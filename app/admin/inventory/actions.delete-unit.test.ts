@@ -129,30 +129,12 @@ describe("deleteUnit -- names what is blocking it, and still blocks it", () => {
     expect(res.error).toContain("nhóm nguyên liệu Trứng gà");
   });
 
-  it("refuses via semi_products.base_unit, naming the semi-product", async () => {
-    mocks.findAllWhere.mockImplementation((sheet: string, filters: any) => {
-      if (sheet === "Units") return Promise.resolve([{ id: "U-010", name: "Ca" }]);
-      if (sheet === "UOM_Conversions") return Promise.resolve([]);
-      if (sheet === "Purchased_Items") return Promise.resolve([]);
-      if (sheet === "Base_Ingredients") return Promise.resolve([]);
-      if (sheet === "Semi_Products" && filters.eq.base_unit === "U-010") {
-        return Promise.resolve([{ name: "Thạch dừa Thanh Bình" }]);
-      }
-      return Promise.resolve([]);
-    });
-
-    const res = await deleteUnit(formData({ id: "U-010" }));
-
-    expect(res.error).toContain("bán thành phẩm Thạch dừa Thanh Bình");
-  });
-
   it("refuses via purchase_order_lines with the frozen-history hint, not an actionable one", async () => {
     mocks.findAllWhere.mockImplementation((sheet: string, filters: any) => {
       if (sheet === "Units") return Promise.resolve([{ id: "UNT-099", name: "Thùng" }]);
       if (sheet === "UOM_Conversions") return Promise.resolve([]);
       if (sheet === "Purchased_Items" && filters.eq.default_unit_id) return Promise.resolve([]);
       if (sheet === "Base_Ingredients") return Promise.resolve([]);
-      if (sheet === "Semi_Products") return Promise.resolve([]);
       if (sheet === "Purchase_Order_Lines" && filters.eq.base_unit === "UNT-099") {
         return Promise.resolve([{ purchased_item_id: "SPM-050" }, { purchased_item_id: "SPM-050" }]);
       }
@@ -180,5 +162,20 @@ describe("deleteUnit -- names what is blocking it, and still blocks it", () => {
     expect(res.error).toBeUndefined();
     expect(mocks.remove).toHaveBeenCalledWith("Units", "UNT-002");
     expect(mocks.revalidateTag).toHaveBeenCalled();
+  });
+
+  // 2026-09-28: semi_products and production_items were dropped (migration
+  // 0105) -- the unit-in-use check must no longer query either table.
+  it("no longer queries Semi_Products or Production_Items when checking whether a unit is in use", async () => {
+    mocks.findAllWhere.mockImplementation((sheet: string) => {
+      if (sheet === "Units") return Promise.resolve([{ id: "UNT-002", name: "Bộ" }]);
+      return Promise.resolve([]);
+    });
+
+    await deleteUnit(formData({ id: "UNT-002" }));
+
+    const queriedSheets = mocks.findAllWhere.mock.calls.map((call: any[]) => call[0]);
+    expect(queriedSheets).not.toContain("Semi_Products");
+    expect(queriedSheets).not.toContain("Production_Items");
   });
 });

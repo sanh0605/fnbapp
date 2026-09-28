@@ -40,8 +40,8 @@ const STATIC_SHEETS = new Set([
   'Suppliers', 'Users',
 ]);
 const CATALOG_SHEETS = new Set([
-  'Products', 'Product_Variants', 'Modifiers', 'Recipes', 'Promotions',
-  'Semi_Products', 'Purchased_Items', 'UOM_Conversions',
+  'Products', 'Product_Variants', 'Modifiers', 'Promotions',
+  'Purchased_Items', 'UOM_Conversions',
   'Product_Price_History',
 ]);
 const getRevalidation = (sheetName: string) => {
@@ -132,14 +132,14 @@ const JSON_COLUMNS_BY_TABLE: Record<string, Set<string>> = {
     'recipe_snapshot_json',
   ]),
   order_events: new Set(['delta_json']),
-  recipes: new Set(['ingredients_json']),
   promotions: new Set(['applicable_products_json']),
   pos_drafts: new Set(['cart_json']),
 };
 
-const BOOLEAN_COLUMNS_BY_TABLE: Record<string, Set<string>> = {
-  base_ingredients: new Set(["is_non_inventory"]),
-};
+// base_ingredients (its own boolean entry) was dropped 2026-09-01 (migration
+// 0090). No live table currently has a boolean column; the next one to get
+// one adds its own entry here, driven by its own test.
+const BOOLEAN_COLUMNS_BY_TABLE: Record<string, Set<string>> = {};
 
 function getJsonColumns(tableName: string): Set<string> {
   return JSON_COLUMNS_BY_TABLE[tableName] || new Set();

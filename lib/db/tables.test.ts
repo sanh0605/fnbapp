@@ -64,23 +64,6 @@ describe("findAllNoCache legacy compatibility", () => {
     mocks.queryCalls.length = 0;
   });
 
-  it("serializes Postgres booleans as legacy Sheets TRUE/FALSE strings", async () => {
-    mocks.supabaseSelect.mockResolvedValue({
-      data: [
-        { id: "ING-001", is_non_inventory: true },
-        { id: "ING-002", is_non_inventory: false },
-      ],
-      error: null,
-    });
-
-    const rows = await findAllNoCache("Base_Ingredients");
-
-    expect(rows).toEqual([
-      { id: "ING-001", is_non_inventory: "TRUE" },
-      { id: "ING-002", is_non_inventory: "FALSE" },
-    ]);
-  });
-
   // Opus code review on 3945207: lib/costing/issue-costing-inputs.ts's
   // buildClassifiedIssues reads stocktake_sessions.is_shrinkage as a real
   // JS boolean (`s.is_shrinkage !== false`). That is only correct because
@@ -344,17 +327,6 @@ describe("findAllWhere", () => {
     }]);
   });
 
-  it("uses the same boolean serialization as findAllNoCache", async () => {
-    mocks.supabaseSelect.mockResolvedValue({
-      data: [{ id: "ING-1", is_non_inventory: true }],
-      error: null,
-    });
-
-    const rows = await findAllWhere("Base_Ingredients", { eq: { id: "ING-1" } });
-
-    expect(rows).toEqual([{ id: "ING-1", is_non_inventory: "TRUE" }]);
-  });
-
   it("throws a contextual error when the filtered query fails", async () => {
     mocks.supabaseSelect.mockResolvedValue({
       data: null,
@@ -431,27 +403,6 @@ describe("updateMany", () => {
     await expect(
       updateMany("Purchase_Order_Lines", [{ unit: "gram" }])
     ).rejects.toThrow(/missing id/);
-  });
-
-  it("deserializes legacy TRUE/FALSE strings for Postgres boolean columns", async () => {
-    mocks.supabaseUpdate.mockImplementation((payload: any) => ({
-      data: payload,
-      error: null,
-    }));
-
-    await updateMany("Base_Ingredients", [
-      { id: "ING-001", is_non_inventory: "TRUE" },
-      { id: "ING-002", is_non_inventory: "FALSE" },
-    ]);
-
-    expect(mocks.supabaseUpdate).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({ is_non_inventory: true }),
-    );
-    expect(mocks.supabaseUpdate).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({ is_non_inventory: false }),
-    );
   });
 });
 

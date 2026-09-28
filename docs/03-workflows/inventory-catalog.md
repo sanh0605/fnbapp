@@ -7,6 +7,14 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002
 ```
 
+**Reviewed, no behaviour change — 2026-09-28:** `app/admin/inventory/actions.ts`'s
+`deleteUnit` unit-in-use check stopped querying `Semi_Products` and
+`Production_Items` (Task 3, `docs/superpowers/plans/2026-09-28-go-10-bang-bo-hoang.md`
+-- their tables are being dropped in migration 0105). Both were always
+0 rows in production, so this changes nothing a real delete could hit; the
+`semi_products`/`production_items` refusal messages are also removed from
+`lib/catalog/unit-delete-restriction.ts` (not one of this flow's declared
+files).
 **Reviewed, no behaviour change — 2026-09-07 (Task 16):** a declared source file's import path only -- stock lib helpers (manual-issue-transaction, stock-adjustment-transaction, stocktake-transaction, stocktake-package-lines, issue-slip-onhand-display, issue-slip-warnings, purchased-item-onhand, conversion-countability) moved to `lib/stock/`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 14):** a declared source file's import path only -- purchasing lib helpers (purchase-order-transaction, purchase-order-edit-gate, purchase-order-write-plan, purchase-line-base-quantity, item-purchase-history) moved to `lib/purchasing/`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.

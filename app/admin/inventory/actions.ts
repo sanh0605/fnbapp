@@ -364,12 +364,13 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// section A3: 7 RESTRICT foreign keys reference units.id (measured live
-// 2026-09-01) -- checked in this order, stopping at the first match, so a
-// unit blocked by more than one source still gets one clear sentence rather
-// than a merged one. purchase_order_lines and production_items are checked
-// last -- historical/production rows are the least likely real-world cause
-// today (0 production_items rows exist at all).
+// section A3: RESTRICT foreign keys reference units.id -- checked in this
+// order, stopping at the first match, so a unit blocked by more than one
+// source still gets one clear sentence rather than a merged one.
+// purchase_order_lines is checked last -- historical rows are the least
+// likely real-world cause. semi_products and production_items were dropped
+// with their tables (migration 0105, 2026-09-28); their checks were removed
+// here in step.
 async function findUnitDeleteBlocker(unitId: string): Promise<UnitBlockerFinding | null> {
   const conversionsByPurchasedUnit = await findAllWhere<{ purchased_item_id: string }>(
     "UOM_Conversions", { eq: { purchased_unit: unitId }, limit: 1 },
@@ -401,13 +402,6 @@ async function findUnitDeleteBlocker(unitId: string): Promise<UnitBlockerFinding
     return { kind: "base_ingredients", count: 1, ownerName: baseIngredients[0].name };
   }
 
-  const semiProducts = await findAllWhere<{ name: string }>(
-    "Semi_Products", { eq: { base_unit: unitId }, limit: 1 },
-  );
-  if (semiProducts[0]) {
-    return { kind: "semi_products", count: 1, ownerName: semiProducts[0].name };
-  }
-
   const poLines = await findAllWhere<{ purchased_item_id: string }>(
     "Purchase_Order_Lines", { eq: { base_unit: unitId } },
   );
@@ -416,13 +410,6 @@ async function findUnitDeleteBlocker(unitId: string): Promise<UnitBlockerFinding
       "Purchased_Items", { eq: { id: poLines[0].purchased_item_id }, limit: 1 },
     );
     return { kind: "purchase_order_lines", count: poLines.length, ownerName: items[0]?.name || poLines[0].purchased_item_id };
-  }
-
-  const productionItems = await findAllWhere(
-    "Production_Items", { eq: { unit_id: unitId } },
-  );
-  if (productionItems.length > 0) {
-    return { kind: "production_items", count: productionItems.length, ownerName: "" };
   }
 
   return null;

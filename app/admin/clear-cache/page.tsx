@@ -2,7 +2,6 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { revalidateTag } from "next/cache";
 
 export default async function ClearCachePage() {
-  revalidateTag("sheets-Recipes");
   revalidateTag("sheets-Product_Variants");
   revalidateTag("sheets-Products");
   revalidateTag("sheets-Product_Price_History");

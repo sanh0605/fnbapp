@@ -104,13 +104,12 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const orders = await findCompletedOrders(queryDateRange, filters);
-    const [orderLines, recipes, modifiers, products, purchaseOrderLines, purchaseOrders, stockIssues, purchasedItems, itemCategories, stocktakeSessions] = await Promise.all([
+    const [orderLines, modifiers, products, purchaseOrderLines, purchaseOrders, stockIssues, purchasedItems, itemCategories, stocktakeSessions] = await Promise.all([
       findAllWhereInBatches(
         "Order_Lines_V2",
         "order_id",
         orders.map(order => order.id),
       ),
-      findAll("Recipes"),
       findAll("Modifiers"),
       findAll("Products"),
       findAllNoCache("Purchase_Order_Lines"),

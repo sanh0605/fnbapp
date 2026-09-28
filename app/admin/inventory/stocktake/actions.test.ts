@@ -81,26 +81,24 @@ describe("startStocktakeSession item list", () => {
     });
   });
 
-  // Plan C Task 3, BR-INV-006 (docs/02-rules/business-rules/inventory.md): semi-products carry
-  // no stock and no value, so the count list must not offer them, even
-  // though SEMI_PRODUCT stays a legal item_type at the database level
-  // (Plan B migration 0052) -- checked by count here, not by eye.
+  // Plan C Task 3, BR-INV-006 (docs/02-rules/business-rules/inventory.md):
+  // the count list must offer only PURCHASED_ITEM lines, checked by count
+  // here, not by eye.
   //
   // Plan D Gap 1 (2026-08-07): BASE_INGREDIENT lines are gone from new
   // sessions entirely -- counting by generic ingredient and counting by
   // purchased item fed different systems (stock_ledger vs stock_issues)
   // with nothing on screen telling them apart. Only PURCHASED_ITEM lines
   // remain.
+  //
+  // 2026-09-28 (migration 0105): semi_products was dropped along with its
+  // table -- startStocktakeSession no longer reads it at all, so there is
+  // no fixture branch to feed it here any more.
   it("never includes SEMI_PRODUCT or BASE_INGREDIENT, only PURCHASED_ITEM", async () => {
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Base_Ingredients") {
         return Promise.resolve([
           { id: "NNL-001", name: "Sữa tươi", base_unit: "U-ML", is_non_inventory: false },
-        ]);
-      }
-      if (sheet === "Semi_Products") {
-        return Promise.resolve([
-          { id: "BTP-001", name: "Cốt cà phê", base_unit: "U-ML" },
         ]);
       }
       if (sheet === "Purchased_Items") {
@@ -133,6 +131,8 @@ describe("startStocktakeSession item list", () => {
     expect(items).toHaveLength(1);
     // ACTIVE items never trigger the C17 purchase/issue lookup.
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
+    // The dropped table must not even be queried any more.
+    expect(mocks.findAll).not.toHaveBeenCalledWith("Semi_Products");
   });
 
   // section 4: the issue-slip screen was given a zero-stock filter, but
@@ -145,7 +145,6 @@ describe("startStocktakeSession item list", () => {
   it("an ACTIVE item with zero on-hand stays offered for counting, unlike the issue-slip picker", async () => {
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Base_Ingredients") return Promise.resolve([]);
-      if (sheet === "Semi_Products") return Promise.resolve([]);
       if (sheet === "Purchased_Items") {
         return Promise.resolve([
           { id: "SPM-EMPTY", name: "Hết tồn", base_ingredient_id: "ING-B", default_unit_id: "U-G", status: "ACTIVE" },
@@ -178,7 +177,6 @@ describe("startStocktakeSession item list", () => {
   it("excludes a purchased item flagged is_non_inventory on itself, while an unflagged sibling stays offered", async () => {
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Base_Ingredients") return Promise.resolve([]);
-      if (sheet === "Semi_Products") return Promise.resolve([]);
       if (sheet === "Purchased_Items") {
         return Promise.resolve([
           { id: "SPM-070", name: "Túi rác", base_ingredient_id: "", default_unit_id: "U-BAO", status: "ACTIVE", is_non_inventory: true },
@@ -221,7 +219,6 @@ describe("startStocktakeSession item list", () => {
           { id: "NNL-012", name: "Khoai lang", base_unit: "U-KG", is_non_inventory: true },
         ]);
       }
-      if (sheet === "Semi_Products") return Promise.resolve([]);
       if (sheet === "Purchased_Items") {
         return Promise.resolve([
           { id: "SPM-052", name: "Khoai lang", base_ingredient_id: "NNL-012", default_unit_id: "U-KG", status: "ACTIVE", is_non_inventory: false },
@@ -261,7 +258,6 @@ describe("startStocktakeSession item list", () => {
   it("excludes every purchased item whose category is EQUIPMENT, regardless of its own is_non_inventory flag", async () => {
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Base_Ingredients") return Promise.resolve([]);
-      if (sheet === "Semi_Products") return Promise.resolve([]);
       if (sheet === "Item_Categories") {
         return Promise.resolve([
           { id: "NHH-001", name: "Nguyên liệu", system_type: "RAW" },
@@ -299,7 +295,6 @@ describe("startStocktakeSession item list", () => {
   it("C17: an inactive purchased item stays offered while its on-hand is still positive", async () => {
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Base_Ingredients") return Promise.resolve([]);
-      if (sheet === "Semi_Products") return Promise.resolve([]);
       if (sheet === "Purchased_Items") {
         return Promise.resolve([
           { id: "SPM-OLD", name: "Sữa đặc La rosee (ngừng bán)", base_ingredient_id: "ING-003", default_unit_id: "U-ML", status: "INACTIVE" },
@@ -335,7 +330,6 @@ describe("startStocktakeSession item list", () => {
   it("C17: an inactive purchased item is dropped once its on-hand reaches zero", async () => {
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Base_Ingredients") return Promise.resolve([]);
-      if (sheet === "Semi_Products") return Promise.resolve([]);
       if (sheet === "Purchased_Items") {
         return Promise.resolve([
           { id: "SPM-GONE", name: "Nguyên liệu đã hết", base_ingredient_id: "ING-999", default_unit_id: "U-ML", status: "INACTIVE" },
@@ -392,7 +386,6 @@ describe("getStocktakeSessionData package lines", () => {
     });
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Base_Ingredients") return Promise.resolve([{ id: "ING-028", name: "Dâu sấy", base_unit: "UNT-017", is_non_inventory: false }]);
-      if (sheet === "Semi_Products") return Promise.resolve([]);
       if (sheet === "Purchased_Items") return Promise.resolve([{ id: "SPM-033", name: "Dâu sấy", base_ingredient_id: "ING-028", default_unit_id: "U-008", status: "ACTIVE" }]);
       if (sheet === "Units") return Promise.resolve([{ id: "UNT-017", name: "g" }, { id: "U-008", name: "Túi" }]);
       if (sheet === "UOM_Conversions") {

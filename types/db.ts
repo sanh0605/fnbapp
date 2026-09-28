@@ -221,17 +221,6 @@ export interface DBUOMConversion {
   purchase_only: boolean;
 }
 
-export interface DBRecipe {
-  id: string;
-  target_type: "PRODUCT_VARIANT" | "SEMI_PRODUCT" | "MODIFIER";
-  target_id: string;
-  ingredients_json: string;
-  status: string;
-  start_date: string;
-  end_date: string;
-  created_at: string;
-}
-
 export interface DBPurchaseSource {
   id: string;
   name: string;
@@ -265,35 +254,6 @@ export interface DBPurchaseOrderLine {
   unit_id: string;
   unit_cost: string;
   subtotal: string;
-  created_at: string;
-}
-
-export interface DBSemiProduct {
-  id: string;
-  name: string;
-  unit_id: string;
-  status: string;
-  created_at: string;
-  base_unit?: string; // Joined field
-  batch_yield?: string; // Joined field
-}
-
-export interface DBProductionOrder {
-  id: string;
-  semi_product_id: string;
-  batch_yield: string;
-  status: string;
-  created_at: string;
-  completed_at?: string;
-}
-
-export interface DBProductionItem {
-  id: string;
-  production_order_id: string;
-  ingredient_type: string;
-  ingredient_id: string;
-  quantity: string;
-  unit_id: string;
   created_at: string;
 }
 

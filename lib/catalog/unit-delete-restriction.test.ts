@@ -46,17 +46,6 @@ describe("buildUnitDeleteRestrictionMessage", () => {
     );
   });
 
-  it("names the semi-product for semi_products.base_unit", () => {
-    const message = buildUnitDeleteRestrictionMessage("lít", {
-      kind: "semi_products",
-      count: 1,
-      ownerName: "Nước đường Glofood",
-    });
-    expect(message).toBe(
-      "Không xoá được đơn vị lít vì đang được dùng trong bán thành phẩm Nước đường Glofood. Đổi đơn vị gốc của bán thành phẩm đó trước.",
-    );
-  });
-
   it("frames purchase_order_lines as frozen history with no fix-it hint", () => {
     const message = buildUnitDeleteRestrictionMessage("Can", {
       kind: "purchase_order_lines",
@@ -65,17 +54,6 @@ describe("buildUnitDeleteRestrictionMessage", () => {
     });
     expect(message).toBe(
       "Không xoá được đơn vị Can vì đang được dùng trong 2 dòng đơn nhập lịch sử của Nước đường Glofood. Đây là lịch sử đơn nhập đã ghi nhận, đơn vị này không thể xoá được nữa.",
-    );
-  });
-
-  it("falls back to a plain count for production_items, which has no owner name", () => {
-    const message = buildUnitDeleteRestrictionMessage("kg", {
-      kind: "production_items",
-      count: 1,
-      ownerName: "",
-    });
-    expect(message).toBe(
-      "Không xoá được đơn vị kg vì đang được dùng trong 1 dòng kế hoạch sản xuất. Xoá dòng kế hoạch sản xuất đó trước.",
     );
   });
 });

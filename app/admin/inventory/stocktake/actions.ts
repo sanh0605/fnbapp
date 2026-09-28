@@ -62,8 +62,10 @@ async function loadItemNameMaps() {
   // is item_type PURCHASED_ITEM (50/50) -- no BASE_INGREDIENT-type line has
   // ever existed, so there is no historical name this map needs to resolve
   // through that table.
-  const [semiProducts, purchasedItems, units, itemCategories] = await Promise.all([
-    findAll("Semi_Products"),
+  // semi_products dropped 2026-09-28 (migration 0105): the count list never
+  // offered SEMI_PRODUCT lines (see actions.test.ts), so this map no longer
+  // needs to read that table at all.
+  const [purchasedItems, units, itemCategories] = await Promise.all([
     findAll("Purchased_Items"),
     findAll("Units"),
     findAll("Item_Categories"),
@@ -71,10 +73,6 @@ async function loadItemNameMaps() {
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
   const nameById = new Map<string, string>();
   const unitNameByItemId = new Map<string, string>();
-  for (const item of semiProducts as any[]) {
-    nameById.set(item.id, item.name);
-    unitNameByItemId.set(item.id, unitNameById.get(item.base_unit) ?? item.base_unit ?? "");
-  }
   for (const item of purchasedItems as any[]) {
     nameById.set(item.id, item.name);
     unitNameByItemId.set(item.id, unitNameById.get(item.default_unit_id) ?? item.default_unit_id ?? "");
@@ -83,7 +81,6 @@ async function loadItemNameMaps() {
     nameById,
     unitNameById,
     unitNameByItemId,
-    semiProducts: semiProducts as any[],
     purchasedItems: purchasedItems as any[],
     itemCategories: itemCategories as any[],
   };
