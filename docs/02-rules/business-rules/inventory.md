@@ -135,3 +135,15 @@ A stocktake session cancelled before it is confirmed is deleted outright: the se
 
 **Second one-time exception to `BR-INV-009`, 2026-09-28: every issue slip from 27/09 erased.** The owner asked to delete all issue slips from 2026-09-27 until the moment of asking: ISL-00075..ISL-00088, their 32 lines and the 25 rows reversing them (`supabase/migrations/0104_erase_issue_slips_since_0927.sql`). The 27/09 slips had already been cancelled by the owner that evening ("Lỗi hệ thống"), so erasing them only removes the trail. The six slips of 28/09 were live and looked like ordinary same-day use (Sữa tươi Mlekovita 1 l, Sữa yến mạch Oatside 2 l, Sữa đặc La rosee 1 l, Bột sữa B One 1 kg, two coffee powders 500 g each); the owner was told that erasing them leaves the book that much above the shelf until the next count, and chose to erase them anyway. Slips after this one-time clean-up are cancelled, not deleted.
 
+
+### BR-INV-012 — The owner can edit a confirmed stocktake; the change lands on the count's own date
+
+**Status:** `APPROVED` — owner decision 2026-09-28. **Not built yet.** One point still open, below.
+
+Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
+
+- **Where the change lands (1b).** Editing a counted quantity on a confirmed stocktake rewrites that count's shortfall or found-goods row **on the count's own date**, not today. The owner was told beforehand that this means a month's cost of goods, and so its profit report, changes after he may already have read it. This is a deliberate exception to the "corrections land today" pattern of `BR-INV-009`, and applies to stocktakes only.
+- **Who may edit (2a).** The owner only — `requireOwner()`, the same guard as undoing a confirmed stocktake, and for the same reason: the person being checked must not be able to change the check.
+- **Where a shortfall shows (3a).** A stocktake shortfall appears in the issue-slip list alongside ordinary slips, labelled "Kiểm kê". Opening it opens the stocktake; it carries no cancel button there. It stays a separate source (`STOCKTAKE`) for cost purposes, so `BR-COGS-007`'s split of cost of goods from loss is unchanged.
+
+**Open, to ask the owner (found 2026-09-28, while writing this rule down).** If a later stocktake exists, editing an earlier one breaks the later one's arithmetic. Example with made-up numbers: count 1 finds 10 of an item against a book of 15 (short 5); count 2 later finds 8 against a book of 10 (short 2). Edit count 1 to 12: the book after count 1 becomes 12, so count 2 should now be short 4, but it still says 2, and the book after count 2 reads 10 while the shelf holds 8. Either only the most recent confirmed stocktake may be edited (as with undoing one today), or every later stocktake's shortfall is recomputed from its unchanged count.
