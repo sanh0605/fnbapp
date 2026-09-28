@@ -198,6 +198,24 @@ giá trị trung bình mỗi ly, số ly, số trứng, số khoai.
   góp, Doanh thu ghi tay (thu). Nhóm quá rộng để dùng làm dấu "đã nhập khoản
   này tháng này" — "Vận hành" gồm nhiều khoản khác nhau.
 
+### 5.8 Anh trả lời Q2b, Q2c — 2026-09-28
+
+Nguyên văn: *"1b. 2a nhưng chỉ tính toppings được bán kèm với nước, không tính
+toppings bán riêng. 3 các khoản nhập hàng tháng cứ để mặc định vào ngày 25 hàng
+tháng, còn ngày cụ thể thì anh sẽ tự chọn các ngày trong đúng tháng được nhắc."*
+
+- **Cột đồ ăn:** hai cột cố định, Trứng luộc và Khoai lang (không tự thêm cột
+  khi thêm món đồ ăn mới).
+- **Số ly:** mọi món thuộc nhóm Cà phê, Giải trí, Trà, Yogurt.
+- **Giá trị trung bình mỗi ly** = (tiền các ly nước + tiền topping gọi kèm trên
+  chính ly đó) ÷ số ly. Topping bán thành món riêng (ví dụ Hộp sữa chua bán lẻ)
+  không tính. Ví dụ: 100 ly nước 3.000.000đ, topping gọi kèm 200.000đ, 20 trứng,
+  10 khoai → 3.200.000đ ÷ 100 = 32.000đ/ly. *Chưa kiểm: đơn hàng lưu topping gọi
+  kèm tách khỏi topping bán riêng thế nào — phải đo trước khi thiết kế.*
+- **Nhắc chi phí tháng:** anh tự lập danh sách khoản hằng tháng. Lời nhắc của
+  tháng M hiện từ **ngày 25/M**. Anh nhập khoản đó với ngày tự chọn, miễn nằm
+  trong tháng M; có một dòng như vậy thì hết nhắc tháng M.
+
 ## 6. Chia phần làm — nháp, chờ anh duyệt thứ tự
 
 | # | Phần | Vì sao đứng ở vị trí này |
@@ -217,9 +235,10 @@ giá trị trung bình mỗi ly, số ly, số trứng, số khoai.
 | Q1b | Chọn giữa bản của anh và bản của Opus ở 4 chỗ khác nhau (mục 5.4), và cách đặt tên (5.3) | anh đã trả lời 2026-09-28 (mục 5.5) |
 | Q1c | Thu chi là nhóm riêng hay trong Báo cáo; Nhập hàng tách riêng hay trong Kho (mục 5.6) | chốt 2026-09-28: cả hai tách riêng |
 | Q2 | Trang chủ cảnh báo những gì, ngưỡng nào | anh đã trả lời 2026-09-28 (mục 5.7) |
-| Q2b | "Ly" gồm nhóm nào; trứng, khoai là cột cố định hay theo nhóm Thức ăn; giá trị trung bình mỗi ly tính trên tiền nào | **đang hỏi** 2026-09-28 |
-| Q2c | Nhắc chi phí tháng: những khoản nào, hạn ngày nào, khi nào coi là đã nhập | **đang hỏi** 2026-09-28 |
-| Q2d | Ngưỡng "lâu chưa kiểm kê" | chờ |
+| Q2b | "Ly" gồm nhóm nào; trứng, khoai là cột cố định hay theo nhóm Thức ăn; giá trị trung bình mỗi ly tính trên tiền nào | chốt 2026-09-28 (mục 5.8) |
+| Q2c | Nhắc chi phí tháng: những khoản nào, hạn ngày nào, khi nào coi là đã nhập | chốt 2026-09-28 (mục 5.8) |
+| Q2e | Qua hết tháng M mà chưa nhập thì sao | **đang hỏi** 2026-09-28 |
+| Q2d | Ngưỡng "lâu chưa kiểm kê" | **đang hỏi** 2026-09-28 |
 | Q3 | Thứ tự các phần A–F | chờ |
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
