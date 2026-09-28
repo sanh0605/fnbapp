@@ -205,6 +205,8 @@ Khoá ngoại trỏ vào 10 bảng:
 
 ## Release (each step needs its own owner approval)
 
+**Released 2026-09-29, each step approved by the owner in turn.** Step 1 pasted by the owner. Step 2 pushed `4854e59`. Step 3 deployed. Step 4: `db push --dry-run` listed only `0105`, then applied. Step 5: `backup-to-sheets` deleted; `supabase functions list` now shows `user-admin` and `backup-to-drive` only. Step 6 measured: all 34 `BACKUP_TABLES` readable (34/34); the 10 dropped tables answer `PGRST205` (checked with a real select — a `head` request hides that error and first read as "still present"); `verify-cogs` 49.943.622đ reported = recomputed, 0 mismatch / 191 orders, 347 lines. Still owed by the owner: one product save, and the Drive file on the morning of 2026-09-30.
+
 The order avoids a broken night of backups and keeps product saving down for as short a time as possible.
 
 1. **Owner pastes the new `EXPECTED_TABLES` into Google Apps Script.** The file content is given to him. With the edge function still sending 44 tables, the extra 10 only trigger a non-fatal warning email. Pasting after the edge function deploy would make one night's backup fail.

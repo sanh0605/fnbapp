@@ -350,7 +350,7 @@ POS"** nằm riêng trên đầu menu (`app/admin/layout.tsx`). Bấm nút này,
 
 | Thứ tự | Phần | Gồm | Vì sao ở vị trí này |
 |---|---|---|---|
-| 1 | F — Gỡ 10 bảng bỏ hoang | Đã xong phần code; còn đưa lên, mỗi bước anh duyệt | Làm xong việc dở trước khi mở việc mới |
+| 1 | F — Gỡ 10 bảng bỏ hoang | Đã đưa lên 2026-09-29; còn anh thử lưu một món và xem file sao lưu sáng 30/09 | Làm xong việc dở trước khi mở việc mới |
 | 2 | A — Menu 7 nhóm | Gom nhóm, đổi tên theo mục 5.3–5.6 | Rẻ, thấy ngay, không đổi dữ liệu |
 | 3 | B — Khuôn trang chung | Font, bảng màu 4 vai trò dùng chung cả máy bán hàng, menu riêng cho điện thoại và menu thu gọn trên máy tính (mục 5.12, 5.13), trang "lập phiếu + danh sách phiếu cũ" (mới nhất trên, 20 phiếu một trang), trang chi tiết phiếu; bản mẫu cho anh bấm thử trước | Mọi trang sau dựng theo khuôn này |
 | 4 | C — Các trang phiếu theo khuôn | Phiếu nhập, Phiếu xuất, Kiểm kê (gồm `BR-INV-012`), Sổ thu chi | Kiểm kê là việc anh cần nhất |
