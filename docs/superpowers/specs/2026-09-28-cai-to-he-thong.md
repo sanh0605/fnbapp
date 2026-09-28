@@ -271,16 +271,35 @@ Toppings có nên cùng level với cái này không nhỉ?"*
 - Với nhóm hiện có: Cà phê, Giải trí, Trà, Yogurt → Thức uống; Thức ăn → Thức
   ăn; Topping → Topping.
 
-## 6. Chia phần làm — nháp, chờ anh duyệt thứ tự
+### 5.11 Anh trả lời Q2g, 2026-09-28 — loại món do anh tự quản
 
-| # | Phần | Vì sao đứng ở vị trí này |
-|---|---|---|
-| A | Gom menu theo nhóm đã chốt (mục 5) | Rẻ, thấy ngay, không đổi dữ liệu |
-| B | Khuôn trang chung: font, trang "lập phiếu + danh sách phiếu cũ" (mới nhất trên cùng, 20 phiếu một trang), trang chi tiết phiếu. Bản mẫu cho anh bấm thử trước | Mọi trang sau dựng theo khuôn này; làm sau nó thì không phải làm lại |
-| C | Áp khuôn B vào các trang phiếu: nhập hàng, xuất kho, kiểm kê (gồm `BR-INV-012`), sổ thu chi | Kiểm kê là trang đầu tiên dùng khuôn mới |
-| D | Chức năng còn thiếu: màn hình tồn kho, trang chủ cảnh báo, báo cáo lưu chuyển tiền tệ | Cần khuôn B có trước |
-| E | Sắp xếp file và gọn code | Làm song song từng phần khi đụng tới, không làm một đợt lớn riêng |
-| F | Cơ sở dữ liệu: gỡ 10 bảng bỏ hoang | Đã xong phần code, chờ anh duyệt đưa lên |
+Nguyên văn: *"1 đồng ý. 2 Ok, có thể làm trước theo khuyến nghị. 3. Không đồng
+ý, đáng lẽ máy chỉ cần biết thức uống và khác thức uống là được chứ nhỉ?"*
+
+Anh đúng. Máy chỉ cần một điều: loại đó **có phải thức uống không** (thì tính là
+ly). Topping bán riêng tự bị loại khỏi số ly và giá trị mỗi ly vì nó không phải
+thức uống; topping gọi kèm vẫn được cộng vì nó nằm trên một ly. Cột đồ ăn trong
+bảng 7 ngày do anh chọn theo món (mục 5.9), không cần loại.
+
+**Chốt:**
+- **Danh sách loại món do anh tự thêm, sửa, xoá** — đặt ở Bán hàng, cạnh Nhóm
+  món. Mỗi loại có tên và một ô "là thức uống (tính là ly)".
+- Mặc định ba loại: Thức uống (có đánh dấu), Thức ăn, Topping.
+- Mỗi **nhóm món** chọn một loại; món theo loại của nhóm. Làm theo cách này trước.
+- Xoá một loại đang có nhóm dùng thì máy từ chối và nói nhóm nào đang dùng.
+- Thay cho ý "ba loại cố định" ở mục 5.10 — ý đó bị bác.
+
+## 6. Chia phần làm — đề xuất thứ tự, chờ anh duyệt (Q3)
+
+| Thứ tự | Phần | Gồm | Vì sao ở vị trí này |
+|---|---|---|---|
+| 1 | F — Gỡ 10 bảng bỏ hoang | Đã xong phần code; còn đưa lên, mỗi bước anh duyệt | Làm xong việc dở trước khi mở việc mới |
+| 2 | A — Menu 7 nhóm | Gom nhóm, đổi tên theo mục 5.3–5.6 | Rẻ, thấy ngay, không đổi dữ liệu |
+| 3 | B — Khuôn trang chung | Font, trang "lập phiếu + danh sách phiếu cũ" (mới nhất trên, 20 phiếu một trang), trang chi tiết phiếu; bản mẫu cho anh bấm thử trước | Mọi trang sau dựng theo khuôn này |
+| 4 | C — Các trang phiếu theo khuôn | Phiếu nhập, Phiếu xuất, Kiểm kê (gồm `BR-INV-012`), Sổ thu chi | Kiểm kê là việc anh cần nhất |
+| 5 | D — Tổng quan mới | Báo động, bảng 7 ngày, loại món, khoản chi hằng tháng, Cài đặt → Tổng quan | Cần khuôn B và loại món |
+| 6 | E — Chức năng còn thiếu | Tồn kho, Lưu chuyển tiền tệ | Cần khuôn B |
+| suốt quá trình | G — Sắp xếp file, gọn code | Làm ở từng phần khi đụng tới | Không làm một đợt lớn riêng: đợt lớn không ai kiểm nổi |
 
 ## 7. Câu hỏi còn mở — hỏi lần lượt, mỗi lượt một vấn đề
 
@@ -294,9 +313,9 @@ Toppings có nên cùng level với cái này không nhỉ?"*
 | Q2c | Nhắc chi phí tháng: những khoản nào, hạn ngày nào, khi nào coi là đã nhập | chốt 2026-09-28 (mục 5.8) |
 | Q2e | Qua hết tháng M mà chưa nhập thì sao | chốt 2026-09-28: vẫn nhắc |
 | Q2f | Chỗ đặt các thứ chỉnh được của Tổng quan (mục 5.9) | chốt 2026-09-28 |
-| Q2g | Loại món: 3 loại cố định (Thức uống, Thức ăn, Topping), đặt trên nhóm món (mục 5.10) | **đang hỏi** 2026-09-28 |
+| Q2g | Loại món: 3 loại cố định (Thức uống, Thức ăn, Topping), đặt trên nhóm món (mục 5.10) | chốt 2026-09-28: loại do anh tự quản, có ô "là thức uống" (mục 5.11) |
 | Q2d | Ngưỡng "lâu chưa kiểm kê" | chốt 2026-09-28: 30 ngày, anh đổi được |
-| Q3 | Thứ tự các phần A–F | chờ |
+| Q3 | Thứ tự các phần (mục 6) | **đang hỏi** 2026-09-28 |
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
 | Q6 | Báo cáo lưu chuyển tiền tệ theo mẫu nào | chờ, xem `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md` trước |
