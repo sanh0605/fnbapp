@@ -44,6 +44,7 @@ trên báo cáo lần ngược được về phiếu nhập, phiếu xuất, ki�
 | Ngày | Điều đã chốt | Ghi ở |
 |---|---|---|
 | 2026-09-28 | Không giữ bản sao lưu 44 bảng trước khi gỡ 10 bảng bỏ hoang: "khi tạo lại bảng thì cũng đã thay đổi logic" | file này |
+| 2026-09-28 | Menu 7 nhóm: Tổng quan, Bán hàng, Nhập hàng, Kho, Thu chi, Báo cáo, Cài đặt; Cài đặt chỉ chứa thứ dùng chung cho cả hệ thống | mục 5.5, 5.6 |
 | 2026-09-28 | Sửa phiếu kiểm kê đã xác nhận: ghi vào đúng ngày kiểm cũ (1b), chỉ chủ quán sửa (2a), phần thiếu hiện trong danh sách phiếu xuất kho có nhãn "Kiểm kê" (3a) | `BR-INV-012`, `docs/02-rules/business-rules/inventory.md` |
 
 ## 4. Hiện trạng đo được (2026-09-28)
@@ -150,15 +151,18 @@ thống.
 Áp nguyên tắc đó, Opus tự xếp thêm: **Thời hạn khấu hao** chỉ phục vụ Tài sản →
 về **Kho**, cạnh Tài sản.
 
-### 5.6 Menu hiện tại sau các câu trả lời — bản làm việc
+### 5.6 Menu đã chốt — 2026-09-28
+
+Anh trả lời Q1c *"1a 2a"*: Thu chi là nhóm riêng, Nhập hàng tách riêng. Bảy
+nhóm dưới đây là bản chốt; chỉ còn nội dung trang Tổng quan (Q2).
 
 | Nhóm | Gồm | Còn mở |
 |---|---|---|
 | Tổng quan | Cảnh báo cần xử lý | Q2 |
 | Bán hàng | Đơn hàng, Món, Nhóm món, Topping & tuỳ chọn, Khuyến mãi, Thương hiệu, Điểm bán | |
-| Nhập hàng | Phiếu nhập, Nhà cung cấp | tách riêng hay nằm trong Kho: Q1c |
+| Nhập hàng | Phiếu nhập, Nhà cung cấp | |
 | Kho | Tồn kho, Phiếu xuất, Kiểm kê, Hàng hoá, Tài sản, Thời hạn khấu hao, Đơn vị tính, Phân loại hàng | |
-| Thu chi | Sổ thu chi, Nhóm thu chi, Tài khoản ngân hàng | nhóm riêng hay nằm trong Báo cáo: Q1c |
+| Thu chi | Sổ thu chi, Nhóm thu chi, Tài khoản ngân hàng | |
 | Báo cáo | Tổng kết ngày, Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | |
 | Cài đặt | Nhân viên & quyền, Nhật ký hoạt động | |
 
@@ -181,8 +185,8 @@ Tên mục theo mục 5.3; anh chưa phản đối cách đặt tên.
 |---|---|---|
 | Q1 | Xếp các mục anh chưa nhắc tới vào nhóm nào (mục 5) | anh đã trả lời 2026-09-28 (mục 5.1) |
 | Q1b | Chọn giữa bản của anh và bản của Opus ở 4 chỗ khác nhau (mục 5.4), và cách đặt tên (5.3) | anh đã trả lời 2026-09-28 (mục 5.5) |
-| Q1c | Thu chi là nhóm riêng hay trong Báo cáo; Nhập hàng tách riêng hay trong Kho (mục 5.6) | **đang hỏi** 2026-09-28 |
-| Q2 | Trang chủ cảnh báo những gì, ngưỡng nào | chờ |
+| Q1c | Thu chi là nhóm riêng hay trong Báo cáo; Nhập hàng tách riêng hay trong Kho (mục 5.6) | chốt 2026-09-28: cả hai tách riêng |
+| Q2 | Trang chủ cảnh báo những gì, ngưỡng nào | **đang hỏi** 2026-09-28 |
 | Q3 | Thứ tự các phần A–F | chờ |
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
