@@ -44,6 +44,7 @@ trên báo cáo lần ngược được về phiếu nhập, phiếu xuất, ki�
 | Ngày | Điều đã chốt | Ghi ở |
 |---|---|---|
 | 2026-09-28 | Không giữ bản sao lưu 44 bảng trước khi gỡ 10 bảng bỏ hoang: "khi tạo lại bảng thì cũng đã thay đổi logic" | file này |
+| 2026-09-28 | Thứ gì chỉnh được thì chủ quán tự thêm, sửa, xoá; không nhét cứng | `CLAUDE.md` mục Viết code, mục 5.9 |
 | 2026-09-28 | Menu 7 nhóm: Tổng quan, Bán hàng, Nhập hàng, Kho, Thu chi, Báo cáo, Cài đặt; Cài đặt chỉ chứa thứ dùng chung cho cả hệ thống | mục 5.5, 5.6 |
 | 2026-09-28 | Sửa phiếu kiểm kê đã xác nhận: ghi vào đúng ngày kiểm cũ (1b), chỉ chủ quán sửa (2a), phần thiếu hiện trong danh sách phiếu xuất kho có nhãn "Kiểm kê" (3a) | `BR-INV-012`, `docs/02-rules/business-rules/inventory.md` |
 
@@ -216,6 +217,34 @@ tháng, còn ngày cụ thể thì anh sẽ tự chọn các ngày trong đúng 
   tháng M hiện từ **ngày 25/M**. Anh nhập khoản đó với ngày tự chọn, miễn nằm
   trong tháng M; có một dòng như vậy thì hết nhắc tháng M.
 
+### 5.9 Anh trả lời Q2d, Q2e — và luật "không nhét cứng", 2026-09-28
+
+Nguyên văn: *"1a. 2a và anh có thể thay đổi số ngày trong cài đặt. 3 bổ sung
+thêm một lưu ý mới. Cái nào có thể tùy chỉnh thì để anh có thể tự do thêm sửa
+xóa. Tuyệt đối không áp dụng hardcode 100% vào tất cả mọi thứ."*
+
+- Qua hết tháng mà chưa nhập: **vẫn nhắc**, ghi rõ tháng nào, tới khi nhập.
+- Lâu chưa kiểm kê: mặc định **30 ngày**, anh tự đổi được.
+- Phiếu kiểm kê mở dở: Opus đề xuất báo khi quá 2 ngày; anh không phản đối.
+- **Luật mới, áp cho toàn bộ cải tổ:** thứ gì chỉnh được thì anh tự thêm, sửa,
+  xoá trên màn hình. Đã ghi vào `CLAUDE.md` mục "Viết code". Thứ đã có lịch sử
+  (món, nguyên liệu, đơn, nhà cung cấp) vẫn ngừng dùng chứ không xoá.
+
+**Luật mới đụng tới các câu đã chốt — Opus đề xuất sửa như sau (Q2f):**
+
+| Thứ | Trước | Theo luật mới | Để ở |
+|---|---|---|---|
+| Số ngày "lâu chưa kiểm kê" | 30 | Anh đổi được, mặc định 30 | Cài đặt → Tổng quan |
+| Số ngày "phiếu mở dở" | 2 | Anh đổi được, mặc định 2 | Cài đặt → Tổng quan |
+| Ngày bắt đầu nhắc chi phí | 25 | Anh đổi được, mặc định 25 | Cài đặt → Tổng quan |
+| Cột đồ ăn trong bảng 7 ngày | cố định Trứng luộc, Khoai lang (1b) | Anh chọn món nào thành cột, mặc định hai món này | Cài đặt → Tổng quan |
+| Nhóm nào tính là "ly" | Cà phê, Giải trí, Trà, Yogurt | Mỗi nhóm món có ô "tính là ly" | Bán hàng → Nhóm món |
+| Khoản chi hằng tháng | — | Anh tự thêm, sửa, xoá | Thu chi |
+
+Vì sao các ngưỡng về Cài đặt dù anh đặt nguyên tắc "Cài đặt chỉ cho cả hệ
+thống": trang Tổng quan gom báo động của mọi nhóm, nên phần chỉnh của nó là thứ
+dùng chung. Còn "tính là ly" chỉ thuộc về món, nên nằm ở Bán hàng.
+
 ## 6. Chia phần làm — nháp, chờ anh duyệt thứ tự
 
 | # | Phần | Vì sao đứng ở vị trí này |
@@ -237,8 +266,9 @@ tháng, còn ngày cụ thể thì anh sẽ tự chọn các ngày trong đúng 
 | Q2 | Trang chủ cảnh báo những gì, ngưỡng nào | anh đã trả lời 2026-09-28 (mục 5.7) |
 | Q2b | "Ly" gồm nhóm nào; trứng, khoai là cột cố định hay theo nhóm Thức ăn; giá trị trung bình mỗi ly tính trên tiền nào | chốt 2026-09-28 (mục 5.8) |
 | Q2c | Nhắc chi phí tháng: những khoản nào, hạn ngày nào, khi nào coi là đã nhập | chốt 2026-09-28 (mục 5.8) |
-| Q2e | Qua hết tháng M mà chưa nhập thì sao | **đang hỏi** 2026-09-28 |
-| Q2d | Ngưỡng "lâu chưa kiểm kê" | **đang hỏi** 2026-09-28 |
+| Q2e | Qua hết tháng M mà chưa nhập thì sao | chốt 2026-09-28: vẫn nhắc |
+| Q2f | Chỗ đặt các thứ chỉnh được của Tổng quan (mục 5.9) | **đang hỏi** 2026-09-28 |
+| Q2d | Ngưỡng "lâu chưa kiểm kê" | chốt 2026-09-28: 30 ngày, anh đổi được |
 | Q3 | Thứ tự các phần A–F | chờ |
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |

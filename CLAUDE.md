@@ -135,7 +135,7 @@ Việc có cả hai phần thì tách thành hai phiếu giao việc. Opus soát
 - Máy tính và điện thoại dựng hai bố cục riêng. Trang xong khi cả hai dùng được. Chi tiết: `.claude/rules/ui-devices.md`.
 - Không đo tỉ lệ thiết bị người dùng mở; chủ quán đã bác (2026-08-26). Điều kiện xem lại do chủ quán tự nêu.
 - Màn hình mới phải gắn lối vào menu; quên thì `npx vitest run` đỏ.
-- Thứ chủ quán có thể muốn đổi phải là một bảng dữ liệu kèm màn hình tự sửa, không nhét cứng vào code. Phải nói rõ: ghi lại giá trị đã dùng lúc tính, hay sửa bảng là tính lại toàn bộ.
+- Thứ chủ quán có thể muốn đổi phải là một bảng dữ liệu kèm màn hình để chủ quán tự thêm, sửa, xoá; không nhét cứng vào code (chủ quán chốt 2026-09-28: "Tuyệt đối không áp dụng hardcode 100% vào tất cả mọi thứ"). Thứ đã có lịch sử (món, nguyên liệu, đơn, nhà cung cấp) vẫn theo Luật dữ liệu: ngừng dùng thay vì xoá. Phải nói rõ: ghi lại giá trị đã dùng lúc tính, hay sửa bảng là tính lại toàn bộ.
 - Code và chú thích tiếng Anh; chữ hiển thị tiếng Việt.
 - Không thêm tính năng, lớp trừu tượng, hay tuỳ chọn ngoài yêu cầu.
 - Thấy code chết không liên quan thì nói, không tự xoá.
