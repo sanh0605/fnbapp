@@ -12,9 +12,7 @@ export const BACKUP_TABLES = [
   "products",
   "product_variants",
   "modifiers",
-  "recipes",
   "promotions",
-  "semi_products",
   "purchased_items",
   "asset_depreciation_bands",
   // References purchased_items, so it must come after it.
@@ -28,17 +26,9 @@ export const BACKUP_TABLES = [
   "order_events",
   "purchase_orders",
   "purchase_order_lines",
-  "stock_adjustments",
-  "production_orders",
-  "production_items",
   "pos_drafts",
   "users",
-  "sync_state",
-  "data_migration_runs",
-  "data_recovery_changes",
   "order_payments",
-  "shifts",
-  "shift_stock_checks",
   "stocktake_sessions",
   "stocktake_lines",
   // References stock_issues below only in reverse (stock_issues.issue_slip_id
@@ -67,11 +57,10 @@ export const BACKUP_TABLES = [
 ] as const;
 
 export const PAGE_SIZE = 1000;
-export const BACKUP_TABLE_ORDER_COLUMNS: Partial<Record<typeof BACKUP_TABLES[number], string>> = {
-  sync_state: "sync_key",
-  data_migration_runs: "migration_key",
-  data_recovery_changes: "run_id.asc,table_name.asc,row_id.asc,column_name",
-};
+// sync_state, data_migration_runs, and data_recovery_changes each had a
+// custom order column here; all three were dropped 2026-09-28 (migration
+// 0105). No remaining table needs anything but the default "id".
+export const BACKUP_TABLE_ORDER_COLUMNS: Partial<Record<typeof BACKUP_TABLES[number], string>> = {};
 
 export type JsonRow = Record<string, unknown>;
 

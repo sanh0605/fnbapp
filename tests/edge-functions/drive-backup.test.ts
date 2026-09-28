@@ -11,25 +11,38 @@ import {
 import { extractTables } from "@/scripts/system-map/extract-tables";
 
 describe("Google Drive backup core", () => {
-  it("pins the complete 44-table snapshot policy", () => {
-    expect(BACKUP_TABLES).toHaveLength(44);
-    expect(new Set(BACKUP_TABLES).size).toBe(44);
+  it("pins the complete 34-table snapshot policy", () => {
+    expect(BACKUP_TABLES).toHaveLength(34);
+    expect(new Set(BACKUP_TABLES).size).toBe(34);
     expect(BACKUP_TABLES).toContain("orders_v2");
     expect(BACKUP_TABLES).toContain("users");
-    expect(BACKUP_TABLES).toContain("sync_state");
-    expect(BACKUP_TABLES).toContain("data_migration_runs");
-    expect(BACKUP_TABLES).toContain("data_recovery_changes");
-    expect(BACKUP_TABLE_ORDER_COLUMNS.sync_state).toBe("sync_key");
-    expect(BACKUP_TABLE_ORDER_COLUMNS.data_migration_runs).toBe("migration_key");
-    expect(BACKUP_TABLE_ORDER_COLUMNS.data_recovery_changes)
-      .toBe("run_id.asc,table_name.asc,row_id.asc,column_name");
+    expect(BACKUP_TABLE_ORDER_COLUMNS).toEqual({});
+  });
+
+  // 2026-09-28 (migration 0105): recipes, semi_products, production_orders,
+  // production_items, stock_adjustments, shifts, shift_stock_checks,
+  // sync_state, data_migration_runs, and data_recovery_changes were dropped.
+  // The nightly backup must not try to dump a table that no longer exists.
+  it("no longer backs up the 10 tables dropped by migration 0105", () => {
+    for (const table of [
+      "recipes",
+      "semi_products",
+      "production_orders",
+      "production_items",
+      "stock_adjustments",
+      "shifts",
+      "shift_stock_checks",
+      "sync_state",
+      "data_migration_runs",
+      "data_recovery_changes",
+    ]) {
+      expect(BACKUP_TABLES).not.toContain(table);
+    }
   });
 
   it("covers every persisted table except deliberately derived ones", () => {
     for (const table of [
       "order_payments",
-      "shifts",
-      "shift_stock_checks",
       "stocktake_sessions",
       "stocktake_lines",
       "stock_issues",
@@ -113,10 +126,10 @@ describe("Google Drive backup core", () => {
       .toBe("fnbapp-backup-2026-07-17.json");
   });
 
-  it("rejects a snapshot missing any of the 44 required table keys", () => {
+  it("rejects a snapshot missing any of the 34 required table keys", () => {
     const rows = new Map(BACKUP_TABLES.map(table => [table, []]));
     const complete = buildBackupBundle("2026-07-16T00:00:00.000Z", rows);
-    expect(validateBackupBundle(complete)).toEqual({ tableCount: 44, totalRowCount: 0 });
+    expect(validateBackupBundle(complete)).toEqual({ tableCount: 34, totalRowCount: 0 });
 
     delete complete.tables.users;
     expect(() => validateBackupBundle(complete)).toThrow(/missing.*users/i);

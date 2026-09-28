@@ -1,12 +1,15 @@
+// Kept in the same order as BACKUP_TABLES in
+// supabase/functions/backup-to-drive/core.ts. 10 abandoned tables (recipes,
+// semi_products, production_orders, production_items, stock_adjustments,
+// shifts, shift_stock_checks, sync_state, data_migration_runs,
+// data_recovery_changes) were dropped 2026-09-28, migration 0105.
 const EXPECTED_TABLES = [
   "brands", "outlets", "product_categories", "item_categories", "units", "suppliers",
-  "purchase_sources", "products", "product_variants", "modifiers", "recipes",
-  "promotions", "semi_products", "purchased_items", "asset_depreciation_bands",
+  "purchase_sources", "products", "product_variants", "modifiers",
+  "promotions", "purchased_items", "asset_depreciation_bands",
   "assets", "asset_disposals", "uom_conversions", "product_price_history",
   "orders_v2", "order_lines_v2", "order_events", "purchase_orders",
-  "purchase_order_lines", "stock_adjustments", "production_orders",
-  "production_items", "pos_drafts", "users", "sync_state", "data_migration_runs",
-  "data_recovery_changes", "order_payments", "shifts", "shift_stock_checks",
+  "purchase_order_lines", "pos_drafts", "users", "order_payments",
   "stocktake_sessions", "stocktake_lines", "issue_slips", "stock_issues",
   "purchase_order_edits", "pos_sync_failures", "cash_categories",
   "bank_accounts", "cash_entries",

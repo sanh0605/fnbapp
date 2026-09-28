@@ -244,3 +244,117 @@ grant execute on function public.save_product_atomic(
 
 drop function if exists public.submit_stock_adjustment_atomic(jsonb);
 drop function if exists public.approve_stock_adjustment_atomic(text, text, timestamp with time zone);
+
+-- 3. Drop the 10 abandoned tables (owner decision 2026-09-28, "Ok gỡ" --
+-- docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md group C, all 10
+-- plus the stock-adjustment menu entry).
+--
+-- Trigger inventory (read from migration text -- supabase/CLAUDE.md: no
+-- session here can query pg_catalog directly): the only triggers on any of
+-- these 10 tables are trg_shifts_touch (0033, on shifts) and
+-- prune_data_recovery_changes_trigger (0045, on data_recovery_changes).
+-- Both are defined ON the table they trigger on, so dropping the table
+-- drops the trigger with it -- no separate `drop trigger` needed. No live
+-- table outside this set has a trigger that writes into any of these 10.
+--
+-- Foreign-key inventory (same method): purchased_items.semi_product_id ->
+-- semi_products (0001) is the only FK from a table that survives this
+-- migration, handled by the column drop below, before semi_products is
+-- dropped. production_orders.semi_product_id -> semi_products,
+-- production_items.production_order_id -> production_orders (0001), and
+-- shift_stock_checks.shift_id -> shifts (0033) are all between tables in
+-- this same drop list, so the child-first order below is enough; no other
+-- live table references any of these 10 by foreign key.
+--
+-- Guard: this migration was written against counts measured live
+-- 2026-09-28 (docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md).
+-- If any of them changed since -- new real usage the plan did not account
+-- for -- refuse rather than silently discard data.
+do $$
+declare
+  v_recipes_total integer;
+  v_recipes_nonempty integer;
+  v_semi_products integer;
+  v_production_orders integer;
+  v_production_items integer;
+  v_stock_adjustments integer;
+  v_shifts integer;
+  v_data_recovery_changes integer;
+  v_purchased_items_with_semi_product integer;
+begin
+  select count(*) into v_recipes_total from public.recipes;
+  if v_recipes_total > 1 then
+    raise exception 'Guard: public.recipes has % rows, expected <= 1 (measured 2026-09-28: only REC-001, empty)', v_recipes_total;
+  end if;
+  select count(*) into v_recipes_nonempty
+  from public.recipes
+  where ingredients_json is not null
+    and ingredients_json <> '[]'::jsonb
+    and ingredients_json <> '{}'::jsonb;
+  if v_recipes_nonempty > 0 then
+    raise exception 'Guard: public.recipes has % row(s) with a non-empty ingredients_json', v_recipes_nonempty;
+  end if;
+
+  select count(*) into v_semi_products from public.semi_products;
+  if v_semi_products <> 0 then
+    raise exception 'Guard: public.semi_products has % rows, expected 0', v_semi_products;
+  end if;
+
+  select count(*) into v_production_orders from public.production_orders;
+  if v_production_orders <> 0 then
+    raise exception 'Guard: public.production_orders has % rows, expected 0', v_production_orders;
+  end if;
+
+  select count(*) into v_production_items from public.production_items;
+  if v_production_items <> 0 then
+    raise exception 'Guard: public.production_items has % rows, expected 0', v_production_items;
+  end if;
+
+  select count(*) into v_stock_adjustments from public.stock_adjustments;
+  if v_stock_adjustments <> 0 then
+    raise exception 'Guard: public.stock_adjustments has % rows, expected 0', v_stock_adjustments;
+  end if;
+
+  select count(*) into v_shifts from public.shifts;
+  if v_shifts > 1 then
+    raise exception 'Guard: public.shifts has % rows, expected <= 1 (measured 2026-09-28: only the SHF-001 smoke test)', v_shifts;
+  end if;
+
+  select count(*) into v_data_recovery_changes from public.data_recovery_changes;
+  if v_data_recovery_changes <> 0 then
+    raise exception 'Guard: public.data_recovery_changes has % rows, expected 0', v_data_recovery_changes;
+  end if;
+
+  select count(*) into v_purchased_items_with_semi_product
+  from public.purchased_items
+  where semi_product_id is not null;
+  if v_purchased_items_with_semi_product <> 0 then
+    raise exception 'Guard: purchased_items.semi_product_id is set on % row(s), expected 0', v_purchased_items_with_semi_product;
+  end if;
+end $$;
+
+-- purchased_items.semi_product_id is dead in application code (never in
+-- types/db.ts, 0/151 rows non-null measured 2026-09-28) -- drop it before
+-- semi_products, the table it references, can be dropped.
+alter table public.purchased_items drop column if exists semi_product_id;
+
+-- The four dead functions from the plan's "Hàm trong cơ sở dữ liệu còn
+-- sống" table (the other two, submit/approve_stock_adjustment_atomic, were
+-- already dropped above in section 2). No code anywhere (app/, lib/,
+-- scripts/, supabase/functions/) calls any of these three. Argument lists
+-- copied verbatim from each function's last create-or-replace.
+drop function if exists public.apply_full_history_recovery(text, text, jsonb, boolean);
+drop function if exists public.remove_audit_baseline_lock(text, text, text);
+drop function if exists public.prune_data_recovery_changes();
+
+-- Child-first order.
+drop table if exists public.production_items;
+drop table if exists public.production_orders;
+drop table if exists public.shift_stock_checks;
+drop table if exists public.shifts;
+drop table if exists public.stock_adjustments;
+drop table if exists public.recipes;
+drop table if exists public.semi_products;
+drop table if exists public.data_recovery_changes;
+drop table if exists public.data_migration_runs;
+drop table if exists public.sync_state;

@@ -50,4 +50,100 @@ describe("0105: drop the abandoned tables", () => {
       "drop function if exists public.approve_stock_adjustment_atomic(text, text, timestamp with time zone);",
     );
   });
+
+  // Task 4: purchased_items.semi_product_id is a live FK into semi_products
+  // (0001_init_schema.sql) -- it must go before semi_products can be
+  // dropped, and it is dead in application code (never in types/db.ts,
+  // 0/151 rows non-null measured 2026-09-28).
+  it("drops purchased_items.semi_product_id before dropping semi_products", () => {
+    const migration = readMigration();
+    const columnDropIndex = migration.indexOf(
+      "alter table public.purchased_items drop column if exists semi_product_id;",
+    );
+    const tableDropIndex = migration.indexOf("drop table if exists public.semi_products");
+    expect(columnDropIndex).toBeGreaterThan(-1);
+    expect(tableDropIndex).toBeGreaterThan(-1);
+    expect(columnDropIndex).toBeLessThan(tableDropIndex);
+  });
+
+  // Task 4: the four dead functions named in the plan's "Hàm trong cơ sở dữ
+  // liệu còn sống" table -- no code anywhere calls any of them (checked:
+  // app/, lib/, scripts/, supabase/functions/). Argument lists copied
+  // verbatim from each function's last create-or-replace (0046, 0032, 0045).
+  it("drops the three remaining dead functions with their exact argument lists", () => {
+    const migration = readMigration();
+    expect(migration).toContain(
+      "drop function if exists public.apply_full_history_recovery(text, text, jsonb, boolean);",
+    );
+    expect(migration).toContain(
+      "drop function if exists public.remove_audit_baseline_lock(text, text, text);",
+    );
+    expect(migration).toContain(
+      "drop function if exists public.prune_data_recovery_changes();",
+    );
+  });
+
+  // Task 4: guard against dropping a table that has since gained real data
+  // the 2026-09-28 measurement did not account for -- recipes <= 1 (empty
+  // ingredients_json), semi_products/production_orders/production_items/
+  // stock_adjustments/data_recovery_changes = 0, shifts <= 1, and
+  // purchased_items.semi_product_id all null.
+  it("guards the table drops against unexpected data with a count check", () => {
+    const migration = readMigration();
+    const guardStart = migration.indexOf("do $$");
+    const guardEnd = migration.indexOf("end $$;", guardStart);
+    expect(guardStart).toBeGreaterThan(-1);
+    expect(guardEnd).toBeGreaterThan(guardStart);
+    const guardBody = migration.slice(guardStart, guardEnd);
+    expect(guardBody).toContain("public.recipes");
+    expect(guardBody).toContain("ingredients_json");
+    expect(guardBody).toContain("public.semi_products");
+    expect(guardBody).toContain("public.production_orders");
+    expect(guardBody).toContain("public.production_items");
+    expect(guardBody).toContain("public.stock_adjustments");
+    expect(guardBody).toContain("public.shifts");
+    expect(guardBody).toContain("public.data_recovery_changes");
+    expect(guardBody).toContain("semi_product_id");
+    expect(guardBody).toMatch(/raise exception/);
+  });
+
+  // Task 4: the guard must run, and the column drop must run, before any
+  // table drop -- a table dropped first would make the guard's own SELECT
+  // fail with "relation does not exist" instead of the intended count
+  // check.
+  it("runs the guard before any table drop", () => {
+    const migration = readMigration();
+    const guardStart = migration.indexOf("do $$");
+    const firstTableDrop = migration.indexOf("drop table if exists public.production_items");
+    expect(guardStart).toBeGreaterThan(-1);
+    expect(firstTableDrop).toBeGreaterThan(-1);
+    expect(guardStart).toBeLessThan(firstTableDrop);
+  });
+
+  // Task 4: child-first order, exactly as the plan's FK inventory requires
+  // (production_items -> production_orders; shift_stock_checks -> shifts;
+  // purchased_items.semi_product_id -> semi_products, dropped above).
+  it("drops the 10 abandoned tables in child-first order", () => {
+    const migration = readMigration();
+    const expectedOrder = [
+      "production_items",
+      "production_orders",
+      "shift_stock_checks",
+      "shifts",
+      "stock_adjustments",
+      "recipes",
+      "semi_products",
+      "data_recovery_changes",
+      "data_migration_runs",
+      "sync_state",
+    ];
+    const indices = expectedOrder.map(table => {
+      const index = migration.indexOf(`drop table if exists public.${table}`);
+      expect(index).toBeGreaterThan(-1);
+      return index;
+    });
+    for (let i = 1; i < indices.length; i++) {
+      expect(indices[i]).toBeGreaterThan(indices[i - 1]);
+    }
+  });
 });
