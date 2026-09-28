@@ -367,6 +367,19 @@ mua** (Shopee, Lazada, Mua ngoài; 190/191 phiếu có) và **số hoá đơn** 
 (62/191 phiếu có). Người lập phiếu không đáng hiện: cả 20 phiếu gần nhất đều là "admin".
 Trạng thái giữ lại dù hiện 0 phiếu nháp. Chờ anh xác nhận (Q11).
 
+*"Để màu của POS là màu khác để nổi bật nút đó lên"* (bình luận ở thanh dưới đáy điện
+thoại, 2026-09-28). Nút mở máy bán hàng đổi sang màu chữ (nâu đen), khác màu chính
+(nâu) của nút "Tạo phiếu": trên điện thoại là nút tròn nhô lên giữa thanh dưới, trên
+máy tính là nút đầu menu. Dùng lại màu có sẵn, bảng màu vẫn 4 vai trò. Anh muốn một
+màu riêng hẳn thì trả lời trong bình luận đó.
+
+**Anh chốt Q8, 2026-09-29:** *"Theo em khuyên chọn"* — bảng màu **Cà phê** (nền
+#F7F5F0, chữ #1F1B16, màu chính #8A5A1F, đỏ #B3261E) và kiểu chữ **Be Vietnam Pro**
+cho toàn hệ thống, cả tiêu đề lẫn chữ thường, cả máy bán hàng. Việc này thay mục mở
+"đổi font tiêu đề từ Outfit" trong `app/globals.test.ts` (câu hỏi "đổi cả chữ thường
+hay chỉ tiêu đề" nay đã có lời đáp: đổi cả hai). Còn treo: màu có cần là thứ anh tự
+đổi trong Cài đặt không (Q8b).
+
 **Thấy khi đo để dựng bản mẫu (chưa hỏi anh):**
 - "Mới nhất ở trên" phải chọn theo ngày nào. Phiếu nhập có ngày ghi trên phiếu
   (ngày nhập) và ngày tạo trên máy. Hai ngày này lệch nhau: PO-178 ghi ngày 30/05/2026
@@ -427,7 +440,8 @@ Có, bằng hai đường:
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
 | Q6 | Báo cáo lưu chuyển tiền tệ theo mẫu nào | chờ, xem `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md` trước |
 | Q7 | Trên điện thoại, những trang nào anh thật sự dùng (chọn 4 trang cho thanh dưới đáy, mục 5.12) | chốt 2026-09-28 (mục 5.13) |
-| Q8 | Bảng màu và kiểu chữ: chọn trên bản mẫu (mục 5.14); có cần tự đổi màu trong Cài đặt không (mục 5.12) | **đang hỏi** 2026-09-29 |
+| Q8 | Bảng màu và kiểu chữ: chọn trên bản mẫu (mục 5.14) | Đã chốt 2026-09-29: Cà phê, Be Vietnam Pro |
+| Q8b | Màu có cần là thứ anh tự đổi trong Cài đặt không (mục 5.12) | chưa hỏi; hỏi trước khi viết thiết kế bước 3 |
 | Q10 | Ngày tháng: hiện `dd/mm/yyyy`, lọc chỉ theo ngày (`BR-DATA-006`); còn hỏi có kèm giờ `dd/mm/yyyy HH:mm` ở chỗ cần giờ không | chốt phần ngày 2026-09-29 qua bình luận; phần giờ **đang hỏi** trên bản mẫu |
 | Q11 | Danh sách phiếu nhập hiện gì thay cho mặt hàng (mục 5.14) | **đang hỏi** 2026-09-29 |
 | Q9 | Danh sách phiếu "mới nhất ở trên" xếp theo ngày nhập hay ngày tạo (mục 5.14) | chốt 2026-09-29 qua bình luận trên bản mẫu: *"Hiển thị ngày nhập thực tế, không phải là ngày phiếu được nhập vào"*. Đo: 191/191 phiếu có ngày nhập, 164 phiếu lệch ngày tạo |
