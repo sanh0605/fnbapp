@@ -82,7 +82,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
   - On purchase orders, 164 of 191 slip dates sit at exactly 00:00:00 Saigon time, because the form asks only for the day.
   - All 74 of 74 issue slips have :00 seconds, because the form asks only to the minute.
   - Sales orders do carry real seconds: 3.010 of 3.079 completed orders have non-zero seconds.
-- **Still open:** what to show where no time was recorded. Showing "28/09/2026 00:00:00" presents a time nobody entered. Asked 2026-09-29.
+- **Where no time was recorded, the time still shows, as 00:00:00** (owner 2026-09-29, chose this over showing the day alone): "28/09/2026 00:00:00". Every date outside a filter therefore has the same shape. Day-only fields are read as midnight Saigon time; nothing is invented beyond that.
 ## Backup and retention rules
 
 ### BR-BACKUP-001 — Scheduled backups are full snapshots
