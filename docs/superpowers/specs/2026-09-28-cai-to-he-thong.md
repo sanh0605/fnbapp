@@ -346,6 +346,23 @@ POS"** nằm riêng trên đầu menu (`app/admin/layout.tsx`). Bấm nút này,
 - **Trong màn máy bán hàng không hiện thanh dưới đáy:** màn bán hàng cần hết chỗ cho
   món và giỏ hàng. Quay về bằng mũi tên trên đầu như hiện nay.
 
+### 5.14 Bản mẫu bước 2 và 3 — 2026-09-29
+
+Bản mẫu: https://claude.ai/artifact/FNbaFdDRe1hN7i49LWXf88 (riêng tư, chỉ anh mở được).
+Bốn khung: máy tính (trang Phiếu nhập, menu thu gọn được), điện thoại (thanh dưới
+đáy, nút Thêm), máy bán hàng, và khung chọn bảng màu và kiểu chữ. Mỗi khung có nút
+chỉnh để đổi qua lại 3 bảng màu (Cà phê, Xanh rêu, Xanh dương) và 2 kiểu chữ (Be
+Vietnam Pro, Lexend). Số liệu trong bản mẫu là 20 phiếu nhập thật mới nhất, đo ngày
+29/09.
+
+**Thấy khi đo để dựng bản mẫu (chưa hỏi anh):**
+- "Mới nhất ở trên" phải chọn theo ngày nào. Phiếu nhập có ngày ghi trên phiếu
+  (ngày nhập) và ngày tạo trên máy. Hai ngày này lệch nhau: PO-178 ghi ngày 30/05/2026
+  nhưng được tạo sau PO-179 (ngày 14/09/2026). Trang hiện nay xếp theo ngày tạo. Bản
+  mẫu xếp theo ngày nhập. Q9.
+- 80 trên 191 phiếu nhập có nhà cung cấp là "Không rõ" hoặc để trống. Bộ lọc theo
+  nhà cung cấp vì thế ít tác dụng với các phiếu đó. Chỉ ghi lại, chưa đề xuất sửa.
+
 ## 6. Chia phần làm — thứ tự đã chốt 2026-09-29 (Q3: "Theo em khuyến nghị")
 
 | Thứ tự | Phần | Gồm | Vì sao ở vị trí này |
@@ -398,4 +415,5 @@ Có, bằng hai đường:
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
 | Q6 | Báo cáo lưu chuyển tiền tệ theo mẫu nào | chờ, xem `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md` trước |
 | Q7 | Trên điện thoại, những trang nào anh thật sự dùng (chọn 4 trang cho thanh dưới đáy, mục 5.12) | chốt 2026-09-28 (mục 5.13) |
-| Q8 | Bảng màu: chọn trên bản mẫu; có cần tự đổi màu trong Cài đặt không (mục 5.12) | chờ, hỏi khi có bản mẫu |
+| Q8 | Bảng màu và kiểu chữ: chọn trên bản mẫu (mục 5.14); có cần tự đổi màu trong Cài đặt không (mục 5.12) | **đang hỏi** 2026-09-29 |
+| Q9 | Danh sách phiếu "mới nhất ở trên" xếp theo ngày nhập hay ngày tạo (mục 5.14) | **đang hỏi** 2026-09-29 |
