@@ -4,7 +4,7 @@
 routes: /admin/inventory/stocktake
 files: lib/stock/stocktake-transaction.ts
 tables: stocktake_sessions, stocktake_lines, stock_issues
-brCodes: BR-INV-007, BR-COGS-007
+brCodes: BR-INV-007, BR-COGS-007, BR-INV-010
 ```
 
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
@@ -27,7 +27,9 @@ function called from `lib/stock/stocktake-transaction.ts`.
    screen; during counting the session collects one line per material counted; it
    becomes closed when the worker finalises it, which is the step that computes and
    books the difference. A closed session is final — there is no re-open. To correct
-   a mistake after closing, a new session is started.
+   a mistake after closing, a new session is started. An open session can instead be
+   cancelled by the owner or a manager, which deletes it and its counted lines
+   outright; no cancelled state is kept (`BR-INV-010`).
 
 2. **Buttons per screen, and when to hide them.** The stocktake screen at
    `/admin/inventory/stocktake` has a button to start (open) a new session, entry

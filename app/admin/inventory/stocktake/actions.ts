@@ -38,7 +38,7 @@ export interface StocktakeLineView {
 
 export interface StocktakeSessionView {
   id: string;
-  status: "OPEN" | "CONFIRMED" | "CANCELLED" | "REVERSED";
+  status: "OPEN" | "CONFIRMED" | "REVERSED";
   createdByName: string;
   createdAt: string;
   notes: string;

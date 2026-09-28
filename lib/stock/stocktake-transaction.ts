@@ -4,7 +4,7 @@ export type StocktakeItemType = "BASE_INGREDIENT" | "SEMI_PRODUCT" | "PURCHASED_
 
 export type StocktakeSessionRow = {
   id: string;
-  status: "OPEN" | "CONFIRMED" | "CANCELLED" | "REVERSED";
+  status: "OPEN" | "CONFIRMED" | "REVERSED";
   created_by_id: string;
   created_by_name: string;
   created_at: string;
@@ -86,14 +86,15 @@ export async function saveStocktakeLineAtomic(input: {
   return data as StocktakeLineResultRow;
 }
 
-export async function cancelStocktakeSessionAtomic(sessionId: string): Promise<{ id: string; status: "CANCELLED" }> {
+// BR-INV-010: cancelling deletes the session and its lines outright.
+export async function cancelStocktakeSessionAtomic(sessionId: string): Promise<{ id: string; deleted: true }> {
   const { data, error } = await getSupabaseClient().rpc("cancel_stocktake_session_atomic", {
     p_session_id: sessionId,
   });
   if (error) {
     throw new Error(`cancel_stocktake_session_atomic: ${error.message}`);
   }
-  return data as { id: string; status: "CANCELLED" };
+  return data as { id: string; deleted: true };
 }
 
 export type StocktakeReversalResult = {

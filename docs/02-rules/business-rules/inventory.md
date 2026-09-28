@@ -110,8 +110,18 @@ A manual issue slip entered by mistake is never deleted and never edited. It is 
 
 **Extended 2026-08-09 (Plan D D14) to two whole-event forms of the same mechanism, not a new valuation rule:**
 
-- **Undoing a whole confirmed stocktake session.** Owner reason: *"không có gì chắc chắn nhân viên đúng 100% cả. Nếu sai thì phải hủy phiếu cũ tạo phiếu mới chứ."* Compensating rows only (one per `stock_issues` line the session wrote, one per `stock_ledger` ingredient correction it wrote), same today's-average valuation, original rows never touched. **Owner-only** — `requireOwner()` (`lib/auth/auth.ts`), stricter than every other action in the system, because a stocktake checks the person counting and the person being checked cannot be the one who can erase the check. Only the most recently confirmed session may be reversed, refused while any session is `OPEN`, a reason is required. The session gets a new status, `REVERSED` — never `CANCELLED`, which already means "abandoned before apply" and is what `cancel_stocktake_session_atomic` (D12) deletes when blank.
+- **Undoing a whole confirmed stocktake session.** Owner reason: *"không có gì chắc chắn nhân viên đúng 100% cả. Nếu sai thì phải hủy phiếu cũ tạo phiếu mới chứ."* Compensating rows only (one per `stock_issues` line the session wrote, one per `stock_ledger` ingredient correction it wrote), same today's-average valuation, original rows never touched. **Owner-only** — `requireOwner()` (`lib/auth/auth.ts`), stricter than every other action in the system, because a stocktake checks the person counting and the person being checked cannot be the one who can erase the check. Only the most recently confirmed session may be reversed, refused while any session is `OPEN`, a reason is required. The session gets a new status, `REVERSED`. A session abandoned before apply is not kept at all (`BR-INV-010`).
 - **Cancelling a whole issue slip**, beside the existing per-line reversal — settles I11 (Plan D §5 I11). Reverses every not-yet-reversed line of a slip in one call, one reason. Same `requireAdmin()` level as the existing per-line reversal, deliberately not raised to owner-only — an issue slip records waste or internal use, not a check on the person who counted.
 
 Implemented `supabase/migrations/0062_reverse_confirmed_stocktake_and_issue_slip.sql`; full case list in the plan's §5 "Undoing a confirmed count or a whole issue slip" (U1-U13).
+
+### BR-INV-010 — Cancelling a stocktake session keeps nothing
+
+**Status:** `APPROVED` — owner decision 2026-09-28. **Implemented** `supabase/migrations/0103_stocktake_cancel_deletes_session.sql`.
+
+A stocktake session cancelled before it is confirmed is deleted outright: the session, every counted line, and no `CANCELLED` status left behind. Owner's words: *"tất cả các phiếu kiểm kê khi bấm bắt đầu nhưng bấm huỷ thì sẽ không lưu lần kiểm kê đó cũng không lưu trạng thái bị huỷ."* This replaces the 2026-08-09 rule (Plan D D12) that kept a cancelled session whenever at least one line had been counted.
+
+**Who may cancel:** the owner and managers (`requireAdmin()`), confirmed by the owner the same day — *"Chỉ anh và quản lý được huỷ."* Like a POS draft, an unconfirmed count has not touched stock, so it sits outside the "only ADMIN deletes outright" rule.
+
+**The price, stated to the owner before the decision:** counting work abandoned by a cancel is gone with no trace. STK-003 had 11 items counted over 15/09–27/09 before it was cancelled; under this rule nothing of it would remain. The two cancelled sessions already stored (STK-002, STK-003) are deleted by the same migration.
 
