@@ -75,7 +75,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 
 - **Every date on screen is `dd/mm/yyyy`**, with a leading zero: 05/03/2026, never 5/3/2026, never 2026-03-05, never the month first. This includes date pickers, whose look otherwise follows the phone or computer's own language setting.
 - **Every date filter chooses whole days.** "Từ 01/09/2026 đến 30/09/2026" covers both days completely, in Saigon time. No filter asks for an hour or minute.
-- **A slip list shows and sorts by the date written on the slip** (for a purchase order, the day the goods arrived), newest first — not the day the slip was typed into the machine (owner 2026-09-29, same mockup). Measured 2026-09-29: 191 of 191 purchase orders carry that date; 164 of them differ from the day they were created.
+- **A slip list shows and sorts by the date written on the slip** (for a purchase order, its `transaction_date`: completing the slip counts as the goods having come in, owner 2026-09-29; the system never records a separate arrival day), newest first — not the day the slip was typed into the machine (owner 2026-09-29, same mockup). Measured 2026-09-29: 191 of 191 purchase orders carry that date; 164 of them differ from the day they were created.
 - **Outside filters, a date shows its time to the second: `dd/mm/yyyy HH:mm:ss`** (owner 2026-09-29: *"Chỉ có bộ lọc thì hiển thị theo ngày, các chỗ khác có thể hiển thị thêm giờ và nên cụ thể đến đơn vị giây"*).
 - **Measured 2026-09-29, where no time was ever recorded:**
   - Four fields store a day with no time at all: a brand's start date, an asset's purchase date, an asset's disposal date, and a cash-book entry's date.

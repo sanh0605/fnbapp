@@ -440,6 +440,24 @@ phiếu nháp.
 1. Mã anh cần là mã đơn Shopee (đã có) hay mã vận đơn của bên giao (chưa có chỗ ghi)?
 2. Anh tạo phiếu lúc đặt hay lúc hàng về? Có hay gặp hàng về thiếu, hỏng, về nhiều đợt?
 
+**Anh chốt Q12, 2026-09-29.** Nguyên văn: *"Anh nghĩ cứ giữ như bây giờ, xong phiếu nhập
+hàng rồi thì coi như là đã nhập xong hàng. Mã vận đơn là mã tự phát sinh trong hệ
+thống. [...] Còn các mã từ bên phía nhà cung cấp thì tạm thời chưa thu thập. Cách này
+cũng phát sinh thêm khá nhiều phức tạp chưa cần thiết, nên khi nào cần sẽ xây."*
+
+Chốt:
+- **Giữ gộp.** Phiếu nhập hàng hoàn thành là hàng đã vào kho. Không tách phiếu nhập kho.
+  Khi nào anh cần thì xây riêng.
+- **"Mã vận đơn" anh nói là mã phiếu do hệ thống tự đánh** (PO-191…). Danh sách đã
+  hiện mã này ở cột đầu.
+- **Mã của nhà cung cấp tạm chưa thu thập,** nên danh sách bỏ cột "Số hoá đơn". Ô đó
+  vẫn giữ trong phiếu, 62 phiếu đã ghi không mất gì. Ô tìm kiếm vẫn tìm được theo mã
+  này. Opus tự quyết.
+- Cột danh sách phiếu nhập trên máy tính: Mã phiếu, Ngày nhập, Nhà cung cấp, Nguồn
+  mua, Trạng thái, Tổng tiền.
+- Anh gợi ý tên gọi: "phiếu mua hàng" mới đúng cho đơn đặt mua. Vì không tách, màn
+  hình vẫn tên "Phiếu nhập".
+
 ## 6. Chia phần làm — thứ tự đã chốt 2026-09-29 (Q3: "Theo em khuyến nghị")
 
 | Thứ tự | Phần | Gồm | Vì sao ở vị trí này |
@@ -495,6 +513,6 @@ Có, bằng hai đường:
 | Q8 | Bảng màu và kiểu chữ: chọn trên bản mẫu (mục 5.14) | Đã chốt 2026-09-29: Cà phê, Be Vietnam Pro |
 | Q8b | Màu có cần là thứ anh tự đổi trong Cài đặt không (mục 5.12) | Đã chốt 2026-09-29 ("Theo em khuyên"): **không**. Màu cố định một chỗ trong code, anh nhắn là đổi. Đây là ngoại lệ anh tự chọn cho luật "không nhét cứng vào code": lý do là cho chọn màu tuỳ ý dễ ra chữ nhạt trên nền nhạt, đứng quầy khó đọc |
 | Q10 | Ngày tháng: hiện `dd/mm/yyyy`, lọc chỉ theo ngày (`BR-DATA-006`); còn hỏi có kèm giờ `dd/mm/yyyy HH:mm` ở chỗ cần giờ không | chốt phần ngày 2026-09-29 qua bình luận; phần giờ **đang hỏi** trên bản mẫu |
-| Q11 | Danh sách phiếu nhập hiện gì thay cho mặt hàng (mục 5.14) | Anh trả lời 2026-09-29: "mã vận đơn" — còn phải rõ là mã nào (Q12) |
-| Q12 | Mã đơn Shopee hay mã vận đơn; tạo phiếu lúc đặt hay lúc hàng về (mục 5.15) | **đang hỏi** 2026-09-29 |
+| Q11 | Danh sách phiếu nhập hiện gì thay cho mặt hàng (mục 5.14) | Đã chốt 2026-09-29 (mục 5.15): mã phiếu, nguồn mua; bỏ số hoá đơn |
+| Q12 | Mã đơn Shopee hay mã vận đơn; tạo phiếu lúc đặt hay lúc hàng về (mục 5.15) | Đã chốt 2026-09-29: giữ gộp, không tách phiếu nhập kho |
 | Q9 | Danh sách phiếu "mới nhất ở trên" xếp theo ngày nhập hay ngày tạo (mục 5.14) | chốt 2026-09-29 qua bình luận trên bản mẫu: *"Hiển thị ngày nhập thực tế, không phải là ngày phiếu được nhập vào"*. Đo: 191/191 phiếu có ngày nhập, 164 phiếu lệch ngày tạo |
