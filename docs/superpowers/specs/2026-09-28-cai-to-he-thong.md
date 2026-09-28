@@ -78,28 +78,69 @@ trên báo cáo lần ngược được về phiếu nhập, phiếu xuất, ki�
 Tổng quan, kiểm kê, phiếu xuất kho, phiếu nhập hàng. Chưa xem: từng trang báo
 cáo, máy bán hàng (`app/pos/`), font và màu hiện dùng, cấu trúc `lib/`.
 
-## 5. Đề xuất gom nhóm — nháp của Opus, chờ anh duyệt
+## 5. Gom nhóm menu
 
-Sáu nhóm anh đưa ra, xếp đủ 28 mục hiện có vào đó:
+### 5.1 Bản của anh — trả lời Q1, 2026-09-28
 
-| Nhóm | Gồm | Ghi chú |
+Nguyên văn: *"Đơn hàng để trong vận hành, Sổ thu chi để trong báo cáo. Khuyến
+mãi để trong vận hành. Tài sản để trong kho. Còn nhà cung cấp có nên tách ra
+thành mục nhập hàng không? Trong mục đó sẽ quản lý phiếu nhập hàng và nhà cung
+cấp."* Anh cũng yêu cầu Opus đưa bản của riêng mình: *"có thể sắp xếp đã đúng
+nhưng cách dùng từ chưa đúng hoặc sai cả 2."*
+
+| Nhóm | Gồm |
+|---|---|
+| Trang chủ | Cảnh báo cần xử lý |
+| Sản phẩm | Món (nước, đồ ăn), Nhóm món, Topping, Tuỳ chọn (đá, ngọt) |
+| Vận hành | Thương hiệu, Điểm bán, Đơn hàng, Khuyến mãi |
+| Nhập hàng (anh đang cân nhắc tách) | Phiếu nhập hàng, Nhà cung cấp |
+| Kho | Phiếu xuất kho, Kiểm kê, Tồn kho, Hàng mua vào, Tài sản |
+| Báo cáo | Tổng kết ngày, Bán hàng, Hàng đã xuất, Tài chính, Lưu chuyển tiền tệ, Sổ thu chi |
+| Cấu hình | Nhân sự, Đơn vị, Phân loại hàng, Quy đổi, Nhóm thu chi, Tài khoản ngân hàng, Bảng khấu hao, Nhật ký |
+
+### 5.2 Bản của Opus — xếp theo đường đi của tiền và hàng
+
+Anh nói bản chất hệ thống là *nhập, xuất, theo dõi chi phí, báo cáo*. Bản này
+xếp menu đúng theo đường đó, từ trên xuống: bán ra → mua vào → trong kho → tiền
+ngoài bán/mua → xem báo cáo → cài đặt một lần.
+
+| Nhóm | Gồm | Vì sao |
 |---|---|---|
-| Trang chủ | Các cảnh báo cần xử lý | Cảnh báo gì: chưa hỏi (câu hỏi Q2) |
-| Sản phẩm | Món (nước, đồ ăn), Nhóm món, Topping, Tuỳ chọn (đá, ngọt), Khuyến mãi | Khuyến mãi gắn với món nên để đây |
-| Vận hành | Thương hiệu, Điểm bán, Đơn hàng, Sổ thu chi | Đơn hàng và Sổ thu chi chưa có chỗ trong 6 nhóm anh nêu |
-| Kho | Đơn nhập hàng, Phiếu xuất kho, Kiểm kê, Tồn kho (làm mới), Hàng mua vào, Nhà cung cấp, Tài sản | Tồn kho hiện không có màn hình |
-| Báo cáo | Tổng kết ngày, Bán hàng, Giá trị hàng đã xuất, Tài chính, Lưu chuyển tiền tệ (làm mới) | |
-| Cấu hình | Nhân sự & phân quyền, Đơn vị, Phân loại hàng, Bảng quy đổi, Nhóm thu chi, Tài khoản ngân hàng, Bảng khấu hao, Nhật ký hoạt động | "Xoá cache" là nút kỹ thuật, đề xuất bỏ khỏi menu |
+| **Tổng quan** | Cảnh báo cần xử lý, số chính trong ngày | "Trang chủ" là chỗ bấm logo; "Tổng quan" nói rõ trang làm gì |
+| **Bán hàng** | Đơn hàng, Món, Nhóm món, Topping & tuỳ chọn, Khuyến mãi | Mọi thứ khách mua nằm một chỗ. Khuyến mãi tính trên món, đơn hàng chứa món |
+| **Nhập hàng** | Phiếu nhập, Nhà cung cấp | Đồng ý tách như anh đề xuất: là việc làm nhiều nhất hằng tuần, có đối tác riêng |
+| **Kho** | Tồn kho, Phiếu xuất, Kiểm kê, Hàng hoá, Tài sản | Mọi thứ đang nằm trong quán |
+| **Thu chi** | Sổ thu chi | Là chỗ **ghi** tiền. Báo cáo chỉ để **xem** — để một trang nhập liệu trong Báo cáo thì nhóm Báo cáo mất nghĩa |
+| **Báo cáo** | Tổng kết ngày, Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | Chỉ xem, không nhập |
+| **Cài đặt** | Thương hiệu & điểm bán, Nhân viên & quyền, Đơn vị tính, Phân loại hàng, Nhóm thu chi, Tài khoản ngân hàng, Thời hạn khấu hao, Nhật ký | Thứ đặt một lần rồi ít đụng. Thương hiệu, điểm bán thuộc loại này, nên bỏ nhóm "Vận hành" |
 
-**Anh chưa nhắc tới, cần anh xếp:** Đơn hàng (xem, sửa, huỷ đơn đã bán), Khuyến
-mãi, Sổ thu chi (tiền ra vào ngoài bán và mua), Tài sản và khấu hao, Nhà cung
-cấp, Nhân sự & phân quyền, Nhật ký hoạt động.
+Bảy nhóm, không nhóm nào vừa để nhập vừa để xem.
+
+### 5.3 Cách đặt tên đề xuất
+
+- Tên mục là danh từ ngắn 1–2 chữ, bỏ "Danh sách", "Quản lý", "Bảng".
+- Chỉ viết hoa chữ đầu ("Phiếu nhập", không "Phiếu Nhập").
+- Đổi: "Danh sách Món" → Món; "Đơn Nhập Hàng" → Phiếu nhập; "Kiểm Kê Định Kỳ"
+  → Kiểm kê; "Hàng Mua Vào" → Hàng hoá; "Giá trị hàng đã xuất" → Hàng đã xuất (không gọi "Giá vốn": trang này gộp cả hao hụt kiểm kê, mà `BR-COGS-007` tách hai thứ đó); "Báo
+  cáo tài chính" (đang là lãi lỗ) → Lãi lỗ; "Báo cáo Bán hàng" → Doanh số; "Nhân
+  sự & Phân quyền" → Nhân viên & quyền; "Cấu hình"/"Hệ thống" → Cài đặt.
+- "Bảng Quy Đổi" không đứng riêng: quy đổi thuộc về từng mặt hàng, nên nằm
+  trong trang Hàng hoá. "Xoá cache" bỏ khỏi menu.
+
+### 5.4 Hai bản khác nhau ở đâu
+
+| Chỗ | Anh | Opus |
+|---|---|---|
+| Đơn hàng, Khuyến mãi | Vận hành | Bán hàng, cùng món |
+| Thương hiệu, Điểm bán | Vận hành | Cài đặt |
+| Sổ thu chi | Báo cáo | Nhóm Thu chi riêng |
+| Nhập hàng | Đang cân nhắc tách | Tách |
 
 ## 6. Chia phần làm — nháp, chờ anh duyệt thứ tự
 
 | # | Phần | Vì sao đứng ở vị trí này |
 |---|---|---|
-| A | Gom menu 6 nhóm (mục 5) | Rẻ, thấy ngay, không đổi dữ liệu |
+| A | Gom menu theo nhóm đã chốt (mục 5) | Rẻ, thấy ngay, không đổi dữ liệu |
 | B | Khuôn trang chung: font, trang "lập phiếu + danh sách phiếu cũ" (mới nhất trên cùng, 20 phiếu một trang), trang chi tiết phiếu. Bản mẫu cho anh bấm thử trước | Mọi trang sau dựng theo khuôn này; làm sau nó thì không phải làm lại |
 | C | Áp khuôn B vào các trang phiếu: nhập hàng, xuất kho, kiểm kê (gồm `BR-INV-012`), sổ thu chi | Kiểm kê là trang đầu tiên dùng khuôn mới |
 | D | Chức năng còn thiếu: màn hình tồn kho, trang chủ cảnh báo, báo cáo lưu chuyển tiền tệ | Cần khuôn B có trước |
@@ -110,7 +151,8 @@ cấp, Nhân sự & phân quyền, Nhật ký hoạt động.
 
 | # | Vấn đề | Trạng thái |
 |---|---|---|
-| Q1 | Xếp các mục anh chưa nhắc tới vào nhóm nào (mục 5) | **đang hỏi** 2026-09-28 |
+| Q1 | Xếp các mục anh chưa nhắc tới vào nhóm nào (mục 5) | anh đã trả lời 2026-09-28 (mục 5.1) |
+| Q1b | Chọn giữa bản của anh và bản của Opus ở 4 chỗ khác nhau (mục 5.4), và cách đặt tên (5.3) | **đang hỏi** 2026-09-28 |
 | Q2 | Trang chủ cảnh báo những gì, ngưỡng nào | chờ |
 | Q3 | Thứ tự các phần A–F | chờ |
 | Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
