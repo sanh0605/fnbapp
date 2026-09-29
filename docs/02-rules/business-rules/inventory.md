@@ -96,7 +96,7 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 
 ### BR-INV-013 — "Xoá" on an issue-slip line returns the goods to stock the day it is pressed; the line leaves the slip view
 
-**Status:** `APPROVED` — owner decision 2026-09-29. **Not built yet.** It keeps `BR-INV-009`'s mechanism and changes only what the screen shows and asks.
+**Status:** `APPROVED` — owner decision 2026-09-29. **Implemented** on branch `feat/issue-slip-list` (`supabase/migrations/0106_issue_slip_edit.sql`, `8c158f8`; screens `9bd0c2f`, `1989b6a`, `2b68a45`). Migration `0106` ships together with that code. It keeps `BR-INV-009`'s mechanism and changes only what the screen shows and asks.
 
 **What was decided, in order, the same day.**
 1. The owner was offered two meanings of "Xoá": the `BR-INV-009` return to stock dated today, or a real delete as if never issued. The example used real data: slip ISL-00040 (01/09/2026) issued 500 g of Bột cà phê MR.PHIN Robusta Dak Mil, and the line is deleted on 15/10.
@@ -170,6 +170,8 @@ A stocktake session cancelled before it is confirmed is deleted outright: the se
 **One-time exception to `BR-INV-009`, 2026-09-28: STK-004 erased, not reversed.** The owner asked to delete the 2026-09-27 count and everything linked to it. It had 32 of 68 items counted — not a real count — and its only effect was one found-goods row (Bột cacao DK Harvest, +500g) with nothing recorded after it for that item, so erasing moves no other figure. September's cost rises by the value of those 500g. The owner chose "only STK-004": later confirmed counts are still undone with Hoàn tác, as `BR-INV-009` says.
 
 **Second one-time exception to `BR-INV-009`, 2026-09-28: every issue slip from 27/09 erased.** The owner asked to delete all issue slips from 2026-09-27 until the moment of asking: ISL-00075..ISL-00088, their 32 lines and the 25 rows reversing them (`supabase/migrations/0104_erase_issue_slips_since_0927.sql`). The 27/09 slips had already been cancelled by the owner that evening ("Lỗi hệ thống"), so erasing them only removes the trail. The six slips of 28/09 were live and looked like ordinary same-day use (Sữa tươi Mlekovita 1 l, Sữa yến mạch Oatside 2 l, Sữa đặc La rosee 1 l, Bột sữa B One 1 kg, two coffee powders 500 g each); the owner was told that erasing them leaves the book that much above the shelf until the next count, and chose to erase them anyway. Slips after this one-time clean-up are cancelled, not deleted.
+
+**Numbers reused (measured 2026-09-29).** Because the erased ids were freed, the next slips took the same numbers: ISL-00075..ISL-00078 as they exist now were all created on 2026-09-29 (issue dates 27/09–29/09) and are not the slips erased above. A code seen in an older note or screenshot may therefore name a different slip.
 
 
 ### BR-INV-012 — The owner can edit a confirmed stocktake; the change lands on the count's own date

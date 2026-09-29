@@ -90,7 +90,7 @@ Khuôn giống hệt Phiếu nhập (spec 2026-09-29, mục 3.5), trừ những 
 - **Thẻ trên điện thoại:**
   - Dòng 1: mã phiếu và giá trị.
   - Dòng 2: ngày giờ · người ghi, và nhãn loại.
-- **Chân bảng:** "1–20 trên 79 phiếu" (78 phiếu xuất và 1 lần kiểm kê, số ngày 2026-09-29), có nút trước, sau và số trang.
+- **Chân bảng:** "1–20 trên 75 phiếu" (ví dụ đo sáng 2026-09-29: 74 phiếu còn hiệu lực và 1 lần kiểm kê; 4 phiếu đã huỷ ẩn), có nút trước, sau và số trang.
 - **Dòng Kiểm kê:**
   - Mã là mã lần kiểm kê (STK-001), người ghi là người xác nhận, ngày là ngày xác nhận.
   - Bấm vào mở `/admin/inventory/stocktake`.
