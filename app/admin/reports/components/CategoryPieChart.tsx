@@ -5,16 +5,8 @@ export default function CategoryPieChart({ data }: { data: { label: string, amou
   
   // Mảng màu sắc cho biểu đồ tròn
   const colors = [
-    "#3b82f6", // blue-500
-    "#10b981", // emerald-500
-    "#f59e0b", // amber-500
-    "#ef4444", // red-500
-    "#8b5cf6", // violet-500
-    "#ec4899", // pink-500
-    "#06b6d4", // cyan-500
-    "#f97316", // orange-500
-    "#64748b", // slate-500
-    "#84cc16", // lime-500
+    "#8A5A1F", "#A57A45", "#BF9A6B", "#D6BC96", "#E9DBC4",
+    "#5E3D14", "#744B19", "#C9A77C", "#DCC7A6", "#F2E8D8"
   ];
 
   let currentAngle = 0;

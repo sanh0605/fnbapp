@@ -56,7 +56,7 @@ export function PnlChart({ table }: { table: PnlTable }) {
         <h2 className="text-[17px] font-semibold text-text-primary">Lãi lỗ từng tháng và luỹ kế</h2>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-secondary">
           <span className="flex items-center gap-1">
-            <span className="inline-block h-3 w-3 rounded-sm bg-chart-profit" />Tháng lời
+            <span className="inline-block h-3 w-3 rounded-sm bg-primary" />Tháng lời
           </span>
           <span className="flex items-center gap-1">
             <span className="inline-block h-3 w-3 rounded-sm bg-danger" />Tháng lỗ
@@ -100,7 +100,7 @@ export function PnlChart({ table }: { table: PnlTable }) {
                 width={barWidth}
                 height={barHeight}
                 rx={3}
-                className={isLoss ? "fill-danger" : "fill-chart-profit"}
+                className={isLoss ? "fill-danger" : "fill-primary"}
               />
               {p.netProfit !== 0 && (
                 <text

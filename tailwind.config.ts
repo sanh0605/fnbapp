@@ -16,9 +16,6 @@ const config: Config = {
           active: "var(--color-primary-active)",
           soft: "var(--color-primary-soft)",
         },
-        accent: {
-          cyan: "var(--color-accent-cyan)",
-        },
         page: "var(--color-bg-page)",
         surface: {
           card: "var(--color-surface-card)",
@@ -34,10 +31,10 @@ const config: Config = {
         danger: "var(--color-danger)",
         processing: "var(--color-processing)",
         "focus-ring": "var(--color-focus-ring)",
-        "chart-profit": "var(--color-chart-profit)",
       },
       fontFamily: {
-        display: ["Outfit", "Plus Jakarta Sans", "Arial", "sans-serif"],
+        sans: ["var(--font-app)", "Arial", "sans-serif"],
+        display: ["var(--font-app)", "Arial", "sans-serif"],
       },
       borderRadius: {
         card: "12px",

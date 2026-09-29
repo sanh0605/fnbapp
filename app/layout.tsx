@@ -3,10 +3,18 @@ if (typeof window === "undefined") {
 }
 
 import type { Metadata } from "next";
+import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import NextAuthSessionProvider from "@/components/providers/SessionProvider";
 import { DialogHost } from "@/components/providers/DialogHost";
 import { DevPreviewToolsLoader } from "@/components/dev-feedback/DevPreviewToolsLoader";
+
+const appFont = Be_Vietnam_Pro({
+  subsets: ["vietnamese", "latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-app",
+});
 
 export const metadata: Metadata = {
   title: "FNB App v2 - Google Sheets",
@@ -32,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    <html lang="vi" className={appFont.variable}>
       <body>
         <NextAuthSessionProvider>
           {children}
