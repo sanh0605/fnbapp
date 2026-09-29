@@ -18,6 +18,22 @@ export function writeSidebarCollapsed(getStorage: () => Pick<Storage, "setItem">
   }
 }
 
+/**
+ * Returns the href of the single child whose href matches the given pathname
+ * (either exactly or as a prefix followed by '/') with the longest href.
+ * Returns null if no child matches.
+ */
+export function activeChildHref(pathname: string, children: { href: string }[]): string | null {
+  let best: { href: string; length: number } | null = null;
+  for (const child of children) {
+    const hit = pathname === child.href || pathname.startsWith(`${child.href}/`);
+    if (hit && (!best || child.href.length > best.length)) {
+      best = { href: child.href, length: child.href.length };
+    }
+  }
+  return best?.href ?? null;
+}
+
 export function activeGroupName(pathname: string): string | null {
   let best: { name: string; length: number } | null = null;
   for (const group of NAV_GROUPS) {

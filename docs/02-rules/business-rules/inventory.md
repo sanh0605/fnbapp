@@ -94,9 +94,45 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 
 **Edge settled 2026-08-07:** a found event when the on-hand quantity is zero has no live average to draw on (`value/quantity` is `0/0`). Resolved as the **last unit cost the item left at** (the rate of the issue that emptied the pool), not a lifetime average of all purchases — that is the exact inverse of the depleting issue and the only choice that leaves the weighted average unchanged. A found event with no purchase ever recorded still refuses; a lot that never existed cannot be found. Implemented in `lib/costing/issue-costing.ts` (`computeIssueCosting`), Plan D K6, 5 tests.
 
+### BR-INV-013 — "Xoá" on an issue-slip line returns the goods to stock the day it is pressed; the line leaves the slip view
+
+**Status:** `APPROVED` — owner decision 2026-09-29. **Implemented** on branch `feat/issue-slip-list` (`supabase/migrations/0106_issue_slip_edit.sql`, `8c158f8`; screens `9bd0c2f`, `1989b6a`, `2b68a45`). Migration `0106` ships together with that code. It keeps `BR-INV-009`'s mechanism and changes only what the screen shows and asks.
+
+**What was decided, in order, the same day.**
+1. The owner was offered two meanings of "Xoá": the `BR-INV-009` return to stock dated today, or a real delete as if never issued. The example used real data: slip ISL-00040 (01/09/2026) issued 500 g of Bột cà phê MR.PHIN Robusta Dak Mil, and the line is deleted on 15/10.
+2. He first chose the real delete: *"Chọn cách 2, anh cần dữ liệu được tối giản. Project này chưa đủ lớn để theo dõi chi tiết từng thao tác."*
+3. He was then told three consequences of the real delete:
+   - It would need an exception so managers could delete outright.
+   - September's report, and slightly every later month through the running average, would change.
+   - A line dated before a confirmed stocktake is a problem under **both** meanings.
+4. He asked whether to go back to the first meaning and chose it (*"A"*). The screen stays as simple as he asked; the data keeps one compensating row per deleted line.
+
+**Rule.**
+- **Mechanism.** Deleting a line writes the `BR-INV-009` compensating row: dated today, valued at today's running average. The month of the mistake keeps its figure, and the correction lands in the month it is made.
+- **Display.** A deleted line disappears from the slip's detail view: no strike-through, no "đảo" wording. The compensating row is not shown as a line of the slip.
+- **Buttons.**
+  - The detail page has "Chỉnh sửa". In edit mode the user picks one line, several, or all, then "Xoá".
+  - "Huỷ phiếu" stays, and does the same thing to every remaining line.
+  - If every line is deleted, the slip asks whether to cancel the slip. If the user declines, at least one line must be entered before the slip can be saved. Owner's words: *"nút huỷ phiếu vẫn để, nếu xoá hết dòng thì phiếu sẽ hỏi người dùng về việc huỷ phiếu. Nếu không huỷ phiếu thì yêu cầu người dùng nhập ít nhất 1 dòng để lưu phiếu."*
+- **Who.** The owner and managers (`requireAdmin()`), as today. Nothing is deleted outright, so the "only ADMIN deletes" rule does not apply.
+- **Lines before a confirmed stocktake cannot be deleted.** This means any line whose issue date is on or before the confirmed date of the most recent confirmed stocktake. That count already put the goods back on the book as found stock. Returning them again would leave the book that much above the shelf. The screen says why and points to the next count. The reversal from `0058` had no such block; `0106` adds it to `reverse_manual_issue_atomic`, `cancel_issue_slip_atomic` and `edit_issue_slip_atomic`.
+
+**What "Chỉnh sửa" allows** (owner 2026-09-29, *"A"*): deleting lines, changing a quantity, and adding lines.
+- **Changing a quantity** is a delete plus a new line, **both on the slip's own date** (owner 2026-09-29, answer *"1"*; this replaces the first version, where the old quantity went back to stock today). Example: 500 g changed to 300 g returns 500 g and issues 300 g, both on the slip's date, so that month's cost ends up as if 300 g had been entered in the first place.
+- **Added lines** take the slip's own date, like the lines entered when the slip was made.
+- **A slip dated on or before the most recent confirmed stocktake cannot be edited at all.** A new line backdated before that count would leave the book below the shelf, just as a delete would leave it above.
+
+**Cancelled slips in the list** (owner 2026-09-29, after seeing the mockup): hidden by default. Choosing Loại = "Đã huỷ" in the list's filter shows them. Owner's words: *"Bình thường thì ẩn, chọn Loại = \"Đã huỷ\" trong bộ lọc mới thấy."* He was told the trade-off beforehand: slip numbers then appear to skip in the default list.
+
+**Stock check on backdated lines** (owner 2026-09-29, *"theo khuyến nghị"*, both questions answered A; plan `docs/superpowers/plans/2026-09-29-phieu-xuat.md`).
+- **The check covers the slip's date through today, not the slip's date alone.** Any line written on an earlier date, whether by a new slip or by "Chỉnh sửa", must not push stock below zero at any later moment. Otherwise the costing engine stops with "issue exceeds quantity on hand" and the reports built on it stop opening. This part was a technical decision, reported to the owner.
+- **Raising a line's quantity can be refused even when the difference seems available** (question 1, answer A). Example from ISL-00076: from 28/09 to 2026-09-29 Bột sữa B One never had more than 1.000 g in stock. In the first version, changing its line from 1.000 g to 1.500 g returned the 1.000 g today but issued 1.500 g on 28/09, so stock would sit 500 g below zero in between, and the edit was refused. The refusal says how much is left and suggests adding a separate 500 g line, which passes. Option B was to split the difference into a second line automatically; the owner did not take it.
+- **Changing a quantity returns the old quantity on the slip's own date** (owner 2026-09-29, *"1"*). Found in review: with the return dated today, even *lowering* a line could be refused. Example put to him: 1.000 g of Bột sữa B One issued on the 10th, stock down to 200 g on the 15th, line lowered to 500 g today: between the 10th and today both 1.000 g and 500 g counted, so stock went to −300 g and the edit was refused. It also split one correction across two months. Now both halves land on the slip's date: lowering is not refused unless the book is already below zero somewhere after the slip's date, and raising is refused only when the extra part (500 g in the ISL-00076 example) is itself more than the stock left from the slip's date to today. He was told beforehand that the report of the slip's month changes after the edit. **Unchanged:** "Xoá" on a line and "Huỷ phiếu" still return goods today (`BR-INV-009`), as decided earlier the same day; the stocktake block still applies.
+- **A new slip cannot be dated on or before the most recent confirmed stocktake** (question 2, answer A). This is the same block as for editing, for the same reason: the count already fixed the book at that date.
+
 ### BR-INV-009 — Reversing a mistaken issue slip lands today, at today's average, using BR-INV-008's mechanism
 
-**Status:** `APPROVED` — owner decision 2026-08-08 (`259103e`, Plan D §5 I7 in full). **Implemented** (Plan D D7b, `0058_reverse_manual_issue.sql`, `reverse_manual_issue_atomic`), extended 2026-08-09 by D14 (below).
+**Status:** `APPROVED` — owner decision 2026-08-08 (`259103e`, Plan D §5 I7 in full). **Implemented** (Plan D D7b, `0058_reverse_manual_issue.sql`, `reverse_manual_issue_atomic`), extended 2026-08-09 by D14 (below). Still the mechanism for issue slips; `BR-INV-013` (owner 2026-09-29) changes only the screen and adds the stocktake block.
 
 A manual issue slip entered by mistake is never deleted and never edited. It is marked reversed and answered with a compensating entry: quantity `-`original, dated **today**, valued at **today's running average** — not the rate that was in effect at the moment of the mistake, and not backdated to that moment. Both rows stay visible and linked.
 
@@ -135,6 +171,8 @@ A stocktake session cancelled before it is confirmed is deleted outright: the se
 
 **Second one-time exception to `BR-INV-009`, 2026-09-28: every issue slip from 27/09 erased.** The owner asked to delete all issue slips from 2026-09-27 until the moment of asking: ISL-00075..ISL-00088, their 32 lines and the 25 rows reversing them (`supabase/migrations/0104_erase_issue_slips_since_0927.sql`). The 27/09 slips had already been cancelled by the owner that evening ("Lỗi hệ thống"), so erasing them only removes the trail. The six slips of 28/09 were live and looked like ordinary same-day use (Sữa tươi Mlekovita 1 l, Sữa yến mạch Oatside 2 l, Sữa đặc La rosee 1 l, Bột sữa B One 1 kg, two coffee powders 500 g each); the owner was told that erasing them leaves the book that much above the shelf until the next count, and chose to erase them anyway. Slips after this one-time clean-up are cancelled, not deleted.
 
+**Numbers reused (measured 2026-09-29).** Because the erased ids were freed, the next slips took the same numbers: ISL-00075..ISL-00078 as they exist now were all created on 2026-09-29 (issue dates 27/09–29/09) and are not the slips erased above. A code seen in an older note or screenshot may therefore name a different slip.
+
 
 ### BR-INV-012 — The owner can edit a confirmed stocktake; the change lands on the count's own date
 
@@ -142,8 +180,12 @@ A stocktake session cancelled before it is confirmed is deleted outright: the se
 
 Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
-- **Where the change lands (1b).** Editing a counted quantity on a confirmed stocktake rewrites that count's shortfall or found-goods row **on the count's own date**, not today. The owner was told beforehand that this means a month's cost of goods, and so its profit report, changes after he may already have read it. This is a deliberate exception to the "corrections land today" pattern of `BR-INV-009`, and applies to stocktakes only.
+- **Where the change lands (1b).** Editing a counted quantity on a confirmed stocktake rewrites that count's shortfall or found-goods row **on the count's own date**, not today. The owner was told beforehand that this means a month's cost of goods, and so its profit report, changes after he may already have read it. This is a deliberate exception to the "corrections land today" pattern of `BR-INV-009`, and applies to stocktakes and, since 2026-09-29, to quantity changes in an issue slip's "Chỉnh sửa" (`BR-INV-013`).
 - **Who may edit (2a).** The owner only — `requireOwner()`, the same guard as undoing a confirmed stocktake, and for the same reason: the person being checked must not be able to change the check.
 - **Where a shortfall shows (3a).** A stocktake shortfall appears in the issue-slip list alongside ordinary slips, labelled "Kiểm kê". Opening it opens the stocktake; it carries no cancel button there. It stays a separate source (`STOCKTAKE`) for cost purposes, so `BR-COGS-007`'s split of cost of goods from loss is unchanged.
+- **How that row behaves** (owner 2026-09-29, *"1A 2A 3A"*, answered with STK-001 as the example: 49 items short, none found):
+  - No separate issue slip (no `ISL-` code) is created for a shortfall. The list row is the stocktake itself (`STK-…`), so nothing is recorded twice. It leaves the list only when the stocktake is undone.
+  - A stocktake that found only surplus and nothing short does not appear in the issue-slip list. Found goods are seen on the stocktake page.
+  - When a stocktake has both, the row's value is the shortfall only; found goods are not netted against it.
 
 **Open, to ask the owner (found 2026-09-28, while writing this rule down).** If a later stocktake exists, editing an earlier one breaks the later one's arithmetic. Example with made-up numbers: count 1 finds 10 of an item against a book of 15 (short 5); count 2 later finds 8 against a book of 10 (short 2). Edit count 1 to 12: the book after count 1 becomes 12, so count 2 should now be short 4, but it still says 2, and the book after count 2 reads 10 while the shelf holds 8. Either only the most recent confirmed stocktake may be edited (as with undoing one today), or every later stocktake's shortfall is recomputed from its unchanged count.

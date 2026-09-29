@@ -71,7 +71,7 @@ describe("computeIssuedEventFigures: the section 5 sum gate", () => {
 
     const eventFigures = computeIssuedEventFigures(stockIssues, purchases);
     expect(eventFigures).toHaveLength(3);
-    // Newest first, matching getRecentIssueSlips's ordering.
+    // Newest first.
     expect(eventFigures.map(f => f.key)).toEqual(["M:SLIP-C", "M:SLIP-B", "S:SESSION-A"]);
 
     const sumOfEventValuesExact = eventFigures.reduce((sum, f) => sum + f.valueExact, 0);

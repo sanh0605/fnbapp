@@ -1,23 +1,162 @@
 "use server";
 
-import { findAll, findAllWhere } from "@/lib/db/tables";
+import { findAll, findAllNoCache } from "@/lib/db/tables";
+import { buildIssueCostingPurchases, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
+import { computeIssueLineValues } from "@/lib/costing/issue-line-values";
+import { listIssueSlipsPage, type IssueSlipListFilters, type IssueSlipListPage } from "@/lib/stock/issue-slip-list";
+import { buildIssueSlipDetail, type IssueSlipDetail } from "@/lib/stock/issue-slip-detail";
+import { diffIssueSlipEdit, type EditDraftLine, type EditOriginalLine } from "@/lib/stock/issue-slip-edit-diff";
+import {
+  activeSlipLines, reversedIssueIds,
+  type IssueRowRecord, type IssueSlipRecord, type StocktakeSessionRecord,
+} from "@/lib/stock/issue-slip-status";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/auth";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import {
   createIssueSlipAtomic,
-  reverseManualIssueAtomic,
   cancelIssueSlipAtomic,
+  editIssueSlipAtomic,
+  type SlipEditResult,
   type IssueSlipResult,
-  type ReversalResult,
   type SlipCancelResult,
 } from "@/lib/stock/manual-issue-transaction";
 import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stock/stocktake-package-lines";
 import { computeOnHandByPurchasedItem, filterByC17 } from "@/lib/stock/purchased-item-onhand";
 
 const PATH = "/admin/inventory/issue-slips";
-const RECENT_SLIPS_LIMIT = 100;
+
+// Package lines per purchased item, one per active conversion -- shared by the
+// create form and the slip detail so both offer the same units.
+function groupPackageLines(
+  conversions: any[],
+  nameById: Map<string, string>,
+  unitNameById: Map<string, string>,
+): Map<string, PackageLine[]> {
+  const input: PurchasedItemConversion[] = conversions.map(c => ({
+    conversionId: c.id,
+    purchasedItemId: c.purchased_item_id,
+    purchasedItemName: nameById.get(c.purchased_item_id) ?? c.purchased_item_id,
+    purchasedUnitName: unitNameById.get(c.purchased_unit) ?? c.purchased_unit ?? "",
+    baseUnitName: unitNameById.get(c.base_unit) ?? c.base_unit ?? "",
+    conversionRate: Number(c.conversion_rate),
+    status: c.status,
+    purchaseOnly: c.purchase_only === true,
+  }));
+  const byItem = new Map<string, PackageLine[]>();
+  for (const line of buildPackageLines(input)) {
+    const list = byItem.get(line.purchasedItemId) ?? [];
+    list.push(line);
+    byItem.set(line.purchasedItemId, list);
+  }
+  return byItem;
+}
+
+// Reads the tables the slip screens share and prices every issue line with the
+// same costing engine as the Hàng đã xuất report (no second cost definition).
+async function loadIssueSlipContext() {
+  const [slips, issues, sessions, purchaseOrders, purchaseOrderLines, purchasedItems, itemCategories] = await Promise.all([
+    findAllNoCache("Issue_Slips"),
+    findAllNoCache("Stock_Issues"),
+    findAllNoCache("stocktake_sessions"),
+    findAllNoCache("Purchase_Orders"),
+    findAllNoCache("Purchase_Order_Lines"),
+    findAll("Purchased_Items"),
+    findAll("Item_Categories"),
+  ]);
+  const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
+  const costed = selectCostedIssues(issues as any[], purchasedItems as any[], itemCategories as any[]);
+  const lineValues = computeIssueLineValues(
+    purchases,
+    costed.map((r: any) => ({
+      id: r.id as string,
+      purchased_item_id: r.purchased_item_id as string,
+      at: r.issued_at as string,
+      base_quantity: Number(r.base_quantity) || 0,
+      source: r.source as "STOCKTAKE" | "MANUAL",
+    })),
+  );
+  return {
+    slips: slips as IssueSlipRecord[],
+    issues: issues as IssueRowRecord[],
+    sessions: sessions as StocktakeSessionRecord[],
+    items: (purchasedItems as any[]).map(p => ({ id: p.id as string, name: p.name as string })),
+    lineValues,
+  };
+}
+
+export async function getIssueSlipsPage(filters: IssueSlipListFilters): Promise<IssueSlipListPage> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+  const ctx = await loadIssueSlipContext();
+  return listIssueSlipsPage({ ...ctx, filters });
+}
+
+export async function getIssueSlipDetail(slipId: string): Promise<IssueSlipDetail | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+  const ctx = await loadIssueSlipContext();
+  const slip = ctx.slips.find(s => s.id === slipId);
+  if (!slip) return null;
+
+  const [conversions, units] = await Promise.all([findAll("UOM_Conversions"), findAll("Units")]);
+  const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
+  const nameById = new Map(ctx.items.map(i => [i.id, i.name] as [string, string]));
+  // Base unit: first ACTIVE conversion per item, as getIssuedValueReport does.
+  const baseUnitNameByItem = new Map<string, string>();
+  for (const c of conversions as any[]) {
+    if (c.status !== "ACTIVE" || baseUnitNameByItem.has(c.purchased_item_id)) continue;
+    baseUnitNameByItem.set(c.purchased_item_id, unitNameById.get(c.base_unit) ?? "");
+  }
+  return buildIssueSlipDetail({
+    slip,
+    issues: ctx.issues,
+    sessions: ctx.sessions,
+    items: ctx.items,
+    baseUnitNameByItem,
+    packageLinesByItem: groupPackageLines(conversions as any[], nameById, unitNameById),
+    lineValues: ctx.lineValues,
+  });
+}
+
+// BR-INV-013. The server loads the slip's active lines itself; the client only
+// sends its draft, so a stale or forged "original" can never be trusted.
+export async function editIssueSlip(input: {
+  slipId: string;
+  draft: EditDraftLine[];
+}): Promise<ActionResponse & { result?: SlipEditResult }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  try {
+    const issues = (await findAllNoCache("Stock_Issues")) as IssueRowRecord[];
+    const active = activeSlipLines(input.slipId, issues, reversedIssueIds(issues));
+    if (active.length === 0) return fail("Phiếu này đã huỷ hoặc không có dòng nào để sửa.");
+    const original: EditOriginalLine[] = active.map(l => ({
+      issueId: l.id,
+      purchasedItemId: l.purchased_item_id,
+      baseQuantity: Number(l.base_quantity),
+    }));
+
+    const diff = diffIssueSlipEdit(original, input.draft);
+    if (!diff.ok) return fail(diff.error);
+
+    const result = await editIssueSlipAtomic({
+      slipId: input.slipId,
+      removeIssueIds: diff.removeIssueIds,
+      replaceIssueIds: diff.replaceIssueIds,
+      addLines: diff.addLines,
+      createdById: auth.actor.id,
+      createdByName: auth.actor.name,
+    });
+    revalidatePath(PATH);
+    revalidatePath(`${PATH}/${input.slipId}`);
+    return ok({ result });
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
 
 export interface IssueSlipItemView {
   id: string;
@@ -58,22 +197,7 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
     (itemCategories as any[]).filter(c => c.system_type === "EQUIPMENT").map(c => c.id as string),
   );
 
-  const input: PurchasedItemConversion[] = (conversions as any[]).map(c => ({
-    conversionId: c.id,
-    purchasedItemId: c.purchased_item_id,
-    purchasedItemName: nameById.get(c.purchased_item_id) ?? c.purchased_item_id,
-    purchasedUnitName: unitNameById.get(c.purchased_unit) ?? c.purchased_unit ?? "",
-    baseUnitName: unitNameById.get(c.base_unit) ?? c.base_unit ?? "",
-    conversionRate: Number(c.conversion_rate),
-    status: c.status,
-    purchaseOnly: c.purchase_only === true,
-  }));
-  const packageLinesByPurchasedItem = new Map<string, PackageLine[]>();
-  for (const line of buildPackageLines(input)) {
-    const list = packageLinesByPurchasedItem.get(line.purchasedItemId) ?? [];
-    list.push(line);
-    packageLinesByPurchasedItem.set(line.purchasedItemId, list);
-  }
+  const packageLinesByPurchasedItem = groupPackageLines(conversions as any[], nameById, unitNameById);
 
   const eligiblePurchasedItems = (purchasedItems as any[]).filter(
     p => p.is_non_inventory !== true && p.is_non_inventory !== "TRUE" && !equipmentCategoryIds.has(p.item_category_id),
@@ -169,83 +293,9 @@ export async function createIssueSlip(input: {
   }
 }
 
-export interface IssueSlipRow {
-  id: string;
-  slipId: string | null;
-  itemName: string;
-  baseQuantity: number;
-  issuedAt: string;
-  note: string;
-  // Plan D D7b, BR-INV-009: a row is either an ordinary MANUAL issue, or
-  // itself a compensating entry for an earlier one (reversesIssueId set).
-  // reversedByIssueId is the reverse direction, derived from this same
-  // fetched window -- "hai chiều" (both directions visible), the original
-  // row itself never mutated.
-  reversesIssueId: string | null;
-  reversedByIssueId: string | null;
-}
-
-export async function getRecentIssueSlips(): Promise<IssueSlipRow[]> {
-  const auth = await requireAdmin();
-  if (!auth.ok) throw new Error(auth.error);
-
-  const [rows, purchasedItems] = await Promise.all([
-    findAllWhere<any>("Stock_Issues", {
-      eq: { source: "MANUAL" },
-      order: { column: "created_at", ascending: false },
-      limit: RECENT_SLIPS_LIMIT,
-    }),
-    findAll("Purchased_Items"),
-  ]);
-  const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
-  const reversedByIdByOriginal = new Map<string, string>();
-  for (const row of rows) {
-    if (row.reverses_issue_id) reversedByIdByOriginal.set(row.reverses_issue_id, row.id);
-  }
-
-  return rows.map(row => ({
-    id: row.id,
-    // Plan D D9: rows written before this migration (or, in principle, any
-    // row written outside a slip) carry no issue_slip_id -- shown
-    // individually rather than grouped, not an error.
-    slipId: row.issue_slip_id ?? null,
-    itemName: nameById.get(row.purchased_item_id) ?? row.purchased_item_id,
-    baseQuantity: Number(row.base_quantity),
-    issuedAt: row.issued_at,
-    note: row.note ?? "",
-    reversesIssueId: row.reverses_issue_id ?? null,
-    reversedByIssueId: reversedByIdByOriginal.get(row.id) ?? null,
-  }));
-}
-
-// Plan D D9 / I11: reversal stays per-line, unchanged from D7b -- a
-// multi-line slip still writes one stock_issues row per line, so
-// correcting one wrong line does not require touching the rest of the
-// slip.
-export async function reverseIssueSlip(input: {
-  issueId: string;
-  note: string;
-}): Promise<ActionResponse & { result?: ReversalResult }> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return fail(auth.error);
-
-  try {
-    const result = await reverseManualIssueAtomic({
-      issueId: input.issueId,
-      note: input.note,
-      createdById: auth.actor.id,
-      createdByName: auth.actor.name,
-    });
-    revalidatePath(PATH);
-    return ok({ result });
-  } catch (error: unknown) {
-    return describeActionError(error);
-  }
-}
-
 // Plan D D14 / I11: cancel a WHOLE slip -- reverses every line not already
 // individually reversed, in one call, one reason. Same requireAdmin() level
-// as the existing per-line reversal above -- deliberately not raised to
+// as the other slip actions -- deliberately not raised to
 // owner-only (U12): an issue slip records waste/internal use, not a check on
 // the person who counted, so the stocktake reversal's stricter guard does
 // not carry over here.
@@ -267,6 +317,7 @@ export async function cancelIssueSlip(input: {
       createdByName: auth.actor.name,
     });
     revalidatePath(PATH);
+    revalidatePath(`${PATH}/${input.slipId}`);
     return ok({ result });
   } catch (error: unknown) {
     return describeActionError(error);

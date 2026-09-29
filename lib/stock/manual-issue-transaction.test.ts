@@ -6,7 +6,7 @@ vi.mock("@/lib/db/supabase", () => ({
   getSupabaseClient: mocks.getSupabaseClient,
 }));
 
-import { createIssueSlipAtomic, reverseManualIssueAtomic, cancelIssueSlipAtomic } from "./manual-issue-transaction";
+import { createIssueSlipAtomic, reverseManualIssueAtomic, cancelIssueSlipAtomic, editIssueSlipAtomic } from "./manual-issue-transaction";
 
 describe("createIssueSlipAtomic", () => {
   beforeEach(() => {
@@ -343,5 +343,67 @@ describe("cancelIssueSlipAtomic (Plan D D14, U9-U12)", () => {
       createdById: "admin-1",
       createdByName: "Admin",
     })).rejects.toThrow("invalid result");
+  });
+});
+
+describe("editIssueSlipAtomic", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
+  });
+
+  it("sends removed, replaced and added lines under the RPC parameter names and parses the result", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        slip_id: "ISL-00076",
+        removed: [
+          { reversal_issue_id: "ISS-00200", reverses_issue_id: "ISS-00196" },
+          { reversal_issue_id: "ISS-00201", reverses_issue_id: "ISS-00192" },
+        ],
+        added: [{ issue_id: "ISS-00202", purchased_item_id: "SPM-038", base_quantity: 1000 }],
+      },
+      error: null,
+    });
+
+    const result = await editIssueSlipAtomic({
+      slipId: "ISL-00076",
+      removeIssueIds: ["ISS-00196"],
+      replaceIssueIds: ["ISS-00192"],
+      addLines: [{ purchasedItemId: "SPM-038", baseQuantity: 1000 }],
+      createdById: "admin-1",
+      createdByName: "Admin",
+    });
+
+    expect(mocks.rpc).toHaveBeenCalledWith("edit_issue_slip_atomic", {
+      p_slip_id: "ISL-00076",
+      p_remove_issue_ids: ["ISS-00196"],
+      p_replace_issue_ids: ["ISS-00192"],
+      p_add_lines: [{ purchased_item_id: "SPM-038", base_quantity: 1000 }],
+      p_created_by_id: "admin-1",
+      p_created_by_name: "Admin",
+    });
+    expect(result).toEqual({
+      slipId: "ISL-00076",
+      removed: [
+        { reversalIssueId: "ISS-00200", reversesIssueId: "ISS-00196" },
+        { reversalIssueId: "ISS-00201", reversesIssueId: "ISS-00192" },
+      ],
+      added: [{ issueId: "ISS-00202", purchasedItemId: "SPM-038", baseQuantity: 1000 }],
+    });
+  });
+
+  it("throws the RPC message prefixed with the function name", async () => {
+    mocks.rpc.mockResolvedValue({ data: null, error: { message: "Không đủ tồn kho cho Oatside: từ ngày phiếu tới nay có lúc kho chỉ còn 500 ml." } });
+
+    await expect(
+      editIssueSlipAtomic({ slipId: "ISL-00076", removeIssueIds: [], replaceIssueIds: [], addLines: [], createdById: "a", createdByName: "A" }),
+    ).rejects.toThrow("edit_issue_slip_atomic: Không đủ tồn kho cho Oatside");
+  });
+
+  it("rejects a result with no slip_id", async () => {
+    mocks.rpc.mockResolvedValue({ data: {}, error: null });
+    await expect(
+      editIssueSlipAtomic({ slipId: "ISL-00076", removeIssueIds: [], replaceIssueIds: [], addLines: [], createdById: "a", createdByName: "A" }),
+    ).rejects.toThrow("edit_issue_slip_atomic returned an invalid result");
   });
 });
