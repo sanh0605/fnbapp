@@ -122,6 +122,8 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 - **Added lines** take the slip's own date, like the lines entered when the slip was made.
 - **A slip dated on or before the most recent confirmed stocktake cannot be edited at all.** A new line backdated before that count would leave the book below the shelf, just as a delete would leave it above.
 
+**Cancelled slips in the list** (owner 2026-09-29, after seeing the mockup): hidden by default. Choosing Loại = "Đã huỷ" in the list's filter shows them. Owner's words: *"Bình thường thì ẩn, chọn Loại = \"Đã huỷ\" trong bộ lọc mới thấy."* He was told the trade-off beforehand: slip numbers then appear to skip in the default list.
+
 ### BR-INV-009 — Reversing a mistaken issue slip lands today, at today's average, using BR-INV-008's mechanism
 
 **Status:** `APPROVED` — owner decision 2026-08-08 (`259103e`, Plan D §5 I7 in full). **Implemented** (Plan D D7b, `0058_reverse_manual_issue.sql`, `reverse_manual_issue_atomic`), extended 2026-08-09 by D14 (below). Still the mechanism for issue slips; `BR-INV-013` (owner 2026-09-29) changes only the screen and adds the stocktake block.

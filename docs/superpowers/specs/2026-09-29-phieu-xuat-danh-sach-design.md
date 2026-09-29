@@ -18,7 +18,8 @@ Chủ quán chọn làm Phiếu xuất trước trong bước 4 (2026-09-29). Ng
 | Lý do huỷ phiếu | Vẫn bắt buộc |
 | Danh sách lý do (đang viết cứng 3 lý do) | Để bước sau; ghi vào việc chưa xong. Không có ô lọc theo lý do |
 | Cột Giá trị | Có |
-| Ô lọc Loại (Tất cả, Phiếu xuất, Kiểm kê) | Có |
+| Ô lọc Loại (Tất cả, Phiếu xuất, Kiểm kê, Đã huỷ) | Có |
+| Phiếu đã huỷ trong danh sách | Ẩn khi lọc "Tất cả"; chỉ hiện khi chọn Loại = "Đã huỷ" (chủ quán 2026-09-29, sau khi xem bản mẫu) |
 | Ô lọc Người ghi | Có |
 | Cột mặt hàng trên danh sách | Không. Ô tìm vẫn tìm theo tên mặt hàng |
 
@@ -31,14 +32,14 @@ Opus tự quyết (chủ quán không đồng ý thì sửa): xoá từng dòng 
    - Một dòng có thể đã bị đảo: có dòng khác trỏ về nó qua `reverses_issue_id`.
    - Sau bước này, nhìn từ màn hình, một phiếu mang một trong hai trạng thái:
      - **Còn hiệu lực:** còn ít nhất 1 dòng chưa bị trả về kho.
-     - **Đã huỷ:** mọi dòng đã được trả về kho. Phiếu vẫn nằm trong danh sách, có nhãn "Đã huỷ".
+     - **Đã huỷ:** mọi dòng đã được trả về kho. Mặc định ẩn khỏi danh sách; chọn Loại = "Đã huỷ" mới thấy, có nhãn "Đã huỷ".
    - Một lần kiểm kê hiện trong danh sách khi nó ở trạng thái `CONFIRMED`.
 2. **Nút.**
    - Danh sách có "Tạo phiếu xuất", "Lọc", "Xoá lọc".
    - Chi tiết phiếu có "Chỉnh sửa" và "Huỷ phiếu". Cả hai ẩn khi phiếu đã huỷ, hoặc khi ngày xuất nằm vào hoặc trước ngày xác nhận của lần kiểm kê gần nhất; khi đó hiện một câu giải thích thay cho nút.
    - Trong chế độ chỉnh sửa có "Xoá dòng đã chọn", "Thêm dòng", "Lưu", "Bỏ".
 3. **Danh sách.**
-   - Chứa mọi phiếu xuất tay (`issue_slips`), cả phiếu đã huỷ.
+   - Chứa mọi phiếu xuất tay (`issue_slips`) còn hiệu lực. Phiếu đã huỷ chỉ hiện khi lọc Loại = "Đã huỷ".
    - Chứa thêm mỗi lần kiểm kê đã xác nhận thành một dòng "Kiểm kê" (`BR-INV-012`), giá trị là số tiền hao hụt của lần đó.
    - Dòng trả hàng về kho (`reverses_issue_id` khác rỗng) không hiện thành phiếu riêng.
    - Mỗi trang 20 dòng. Thứ tự: ngày xuất mới nhất ở trên; cùng ngày giờ thì dòng tạo sau đứng trên.
@@ -79,7 +80,7 @@ Khuôn giống hệt Phiếu nhập (spec 2026-09-29, mục 3.5), trừ những 
 - **Đầu trang:** chữ nhỏ "Kho", tên trang "Phiếu xuất", nút "Tạo phiếu xuất" bên phải (trên điện thoại chiếm hết bề ngang).
 - **Thanh lọc:**
   - Tìm: mã phiếu, tên mặt hàng.
-  - Loại: Tất cả, Phiếu xuất, Kiểm kê.
+  - Loại: Tất cả, Phiếu xuất, Kiểm kê, Đã huỷ. "Tất cả" không gồm phiếu đã huỷ.
   - Người ghi: Tất cả, cộng với mọi người từng ghi phiếu, lấy từ dữ liệu.
   - Từ ngày, Đến ngày.
   - Có nút Lọc và Xoá lọc; Enter cũng lọc.
