@@ -17,8 +17,7 @@ function screenSources(routeDir: string): string {
 const links = NAV_GROUPS.flatMap(g => (g.href ? [{ name: g.name, href: g.href }] : g.children ?? []));
 
 describe("page headings match the menu", () => {
-  const activeLinks = links.filter(l => l.href !== "/admin/inventory/purchase-orders");
-  it.each(activeLinks)("$href is titled \"$name\"", ({ name, href }) => {
+  it.each(links)("$href is titled \"$name\"", ({ name, href }) => {
     const dir = join(process.cwd(), "app", ...href.split("/").filter(Boolean));
     const src = screenSources(dir);
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -26,10 +25,7 @@ describe("page headings match the menu", () => {
     expect(src).toMatch(heading);
   });
 
-  // green in Task 8
-  it.skip("/admin/inventory/purchase-orders is titled \"Phiếu nhập\"", () => {});
-
-  it.each(activeLinks)('$href loading skeleton shows "$name"', ({ name, href }) => {
+  it.each(links)('$href loading skeleton shows "$name"', ({ name, href }) => {
     const dir = join(process.cwd(), "app", ...href.split("/").filter(Boolean));
     const loadingPath = join(dir, "loading.tsx");
     if (!existsSync(loadingPath)) {
@@ -48,7 +44,4 @@ describe("page headings match the menu", () => {
       expect(h1).toBe(name);
     }
   });
-
-  // purchase-orders checked in Task 8
-  it.skip('/admin/inventory/purchase-orders loading skeleton shows "Phiếu nhập"', () => {});
 });

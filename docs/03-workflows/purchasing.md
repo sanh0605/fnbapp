@@ -104,6 +104,6 @@ does not reference `stock_ledger`. `BR-INV-001` (the old "quantity movement
 belongs in the stock ledger" rule) was retired in favour of the issue-based
 cost path (`BR-COGS-005`).
 
-> Measured against source: 2026-09-03 — via docs/generated/system-map.md
+> Reviewed, 2026-09-29: the list page calls getPurchaseOrdersPage to support server-side search, filters by status, supplier, and whole Saigon days; it sorts newest slip first, shows 20 per page, and tracks the page number in the URL.
 
-> Reviewed, no behaviour change — 2026-09-29: added `getPurchaseOrdersPage` (read-only, not yet called by any page).
+> Measured against source: 2026-09-03 — via docs/generated/system-map.md
