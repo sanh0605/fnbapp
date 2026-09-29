@@ -5,7 +5,7 @@ export default function Loading() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Quản lý Nhà Cung Cấp" 
+        title="Nhà cung cấp" 
         subtitle="Quản lý thông tin liên hệ và danh sách các đối tác cung ứng." 
       />
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">

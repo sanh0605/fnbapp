@@ -28,4 +28,27 @@ describe("page headings match the menu", () => {
 
   // green in Task 8
   it.skip("/admin/inventory/purchase-orders is titled \"Phiếu nhập\"", () => {});
+
+  it.each(activeLinks)('$href loading skeleton shows "$name"', ({ name, href }) => {
+    const dir = join(process.cwd(), "app", ...href.split("/").filter(Boolean));
+    const loadingPath = join(dir, "loading.tsx");
+    if (!existsSync(loadingPath)) {
+      return;
+    }
+
+    const src = readFileSync(loadingPath, "utf8");
+
+    const titles = Array.from(src.matchAll(/(?<![\w-])title="([^"]*)"/g), m => m[1]);
+    for (const title of titles) {
+      expect(title).toBe(name);
+    }
+
+    const h1s = Array.from(src.matchAll(/<h1[^>]*>([\s\S]*?)<\/h1>/g), m => m[1].trim());
+    for (const h1 of h1s) {
+      expect(h1).toBe(name);
+    }
+  });
+
+  // purchase-orders checked in Task 8
+  it.skip('/admin/inventory/purchase-orders loading skeleton shows "Phiếu nhập"', () => {});
 });
