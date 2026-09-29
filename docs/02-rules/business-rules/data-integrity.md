@@ -83,6 +83,18 @@ If a post-apply invariant fails, stop further writes and compare against the app
   - All 74 of 74 issue slips have :00 seconds, because the form asks only to the minute.
   - Sales orders do carry real seconds: 3.010 of 3.079 completed orders have non-zero seconds.
 - **Where no time was recorded, the time still shows, as 00:00:00** (owner 2026-09-29, chose this over showing the day alone): "28/09/2026 00:00:00". Every date outside a filter therefore has the same shape. Day-only fields are read as midnight Saigon time; nothing is invented beyond that.
+
+### BR-DATA-007 — Admin screens never open a popup; anything with an input is its own page
+
+**Status:** `APPROVED` — owner decision 2026-09-30. **Not built yet**; its own plan, screen group by screen group. Counted 2026-09-30: 91 popup or browser-dialog uses in 38 files under `app/` (POS included in that count).
+
+*"hệ thống sẽ không bao giờ được sử dụng dạng popups. Tất cả đều phải áp dụng cách chuyển trang"*, then on the scope questions: *"1B 2B"*.
+
+- **A box that asks for input becomes a page.** Example: "Huỷ phiếu" on an issue slip opens a page with the reason field and "Xác nhận huỷ", and returns to the slip afterwards; it no longer opens a box over the slip.
+- **A short yes/no confirmation is asked inline on the same page**, not in a box and not on a separate page (answer 1B). Example: "Xoá nhà cung cấp ABC?" shows as a line with Có / Không where the button was.
+- **Browser dialogs (`window.confirm`, `window.alert`) count as popups** and go the same way.
+- **POS is exempt** (answer 2B): choosing size, toppings and payment keep their current boxes, because a page change slows selling at a busy moment.
+- **Not popups:** a dropdown list and a date picker's calendar. They open in place and are kept (owner asked on 2026-09-30 for dropdowns to float above tables, not to become pages).
 ## Backup and retention rules
 
 ### BR-BACKUP-001 — Scheduled backups are full snapshots

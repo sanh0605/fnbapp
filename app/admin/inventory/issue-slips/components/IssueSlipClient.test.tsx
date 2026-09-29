@@ -51,6 +51,7 @@ afterEach(() => {
   while (containers.length) {
     containers.pop()!.remove();
   }
+  document.body.innerHTML = "";
 });
 
 async function renderTracked(element: React.ReactElement) {
@@ -83,7 +84,7 @@ async function selectItem(container: HTMLElement, label: string) {
   const combobox = container.querySelector('[role="combobox"]');
   if (!combobox) throw new Error("SearchableSelect trigger not found");
   await fireClick(combobox);
-  const option = Array.from(container.querySelectorAll('[role="option"]')).find(
+  const option = Array.from(document.body.querySelectorAll('[role="option"]')).find(
     el => el.textContent?.trim() === label,
   );
   if (!option) throw new Error(`option not found: "${label}"`);
@@ -110,7 +111,7 @@ async function selectItemInBlock(block: HTMLElement, label: string) {
   const combobox = block.querySelector('[role="combobox"]');
   if (!combobox) throw new Error("SearchableSelect trigger not found in block");
   await fireClick(combobox);
-  const option = Array.from(block.querySelectorAll('[role="option"]')).find(el => el.textContent?.trim() === label);
+  const option = Array.from(document.body.querySelectorAll('[role="option"]')).find(el => el.textContent?.trim() === label);
   if (!option) throw new Error(`option not found: "${label}"`);
   await fireClick(option);
 }

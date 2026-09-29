@@ -52,6 +52,9 @@ export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
         wrapperClassName="w-full"
         isClearable={props.isClearable ?? true}
         withPortal={isMobile}
+        portalId={!isMobile ? "datepicker-portal" : undefined}
+        popperPlacement="bottom-start"
+        popperClassName="z-[110]"
         {...props}
         {...({ inputMode: "none" } as any)}
       />
