@@ -1,4 +1,3 @@
-// orphan-allow: consumed by the issue-slip server actions and UI added in later tasks (ledger ruling R4)
 // Turns an edited slip draft into the lines to return to stock and the lines
 // to raise anew. A changed quantity is a return plus a new line, never an in-place edit;
 // its return is dated on the slip's own date (replaceIssueIds), a pure delete is dated now (removeIssueIds).

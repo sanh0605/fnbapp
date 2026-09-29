@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   createIssueSlipAtomic: vi.fn(),
   reverseManualIssueAtomic: vi.fn(),
   cancelIssueSlipAtomic: vi.fn(),
+  editIssueSlipAtomic: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
@@ -24,6 +25,7 @@ vi.mock("@/lib/stock/manual-issue-transaction", () => ({
   createIssueSlipAtomic: mocks.createIssueSlipAtomic,
   reverseManualIssueAtomic: mocks.reverseManualIssueAtomic,
   cancelIssueSlipAtomic: mocks.cancelIssueSlipAtomic,
+  editIssueSlipAtomic: mocks.editIssueSlipAtomic,
 }));
 
 import * as issueSlipActions from "./actions";
@@ -498,5 +500,167 @@ describe("cancelIssueSlip (Plan D D14, U9-U12)", () => {
 
     expect(res.result?.reversedCount).toBe(2);
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/issue-slips");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/issue-slips/ISL-00003");
   });
 });
+
+// Real numbers from ISL-00076 (plan 2026-09-29-phieu-xuat, worked example),
+// cut down to the two lines the spec edit example touches.
+function mockSlipTables() {
+  const tables: Record<string, any[]> = {
+    Issue_Slips: [
+      { id: "ISL-00076", issued_at: "2026-09-28T11:20:00+00:00", note: "Khác", created_by_id: "u1", created_by_name: "tuyen2612", created_at: "2026-09-28T11:21:00+00:00" },
+    ],
+    Stock_Issues: [
+      { id: "ISS-00192", purchased_item_id: "SPM-038", issued_at: "2026-09-28T11:20:00+00:00", base_quantity: 2000, source: "MANUAL", session_id: null, note: "Khác", reverses_issue_id: null, issue_slip_id: "ISL-00076" },
+      { id: "ISS-00196", purchased_item_id: "SPM-050", issued_at: "2026-09-28T11:20:00+00:00", base_quantity: 1, source: "MANUAL", session_id: null, note: "Khác", reverses_issue_id: null, issue_slip_id: "ISL-00076" },
+    ],
+    stocktake_sessions: [],
+    Purchase_Orders: [{ id: "PO-1", status: "COMPLETED", transaction_date: "2026-09-01T00:00:00+00:00" }],
+    Purchase_Order_Lines: [
+      { id: "POL-1", purchase_order_id: "PO-1", purchased_item_id: "SPM-038", base_quantity: 40000, subtotal: 1472123 },
+      { id: "POL-2", purchase_order_id: "PO-1", purchased_item_id: "SPM-050", base_quantity: 5, subtotal: 182023 },
+    ],
+    Purchased_Items: [
+      { id: "SPM-038", name: "Sữa yến mạch Oatside", is_non_inventory: false },
+      { id: "SPM-050", name: "Giấy lót chống tràn", is_non_inventory: false },
+    ],
+    Item_Categories: [],
+    UOM_Conversions: [
+      { id: "C1", purchased_item_id: "SPM-038", purchased_unit: "U-HOP", base_unit: "U-ML", conversion_rate: 1000, status: "ACTIVE" },
+      { id: "C2", purchased_item_id: "SPM-050", purchased_unit: "U-XAP", base_unit: "U-XAP", conversion_rate: 1, status: "ACTIVE" },
+    ],
+    Units: [
+      { id: "U-HOP", name: "Hộp" }, { id: "U-ML", name: "ml" }, { id: "U-XAP", name: "Xấp" },
+    ],
+  };
+  mocks.findAll.mockImplementation((t: string) => Promise.resolve(tables[t] ?? []));
+  mocks.findAllNoCache.mockImplementation((t: string) => Promise.resolve(tables[t] ?? []));
+  return tables;
+}
+
+describe("getIssueSlipsPage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+  });
+
+  it("lists the slip with its reason and creator", async () => {
+    mockSlipTables();
+    const page = await issueSlipActions.getIssueSlipsPage({});
+    expect(page.total).toBe(1);
+    expect(page.rows[0]).toMatchObject({ id: "ISL-00076", kind: "SLIP", reason: "Khác", createdByName: "tuyen2612" });
+  });
+
+  it("throws when the caller is not allowed", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền" });
+    await expect(issueSlipActions.getIssueSlipsPage({})).rejects.toThrow("Không có quyền");
+  });
+});
+
+describe("getIssueSlipDetail", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+  });
+
+  it("returns null for a slip that does not exist", async () => {
+    mockSlipTables();
+    expect(await issueSlipActions.getIssueSlipDetail("ISL-99999")).toBeNull();
+  });
+
+  it("returns the slip's active lines in package units", async () => {
+    mockSlipTables();
+    const detail = await issueSlipActions.getIssueSlipDetail("ISL-00076");
+    expect(detail?.lines.map(l => [l.issueId, l.name, l.quantityText])).toEqual([
+      ["ISS-00192", "Sữa yến mạch Oatside", "2 Hộp (2.000 ml)"],
+      ["ISS-00196", "Giấy lót chống tràn", "1 Xấp"],
+    ]);
+    expect(detail?.canEdit).toBe(true);
+  });
+
+  it("throws when the caller is not allowed", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền" });
+    await expect(issueSlipActions.getIssueSlipDetail("ISL-00076")).rejects.toThrow("Không có quyền");
+  });
+});
+
+describe("editIssueSlip", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+    mockSlipTables();
+  });
+
+  const unchangedDraft = [
+    { issueId: "ISS-00192", purchasedItemId: "SPM-038", baseQuantity: 2000, removed: false },
+    { issueId: "ISS-00196", purchasedItemId: "SPM-050", baseQuantity: 1, removed: false },
+  ];
+
+  it("refuses an unchanged draft without calling the RPC", async () => {
+    const res = await issueSlipActions.editIssueSlip({ slipId: "ISL-00076", draft: unchangedDraft });
+    expect(res.error).toBe("Chưa có thay đổi nào.");
+    expect(mocks.editIssueSlipAtomic).not.toHaveBeenCalled();
+  });
+
+  it("spec example: drop Giấy lót, Oatside 2.000 -> 1.000 ml sends remove, replace and add", async () => {
+    mocks.editIssueSlipAtomic.mockResolvedValue({ slipId: "ISL-00076", removed: [], added: [] });
+    const res = await issueSlipActions.editIssueSlip({
+      slipId: "ISL-00076",
+      draft: [
+        { issueId: "ISS-00192", purchasedItemId: "SPM-038", baseQuantity: 1000, removed: false },
+        { issueId: "ISS-00196", purchasedItemId: "SPM-050", baseQuantity: 1, removed: true },
+      ],
+    });
+    expect(res.error).toBeUndefined();
+    expect(mocks.editIssueSlipAtomic).toHaveBeenCalledWith({
+      slipId: "ISL-00076",
+      removeIssueIds: ["ISS-00196"],
+      replaceIssueIds: ["ISS-00192"],
+      addLines: [{ purchasedItemId: "SPM-038", baseQuantity: 1000 }],
+      createdById: "admin-1",
+      createdByName: "Admin",
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/issue-slips");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/issue-slips/ISL-00076");
+  });
+
+  it("does not trust a line the slip does not own", async () => {
+    const res = await issueSlipActions.editIssueSlip({
+      slipId: "ISL-00076",
+      draft: [{ issueId: "ISS-00001", purchasedItemId: "SPM-038", baseQuantity: 5, removed: false }],
+    });
+    expect(res.error).toContain("không thuộc phiếu này");
+    expect(mocks.editIssueSlipAtomic).not.toHaveBeenCalled();
+  });
+
+  it("refuses a slip with no active line (unknown or cancelled) before the RPC", async () => {
+    const res = await issueSlipActions.editIssueSlip({ slipId: "ISL-99999", draft: unchangedDraft });
+    expect(res.error).toBeTruthy();
+    expect(mocks.editIssueSlipAtomic).not.toHaveBeenCalled();
+  });
+
+  it("relays a stock-headroom refusal from the RPC verbatim", async () => {
+    mocks.editIssueSlipAtomic.mockRejectedValue(
+      new Error("edit_issue_slip_atomic: Không đủ tồn kho cho Sữa yến mạch Oatside: từ ngày phiếu tới nay có lúc kho chỉ còn 500 ml."),
+    );
+    const res = await issueSlipActions.editIssueSlip({
+      slipId: "ISL-00076",
+      draft: [
+        { issueId: "ISS-00192", purchasedItemId: "SPM-038", baseQuantity: 9000, removed: false },
+        { issueId: "ISS-00196", purchasedItemId: "SPM-050", baseQuantity: 1, removed: false },
+      ],
+    });
+    expect(res.error).toContain("có lúc kho chỉ còn 500 ml");
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("returns fail for a caller without permission and never writes", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền" });
+    const res = await issueSlipActions.editIssueSlip({ slipId: "ISL-00076", draft: unchangedDraft });
+    expect(res.error).toBe("Không có quyền");
+    expect(mocks.editIssueSlipAtomic).not.toHaveBeenCalled();
+  });
+});
+
+it.todo("Danh sách lý do xuất do chủ quán tự thêm, sửa, ngừng dùng (spec 2026-09-29 mục 0; 72 trên 78 phiếu chọn Khác)");

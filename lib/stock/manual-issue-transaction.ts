@@ -153,6 +153,61 @@ export async function cancelIssueSlipAtomic(input: {
   return parseSlipCancelResult(data);
 }
 
+export type SlipEditResult = {
+  slipId: string;
+  removed: { reversalIssueId: string; reversesIssueId: string }[];
+  added: { issueId: string; purchasedItemId: string; baseQuantity: number }[];
+};
+
+// BR-INV-013: edit a slip in one transaction. removeIssueIds return to stock
+// dated now; replaceIssueIds (quantity changed) return to stock dated on the
+// slip's own date; addLines are new lines on the slip's date. Stock headroom
+// and the stocktake lock are enforced inside the RPC (migration 0106).
+export async function editIssueSlipAtomic(input: {
+  slipId: string;
+  removeIssueIds: string[];
+  replaceIssueIds: string[];
+  addLines: Array<{ purchasedItemId: string; baseQuantity: number }>;
+  createdById: string;
+  createdByName: string;
+}): Promise<SlipEditResult> {
+  const { data, error } = await getSupabaseClient().rpc("edit_issue_slip_atomic", {
+    p_slip_id: input.slipId,
+    p_remove_issue_ids: input.removeIssueIds,
+    p_replace_issue_ids: input.replaceIssueIds,
+    p_add_lines: input.addLines.map(l => ({ purchased_item_id: l.purchasedItemId, base_quantity: l.baseQuantity })),
+    p_created_by_id: input.createdById,
+    p_created_by_name: input.createdByName,
+  });
+  if (error) {
+    throw new Error(`edit_issue_slip_atomic: ${error.message}`);
+  }
+  return parseSlipEditResult(data);
+}
+
+function parseSlipEditResult(data: unknown): SlipEditResult {
+  const result = data as {
+    slip_id?: string;
+    removed?: Array<{ reversal_issue_id?: string; reverses_issue_id?: string }>;
+    added?: Array<{ issue_id?: string; purchased_item_id?: string; base_quantity?: number }>;
+  } | null;
+  if (!result?.slip_id) {
+    throw new Error("edit_issue_slip_atomic returned an invalid result");
+  }
+  return {
+    slipId: result.slip_id,
+    removed: (result.removed ?? []).map(r => ({
+      reversalIssueId: r.reversal_issue_id || "",
+      reversesIssueId: r.reverses_issue_id || "",
+    })),
+    added: (result.added ?? []).map(a => ({
+      issueId: a.issue_id || "",
+      purchasedItemId: a.purchased_item_id || "",
+      baseQuantity: Number(a.base_quantity) || 0,
+    })),
+  };
+}
+
 function parseSlipCancelResult(data: unknown): SlipCancelResult {
   const result = data as {
     slip_id?: string;

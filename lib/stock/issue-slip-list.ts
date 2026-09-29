@@ -1,4 +1,3 @@
-// orphan-allow: imported by app/admin/inventory/issue-slips/actions.ts in a later task of plan 2026-09-29-phieu-xuat
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";

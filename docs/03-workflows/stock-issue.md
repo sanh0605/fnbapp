@@ -24,22 +24,27 @@ called from `lib/stock/manual-issue-transaction.ts`.
 
 ## Five-question current-state description
 
-1. **States, and how each is set.** An issue slip has a single state: recorded.
-   Once written it is final — there is no draft and no approval step. To reverse
-   its effect a worker records an offsetting slip; the original is never edited or
-   deleted.
-2. **Buttons per screen, and when to hide them.** The issue-slip screen at
-   `/admin/inventory/issue-slips` has a button to create a new slip. It offers no
-   edit or delete for a slip already written, because slips are an append-only
-   ledger; a correction is made by recording a new entry, so no edit/delete
-   button should ever appear.
-3. **What each list contains, and what is excluded.** The issue-slip list shows
-   every recorded issue slip, one row per issue. Stocktake differences are
-   excluded — they are a separate cost path booked when a count period is
-   closed, not a manual issue.
-4. **Valid inputs, and what happens outside the range.** Each issue-slip line
-   needs a material and a positive quantity; a quantity of zero or a negative
-   number is not a valid issue.
+**Updated 2026-09-29 (Phiếu xuất step 4a, `docs/superpowers/plans/2026-09-29-phieu-xuat.md`):**
+`lib/stock/manual-issue-transaction.ts` gains `editIssueSlipAtomic`, which calls
+`edit_issue_slip_atomic` (migration `0106`, not yet applied to the server when
+written). Rules: `BR-INV-009`, `BR-INV-012`, `BR-INV-013`. Nothing is deleted:
+every correction is a compensating `stock_issues` row.
+
+1. **States, and how each is set.** Derived, not stored (`lib/stock/issue-slip-status.ts`):
+   - *Active*: at least one line not reversed.
+   - *Cancelled*: every line reversed (by "Huỷ phiếu"); the reason is read from the reversal note.
+   - *Locked*: dated on or before the latest confirmed stocktake; it can no longer be edited or cancelled.
+2. **Buttons per screen, and when to hide them.** The list page links to each slip and to "Tạo phiếu xuất".
+   - The detail page has "Chỉnh sửa" and "Huỷ phiếu", both hidden when the slip is cancelled or locked.
+   - The server refuses them anyway (`issue_slip_stocktake_lock`, cancelled-slip check).
+3. **What each list contains, and what is excluded.** One row per slip plus one row per confirmed stocktake with a shortfall (`BR-INV-012`). Cancelled slips are hidden unless the type filter is "Đã huỷ".
+4. **Valid inputs, and what happens outside the range.** Each line needs a material and a positive quantity.
+   - A line dated in the past must not push stock below zero at any moment from its date to now (`issue_stock_headroom`); otherwise the save is refused with the lowest balance.
+   - What each edit writes:
+     - A quantity change returns the old line on the slip's own date.
+     - "Xoá" on a line returns it today.
+     - "Huỷ phiếu" returns every line today.
+   - A new slip cannot be dated on or before the latest confirmed stocktake.
 5. **Which data it serves, and which it deliberately does not.** This flow serves
    purchased materials leaving stock by manual action. It deliberately does not
    serve stocktake differences (their own closing path), does not serve
@@ -48,7 +53,7 @@ called from `lib/stock/manual-issue-transaction.ts`.
 
 ## Where it writes
 
-The issue-slip atomic function writes two tables: `issue_slips` (the slip header)
+The issue-slip atomic functions (create, edit, cancel, reverse) write two tables: `issue_slips` (the slip header)
 and `stock_issues` (one row per line of goods leaving stock). The generated map at
 `docs/generated/system-map.md` confirms exactly these write relations for the
 declared file.

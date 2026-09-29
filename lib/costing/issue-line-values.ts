@@ -1,4 +1,3 @@
-// orphan-allow: consumed by the issue-slip list/detail actions in later tasks of docs/superpowers/plans/2026-09-29-phieu-xuat.md; remove this line once imported
 import { computeIssueCosting, type Issue, type Purchase } from "@/lib/costing/issue-costing";
 
 export type IdentifiedIssue = Issue & { id: string };

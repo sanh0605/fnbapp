@@ -1,4 +1,3 @@
-// orphan-allow: consumed by the issue-slip server actions and UI added in later tasks (ledger ruling R4)
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { formatDate, formatDateTimeFull } from "@/lib/shared/datetime";
 import type { PackageLine } from "@/lib/stock/stocktake-package-lines";
