@@ -20,6 +20,15 @@ export function buildIssueUnitOptions(baseUnitName: string, packageLines: Packag
 }
 
 export function initialUnitQuantity(baseQuantity: number, options: IssueUnitOption[]): { key: string; quantity: number } {
+  // Open in a package only when the line is a whole number of them; otherwise the
+  // shown (rounded) package count would not round-trip back to the stored quantity.
+  const whole = options.find(o => {
+    const q = baseQuantity / o.factor;
+    return Math.abs(q - Math.round(q)) < 1e-6;
+  });
+  if (whole) return { key: whole.key, quantity: baseQuantity / whole.factor };
+  const loose = options.find(o => o.factor === 1);
+  if (loose) return { key: loose.key, quantity: baseQuantity };
   const first = options[0];
   return { key: first.key, quantity: baseQuantity / first.factor };
 }

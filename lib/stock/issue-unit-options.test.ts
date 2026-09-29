@@ -31,6 +31,21 @@ describe("issue unit options", () => {
     expect(toBaseQuantity(0.1 * 3, o[1])).toBe(0.3);
   });
 
+  it("opens in the loose unit when the base quantity is not a whole number of packages", () => {
+    const o = buildIssueUnitOptions("g", [pkg("QD-100", "Túi", 454, "g")]);
+    expect(initialUnitQuantity(1000, o)).toEqual({ key: "BASE", quantity: 1000 });
+  });
+
+  it("opens in the package when the base quantity is a whole number of packages", () => {
+    const o = buildIssueUnitOptions("g", [pkg("QD-100", "Túi", 454, "g")]);
+    expect(initialUnitQuantity(908, o)).toEqual({ key: "QD-100", quantity: 2 });
+  });
+
+  it("1000 ml is exactly one Hộp 1.000 ml", () => {
+    const o = buildIssueUnitOptions("ml", [pkg("QD-044", "Hộp", 1000, "ml")]);
+    expect(initialUnitQuantity(1000, o)).toEqual({ key: "QD-044", quantity: 1 });
+  });
+
   it("no packages: only the loose unit, described as base", () => {
     const o = buildIssueUnitOptions("g", []);
     expect(o).toEqual([{ key: "BASE", label: "g (lẻ)", factor: 1, unitName: "g" }]);
