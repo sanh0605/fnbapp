@@ -123,7 +123,10 @@ Cột "Số dòng" ở đây chỉ để đối chiếu; trang thật không có
 - **Chế độ chỉnh sửa:**
   - Mỗi dòng có ô đánh dấu, cộng với một ô "chọn tất cả".
   - Có nút "Xoá dòng đã chọn". Dòng bị xoá mờ đi cho tới lúc bấm Lưu; bấm Bỏ thì hiện lại.
-  - Ô số lượng sửa được.
+  - Mỗi dòng có ô **Đơn vị** và ô **Số lượng** theo đơn vị đó; cột **Quy ra** tự tính số lượng gốc = số lượng × hệ số của đơn vị (chủ quán 2026-09-29, góp ý trên bản mẫu). Ví dụ thật: Sữa yến mạch Oatside, quy cách Hộp = 1.000 ml; gõ 2 Hộp → Quy ra 2.000 ml.
+    - Danh sách đơn vị lấy từ bảng quy đổi của mặt hàng (như trang tạo phiếu), cộng thêm đơn vị gốc lẻ (g, ml…) với hệ số 1. **Đơn vị gốc lẻ là đề xuất của Opus, chờ chủ quán chốt.**
+    - Dòng cũ mở ra với quy cách đầu tiên, số lượng = số gốc ÷ hệ số, có thể lẻ (454 g với Túi 454 g → 1 Túi).
+    - Máy chỉ lưu số lượng gốc, như hiện nay; không lưu đơn vị đã chọn.
   - "Thêm dòng" dùng đúng ô chọn mặt hàng của trang tạo phiếu. Chỉ hiện hàng còn trong kho.
   - **Lưu** ghi mọi thay đổi trong một lần, hoặc không ghi gì nếu có lỗi:
     - Mỗi dòng bị xoá tạo một dòng trả về kho, ngày hôm nay (`BR-INV-009`).
