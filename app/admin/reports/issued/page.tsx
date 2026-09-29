@@ -121,7 +121,7 @@ export default async function IssuedValueReportPage({
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
       <div>
-        <h1 className="text-xl font-bold text-text-primary">Giá trị hàng đã xuất</h1>
+        <h1 className="text-xl font-bold text-text-primary">Hàng đã xuất</h1>
         <p className="text-3xl font-black text-danger mt-1">{formatNumber(report.grandTotal)}đ</p>
         <div className="mt-1">
           <LifetimeNotice />

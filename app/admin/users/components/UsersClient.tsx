@@ -30,7 +30,7 @@ export default function UsersClient({ users, canDelete }: UsersClientProps) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Quản lý Nhân Sự"
+        title="Nhân viên & quyền"
         subtitle="Quản lý tài khoản đăng nhập và phân quyền hệ thống."
         actions={rightContent}
       />

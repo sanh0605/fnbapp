@@ -128,7 +128,7 @@ export default async function SalesReportPage({
         brands={brands}
         users={users}
         categories={categories}
-        title="Báo cáo Bán hàng"
+        title="Doanh số"
         subtitle="Phân tích hiệu quả kinh doanh theo thời gian (V2)."
       />
 

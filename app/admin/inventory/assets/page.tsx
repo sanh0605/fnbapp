@@ -39,7 +39,7 @@ export default async function AssetsPage({
     <div className="p-4 max-w-2xl mx-auto space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h1 className="text-xl font-bold text-text-primary">Sổ Tài Sản</h1>
+          <h1 className="text-xl font-bold text-text-primary">Tài sản</h1>
           <p className="text-sm text-text-secondary mt-1">Dụng cụ đã mua, theo khấu hao đường thẳng.</p>
         </div>
         <Link

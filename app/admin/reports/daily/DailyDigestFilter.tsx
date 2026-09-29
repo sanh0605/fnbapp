@@ -30,7 +30,7 @@ export function DailyDigestFilter({ date }: { date: string }) {
 
   return (
     <PageHeader
-      title="Tổng Kết Ngày"
+      title="Tổng kết ngày"
       subtitle="Xem nhanh tình hình bán hàng, tồn kho và các việc cần chú ý trong ngày."
       actions={
         <div className="flex items-center gap-2">

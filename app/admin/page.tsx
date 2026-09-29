@@ -267,7 +267,7 @@ export default async function AdminDashboard({
       )}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-text-primary tracking-tight">Tổng quan Hệ thống</h1>
+          <h1 className="text-3xl font-bold text-text-primary tracking-tight">Tổng quan</h1>
           <p className="text-text-secondary mt-1">Xin chào, đây là tình hình kinh doanh hiện tại của bạn.</p>
         </div>
         

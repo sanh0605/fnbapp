@@ -115,7 +115,7 @@ export default function PromotionsClient({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Quản lý Khuyến Mãi"
+        title="Khuyến mãi"
         subtitle="Quản lý mã giảm giá, chiết khấu hóa đơn và khuyến mãi theo sản phẩm."
         actions={rightContent}
       />

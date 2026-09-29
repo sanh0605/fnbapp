@@ -25,7 +25,7 @@ export default function CategoriesClient({ categories, counts }: CategoriesClien
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Quản lý Danh mục"
+        title="Nhóm món"
         subtitle="Quản lý các nhóm sản phẩm trong Menu bán hàng."
         actions={rightContent}
       />
