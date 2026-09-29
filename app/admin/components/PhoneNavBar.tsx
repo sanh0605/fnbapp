@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Menu, Store } from "lucide-react";
 import { NAV_GROUPS, PHONE_BAR_HREFS } from "../nav-items";
 import { MoreSheet } from "./MoreSheet";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 function findNavInfo(targetHref: string) {
   for (const group of NAV_GROUPS) {
@@ -26,6 +26,7 @@ function findNavInfo(targetHref: string) {
 export function PhoneNavBar({ onOpenPos }: { onOpenPos: () => void }) {
   const pathname = usePathname();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const closeMore = useCallback(() => setIsMoreOpen(false), []);
 
   const slots = PHONE_BAR_HREFS.map(findNavInfo).filter(Boolean) as Array<{
     name: string;
@@ -79,7 +80,7 @@ export function PhoneNavBar({ onOpenPos }: { onOpenPos: () => void }) {
         </button>
       </nav>
 
-      {isMoreOpen && <MoreSheet onClose={() => setIsMoreOpen(false)} />}
+      {isMoreOpen && <MoreSheet onClose={closeMore} />}
     </>
   );
 }

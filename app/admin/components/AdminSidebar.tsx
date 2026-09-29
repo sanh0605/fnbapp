@@ -24,7 +24,7 @@ export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
     if (!collapsed) {
       setOpenGroup(activeGroupName(pathname));
     }
-  }, [pathname, collapsed]);
+  }, [pathname]);
 
   const toggleCollapsed = () => {
     const newCollapsed = !collapsed;

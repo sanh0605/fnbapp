@@ -14,17 +14,23 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
   const titleId = useId();
   const mouseDownTarget = useRef<EventTarget | null>(null);
 
+  const initialPathname = useRef(pathname);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   // Close on route change
   useEffect(() => {
-    onClose();
-  }, [pathname, onClose]);
+    if (pathname !== initialPathname.current) {
+      onCloseRef.current();
+    }
+  }, [pathname]);
 
   // Handle focus, Escape key
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopImmediatePropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab") return;
@@ -69,7 +75,7 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
         previouslyFocused.focus();
       }
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <div
@@ -101,15 +107,15 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
             type="button"
             onClick={onClose}
             aria-label="Đóng"
-            className="w-11 h-11 border-0 rounded-full bg-surface flex items-center justify-center text-text-primary text-xl cursor-pointer hover:bg-surface-card/10"
+            className="w-11 h-11 border-0 rounded-full bg-surface-card flex items-center justify-center text-text-primary text-xl cursor-pointer hover:bg-surface-card/10"
           >
             <X size={20} />
           </button>
         </div>
 
         {NAV_GROUPS.map((group) => {
-          const items = group.children || (group.href ? [{ name: group.name, href: group.href }] : []);
-          if (items.length === 0) return null;
+          if (!group.children || group.children.length === 0) return null;
+          const items = group.children;
 
           return (
             <div key={group.name} className="flex flex-col gap-2">
@@ -139,7 +145,7 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="inline-flex items-center min-h-[44px] px-4 border border-border rounded-lg text-sm text-text-primary bg-surface cursor-pointer hover:bg-danger/10 hover:text-danger hover:border-danger/30 transition-colors"
+              className="inline-flex items-center min-h-[44px] px-4 border border-border rounded-lg text-sm text-text-primary bg-surface-card cursor-pointer hover:bg-danger/10 hover:text-danger hover:border-danger/30 transition-colors"
             >
               Đăng xuất
             </button>
