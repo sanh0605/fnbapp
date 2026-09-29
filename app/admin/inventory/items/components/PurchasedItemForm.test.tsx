@@ -66,6 +66,7 @@ afterEach(() => {
   while (containers.length) {
     containers.pop()!.remove();
   }
+  document.body.innerHTML = "";
 });
 
 async function renderTracked(element: React.ReactElement) {
@@ -117,7 +118,7 @@ async function chooseInCombobox(wrapper: HTMLElement, optionLabel: string) {
   const trigger = wrapper.querySelector('[role="combobox"]');
   if (!trigger) throw new Error("combobox trigger not found in wrapper");
   await fireClick(trigger);
-  const option = Array.from(wrapper.querySelectorAll('[role="option"]')).find(
+  const option = Array.from(document.body.querySelectorAll('[role="option"]')).find(
     el => el.textContent?.trim() === optionLabel,
   );
   if (!option) throw new Error(`option not found: "${optionLabel}"`);

@@ -13,6 +13,7 @@ import { initialUnitQuantity, toBaseQuantity, LOOSE_UNIT_KEY } from "@/lib/stock
 import type { EditDraftLine } from "@/lib/stock/issue-slip-edit-diff";
 import { Alert } from "@/components/ui/Alert";
 import { buildIssueUnitOptions } from "@/lib/stock/issue-unit-options";
+import { BackLink } from "@/components/ui/BackLink";
 
 interface IssueSlipDetailClientProps {
   detail: IssueSlipDetail;
@@ -51,13 +52,6 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
   const [nextNewId, setNextNewId] = useState(1);
 
   const itemOptions = items.map((i) => ({ id: i.id, label: i.name }));
-
-  function handleBack(e: React.MouseEvent<HTMLAnchorElement>) {
-    if (window.history.length > 1) {
-      e.preventDefault();
-      router.back();
-    }
-  }
 
   function startEdit() {
     const initialDraft: DraftLine[] = detail.lines.map((line) => {
@@ -281,9 +275,7 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
 
   return (
     <div className="space-y-6 flex flex-col h-full bg-surface-background">
-      <Link href="/admin/inventory/issue-slips" onClick={handleBack} className="text-sm font-medium text-primary hover:text-primary-hover no-underline self-start">
-        ← Phiếu xuất
-      </Link>
+      <BackLink href="/admin/inventory/issue-slips" label="Phiếu xuất" />
 
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-2">
@@ -410,6 +402,7 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
                   <th className="p-2 font-bold w-40">Đơn vị</th>
                   <th className="p-2 font-bold text-right w-32">Số lượng</th>
                   <th className="p-2 font-bold text-right w-36">Quy ra</th>
+                  <th className="p-2 font-bold text-right w-32">Giá trị</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -484,11 +477,28 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
                       <td className="p-2 text-right tabular-nums text-text-primary">
                         {l.purchasedItemId ? `${qtyText} ${baseUnitName}` : "—"}
                       </td>
+                      <td className="p-2 text-right tabular-nums text-text-primary">
+                        {(() => {
+                          if (!l.purchasedItemId) return "—";
+                          const oldLine = detail.lines.find(ol => ol.issueId === l.issueId);
+                          if (!oldLine) return "Tính khi lưu";
+                          if (l.removed) {
+                            return (
+                              <div className="flex flex-col items-end">
+                                <span className="line-through text-text-muted">{formatNumber(oldLine.value)}đ</span>
+                                <span className="text-xs text-warning-active">Tính khi lưu</span>
+                              </div>
+                            );
+                          }
+                          if (oldLine.baseQuantity !== l.baseQuantity) return "Tính khi lưu";
+                          return `${formatNumber(oldLine.value)}đ`;
+                        })()}
+                      </td>
                     </tr>
                   );
                 })}
                 <tr className="border-t border-border">
-                  <td colSpan={5} className="p-0">
+                  <td colSpan={6} className="p-0">
                     <button
                       type="button"
                       onClick={addLine}
@@ -588,8 +598,27 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
                         />
                       </div>
                     </div>
-                    <div className="text-right text-sm text-text-secondary pl-7">
-                      Quy ra {l.purchasedItemId ? `${qtyText} ${baseUnitName}` : "—"}
+                    <div className="flex justify-between items-end pl-7 mt-1">
+                      <div className="text-sm text-text-secondary">
+                        Quy ra {l.purchasedItemId ? `${qtyText} ${baseUnitName}` : "—"}
+                      </div>
+                      <div className="text-sm font-medium tabular-nums text-text-primary text-right">
+                        {(() => {
+                          if (!l.purchasedItemId) return "—";
+                          const oldLine = detail.lines.find(ol => ol.issueId === l.issueId);
+                          if (!oldLine) return "Tính khi lưu";
+                          if (l.removed) {
+                            return (
+                              <div className="flex flex-col items-end gap-0.5">
+                                <span className="line-through text-text-muted text-xs">{formatNumber(oldLine.value)}đ</span>
+                                <span className="text-xs text-warning-active">Tính khi lưu</span>
+                              </div>
+                            );
+                          }
+                          if (oldLine.baseQuantity !== l.baseQuantity) return "Tính khi lưu";
+                          return `${formatNumber(oldLine.value)}đ`;
+                        })()}
+                      </div>
                     </div>
                   </div>
                 );

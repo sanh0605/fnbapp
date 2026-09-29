@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useId } from "react";
+import { ModalPortal } from "./ModalPortal";
 
 interface Option {
   id: string;
@@ -25,14 +26,55 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
   const [activeIndex, setActiveIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
   const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
   const listboxId = useId();
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+
+  const updatePosition = () => {
+    if (triggerRef.current && isOpen) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      
+      if (spaceBelow < 288 && spaceAbove > spaceBelow) {
+        setDropdownStyle({
+          position: "fixed",
+          bottom: window.innerHeight - rect.top + 4,
+          left: rect.left,
+          width: rect.width,
+        });
+      } else {
+        setDropdownStyle({
+          position: "fixed",
+          top: rect.bottom + 4,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    updatePosition();
+    if (isOpen) {
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      return () => {
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }
+  }, [isOpen]);
 
   const selectedOption = options.find((opt) => opt.id === value);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (
+        wrapperRef.current && !wrapperRef.current.contains(event.target as Node) &&
+        (!portalRef.current || !portalRef.current.contains(event.target as Node))
+      ) {
         setIsOpen(false);
       }
     }
@@ -145,67 +187,73 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
       </div>
 
       {isOpen && (
-        <div className="absolute z-[80] w-full mt-1 bg-surface-card border border-border rounded-lg shadow-xl max-h-72 overflow-hidden flex flex-col">
-          <div className="p-2 border-b border-border">
-            <input
-              type="text"
-              className="w-full border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-focus-ring"
-              placeholder="Gõ để tìm kiếm…"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={handleInputKey}
-              autoFocus
-            />
-          </div>
-          <div className="overflow-y-auto flex-1">
-            {filteredOptions.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-text-secondary text-center flex flex-col items-center">
-                <span className="mb-2">Không tìm thấy kết quả</span>
-                {onCreateNew && searchTerm.trim() && (
-                  <button
-                    type="button"
-                    className="px-3 py-1.5 bg-primary-soft text-primary rounded-md hover:bg-primary-soft font-medium focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
-                    onMouseDown={async (e) => {
-                      e.preventDefault();
-                      try {
-                        await onCreateNew(searchTerm.trim());
-                      } finally {
-                        setIsOpen(false);
-                      }
-                    }}
-                  >
-                    + Thêm "{searchTerm.trim()}"
-                  </button>
-                )}
-              </div>
-            ) : (
-              <ul id={listboxId} role="listbox" className="py-1">
-                {filteredOptions.map((opt, idx) => {
-                  const isSelected = opt.id === value;
-                  return (
-                    <li
-                      key={opt.id}
-                      id={`${listboxId}-opt-${idx}`}
-                      ref={(el) => { optionRefs.current[idx] = el; }}
-                      role="option"
-                      aria-selected={isSelected}
-                      className={`px-4 py-2 text-sm cursor-pointer truncate ${
-                        isSelected ? 'bg-primary-soft text-primary font-medium' : 'text-text-primary'
-                      } ${idx === activeIndex ? 'ring-2 ring-inset ring-focus-ring bg-primary-soft' : 'hover:bg-primary-soft'}`}
-                      onClick={() => {
-                        onChange(opt.id);
-                        setIsOpen(false);
-                        triggerRef.current?.focus();
+        <ModalPortal>
+          <div
+            ref={portalRef}
+            style={dropdownStyle}
+            className="z-[110] bg-surface-card border border-border rounded-lg shadow-xl max-h-72 overflow-hidden flex flex-col"
+          >
+            <div className="p-2 border-b border-border">
+              <input
+                type="text"
+                className="w-full border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-focus-ring"
+                placeholder="Gõ để tìm kiếm…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleInputKey}
+                autoFocus
+              />
+            </div>
+            <div className="overflow-y-auto flex-1">
+              {filteredOptions.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-text-secondary text-center flex flex-col items-center">
+                  <span className="mb-2">Không tìm thấy kết quả</span>
+                  {onCreateNew && searchTerm.trim() && (
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 bg-primary-soft text-primary rounded-md hover:bg-primary-soft font-medium focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
+                      onMouseDown={async (e) => {
+                        e.preventDefault();
+                        try {
+                          await onCreateNew(searchTerm.trim());
+                        } finally {
+                          setIsOpen(false);
+                        }
                       }}
                     >
-                      {opt.label}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+                      + Thêm "{searchTerm.trim()}"
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <ul id={listboxId} role="listbox" className="py-1">
+                  {filteredOptions.map((opt, idx) => {
+                    const isSelected = opt.id === value;
+                    return (
+                      <li
+                        key={opt.id}
+                        id={`${listboxId}-opt-${idx}`}
+                        ref={(el) => { optionRefs.current[idx] = el; }}
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`px-4 py-2 text-sm cursor-pointer truncate ${
+                          isSelected ? 'bg-primary-soft text-primary font-medium' : 'text-text-primary'
+                        } ${idx === activeIndex ? 'ring-2 ring-inset ring-focus-ring bg-primary-soft' : 'hover:bg-primary-soft'}`}
+                        onClick={() => {
+                          onChange(opt.id);
+                          setIsOpen(false);
+                          triggerRef.current?.focus();
+                        }}
+                      >
+                        {opt.label}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

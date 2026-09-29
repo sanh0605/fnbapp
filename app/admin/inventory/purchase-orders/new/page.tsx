@@ -2,6 +2,8 @@ import { findAll } from "@/lib/db/tables";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import Link from "next/link";
 
+import { BackLink } from "@/components/ui/BackLink";
+
 export const dynamic = "force-dynamic";
 
 export default async function NewPurchaseOrderPage() {
@@ -18,14 +20,11 @@ export default async function NewPurchaseOrderPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center gap-4">
-        <Link 
+        <BackLink 
           href="/admin/inventory/purchase-orders" 
-          className="p-2 text-text-muted hover:text-text-primary bg-surface-card rounded-lg border border-border shadow-sm"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </Link>
+          label="Quay lại"
+          className="p-2 text-text-muted hover:text-text-primary bg-surface-card rounded-lg border border-border shadow-sm inline-block"
+        />
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Tạo Phiếu Nhập Kho</h1>
           <p className="text-sm text-text-muted mt-1">Nhập hàng hoá từ nhà cung cấp vào kho.</p>
