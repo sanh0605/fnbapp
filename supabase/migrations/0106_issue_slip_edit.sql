@@ -303,7 +303,7 @@ begin
       join public.purchase_orders po on po.id = pol.purchase_order_id
       where po.status = 'COMPLETED'
         and pol.purchased_item_id = v_line.purchased_item_id
-        and po.transaction_date <= p_issued_at;
+        and coalesce(po.transaction_date, po.created_at) <= p_issued_at;
 
       if v_total_purchased_asof = 0 then
         raise exception 'Dòng % (%): chưa có đơn nhập nào tính tới thời điểm %, không thể xuất trước khi nhập',
@@ -322,9 +322,8 @@ begin
       where uc.purchased_item_id = v_line.purchased_item_id and uc.status = 'ACTIVE'
       order by uc.id
       limit 1;
-      raise exception 'Dòng % (%): yêu cầu xuất % %, chỉ còn % % tính tới thời điểm % (đã trừ các dòng khác cùng mặt hàng trong phiếu này)',
-        v_line_index, v_item_name, v_line.base_quantity, coalesce(v_base_unit_name, ''),
-        v_remaining[v_idx], coalesce(v_base_unit_name, ''), p_issued_at;
+      raise exception 'Không đủ tồn kho cho %: từ ngày phiếu tới nay có lúc kho chỉ còn % %.',
+        v_item_name, v_remaining[v_idx], coalesce(v_base_unit_name, '');
     end if;
     v_remaining[v_idx] := v_remaining[v_idx] - v_line.base_quantity;
 
@@ -424,16 +423,25 @@ begin
     raise exception 'Phiếu % nằm trước lần kiểm kê % nên không sửa được nữa.', v_slip_id, v_lock;
   end if;
 
+  -- A slip with no active line is cancelled (or fully reversed): refuse first.
+  select count(*) into v_active
+  from public.stock_issues si
+  where si.issue_slip_id = v_slip_id
+    and not exists (select 1 from public.stock_issues r where r.reverses_issue_id = si.id);
+  if v_active = 0 then
+    raise exception 'Phiếu xuất % đã huỷ, không sửa được.', v_slip_id;
+  end if;
+
+  if exists (select 1 from unnest(v_remove) as x where x is null) then
+    raise exception 'Danh sách dòng bỏ có mã trống.';
+  end if;
+  end if;
   -- The same id twice would try to reverse one line twice; reject the payload.
   select count(distinct x) into v_remove_distinct from unnest(v_remove) as x;
   if v_remove_distinct <> cardinality(v_remove) then
     raise exception 'Danh sách dòng bỏ có mã trùng nhau.';
   end if;
 
-  select count(*) into v_active
-  from public.stock_issues si
-  where si.issue_slip_id = v_slip_id
-    and not exists (select 1 from public.stock_issues r where r.reverses_issue_id = si.id);
   if v_active - v_remove_distinct + jsonb_array_length(v_add) <= 0 then
     raise exception 'Phiếu không còn dòng nào. Huỷ phiếu nếu muốn bỏ hết.';
   end if;
@@ -485,7 +493,7 @@ begin
       join public.purchase_orders po on po.id = pol.purchase_order_id
       where po.status = 'COMPLETED'
         and pol.purchased_item_id = v_line.purchased_item_id
-        and po.transaction_date <= v_slip.issued_at;
+        and coalesce(po.transaction_date, po.created_at) <= v_slip.issued_at;
 
       if v_total_purchased_asof = 0 then
         raise exception 'Dòng % (%): chưa có đơn nhập nào tính tới thời điểm %, không thể xuất trước khi nhập',
@@ -503,10 +511,8 @@ begin
       where uc.purchased_item_id = v_line.purchased_item_id and uc.status = 'ACTIVE'
       order by uc.id
       limit 1;
-      raise exception 'Dòng thêm % (%): cần % %, từ % tới nay tồn thấp nhất chỉ còn % %. Muốn xuất thêm thì thêm một dòng riêng cho phần chênh.',
-        v_line_index, v_item_name, v_line.base_quantity, coalesce(v_base_unit_name, ''),
-        to_char(v_slip.issued_at at time zone 'Asia/Ho_Chi_Minh', 'DD/MM/YYYY HH24:MI'),
-        v_remaining[v_idx], coalesce(v_base_unit_name, '');
+      raise exception 'Không đủ tồn kho cho %: từ ngày phiếu tới nay có lúc kho chỉ còn % %.',
+        v_item_name, v_remaining[v_idx], coalesce(v_base_unit_name, '');
     end if;
     v_remaining[v_idx] := v_remaining[v_idx] - v_line.base_quantity;
 

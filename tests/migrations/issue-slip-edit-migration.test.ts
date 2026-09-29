@@ -37,6 +37,20 @@ describe("0106: issue-slip edit", () => {
     expect(b).toMatch(/count\(distinct/i);
   });
 
+  it("fix round 1: cancelled slip, null ids, purchase date fallback, shortage wording", () => {
+    const e = body("edit_issue_slip_atomic");
+    expect(e).toContain("đã huỷ, không sửa được");
+    expect(e.indexOf("đã huỷ, không sửa được")).toBeLessThan(e.indexOf("reverse_manual_issue_atomic("));
+    expect(e).toContain("Danh sách dòng bỏ có mã trống.");
+    expect(e.indexOf("mã trống")).toBeLessThan(e.indexOf("mã trùng"));
+    for (const fn of ["edit_issue_slip_atomic", "create_issue_slip_atomic"]) {
+      const b = body(fn);
+      expect(b).toContain("coalesce(po.transaction_date, po.created_at) <= ");
+      expect(b).not.toMatch(/and po\.transaction_date <=/);
+      expect(b).toContain("Không đủ tồn kho cho %: từ ngày phiếu tới nay có lúc kho chỉ còn % %.");
+    }
+  });
+
   it("create checks the lowest balance from its date onward, not only at its date", () => {
     expect(body("create_issue_slip_atomic")).toContain("issue_stock_headroom(");
   });
