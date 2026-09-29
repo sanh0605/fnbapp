@@ -34,7 +34,7 @@ every correction is a compensating `stock_issues` row.
    - *Active*: at least one line not reversed.
    - *Cancelled*: every line reversed (by "Huỷ phiếu"); the reason is read from the reversal note.
    - *Locked*: dated on or before the latest confirmed stocktake; it can no longer be edited or cancelled.
-2. **Buttons per screen, and when to hide them.** The list page links to each slip and to "Tạo phiếu xuất".
+2. **Buttons per screen, and when to hide them.** The list page links to each slip and to "Tạo phiếu xuất". (Built in step 4a: the list page first; the detail page `[id]` and the create page `/new` follow in the same plan's next UI tasks.)
    - The detail page has "Chỉnh sửa" and "Huỷ phiếu", both hidden when the slip is cancelled or locked.
    - The server refuses them anyway (`issue_slip_stocktake_lock`, cancelled-slip check).
 3. **What each list contains, and what is excluded.** One row per slip plus one row per confirmed stocktake with a shortfall (`BR-INV-012`). Cancelled slips are hidden unless the type filter is "Đã huỷ".
@@ -53,8 +53,10 @@ every correction is a compensating `stock_issues` row.
 
 ## Where it writes
 
-The issue-slip atomic functions (create, edit, cancel, reverse) write two tables: `issue_slips` (the slip header)
-and `stock_issues` (one row per line of goods leaving stock). The generated map at
+Creating a slip writes two tables: `issue_slips` (the slip header) and
+`stock_issues` (one row per line of goods leaving stock). Editing, cancelling
+and reversing write only `stock_issues` (compensating and added rows); the slip
+header is locked during an edit but never changed. The generated map at
 `docs/generated/system-map.md` confirms exactly these write relations for the
 declared file.
 
