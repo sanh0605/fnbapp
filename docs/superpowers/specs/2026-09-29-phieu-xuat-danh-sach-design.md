@@ -128,6 +128,12 @@ Cột "Số dòng" ở đây chỉ để đối chiếu; trang thật không có
     - Dòng cũ mở ra với quy cách đầu tiên, số lượng = số gốc ÷ hệ số, có thể lẻ (454 g với Túi 454 g → 1 Túi).
     - Máy chỉ lưu số lượng gốc, như hiện nay; không lưu đơn vị đã chọn.
   - "Thêm dòng" dùng đúng ô chọn mặt hàng của trang tạo phiếu. Chỉ hiện hàng còn trong kho.
+    - Lối thêm là một dòng chữ "+ Thêm dòng" nằm ở cuối bảng, bấm vào là có dòng mới ngay tại đó; không có nút thêm ở đầu bảng (chủ quán 2026-09-29, góp ý trên bản mẫu).
+  - **Một ô nút chính ở góc dưới, đổi theo tình huống** (chủ quán 2026-09-29, góp ý trên bản mẫu):
+    - Có ít nhất 1 dòng được tick → nút thành "Xoá N dòng đã chọn". Bấm là bỏ các dòng đó khỏi bản nháp, chưa ghi gì.
+    - Không tick dòng nào, và chưa có gì khác bản gốc → "Lưu thay đổi" mờ, không bấm được.
+    - Không tick dòng nào, và đã có thay đổi (xoá, sửa số lượng, thêm dòng có mặt hàng) → "Lưu thay đổi" bấm được.
+    - Nút "Bỏ thay đổi" luôn ở cạnh.
   - **Lưu** ghi mọi thay đổi trong một lần, hoặc không ghi gì nếu có lỗi:
     - Mỗi dòng bị xoá tạo một dòng trả về kho, ngày hôm nay (`BR-INV-009`).
     - Sửa số lượng là trả dòng cũ về kho hôm nay, rồi ghi dòng mới vào ngày của phiếu.
