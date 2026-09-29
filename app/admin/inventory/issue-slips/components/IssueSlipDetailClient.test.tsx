@@ -108,6 +108,7 @@ const defaultDetail: IssueSlipDetail = {
   cancellation: null,
   lock: null,
   canEdit: true,
+  unitCostByItem: { "item-oatside": 36.80308163265307 },
 };
 
 describe("IssueSlipDetailClient", () => {
@@ -205,24 +206,19 @@ describe("IssueSlipDetailClient", () => {
     
     expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeDisabled();
   });
-});
 
-  it("shows Giá trị column in edit mode and Tính khi lưu when changed", async () => {
+  it("shows live computed value when quantity changes", async () => {
     render(<IssueSlipDetailClient detail={defaultDetail} items={mockItems} />);
     fireEvent.click(screen.getByRole("button", { name: "Chỉnh sửa" }));
 
-    // Cột Giá trị
     const table = screen.getByRole("table");
-    const headers = within(table).getAllByRole("columnheader");
-    expect(headers[headers.length - 1]).toHaveTextContent("Giá trị");
-
-    // Dòng cũ chưa đổi hiện giá trị hiện có (120000)
-    expect(within(table).getAllByText("120.000đ").length).toBeGreaterThan(0);
-
-    // Đổi số lượng
+    
+    // Đổi số lượng từ 2 Hộp (2000 ml) sang 1 Hộp (1000 ml)
     const qtyInputs = within(table).getAllByRole("textbox", { name: "Số lượng" });
-    fireEvent.change(qtyInputs[0], { target: { value: "3" } });
+    fireEvent.change(qtyInputs[0], { target: { value: "1" } });
 
-    // Dòng đã đổi số lượng hiện Tính khi lưu
-    expect(within(table).getByText("Tính khi lưu")).toBeInTheDocument();
+    // Hiển thị giá trị mới 36.803đ trên dòng đó
+    // The slip has one line, so the line cell and the live total both read 36.803đ.
+    expect(within(table).getAllByText("36.803đ")).toHaveLength(2);
   });
+});

@@ -90,7 +90,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 
 *"hệ thống sẽ không bao giờ được sử dụng dạng popups. Tất cả đều phải áp dụng cách chuyển trang"*, then on the scope questions: *"1B 2B"*.
 
-- **A box that asks for input becomes a page.** Example: "Huỷ phiếu" on an issue slip opens a page with the reason field and "Xác nhận huỷ", and returns to the slip afterwards; it no longer opens a box over the slip.
+- **A box that asks for input becomes a page**, with exceptions the owner will name case by case when they come up (owner 2026-09-30: *"Cái này sẽ có một số ngoại lệ, anh sẽ đề cập vào lúc cần thiết"*); until he names one, none is assumed. Example: "Huỷ phiếu" on an issue slip opens a page with the reason field and "Xác nhận huỷ", and returns to the slip afterwards; it no longer opens a box over the slip.
 - **A short yes/no confirmation is asked inline on the same page**, not in a box and not on a separate page (answer 1B). Example: "Xoá nhà cung cấp ABC?" shows as a line with Có / Không where the button was.
 - **Browser dialogs (`window.confirm`, `window.alert`) count as popups** and go the same way.
 - **POS is exempt** (answer 2B): choosing size, toppings and payment keep their current boxes, because a page change slows selling at a busy moment.

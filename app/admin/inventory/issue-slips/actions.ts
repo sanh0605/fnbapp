@@ -3,6 +3,7 @@
 import { findAll, findAllNoCache } from "@/lib/db/tables";
 import { buildIssueCostingPurchases, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
 import { computeIssueLineValues } from "@/lib/costing/issue-line-values";
+import { computeUnitCostsAt } from "@/lib/costing/unit-cost-at";
 import { listIssueSlipsPage, type IssueSlipListFilters, type IssueSlipListPage } from "@/lib/stock/issue-slip-list";
 import { buildIssueSlipDetail, type IssueSlipDetail } from "@/lib/stock/issue-slip-detail";
 import { diffIssueSlipEdit, type EditDraftLine, type EditOriginalLine } from "@/lib/stock/issue-slip-edit-diff";
@@ -67,22 +68,22 @@ async function loadIssueSlipContext() {
   ]);
   const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
   const costed = selectCostedIssues(issues as any[], purchasedItems as any[], itemCategories as any[]);
-  const lineValues = computeIssueLineValues(
-    purchases,
-    costed.map((r: any) => ({
-      id: r.id as string,
-      purchased_item_id: r.purchased_item_id as string,
-      at: r.issued_at as string,
-      base_quantity: Number(r.base_quantity) || 0,
-      source: r.source as "STOCKTAKE" | "MANUAL",
-    })),
-  );
+  const costedIssues = costed.map((r: any) => ({
+    id: r.id as string,
+    purchased_item_id: r.purchased_item_id as string,
+    at: r.issued_at as string,
+    base_quantity: Number(r.base_quantity) || 0,
+    source: r.source as "STOCKTAKE" | "MANUAL",
+  }));
+  const lineValues = computeIssueLineValues(purchases, costedIssues);
   return {
     slips: slips as IssueSlipRecord[],
     issues: issues as IssueRowRecord[],
     sessions: sessions as StocktakeSessionRecord[],
     items: (purchasedItems as any[]).map(p => ({ id: p.id as string, name: p.name as string })),
     lineValues,
+    purchases,
+    costedIssues,
   };
 }
 
@@ -109,6 +110,15 @@ export async function getIssueSlipDetail(slipId: string): Promise<IssueSlipDetai
     if (c.status !== "ACTIVE" || baseUnitNameByItem.has(c.purchased_item_id)) continue;
     baseUnitNameByItem.set(c.purchased_item_id, unitNameById.get(c.base_unit) ?? "");
   }
+  // Price preview for the edit screen: every item the edit form offers plus
+  // every item already on the slip, at the slip's own moment. Issues never
+  // change the average, so it does not depend on the quantity being typed.
+  const offered = await getIssueSlipFormData();
+  const previewItemIds = new Set<string>(offered.map(o => o.id));
+  for (const row of ctx.issues) if (row.issue_slip_id === slip.id) previewItemIds.add(row.purchased_item_id);
+  const unitCostByItem = Object.fromEntries(
+    computeUnitCostsAt(ctx.purchases, ctx.costedIssues, slip.issued_at, previewItemIds),
+  );
   return buildIssueSlipDetail({
     slip,
     issues: ctx.issues,
@@ -117,6 +127,7 @@ export async function getIssueSlipDetail(slipId: string): Promise<IssueSlipDetai
     baseUnitNameByItem,
     packageLinesByItem: groupPackageLines(conversions as any[], nameById, unitNameById),
     lineValues: ctx.lineValues,
+    unitCostByItem,
   });
 }
 

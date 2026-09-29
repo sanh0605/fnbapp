@@ -47,8 +47,8 @@ export default async function PurchaseOrderDetail({
 
   return (
     <div className="space-y-6">
+      <BackLink href="/admin/inventory/purchase-orders" label="Phiếu nhập" />
       <div className="flex items-center gap-4">
-        <BackLink href="/admin/inventory/purchase-orders" label="Quay lại" className="p-2 bg-surface-card rounded-lg border border-border hover:bg-surface-secondary transition inline-block" />
         <div>
           <h1 className="text-2xl font-bold text-text-primary">{isDraft ? "Tiếp tục tạo Phiếu Nhập Kho" : "Chi tiết Phiếu Nhập Kho"}: {po.id}</h1>
           <p className="text-text-muted">Ngày tạo: {new Date(po.created_at).toLocaleString('vi-VN')} | Ngày giao dịch: {po.transaction_date ? new Date(po.transaction_date).toLocaleString('vi-VN') : 'N/A'}</p>
