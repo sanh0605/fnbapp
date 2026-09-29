@@ -2,6 +2,7 @@ import { getUserById } from "../../actions";
 import EditUserForm from "../../components/EditUserForm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/ui/BackLink";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +15,7 @@ export default async function EditUserPage({ params }: { params: { id: string } 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-sm text-text-muted">
-        <Link href="/admin/users" className="hover:text-primary">Nhân sự</Link>
-        <span>/</span>
-        <span className="text-text-primary font-medium">Chỉnh sửa</span>
-      </div>
+      <BackLink href="/admin/users" label="Nhân sự" />
 
       <div>
         <h1 className="text-2xl font-bold text-text-primary">Chỉnh sửa nhân sự: {user.username}</h1>

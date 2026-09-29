@@ -17,14 +17,18 @@ export interface IssueSlipDetail {
   cancellation: { at: string; dateText: string; reason: string } | null;
   lock: { sessionId: string; confirmedAt: string; dateText: string } | null;
   canEdit: boolean;
+  // Exact weighted-average cost per base unit at the slip's time, keyed by
+  // purchased item; an item with no price yet has no key. For edit-mode preview only.
+  unitCostByItem: Record<string, number>;
 }
 
 export function buildIssueSlipDetail(input: {
   slip: IssueSlipRecord; issues: IssueRowRecord[]; sessions: StocktakeSessionRecord[];
   items: { id: string; name: string }[]; baseUnitNameByItem: Map<string, string>;
   packageLinesByItem: Map<string, PackageLine[]>; lineValues: Map<string, number>;
+  unitCostByItem: Record<string, number>;
 }): IssueSlipDetail {
-  const { slip, issues, sessions, items, baseUnitNameByItem, packageLinesByItem, lineValues } = input;
+  const { slip, issues, sessions, items, baseUnitNameByItem, packageLinesByItem, lineValues, unitCostByItem } = input;
   const reversed = reversedIssueIds(issues);
   const cancel = slipCancellation(slip.id, issues, reversed);
   const lockRaw = stocktakeLock(slip.issued_at, sessions);
@@ -60,6 +64,6 @@ export function buildIssueSlipDetail(input: {
     id: slip.id, issuedAt: slip.issued_at, dateText: formatDateTimeFull(slip.issued_at),
     note: slip.note ?? "", createdByName: slip.created_by_name ?? "",
     lines, totalValue: cancel ? 0 : displayMoney(exactTotal),
-    cancellation, lock, canEdit: !cancellation && !lock,
+    cancellation, lock, canEdit: !cancellation && !lock, unitCostByItem,
   };
 }

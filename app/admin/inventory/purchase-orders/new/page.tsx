@@ -19,12 +19,8 @@ export default async function NewPurchaseOrderPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
+      <BackLink href="/admin/inventory/purchase-orders" label="Phiếu nhập" />
       <div className="flex items-center gap-4">
-        <BackLink 
-          href="/admin/inventory/purchase-orders" 
-          label="Quay lại"
-          className="p-2 text-text-muted hover:text-text-primary bg-surface-card rounded-lg border border-border shadow-sm inline-block"
-        />
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Tạo Phiếu Nhập Kho</h1>
           <p className="text-sm text-text-muted mt-1">Nhập hàng hoá từ nhà cung cấp vào kho.</p>

@@ -252,24 +252,29 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
   const allSelected = visibleLines.length > 0 && selectedCount === visibleLines.length;
 
   let changed = false;
+  let exactDraftSum = 0;
   if (mode === "edit") {
     const realDraft = draft.filter((l) => l.issueId !== null || l.purchasedItemId);
     const originalMap = new Map(detail.lines.map((l) => [l.issueId, l.baseQuantity]));
     
-    // Check if any old lines were modified or removed
     for (const d of realDraft) {
       if (d.issueId !== null) {
         if (d.removed || originalMap.get(d.issueId) !== d.baseQuantity) {
           changed = true;
-          break;
         }
       } else if (!d.removed) {
-        // New line added
         changed = true;
-        break;
+      }
+      
+      if (!d.removed && d.purchasedItemId) {
+        const unitCost = detail.unitCostByItem?.[d.purchasedItemId];
+        if (unitCost !== undefined) {
+          exactDraftSum += unitCost * d.baseQuantity;
+        }
       }
     }
   }
+  const draftTotalValue = Math.round(exactDraftSum);
 
   const saveDisabled = visibleLines.filter((l) => l.issueId !== null || l.purchasedItemId).length === 0 || !changed;
 
@@ -480,18 +485,19 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
                       <td className="p-2 text-right tabular-nums text-text-primary">
                         {(() => {
                           if (!l.purchasedItemId) return "—";
-                          const oldLine = detail.lines.find(ol => ol.issueId === l.issueId);
-                          if (!oldLine) return "Tính khi lưu";
+                          const unitCost = detail.unitCostByItem?.[l.purchasedItemId];
+                          if (unitCost === undefined) return "—";
+                          const exactValue = unitCost * l.baseQuantity;
+                          const formattedValue = formatNumber(Math.round(exactValue)) + "đ";
+                          
                           if (l.removed) {
-                            return (
-                              <div className="flex flex-col items-end">
-                                <span className="line-through text-text-muted">{formatNumber(oldLine.value)}đ</span>
-                                <span className="text-xs text-warning-active">Tính khi lưu</span>
-                              </div>
-                            );
+                            const oldLine = detail.lines.find(ol => ol.issueId === l.issueId);
+                            if (oldLine) {
+                              return <span className="line-through text-text-muted">{formatNumber(oldLine.value)}đ</span>;
+                            }
+                            return <span className="line-through text-text-muted">{formattedValue}</span>;
                           }
-                          if (oldLine.baseQuantity !== l.baseQuantity) return "Tính khi lưu";
-                          return `${formatNumber(oldLine.value)}đ`;
+                          return formattedValue;
                         })()}
                       </td>
                     </tr>
@@ -507,6 +513,11 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
                       + Thêm dòng
                     </button>
                   </td>
+                </tr>
+                <tr className="bg-surface-secondary/30">
+                  <td className="p-2"></td>
+                  <td className="p-2 font-bold text-text-primary" colSpan={4}>Tổng giá trị</td>
+                  <td className="p-2 text-right font-bold tabular-nums text-text-primary">{formatNumber(draftTotalValue)}đ</td>
                 </tr>
               </tbody>
             </table>
@@ -605,18 +616,19 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
                       <div className="text-sm font-medium tabular-nums text-text-primary text-right">
                         {(() => {
                           if (!l.purchasedItemId) return "—";
-                          const oldLine = detail.lines.find(ol => ol.issueId === l.issueId);
-                          if (!oldLine) return "Tính khi lưu";
+                          const unitCost = detail.unitCostByItem?.[l.purchasedItemId];
+                          if (unitCost === undefined) return "—";
+                          const exactValue = unitCost * l.baseQuantity;
+                          const formattedValue = formatNumber(Math.round(exactValue)) + "đ";
+                          
                           if (l.removed) {
-                            return (
-                              <div className="flex flex-col items-end gap-0.5">
-                                <span className="line-through text-text-muted text-xs">{formatNumber(oldLine.value)}đ</span>
-                                <span className="text-xs text-warning-active">Tính khi lưu</span>
-                              </div>
-                            );
+                            const oldLine = detail.lines.find(ol => ol.issueId === l.issueId);
+                            if (oldLine) {
+                              return <span className="line-through text-text-muted">{formatNumber(oldLine.value)}đ</span>;
+                            }
+                            return <span className="line-through text-text-muted">{formattedValue}</span>;
                           }
-                          if (oldLine.baseQuantity !== l.baseQuantity) return "Tính khi lưu";
-                          return `${formatNumber(oldLine.value)}đ`;
+                          return formattedValue;
                         })()}
                       </div>
                     </div>
@@ -632,6 +644,10 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
             >
               + Thêm dòng
             </button>
+            <div className="p-4 flex justify-between font-bold text-sm bg-surface-secondary/30 rounded-xl border border-border">
+              <span className="text-text-primary">Tổng giá trị</span>
+              <span className="text-text-primary">{formatNumber(draftTotalValue)}đ</span>
+            </div>
           </div>
           
           <div className="flex justify-end gap-2.5 mt-2">

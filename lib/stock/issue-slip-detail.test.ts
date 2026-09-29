@@ -17,9 +17,14 @@ const input = {
     ["SPM-070", [{ conversionId: "QD-080", purchasedItemId: "SPM-070", purchasedItemName: "Giấy lót chống tràn", sizeLabel: "Xấp 1 Xấp", conversionRate: 1, baseUnitName: "Xấp", purchasedUnitName: "Xấp" }]],
   ]),
   lineValues: new Map([["ISS-00192", 73606.1633], ["ISS-00196", 36404.6]]),
+  unitCostByItem: { "SPM-038": 36.8030816 },
 };
 
 describe("buildIssueSlipDetail", () => {
+  it("carries the unit cost map through untouched", () => {
+    expect(buildIssueSlipDetail(input).unitCostByItem).toEqual({ "SPM-038": 36.8030816 });
+  });
+
   it("ISL-00076: lines, values, editable", () => {
     const d = buildIssueSlipDetail(input);
     expect(d.lines.map(l => [l.name, l.quantityText, l.value])).toEqual([
