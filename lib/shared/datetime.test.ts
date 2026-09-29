@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDateTime, formatDate, formatTime, toSaigonIsoString } from "./datetime";
+import { formatDateTime, formatDate, formatTime, toSaigonIsoString, formatDateTimeFull, parseVnDay, formatVnDay } from "./datetime";
 
 describe("formatDateTime", () => {
   it("formats UTC instant as Asia/Saigon local time", () => {
@@ -47,5 +47,39 @@ describe("toSaigonIsoString", () => {
   it("day boundary crosses", () => {
     const d = new Date("2026-06-25T17:00:00.000Z");
     expect(toSaigonIsoString(d)).toBe("2026-06-26T00:00:00");
+  });
+});
+
+describe("formatDateTimeFull (BR-DATA-006)", () => {
+  it("shows a stored instant in Saigon time to the second", () => {
+    expect(formatDateTimeFull("2026-09-28T09:13:06.000Z")).toBe("28/09/2026 16:13:06");
+  });
+  it("shows a Saigon-midnight slip on its own day, not the day before (PO-188)", () => {
+    expect(formatDateTimeFull("2026-09-22T17:00:00+00:00")).toBe("23/09/2026 00:00:00");
+  });
+  it("reads a day-only value as Saigon midnight, never 07:00:00", () => {
+    expect(formatDateTimeFull("2026-09-28")).toBe("28/09/2026 00:00:00");
+  });
+  it("returns empty for empty or unreadable input", () => {
+    expect(formatDateTimeFull("")).toBe("");
+    expect(formatDateTimeFull(null)).toBe("");
+    expect(formatDateTimeFull("không phải ngày")).toBe("");
+  });
+});
+
+describe("parseVnDay / formatVnDay", () => {
+  it("parses dd/mm/yyyy, with or without leading zeros", () => {
+    expect(parseVnDay("23/09/2026")).toBe("2026-09-23");
+    expect(parseVnDay(" 1/9/2026 ")).toBe("2026-09-01");
+  });
+  it("rejects impossible dates and other shapes", () => {
+    expect(parseVnDay("31/02/2026")).toBeNull();
+    expect(parseVnDay("2026-09-23")).toBeNull();
+    expect(parseVnDay("abc")).toBeNull();
+    expect(parseVnDay("")).toBeNull();
+  });
+  it("formats an ISO day for display", () => {
+    expect(formatVnDay("2026-09-01")).toBe("01/09/2026");
+    expect(formatVnDay("bad")).toBe("");
   });
 });
