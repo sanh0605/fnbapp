@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { NAV_GROUPS } from "../nav-items";
-import { readSidebarCollapsed, writeSidebarCollapsed, activeGroupName } from "./sidebar-state";
+import { readSidebarCollapsed, writeSidebarCollapsed, activeGroupName, activeChildHref } from "./sidebar-state";
 import { ChevronLeft, ChevronRight, Store, ChevronDown } from "lucide-react";
 
 export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
@@ -134,22 +134,25 @@ export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
               </button>
               {isExpanded && group.children && (
                 <div className="flex flex-col gap-0.5 py-0.5 pb-1.5">
-                  {group.children.map(child => {
-                    const isChildActive = pathname === child.href || pathname.startsWith(`${child.href}/`);
-                    return (
-                      <Link
-                        key={child.name}
-                        href={child.href}
-                        className={`block py-2 pr-3 pl-11 rounded-lg text-sm no-underline ${
-                          isChildActive
-                            ? "bg-primary-soft text-primary font-semibold"
-                            : "text-text-muted hover:text-text-primary"
-                        }`}
-                      >
-                        {child.name}
-                      </Link>
-                    );
-                  })}
+                  {(() => {
+                    const activeHref = activeChildHref(pathname, group.children);
+                    return group.children.map(child => {
+                      const isChildActive = child.href === activeHref;
+                      return (
+                        <Link
+                          key={child.name}
+                          href={child.href}
+                          className={`block py-2 pr-3 pl-11 rounded-lg text-sm no-underline ${
+                            isChildActive
+                              ? "bg-primary-soft text-primary font-semibold"
+                              : "text-text-muted hover:text-text-primary"
+                          }`}
+                        >
+                          {child.name}
+                        </Link>
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </div>
