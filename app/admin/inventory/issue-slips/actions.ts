@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllNoCache, findAllWhere } from "@/lib/db/tables";
+import { findAll, findAllNoCache } from "@/lib/db/tables";
 import { buildIssueCostingPurchases, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
 import { computeIssueLineValues } from "@/lib/costing/issue-line-values";
 import { listIssueSlipsPage, type IssueSlipListFilters, type IssueSlipListPage } from "@/lib/stock/issue-slip-list";
@@ -16,19 +16,16 @@ import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import {
   createIssueSlipAtomic,
-  reverseManualIssueAtomic,
   cancelIssueSlipAtomic,
   editIssueSlipAtomic,
   type SlipEditResult,
   type IssueSlipResult,
-  type ReversalResult,
   type SlipCancelResult,
 } from "@/lib/stock/manual-issue-transaction";
 import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stock/stocktake-package-lines";
 import { computeOnHandByPurchasedItem, filterByC17 } from "@/lib/stock/purchased-item-onhand";
 
 const PATH = "/admin/inventory/issue-slips";
-const RECENT_SLIPS_LIMIT = 100;
 
 // Package lines per purchased item, one per active conversion -- shared by the
 // create form and the slip detail so both offer the same units.
@@ -296,83 +293,9 @@ export async function createIssueSlip(input: {
   }
 }
 
-export interface IssueSlipRow {
-  id: string;
-  slipId: string | null;
-  itemName: string;
-  baseQuantity: number;
-  issuedAt: string;
-  note: string;
-  // Plan D D7b, BR-INV-009: a row is either an ordinary MANUAL issue, or
-  // itself a compensating entry for an earlier one (reversesIssueId set).
-  // reversedByIssueId is the reverse direction, derived from this same
-  // fetched window -- "hai chiều" (both directions visible), the original
-  // row itself never mutated.
-  reversesIssueId: string | null;
-  reversedByIssueId: string | null;
-}
-
-export async function getRecentIssueSlips(): Promise<IssueSlipRow[]> {
-  const auth = await requireAdmin();
-  if (!auth.ok) throw new Error(auth.error);
-
-  const [rows, purchasedItems] = await Promise.all([
-    findAllWhere<any>("Stock_Issues", {
-      eq: { source: "MANUAL" },
-      order: { column: "created_at", ascending: false },
-      limit: RECENT_SLIPS_LIMIT,
-    }),
-    findAll("Purchased_Items"),
-  ]);
-  const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
-  const reversedByIdByOriginal = new Map<string, string>();
-  for (const row of rows) {
-    if (row.reverses_issue_id) reversedByIdByOriginal.set(row.reverses_issue_id, row.id);
-  }
-
-  return rows.map(row => ({
-    id: row.id,
-    // Plan D D9: rows written before this migration (or, in principle, any
-    // row written outside a slip) carry no issue_slip_id -- shown
-    // individually rather than grouped, not an error.
-    slipId: row.issue_slip_id ?? null,
-    itemName: nameById.get(row.purchased_item_id) ?? row.purchased_item_id,
-    baseQuantity: Number(row.base_quantity),
-    issuedAt: row.issued_at,
-    note: row.note ?? "",
-    reversesIssueId: row.reverses_issue_id ?? null,
-    reversedByIssueId: reversedByIdByOriginal.get(row.id) ?? null,
-  }));
-}
-
-// Plan D D9 / I11: reversal stays per-line, unchanged from D7b -- a
-// multi-line slip still writes one stock_issues row per line, so
-// correcting one wrong line does not require touching the rest of the
-// slip.
-export async function reverseIssueSlip(input: {
-  issueId: string;
-  note: string;
-}): Promise<ActionResponse & { result?: ReversalResult }> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return fail(auth.error);
-
-  try {
-    const result = await reverseManualIssueAtomic({
-      issueId: input.issueId,
-      note: input.note,
-      createdById: auth.actor.id,
-      createdByName: auth.actor.name,
-    });
-    revalidatePath(PATH);
-    return ok({ result });
-  } catch (error: unknown) {
-    return describeActionError(error);
-  }
-}
-
 // Plan D D14 / I11: cancel a WHOLE slip -- reverses every line not already
 // individually reversed, in one call, one reason. Same requireAdmin() level
-// as the existing per-line reversal above -- deliberately not raised to
+// as the other slip actions -- deliberately not raised to
 // owner-only (U12): an issue slip records waste/internal use, not a check on
 // the person who counted, so the stocktake reversal's stricter guard does
 // not carry over here.
