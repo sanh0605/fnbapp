@@ -68,6 +68,23 @@ describe("0106: issue-slip edit", () => {
     }
   });
 
+  it("every function body has balanced if/end if and loop/end loop", () => {
+    const bodies = [...sql().matchAll(/create or replace function[\s\S]*?\$function\$([\s\S]*?)\$function\$/g)].map((m) => m[1]);
+    expect(bodies.length).toBeGreaterThanOrEqual(6);
+    for (const raw of bodies) {
+      const code = raw
+        .split("\n")
+        .map((line) => line.replace(/'(?:[^']|'')*'/g, "''").replace(/--.*$/, ""))
+        .join("\n");
+      const closeIf = (code.match(/\bend\s+if\b/gi) ?? []).length;
+      const openIf = (code.match(/\bif\b/gi) ?? []).length - closeIf;
+      const closeLoop = (code.match(/\bend\s+loop\b/gi) ?? []).length;
+      const openLoop = (code.match(/\bloop\b/gi) ?? []).length - closeLoop;
+      expect(openIf).toBe(closeIf);
+      expect(openLoop).toBe(closeLoop);
+    }
+  });
+
   it("uses $function$ delimiters only", () => {
     expect(sql()).not.toMatch(/\$\$/);
   });

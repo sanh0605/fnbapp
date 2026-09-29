@@ -435,7 +435,6 @@ begin
   if exists (select 1 from unnest(v_remove) as x where x is null) then
     raise exception 'Danh sách dòng bỏ có mã trống.';
   end if;
-  end if;
   -- The same id twice would try to reverse one line twice; reject the payload.
   select count(distinct x) into v_remove_distinct from unnest(v_remove) as x;
   if v_remove_distinct <> cardinality(v_remove) then
