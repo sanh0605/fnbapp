@@ -1,50 +1,32 @@
 // @vitest-environment jsdom
 //
-// Render tests for IssueSlipClient (OPEN-ITEMS 38). IssueSlipClient.test.ts
-// asserted 20 claims against source text with almost no render coverage --
-// the two-copies shape this item exists to close. Classified before writing
-// anything: 18 of 20 convert to a real render assertion here; 1 (the
-// two-column `lg:grid-cols-2` layout) is genuinely inexpressible in jsdom
-// (breakpoint-conditional, no media-query evaluation) and stays in the
-// slimmed IssueSlipClient.test.ts; 1 ("uses SearchableSelect") is deleted
-// outright as redundant -- every test below that selects an item necessarily
-// drives the real SearchableSelect combobox to do it.
-//
-// This also carries the OPEN-ITEMS 41 unit-label render tests added
-// 2026-08-17 -- one render file per component, not several.
+// Render tests for IssueSlipClient (OPEN-ITEMS 38).
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import React from "react";
 import { IssueSlipClient } from "./IssueSlipClient";
-import type { IssueSlipItemView, IssueSlipRow } from "../actions";
+import type { IssueSlipItemView } from "../actions";
 import type { PackageLine } from "@/lib/stock/stocktake-package-lines";
 import type { IssueSlipResult } from "@/lib/stock/manual-issue-transaction";
 
 const mocks = vi.hoisted(() => ({
   createIssueSlip: vi.fn(),
-  reverseIssueSlip: vi.fn(),
-  cancelIssueSlip: vi.fn(),
   confirmDialog: vi.fn(),
   routerRefresh: vi.fn(),
+  routerPush: vi.fn(),
 }));
 
 vi.mock("../actions", () => ({
   createIssueSlip: mocks.createIssueSlip,
-  reverseIssueSlip: mocks.reverseIssueSlip,
-  cancelIssueSlip: mocks.cancelIssueSlip,
 }));
 
-// IssueSlipClient's own confirm() (a custom Promise-based dialog rendered by
-// DialogHost, which is not mounted here) would otherwise hang forever --
-// nothing calls dismiss(). Auto-approves by default; individual tests that
-// need to prove the declined path override this per-test.
 vi.mock("@/lib/shared/dialog", () => ({
   confirm: mocks.confirmDialog,
 }));
-// section B: this component now calls useRouter().refresh() on save.
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.routerRefresh }),
+  useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.routerPush }),
 }));
 
 beforeEach(() => {
@@ -52,8 +34,6 @@ beforeEach(() => {
   mocks.confirmDialog.mockResolvedValue(true);
 });
 
-// SearchableSelect scrolls the highlighted option into view when the
-// dropdown opens; jsdom does not implement scrollIntoView at all.
 if (typeof Element.prototype.scrollIntoView !== "function") {
   Element.prototype.scrollIntoView = () => {};
 }
@@ -122,16 +102,10 @@ function findButtonWithText(container: HTMLElement, text: string): HTMLButtonEle
     | undefined;
 }
 
-// Each draft line's own wrapper div carries this exact class combination
-// (IssueSlipClient.tsx: `className="p-4 border border-border rounded-xl
-// relative bg-surface-secondary/50"`) and nothing else in the tree does.
 function getLineBlocks(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>("div.rounded-xl.relative"));
 }
 
-// SearchableSelect renders its dropdown as a sibling inside its own wrapper,
-// not a portal -- scoping the query to `block` is safe even with several
-// SearchableSelect instances (one per line) in the same render.
 async function selectItemInBlock(block: HTMLElement, label: string) {
   const combobox = block.querySelector('[role="combobox"]');
   if (!combobox) throw new Error("SearchableSelect trigger not found in block");
@@ -154,7 +128,7 @@ async function selectPackage(block: HTMLElement, sizeLabel: string) {
 }
 
 function findQtyInput(block: HTMLElement): HTMLInputElement {
-  const input = block.querySelector('input[type="number"]');
+  const input = block.querySelector('input[type="text"]');
   if (!input) throw new Error("quantity input not found");
   return input as HTMLInputElement;
 }
@@ -185,20 +159,6 @@ function item(overrides: Partial<IssueSlipItemView> = {}): IssueSlipItemView {
   };
 }
 
-function row(overrides: Partial<IssueSlipRow> = {}): IssueSlipRow {
-  return {
-    id: "ISS-001",
-    slipId: "ISL-001",
-    itemName: "Sữa tươi Vinamilk",
-    baseQuantity: 24,
-    issuedAt: "2026-08-17T09:00:00.000Z",
-    note: "Hao hụt",
-    reversesIssueId: null,
-    reversedByIssueId: null,
-    ...overrides,
-  };
-}
-
 function submittedResult(overrides: Partial<IssueSlipResult> = {}): IssueSlipResult {
   return {
     slipId: "ISL-999",
@@ -223,9 +183,6 @@ const itemWithRealUnit: IssueSlipItemView = {
   ],
 };
 
-// The real SPM-043 case, post-correction (2026-08-17): QD-049's base_unit
-// now agrees with its ingredient's own "g", so getIssueSlipFormData's
-// generic lookup resolves it like any other item -- no special case.
 const itemFormerlyMismatched: IssueSlipItemView = {
   id: "SPM-043",
   name: "Sua chua khong duong Vinamilk",
@@ -237,47 +194,31 @@ const itemFormerlyMismatched: IssueSlipItemView = {
 };
 
 describe("IssueSlipClient onHand unit label (OPEN-ITEMS 41)", () => {
-  // section 3 superseded this test's own original claim: selecting an item
-  // auto-selects its first package (handleItemChange), so the base-unit
-  // figure alone is no longer what this shows once a conversion with a
-  // rate other than 1 is in play -- it now shows the figure converted into
-  // that package's own unit, base kept alongside in parens.
   it("renders the on-hand quantity converted into the selected package's unit, base kept alongside", async () => {
     const container = await renderTracked(
-      <IssueSlipClient items={[itemWithRealUnit]} recentSlips={[]} />,
+      <IssueSlipClient items={[itemWithRealUnit]} />
     );
     await selectItem(container, "Sua tuoi Vinamilk");
 
     const line = Array.from(container.querySelectorAll("p")).find(p =>
       p.textContent?.includes("Tồn hiện tại"),
     );
-    // 12 kg on hand / 12 (Thung 12 hop's rate) = 1 Thung exactly.
     expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 1 Thung (12 kg)");
   });
 
   it("renders g for Sua chua khong duong Vinamilk now that QD-049 is corrected", async () => {
     const container = await renderTracked(
-      <IssueSlipClient items={[itemFormerlyMismatched]} recentSlips={[]} />,
+      <IssueSlipClient items={[itemFormerlyMismatched]} />
     );
     await selectItem(container, "Sua chua khong duong Vinamilk");
 
     const line = Array.from(container.querySelectorAll("p")).find(p =>
       p.textContent?.includes("Tồn hiện tại"),
     );
-    // 48 g on hand / 100 (Hop 100 g's rate) = 0,48 Hop, not clean -- two
-    // decimal places, per section 3's rounding rule.
     expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 0,48 Hop (48 g)");
   });
 });
 
-// --- section 3: converted on-hand is a mistake guard, not a convenience ---
-//
-// Verified at handleSubmit (line ~163): the form submits
-// parsedQty * pkg.conversionRate. With "Cây 50 Cái" selected against 1.000
-// Cái on hand, a screen still showing "1.000 Cái" invites typing "1.000"
-// against a box that means cây -- 50.000 cái, fifty times the intent. The
-// RPC only refuses when the result exceeds stock; with enough stock it
-// passes silently. These tests are at the value the plan itself names.
 describe("IssueSlipClient -- converted on-hand is a mistake guard (section 3)", () => {
   const lyMap: IssueSlipItemView = {
     id: "SPM-CUP",
@@ -297,7 +238,7 @@ describe("IssueSlipClient -- converted on-hand is a mistake guard (section 3)", 
   }
 
   it("Cây 50 Cái selected against 1.000 Cái on hand shows 20 Cây (1.000 Cái), not 1.000 Cái", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[lyMap]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[lyMap]} />);
     const block = getLineBlocks(container)[0];
     await selectItemInBlock(block, "Ly mập Uchako");
     await selectPackage(block, "Cây 50 Cái");
@@ -306,7 +247,7 @@ describe("IssueSlipClient -- converted on-hand is a mistake guard (section 3)", 
   });
 
   it("Cái 1 Cái selected (rate 1) shows the base figure alone, not doubled", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[lyMap]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[lyMap]} />);
     const block = getLineBlocks(container)[0];
     await selectItemInBlock(block, "Ly mập Uchako");
     await selectPackage(block, "Cái 1 Cái");
@@ -314,8 +255,6 @@ describe("IssueSlipClient -- converted on-hand is a mistake guard (section 3)", 
     expect(onHandText(container)).toBe("Tồn hiện tại: 1.000 Cái");
   });
 });
-
-// --- I3: package-size counting produces the base quantity sent to the RPC --
 
 describe("IssueSlipClient -- package-size counting produces the base quantity sent to the RPC (I3)", () => {
   it("multiplies the typed package count by the chosen conversion rate before submitting", async () => {
@@ -326,7 +265,7 @@ describe("IssueSlipClient -- package-size counting produces the base quantity se
         pkg({ conversionId: "QD-002", sizeLabel: "Hộp lẻ", conversionRate: 1, purchasedUnitName: "Hộp" }),
       ],
     });
-    const container = await renderTracked(<IssueSlipClient items={[theItem]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[theItem]} />);
     const block = getLineBlocks(container)[0];
 
     await selectItemInBlock(block, "Sữa tươi Vinamilk");
@@ -340,7 +279,43 @@ describe("IssueSlipClient -- package-size counting produces the base quantity se
   });
 });
 
-// --- I6: backdated slip warns which months move, requires explicit confirm -
+describe("IssueSlipClient -- routing and custom loose options", () => {
+  it("navigates to the details page on a successful submit", async () => {
+    mocks.createIssueSlip.mockResolvedValue({ result: submittedResult({ slipId: "ISL-00077" }) });
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const block = getLineBlocks(container)[0];
+
+    await selectItemInBlock(block, "Sữa tươi Vinamilk");
+    await selectPackage(block, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(block), "3");
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+
+    expect(mocks.routerPush).toHaveBeenCalledWith("/admin/inventory/issue-slips/ISL-00077");
+  });
+
+  it("choosing loose unit for Phin Đậm sends the correct base quantity", async () => {
+    mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
+    const phinDam = item({
+      id: "SPM-PHIN",
+      name: "Phin Đậm",
+      unitName: "g",
+      onHand: 1000,
+      packageLines: [
+        pkg({ conversionId: "QD-TUI1KG", sizeLabel: "Túi 1kg", conversionRate: 1000, purchasedUnitName: "Túi" }),
+      ],
+    });
+    const container = await renderTracked(<IssueSlipClient items={[phinDam]} />);
+    const block = getLineBlocks(container)[0];
+
+    await selectItemInBlock(block, "Phin Đậm");
+    await selectPackage(block, "g (lẻ)");
+    await setInputValue(findQtyInput(block), "250");
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+
+    const call = mocks.createIssueSlip.mock.calls[0][0];
+    expect(call.lines).toEqual([{ purchasedItemId: "SPM-PHIN", baseQuantity: 250 }]);
+  });
+});
 
 describe("IssueSlipClient -- backdated slip warns which months move and requires explicit confirm (I6)", () => {
   afterEach(() => {
@@ -351,7 +326,7 @@ describe("IssueSlipClient -- backdated slip warns which months move and requires
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-17T12:00:00.000Z"));
     mocks.confirmDialog.mockResolvedValue(false);
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const block = getLineBlocks(container)[0];
     await selectItemInBlock(block, "Sữa tươi Vinamilk");
     await selectPackage(block, "Thùng 12 hộp");
@@ -373,7 +348,7 @@ describe("IssueSlipClient -- backdated slip warns which months move and requires
     vi.setSystemTime(new Date("2026-08-17T12:00:00.000Z"));
     mocks.confirmDialog.mockResolvedValue(true);
     mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const block = getLineBlocks(container)[0];
     await selectItemInBlock(block, "Sữa tươi Vinamilk");
     await selectPackage(block, "Thùng 12 hộp");
@@ -387,19 +362,13 @@ describe("IssueSlipClient -- backdated slip warns which months move and requires
   });
 });
 
-// --- I4/I5/I10: does not pre-empt the RPC's own refusal, for this input ----
-
 describe("IssueSlipClient -- does not pre-empt the RPC's on-hand refusal, for this input (I4/I5/I10)", () => {
   it("submits an over-onHand quantity unchanged and shows the RPC's refusal verbatim when it rejects", async () => {
-    // Proves the client does not block THIS specific input locally -- it
-    // does not prove no local check of any shape exists for a different
-    // input or threshold. The RPC's own refusal is what actually decides;
-    // this shows the client gets out of the way and surfaces the answer.
     mocks.createIssueSlip.mockResolvedValue({
       error: "Dòng 1 (Sữa tươi Vinamilk): yêu cầu xuất 999 hộp, chỉ còn 12 hộp tính tới thời điểm hiện tại",
     });
     const theItem = item({ onHand: 12 });
-    const container = await renderTracked(<IssueSlipClient items={[theItem]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[theItem]} />);
     const block = getLineBlocks(container)[0];
     await selectItemInBlock(block, "Sữa tươi Vinamilk");
     await selectPackage(block, "Thùng 12 hộp");
@@ -412,11 +381,9 @@ describe("IssueSlipClient -- does not pre-empt the RPC's on-hand refusal, for th
   });
 });
 
-// --- datetime defaults near now; the submitted value is a real instant -----
-
 describe("IssueSlipClient -- time field defaults near now and submits a real instant, not a bare date", () => {
   it("the datetime-local input starts within a minute of now", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const datetimeInput = container.querySelector('input[type="datetime-local"]') as HTMLInputElement;
     const initial = new Date(datetimeInput.value).getTime();
     expect(Math.abs(Date.now() - initial)).toBeLessThan(60_000);
@@ -424,7 +391,7 @@ describe("IssueSlipClient -- time field defaults near now and submits a real ins
 
   it("the value sent to the RPC carries the typed time, not midnight", async () => {
     mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const block = getLineBlocks(container)[0];
     await selectItemInBlock(block, "Sữa tươi Vinamilk");
     await selectPackage(block, "Thùng 12 hộp");
@@ -440,11 +407,9 @@ describe("IssueSlipClient -- time field defaults near now and submits a real ins
   });
 });
 
-// --- D9: add/remove line list ------------------------------------------
-
 describe("IssueSlipClient -- manages an add/remove line list (D9)", () => {
   it("adding and removing lines changes the number of rendered line blocks", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     expect(getLineBlocks(container)).toHaveLength(1);
 
     await clickButtonWithText(container, "+ Thêm mặt hàng");
@@ -455,8 +420,6 @@ describe("IssueSlipClient -- manages an add/remove line list (D9)", () => {
     expect(getLineBlocks(container)).toHaveLength(1);
   });
 });
-
-// --- D9: one RPC call for the whole slip, not one per item ------------------
 
 describe("IssueSlipClient -- sends every line in ONE RPC call, not one per item (D9)", () => {
   it("a 3-line slip produces exactly one createIssueSlip call with all 3 lines", async () => {
@@ -478,7 +441,7 @@ describe("IssueSlipClient -- sends every line in ONE RPC call, not one per item 
         packageLines: [pkg({ conversionId: "QD-003", purchasedItemId: "SPM-003", sizeLabel: "Túi 1kg", conversionRate: 1, purchasedUnitName: "Túi" })],
       }),
     ];
-    const container = await renderTracked(<IssueSlipClient items={items3} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={items3} />);
 
     await selectItemInBlock(getLineBlocks(container)[0], "Sữa tươi Vinamilk");
     await selectPackage(getLineBlocks(container)[0], "Thùng 12 hộp");
@@ -506,34 +469,27 @@ describe("IssueSlipClient -- sends every line in ONE RPC call, not one per item 
   });
 });
 
-// --- D9: one time field and one reason across the whole slip ---------------
-
 describe("IssueSlipClient -- shares one time field and one reason across the whole slip (D9)", () => {
   it("stays at exactly one datetime-local input and one reason select as lines are added", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await clickButtonWithText(container, "+ Thêm mặt hàng");
     await clickButtonWithText(container, "+ Thêm mặt hàng");
 
     expect(container.querySelectorAll('input[type="datetime-local"]')).toHaveLength(1);
     expect(container.textContent).toContain("áp dụng cho cả phiếu");
-    // The "Lý do" select is the only <select> outside the per-line blocks --
-    // each line block has its own "Quy cách" select.
     const allSelects = Array.from(container.querySelectorAll("select"));
     const lineBlockSelects = getLineBlocks(container).flatMap(b => Array.from(b.querySelectorAll("select")));
     expect(allSelects.length - lineBlockSelects.length).toBe(1);
   });
 });
 
-// --- D9: per-line validation names which line is wrong ----------------------
-
 describe("IssueSlipClient -- per-line validation names which line is wrong, before ever calling the RPC (D9)", () => {
   it("names line 2 when its item is unselected, and does not call the RPC", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await clickButtonWithText(container, "+ Thêm mặt hàng");
     await selectItemInBlock(getLineBlocks(container)[0], "Sữa tươi Vinamilk");
     await selectPackage(getLineBlocks(container)[0], "Thùng 12 hộp");
     await setInputValue(findQtyInput(getLineBlocks(container)[0]), "2");
-    // Line 2 left with no item chosen.
 
     await clickButtonWithText(container, "Ghi phiếu xuất (2 dòng)");
 
@@ -542,11 +498,8 @@ describe("IssueSlipClient -- per-line validation names which line is wrong, befo
   });
 
   it("names line 1 when its package size is unselected, and does not call the RPC", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await selectItemInBlock(getLineBlocks(container)[0], "Sữa tươi Vinamilk");
-    // Choosing an item auto-fills its first package size (handleItemChange)
-    // -- explicitly reset back to the placeholder to reach the unselected
-    // state a user gets to by reopening "Quy cách" and clearing it.
     await selectPackage(getLineBlocks(container)[0], "-- Chọn --");
     await setInputValue(findQtyInput(getLineBlocks(container)[0]), "2");
 
@@ -557,10 +510,9 @@ describe("IssueSlipClient -- per-line validation names which line is wrong, befo
   });
 
   it("names line 1 when its quantity is zero, and does not call the RPC", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await selectItemInBlock(getLineBlocks(container)[0], "Sữa tươi Vinamilk");
     await selectPackage(getLineBlocks(container)[0], "Thùng 12 hộp");
-    // Quantity left blank.
 
     await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
 
@@ -569,116 +521,15 @@ describe("IssueSlipClient -- per-line validation names which line is wrong, befo
   });
 });
 
-// --- D7b/D9, BR-INV-009 reversal UI -----------------------------------------
-
-describe("IssueSlipClient -- only offers to reverse an eligible row (D7b/D9)", () => {
-  it("shows Đảo dòng only for a MANUAL row that is not itself a reversal and has not already been reversed", async () => {
-    const eligible = row({ id: "ISS-001", slipId: "ISL-001", itemName: "Sữa tươi Vinamilk" });
-    const isAReversal = row({ id: "ISS-002", slipId: "ISL-002", itemName: "Đường cát", reversesIssueId: "ISS-000" });
-    const alreadyReversed = row({ id: "ISS-003", slipId: "ISL-003", itemName: "Cà phê hạt", reversedByIssueId: "ISS-004" });
-    const container = await renderTracked(
-      <IssueSlipClient items={[]} recentSlips={[eligible, isAReversal, alreadyReversed]} />,
-    );
-
-    const reverseButtons = Array.from(container.querySelectorAll("button")).filter(
-      b => b.textContent?.trim() === "Đảo dòng",
-    );
-    expect(reverseButtons).toHaveLength(1);
-    const rowEl = reverseButtons[0].closest(".border-l-2") as HTMLElement;
-    expect(rowEl?.textContent).toContain("Sữa tươi Vinamilk");
-  });
-});
-
-describe("IssueSlipClient -- reversal requires an explicit confirm naming BR-INV-009 (D7b/D9)", () => {
-  it("opens confirm() with a message naming BR-INV-009 and that the original line is preserved, before calling the RPC", async () => {
-    mocks.confirmDialog.mockResolvedValue(true);
-    mocks.reverseIssueSlip.mockResolvedValue({});
-    const eligible = row({ id: "ISS-001", slipId: "ISL-001" });
-    const container = await renderTracked(<IssueSlipClient items={[]} recentSlips={[eligible]} />);
-
-    await clickButtonWithText(container, "Đảo dòng");
-
-    expect(mocks.confirmDialog).toHaveBeenCalledTimes(1);
-    const message = mocks.confirmDialog.mock.calls[0][0].message;
-    expect(message).toContain("BR-INV-009");
-    expect(message).toContain("Dòng gốc được giữ nguyên, không xoá");
-    expect(mocks.reverseIssueSlip).toHaveBeenCalledWith(expect.objectContaining({ issueId: "ISS-001" }));
-  });
-
-  it("does not call reverseIssueSlip when the confirm is declined", async () => {
-    mocks.confirmDialog.mockResolvedValue(false);
-    const eligible = row({ id: "ISS-001", slipId: "ISL-001" });
-    const container = await renderTracked(<IssueSlipClient items={[]} recentSlips={[eligible]} />);
-
-    await clickButtonWithText(container, "Đảo dòng");
-
-    expect(mocks.reverseIssueSlip).not.toHaveBeenCalled();
-  });
-});
-
-describe("IssueSlipClient -- a reversed pair shows both ways, neither row hidden (D7b/D9)", () => {
-  it("the reversal row names what it reverses; the original names what reversed it", async () => {
-    const original = row({ id: "ISS-001", slipId: "ISL-001", itemName: "Sữa tươi Vinamilk", reversedByIssueId: "ISS-002" });
-    const reversal = row({
-      id: "ISS-002",
-      slipId: "ISL-002",
-      itemName: "Sữa tươi Vinamilk",
-      baseQuantity: -24,
-      reversesIssueId: "ISS-001",
-    });
-    const container = await renderTracked(<IssueSlipClient items={[]} recentSlips={[original, reversal]} />);
-
-    expect(container.textContent).toContain("Đảo dòng ISS-001");
-    expect(container.textContent).toContain("Đã đảo bởi ISS-002");
-  });
-});
-
-describe("IssueSlipClient -- groups rows by slipId, falling back to the row's own id (D9)", () => {
-  it("two rows sharing a slipId render as one group; a null-slipId row shows the legacy fallback", async () => {
-    const lineA = row({ id: "ISS-001", slipId: "ISL-001", itemName: "Sữa tươi Vinamilk" });
-    const lineB = row({ id: "ISS-002", slipId: "ISL-001", itemName: "Đường cát" });
-    const legacy = row({ id: "ISS-003", slipId: null, itemName: "Cà phê hạt" });
-    const container = await renderTracked(<IssueSlipClient items={[]} recentSlips={[lineA, lineB, legacy]} />);
-
-    const occurrences = (container.textContent?.split("ISL-001").length ?? 1) - 1;
-    expect(occurrences).toBe(1);
-    expect(container.textContent).toContain("Sữa tươi Vinamilk");
-    expect(container.textContent).toContain("Đường cát");
-    expect(container.textContent).toContain("(phiếu cũ)");
-  });
-});
-
-describe("IssueSlipClient -- reversal stays per-line, not one button per slip (D9)", () => {
-  it("a 2-line slip with both rows eligible shows two Đảo dòng buttons, not one", async () => {
-    const lineA = row({ id: "ISS-001", slipId: "ISL-001", itemName: "Sữa tươi Vinamilk" });
-    const lineB = row({ id: "ISS-002", slipId: "ISL-001", itemName: "Đường cát" });
-    const container = await renderTracked(<IssueSlipClient items={[]} recentSlips={[lineA, lineB]} />);
-
-    const reverseButtons = Array.from(container.querySelectorAll("button")).filter(
-      b => b.textContent?.trim() === "Đảo dòng",
-    );
-    expect(reverseButtons).toHaveLength(2);
-  });
-});
-
-// --- D10: explicit empty state, field sizing, mobile (M2-M4) ---------------
-
-describe("IssueSlipClient -- RecentSlipsSection always renders, with an explicit empty state (D10)", () => {
-  it("renders the empty-state message rather than nothing when there are no recent slips", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[]} recentSlips={[]} />);
-    expect(container.textContent).toContain("Chưa có phiếu xuất nào");
-  });
-});
-
 describe("IssueSlipClient -- Số lượng field sizing and Chi tiết input shape (D10)", () => {
   it("the Số lượng field carries the compact w-24 width class (class presence, not measured width)", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const qtyInput = findQtyInput(getLineBlocks(container)[0]);
     expect(qtyInput.closest(".w-24")).toBeTruthy();
   });
 
   it("Chi tiết is a single-line text input, not a multi-row textarea", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     expect(container.querySelector("textarea")).toBeNull();
     const detailInput = container.querySelector(
       'input[placeholder="Ví dụ: rơi vỡ khi vận chuyển..."]',
@@ -690,44 +541,36 @@ describe("IssueSlipClient -- Số lượng field sizing and Chi tiết input sha
 
 describe("IssueSlipClient -- M2, the quantity input opens a numeric phone keypad", () => {
   it("the Số lượng input's inputMode is numeric", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
-    expect(findQtyInput(getLineBlocks(container)[0]).getAttribute("inputmode")).toBe("numeric");
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    expect(findQtyInput(getLineBlocks(container)[0]).getAttribute("inputmode")).toBe("decimal");
   });
 });
 
 describe("IssueSlipClient -- M3, tap targets carry the 44px-tier class, not the 32px one (class presence, not measured size)", () => {
   it("the add-line button carries min-h-[44px]", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const addBtn = findButtonWithText(container, "+ Thêm mặt hàng");
     expect(addBtn?.className).toContain("min-h-[44px]");
   });
 
   it("the remove-line button carries the p-2 padding class that gives it a real hit area", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await clickButtonWithText(container, "+ Thêm mặt hàng");
     const removeBtn = getLineBlocks(container)[0].querySelector('button[aria-label="Xoá dòng"]');
     expect(removeBtn?.className).toContain("p-2");
-  });
-
-  it("the Đảo dòng reverse button carries min-h-[44px], not the 32px sm size", async () => {
-    const eligible = row({ id: "ISS-001", slipId: "ISL-001" });
-    const container = await renderTracked(<IssueSlipClient items={[]} recentSlips={[eligible]} />);
-    const reverseBtn = findButtonWithText(container, "Đảo dòng");
-    expect(reverseBtn?.className).toContain("min-h-[44px]");
-    expect(reverseBtn?.className).not.toContain("min-h-[32px]");
   });
 });
 
 describe("IssueSlipClient -- M4, the live ready-to-submit count matches handleSubmit's own validation (D10)", () => {
   it("counts only fully-filled lines as ready", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} recentSlips={[]} />);
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await clickButtonWithText(container, "+ Thêm mặt hàng");
 
     await selectItemInBlock(getLineBlocks(container)[0], "Sữa tươi Vinamilk");
     await selectPackage(getLineBlocks(container)[0], "Thùng 12 hộp");
     await setInputValue(findQtyInput(getLineBlocks(container)[0]), "2");
-    // Line 2 left empty.
 
     expect(container.textContent).toContain("Đã điền đủ: 1/2 dòng");
   });
 });
+

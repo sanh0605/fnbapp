@@ -21,6 +21,10 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the purchase-orders list -- legitimately unlinked",
   },
   {
+    route: "/admin/inventory/issue-slips/new",
+    reason: "reached from the issue-slips list -- legitimately unlinked",
+  },
+  {
     route: "/admin/pos-sync",
     reason:
       "reached from the Tổng quan page (app/admin/page.tsx links it)",

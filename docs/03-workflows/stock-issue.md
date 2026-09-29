@@ -1,7 +1,7 @@
 # Stock issue flow
 
 ```flow-decl
-routes: /admin/inventory/issue-slips, /admin/inventory/issue-slips/[id]
+routes: /admin/inventory/issue-slips, /admin/inventory/issue-slips/new, /admin/inventory/issue-slips/[id]
 files: lib/stock/manual-issue-transaction.ts
 tables: issue_slips, stock_issues
 brCodes: BR-COGS-005
@@ -34,7 +34,7 @@ every correction is a compensating `stock_issues` row.
    - *Active*: at least one line not reversed.
    - *Cancelled*: every line reversed (by "Huỷ phiếu"); the reason is read from the reversal note.
    - *Locked*: dated on or before the latest confirmed stocktake; it can no longer be edited or cancelled.
-2. **Buttons per screen, and when to hide them.** The list page links to each slip and to "Tạo phiếu xuất". (Built in step 4a: the list page and the detail page `[id]`; the create page `/new` follows in the same plan's next UI task.)
+2. **Buttons per screen, and when to hide them.** The list page links to each slip and to "Tạo phiếu xuất" (`/new`). After a slip is created, the create page opens that slip's detail page. The old "recent slips" column with its per-line reverse button is gone; corrections happen on the detail page.
    - The detail page has "Chỉnh sửa" and "Huỷ phiếu", both hidden when the slip is cancelled or locked.
    - The server refuses them anyway (`issue_slip_stocktake_lock`, cancelled-slip check).
 3. **What each list contains, and what is excluded.** One row per slip plus one row per confirmed stocktake with a shortfall (`BR-INV-012`). Cancelled slips are hidden unless the type filter is "Đã huỷ".
