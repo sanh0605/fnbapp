@@ -125,12 +125,12 @@ Chủ quán chốt 2026-09-28, áp dụng mọi phiên:
 | Phần việc | Ai làm |
 |---|---|
 | Giao diện, frontend, UI/UX: màn hình, component, bố cục, menu, kiểu dáng | Gemini 3.1 Pro, chạy qua `agy` (`agy --model gemini-3.1-pro-high -p "<việc>"`) |
-| Backend: `lib/`, server action, `supabase/`, `scripts/`, test của chúng | Sonnet 5 (công cụ Agent, model `sonnet`) |
+| Backend: `lib/`, server action, `supabase/`, `scripts/`, test của chúng | Sonnet 5.5 (công cụ Agent, model `sonnet`) |
 | Đặc tả, kế hoạch, giao việc, soát lại, tài liệu | Opus |
 
 Việc có cả hai phần thì tách thành hai phiếu giao việc. Opus soát lại trước khi báo xong.
 
-Model chủ quán chốt 2026-09-29: Gemini luôn ghi rõ `--model gemini-3.1-pro-high`, không để `agy` tự chọn. Sonnet dùng bản mới nhất có trong công cụ Agent, hiện là Sonnet 5 (chưa có Sonnet 5.5); có bản mới hơn thì báo chủ quán trước khi đổi.
+Model chủ quán chốt 2026-09-29: Gemini luôn ghi rõ `--model gemini-3.1-pro-high`, không để `agy` tự chọn. Sonnet dùng bản mới nhất có trong công cụ Agent, hiện là Sonnet 5.5 (`claude-sonnet-5-5`); có bản mới hơn thì báo chủ quán trước khi đổi.
 
 ## Viết code
 

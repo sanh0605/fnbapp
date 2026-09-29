@@ -14,7 +14,7 @@
 **Spec:** `docs/superpowers/specs/2026-09-29-menu-va-khuon-trang-design.md`. Owner approved it on 2026-09-29 ("Duyệt"). Interview record: `docs/superpowers/specs/2026-09-28-cai-to-he-thong.md`.
 
 **Who codes (owner, 2026-09-28):**
-- **Part A, Tasks 1–3, goes to Sonnet 5** (Agent tool, model `sonnet`): `lib/`, server action, and their tests.
+- **Part A, Tasks 1–3, goes to Sonnet 5.5** (Agent tool, model `sonnet`): `lib/`, server action, and their tests.
 - **Part B, Tasks 4–8, goes to Gemini 3.1 Pro** through `agy --model gemini-3.1-pro-high -p "<task>"`: menu, colours, font, list screen.
 - Opus reviews each part before it is reported done.
 - Part A lands first, because Task 8 consumes it.
