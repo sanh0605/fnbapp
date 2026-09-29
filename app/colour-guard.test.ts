@@ -31,8 +31,16 @@ describe("colour guard", () => {
       const rel = relative(root, file);
       if (SKIP.some(s => rel.includes(s))) continue;
       const src = readFileSync(file, "utf8");
-      for (const hex of src.match(/#[0-9A-Fa-f]{6}\b/g) ?? []) {
-        if (!ALLOWED_HEX.has(hex.toUpperCase())) offenders.push(`${rel}: ${hex}`);
+      // Neutral black/white rgba is allowed for shadows
+      for (const color of src.match(/#[0-9A-Fa-f]{6}\b|#[0-9A-Fa-f]{3}\b|rgba?\(\s*\d[^)]*\)/g) ?? []) {
+        if (color.startsWith("#")) {
+          if (!ALLOWED_HEX.has(color.toUpperCase())) offenders.push(`${rel}: ${color}`);
+        } else {
+          const [r, g, b] = (color.match(/\d+/g) || []).map(Number);
+          if (!(r === 0 && g === 0 && b === 0) && !(r === 255 && g === 255 && b === 255)) {
+            offenders.push(`${rel}: ${color}`);
+          }
+        }
       }
       for (const cls of src.match(RAW_TAILWIND) ?? []) offenders.push(`${rel}: ${cls}`);
     }

@@ -82,7 +82,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
   function renderStatusBadge(status: string) {
     if (status === "COMPLETED") {
       return (
-        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-success/10 text-success border border-success/30">
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-primary-soft text-primary border border-primary/30">
           Hoàn thành
         </span>
       );

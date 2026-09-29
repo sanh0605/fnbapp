@@ -340,7 +340,7 @@ export default async function SalesReportPage({
                           title={`${day}, ${hour}h: ${formatNumber(cell.revenue)} (${cell.orderCount} đơn)`}
                           className="rounded-md border border-border/50 flex flex-col items-center justify-center transition-transform transition-shadow hover:scale-105 hover:shadow-sm cursor-pointer"
                           style={{
-                            backgroundColor: cell.revenue > 0 ? `rgba(37, 99, 235, ${scaledOpacity})` : 'var(--color-bg-page)',
+                            backgroundColor: cell.revenue > 0 ? `rgb(var(--color-primary-rgb) / ${scaledOpacity})` : 'var(--color-bg-page)',
                             color: scaledOpacity > 0.5 ? '#ffffff' : 'var(--color-text-primary)',
                           }}
                         >
@@ -367,10 +367,10 @@ export default async function SalesReportPage({
         <div className="mt-4 flex items-center justify-end gap-3 text-xs text-text-secondary hidden md:flex">
           <span>Doanh thu thấp</span>
           <div className="flex gap-1 h-4">
-            <div className="w-6 rounded" style={{ backgroundColor: 'rgba(37, 99, 235, 0.05)' }}></div>
-            <div className="w-6 rounded" style={{ backgroundColor: 'rgba(37, 99, 235, 0.25)' }}></div>
-            <div className="w-6 rounded" style={{ backgroundColor: 'rgba(37, 99, 235, 0.55)' }}></div>
-            <div className="w-6 rounded" style={{ backgroundColor: 'rgba(37, 99, 235, 0.9)' }}></div>
+            <div className="w-6 rounded" style={{ backgroundColor: 'rgb(var(--color-primary-rgb) / 0.05)' }}></div>
+            <div className="w-6 rounded" style={{ backgroundColor: 'rgb(var(--color-primary-rgb) / 0.25)' }}></div>
+            <div className="w-6 rounded" style={{ backgroundColor: 'rgb(var(--color-primary-rgb) / 0.55)' }}></div>
+            <div className="w-6 rounded" style={{ backgroundColor: 'rgb(var(--color-primary-rgb) / 0.9)' }}></div>
           </div>
           <span>Doanh thu cao</span>
         </div>

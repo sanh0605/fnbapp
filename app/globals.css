@@ -12,22 +12,39 @@
      Four roles -- background, text, primary, red; old status names are
      repointed so existing classes keep working. */
   --color-primary: #8A5A1F;
+  --color-primary-rgb: 138 90 31;
   --color-primary-hover: #744B19;
+  --color-primary-hover-rgb: 116 75 25;
   --color-primary-active: #5E3D14;
+  --color-primary-active-rgb: 94 61 20;
   --color-primary-soft: #F2E8D8;
+  --color-primary-soft-rgb: 242 232 216;
   --color-bg-page: #F7F5F0;
+  --color-bg-page-rgb: 247 245 240;
   --color-surface-card: #FFFFFF;
+  --color-surface-card-rgb: 255 255 255;
   --color-surface-secondary: #E4DFD5;
+  --color-surface-secondary-rgb: 228 223 213;
   --color-sidebar: #FFFFFF;
+  --color-sidebar-rgb: 255 255 255;
   --color-text-primary: #1F1B16;
+  --color-text-primary-rgb: 31 27 22;
   --color-text-secondary: #5E574E;
+  --color-text-secondary-rgb: 94 87 78;
   --color-text-muted: #5E574E;
+  --color-text-muted-rgb: 94 87 78;
   --color-border: #E4DFD5;
+  --color-border-rgb: 228 223 213;
   --color-success: #8A5A1F;
+  --color-success-rgb: 138 90 31;
   --color-warning: #B3261E;
+  --color-warning-rgb: 179 38 30;
   --color-danger: #B3261E;
+  --color-danger-rgb: 179 38 30;
   --color-processing: #8A5A1F;
+  --color-processing-rgb: 138 90 31;
   --color-focus-ring: #8A5A1F;
+  --color-focus-ring-rgb: 138 90 31;
 }
 
 body {

@@ -2,17 +2,17 @@ import { NAV_GROUPS } from "../nav-items";
 
 const KEY = "fnb.sidebarCollapsed";
 
-export function readSidebarCollapsed(storage: Pick<Storage, "getItem"> | null): boolean {
+export function readSidebarCollapsed(getStorage: () => Pick<Storage, "getItem"> | null): boolean {
   try {
-    return storage?.getItem(KEY) === "1";
+    return getStorage()?.getItem(KEY) === "1";
   } catch {
     return false;
   }
 }
 
-export function writeSidebarCollapsed(storage: Pick<Storage, "setItem"> | null, collapsed: boolean): void {
+export function writeSidebarCollapsed(getStorage: () => Pick<Storage, "setItem"> | null, collapsed: boolean): void {
   try {
-    storage?.setItem(KEY, collapsed ? "1" : "0");
+    getStorage()?.setItem(KEY, collapsed ? "1" : "0");
   } catch {
     // Private window or blocked site data: the choice just is not remembered.
   }

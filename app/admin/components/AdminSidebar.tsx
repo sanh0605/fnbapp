@@ -16,7 +16,7 @@ export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
   const [openGroup, setOpenGroup] = useState<string | null>(() => activeGroupName(pathname));
 
   useEffect(() => {
-    const isCollapsed = readSidebarCollapsed(window.localStorage);
+    const isCollapsed = readSidebarCollapsed(() => window.localStorage);
     setCollapsed(isCollapsed);
   }, []);
 
@@ -29,7 +29,7 @@ export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
   const toggleCollapsed = () => {
     const newCollapsed = !collapsed;
     setCollapsed(newCollapsed);
-    writeSidebarCollapsed(window.localStorage, newCollapsed);
+    writeSidebarCollapsed(() => window.localStorage, newCollapsed);
   };
 
   const toggleGroup = (name: string) => {
@@ -39,7 +39,7 @@ export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
   const handleGroupClick = (groupName: string) => {
     if (collapsed) {
       setCollapsed(false);
-      writeSidebarCollapsed(window.localStorage, false);
+      writeSidebarCollapsed(() => window.localStorage, false);
       setOpenGroup(groupName);
     } else {
       toggleGroup(groupName);

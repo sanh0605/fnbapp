@@ -23,7 +23,7 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
   {
     route: "/admin/pos-sync",
     reason:
-      "TODO: owner decision -- a real, working screen (\"Đơn cần chú ý\": late orders + sync failures via getPosSyncAttentionItems), just never linked; looks like a plain oversight, not a dead page",
+      "reached from the Tổng quan page (app/admin/page.tsx links it)",
   },
   {
     route: "/admin/products/toppings",
