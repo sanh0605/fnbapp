@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useState, useEffect } from "react";
+import { forwardRef, useState, useEffect, type ReactElement } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { vi } from "date-fns/locale";
@@ -17,6 +17,8 @@ interface CustomDatePickerProps {
   className?: string;
   dateFormat?: string;
   showTimeSelect?: boolean;
+  customInput?: ReactElement;
+  isClearable?: boolean;
 }
 
 export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
@@ -48,7 +50,7 @@ export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
         placeholderText={placeholderText || "dd/mm/yyyy hh:mm:ss"}
         className={className || "w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring"}
         wrapperClassName="w-full"
-        isClearable
+        isClearable={props.isClearable ?? true}
         withPortal={isMobile}
         {...props}
         {...({ inputMode: "none" } as any)}

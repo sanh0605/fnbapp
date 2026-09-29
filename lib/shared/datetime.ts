@@ -71,3 +71,37 @@ export function toSaigonIsoString(d: Date): string {
   const p = getSaigonParts(d);
   return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}`;
 }
+
+const DAY_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/**
+ * BR-DATA-006: every date outside a filter shows dd/mm/yyyy HH:mm:ss.
+ * A day-only value ("2026-09-28") has no time; it is read as Saigon
+ * midnight so it shows 00:00:00 -- `new Date("2026-09-28")` would be UTC
+ * midnight, i.e. 07:00:00 in Saigon.
+ */
+export function formatDateTimeFull(value: string | Date | null | undefined): string {
+  if (!value) return "";
+  if (typeof value === "string") {
+    const m = DAY_ONLY.exec(value);
+    if (m) return `${m[3]}/${m[2]}/${m[1]} 00:00:00`;
+  }
+  return formatDateTime(value, { withSeconds: true });
+}
+
+/** Filter input: "dd/mm/yyyy" (1- or 2-digit day and month) -> "YYYY-MM-DD", or null. */
+export function parseVnDay(text: string): string | null {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(text.trim());
+  if (!m) return null;
+  const d = Number(m[1]);
+  const mo = Number(m[2]);
+  const y = Number(m[3]);
+  const probe = new Date(Date.UTC(y, mo - 1, d));
+  if (probe.getUTCFullYear() !== y || probe.getUTCMonth() !== mo - 1 || probe.getUTCDate() !== d) return null;
+  return `${m[3]}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+export function formatVnDay(isoDay: string): string {
+  const m = DAY_ONLY.exec(isoDay);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : "";
+}

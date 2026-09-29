@@ -4,7 +4,7 @@
 // This is deliberately a thin wrapper: the decision logic and both failure
 // modes are unit-tested with synthetic fixtures in lib/nav-completeness.test.ts.
 // This file only wires that logic to the real filesystem and the real
-// layout.tsx, so a future page added without a nav entry (or a nav entry
+// nav-items.ts, so a future page added without a nav entry (or a nav entry
 // added without a page) fails an actual CLAUDE.md "Lệnh" gate
 // (`npx vitest run`), not just a fixture.
 import { readFileSync } from "node:fs";
@@ -17,8 +17,8 @@ describe("app/admin nav completeness", () => {
   it("every static page is reachable from navItems or the allowlist, and every nav entry has a page", () => {
     const repoRoot = process.cwd();
     const pageRoutes = listAdminPageRoutes(repoRoot);
-    const layoutSource = readFileSync(join(repoRoot, "app", "admin", "layout.tsx"), "utf8");
-    const navHrefs = extractNavHrefs(layoutSource);
+    const navSource = readFileSync(join(repoRoot, "app", "admin", "nav-items.ts"), "utf8");
+    const navHrefs = extractNavHrefs(navSource);
 
     const result = checkNavCompleteness(pageRoutes, navHrefs, NAV_ALLOWLIST);
 

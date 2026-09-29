@@ -43,7 +43,7 @@ export default function ModifiersClient({ modifiers, toppings }: ModifiersClient
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Topping & Tùy chọn"
+        title="Topping & tuỳ chọn"
         subtitle="Quản lý tùy chọn và cài đặt bán độc lập (POS)."
         actions={<ModifierForm />}
       />

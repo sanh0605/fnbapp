@@ -1,49 +1,57 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* Owner decision 2026-09-12: the approved report sample's heading font,
-     applied system-wide. Outfit has no Vietnamese glyphs (latin/latin-ext
-     only, checked 2026-09-12), so a Vietnamese heading falls back to Plus
-     Jakarta Sans letter by letter -- the same thing the sample does. */
-  h1, h2, h3 { font-family: 'Outfit', 'Plus Jakarta Sans', Arial, Helvetica, sans-serif; }
 }
 
 :root {
-  --background: #F6F5F0;
-  --foreground: #1D2A24;
-
-  /* Warm Ledger Tokens -- matches the 2026-07-23 inventory report palette */
-  --color-primary: #9C6418;
-  --color-primary-hover: #7D4F13;
-  --color-primary-active: #5F3C0F;
-  --color-primary-soft: #F1E3C8;
-  --color-accent-cyan: #2D6E77;
-  --color-bg-page: #F6F5F0;
+  --background: #F7F5F0;
+  --foreground: #1F1B16;
+  /* Owner decision 2026-09-29 (Q8, Q8b): palette "Cà phê", fixed in code.
+     Four roles -- background, text, primary, red; old status names are
+     repointed so existing classes keep working. */
+  --color-primary: #8A5A1F;
+  --color-primary-rgb: 138 90 31;
+  --color-primary-hover: #744B19;
+  --color-primary-hover-rgb: 116 75 25;
+  --color-primary-active: #5E3D14;
+  --color-primary-active-rgb: 94 61 20;
+  --color-primary-soft: #F2E8D8;
+  --color-primary-soft-rgb: 242 232 216;
+  --color-bg-page: #F7F5F0;
+  --color-bg-page-rgb: 247 245 240;
   --color-surface-card: #FFFFFF;
-  --color-surface-secondary: #EDEAE0;
-  --color-sidebar: #1D2A24;
-  --color-text-primary: #1D2A24;
-  --color-text-secondary: #4A5A52; /* WCAG AA 7.3:1 */
-  --color-text-muted: #63716A; /* WCAG AA 5.1:1 */
-  --color-border: #DBD6C7;
-  --color-success: #3F7154;
-  --color-warning: #B5651D;
-  --color-danger: #9C4430;
-  --color-processing: #2D6E77;
-  --color-focus-ring: #9C6418;
-  /* Chart bars for a profit month (Bản thử, owner notes 2026-09-11): lighter
-     than --color-success so the luỹ kế line still reads as its own series. */
-  --color-chart-profit: #6B9E80;
+  --color-surface-card-rgb: 255 255 255;
+  --color-surface-secondary: #E4DFD5;
+  --color-surface-secondary-rgb: 228 223 213;
+  --color-sidebar: #FFFFFF;
+  --color-sidebar-rgb: 255 255 255;
+  --color-text-primary: #1F1B16;
+  --color-text-primary-rgb: 31 27 22;
+  --color-text-secondary: #5E574E;
+  --color-text-secondary-rgb: 94 87 78;
+  --color-text-muted: #5E574E;
+  --color-text-muted-rgb: 94 87 78;
+  --color-border: #E4DFD5;
+  --color-border-rgb: 228 223 213;
+  --color-success: #8A5A1F;
+  --color-success-rgb: 138 90 31;
+  --color-warning: #B3261E;
+  --color-warning-rgb: 179 38 30;
+  --color-danger: #B3261E;
+  --color-danger-rgb: 179 38 30;
+  --color-processing: #8A5A1F;
+  --color-processing-rgb: 138 90 31;
+  --color-focus-ring: #8A5A1F;
+  --color-focus-ring-rgb: 138 90 31;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Plus Jakarta Sans', 'Outfit', Arial, Helvetica, sans-serif;
+  font-family: var(--font-app), Arial, Helvetica, sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 .bento-card {

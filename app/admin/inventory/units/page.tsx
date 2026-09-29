@@ -19,7 +19,7 @@ export default async function UnitsPage() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Quản lý Đơn vị (Units)" 
+        title="Đơn vị tính" 
         subtitle="Quản lý danh sách các đơn vị tính hợp lệ (kg, lít, hộp...)"
         actions={<UnitForm />}
       />

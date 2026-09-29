@@ -5,11 +5,10 @@ export default function Loading() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Nhân viên & quyền" 
-        subtitle="Quản lý tài khoản đăng nhập và phân quyền hệ thống."
+        title="Topping & tuỳ chọn" 
       />
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
-        <SkeletonTable rows={5} columns={5} />
+        <SkeletonTable rows={5} columns={6} />
       </div>
     </div>
   );

@@ -273,7 +273,7 @@ export default function OrderTable({
     <div className="space-y-4">
       {/* Filter Bar */}
       <PageHeader
-        title="Quản lý Đơn hàng"
+        title="Đơn hàng"
         subtitle="Quản lý và xem lại tất cả các đơn hàng đã được tạo."
         actions={rightContent}
       />

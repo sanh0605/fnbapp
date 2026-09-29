@@ -20,7 +20,7 @@ export default async function OutletsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Quản lý Điểm bán"
+        title="Điểm bán"
         subtitle="Thêm, đổi tên và ngừng hoạt động điểm bán. Mã điểm bán không bao giờ bị xoá hay dùng lại."
         actions={<OutletForm brands={brands} outlets={outlets} />}
       />

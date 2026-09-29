@@ -165,7 +165,7 @@ export default function ActivityLogClient({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Nhật ký Hoạt động"
+        title="Nhật ký hoạt động"
         subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">

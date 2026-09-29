@@ -23,11 +23,21 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
   {
     route: "/admin/pos-sync",
     reason:
-      "TODO: owner decision -- a real, working screen (\"Đơn cần chú ý\": late orders + sync failures via getPosSyncAttentionItems), just never linked; looks like a plain oversight, not a dead page",
+      "reached from the Tổng quan page (app/admin/page.tsx links it)",
   },
   {
     route: "/admin/products/toppings",
     reason:
       "TODO: owner decision -- confirmed dead as its own screen: the entire page body is redirect(\"/admin/products/modifiers\")",
+  },
+  {
+    route: "/admin/clear-cache",
+    reason:
+      "left the menu 2026-09-29 (spec 2026-09-29-menu-va-khuon-trang-design.md section 2): saves already refresh cached data; kept as a fallback by URL",
+  },
+  {
+    route: "/admin/inventory/conversions",
+    reason:
+      "left the menu 2026-09-29 (same spec, section 2): opened from the \"Bảng quy đổi\" button on the Hàng hoá page",
   },
 ];

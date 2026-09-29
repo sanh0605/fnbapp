@@ -5,7 +5,7 @@ export default function Loading() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Quản lý Đơn vị (Units)" 
+        title="Đơn vị tính" 
         subtitle="Quản lý danh sách các đơn vị tính hợp lệ (kg, lít, hộp...)" 
       />
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">

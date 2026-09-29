@@ -90,7 +90,7 @@ export default function ProductsClient({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Thành phẩm (Menu)"
+        title="Món"
         subtitle="Quản lý Menu bán hàng, cấu hình Size và Định mức pha chế."
         actions={rightContent}
       />

@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useFilterForm } from "@/lib/shared/use-filter-form";
 import { EmptyState } from "@/components/ui/EmptyState";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -46,16 +47,21 @@ export default function ItemsClient({ categories, items, conversions, units, uni
   }, [categories]);
 
   const rightContent = (
-    <PurchasedItemForm
-      itemCategories={categories}
-      units={units}
-    />
+    <div className="flex items-center gap-2">
+      <Link href="/admin/inventory/conversions" className="border border-border bg-surface-card text-text-primary flex items-center justify-center font-bold text-sm transition-colors hover:bg-page rounded-button h-11 px-4">
+        Bảng quy đổi
+      </Link>
+      <PurchasedItemForm
+        itemCategories={categories}
+        units={units}
+      />
+    </div>
   );
 
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Quản lý Hàng Mua Vào" 
+        title="Hàng hoá" 
         subtitle="Danh sách các mặt hàng thực tế nhập từ nhà cung cấp."
         actions={rightContent}
       />

@@ -18,7 +18,7 @@ export default async function BrandsPage() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Quản lý Thương hiệu" 
+        title="Thương hiệu" 
         subtitle="Quản lý các thương hiệu F&B đang hoạt động trên hệ thống."
         actions={<BrandForm />}
       />

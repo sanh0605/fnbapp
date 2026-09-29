@@ -83,7 +83,7 @@ export function IssueSlipClient({
   if (items.length === 0) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Phiếu Xuất Kho" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
+        <PageHeader title="Phiếu xuất" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
         <EmptyState icon="📦" title="Không có mặt hàng nào" description="Không tìm thấy hàng mua vào nào để lập phiếu xuất." />
         <RecentSlipsSection recentSlips={recentSlips} />
       </div>
@@ -215,7 +215,7 @@ function FormView({
 
   const form = (
     <>
-      <PageHeader title="Phiếu Xuất Kho" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
+      <PageHeader title="Phiếu xuất" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
       {error && <Alert variant="danger">{error}</Alert>}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6 space-y-5">
         <div className="space-y-3">
@@ -372,7 +372,7 @@ function SubmittedView({
 }) {
   const main = (
     <>
-      <PageHeader title="Phiếu Xuất Kho" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
+      <PageHeader title="Phiếu xuất" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
       <Alert variant="success" title={`Đã ghi phiếu ${result.slipId} (${result.lines.length} dòng)`}>
         <div className="space-y-1">
           {result.lines.map(line => {

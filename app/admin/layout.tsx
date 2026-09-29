@@ -1,98 +1,18 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
-import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useId } from "react";
 import { getOutlets } from "@/app/admin/outlets/actions";
 import { getSaigonNowHHMM } from "@/lib/catalog/outlet-hours";
 import { PosOutletPicker } from "@/app/admin/components/PosOutletPicker";
-import { LayoutDashboard, Package, Truck, Coffee, Receipt, TrendingUp, Settings, LogOut, Store, Wallet } from "lucide-react";
+import { AdminSidebar } from "./components/AdminSidebar";
+import { PhoneNavBar } from "./components/PhoneNavBar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
 
-  const navItems = [
-    { name: "Tổng quan", href: "/admin", icon: <LayoutDashboard size={20} /> },
-    {
-      name: "Danh mục",
-      icon: <Package size={20} />,
-      children: [
-        { name: "Thương hiệu", href: "/admin/brands" },
-        { name: "Điểm bán", href: "/admin/outlets" },
-        { name: "Nhà cung cấp", href: "/admin/suppliers" },
-        { name: "Phân loại Hàng", href: "/admin/inventory/categories" },
-        { name: "Hàng Mua Vào", href: "/admin/inventory/items" },
-        { name: "Bảng Quy Đổi", href: "/admin/inventory/conversions" },
-        { name: "Quản lý Đơn vị", href: "/admin/inventory/units" },
-      ]
-    },
-    {
-      name: "Nhập hàng & Tồn kho",
-      icon: <Truck size={20} />,
-      children: [
-        { name: "Đơn Nhập Hàng", href: "/admin/inventory/purchase-orders" },
-        { name: "Kiểm Kê Định Kỳ", href: "/admin/inventory/stocktake" },
-        { name: "Phiếu Xuất Kho", href: "/admin/inventory/issue-slips" },
-        { name: "Sổ Tài Sản", href: "/admin/inventory/assets" },
-        { name: "Bảng Thời Hạn Khấu Hao", href: "/admin/inventory/asset-bands" },
-      ]
-    },
-    {
-      name: "Menu Bán hàng",
-      icon: <Coffee size={20} />,
-      children: [
-        { name: "Danh mục Nhóm", href: "/admin/products/categories" },
-        { name: "Danh sách Món", href: "/admin/products" },
-        { name: "Topping & Tùy chọn", href: "/admin/products/modifiers" },
-      ]
-    },
-    {
-      name: "Bán hàng",
-      icon: <Receipt size={20} />,
-      children: [
-        { name: "Đơn hàng", href: "/admin/orders" },
-        { name: "Khuyến mãi", href: "/admin/promotions" },
-      ]
-    },
-    {
-      name: "Sổ thu chi",
-      icon: <Wallet size={20} />,
-      children: [
-        { name: "Sổ thu chi", href: "/admin/finance" },
-        { name: "Nhóm thu chi", href: "/admin/finance/categories" },
-        { name: "Tài khoản ngân hàng", href: "/admin/finance/bank-accounts" },
-      ]
-    },
-    {
-      name: "Báo cáo",
-      icon: <TrendingUp size={20} />,
-      children: [
-        { name: "Tổng kết ngày", href: "/admin/reports/daily" },
-        { name: "Báo cáo Bán hàng", href: "/admin/reports/sales" },
-        // Owner decision 2026-08-13 (Plan G G5): repointed from
-        // /admin/reports/stock to the new issued-value page. The old
-        // page's three panels (StockTable, ReorderSuggestionTable,
-        // ShiftStockCheckPanel) live nowhere else in the app and are NOT
-        // deleted -- app/admin/reports/stock stays on disk, reachable by
-        // URL, so restoring this link is a one-line change if ever needed.
-        { name: "Giá trị hàng đã xuất", href: "/admin/reports/issued" },
-        { name: "Báo cáo tài chính", href: "/admin/reports/pnl" },
-      ]
-    },
-    {
-      name: "Hệ thống",
-      icon: <Settings size={20} />,
-      children: [
-        { name: "Nhân sự & Phân quyền", href: "/admin/users" },
-        { name: "Nhật ký Hoạt động", href: "/admin/activity-log" },
-        { name: "Xoá Cache", href: "/admin/clear-cache" },
-      ]
-    }
-  ];
-
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isPosModalOpen, setIsPosModalOpen] = useState(false);
   const [outlets, setOutlets] = useState<any[]>([]);
   const [outletsLoading, setOutletsLoading] = useState(false);
@@ -159,15 +79,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     };
   }, [isPosModalOpen]);
 
-  const [openGroup, setOpenGroup] = useState<string | null>(() => {
-    for (const item of navItems) {
-      if (item.children?.some((child: any) => pathname === child.href)) {
-        return item.name;
-      }
-    }
-    return null;
-  });
-
   const loadOutletsForPosModal = async () => {
     setOutletsLoading(true);
     setOutletsError(null);
@@ -192,177 +103,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push(`/pos?outletId=${outletId}`);
   };
 
-  useEffect(() => {
-    for (const item of navItems) {
-      if (item.children?.some((child: any) => pathname === child.href)) {
-        setOpenGroup(item.name);
-        return;
-      }
-    }
-  }, [pathname]);
-
-  const toggleGroup = (name: string) => {
-    setOpenGroup(prev => prev === name ? null : name);
-  };
-
   return (
     <div className="fixed inset-0 flex bg-page font-sans text-text-primary overflow-hidden">
       
-      {/* Mobile Backdrop */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-[49] md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
       {/* Sidebar */}
-      <aside 
-        className={`fixed inset-y-0 left-0 w-64 bg-sidebar border-r border-sidebar/50 flex flex-col shadow-xl z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 pt-[env(safe-area-inset-top)] md:pt-0">
-          <h1 className="text-xl font-bold text-white tracking-tight">
-            Admin <span className="text-primary-soft font-medium opacity-80">Workspace</span>
-          </h1>
-          <button 
-            className="md:hidden text-text-muted hover:text-white transition-colors"
-            onClick={() => setIsSidebarOpen(false)}
-          >
-            ✕
-          </button>
-        </div>
-        
-        <div className="px-4 py-3 border-b border-white/10">
-          <button 
-            onClick={handleOpenPosModal}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-white font-bold py-2.5 rounded-button hover:bg-primary-hover active:bg-primary-active transition shadow-sm"
-          >
-            <Store size={18} />
-            MỞ MÁY POS
-          </button>
-        </div>
-
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 sidebar-nav-scroll">
-          {navItems.map((item: any) => {
-            if (item.children) {
-              const isGroupActive = item.children.some((child: any) => pathname === child.href);
-              const isExpanded = openGroup === item.name;
-              
-              return (
-                <div key={item.name} className="space-y-1 mb-1">
-                  <button
-                    onClick={() => toggleGroup(item.name)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                      isGroupActive ? "bg-primary text-white font-semibold" : "text-text-muted hover:bg-surface-card/10 hover:text-white"
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <span className="mr-3">{item.icon}</span>
-                      {item.name}
-                    </div>
-                    <svg
-                      className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-90 text-white" : "text-text-muted"}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                  
-                  {isExpanded && (
-                    <div className="pl-11 space-y-1 mt-1">
-                      {item.children.map((child: any) => {
-                        const isChildActive = pathname === child.href;
-                        return (
-                          <Link
-                            key={child.name}
-                            href={child.href}
-                            prefetch={false}
-                            onClick={() => setIsSidebarOpen(false)}
-                            className={`block px-3 py-2 rounded-lg text-sm transition-colors duration-200 ${
-                              isChildActive
-                                ? "bg-primary text-white font-semibold shadow-sm"
-                                : "text-text-muted hover:bg-surface-card/10 hover:text-white font-medium"
-                            }`}
-                          >
-                            {child.name}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            }
-
-            const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href) && !pathname.includes("/admin/products") && !pathname.includes("/admin/semi-products") && !pathname.includes("/admin/production"));
-            
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                prefetch={false}
-                onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center px-3 py-2.5 rounded-lg text-sm transition-colors duration-200 mb-1 ${
-                  isActive
-                    ? "bg-primary text-white shadow-sm font-semibold"
-                    : "text-text-muted hover:bg-surface-card/10 hover:text-white font-medium"
-                }`}
-              >
-                <span className="mr-3">{item.icon}</span>
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-white/10 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-surface-card/10 flex items-center justify-center text-white font-bold">
-              {session?.user?.name?.charAt(0).toUpperCase() || "A"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {session?.user?.name || "Admin User"}
-              </p>
-              <p className="text-xs text-text-muted truncate capitalize">
-                {(session?.user as any)?.role || "Admin"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white/80 bg-surface-card/5 rounded-lg hover:bg-danger hover:text-white transition-colors"
-          >
-            <LogOut size={16} />
-            Đăng xuất
-          </button>
-        </div>
-      </aside>
+      <AdminSidebar onOpenPos={handleOpenPosModal} />
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-surface-card/50 relative">
-        {/* Top Header Mobile */}
-        <div className="md:hidden h-auto min-h-[4rem] bg-surface-card border-b border-border flex items-center px-4 justify-between pt-[env(safe-area-inset-top)]">
-          <button 
-            className="text-text-muted p-2 hover:bg-surface-secondary rounded-lg"
-            onClick={() => setIsSidebarOpen(true)}
-            aria-label="Mở menu"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-          </button>
-          <span className="font-bold text-text-primary">Admin</span>
-          <div className="w-10"></div>
-        </div>
-
         {/* Content Scroll */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <div className="max-w-[1920px] mx-auto w-full pb-20">
+          <div className="max-w-[1920px] mx-auto w-full pb-24 md:pb-0">
             {children}
           </div>
         </div>
       </main>
+
+      {/* Phone Navigation Bar */}
+      <PhoneNavBar onOpenPos={handleOpenPosModal} />
 
       {/* POS Brand Selection Modal */}
       {isPosModalOpen && (

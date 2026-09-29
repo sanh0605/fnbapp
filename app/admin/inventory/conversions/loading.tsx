@@ -5,7 +5,7 @@ export default function Loading() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Quản lý Bảng Quy Đổi" 
+        title="Bảng quy đổi" 
         subtitle="Thiết lập tỷ lệ quy đổi từ đơn vị mua hàng sang đơn vị cơ bản dùng trong pha chế." 
       />
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">

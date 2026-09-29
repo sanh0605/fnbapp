@@ -5,7 +5,7 @@ export default function Loading() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Quản lý Thương hiệu" 
+        title="Thương hiệu" 
         subtitle="Quản lý các thương hiệu F&B đang hoạt động trên hệ thống." 
       />
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">

@@ -125,7 +125,7 @@ function StartSessionView() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Kiểm Kê Định Kỳ" subtitle="Đếm thực tế toàn bộ nguyên liệu và bán thành phẩm, so sánh với sổ sách hệ thống." />
+      <PageHeader title="Kiểm kê" subtitle="Đếm thực tế toàn bộ nguyên liệu và bán thành phẩm, so sánh với sổ sách hệ thống." />
       {error && <Alert variant="danger">{error}</Alert>}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6 max-w-xl mx-auto text-center space-y-4">
         <p className="text-text-secondary text-sm">
@@ -223,7 +223,7 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Kiểm Kê Định Kỳ"
+        title="Kiểm kê"
         subtitle="Đếm thực tế toàn bộ nguyên liệu và bán thành phẩm, so sánh với sổ sách hệ thống."
         actions={
           <div className="flex gap-2">
@@ -364,7 +364,7 @@ function AppliedSessionView({ sessionId, result }: { sessionId: string; result: 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Kiểm Kê Định Kỳ"
+        title="Kiểm kê"
         subtitle="Phiên kiểm kê đã được xác nhận và khóa."
       />
       <Alert variant="success" title={`Đã áp dụng phiên ${sessionId}`}>
