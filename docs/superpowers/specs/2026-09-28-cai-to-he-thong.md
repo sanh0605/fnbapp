@@ -512,7 +512,7 @@ Có, bằng hai đường:
 | Q7 | Trên điện thoại, những trang nào anh thật sự dùng (chọn 4 trang cho thanh dưới đáy, mục 5.12) | chốt 2026-09-28 (mục 5.13) |
 | Q8 | Bảng màu và kiểu chữ: chọn trên bản mẫu (mục 5.14) | Đã chốt 2026-09-29: Cà phê, Be Vietnam Pro |
 | Q8b | Màu có cần là thứ anh tự đổi trong Cài đặt không (mục 5.12) | Đã chốt 2026-09-29 ("Theo em khuyên"): **không**. Màu cố định một chỗ trong code, anh nhắn là đổi. Đây là ngoại lệ anh tự chọn cho luật "không nhét cứng vào code": lý do là cho chọn màu tuỳ ý dễ ra chữ nhạt trên nền nhạt, đứng quầy khó đọc |
-| Q10 | Ngày tháng: hiện `dd/mm/yyyy`, lọc chỉ theo ngày (`BR-DATA-006`); còn hỏi có kèm giờ `dd/mm/yyyy HH:mm` ở chỗ cần giờ không | chốt phần ngày 2026-09-29 qua bình luận; phần giờ **đang hỏi** trên bản mẫu |
+| Q10 | Ngày tháng: hiện `dd/mm/yyyy`, lọc chỉ theo ngày (`BR-DATA-006`); còn hỏi có kèm giờ `dd/mm/yyyy HH:mm` ở chỗ cần giờ không | Đã chốt 2026-09-29 (`BR-DATA-006`): bộ lọc chỉ chọn ngày; mọi chỗ khác `dd/mm/yyyy HH:mm:ss`, chỗ không ghi giờ thì hiện 00:00:00 |
 | Q11 | Danh sách phiếu nhập hiện gì thay cho mặt hàng (mục 5.14) | Đã chốt 2026-09-29 (mục 5.15): mã phiếu, nguồn mua; bỏ số hoá đơn |
 | Q12 | Mã đơn Shopee hay mã vận đơn; tạo phiếu lúc đặt hay lúc hàng về (mục 5.15) | Đã chốt 2026-09-29: giữ gộp, không tách phiếu nhập kho |
 | Q9 | Danh sách phiếu "mới nhất ở trên" xếp theo ngày nhập hay ngày tạo (mục 5.14) | chốt 2026-09-29 qua bình luận trên bản mẫu: *"Hiển thị ngày nhập thực tế, không phải là ngày phiếu được nhập vào"*. Đo: 191/191 phiếu có ngày nhập, 164 phiếu lệch ngày tạo |
