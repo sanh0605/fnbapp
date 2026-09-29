@@ -24,6 +24,8 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
   const [applyRequested, setApplyRequested] = useState(false);
 
   const hasAnyFilter = Boolean(searchParams.get("q") || searchParams.get("status") || searchParams.get("supplier") || searchParams.get("from") || searchParams.get("to"));
+  const draftChanged = draft.q !== defaultFilters.q || draft.status !== defaultFilters.status || draft.supplier !== defaultFilters.supplier || draft.from !== defaultFilters.from || draft.to !== defaultFilters.to;
+  const showClear = hasAnyFilter || draftChanged;
 
   useEffect(() => {
     if (!applyRequested) return;
@@ -66,8 +68,14 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") {
-      e.preventDefault();
-      setApplyRequested(true);
+      const target = e.target as HTMLElement;
+      if (
+        (target instanceof HTMLInputElement || target instanceof HTMLSelectElement) &&
+        target.closest('.react-datepicker') === null
+      ) {
+        e.preventDefault();
+        setApplyRequested(true);
+      }
     }
   }
 
@@ -139,7 +147,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
               placeholder="Tìm mã phiếu, nhà cung cấp, mặt hàng…"
               value={draft.q}
               onChange={(e) => setField("q", e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+              className="w-full min-h-[44px] border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
             />
           </div>
           <div className="w-full md:w-40">
@@ -148,7 +156,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
               id="status-select"
               value={draft.status}
               onChange={(e) => setField("status", e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+              className="w-full min-h-[44px] border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
             >
               <option value="ALL">Tất cả</option>
               <option value="DRAFT">Nháp</option>
@@ -161,7 +169,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
               id="supplier-select"
               value={draft.supplier}
               onChange={(e) => setField("supplier", e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+              className="w-full min-h-[44px] border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
             >
               <option value="ALL">Tất cả</option>
               {pageData.suppliers.map((s) => (
@@ -173,7 +181,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
             <DayInput
               label="Từ ngày"
               value={draft.from}
-              onChange={(v) => setField("from", v)}
+              onChange={(v) => { setField("from", v); setFromError(""); setRangeMsg(""); }}
               error={fromError}
             />
           </div>
@@ -181,7 +189,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
             <DayInput
               label="Đến ngày"
               value={draft.to}
-              onChange={(v) => setField("to", v)}
+              onChange={(v) => { setField("to", v); setToError(""); setRangeMsg(""); }}
               error={toError}
             />
           </div>
@@ -193,7 +201,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
             >
               Lọc
             </button>
-            {hasAnyFilter && (
+            {showClear && (
               <button
                 type="button"
                 onClick={handleClear}
@@ -243,7 +251,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
                   {rows.map((po) => (
                     <tr key={po.id} className="hover:bg-surface-secondary/50 transition-colors group relative">
                       <td className="px-6 py-4">
-                        <Link href={`/admin/inventory/purchase-orders/${po.id}`} className="absolute inset-0 z-10 focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none">
+                        <Link href={`/admin/inventory/purchase-orders/${po.id}`} title={po.supplierName} className="absolute inset-0 z-10 focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none">
                           <span className="sr-only">Xem chi tiết {po.id}</span>
                         </Link>
                         <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">{po.id}</span>
@@ -303,7 +311,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
               </div>
               
               {pageCount > 1 && (
-                <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center justify-center gap-1">
                   {page > 1 ? (
                     <Link
                       href={getPageUrl(page - 1)}
@@ -319,10 +327,10 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
                     <Link
                       key={p}
                       href={getPageUrl(p)}
-                      className={`min-h-[44px] min-w-[44px] flex items-center justify-center px-3 py-1 text-sm font-medium rounded border ${
+                      className={`min-h-[44px] min-w-[44px] items-center justify-center px-3 py-1 text-sm font-medium rounded border ${
                         p === page 
-                          ? "bg-primary text-white border-primary" 
-                          : "text-text-primary hover:bg-surface-card border-transparent hover:border-border"
+                          ? "flex bg-primary text-white border-primary" 
+                          : "hidden md:flex text-text-primary hover:bg-surface-card border-transparent hover:border-border"
                       }`}
                     >
                       {p}
