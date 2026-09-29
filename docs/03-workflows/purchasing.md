@@ -105,3 +105,5 @@ belongs in the stock ledger" rule) was retired in favour of the issue-based
 cost path (`BR-COGS-005`).
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md
+
+> Reviewed, no behaviour change — 2026-09-29: added `getPurchaseOrdersPage` (read-only, not yet called by any page).

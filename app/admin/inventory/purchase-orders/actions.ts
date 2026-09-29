@@ -8,6 +8,7 @@ import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DB
 import { buildPurchaseOrderWritePlan } from "@/lib/purchasing/purchase-order-write-plan";
 import { savePurchaseOrderAtomic } from "@/lib/purchasing/purchase-order-transaction";
 import { requireAdmin } from "@/lib/auth/auth";
+import { listPurchaseOrdersPage, type PurchaseOrderListFilters, type PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
 import type { RawPurchaseOrderLine } from "@/lib/purchasing/item-purchase-history";
 import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine } from "@/lib/assets/asset-purchase-allocation";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
@@ -37,6 +38,31 @@ export async function getPurchaseOrdersData(): Promise<{
     console.error("Loi getPurchaseOrdersData:", error);
     throw error;
   }
+}
+
+export async function getPurchaseOrdersPage(filters: PurchaseOrderListFilters): Promise<
+  PurchaseOrderListPage & { suppliers: { id: string; name: string }[] }
+> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const [orders, suppliers, sources, lines, items] = await Promise.all([
+    findAll("Purchase_Orders") as Promise<DBPurchaseOrder[]>,
+    findAll("Suppliers") as Promise<DBSupplier[]>,
+    findAll("Purchase_Sources") as Promise<DBPurchaseSource[]>,
+    findAll("Purchase_Order_Lines") as Promise<RawPurchaseOrderLine[]>,
+    findAll("Purchased_Items") as Promise<DBPurchasedItem[]>,
+  ]);
+  // Narrow the optional raw fields: a line missing either id cannot be searched by item name.
+  const linkedLines = lines.flatMap(l =>
+    l.purchase_order_id && l.purchased_item_id
+      ? [{ purchase_order_id: l.purchase_order_id, purchased_item_id: l.purchased_item_id }]
+      : []);
+  const page = listPurchaseOrdersPage({ orders, suppliers, sources, lines: linkedLines, items, filters });
+  const supplierOptions = suppliers
+    .map(s => ({ id: s.id, name: s.name }))
+    .sort((a, b) => a.name.localeCompare(b.name, "vi"));
+  return { ...page, suppliers: supplierOptions };
 }
 
 export async function savePurchaseOrder(formData: FormData): Promise<ActionResponse> {
