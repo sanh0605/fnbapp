@@ -117,7 +117,10 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 - **Who.** The owner and managers (`requireAdmin()`), as today. Nothing is deleted outright, so the "only ADMIN deletes" rule does not apply.
 - **Lines before a confirmed stocktake cannot be deleted.** This means any line whose issue date is on or before the confirmed date of the most recent confirmed stocktake. That count already put the goods back on the book as found stock. Returning them again would leave the book that much above the shelf. The screen says why and points to the next count. The current reversal (`0058`) has no such block, as of 2026-09-29.
 
-**Still open, to ask the owner:** whether "Chỉnh sửa" also allows changing a quantity and adding lines, or only deleting. His words about entering at least one line to save suggest adding.
+**What "Chỉnh sửa" allows** (owner 2026-09-29, *"A"*): deleting lines, changing a quantity, and adding lines.
+- **Changing a quantity** is a delete plus a new line. Example given to him: 500 g changed to 300 g returns 500 g to stock today and issues 300 g on the slip's own date.
+- **Added lines** take the slip's own date, like the lines entered when the slip was made.
+- **A slip dated on or before the most recent confirmed stocktake cannot be edited at all.** A new line backdated before that count would leave the book below the shelf, just as a delete would leave it above.
 
 ### BR-INV-009 — Reversing a mistaken issue slip lands today, at today's average, using BR-INV-008's mechanism
 
