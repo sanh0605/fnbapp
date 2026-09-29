@@ -62,7 +62,7 @@ export function PnlChart({ table }: { table: PnlTable }) {
             <span className="inline-block h-3 w-3 rounded-sm bg-danger" />Tháng lỗ
           </span>
           <span className="flex items-center gap-1">
-            <span className="inline-block h-0.5 w-4 bg-success" />Luỹ kế
+            <span className="inline-block h-0.5 w-4 bg-text-primary" />Luỹ kế
           </span>
         </div>
       </div>
@@ -130,7 +130,7 @@ export function PnlChart({ table }: { table: PnlTable }) {
           points={points.map((p, i) => `${cx(i)},${y(p.cumulative)}`).join(" ")}
           fill="none"
           strokeWidth={2.5}
-          className="stroke-success"
+          className="stroke-text-primary"
         />
         {points.map((p, i) => (
           <circle
@@ -139,7 +139,7 @@ export function PnlChart({ table }: { table: PnlTable }) {
             cy={y(p.cumulative)}
             r={i === lastIndex ? 5 : 3.2}
             strokeWidth={2}
-            className="fill-surface-card stroke-success"
+            className="fill-surface-card stroke-text-primary"
           />
         ))}
         <text
@@ -148,7 +148,7 @@ export function PnlChart({ table }: { table: PnlTable }) {
           textAnchor="end"
           fontSize={12}
           fontWeight={700}
-          className="fill-success"
+          className="fill-text-primary"
         >
           {`luỹ kế ${formatCompact(points[lastIndex].cumulative, unit)}`}
         </text>
