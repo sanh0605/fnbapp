@@ -26,9 +26,17 @@ describe("page headings match the menu", () => {
   });
 
   it.each(links)('$href loading skeleton shows "$name"', ({ name, href }) => {
-    const dir = join(process.cwd(), "app", ...href.split("/").filter(Boolean));
-    const loadingPath = join(dir, "loading.tsx");
-    if (!existsSync(loadingPath)) {
+    let dirParts = href.split("/").filter(Boolean);
+    let loadingPath = "";
+    while (dirParts.length >= 1) {
+      const p = join(process.cwd(), "app", ...dirParts, "loading.tsx");
+      if (existsSync(p)) {
+        loadingPath = p;
+        break;
+      }
+      dirParts.pop();
+    }
+    if (!loadingPath) {
       return;
     }
 

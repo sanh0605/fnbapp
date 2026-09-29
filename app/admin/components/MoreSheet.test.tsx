@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup, act } from "@testing-library/react";
+import { render, screen, cleanup, act, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import { useState } from "react";
 import { MoreSheet } from "./MoreSheet";
@@ -44,9 +44,10 @@ describe("MoreSheet", () => {
     
     await act(async () => {
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
     
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 
   it("closes on pathname change", async () => {
@@ -60,6 +61,19 @@ describe("MoreSheet", () => {
     
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("closes on popstate", async () => {
+    render(<Wrapper />);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent("popstate"));
     });
     
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

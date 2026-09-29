@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup, act, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, act, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import { PhoneNavBar } from "./PhoneNavBar";
 
@@ -42,7 +42,7 @@ describe("PhoneNavBar", () => {
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     });
     
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     
     // click Thêm again
     fireEvent.click(themButton);

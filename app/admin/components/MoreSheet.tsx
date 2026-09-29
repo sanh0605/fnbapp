@@ -17,6 +17,13 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
   const initialPathname = useRef(pathname);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const closeFromUi = () => {
+    if (window.history.state?.moreSheet) {
+      window.history.back();
+    } else {
+      onCloseRef.current();
+    }
+  };
 
   // Close on route change
   useEffect(() => {
@@ -25,12 +32,29 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
     }
   }, [pathname]);
 
+  // Handle back button
+  useEffect(() => {
+    if (!window.history.state?.moreSheet) {
+      window.history.pushState({ moreSheet: true }, "");
+    }
+
+    const handlePopState = () => {
+      onCloseRef.current();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   // Handle focus, Escape key
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopImmediatePropagation();
-        onCloseRef.current();
+        closeFromUi();
         return;
       }
       if (e.key !== "Tab") return;
@@ -88,7 +112,7 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
           e.target === e.currentTarget &&
           mouseDownTarget.current === e.currentTarget
         ) {
-          onClose();
+          closeFromUi();
         }
         mouseDownTarget.current = null;
       }}
@@ -105,7 +129,7 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
           <span id={titleId} className="text-lg font-bold text-text-primary">Tất cả mục</span>
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeFromUi}
             aria-label="Đóng"
             className="w-11 h-11 border-0 rounded-full bg-surface-card flex items-center justify-center text-text-primary text-xl cursor-pointer hover:bg-surface-card/10"
           >
