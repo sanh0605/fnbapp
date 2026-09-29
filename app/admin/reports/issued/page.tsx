@@ -134,7 +134,7 @@ export default async function IssuedValueReportPage({
             key={tab}
             href={tabHref(tab)}
             className={`flex-1 text-center px-1 py-2.5 text-sm font-bold leading-tight transition-colors min-h-[44px] flex items-center justify-center ${
-              activeTab === tab ? "bg-primary text-white" : "bg-surface-card text-text-secondary"
+              activeTab === tab ? "bg-primary text-on-primary" : "bg-surface-card text-text-secondary"
             }`}
           >
             {label}

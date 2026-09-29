@@ -189,7 +189,7 @@ export default function ActivityLogClient({
           type="button"
           onClick={() => updateUrl({ q: search })}
           disabled={isPending}
-          className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+          className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary disabled:opacity-60"
         >
           Lọc
         </button>

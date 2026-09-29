@@ -296,9 +296,9 @@ export default function OrderEditModal({
 
                   {/* Category filter */}
                   <div className="flex flex-wrap gap-1.5">
-                    <button onClick={() => setAddCategory("ALL")} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === "ALL" ? "bg-primary text-white" : "bg-surface-card text-text-secondary border border-border"}`}>Tất cả</button>
+                    <button onClick={() => setAddCategory("ALL")} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === "ALL" ? "bg-primary text-on-primary" : "bg-surface-card text-text-secondary border border-border"}`}>Tất cả</button>
                     {categories.map((c: any) => (
-                      <button key={c.id} onClick={() => setAddCategory(c.id)} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === c.id ? "bg-primary text-white" : "bg-surface-card text-text-secondary border border-border"}`}>{c.name}</button>
+                      <button key={c.id} onClick={() => setAddCategory(c.id)} className={`px-2.5 py-1 rounded-full text-xs font-medium ${addCategory === c.id ? "bg-primary text-on-primary" : "bg-surface-card text-text-secondary border border-border"}`}>{c.name}</button>
                     ))}
                   </div>
 

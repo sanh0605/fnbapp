@@ -333,7 +333,7 @@ export default function OrderTable({
           <button
             onClick={() => handleFilterChange({ q: searchQuery })}
             disabled={isPendingFilter}
-            className="px-4 py-2 min-h-[38px] bg-primary text-white rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
+            className="px-4 py-2 min-h-[38px] bg-primary text-on-primary rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
           >
             {isPendingFilter ? "Đang lọc..." : "Lọc"}
           </button>

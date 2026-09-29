@@ -131,7 +131,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
         </div>
         <Link
           href="/admin/inventory/purchase-orders/new"
-          className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm w-full md:w-auto text-center min-h-[44px] flex items-center justify-center"
+          className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm w-full md:w-auto text-center min-h-[44px] flex items-center justify-center"
         >
           Tạo phiếu nhập
         </Link>
@@ -329,7 +329,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
                       href={getPageUrl(p)}
                       className={`min-h-[44px] min-w-[44px] items-center justify-center px-3 py-1 text-sm font-medium rounded border ${
                         p === page 
-                          ? "flex bg-primary text-white border-primary" 
+                          ? "flex bg-primary text-on-primary border-primary" 
                           : "hidden md:flex text-text-primary hover:bg-surface-card border-transparent hover:border-border"
                       }`}
                     >

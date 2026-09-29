@@ -197,7 +197,7 @@ function SalesFilterInner({
           <button
             onClick={() => applyFilters()}
             disabled={isPending}
-            className="w-full md:w-auto px-4 py-2 min-h-[44px] bg-primary text-white rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
+            className="w-full md:w-auto px-4 py-2 min-h-[44px] bg-primary text-on-primary rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
           >
             {isPending ? "Đang lọc..." : "Lọc"}
           </button>

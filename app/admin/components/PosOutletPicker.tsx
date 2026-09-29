@@ -53,7 +53,7 @@ export function PosOutletPicker({ outlets, nowHHMM, onOpenTill }: PosOutletPicke
           <button
             key={outlet.id}
             onClick={() => void handleSelect(outlet)}
-            className="w-full bg-primary text-white border border-primary font-bold text-lg py-4 rounded-button hover:bg-primary-hover active:bg-primary-active active:scale-[0.98] transition-colors flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
+            className="w-full bg-primary text-on-primary border border-primary font-bold text-lg py-4 rounded-button hover:bg-primary-hover active:bg-primary-active active:scale-[0.98] transition-colors flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
           >
             <span className="flex items-center gap-3">
               <Store size={24} />

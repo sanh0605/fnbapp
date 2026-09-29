@@ -479,7 +479,7 @@ export function PromotionForm({
               type="submit"
               loading={loading}
               loadingText="Đang lưu..."
-              className="px-6 py-2.5 text-sm font-bold text-white bg-primary rounded-xl hover:bg-primary-hover active:scale-[0.98] transition shadow-md"
+              className="px-6 py-2.5 text-sm font-bold text-on-primary bg-primary rounded-xl hover:bg-primary-hover active:scale-[0.98] transition shadow-md"
             >
               Lưu thông tin
             </LoadingButton>

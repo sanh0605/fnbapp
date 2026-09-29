@@ -1003,7 +1003,7 @@ export default function POSScreen({
               }}
               className="text-sm font-bold text-primary bg-primary-soft px-3 py-1.5 rounded-full hover:bg-primary-soft transition flex items-center gap-1.5"
             >
-              📝 Nháp <span className="bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
+              📝 Nháp <span className="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
             </button>
             <div className="text-sm font-medium text-text-secondary bg-surface-secondary px-3 py-1.5 rounded-full">
               {new Date().toLocaleDateString("vi-VN")}
@@ -1068,7 +1068,7 @@ export default function POSScreen({
       {!isCartOpen && cart.length > 0 && (
         <button
           onClick={() => setIsCartOpen(true)}
-          className="hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-4 font-bold active:scale-95 transition-transform z-30"
+          className="hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 bg-primary text-on-primary px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-4 font-bold active:scale-95 transition-transform z-30"
         >
           <div className="relative">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>

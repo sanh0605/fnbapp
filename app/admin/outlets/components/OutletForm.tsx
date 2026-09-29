@@ -115,7 +115,7 @@ export function OutletForm({ initialData, brands, outlets }: OutletFormProps) {
       ) : (
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition"
+          className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition"
         >
           + Thêm Điểm Bán
         </button>

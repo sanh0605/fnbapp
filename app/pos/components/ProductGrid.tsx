@@ -98,7 +98,7 @@ export function ProductGrid({
             onClick={() => setActiveCategory("BEST_SELLERS")}
             className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[44px] flex items-center transition-all duration-150 active:scale-95 transform ${
               activeCategory === "BEST_SELLERS"
-                ? "bg-primary text-white shadow-md"
+                ? "bg-primary text-on-primary shadow-md"
                 : "bg-surface-secondary text-text-secondary hover:bg-border"
             }`}
           >
@@ -108,7 +108,7 @@ export function ProductGrid({
             onClick={() => setActiveCategory("ALL")}
             className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[44px] flex items-center transition-all duration-150 active:scale-95 transform ${
               activeCategory === "ALL"
-                ? "bg-primary text-white shadow-md"
+                ? "bg-primary text-on-primary shadow-md"
                 : "bg-surface-secondary text-text-secondary hover:bg-border"
             }`}
           >
@@ -120,7 +120,7 @@ export function ProductGrid({
               onClick={() => setActiveCategory(c.id)}
               className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[44px] flex items-center transition-all duration-150 active:scale-95 transform ${
                 activeCategory === c.id
-                  ? "bg-primary text-white shadow-md"
+                  ? "bg-primary text-on-primary shadow-md"
                   : "bg-surface-secondary text-text-secondary hover:bg-border"
               }`}
             >

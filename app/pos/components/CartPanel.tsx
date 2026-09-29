@@ -161,7 +161,7 @@ export function CartPanel({
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              <span className="absolute -top-1.5 -right-1.5 bg-primary text-white text-[9px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-bold">
+              <span className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[9px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-bold">
                 {totalItems}
               </span>
             </div>
@@ -175,7 +175,7 @@ export function CartPanel({
               e.stopPropagation();
               setIsCartOpen(true);
             }}
-            className="bg-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-transform min-h-[44px]"
+            className="bg-primary text-on-primary px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-transform min-h-[44px]"
           >
             Thanh toán ({totalItems})
           </button>
@@ -419,7 +419,7 @@ export function CartPanel({
                       }}
                       className={`px-4 py-2.5 text-xs font-bold transition-colors ${
                         userCustomDiscountType === "VND"
-                          ? "bg-primary text-white"
+                          ? "bg-primary text-on-primary"
                           : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
                       }`}
                     >
@@ -432,7 +432,7 @@ export function CartPanel({
                       }}
                       className={`px-4 py-2.5 text-xs font-bold transition-colors ${
                         userCustomDiscountType === "PERCENT"
-                          ? "bg-primary text-white"
+                          ? "bg-primary text-on-primary"
                           : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
                       }`}
                     >
@@ -535,7 +535,7 @@ export function CartPanel({
               <button
                 onClick={() => handleConfirmCheckout("Chuyen khoan")}
                 disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-primary text-white font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
+                className="flex-1 bg-primary text-on-primary font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
               >
                 {!isOnline ? (
                   <span>NGOẠI TUYẾN</span>
@@ -666,7 +666,7 @@ export function CartPanel({
                   className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-page"
                 />
               )}
-              <button type="submit" className="w-full bg-primary text-white py-2 rounded-lg font-bold text-sm hover:bg-primary-hover">Thêm phần thanh toán</button>
+              <button type="submit" className="w-full bg-primary text-on-primary py-2 rounded-lg font-bold text-sm hover:bg-primary-hover">Thêm phần thanh toán</button>
             </form>
           </div>
           <div className="p-5 border-t border-border bg-page">
