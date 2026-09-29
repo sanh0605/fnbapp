@@ -145,8 +145,8 @@ Cột "Số dòng" ở đây chỉ để đối chiếu; trang thật không có
 - **Huỷ phiếu:** hỏi lý do (bắt buộc), rồi trả mọi dòng còn hiệu lực về kho hôm nay, như `cancel_issue_slip_atomic` đang làm.
 
 Ví dụ: ISL-00076 (28/09/2026) có 7 dòng. Sửa phiếu, bỏ dòng Giấy lót chống tràn (1 cái) và đổi Sữa yến mạch Oatside từ 2000 ml thành 1000 ml, rồi Lưu vào ngày 30/09. Máy ghi:
-- 30/09: trả về kho 1 cái Giấy lót chống tràn và 2000 ml Sữa yến mạch Oatside.
-- 28/09: xuất 1000 ml Sữa yến mạch Oatside, ghi thêm vào ISL-00076.
+- 30/09: trả về kho 1 cái Giấy lót chống tràn.
+- 28/09 (giờ của phiếu): trả về kho 2000 ml Sữa yến mạch Oatside, và xuất 1000 ml Sữa yến mạch Oatside, ghi thêm vào ISL-00076.
 
 Phiếu còn 6 dòng.
 

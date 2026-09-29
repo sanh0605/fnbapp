@@ -6,7 +6,6 @@ const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findAll: vi.fn(),
   findAllNoCache: vi.fn(),
-  findAllWhere: vi.fn(),
   revalidatePath: vi.fn(),
   createIssueSlipAtomic: vi.fn(),
   cancelIssueSlipAtomic: vi.fn(),
@@ -17,7 +16,6 @@ vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   findAllNoCache: mocks.findAllNoCache,
-  findAllWhere: mocks.findAllWhere,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/stock/manual-issue-transaction", () => ({

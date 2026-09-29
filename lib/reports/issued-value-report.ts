@@ -77,11 +77,10 @@ export function computeIssuedEventFigures(stockIssues: any[], purchases: Purchas
   const groups = new Map<string, Group>();
   for (const row of stockIssues) {
     const isStocktake = row.source === "STOCKTAKE";
-    // Plan D D9 / getRecentIssueSlips precedent: a row written outside a
-    // slip (or, symmetrically, a session) carries no group id -- shown as
-    // its own one-row group rather than an error. Not reachable today (both
-    // foreign keys are populated for every row checked 2026-08-13), but the
-    // fallback matches the one already established for this exact gap.
+    // Plan D D9: a row written outside a slip (or, symmetrically, a session)
+    // carries no group id -- shown as its own one-row group rather than an
+    // error. Not reachable today (both foreign keys are populated for every
+    // row checked 2026-08-13), but the fallback covers this exact gap.
     const groupId = isStocktake ? (row.session_id ?? row.id) : (row.issue_slip_id ?? row.id);
     const key = `${isStocktake ? "S" : "M"}:${groupId}`;
     const atMs = new Date(row.issued_at).getTime();
@@ -125,7 +124,7 @@ export function computeIssuedEventFigures(stockIssues: any[], purchases: Purchas
     });
   }
 
-  // Newest first -- matches getRecentIssueSlips's own ordering.
+  // Newest first.
   return eventFigures.reverse();
 }
 
