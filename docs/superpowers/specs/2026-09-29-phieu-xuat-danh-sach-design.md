@@ -124,7 +124,8 @@ Cột "Số dòng" ở đây chỉ để đối chiếu; trang thật không có
   - Mỗi dòng có ô đánh dấu, cộng với một ô "chọn tất cả".
   - Có nút "Xoá dòng đã chọn". Dòng bị xoá mờ đi cho tới lúc bấm Lưu; bấm Bỏ thì hiện lại.
   - Mỗi dòng có ô **Đơn vị** và ô **Số lượng** theo đơn vị đó; cột **Quy ra** tự tính số lượng gốc = số lượng × hệ số của đơn vị (chủ quán 2026-09-29, góp ý trên bản mẫu). Ví dụ thật: Sữa yến mạch Oatside, quy cách Hộp = 1.000 ml; gõ 2 Hộp → Quy ra 2.000 ml.
-    - Danh sách đơn vị lấy từ bảng quy đổi của mặt hàng (như trang tạo phiếu), cộng thêm đơn vị gốc lẻ (g, ml…) với hệ số 1. **Đơn vị gốc lẻ là đề xuất của Opus, chờ chủ quán chốt.**
+    - Danh sách đơn vị lấy từ bảng quy đổi của mặt hàng (như trang tạo phiếu), cộng thêm đơn vị gốc lẻ (g, ml…) với hệ số 1 (chủ quán chốt 2026-09-29: "Có"). Trang tạo phiếu cũng thêm lựa chọn đơn vị lẻ này, để hai nơi giống nhau. Ví dụ: xuất nửa túi Bột cà phê truyền thống Phin Đậm (Túi 500 g) → chọn "g (lẻ)", gõ 250 → Quy ra 250 g.
+    - Mặt hàng mà quy cách trùng đơn vị gốc (Giấy lót chống tràn: 1 Xấp = 1 Xấp) chỉ hiện một lựa chọn.
     - Dòng cũ mở ra với quy cách đầu tiên, số lượng = số gốc ÷ hệ số, có thể lẻ (454 g với Túi 454 g → 1 Túi).
     - Máy chỉ lưu số lượng gốc, như hiện nay; không lưu đơn vị đã chọn.
   - "Thêm dòng" dùng đúng ô chọn mặt hàng của trang tạo phiếu. Chỉ hiện hàng còn trong kho.
@@ -152,6 +153,7 @@ Phiếu còn 6 dòng.
 ## 5. Trang tạo phiếu — `/admin/inventory/issue-slips/new`
 
 - Giữ nguyên cách ghi đang có: ngày giờ, lý do, ghi chú, nhiều dòng.
+- Ô quy cách thêm lựa chọn đơn vị gốc lẻ (g, ml…, hệ số 1), giống chế độ chỉnh sửa (chủ quán 2026-09-29). Máy vẫn chỉ gửi số lượng gốc, nên hàm ghi phiếu không đổi.
 - Lưu xong thì mở trang chi tiết của phiếu vừa tạo.
 - Danh sách "phiếu gần đây" dưới ô ghi hiện nay bị bỏ; trang danh sách thay nó.
 
