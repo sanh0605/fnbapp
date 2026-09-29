@@ -137,7 +137,7 @@ Cột "Số dòng" ở đây chỉ để đối chiếu; trang thật không có
     - Nút "Bỏ thay đổi" luôn ở cạnh.
   - **Lưu** ghi mọi thay đổi trong một lần, hoặc không ghi gì nếu có lỗi:
     - Mỗi dòng bị xoá tạo một dòng trả về kho, ngày hôm nay (`BR-INV-009`).
-    - Sửa số lượng là trả dòng cũ về kho hôm nay, rồi ghi dòng mới vào ngày của phiếu.
+    - Sửa số lượng là trả dòng cũ về kho rồi ghi dòng mới, cả hai vào ngày của phiếu (chủ quán chọn "1", 2026-09-29, `BR-INV-013`; bản đầu ghi phần trả vào hôm nay).
     - Dòng thêm mới lấy ngày của phiếu.
   - Nếu sau khi xoá phiếu không còn dòng nào, máy hỏi "Phiếu không còn dòng nào. Huỷ phiếu này?":
     - **Có:** hỏi tiếp lý do huỷ (bắt buộc), rồi huỷ phiếu.

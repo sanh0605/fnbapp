@@ -67,7 +67,7 @@
 
 6. **Giá trị một dòng tính thế nào mà khớp báo cáo "Hàng đã xuất"?** Máy tính giá vốn chỉ trả tổng theo mặt hàng. Cách lấy từng dòng: với mỗi mặt hàng, chạy lại máy tính trên các dòng tính tới dòng đó, lấy phần chênh. Đo 2026-09-29: tổng mọi dòng = tổng máy tính = 53.936.297,115332 trên 196 dòng, lệch 0. Tổng dòng của ISL-00076, ISL-00075, ISL-00077 và STK-001 khớp đúng con số tab "Theo lần xuất".
 7. **Ghi thêm dòng vào ngày cũ có làm kho âm ở giữa không?** Có thể. Hàm tạo phiếu hiện tại (`0094`) chỉ kiểm tồn đúng lúc của phiếu, không kiểm các lúc sau. Nếu kho âm ở giữa, máy tính giá vốn ném lỗi và cả báo cáo lẫn danh sách này sập. Kế hoạch thêm hàm `issue_stock_headroom` (tồn thấp nhất từ lúc đó tới nay) và dùng cho cả sửa lẫn tạo phiếu. Đây là quyết định kỹ thuật, báo lại chủ quán.
-8. **Sửa số lượng tăng lên bị chặn oan không?** Có, trong một trường hợp hẹp. Tăng Bột sữa B One trên ISL-00076 từ 1.000 g lên 1.500 g: máy trả 1.000 g về kho *hôm nay*, rồi xuất 1.500 g *ngày 28/09*. Từ 28/09 tới nay tồn thấp nhất là 1.000 g, nên 1.500 g bị từ chối, dù nhìn thì "chỉ cần thêm 500 g". Thêm một dòng Bột sữa B One 500 g thì được. Chủ quán chốt A (2026-09-29, "theo khuyến nghị"): từ chối, báo rõ còn bao nhiêu và gợi ý thêm dòng. Ghi ở `BR-INV-013`.
+8. **Sửa số lượng tăng lên bị chặn oan không?** Có, trong một trường hợp hẹp. Tăng Bột sữa B One trên ISL-00076 từ 1.000 g lên 1.500 g: máy trả 1.000 g về kho *hôm nay*, rồi xuất 1.500 g *ngày 28/09*. Từ 28/09 tới nay tồn thấp nhất là 1.000 g, nên 1.500 g bị từ chối, dù nhìn thì "chỉ cần thêm 500 g". Thêm một dòng Bột sữa B One 500 g thì được. Chủ quán chốt A (2026-09-29, "theo khuyến nghị"): từ chối, báo rõ còn bao nhiêu và gợi ý thêm dòng. Ghi ở `BR-INV-013`. **Đã thay (2026-09-29, chủ quán chọn "1" sau khi soát Task 4 thấy cả giảm số cũng bị chặn):** đổi số lượng thì dòng cũ trả về kho *đúng ngày của phiếu*, không phải hôm nay. Ví dụ trên chỉ cần tồn ≥ 500 g. Xoá dòng và huỷ phiếu vẫn ghi hôm nay. Ghi ở `BR-INV-013`.
 9. **Tạo phiếu mới lùi ngày về trước lần kiểm kê có bị chặn không?** Hiện không. Spec chỉ chặn sửa và huỷ. Chủ quán chốt A (2026-09-29): chặn luôn, cùng một phép kiểm. Ghi ở `BR-INV-013`.
 
 **Đã xem:** spec và bản mẫu; `app/admin/inventory/issue-slips/{page.tsx, actions.ts}`; `lib/stock/manual-issue-transaction.ts`; `lib/stock/stocktake-package-lines.ts`; migration `0063`, `0093`, `0094`; `lib/costing/issue-costing.ts` (`computeIssueCosting`), `lib/costing/issue-costing-inputs.ts`; `lib/reports/issued-value-report.ts`; `app/admin/reports/issued/actions.ts`; `lib/purchasing/purchase-order-list.ts`; `app/admin/inventory/purchase-orders/{page.tsx, [id]/page.tsx, actions.ts}`; `app/admin/inventory/stocktake/actions.ts` (`getLastConfirmedStocktakeSession`); `app/admin/nav-items.ts`, `app/admin/nav-allowlist.ts`, `app/admin/page-headings.test.ts`, `lib/shared/nav-completeness.ts`; `supabase/CLAUDE.md`; dữ liệu thật đo 2026-09-29.
@@ -92,9 +92,9 @@
 Bản mẫu ghi 610.000đ là số minh hoạ; số thật là 451.265đ.
 
 **Sửa thử ISL-00076 (ví dụ spec mục 4):** bỏ Giấy lót chống tràn (ISS-00196), đổi Sữa yến mạch Oatside 2 Hộp → 1 Hộp.
-- Máy gửi: `removeIssueIds = [ISS-00196, ISS-00192]`, `addLines = [{ SPM-038, 1000 }]`.
-- Kiểm tồn Oatside: tồn thấp nhất từ 28/09 18:20 tới nay = 36.000 ml ≥ 1.000 → cho qua.
-- Ghi: hai dòng trả về kho ngày bấm (−1 Xấp, −2.000 ml), một dòng mới 1.000 ml ngày 28/09 18:20 thuộc ISL-00076.
+- Máy gửi: `removeIssueIds = [ISS-00196]`, `replaceIssueIds = [ISS-00192]`, `addLines = [{ SPM-038, 1000 }]`.
+- Kiểm tồn Oatside: dòng trả −2.000 ml ghi trước, nên tồn thấp nhất từ 28/09 18:20 tới nay = 36.000 + 2.000 = 38.000 ml ≥ 1.000 → cho qua.
+- Ghi: trả Giấy lót về kho ngày bấm (−1 Xấp); trả Oatside về kho ngày 28/09 18:20 (−2.000 ml); một dòng mới 1.000 ml ngày 28/09 18:20 thuộc ISL-00076.
 - Giá trị dòng mới = 73.606,1633 ÷ 2 = 36.803,08 (giá bình quân không đổi khi xuất). Tổng phiếu mới = 451.265,19 − 36.404,60 − 73.606,16 + 36.803,08 = 378.057,51 → **378.058đ**, 6 dòng.
 
 **Tồn thấp nhất từ 28/09 18:20 tới nay** (sau khi đã trừ ISL-00076): MR.PHIN 1.500 g · Phin Đậm 6.000 g · Oatside 36.000 ml · Bột sữa B One 1.000 g · La rosee 48.000 g · Mlekovita 46.000 ml · Giấy lót 4 Xấp.
@@ -510,7 +510,7 @@ export function buildIssueSlipDetail(input: {
 export interface EditOriginalLine { issueId: string; purchasedItemId: string; baseQuantity: number }
 export interface EditDraftLine { issueId: string | null; purchasedItemId: string; baseQuantity: number; removed: boolean }
 export type EditDiff =
-  | { ok: true; removeIssueIds: string[]; addLines: { purchasedItemId: string; baseQuantity: number }[] }
+  | { ok: true; removeIssueIds: string[]; replaceIssueIds: string[]; addLines: { purchasedItemId: string; baseQuantity: number }[] }
   | { ok: false; error: string };
 export function diffIssueSlipEdit(original: EditOriginalLine[], draft: EditDraftLine[]): EditDiff;
 ```
@@ -525,9 +525,9 @@ Luật:
   1. Dòng nháp có `issueId` không thuộc `original` → `{ ok: false, error: "Dòng không thuộc phiếu này. Tải lại trang rồi sửa lại." }`.
   2. Bỏ qua dòng mới (`issueId === null`) chưa chọn mặt hàng hoặc đã `removed`.
   3. Dòng chưa `removed` có số lượng không hữu hạn hoặc ≤ 0 → `"Dòng N: số lượng phải lớn hơn 0"` (N đếm từ 1 theo thứ tự nháp).
-  4. Dòng cũ `removed` → `removeIssueIds`. Dòng cũ đổi số lượng (lệch > 1e-9) → vào `removeIssueIds` và `addLines` với số mới. Dòng mới → `addLines`.
+  4. Dòng cũ `removed` → `removeIssueIds`. Dòng cũ đổi số lượng (lệch > 1e-9) → vào `replaceIssueIds` và `addLines` với số mới (sửa 2026-09-29, `BR-INV-013`: dòng cũ trả về kho đúng ngày của phiếu). Dòng mới → `addLines`.
   5. Không còn dòng nào chưa `removed` → `"Phiếu không còn dòng nào. Huỷ phiếu nếu muốn bỏ hết."`.
-  6. Không có gì trong `removeIssueIds` lẫn `addLines` → `"Chưa có thay đổi nào."`.
+  6. Không có gì trong `removeIssueIds`, `replaceIssueIds` lẫn `addLines` → `"Chưa có thay đổi nào."`.
 
 - [ ] **Step 1: Viết test đỏ** (ba file, số thật ISL-00076)
 
@@ -583,14 +583,14 @@ describe("diffIssueSlipEdit", () => {
   it("spec example: drop Giấy lót, Oatside 2000 → 1000", () => {
     expect(diffIssueSlipEdit(original, [
       { ...keep[0], baseQuantity: 1000 }, { ...keep[1], removed: true },
-    ])).toEqual({ ok: true, removeIssueIds: ["ISS-00192", "ISS-00196"], addLines: [{ purchasedItemId: "SPM-038", baseQuantity: 1000 }] });
+    ])).toEqual({ ok: true, removeIssueIds: ["ISS-00196"], replaceIssueIds: ["ISS-00192"], addLines: [{ purchasedItemId: "SPM-038", baseQuantity: 1000 }] });
   });
 
   it("adds a new line and ignores an empty added row", () => {
     const d = diffIssueSlipEdit(original, [...keep,
       { issueId: null, purchasedItemId: "SPM-012", baseQuantity: 1000, removed: false },
       { issueId: null, purchasedItemId: "", baseQuantity: 0, removed: false }]);
-    expect(d).toEqual({ ok: true, removeIssueIds: [], addLines: [{ purchasedItemId: "SPM-012", baseQuantity: 1000 }] });
+    expect(d).toEqual({ ok: true, removeIssueIds: [], replaceIssueIds: [], addLines: [{ purchasedItemId: "SPM-012", baseQuantity: 1000 }] });
   });
 
   it("refuses zero, an emptied slip, no change, and a foreign line", () => {
@@ -666,7 +666,7 @@ describe("buildIssueSlipDetail", () => {
 - Produces (SQL):
   - `public.issue_stock_headroom(p_purchased_item_id text, p_at timestamptz) returns numeric` — tồn thấp nhất của mặt hàng tại `p_at` và tại mỗi lần xuất dương sau `p_at`.
   - `public.issue_slip_stocktake_lock(p_issued_at timestamptz) returns text` — mã lần kiểm kê `CONFIRMED` gần nhất nếu `p_issued_at <= confirmed_at` của nó, không thì `null`.
-  - `public.edit_issue_slip_atomic(p_slip_id text, p_remove_issue_ids text[], p_add_lines jsonb, p_created_by_id text, p_created_by_name text) returns jsonb` → `{ slip_id, removed: [{ reversal_issue_id, reverses_issue_id }], added: [{ issue_id, purchased_item_id, base_quantity }] }`.
+  - `public.edit_issue_slip_atomic(p_slip_id text, p_remove_issue_ids text[], p_replace_issue_ids text[], p_add_lines jsonb, p_created_by_id text, p_created_by_name text) returns jsonb` → `{ slip_id, removed: [{ reversal_issue_id, reverses_issue_id }], added: [{ issue_id, purchased_item_id, base_quantity }] }`.
   - Định nghĩa lại `reverse_manual_issue_atomic`, `cancel_issue_slip_atomic`, `create_issue_slip_atomic` (chữ ký và kết quả trả về **không đổi**).
 
 Đầu file ghi:
@@ -720,6 +720,14 @@ $function$;
 6. Với mỗi mã trong `p_remove_issue_ids` (khác nhau): phải là dòng `MANUAL` của phiếu, chưa bị trả, không thì `'Dòng % không thuộc phiếu % hoặc đã trả về kho'`. Gọi `reverse_manual_issue_atomic(v_id, 'Sửa phiếu ' || p_slip_id, p_created_by_id, p_created_by_name)`, gom `reversal_issue_id`, `reverses_issue_id`.
 7. Lấy số `ISS-` kế tiếp **sau** bước 6 (các dòng trả đã dùng số). Với mỗi dòng thêm: kiểm như `0094` dòng 69–80 (thiếu mặt hàng, số ≤ 0, mặt hàng không có); tồn cộng dồn theo mặt hàng như `0094` nhưng giá trị đầu lấy từ `issue_stock_headroom(item, v_slip.issued_at)`; vượt → `raise exception 'Dòng thêm % (%): cần % %, từ % tới nay tồn thấp nhất chỉ còn % %. Muốn xuất thêm thì thêm một dòng riêng cho phần chênh.', …` (ngày viết `to_char(v_slip.issued_at at time zone 'Asia/Ho_Chi_Minh', 'DD/MM/YYYY HH24:MI')`, tên đơn vị gốc lấy như `0094` dòng 111–115). Chưa có đơn nhập nào tới lúc đó → câu lỗi như `0094`. Ghi `stock_issues` với `issued_at = v_slip.issued_at`, `note = v_slip.note`, `issue_slip_id = p_slip_id`, `source = 'MANUAL'`.
 8. Trả jsonb như Interfaces.
+
+**Đã đổi khi làm (2026-09-29, ba vòng sửa sau soát, tới commit `8c158f8`; code là nguồn đúng, mục này ghi khác biệt so với các bước trên):**
+- Thêm tham số `p_replace_issue_ids text[]` (chữ ký 6 tham số: `p_slip_id, p_remove_issue_ids, p_replace_issue_ids, p_add_lines, p_created_by_id, p_created_by_name`). Dòng đổi số lượng đi vào đây; dòng trả của nó ghi **đúng `issued_at` của dòng gốc** (chủ quán chọn "1", `BR-INV-013`), ghi thẳng, không qua `reverse_manual_issue_atomic`. Dòng xoá thuần vẫn qua bước 6, ghi hôm nay.
+- Mọi dòng trả được ghi **trước** lần đọc `issue_stock_headroom` đầu tiên, nên phần trả ở ngày của phiếu được tính vào tồn.
+- Phiếu không còn dòng hiệu lực (đã huỷ) → `'Phiếu xuất % đã huỷ, không sửa được.'`, trước mọi bước thêm/bớt.
+- Mã trống → `'Danh sách dòng bỏ có mã trống.'`; mã trùng (tính gộp bỏ + đổi) → `'Danh sách dòng bỏ có mã trùng nhau.'`.
+- Kiểm "chưa có đơn nhập" dùng `coalesce(po.transaction_date, po.created_at)` ở cả tạo lẫn sửa.
+- Câu báo thiếu hàng ở cả tạo lẫn sửa: `'Không đủ tồn kho cho %: từ ngày phiếu tới nay có lúc kho chỉ còn % %.'`.
 
 Định nghĩa lại ba hàm cũ — lấy thân **mới nhất** của mỗi hàm (`grep -ln "create or replace function public.<tên>" supabase/migrations/` rồi lấy file số lớn nhất: hiện là `0093` cho `reverse_manual_issue_atomic`, `0063` cho `cancel_issue_slip_atomic`, `0094` cho `create_issue_slip_atomic`), chép nguyên văn, chỉ thêm:
 - `reverse_manual_issue_atomic`: ngay sau bước kiểm `source = 'MANUAL'` và chưa bị trả: `if public.issue_slip_stocktake_lock(v_original.issued_at) is not null then raise exception 'Dòng % nằm trước lần kiểm kê % nên không trả về kho được nữa.', v_issue_id, public.issue_slip_stocktake_lock(v_original.issued_at); end if;`
@@ -812,7 +820,7 @@ export type SlipEditResult = {
   added: { issueId: string; purchasedItemId: string; baseQuantity: number }[];
 };
 export async function editIssueSlipAtomic(input: {
-  slipId: string; removeIssueIds: string[]; addLines: { purchasedItemId: string; baseQuantity: number }[];
+  slipId: string; removeIssueIds: string[]; replaceIssueIds: string[]; addLines: { purchasedItemId: string; baseQuantity: number }[];
   createdById: string; createdByName: string;
 }): Promise<SlipEditResult>;   // rpc "edit_issue_slip_atomic"; error → throw new Error(`edit_issue_slip_atomic: ${error.message}`)
 
