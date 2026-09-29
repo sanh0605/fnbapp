@@ -94,9 +94,35 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 
 **Edge settled 2026-08-07:** a found event when the on-hand quantity is zero has no live average to draw on (`value/quantity` is `0/0`). Resolved as the **last unit cost the item left at** (the rate of the issue that emptied the pool), not a lifetime average of all purchases — that is the exact inverse of the depleting issue and the only choice that leaves the weighted average unchanged. A found event with no purchase ever recorded still refuses; a lot that never existed cannot be found. Implemented in `lib/costing/issue-costing.ts` (`computeIssueCosting`), Plan D K6, 5 tests.
 
+### BR-INV-013 — A mistaken issue-slip line is deleted outright, as if never issued
+
+**Status:** `APPROVED` — owner decision 2026-09-29. **Not built yet.** This replaces `BR-INV-009` for issue slips only. Undoing a confirmed stocktake keeps `BR-INV-009`'s compensating rows.
+
+The owner was offered two meanings of "Xoá" on an issue-slip line: the `BR-INV-009` return to stock dated today, or a real delete. He chose the real delete, in his words: *"Chọn cách 2, anh cần dữ liệu được tối giản. Project này chưa đủ lớn để theo dõi chi tiết từng thao tác."*
+
+Example shown to him beforehand: slip ISL-00040 (01/09/2026) issued 500 g of Bột cà phê MR.PHIN Robusta Dak Mil. Deleting that line on 15/10 removes it as if it had never been issued.
+
+- **What he was told it costs before choosing:**
+  - September's cost of goods falls, so the profit report for a month he has already read changes.
+  - A stocktake between the slip date and the delete ends up with a wrong shortfall.
+  - No trace remains of who deleted the line.
+- **Also true, found while recording this:** the cost replay in `lib/costing/issue-costing.ts` is chronological. Removing a past issue therefore moves the running average for every later issue of that item, so later months can shift slightly too. This was not yet said to the owner.
+
+**How it works on screen** (owner, same day):
+- The slip's detail page has a "Chỉnh sửa" button. The user picks one line, several lines, or all of them, then "Xoá".
+- The word "đảo dòng" (reversal) is no longer used on screen.
+- A "Huỷ phiếu" button stays. If every line is deleted, the slip asks whether to cancel the slip. If the user declines, at least one line must be entered before the slip can be saved. Owner's words: *"nút huỷ phiếu vẫn để, nếu xoá hết dòng thì phiếu sẽ hỏi người dùng về việc huỷ phiếu. Nếu không huỷ phiếu thì yêu cầu người dùng nhập ít nhất 1 dòng để lưu phiếu."*
+
+**Open, to ask the owner (2026-09-29):**
+- **Who may delete.** `CLAUDE.md` lets only `ADMIN` delete outright. tuyen2612 (`MANAGER`) wrote 57 of the 78 slips as of 2026-09-29.
+- **Lines before a confirmed stocktake.** Should deleting a line dated before the latest confirmed stocktake be blocked?
+- **What "Chỉnh sửa" allows.** Is it delete only, or also changing a quantity and adding lines?
+- **What happens to "Huỷ phiếu".** Does cancelling a slip delete it outright as well?
+- **The four reversal pairs already stored** (ISS-00119/122, ISS-00120/121, ISS-00134/135, ISS-00140/141 as of 2026-09-29).
+
 ### BR-INV-009 — Reversing a mistaken issue slip lands today, at today's average, using BR-INV-008's mechanism
 
-**Status:** `APPROVED` — owner decision 2026-08-08 (`259103e`, Plan D §5 I7 in full). **Implemented** (Plan D D7b, `0058_reverse_manual_issue.sql`, `reverse_manual_issue_atomic`), extended 2026-08-09 by D14 (below).
+**Status:** `APPROVED` — owner decision 2026-08-08 (`259103e`, Plan D §5 I7 in full). **Implemented** (Plan D D7b, `0058_reverse_manual_issue.sql`, `reverse_manual_issue_atomic`), extended 2026-08-09 by D14 (below). **For issue slips, replaced by `BR-INV-013` (owner 2026-09-29) once that is built**; until then the screen still reverses. Undoing a confirmed stocktake keeps this rule.
 
 A manual issue slip entered by mistake is never deleted and never edited. It is marked reversed and answered with a compensating entry: quantity `-`original, dated **today**, valued at **today's running average** — not the rate that was in effect at the moment of the mistake, and not backdated to that moment. Both rows stay visible and linked.
 
