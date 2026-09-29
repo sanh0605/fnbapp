@@ -1,5 +1,5 @@
 // Checks that every static page under app/admin has a way in: either a
-// navItems entry in app/admin/layout.tsx, or an explicit allowlist entry
+// navItems entry in app/admin/nav-items.ts, or an explicit allowlist entry
 // with a reason.
 //
 // section 3:
@@ -108,11 +108,11 @@ export function listAllPageRoutes(repoRoot: string): string[] {
   return routes;
 }
 
-// Extracts every `href: "/admin/..."` literal out of layout.tsx's navItems
-// array. navItems is a plain array built inside the component function, not
-// a module-level export, so this reads the source text rather than
-// importing it -- the same text-extraction approach
-// scripts/check-rules-current-core.ts already uses for backticked paths.
+// Extracts every `href: "/admin/..."` literal out of app/admin/nav-items.ts
+// (the NAV_GROUPS menu data). It reads the source text rather than importing
+// the module, which keeps this check free of the lucide-react icon imports --
+// the same text-extraction approach scripts/check-rules-current-core.ts
+// already uses for backticked paths.
 const HREF_PATTERN = /href:\s*"(\/admin[^"]*)"/g;
 
 export function extractNavHrefs(layoutSource: string): string[] {
