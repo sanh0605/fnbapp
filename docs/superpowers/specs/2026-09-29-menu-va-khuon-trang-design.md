@@ -140,8 +140,11 @@ viết lại từng chỗ là việc lớn mà không đổi gì thấy được
 - Các nhãn "Hoàn thành" đang xanh lá, sẽ thành nâu trên nền nâu nhạt.
 - Cảnh báo cam thành đỏ.
 - Biểu đồ tròn ở **Doanh số** đang có 10 màu viết thẳng trong code. Sẽ đổi thành các
-  sắc đậm nhạt của màu chính. Biểu đồ tròn nhiều nhóm sẽ khó phân biệt hơn, nên mỗi
-  phần có ghi tên và phần trăm ngay trên hình.
+  sắc đậm nhạt của màu chính. Biểu đồ tròn nhiều nhóm sẽ khó phân biệt hơn, nên
+  phần chú thích cạnh hình phải ghi tên nhóm và phần trăm, xếp theo đúng thứ tự
+  các phần trên hình. Chú thích hiện đã có đủ tên và phần trăm, nên giữ nguyên.
+  Phần trăm đang ghi một số lẻ, dùng dấu chấm, lệch `BR-DATA-005`; sửa khi tới
+  trang Doanh số, không làm ở bước này.
 
 ### 3.2 Chữ — Be Vietnam Pro cho mọi thứ (Q8)
 
