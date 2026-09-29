@@ -94,6 +94,9 @@ Khuôn giống hệt Phiếu nhập (spec 2026-09-29, mục 3.5), trừ những 
 - **Dòng Kiểm kê:**
   - Mã là mã lần kiểm kê (STK-001), người ghi là người xác nhận, ngày là ngày xác nhận.
   - Bấm vào mở `/admin/inventory/stocktake`.
+  - Không sinh phiếu ISL riêng cho phần thiếu; dòng STK chính là phần thiếu. Chỉ biến mất khi lần kiểm kê được hoàn tác (chủ quán 2026-09-29, "1A").
+  - Lần kiểm kê chỉ có hàng thừa, không thiếu món nào: không hiện trong danh sách ("2A").
+  - Lần kiểm kê vừa thiếu vừa thừa: giá trị chỉ là tiền phần thiếu, không trừ phần thừa ("3A").
 - **Giá trị** của phiếu là tổng giá trị các dòng còn hiệu lực, mỗi dòng tính theo giá vốn lúc xuất, cùng cách tính với báo cáo "Hàng đã xuất". Phiếu đã huỷ hiện 0đ.
 
 Ví dụ trang 1 (năm dòng đầu, số ngày 2026-09-29; cột giá trị sẽ đo trong kế hoạch):
