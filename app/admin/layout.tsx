@@ -168,7 +168,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <p className="text-sm text-danger">{outletsError}</p>
                   <button
                     onClick={() => void loadOutletsForPosModal()}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-button hover:bg-primary-hover transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-on-primary bg-primary rounded-button hover:bg-primary-hover transition-colors"
                   >
                     Thử lại
                   </button>

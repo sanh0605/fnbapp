@@ -46,7 +46,7 @@ export function DraftsModal({ drafts, calculateItemTotal, onLoad, onDelete, onCl
                     <div className="flex gap-2 shrink-0 ml-4">
                       <button
                         onClick={() => onLoad(d.id)}
-                        className="bg-primary hover:bg-primary-hover text-white font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
+                        className="bg-primary hover:bg-primary-hover text-on-primary font-bold text-xs px-3 py-1.5 rounded-lg transition active:scale-95"
                       >
                         Nạp
                       </button>

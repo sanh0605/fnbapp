@@ -124,7 +124,7 @@ export default function ChangePasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-primary-hover transition-colors flex justify-center items-center disabled:opacity-50 mt-2"
+            className="w-full bg-primary text-on-primary font-semibold py-2.5 rounded-lg hover:bg-primary-hover transition-colors flex justify-center items-center disabled:opacity-50 mt-2"
           >
             {loading ? (
               <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

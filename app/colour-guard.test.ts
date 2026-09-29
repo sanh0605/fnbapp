@@ -54,6 +54,36 @@ describe("colour guard", () => {
     expect(bad).toEqual([]);
   });
 
+  it("brand-brown backgrounds use text-on-primary, not text-white", () => {
+    const root = process.cwd();
+    const offenders: string[] = [];
+    const bgPrimaryRe = /(?<![\w-])bg-primary(?![\w/-])/;
+    const textWhiteRe = /(?<![\w-])text-white(?![\w/-])/;
+
+    for (const file of [...tsxFiles(join(root, "app")), ...tsxFiles(join(root, "components"))]) {
+      const rel = relative(root, file);
+      if (SKIP.some(s => rel.includes(s))) continue;
+      const relPath = rel.replace(/\\/g, "/");
+      const src = readFileSync(file, "utf8");
+
+      const doubleQuotes = src.match(/"(?:[^"\\\n\r]|\\.)*"/g) || [];
+      const singleQuotes = src.match(/'(?:[^'\\\n\r]|\\.)*'/g) || [];
+      const backticks = src.match(/`[\s\S]*?`/g) || [];
+
+      const literals = [...doubleQuotes, ...singleQuotes];
+      for (const bt of backticks) {
+        literals.push(...bt.split("${"));
+      }
+
+      for (const lit of literals) {
+        if (bgPrimaryRe.test(lit) && textWhiteRe.test(lit)) {
+          offenders.push(`${relPath}: ${lit}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("every palette alias used by screens compiles", async () => {
     const postcss = (await import('postcss')).default;
     const tailwind = (await import('tailwindcss')).default;

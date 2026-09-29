@@ -126,7 +126,7 @@ export function SupplierModal({
             <button 
               type="submit" 
               disabled={loading}
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 font-medium transition-colors shadow-sm"
+              className="px-6 py-2 bg-primary text-on-primary rounded-lg hover:bg-primary-hover disabled:opacity-50 font-medium transition-colors shadow-sm"
             >
               {loading ? "Đang lưu..." : "Lưu Thông Tin"}
             </button>

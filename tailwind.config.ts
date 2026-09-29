@@ -16,6 +16,7 @@ const config: Config = {
           active: "rgb(var(--color-primary-active-rgb) / <alpha-value>)",
           soft: "rgb(var(--color-primary-soft-rgb) / <alpha-value>)",
         },
+        "on-primary": "rgb(var(--color-on-primary-rgb) / <alpha-value>)",
         page: "rgb(var(--color-bg-page-rgb) / <alpha-value>)",
         surface: {
           card: "rgb(var(--color-surface-card-rgb) / <alpha-value>)",

@@ -106,7 +106,7 @@ export default function PromotionsClient({
         setEditingPromo(undefined);
         setIsFormOpen(true);
       }}
-      className="bg-primary hover:bg-primary-hover text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow-md active:scale-[0.98]"
+      className="bg-primary hover:bg-primary-hover text-on-primary font-bold px-4 py-2 rounded-lg text-sm transition shadow-md active:scale-[0.98]"
     >
       + Tạo Khuyến Mãi
     </button>
@@ -161,7 +161,7 @@ export default function PromotionsClient({
           <button
             onClick={() => applyFilters()}
             disabled={isPendingFilter}
-            className="px-4 py-2 min-h-[44px] bg-primary text-white rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
+            className="px-4 py-2 min-h-[44px] bg-primary text-on-primary rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
           >
             {isPendingFilter ? "Đang lọc..." : "Lọc"}
           </button>

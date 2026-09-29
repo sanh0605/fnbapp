@@ -34,7 +34,7 @@ export function UserForm() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition"
+        className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition"
       >
         + Thêm Nhân Sự
       </button>

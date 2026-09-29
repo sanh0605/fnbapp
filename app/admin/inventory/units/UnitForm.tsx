@@ -41,7 +41,7 @@ export function UnitForm({ initialData }: { initialData?: any }) {
       {isEdit ? (
         <button onClick={() => setIsOpen(true)} className="text-primary hover:text-primary-active text-sm font-medium">Sửa</button>
       ) : (
-        <button onClick={() => setIsOpen(true)} className="bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition">
+        <button onClick={() => setIsOpen(true)} className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition transition">
           + Thêm Đơn vị
         </button>
       )}
@@ -61,7 +61,7 @@ export function UnitForm({ initialData }: { initialData?: any }) {
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-border">
                 <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg text-sm">Huỷ</button>
-                <button type="submit" disabled={loading} className="px-4 py-2 bg-primary text-white px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition disabled:opacity-50">
+                <button type="submit" disabled={loading} className="px-4 py-2 bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition disabled:opacity-50">
                   {loading ? "Đang lưu..." : "Lưu"}
                 </button>
               </div>

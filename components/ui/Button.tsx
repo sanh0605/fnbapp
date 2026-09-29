@@ -19,7 +19,7 @@ export function Button({
   const baseStyles = "inline-flex items-center justify-center font-medium rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100";
   
   const variants = {
-    primary: "bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-sm",
+    primary: "bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active shadow-sm",
     secondary: "bg-surface-secondary text-text-primary hover:bg-border active:bg-border",
     ghost: "bg-transparent text-primary hover:bg-primary-soft active:bg-primary-soft",
     danger: "bg-danger text-white hover:bg-danger/90 active:bg-danger/80 shadow-sm",

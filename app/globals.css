@@ -13,6 +13,8 @@
      repointed so existing classes keep working. */
   --color-primary: #8A5A1F;
   --color-primary-rgb: 138 90 31;
+  --color-on-primary: #FFFFFF;
+  --color-on-primary-rgb: 255 255 255;
   --color-primary-hover: #744B19;
   --color-primary-hover-rgb: 116 75 25;
   --color-primary-active: #5E3D14;

@@ -33,7 +33,7 @@ export default function GlobalError({
             )}
             <button
               onClick={reset}
-              className="inline-flex items-center justify-center bg-primary text-white font-medium px-4 py-2 rounded-button hover:bg-primary-hover transition-colors min-h-[44px] w-full sm:w-auto"
+              className="inline-flex items-center justify-center bg-primary text-on-primary font-medium px-4 py-2 rounded-button hover:bg-primary-hover transition-colors min-h-[44px] w-full sm:w-auto"
             >
               Thử lại
             </button>
