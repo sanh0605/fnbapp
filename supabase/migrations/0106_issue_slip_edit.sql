@@ -368,9 +368,13 @@ grant execute on function public.create_issue_slip_atomic(timestamp with time zo
 -- on the slip, in one transaction. Task 5 loads the slip's original lines
 -- server-side and passes only the ids to remove and the lines to add; nothing
 -- here trusts a client-supplied original.
+-- p_remove_issue_ids: pure deletes, reversed now (BR-INV-009). p_replace_issue_ids:
+-- quantity changes, reversed on the original row's own date (BR-INV-013, owner
+-- 2026-09-29); the new quantity arrives in p_add_lines.
 create or replace function public.edit_issue_slip_atomic(
   p_slip_id text,
   p_remove_issue_ids text[],
+  p_replace_issue_ids text[],
   p_add_lines jsonb,
   p_created_by_id text,
   p_created_by_name text
@@ -383,13 +387,17 @@ as $function$
 declare
   v_slip_id text := nullif(btrim(coalesce(p_slip_id, '')), '');
   v_remove text[] := coalesce(p_remove_issue_ids, '{}'::text[]);
+  v_replace text[] := coalesce(p_replace_issue_ids, '{}'::text[]);
+  v_all_ids text[];
+  v_original record;
+  v_reversal_number integer;
   v_add jsonb := coalesce(p_add_lines, '[]'::jsonb);
   v_created_by_id text := nullif(btrim(coalesce(p_created_by_id, '')), '');
   v_created_by_name text := nullif(btrim(coalesce(p_created_by_name, '')), '');
   v_slip record;
   v_lock text;
   v_active integer;
-  v_remove_distinct integer;
+  v_all_distinct integer;
   v_id text;
   v_reversal jsonb;
   v_removed jsonb := '[]'::jsonb;
@@ -409,7 +417,8 @@ begin
   if v_created_by_id is null then raise exception 'p_created_by_id is required'; end if;
   if v_created_by_name is null then raise exception 'p_created_by_name is required'; end if;
   if jsonb_typeof(v_add) <> 'array' then raise exception 'p_add_lines must be a JSON array'; end if;
-  if cardinality(v_remove) = 0 and jsonb_array_length(v_add) = 0 then
+  v_all_ids := v_remove || v_replace;
+  if cardinality(v_all_ids) = 0 and jsonb_array_length(v_add) = 0 then
     raise exception 'Chưa có thay đổi nào.';
   end if;
 
@@ -432,16 +441,19 @@ begin
     raise exception 'Phiếu xuất % đã huỷ, không sửa được.', v_slip_id;
   end if;
 
-  if exists (select 1 from unnest(v_remove) as x where x is null) then
+  -- Null and duplicate checks cover remove + replace together: an id in both
+  -- lists would reverse one line twice.
+  if exists (select 1 from unnest(v_all_ids) as x where x is null) then
     raise exception 'Danh sách dòng bỏ có mã trống.';
   end if;
-  -- The same id twice would try to reverse one line twice; reject the payload.
-  select count(distinct x) into v_remove_distinct from unnest(v_remove) as x;
-  if v_remove_distinct <> cardinality(v_remove) then
+  select count(distinct x) into v_all_distinct from unnest(v_all_ids) as x;
+  if v_all_distinct <> cardinality(v_all_ids) then
     raise exception 'Danh sách dòng bỏ có mã trùng nhau.';
   end if;
 
-  if v_active - v_remove_distinct + jsonb_array_length(v_add) <= 0 then
+  -- Every removed or replaced line leaves; a replaced line comes back as one
+  -- of the p_add_lines, which is counted there.
+  if v_active - cardinality(v_all_ids) + jsonb_array_length(v_add) <= 0 then
     raise exception 'Phiếu không còn dòng nào. Huỷ phiếu nếu muốn bỏ hết.';
   end if;
 
@@ -460,6 +472,37 @@ begin
     ));
   end loop;
 
+  -- Replaced lines (quantity changed): the return is dated at the original
+  -- row's own date, so the old quantity is back in stock from the slip's date
+  -- on (BR-INV-013, owner 2026-09-29). Pure removals above stay dated now.
+  foreach v_id in array v_replace loop
+    select * into v_original from public.stock_issues si
+    where si.id = v_id and si.issue_slip_id = v_slip_id and si.source = 'MANUAL'
+      and not exists (select 1 from public.stock_issues r where r.reverses_issue_id = si.id)
+    for update;
+    if not found then
+      raise exception 'Dòng % không thuộc phiếu % hoặc đã trả về kho', v_id, v_slip_id;
+    end if;
+    select coalesce(max(substring(id from '^ISS-([0-9]+)$')::integer), 0) + 1
+    into v_reversal_number
+    from public.stock_issues where id ~ '^ISS-[0-9]+$';
+    v_issue_id := 'ISS-' || lpad(v_reversal_number::text, 5, '0');
+    insert into public.stock_issues (
+      id, purchased_item_id, issued_at, base_quantity, source, session_id, note, reverses_issue_id
+    ) values (
+      v_issue_id, v_original.purchased_item_id, v_original.issued_at, -v_original.base_quantity, 'MANUAL', null,
+      'Sửa số lượng phiếu ' || v_slip_id, v_id
+    );
+    v_removed := v_removed || jsonb_build_array(jsonb_build_object(
+      'reversal_issue_id', v_issue_id,
+      'reverses_issue_id', v_id
+    ));
+  end loop;
+
+  -- Order matters: every reversal (removed ones now, replaced ones on the slip
+  -- date) is written BEFORE issue_stock_headroom is read below, so a replaced
+  -- line's credit at the slip date counts. Lowering is then never refused, and
+  -- raising 1.000 g to 1.500 g needs only 500 g of headroom.
   -- Take the next ISS number after the reversals above, which used numbers.
   select coalesce(max(substring(id from '^ISS-([0-9]+)$')::integer), 0)
   into v_next_issue_number
@@ -534,7 +577,7 @@ begin
 end;
 $function$;
 
-revoke all on function public.edit_issue_slip_atomic(text, text[], jsonb, text, text)
+revoke all on function public.edit_issue_slip_atomic(text, text[], text[], jsonb, text, text)
   from public, anon, authenticated;
-grant execute on function public.edit_issue_slip_atomic(text, text[], jsonb, text, text)
+grant execute on function public.edit_issue_slip_atomic(text, text[], text[], jsonb, text, text)
   to service_role;

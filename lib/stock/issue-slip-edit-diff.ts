@@ -1,10 +1,11 @@
 // orphan-allow: consumed by the issue-slip server actions and UI added in later tasks (ledger ruling R4)
 // Turns an edited slip draft into the lines to return to stock and the lines
-// to raise anew. A changed quantity is a return plus a new line, never an in-place edit.
+// to raise anew. A changed quantity is a return plus a new line, never an in-place edit;
+// its return is dated on the slip's own date (replaceIssueIds), a pure delete is dated now (removeIssueIds).
 export interface EditOriginalLine { issueId: string; purchasedItemId: string; baseQuantity: number }
 export interface EditDraftLine { issueId: string | null; purchasedItemId: string; baseQuantity: number; removed: boolean }
 export type EditDiff =
-  | { ok: true; removeIssueIds: string[]; addLines: { purchasedItemId: string; baseQuantity: number }[] }
+  | { ok: true; removeIssueIds: string[]; replaceIssueIds: string[]; addLines: { purchasedItemId: string; baseQuantity: number }[] }
   | { ok: false; error: string };
 
 const EPSILON = 1e-9;
@@ -16,6 +17,7 @@ export function diffIssueSlipEdit(original: EditOriginalLine[], draft: EditDraft
   }
 
   const removeIssueIds: string[] = [];
+  const replaceIssueIds: string[] = [];
   const addLines: { purchasedItemId: string; baseQuantity: number }[] = [];
   let remaining = 0;
 
@@ -38,12 +40,12 @@ export function diffIssueSlipEdit(original: EditOriginalLine[], draft: EditDraft
     }
     remaining++;
     if (Math.abs(d.baseQuantity - orig.baseQuantity) > EPSILON) {
-      removeIssueIds.push(orig.issueId);
+      replaceIssueIds.push(orig.issueId);
       addLines.push({ purchasedItemId: orig.purchasedItemId, baseQuantity: d.baseQuantity });
     }
   }
 
   if (remaining === 0) return { ok: false, error: "Phiếu không còn dòng nào. Huỷ phiếu nếu muốn bỏ hết." };
-  if (removeIssueIds.length === 0 && addLines.length === 0) return { ok: false, error: "Chưa có thay đổi nào." };
-  return { ok: true, removeIssueIds, addLines };
+  if (removeIssueIds.length === 0 && replaceIssueIds.length === 0 && addLines.length === 0) return { ok: false, error: "Chưa có thay đổi nào." };
+  return { ok: true, removeIssueIds, replaceIssueIds, addLines };
 }

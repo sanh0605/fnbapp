@@ -51,6 +51,20 @@ describe("0106: issue-slip edit", () => {
     }
   });
 
+  it("fix round 3: replaced lines are returned on the original date, before headroom is read", () => {
+    const b = body("edit_issue_slip_atomic");
+    expect(b).toContain("p_replace_issue_ids");
+    // union of remove + replace is checked for null and duplicate ids
+    expect(b).toMatch(/v_all_ids[\s\S]*mã trống[\s\S]*mã trùng/);
+    // replace reversal is dated at the original row, not now()
+    expect(b).toMatch(/insert into public\.stock_issues[\s\S]*?v_original\.issued_at[\s\S]*?reverses_issue_id/);
+    expect(b).toContain("Sửa số lượng phiếu");
+    // every reversal is written before the first headroom read
+    expect(b.indexOf("Sửa số lượng phiếu")).toBeLessThan(b.indexOf("issue_stock_headroom("));
+    expect(b.indexOf("reverse_manual_issue_atomic(")).toBeLessThan(b.indexOf("issue_stock_headroom("));
+    expect(sql()).toMatch(/edit_issue_slip_atomic\(text, text\[\], text\[\], jsonb, text, text\)/);
+  });
+
   it("create checks the lowest balance from its date onward, not only at its date", () => {
     expect(body("create_issue_slip_atomic")).toContain("issue_stock_headroom(");
   });

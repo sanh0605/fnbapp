@@ -11,14 +11,14 @@ describe("diffIssueSlipEdit", () => {
   it("spec example: drop Giấy lót, Oatside 2000 → 1000", () => {
     expect(diffIssueSlipEdit(original, [
       { ...keep[0], baseQuantity: 1000 }, { ...keep[1], removed: true },
-    ])).toEqual({ ok: true, removeIssueIds: ["ISS-00192", "ISS-00196"], addLines: [{ purchasedItemId: "SPM-038", baseQuantity: 1000 }] });
+    ])).toEqual({ ok: true, removeIssueIds: ["ISS-00196"], replaceIssueIds: ["ISS-00192"], addLines: [{ purchasedItemId: "SPM-038", baseQuantity: 1000 }] });
   });
 
   it("adds a new line and ignores an empty added row", () => {
     const d = diffIssueSlipEdit(original, [...keep,
       { issueId: null, purchasedItemId: "SPM-012", baseQuantity: 1000, removed: false },
       { issueId: null, purchasedItemId: "", baseQuantity: 0, removed: false }]);
-    expect(d).toEqual({ ok: true, removeIssueIds: [], addLines: [{ purchasedItemId: "SPM-012", baseQuantity: 1000 }] });
+    expect(d).toEqual({ ok: true, removeIssueIds: [], replaceIssueIds: [], addLines: [{ purchasedItemId: "SPM-012", baseQuantity: 1000 }] });
   });
 
   it("refuses zero, an emptied slip, no change, and a foreign line", () => {
