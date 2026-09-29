@@ -25,10 +25,23 @@ const config: Config = {
         "text-primary": "rgb(var(--color-text-primary-rgb) / <alpha-value>)",
         "text-secondary": "rgb(var(--color-text-secondary-rgb) / <alpha-value>)",
         "text-muted": "rgb(var(--color-text-muted-rgb) / <alpha-value>)",
-        border: "rgb(var(--color-border-rgb) / <alpha-value>)",
-        success: "rgb(var(--color-success-rgb) / <alpha-value>)",
-        warning: "rgb(var(--color-warning-rgb) / <alpha-value>)",
-        danger: "rgb(var(--color-danger-rgb) / <alpha-value>)",
+        border: {
+          DEFAULT: "rgb(var(--color-border-rgb) / <alpha-value>)",
+          hover: "rgb(var(--color-text-muted-rgb) / <alpha-value>)",
+        },
+        success: {
+          DEFAULT: "rgb(var(--color-success-rgb) / <alpha-value>)",
+          active: "rgb(var(--color-primary-active-rgb) / <alpha-value>)",
+        },
+        warning: {
+          DEFAULT: "rgb(var(--color-warning-rgb) / <alpha-value>)",
+          active: "rgb(var(--color-danger-rgb) / <alpha-value>)",
+          soft: "rgb(var(--color-danger-rgb) / 0.1)",
+        },
+        danger: {
+          DEFAULT: "rgb(var(--color-danger-rgb) / <alpha-value>)",
+          active: "rgb(var(--color-danger-rgb) / <alpha-value>)",
+        },
         processing: "rgb(var(--color-processing-rgb) / <alpha-value>)",
         "focus-ring": "rgb(var(--color-focus-ring-rgb) / <alpha-value>)",
       },

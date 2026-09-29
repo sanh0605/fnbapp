@@ -53,4 +53,17 @@ describe("colour guard", () => {
     const bad = (rootBlock.match(/#[0-9A-Fa-f]{6}\b/g) ?? []).filter(h => !ALLOWED_HEX.has(h.toUpperCase()) && !HOVER_SHADES.has(h.toUpperCase()));
     expect(bad).toEqual([]);
   });
+
+  it("every palette alias used by screens compiles", async () => {
+    const postcss = (await import('postcss')).default;
+    const tailwind = (await import('tailwindcss')).default;
+    const config = (await import('../tailwind.config')).default;
+    const CLASSES = ['text-danger-active','text-warning-active','text-success-active','bg-warning-soft','border-border-hover','bg-danger/10','text-text-muted/50'];
+    const result = await postcss([
+      tailwind({ ...config, content: [{ raw: CLASSES.join(' ') }], corePlugins: { preflight: false } })
+    ]).process('@tailwind utilities;', { from: undefined });
+    for (const cls of CLASSES) {
+      expect(result.css).toContain('.' + cls.replace('/', '\\/') + ' {');
+    }
+  });
 });
