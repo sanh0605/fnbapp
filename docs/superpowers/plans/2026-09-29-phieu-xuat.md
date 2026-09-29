@@ -67,8 +67,8 @@
 
 6. **Giá trị một dòng tính thế nào mà khớp báo cáo "Hàng đã xuất"?** Máy tính giá vốn chỉ trả tổng theo mặt hàng. Cách lấy từng dòng: với mỗi mặt hàng, chạy lại máy tính trên các dòng tính tới dòng đó, lấy phần chênh. Đo 2026-09-29: tổng mọi dòng = tổng máy tính = 53.936.297,115332 trên 196 dòng, lệch 0. Tổng dòng của ISL-00076, ISL-00075, ISL-00077 và STK-001 khớp đúng con số tab "Theo lần xuất".
 7. **Ghi thêm dòng vào ngày cũ có làm kho âm ở giữa không?** Có thể. Hàm tạo phiếu hiện tại (`0094`) chỉ kiểm tồn đúng lúc của phiếu, không kiểm các lúc sau. Nếu kho âm ở giữa, máy tính giá vốn ném lỗi và cả báo cáo lẫn danh sách này sập. Kế hoạch thêm hàm `issue_stock_headroom` (tồn thấp nhất từ lúc đó tới nay) và dùng cho cả sửa lẫn tạo phiếu. Đây là quyết định kỹ thuật, báo lại chủ quán.
-8. **Sửa số lượng tăng lên bị chặn oan không?** Có, trong một trường hợp hẹp. Tăng Bột sữa B One trên ISL-00076 từ 1.000 g lên 1.500 g: máy trả 1.000 g về kho *hôm nay*, rồi xuất 1.500 g *ngày 28/09*. Từ 28/09 tới nay tồn thấp nhất là 1.000 g, nên 1.500 g bị từ chối, dù nhìn thì "chỉ cần thêm 500 g". Thêm một dòng Bột sữa B One 500 g thì được. Hỏi chủ quán (câu 1 lúc giao kế hoạch); kế hoạch làm theo khuyến nghị A: từ chối, báo rõ còn bao nhiêu và gợi ý thêm dòng.
-9. **Tạo phiếu mới lùi ngày về trước lần kiểm kê có bị chặn không?** Hiện không. Spec chỉ chặn sửa và huỷ. Hỏi chủ quán (câu 2); kế hoạch làm theo khuyến nghị A: chặn luôn, cùng một phép kiểm.
+8. **Sửa số lượng tăng lên bị chặn oan không?** Có, trong một trường hợp hẹp. Tăng Bột sữa B One trên ISL-00076 từ 1.000 g lên 1.500 g: máy trả 1.000 g về kho *hôm nay*, rồi xuất 1.500 g *ngày 28/09*. Từ 28/09 tới nay tồn thấp nhất là 1.000 g, nên 1.500 g bị từ chối, dù nhìn thì "chỉ cần thêm 500 g". Thêm một dòng Bột sữa B One 500 g thì được. Chủ quán chốt A (2026-09-29, "theo khuyến nghị"): từ chối, báo rõ còn bao nhiêu và gợi ý thêm dòng. Ghi ở `BR-INV-013`.
+9. **Tạo phiếu mới lùi ngày về trước lần kiểm kê có bị chặn không?** Hiện không. Spec chỉ chặn sửa và huỷ. Chủ quán chốt A (2026-09-29): chặn luôn, cùng một phép kiểm. Ghi ở `BR-INV-013`.
 
 **Đã xem:** spec và bản mẫu; `app/admin/inventory/issue-slips/{page.tsx, actions.ts}`; `lib/stock/manual-issue-transaction.ts`; `lib/stock/stocktake-package-lines.ts`; migration `0063`, `0093`, `0094`; `lib/costing/issue-costing.ts` (`computeIssueCosting`), `lib/costing/issue-costing-inputs.ts`; `lib/reports/issued-value-report.ts`; `app/admin/reports/issued/actions.ts`; `lib/purchasing/purchase-order-list.ts`; `app/admin/inventory/purchase-orders/{page.tsx, [id]/page.tsx, actions.ts}`; `app/admin/inventory/stocktake/actions.ts` (`getLastConfirmedStocktakeSession`); `app/admin/nav-items.ts`, `app/admin/nav-allowlist.ts`, `app/admin/page-headings.test.ts`, `lib/shared/nav-completeness.ts`; `supabase/CLAUDE.md`; dữ liệu thật đo 2026-09-29.
 
@@ -724,7 +724,7 @@ $function$;
 Định nghĩa lại ba hàm cũ — lấy thân **mới nhất** của mỗi hàm (`grep -ln "create or replace function public.<tên>" supabase/migrations/` rồi lấy file số lớn nhất: hiện là `0093` cho `reverse_manual_issue_atomic`, `0063` cho `cancel_issue_slip_atomic`, `0094` cho `create_issue_slip_atomic`), chép nguyên văn, chỉ thêm:
 - `reverse_manual_issue_atomic`: ngay sau bước kiểm `source = 'MANUAL'` và chưa bị trả: `if public.issue_slip_stocktake_lock(v_original.issued_at) is not null then raise exception 'Dòng % nằm trước lần kiểm kê % nên không trả về kho được nữa.', v_issue_id, public.issue_slip_stocktake_lock(v_original.issued_at); end if;`
 - `cancel_issue_slip_atomic`: trước vòng lặp: đọc `issued_at` của phiếu; khoá → `'Phiếu % nằm trước lần kiểm kê % nên không huỷ được nữa.'`.
-- `create_issue_slip_atomic`: (a) `v_remaining` đầu cho mỗi mặt hàng = `issue_stock_headroom(item, p_issued_at)` thay cho phép trừ hai tổng; giữ phép kiểm "chưa có đơn nhập nào". (b) Theo khuyến nghị câu 2: `issue_slip_stocktake_lock(p_issued_at)` khác null → `'Ngày xuất % nằm trước lần kiểm kê % đã chốt. Chọn ngày sau lần kiểm kê.'`. Nếu chủ quán chọn B ở câu 2, bỏ (b).
+- `create_issue_slip_atomic`: (a) `v_remaining` đầu cho mỗi mặt hàng = `issue_stock_headroom(item, p_issued_at)` thay cho phép trừ hai tổng; giữ phép kiểm "chưa có đơn nhập nào". (b) Chủ quán chốt câu 2 = A (2026-09-29): `issue_slip_stocktake_lock(p_issued_at)` khác null → `'Ngày xuất % nằm trước lần kiểm kê % đã chốt. Chọn ngày sau lần kiểm kê.'`.
 
 Quyền: mỗi hàm mới và định nghĩa lại: `revoke all on function … from public, anon, authenticated; grant execute on function … to service_role;` như `0063`.
 
@@ -920,7 +920,8 @@ Yêu cầu:
 
 ### Task 10: Tài liệu, cửa kiểm, soát (Opus)
 
-- [ ] `docs/02-rules/business-rules/inventory.md` `BR-INV-013`: thêm đoạn "Kiểm tồn khi sửa" (tồn thấp nhất từ ngày phiếu tới nay; ví dụ Bột sữa B One 1.000 → 1.500 g bị từ chối, thêm dòng 500 g thì được) và câu trả lời câu 1, câu 2 của chủ quán kèm ngày. Ghi chú dưới dòng 166: ISL-00075..78 hiện có là phiếu tạo lại 29/09 cùng số.
+- [x] `BR-INV-013` đoạn "Stock check on backdated lines" đã ghi ngay khi chủ quán chốt (2026-09-29). Khi code lên: đổi dòng **Status** của `BR-INV-013` từ "Not built yet" sang đã làm, kèm mã commit.
+- [ ] `docs/02-rules/business-rules/inventory.md`: ghi chú dưới dòng 166: ISL-00075..78 hiện có là phiếu tạo lại 29/09 cùng số.
 - [ ] Spec mục 3: "1–20 trên 79 phiếu" → "1–20 trên 75 phiếu (74 phiếu còn hiệu lực và 1 lần kiểm kê; 4 phiếu đã huỷ ẩn)".
 - [ ] `docs/03-workflows/` luồng phiếu xuất (nếu có file) cập nhật đường dẫn `/new` và chế độ sửa.
 - [ ] Sinh lại `docs/04-operations/OPEN-ITEMS.md` từ `it.todo` (lệnh sinh lại theo `scripts/`).

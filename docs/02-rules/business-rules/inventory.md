@@ -124,6 +124,11 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 
 **Cancelled slips in the list** (owner 2026-09-29, after seeing the mockup): hidden by default. Choosing Loại = "Đã huỷ" in the list's filter shows them. Owner's words: *"Bình thường thì ẩn, chọn Loại = \"Đã huỷ\" trong bộ lọc mới thấy."* He was told the trade-off beforehand: slip numbers then appear to skip in the default list.
 
+**Stock check on backdated lines** (owner 2026-09-29, *"theo khuyến nghị"*, both questions answered A; plan `docs/superpowers/plans/2026-09-29-phieu-xuat.md`).
+- **The check covers the slip's date through today, not the slip's date alone.** Any line written on an earlier date, whether by a new slip or by "Chỉnh sửa", must not push stock below zero at any later moment. Otherwise the costing engine stops with "issue exceeds quantity on hand" and the reports built on it stop opening. This part was a technical decision, reported to the owner.
+- **Raising a line's quantity can be refused even when the difference seems available** (question 1, answer A). Example from ISL-00076: from 28/09 to 2026-09-29 Bột sữa B One never had more than 1.000 g in stock. Changing its line from 1.000 g to 1.500 g returns the 1.000 g today but issues 1.500 g on 28/09, so stock would sit 500 g below zero in between, and the edit is refused. The refusal says how much is left and suggests adding a separate 500 g line, which passes. Option B was to split the difference into a second line automatically; the owner did not take it.
+- **A new slip cannot be dated on or before the most recent confirmed stocktake** (question 2, answer A). This is the same block as for editing, for the same reason: the count already fixed the book at that date.
+
 ### BR-INV-009 — Reversing a mistaken issue slip lands today, at today's average, using BR-INV-008's mechanism
 
 **Status:** `APPROVED` — owner decision 2026-08-08 (`259103e`, Plan D §5 I7 in full). **Implemented** (Plan D D7b, `0058_reverse_manual_issue.sql`, `reverse_manual_issue_atomic`), extended 2026-08-09 by D14 (below). Still the mechanism for issue slips; `BR-INV-013` (owner 2026-09-29) changes only the screen and adds the stocktake block.
