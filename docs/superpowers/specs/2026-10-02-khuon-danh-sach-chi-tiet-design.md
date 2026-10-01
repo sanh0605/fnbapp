@@ -99,7 +99,7 @@ Giống trang ISL-00083.
 
 | Đợt | Trang | Chi tiết mới | Nút ở dòng | Ghi chú |
 |---|---|---|---|---|
-| 1 (mẫu) | Nhà cung cấp | Thông tin liên hệ + bảng đơn nhập của nhà cung cấp đó | Ngừng dùng | Dựng các mảnh dùng chung ở đợt này |
+| 1 (mẫu) | Nhà cung cấp | Thông tin liên hệ + bảng đơn nhập của nhà cung cấp đó | Xoá (chỉ `ADMIN`; nhà cung cấp đã có phiếu nhập thì máy từ chối, nói rõ lý do) | Dựng các mảnh dùng chung ở đợt này. Trang này chưa có nút ngừng dùng; đo 2026-10-02: 46/48 nhà cung cấp đã có phiếu nhập |
 | 2 | Hàng hoá, Phân loại hàng, Đơn vị tính, Bảng quy đổi | Hàng hoá: thông tin + quy đổi + lịch sử nhập | Theo trang | Lịch sử nhập chuyển vào trang chi tiết hàng hoá |
 | 3 | Tài sản, Thời hạn khấu hao | Tài sản: thông tin + khấu hao | Theo trang | "Thanh lý" là hành động trong trang chi tiết |
 | 4 | Món, Nhóm món, Topping & tuỳ chọn | Món: thông tin + size + lịch sử giá | Ngừng bán | "Bán lại" và "Xoá vĩnh viễn" chỉ ở chi tiết |
