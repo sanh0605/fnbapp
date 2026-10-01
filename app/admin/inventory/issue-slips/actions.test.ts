@@ -561,5 +561,3 @@ describe("editIssueSlip", () => {
     expect(mocks.editIssueSlipAtomic).not.toHaveBeenCalled();
   });
 });
-
-it.todo("Danh sách lý do xuất do chủ quán tự thêm, sửa, ngừng dùng (spec 2026-09-29 mục 0; 72 trên 78 phiếu chọn Khác)");
