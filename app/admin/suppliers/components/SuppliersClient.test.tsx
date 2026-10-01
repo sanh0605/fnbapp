@@ -66,7 +66,6 @@ describe("SuppliersClient", () => {
         suppliers={[sup("SUP-001", "Cà phê Phin"), sup("SUP-002", "Sữa Mlekovita")]}
         canDelete={false}
         initialSearch="Cà phê"
-        initialStatus="ALL"
       />
     );
     expect(screen.getAllByText("Cà phê Phin").length).toBeGreaterThan(0);
@@ -74,17 +73,17 @@ describe("SuppliersClient", () => {
   });
 
   it("typing in search writes q to the URL with replace", () => {
-    render(<SuppliersClient suppliers={[]} canDelete={false} initialSearch="" initialStatus="ALL" />);
+    render(<SuppliersClient suppliers={[]} canDelete={false} initialSearch="" />);
     fireEvent.change(screen.getByPlaceholderText("Tên, SĐT, địa chỉ..."), { target: { value: "Cà phê" } });
     expect(replace).toHaveBeenLastCalledWith("/admin/suppliers?q=C%C3%A0+ph%C3%AA", { scroll: false });
   });
 
   it("Thêm links to the new page carrying the current list URL", () => {
-    render(<SuppliersClient suppliers={[]} canDelete={false} initialSearch="ABC" initialStatus="INACTIVE" />);
+    render(<SuppliersClient suppliers={[]} canDelete={false} initialSearch="ABC" />);
     const link = screen.getByRole("link", { name: "+ Thêm nhà cung cấp" });
     expect(link).toHaveAttribute(
       "href",
-      "/admin/suppliers/new?returnTo=" + encodeURIComponent("/admin/suppliers?q=ABC&status=INACTIVE")
+      "/admin/suppliers/new?returnTo=" + encodeURIComponent("/admin/suppliers?q=ABC")
     );
   });
 
@@ -94,7 +93,6 @@ describe("SuppliersClient", () => {
         suppliers={[sup("SUP-001", "Cà phê Phin")]}
         canDelete={false}
         initialSearch=""
-        initialStatus="ALL"
       />
     );
     const links = screen.getAllByRole("link", { name: "Sửa" });
@@ -107,9 +105,13 @@ describe("SuppliersClient", () => {
         suppliers={[sup("SUP-003", "Cũ", "INACTIVE")]}
         canDelete={false}
         initialSearch=""
-        initialStatus="ALL"
       />
     );
     expect(screen.getAllByRole("link", { name: "Sửa" }).length).toBeGreaterThan(0);
+  });
+
+  it("does not render a status select filter", () => {
+    render(<SuppliersClient suppliers={[]} canDelete={false} initialSearch="" />);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
   });
 });

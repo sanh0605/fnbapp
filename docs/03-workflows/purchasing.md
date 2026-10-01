@@ -61,7 +61,8 @@ when an existing order is edited — see question 5.
    (`/admin/suppliers/new`, `/admin/suppliers/[id]/edit`, `BR-DATA-007`; the list's
    filters ride in the URL and come back after Lưu), and delete, confirmed in a box.
    The form has no status field: nothing on screen sets a supplier to "Ngừng hợp tác"
-   (checked 2026-10-01). Delete is ADMIN-only per `BR-ACCESS-003` (owner
+   (checked 2026-10-01; all 48 suppliers ACTIVE). Asked whether to add one, the owner
+   chose to drop the list's status filter instead (2026-10-01, *"1b"*). Delete is ADMIN-only per `BR-ACCESS-003` (owner
    decision 2026-09-08, `requireOwner`), with the button hidden for anyone else
    (`canDelete` computed from `resolveActor()` in `page.tsx`).
 3. **What each list contains, and what is excluded.** The purchase-order list

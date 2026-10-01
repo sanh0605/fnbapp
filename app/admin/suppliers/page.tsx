@@ -7,23 +7,18 @@ export const dynamic = "force-dynamic";
 export default async function SuppliersPage({
   searchParams,
 }: {
-  searchParams?: { q?: string; status?: string };
+  searchParams?: { q?: string };
 }) {
   const [suppliers, auth] = await Promise.all([getSuppliers(), resolveActor()]);
   // BR-ACCESS-003: permanent deletion is ADMIN only -- hiding the button is
   // courtesy, the server-side requireOwner() in deleteSupplierAction is
   // what actually blocks it.
   const canDelete = auth.ok && auth.actor.role === "ADMIN";
-  const status =
-    searchParams?.status === "ACTIVE" || searchParams?.status === "INACTIVE"
-      ? searchParams.status
-      : "ALL";
   return (
     <SuppliersClient
       suppliers={suppliers}
       canDelete={canDelete}
       initialSearch={searchParams?.q ?? ""}
-      initialStatus={status}
     />
   );
 }

@@ -13,13 +13,11 @@ interface SuppliersClientProps {
   // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
   canDelete: boolean;
   initialSearch: string;
-  initialStatus: "ALL" | "ACTIVE" | "INACTIVE";
 }
 
-function listUrl(search: string, status: string): string {
+function listUrl(search: string): string {
   const p = new URLSearchParams();
   if (search) p.set("q", search);
-  if (status !== "ALL") p.set("status", status);
   const qs = p.toString();
   return qs ? `/admin/suppliers?${qs}` : "/admin/suppliers";
 }
@@ -28,38 +26,27 @@ export default function SuppliersClient({
   suppliers,
   canDelete,
   initialSearch,
-  initialStatus,
 }: SuppliersClientProps) {
   const router = useRouter();
   const [search, setSearch] = useState(initialSearch);
-  const [statusFilter, setStatusFilter] = useState(initialStatus);
 
   const filteredSuppliers = useMemo(() => {
     return suppliers.filter((s) => {
-      const matchesSearch =
+      return (
         s.name.toLowerCase().includes(search.toLowerCase()) ||
         s.phone?.toLowerCase().includes(search.toLowerCase()) ||
-        s.address?.toLowerCase().includes(search.toLowerCase());
-
-      const matchesStatus = statusFilter === "ALL" || s.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
+        s.address?.toLowerCase().includes(search.toLowerCase())
+      );
     });
-  }, [suppliers, search, statusFilter]);
+  }, [suppliers, search]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const next = e.target.value;
     setSearch(next);
-    router.replace(listUrl(next, statusFilter), { scroll: false });
+    router.replace(listUrl(next), { scroll: false });
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const next = e.target.value as "ALL" | "ACTIVE" | "INACTIVE";
-    setStatusFilter(next);
-    router.replace(listUrl(search, next), { scroll: false });
-  };
-
-  const back = encodeURIComponent(listUrl(search, statusFilter));
+  const back = encodeURIComponent(listUrl(search));
 
   const rightContent = (
     <Link
@@ -87,18 +74,6 @@ export default function SuppliersClient({
             onChange={handleSearchChange}
             className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
-        </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trạng thái</label>
-          <select
-            value={statusFilter}
-            onChange={handleStatusChange}
-            className="w-full md:w-36 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-          >
-            <option value="ALL">Tất cả</option>
-            <option value="ACTIVE">Hoạt động</option>
-            <option value="INACTIVE">Ngừng hợp tác</option>
-          </select>
         </div>
       </div>
 

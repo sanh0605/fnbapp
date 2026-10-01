@@ -303,3 +303,17 @@ export default async function SuppliersPage({ searchParams }: { searchParams: { 
   - Nhà cung cấp → "+ Thêm nhà cung cấp".
   - Tìm một tên → Sửa → Cập nhật → ô tìm vẫn giữ.
   - Xoá vẫn bật khung hỏi như cũ.
+
+### Task 4: Bỏ ô lọc trạng thái (chủ quán 2026-10-01, "1b")
+
+Hỏi có cần chuyển nhà cung cấp sang "Ngừng hợp tác" không, chủ quán chọn bỏ ô lọc trạng thái. Đo 2026-10-01: 48 trên 48 nhà cung cấp đang `ACTIVE`.
+
+- `SuppliersClient.tsx`:
+  - Bỏ ô chọn "Trạng thái", bỏ `statusFilter` và bỏ prop `initialStatus`.
+  - `listUrl(search)` chỉ còn `q`.
+  - Nhãn "Ngừng hợp tác" trên từng dòng giữ nguyên: cột vẫn còn trong dữ liệu.
+- `page.tsx`: bỏ phần đọc `searchParams.status`.
+- Test:
+  - Bỏ `initialStatus` khỏi mọi chỗ render.
+  - Test "Thêm links…" đổi thành: `initialSearch="ABC"` thì href là `/admin/suppliers/new?returnTo=` + `encodeURIComponent("/admin/suppliers?q=ABC")`.
+  - Thêm test: không còn ô chọn nào có nhãn "Trạng thái" (`screen.queryByText("Trạng thái")` là null). Test này phải đỏ trên bản trước.
