@@ -1,7 +1,7 @@
 # Users and access flow
 
 ```flow-decl
-routes: /login, /admin/users, /admin/users/edit/[id], /settings/password
+routes: /login, /admin/users, /admin/users/new, /admin/users/edit/[id], /settings/password
 files: app/actions/auth.ts, app/admin/users/actions.ts
 tables: users, Users
 brCodes: BR-ACCESS-001, BR-ACCESS-002, BR-U-003

@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { findAll } from "@/lib/db/tables";
-import { BrandForm, DeleteBrandButton } from "./components/BrandForm";
+import { DeleteBrandButton } from "@/app/admin/brands/components/BrandForm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import type { DBBrand } from "@/types/db";
@@ -20,7 +21,14 @@ export default async function BrandsPage() {
       <PageHeader 
         title="Thương hiệu" 
         subtitle="Quản lý các thương hiệu F&B đang hoạt động trên hệ thống."
-        actions={<BrandForm />}
+        actions={
+          <Link
+            href="/admin/brands/new"
+            className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px]"
+          >
+            + Thêm Thương Hiệu
+          </Link>
+        }
       />
 
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
@@ -57,7 +65,12 @@ export default async function BrandsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-right">
                       <div className="flex justify-end items-center">
-                        <BrandForm initialData={brand} />
+                        <Link
+                          href={`/admin/brands/${encodeURIComponent(brand.id)}/edit`}
+                          className="text-primary hover:text-primary-hover font-medium text-sm mr-4 inline-flex items-center min-h-[44px]"
+                        >
+                          Sửa
+                        </Link>
                         {canDelete && <DeleteBrandButton id={brand.id} />}
                       </div>
                     </td>
@@ -95,7 +108,12 @@ export default async function BrandsPage() {
                 </div>
                 <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                   <div className="flex items-center min-h-[44px]">
-                    <BrandForm initialData={brand} />
+                    <Link
+                      href={`/admin/brands/${encodeURIComponent(brand.id)}/edit`}
+                      className="text-primary hover:text-primary-hover font-medium text-sm inline-flex items-center min-h-[44px]"
+                    >
+                      Sửa
+                    </Link>
                   </div>
                   <div className="flex items-center min-h-[44px]">
                     {canDelete && <DeleteBrandButton id={brand.id} />}

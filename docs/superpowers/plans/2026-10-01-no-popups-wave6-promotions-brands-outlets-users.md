@@ -62,32 +62,32 @@ Chưa xem: thân `PromotionForm.tsx` từ dòng 60, các test có sẵn của b�
 
 ### Task 1: Bốn `return-to.ts`
 
-- [ ] Mỗi tệp + test như mục Architecture.
+- [x] Mỗi tệp + test như mục Architecture.
 
 ### Task 2: Khuyến mãi
 
 **Files:** `promotions/components/PromotionForm.tsx`, `PromotionsClient.tsx`, tạo `promotions/new/page.tsx`, `promotions/[id]/edit/page.tsx`, tests.
 
-- [ ] Test (đỏ trên bản cũ): render `<PromotionForm … returnTo="/admin/promotions?status=ACTIVE" />` không truyền `onClose` thì thấy ô tên khuyến mãi và nút "Bỏ"; "Bỏ" thì `push("/admin/promotions?status=ACTIVE")`. Danh sách: nút Sửa là liên kết `/admin/promotions/<id>/edit?returnTo=…`.
+- [x] Test (đỏ trên bản cũ): render `<PromotionForm … returnTo="/admin/promotions?status=ACTIVE" />` không truyền `onClose` thì thấy ô tên khuyến mãi và nút "Bỏ"; "Bỏ" thì `push("/admin/promotions?status=ACTIVE")`. Danh sách: nút Sửa là liên kết `/admin/promotions/<id>/edit?returnTo=…`.
 
 ### Task 3: Thương hiệu
 
 **Files:** `brands/components/BrandForm.tsx`, `brands/page.tsx`, tạo `brands/new/page.tsx`, `brands/[id]/edit/page.tsx`, tests.
 
-- [ ] Test (đỏ): form render thấy ngay ô tên thương hiệu; "Bỏ" về `/admin/brands`.
+- [x] Test (đỏ): form render thấy ngay ô tên thương hiệu; "Bỏ" về `/admin/brands`.
 
 ### Task 4: Điểm bán
 
 **Files:** `outlets/components/OutletForm.tsx`, `OutletsList.tsx`, `outlets/page.tsx`, tạo `outlets/new/page.tsx`, `outlets/[id]/edit/page.tsx`, tests.
 
-- [ ] Test (đỏ): form thêm với `outlets` có mã `"001"`, `"003"` hiện trước mã `"004"` (`lib/catalog/outlet-code.ts` `nextOutletCode`); "Bỏ" về `/admin/outlets`. Bỏ `resetForNextOpen` và `handleClose` vì không còn mở lại.
+- [x] Test (đỏ): form thêm với `outlets` có mã `"001"`, `"003"` hiện trước mã `"004"` (`lib/catalog/outlet-code.ts` `nextOutletCode`); "Bỏ" về `/admin/outlets`. Bỏ `resetForNextOpen` và `handleClose` vì không còn mở lại.
 
 ### Task 5: Nhân sự
 
 **Files:** `users/components/UserForm.tsx`, `UsersClient.tsx`, `users/page.tsx`, `EditUserForm.tsx`, `users/edit/[id]/page.tsx`, tạo `users/new/page.tsx`, tests.
 
-- [ ] Test (đỏ): `UserForm` render thấy ngay ô tên đăng nhập; "Bỏ" về `returnTo`. `EditUserForm` lưu xong `push(returnTo)`. Danh sách với `initialFilters={{ q: "", role: "STAFF" }}` hiện đúng vai đang lọc (dùng giá trị vai có thật trong ô chọn).
+- [x] Test (đỏ): `UserForm` render thấy ngay ô tên đăng nhập; "Bỏ" về `returnTo`. `EditUserForm` lưu xong `push(returnTo)`. Danh sách với `initialFilters={{ q: "", role: "STAFF" }}` hiện đúng vai đang lọc (dùng giá trị vai có thật trong ô chọn).
 
 ### Task 6: Menu, tài liệu
 
-- [ ] Như mục Thêm. Opus: chứng minh đỏ, chạy đủ năm lệnh, commit.
+- [x] Như mục Thêm. Opus: chứng minh đỏ, chạy đủ năm lệnh, commit.

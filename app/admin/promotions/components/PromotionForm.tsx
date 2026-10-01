@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useId } from "react";
-import { savePromotion } from "../actions";
+import { useRouter } from "next/navigation";
+import { savePromotion } from "@/app/admin/promotions/actions";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { formatNumber } from "@/lib/shared/format";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
-import { ModalPortal } from "@/components/ui/ModalPortal";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { safeReturnTo } from "./return-to";
 
 interface PromotionFormProps {
   initialData?: DBPromotion;
@@ -14,8 +15,7 @@ interface PromotionFormProps {
   categories: DBProductCategory[];
   products: DBProduct[];
   variants: DBProductVariant[];
-  onClose: () => void;
-  onSuccess: () => void;
+  returnTo?: string;
 }
 
 export function PromotionForm({
@@ -24,9 +24,10 @@ export function PromotionForm({
   categories,
   products,
   variants,
-  onClose,
-  onSuccess,
+  returnTo: rawReturnTo,
 }: PromotionFormProps) {
+  const returnTo = safeReturnTo(rawReturnTo);
+  const router = useRouter();
   const formId = useId();
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -167,8 +168,8 @@ export function PromotionForm({
     const res = await savePromotion(promoPayload);
     setLoading(false);
     if (res.success) {
-      onSuccess();
-      onClose();
+      router.push(returnTo);
+      router.refresh();
     } else {
       setError(res.error || "Có lỗi xảy ra, vui lòng thử lại.");
     }
@@ -215,230 +216,221 @@ export function PromotionForm({
   }).filter(group => group.products.length > 0);
 
   return (
-    <ModalPortal>
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-surface-card w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up max-h-[90vh]">
-        <div className="p-5 border-b border-border flex justify-between items-center bg-surface-secondary/50">
-          <h3 className="text-xl font-bold text-text-primary">
-            {initialData ? "Chỉnh sửa khuyến mãi" : "Thêm chương trình khuyến mãi mới"}
-          </h3>
-          <button
-            onClick={onClose}
-            className="p-1.5 border-border rounded-full text-text-muted hover:bg-surface-secondary"
-          >
-            ✕
-          </button>
-        </div>
+    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-4xl shadow-sm">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div role="alert" aria-live="polite" className="bg-danger/10 text-danger text-sm px-4 py-3 rounded-xl border border-danger/20 font-medium">
+            ⚠️ {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
-          {error && (
-            <div role="alert" aria-live="polite" className="bg-danger/10 text-danger text-sm px-4 py-3 rounded-xl border border-danger/20 font-medium">
-              ⚠️ {error}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="col-span-1 md:col-span-2">
-              <label htmlFor={`${formId}-name`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Tên chương trình *</label>
-              <input
-                id={`${formId}-name`}
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ví dụ: Happy Hour Giảm 10%"
-                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-              />
-            </div>
-
-            <div>
-              <label htmlFor={`${formId}-code`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Mã Code (Để nhập thủ công)</label>
-              <input
-                id={`${formId}-code`}
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Ví dụ: HAPPY10 (để trống nếu tự động)"
-                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-              />
-            </div>
-
-            <div>
-              <label htmlFor={`${formId}-brandId`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Áp dụng thương hiệu</label>
-              <SearchableSelect
-                id={`${formId}-brandId`}
-                value={brandId}
-                onChange={setBrandId}
-                options={[
-                  { id: "", label: "Tất cả thương hiệu (Toàn hệ thống)" },
-                  ...brands.map((b) => ({ id: b.id, label: b.name })),
-                ]}
-                placeholder="Tất cả thương hiệu (Toàn hệ thống)"
-              />
-            </div>
-
-            <div>
-              <label htmlFor={`${formId}-type`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Đối tượng giảm giá</label>
-              <select
-                id={`${formId}-type`}
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-              >
-                <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
-                <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor={`${formId}-status`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Trạng thái</label>
-              <select
-                id={`${formId}-status`}
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-              >
-                <option value="ACTIVE">Hoạt động (Active)</option>
-                <option value="INACTIVE">Không hoạt động (Inactive)</option>
-              </select>
-            </div>
-
-             <div>
-               <label htmlFor={`${formId}-discountType`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Hình thức giảm giá</label>
-               <select
-                 id={`${formId}-discountType`}
-                 value={discountType}
-                 onChange={(e) => setDiscountType(e.target.value)}
-                 className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-               >
-                 <option value="PERCENT">Phần trăm (%)</option>
-                 <option value="FLAT_VND">Số tiền giảm cố định (đ)</option>
-                 <option value="FLAT_PRICE">Đồng giá (đ)</option>
-               </select>
-             </div>
- 
-             <div>
-               <label htmlFor={`${formId}-discountValue`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Giá trị giảm giá *</label>
-               <input
-                 id={`${formId}-discountValue`}
-                 type="number"
-                 value={discountValue}
-                 onChange={(e) => setDiscountValue(e.target.value)}
-                 placeholder={discountType === "PERCENT" ? "Ví dụ: 10" : discountType === "FLAT_PRICE" ? "Ví dụ: 15000" : "Ví dụ: 20000"}
-                 className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-               />
-             </div>
-
-            <div>
-              <label htmlFor={`${formId}-minOrderValue`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Đơn tối thiểu để áp dụng (đ)</label>
-              <input
-                id={`${formId}-minOrderValue`}
-                type="number"
-                value={minOrderValue}
-                onChange={(e) => setMinOrderValue(e.target.value)}
-                placeholder="Ví dụ: 50000"
-                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-              />
-            </div>
-
-            <div>
-              <label htmlFor={`${formId}-startDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ bắt đầu *</label>
-              <input
-                id={`${formId}-startDate`}
-                type="datetime-local"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-              />
-            </div>
-
-            <div>
-              <label htmlFor={`${formId}-endDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ kết thúc</label>
-              <input
-                id={`${formId}-endDate`}
-                type="datetime-local"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-1 focus:ring-focus-ring"
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="col-span-1 md:col-span-2">
+            <label htmlFor={`${formId}-name`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Tên chương trình *</label>
+            <input
+              id={`${formId}-name`}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ví dụ: Happy Hour Giảm 10%"
+              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            />
           </div>
 
-          {type === "PRODUCT_DISCOUNT" && (
-            <div className="border border-border rounded-xl p-4 bg-surface-secondary/50 space-y-3">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-border">
-                <label className="block text-xs font-bold uppercase text-text-muted tracking-wider">Chọn các món áp dụng giảm giá *</label>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedVariants(variants.map((v: any) => v.id))}
-                    className="text-[11px] text-primary hover:text-primary-hover font-bold px-2 py-1 bg-surface-card border border-primary/20 rounded-lg hover:bg-primary-soft transition active:scale-95"
-                  >
-                    Chọn tất cả
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedVariants([])}
-                    className="text-[11px] text-danger hover:text-danger-active font-bold px-2 py-1 bg-surface-card border border-danger/30 rounded-lg hover:bg-danger/10 transition active:scale-95"
-                  >
-                    Bỏ chọn tất cả
-                  </button>
-                </div>
+          <div>
+            <label htmlFor={`${formId}-code`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Mã Code (Để nhập thủ công)</label>
+            <input
+              id={`${formId}-code`}
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Ví dụ: HAPPY10 (để trống nếu tự động)"
+              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm uppercase focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            />
+          </div>
+
+          <div>
+            <label htmlFor={`${formId}-brandId`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Áp dụng thương hiệu</label>
+            <SearchableSelect
+              id={`${formId}-brandId`}
+              value={brandId}
+              onChange={setBrandId}
+              options={[
+                { id: "", label: "Tất cả thương hiệu (Toàn hệ thống)" },
+                ...brands.map((b) => ({ id: b.id, label: b.name })),
+              ]}
+              placeholder="Tất cả thương hiệu (Toàn hệ thống)"
+            />
+          </div>
+
+          <div>
+            <label htmlFor={`${formId}-type`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Đối tượng giảm giá</label>
+            <select
+              id={`${formId}-type`}
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            >
+              <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
+              <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor={`${formId}-status`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Trạng thái</label>
+            <select
+              id={`${formId}-status`}
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            >
+              <option value="ACTIVE">Hoạt động (Active)</option>
+              <option value="INACTIVE">Không hoạt động (Inactive)</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor={`${formId}-discountType`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Hình thức giảm giá</label>
+            <select
+              id={`${formId}-discountType`}
+              value={discountType}
+              onChange={(e) => setDiscountType(e.target.value)}
+              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            >
+              <option value="PERCENT">Phần trăm (%)</option>
+              <option value="FLAT_VND">Số tiền giảm cố định (đ)</option>
+              <option value="FLAT_PRICE">Đồng giá (đ)</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor={`${formId}-discountValue`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Giá trị giảm giá *</label>
+            <input
+              id={`${formId}-discountValue`}
+              type="number"
+              inputMode="numeric"
+              value={discountValue}
+              onChange={(e) => setDiscountValue(e.target.value)}
+              placeholder={discountType === "PERCENT" ? "Ví dụ: 10" : discountType === "FLAT_PRICE" ? "Ví dụ: 15000" : "Ví dụ: 20000"}
+              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            />
+          </div>
+
+          <div>
+            <label htmlFor={`${formId}-minOrderValue`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Đơn tối thiểu để áp dụng (đ)</label>
+            <input
+              id={`${formId}-minOrderValue`}
+              type="number"
+              inputMode="numeric"
+              value={minOrderValue}
+              onChange={(e) => setMinOrderValue(e.target.value)}
+              placeholder="Ví dụ: 50000"
+              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            />
+          </div>
+
+          <div>
+            <label htmlFor={`${formId}-startDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ bắt đầu *</label>
+            <input
+              id={`${formId}-startDate`}
+              type="datetime-local"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            />
+          </div>
+
+          <div>
+            <label htmlFor={`${formId}-endDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ kết thúc (Tuỳ chọn)</label>
+            <input
+              id={`${formId}-endDate`}
+              type="datetime-local"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            />
+          </div>
+        </div>
+
+        {type === "PRODUCT_DISCOUNT" && (
+          <div className="border-t border-border pt-4 mt-2">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <h4 className="text-sm font-bold text-text-primary">Chọn món áp dụng</h4>
+                <p className="text-xs text-text-muted">Chọn các kích cỡ/món áp dụng khuyến mãi này. Có thể điều chỉnh giá trị giảm riêng cho từng món.</p>
               </div>
-              <div className="max-h-[400px] overflow-y-auto space-y-6 pr-2 divide-y divide-border">
-                {groupedByCategory.map(({ category, products: catProducts, allVariantIds }) => {
-                  const isCatSelected = allVariantIds.every((id: string) => selectedVariants.includes(id)) && allVariantIds.length > 0;
-                  
-                  return (
-                    <div key={category.id} className="pt-4 first:pt-0">
-                      <div className="flex items-center justify-between mb-3 bg-surface-secondary/50 p-2 rounded-lg">
-                        <h4 className="font-bold text-text-primary uppercase tracking-wide text-[13px]">{category.name}</h4>
-                        <button
-                          type="button"
-                          onClick={() => handleSelectGroup(allVariantIds, !isCatSelected)}
-                          className={`text-[11px] font-bold px-2.5 py-1 rounded-md transition ${isCatSelected ? 'bg-primary/20 text-primary-active hover:bg-primary/30' : 'bg-surface-card border border-border text-text-secondary hover:bg-surface-secondary'}`}
-                        >
-                          {isCatSelected ? "Bỏ chọn nhóm" : "Chọn nhóm này"}
-                        </button>
-                      </div>
+              <div className="text-xs font-bold text-primary bg-primary-soft px-2.5 py-1 rounded-full">
+                Đã chọn: {selectedVariants.length} mục
+              </div>
+            </div>
 
-                      <div className="space-y-4 pl-2 border-l-2 border-border ml-1">
-                        {catProducts.map(({ product, variants: prodVariants }) => {
-                          const prodVariantIds = prodVariants.map((v: any) => v.id as string);
-                          const isProdSelected = prodVariantIds.every((id: string) => selectedVariants.includes(id)) && prodVariantIds.length > 0;
+            <div className="space-y-4 border border-border rounded-xl p-3 bg-surface-secondary/20">
+              {groupedByCategory.map((group) => {
+                const isAllGroupSelected = group.allVariantIds.every(id => selectedVariants.includes(id));
+                const isSomeGroupSelected = group.allVariantIds.some(id => selectedVariants.includes(id)) && !isAllGroupSelected;
 
-                          return (
-                            <div key={product.id} className="relative">
-                              <div className="flex items-center gap-2 mb-1.5">
-                                <p className="text-sm font-bold text-text-secondary">{product.name}</p>
-                                <button
-                                  type="button"
-                                  onClick={() => handleSelectGroup(prodVariantIds, !isProdSelected)}
-                                  className={`text-[10px] px-1.5 py-0.5 rounded transition ${isProdSelected ? 'bg-primary-soft text-primary' : 'bg-surface-secondary text-text-muted hover:border-border'}`}
-                                >
-                                  {isProdSelected ? "Bỏ chọn" : "Chọn tất cả size"}
-                                </button>
-                              </div>
-                              <div className="flex flex-wrap gap-2.5">
-                                {prodVariants.map((v: any) => {
-                                  const isSelected = selectedVariants.includes(v.id);
-                                  return (
-                                    <div key={v.id} className={`flex items-center gap-1.5 p-1 border rounded-xl transition ${
-                                      isSelected ? "bg-primary-soft/50 border-primary/40" : "bg-surface-card border-border"
-                                    }`}>
-                                      <button
-                                        type="button"
-                                        onClick={() => toggleVariantSelection(v.id)}
-                                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
-                                          isSelected
-                                            ? "text-primary-active"
-                                            : "text-text-secondary hover:bg-surface-secondary"
-                                        }`}
-                                      >
-                                        Size {v.size_name || "Mặc định"} ({formatNumber(v.price)})
-                                      </button>
-                                      {isSelected && (
+                return (
+                  <div key={group.category.id} className="border border-border/80 rounded-xl bg-surface-card overflow-hidden">
+                    <div className="p-3 bg-surface-secondary/40 border-b border-border/60 flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer font-bold text-sm text-text-primary">
+                        <input
+                          type="checkbox"
+                          checked={isAllGroupSelected}
+                          ref={el => {
+                            if (el) el.indeterminate = isSomeGroupSelected;
+                          }}
+                          onChange={(e) => handleSelectGroup(group.allVariantIds, e.target.checked)}
+                          className="rounded text-primary focus:ring-primary h-4 w-4"
+                        />
+                        📁 {group.category.name}
+                      </label>
+                      <span className="text-[11px] text-text-muted font-medium">
+                        {group.products.length} sản phẩm
+                      </span>
+                    </div>
+
+                    <div className="p-3 space-y-3">
+                      {group.products.map((item) => {
+                        return (
+                          <div key={item.product.id} className="p-2 border border-border/40 rounded-lg hover:border-border transition bg-surface-card">
+                            <div className="font-bold text-xs text-text-secondary mb-2 px-1">
+                              🍽️ {item.product.name}
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                              {item.variants.map((v) => {
+                                const isChecked = selectedVariants.includes(v.id);
+                                return (
+                                  <div
+                                    key={v.id}
+                                    className={`p-2 rounded-lg border flex flex-col justify-between transition gap-2 ${
+                                      isChecked
+                                        ? "border-primary bg-primary-soft/30"
+                                        : "border-border/60 bg-surface-secondary/30"
+                                    }`}
+                                  >
+                                    <label className="flex items-start gap-2 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={() => toggleVariantSelection(v.id)}
+                                        className="mt-0.5 rounded text-primary focus:ring-primary h-4 w-4"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-xs font-semibold text-text-primary truncate">
+                                          {v.size_name || "Mặc định"}
+                                        </div>
+                                        <div className="text-[10px] text-text-muted font-medium">
+                                          {formatNumber(v.price)}
+                                        </div>
+                                      </div>
+                                    </label>
+
+                                    {isChecked && (
+                                      <div className="flex items-center gap-1.5 pt-1.5 border-t border-border/40">
+                                        <span className="text-[10px] text-text-muted">Giảm:</span>
                                         <input
                                           type="number"
+                                          inputMode="numeric"
                                           placeholder={discountValue || (discountType === "PERCENT" ? "%" : "đ")}
                                           value={variantValues[v.id] ?? ""}
                                           onChange={(e) => {
@@ -448,45 +440,44 @@ export function PromotionForm({
                                               [v.id]: val
                                             }));
                                           }}
-                                          className="w-16 px-2 py-0.5 border border-border rounded-lg text-[11px] focus:outline-none focus:ring-2 focus:ring-focus-ring text-right font-bold text-primary-active bg-surface-card"
+                                          className="w-20 px-2 py-1 min-h-[36px] border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-focus-ring text-right font-bold text-primary-active bg-surface-card"
                                         />
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        })}
-                      </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-
-          <div className="border-t border-border pt-5 flex justify-end gap-3 bg-surface-card sticky bottom-0 z-10 pb-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-5 py-2.5 text-sm font-medium border border-border rounded-xl hover:bg-surface-secondary active:scale-[0.98] transition"
-            >
-              Hủy
-            </button>
-            <LoadingButton
-              type="submit"
-              loading={loading}
-              loadingText="Đang lưu..."
-              className="px-6 py-2.5 text-sm font-bold text-on-primary bg-primary rounded-xl hover:bg-primary-hover active:scale-[0.98] transition shadow-md"
-            >
-              Lưu thông tin
-            </LoadingButton>
           </div>
-        </form>
-      </div>
+        )}
+
+        <div className="border-t border-border pt-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => router.push(returnTo)}
+            disabled={loading}
+            className="w-full sm:w-auto px-5 py-2.5 text-sm font-medium border border-border rounded-xl hover:bg-surface-secondary active:scale-[0.98] transition min-h-[44px] text-center"
+          >
+            Bỏ
+          </button>
+          <LoadingButton
+            type="submit"
+            loading={loading}
+            loadingText="Đang lưu..."
+            className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-on-primary bg-primary rounded-xl hover:bg-primary-hover active:scale-[0.98] transition shadow-md min-h-[44px]"
+          >
+            Lưu thông tin
+          </LoadingButton>
+        </div>
+      </form>
     </div>
-    </ModalPortal>
   );
 }

@@ -1,4 +1,5 @@
-import { OutletForm, RetireOutletButton } from "./OutletForm";
+import Link from "next/link";
+import { RetireOutletButton } from "./OutletForm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
@@ -74,7 +75,12 @@ export function OutletsList({ outlets, brands }: OutletsListProps) {
 
           <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
             <div className="flex items-center min-h-[44px]">
-              <OutletForm initialData={outlet} brands={brands} outlets={outlets} />
+              <Link
+                href={`/admin/outlets/${encodeURIComponent(outlet.id)}/edit`}
+                className="text-primary hover:text-primary-hover font-medium text-sm inline-flex items-center min-h-[44px]"
+              >
+                Sửa
+              </Link>
             </div>
             <div className="flex items-center min-h-[44px]">
               <RetireOutletButton outlet={outlet} />

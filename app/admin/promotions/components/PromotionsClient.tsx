@@ -2,10 +2,10 @@
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useFilterForm } from "@/lib/shared/use-filter-form";
-import { deletePromotionAction } from "../actions";
-import { PromotionForm } from "./PromotionForm";
+import { deletePromotionAction } from "@/app/admin/promotions/actions";
 import { formatNumber } from "@/lib/shared/format";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { alert } from "@/lib/shared/dialog";
@@ -30,13 +30,21 @@ export default function PromotionsClient({
   canDelete,
 }: PromotionsClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const currentUrl = useMemo(() => {
+    const qs = searchParams?.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }, [pathname, searchParams]);
+  const back = encodeURIComponent(currentUrl);
+
   const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
     status: "ALL",
     type: "ALL",
     q: "",
   }, { sync: "history" });
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingPromo, setEditingPromo] = useState<DBPromotion | undefined>(undefined);
+
   const [deleteId, setDeleteConfirmId] = useState<string | null>(null);
 
   // section A4b: the action's result was discarded -- a refusal failed in
@@ -101,15 +109,12 @@ export default function PromotionsClient({
   }, [promotions, draft.q, draft.status, draft.type]);
 
   const rightContent = (
-    <button
-      onClick={() => {
-        setEditingPromo(undefined);
-        setIsFormOpen(true);
-      }}
-      className="bg-primary hover:bg-primary-hover text-on-primary font-bold px-4 py-2 rounded-lg text-sm transition shadow-md active:scale-[0.98]"
+    <Link
+      href={`/admin/promotions/new?returnTo=${back}`}
+      className="bg-primary hover:bg-primary-hover text-on-primary font-bold px-4 py-2 rounded-lg text-sm transition shadow-md active:scale-[0.98] inline-flex items-center justify-center min-h-[44px]"
     >
       + Tạo Khuyến Mãi
-    </button>
+    </Link>
   );
 
   return (
@@ -282,15 +287,12 @@ export default function PromotionsClient({
               </div>
 
               <div className="p-4 border-t border-border bg-surface-secondary/30 flex justify-end gap-2.5">
-                <button
-                  onClick={() => {
-                    setEditingPromo(promo);
-                    setIsFormOpen(true);
-                  }}
-                  className="px-3.5 py-1.5 min-h-[44px] bg-primary-soft hover:bg-primary/20 border border-primary/20 text-primary-active font-bold text-xs rounded-lg transition active:scale-95"
+                <Link
+                  href={`/admin/promotions/${encodeURIComponent(promo.id)}/edit?returnTo=${back}`}
+                  className="inline-flex items-center justify-center px-3.5 py-1.5 min-h-[44px] bg-primary-soft hover:bg-primary/20 border border-primary/20 text-primary-active font-bold text-xs rounded-lg transition active:scale-95"
                 >
                   Sửa
-                </button>
+                </Link>
                 {canDelete && (
                   <button
                     onClick={() => setDeleteConfirmId(promo.id)}
@@ -315,23 +317,6 @@ export default function PromotionsClient({
             Hãy điều chỉnh bộ lọc hoặc tạo một chương trình khuyến mãi mới.
           </p>
         </div>
-      )}
-
-      {isFormOpen && (
-        <PromotionForm
-          initialData={editingPromo}
-          brands={brands}
-          categories={categories}
-          products={products}
-          variants={variants}
-          onClose={() => {
-            setIsFormOpen(false);
-            setEditingPromo(undefined);
-          }}
-          onSuccess={() => {
-            router.refresh();
-          }}
-        />
       )}
 
       <DeleteConfirmModal

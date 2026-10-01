@@ -19,7 +19,7 @@ import type { DBOutlet, DBBrand } from "@/types/db";
 // for the same reason as app/pos/components/POSScreen.itemModal.test.tsx: these
 // modules transitively pull in next/cache, lib/db/tables.ts and lib/auth/auth.ts,
 // none of which are needed to check that the list renders.
-vi.mock("../actions", () => ({
+vi.mock("@/app/admin/outlets/actions", () => ({
   addOutlet: vi.fn(),
   editOutlet: vi.fn(),
   retireOutlet: vi.fn(),
@@ -93,7 +93,7 @@ describe("OutletsList", () => {
 
   it("offers edit and retire actions for each active outlet", async () => {
     const container = await renderTracked(<OutletsList outlets={SEEDED_OUTLETS} brands={BRANDS} />);
-    const buttons = Array.from(container.querySelectorAll("button")).map(b => b.textContent);
+    const buttons = Array.from(container.querySelectorAll("button, a")).map(b => b.textContent);
 
     expect(buttons.filter(t => t === "Sửa")).toHaveLength(2);
     expect(buttons.filter(t => t === "Ngừng hoạt động")).toHaveLength(2);

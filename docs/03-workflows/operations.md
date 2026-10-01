@@ -1,7 +1,7 @@
 # Operations flow (POS sync, outlets, brands, activity log, cache)
 
 ```flow-decl
-routes: /admin/pos-sync, /admin/outlets, /admin/brands, /admin/activity-log, /admin/clear-cache
+routes: /admin/pos-sync, /admin/outlets, /admin/outlets/new, /admin/outlets/[id]/edit, /admin/brands, /admin/brands/new, /admin/brands/[id]/edit, /admin/activity-log, /admin/clear-cache
 files: app/admin/pos-sync/actions.ts, app/admin/outlets/actions.ts, app/admin/brands/actions.ts
 tables: Pos_Sync_Failures, Outlets, Brands
 brCodes: BR-SALE-006

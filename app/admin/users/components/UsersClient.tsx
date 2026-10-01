@@ -2,7 +2,8 @@
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
-import { UserForm, DeleteUserButton } from "./UserForm";
+import { useRouter } from "next/navigation";
+import { DeleteUserButton } from "./UserForm";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { DBUser } from "@/types/db";
@@ -11,11 +12,24 @@ interface UsersClientProps {
   users: DBUser[];
   // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
   canDelete: boolean;
+  initialFilters?: { q?: string; role?: string };
 }
 
-export default function UsersClient({ users, canDelete }: UsersClientProps) {
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("ALL");
+const VALID_ROLES = ["ADMIN", "MANAGER", "STAFF"];
+
+function listUrl(search: string, role: string): string {
+  const p = new URLSearchParams();
+  if (search) p.set("q", search);
+  if (role && role !== "ALL") p.set("role", role);
+  const qs = p.toString();
+  return qs ? `/admin/users?${qs}` : "/admin/users";
+}
+
+export default function UsersClient({ users, canDelete, initialFilters }: UsersClientProps) {
+  const router = useRouter();
+  const initialRole = initialFilters?.role && VALID_ROLES.includes(initialFilters.role) ? initialFilters.role : "ALL";
+  const [search, setSearch] = useState(initialFilters?.q || "");
+  const [roleFilter, setRoleFilter] = useState(initialRole);
 
   const filteredUsers = useMemo(() => {
     return users.filter(u => {
@@ -25,7 +39,29 @@ export default function UsersClient({ users, canDelete }: UsersClientProps) {
     });
   }, [users, search, roleFilter]);
 
-  const rightContent = <UserForm />;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    setSearch(next);
+    router.replace(listUrl(next, roleFilter), { scroll: false });
+  };
+
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const next = e.target.value;
+    const valid = VALID_ROLES.includes(next) ? next : "ALL";
+    setRoleFilter(valid);
+    router.replace(listUrl(search, valid), { scroll: false });
+  };
+
+  const back = encodeURIComponent(listUrl(search, roleFilter));
+
+  const rightContent = (
+    <Link
+      href={`/admin/users/new?returnTo=${back}`}
+      className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px]"
+    >
+      + Thêm Nhân Sự
+    </Link>
+  );
 
   return (
     <div className="space-y-6">
@@ -42,7 +78,7 @@ export default function UsersClient({ users, canDelete }: UsersClientProps) {
             type="text"
             placeholder="Tên đăng nhập..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
@@ -50,7 +86,7 @@ export default function UsersClient({ users, canDelete }: UsersClientProps) {
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Quyền hạn</label>
           <select
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            onChange={handleRoleChange}
             className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả quyền</option>
@@ -87,7 +123,7 @@ export default function UsersClient({ users, canDelete }: UsersClientProps) {
               </div>
               <div className="flex justify-end items-center gap-3 pt-3 border-t border-border">
                 <Link
-                  href={`/admin/users/edit/${user.id}`}
+                  href={`/admin/users/edit/${user.id}?returnTo=${back}`}
                   className="px-3 py-1.5 min-h-[44px] bg-primary-soft hover:bg-primary/20 text-primary font-medium text-xs rounded-lg flex items-center justify-center transition-colors"
                 >
                   Sửa
@@ -143,7 +179,7 @@ export default function UsersClient({ users, canDelete }: UsersClientProps) {
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end items-center gap-3">
                         <Link
-                          href={`/admin/users/edit/${user.id}`}
+                          href={`/admin/users/edit/${user.id}?returnTo=${back}`}
                           className="px-3 py-1.5 min-h-[44px] bg-primary-soft hover:bg-primary/20 text-primary font-medium text-xs rounded-lg flex items-center justify-center transition-colors"
                         >
                           Sửa

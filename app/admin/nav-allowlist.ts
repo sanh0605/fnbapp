@@ -73,6 +73,22 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the modifiers list -- legitimately unlinked",
   },
   {
+    route: "/admin/promotions/new",
+    reason: "reached from the promotions list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/brands/new",
+    reason: "reached from the brands list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/outlets/new",
+    reason: "reached from the outlets list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/users/new",
+    reason: "reached from the users list -- legitimately unlinked",
+  },
+  {
     route: "/admin/pos-sync",
     reason:
       "reached from the Tổng quan page (app/admin/page.tsx links it)",

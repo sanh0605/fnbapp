@@ -1,23 +1,27 @@
 "use client";
 
 import { useState, useId } from "react";
-import { updateUser } from "../actions";
+import { updateUser } from "@/app/admin/users/actions";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { safeReturnTo } from "./return-to";
 import type { DBUser } from "@/types/db";
 
 interface EditUserFormProps {
   user: DBUser;
+  returnTo?: string;
 }
 
-export default function EditUserForm({ user }: EditUserFormProps) {
+export default function EditUserForm({ user, returnTo: rawReturnTo }: EditUserFormProps) {
+  const returnTo = safeReturnTo(rawReturnTo);
   const formId = useId();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setLoading(true);
     setError(null);
     formData.append("id", user.id);
@@ -26,14 +30,14 @@ export default function EditUserForm({ user }: EditUserFormProps) {
     if (res.error) {
       setError(res.error);
     } else {
-      router.push("/admin/users");
+      router.push(returnTo);
       router.refresh();
     }
   }
 
   return (
     <div className="bg-surface-card rounded-2xl shadow-sm border border-border p-6 max-w-2xl mx-auto">
-      <form action={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
             {error}
@@ -49,7 +53,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
             type="text"
             disabled
             value={user.username}
-            className="w-full border border-border rounded-lg px-3 py-2 bg-surface-secondary text-text-muted outline-none"
+            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] bg-surface-secondary text-text-muted outline-none"
           />
           <p className="text-[10px] text-text-muted mt-1">Tên đăng nhập không thể thay đổi.</p>
         </div>
@@ -62,7 +66,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
             id={`${formId}-password`}
             type="password"
             name="password"
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="******"
           />
         </div>
@@ -76,7 +80,7 @@ export default function EditUserForm({ user }: EditUserFormProps) {
             name="role"
             required
             defaultValue={user.role}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
+            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
           >
             <option value="STAFF">Nhân viên (STAFF)</option>
             <option value="MANAGER">Quản lý (MANAGER)</option>
@@ -85,16 +89,18 @@ export default function EditUserForm({ user }: EditUserFormProps) {
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <Link
-            href="/admin/users"
-            className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition"
+          <button
+            type="button"
+            onClick={() => router.push(returnTo)}
+            className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition min-h-[44px]"
           >
-            Hủy bỏ
-          </Link>
+            Bỏ
+          </button>
           <LoadingButton
             type="submit"
             loading={loading}
             loadingText="Đang cập nhật..."
+            className="min-h-[44px]"
           >
             Cập nhật nhân sự
           </LoadingButton>
