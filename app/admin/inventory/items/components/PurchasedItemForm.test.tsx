@@ -35,6 +35,7 @@ const mocks = vi.hoisted(() => ({
   addPurchasedItem: vi.fn(),
   updatePurchasedItem: vi.fn(),
   routerRefresh: vi.fn(),
+  push: vi.fn(),
 }));
 
 vi.mock("../actions", () => ({
@@ -43,7 +44,7 @@ vi.mock("../actions", () => ({
 }));
 // section B: this component now calls useRouter().refresh() on save.
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.routerRefresh }),
+  useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.push }),
 }));
 
 // SearchableSelect scrolls the highlighted option into view when the
@@ -148,9 +149,6 @@ async function openForm() {
       units={UNITS as any}
     />,
   );
-  const openBtn = findButtonWithText(container, "+ Thêm Hàng Mua Vào")!;
-  await fireClick(openBtn);
-  await flush();
   return container;
 }
 
@@ -166,9 +164,6 @@ async function openEditForm(initialData: any, initialConversions: any[]) {
       initialConversions={initialConversions}
     />,
   );
-  const openBtn = findButtonWithText(container, "Sửa")!;
-  await fireClick(openBtn);
-  await flush();
   return container;
 }
 
@@ -284,9 +279,6 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
         isUnitLocked={true}
       />,
     );
-    const openBtn = findButtonWithText(container, "Sửa")!;
-    await fireClick(openBtn);
-    await flush();
 
     // No interactive selector for the base unit -- its placeholder (only
     // ever rendered by the editable SearchableSelect variant) must not
@@ -382,3 +374,22 @@ describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-2
     expect(document.body.textContent).toContain("Không quản lý tồn kho");
   });
 });
+
+describe("PurchasedItemForm on-page behaviour", () => {
+  it("renders on page and Bỏ navigates to returnTo without saving", async () => {
+    const container = await renderTracked(
+      <PurchasedItemForm
+        itemCategories={CATEGORIES as any}
+        units={UNITS as any}
+        returnTo="/admin/inventory/items?category=CAT-1"
+      />,
+    );
+    const nameInput = container.querySelector('input[name="name"]') as HTMLInputElement;
+    expect(nameInput).not.toBeNull();
+    const boBtn = findButtonWithText(container, "Bỏ")!;
+    expect(boBtn).not.toBeUndefined();
+    await fireClick(boBtn);
+    expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/items?category=CAT-1");
+  });
+});
+

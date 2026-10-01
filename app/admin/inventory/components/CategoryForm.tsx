@@ -1,24 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addItemCategory, updateItemCategory } from "@/app/admin/inventory/actions";
-import { ModalPortal } from "@/components/ui/ModalPortal";
 import { alert } from "@/lib/shared/dialog";
+import { safeReturnTo } from "./return-to";
 
-export function CategoryForm({ initialData }: { initialData?: any }) {
+interface CategoryFormProps {
+  initialData?: any;
+  returnTo?: string;
+}
+
+export function CategoryForm({ initialData, returnTo: rawReturnTo }: CategoryFormProps) {
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/inventory/categories");
+  const formId = useId();
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const isEdit = !!initialData;
 
-  // section B2/B7: the exact case the owner hit -- renaming a category here
-  // used to leave this screen showing the old name until he navigated away
-  // and back (revalidatePath alone marks the server cache stale, it does
-  // not repaint an already-open page). router.refresh() re-renders the
-  // current route in place. Also section A4b: the action's result was
-  // discarded outright, so a failed save showed nothing at all.
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setLoading(true);
     let res;
     if (isEdit) {
@@ -32,77 +34,59 @@ export function CategoryForm({ initialData }: { initialData?: any }) {
       await alert({ title: "Lỗi", message: res.error, variant: "danger" });
       return;
     }
-    setIsOpen(false);
+    router.push(returnTo);
     router.refresh();
   }
 
   return (
-    <>
-      {isEdit ? (
-        <button onClick={() => setIsOpen(true)} className="text-primary hover:text-primary text-sm font-medium">
-          Sửa
-        </button>
-      ) : (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-primary text-on-primary px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-primary-hover transition"
-        >
-          + Phân loại Hàng Hoá
-        </button>
-      )}
-
-      {isOpen && (
-        <ModalPortal>
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
-            <div className="bg-surface-card rounded-2xl p-6 w-full max-w-md shadow-xl">
-              <h2 className="text-lg font-bold mb-4">{isEdit ? "Sửa Phân Loại" : "Tạo Phân Loại Hàng Hoá"}</h2>
-              <form action={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1">
-                    Tên Phân Loại (VD: Nguyên liệu khô, Bao bì)
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    defaultValue={initialData?.name}
-                    required
-                    className="w-full border border-border rounded-lg px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1">Đặc tính (System Type)</label>
-                  <select
-                    name="system_type"
-                    defaultValue={initialData?.system_type}
-                    className="w-full border border-border rounded-lg px-3 py-2"
-                  >
-                    <option value="RAW">Thuộc nhóm Nguyên liệu (Có tính quy đổi, có trong công thức)</option>
-                    <option value="CONSUMABLE">Thuộc nhóm Vật tư (Kiểm kê định kỳ)</option>
-                    <option value="EQUIPMENT">Thuộc nhóm Dụng cụ</option>
-                  </select>
-                </div>
-                <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                  <button
-                    type="button"
-                    onClick={() => setIsOpen(false)}
-                    className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg text-sm"
-                  >
-                    Huỷ
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm hover:bg-primary-hover disabled:opacity-50"
-                  >
-                    Lưu
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </ModalPortal>
-      )}
-    </>
+    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-primary mb-1">
+            Tên Phân Loại (VD: Nguyên liệu khô, Bao bì)
+          </label>
+          <input
+            id={`${formId}-name`}
+            type="text"
+            name="name"
+            defaultValue={initialData?.name}
+            required
+            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+          />
+        </div>
+        <div>
+          <label htmlFor={`${formId}-system_type`} className="block text-sm font-medium text-text-primary mb-1">
+            Đặc tính (System Type)
+          </label>
+          <select
+            id={`${formId}-system_type`}
+            name="system_type"
+            defaultValue={initialData?.system_type}
+            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+          >
+            <option value="RAW">Thuộc nhóm Nguyên liệu (Có tính quy đổi, có trong công thức)</option>
+            <option value="CONSUMABLE">Thuộc nhóm Vật tư (Kiểm kê định kỳ)</option>
+            <option value="EQUIPMENT">Thuộc nhóm Dụng cụ</option>
+          </select>
+        </div>
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
+          <button
+            type="button"
+            onClick={() => router.push(returnTo)}
+            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+          >
+            Bỏ
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full sm:w-auto px-4 py-2 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary-hover disabled:opacity-50 transition"
+          >
+            {loading ? "Đang lưu..." : isEdit ? "Cập nhật" : "Lưu"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 

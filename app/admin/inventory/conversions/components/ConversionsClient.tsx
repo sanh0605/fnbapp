@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ConversionForm } from "./ConversionForm";
+import Link from "next/link";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -16,10 +16,22 @@ interface ConversionsClientProps {
   units: DBUnit[];
   // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
   canDelete: boolean;
+  initialSearch?: string;
 }
 
-export default function ConversionsClient({ items, conversions, units, canDelete }: ConversionsClientProps) {
-  const [search, setSearch] = useState("");
+function listUrl(search: string): string {
+  return search ? `/admin/inventory/conversions?q=${encodeURIComponent(search)}` : "/admin/inventory/conversions";
+}
+
+export default function ConversionsClient({
+  items,
+  conversions,
+  units,
+  canDelete,
+  initialSearch = "",
+}: ConversionsClientProps) {
+  const router = useRouter();
+  const [search, setSearch] = useState(initialSearch);
 
   const unitMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -40,12 +52,21 @@ export default function ConversionsClient({ items, conversions, units, canDelete
     });
   }, [conversions, search, itemMap]);
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    setSearch(next);
+    router.replace(listUrl(next), { scroll: false });
+  };
+
+  const back = encodeURIComponent(listUrl(search));
+
   const rightContent = (
-    <ConversionForm
-      items={items}
-      conversions={conversions}
-      units={units}
-    />
+    <Link
+      href={`/admin/inventory/conversions/new?returnTo=${back}`}
+      className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px]"
+    >
+      + Thêm Quy Đổi
+    </Link>
   );
 
   return (
@@ -56,18 +77,16 @@ export default function ConversionsClient({ items, conversions, units, canDelete
         actions={rightContent}
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">
-
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm hàng hóa</label>
           <input
             type="text"
             placeholder="Tên hàng hóa..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
+            onChange={handleSearchChange}
+            className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm text-text-primary"
           />
         </div>
-      
       </div>
 
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
@@ -117,12 +136,12 @@ export default function ConversionsClient({ items, conversions, units, canDelete
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end items-center">
-                        <ConversionForm
-                          initialData={conv}
-                          items={items}
-                          conversions={conversions}
-                          units={units}
-                        />
+                        <Link
+                          href={`/admin/inventory/conversions/${encodeURIComponent(conv.id)}/edit?returnTo=${back}`}
+                          className="text-primary hover:text-primary-hover font-medium text-sm mr-4"
+                        >
+                          Sửa
+                        </Link>
                         {canDelete && (
                           <DeleteConversionButton id={conv.id} itemName={itemMap[conv.purchased_item_id] || ""} />
                         )}
@@ -180,12 +199,12 @@ export default function ConversionsClient({ items, conversions, units, canDelete
 
                 <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                   <div className="flex items-center min-h-[44px]">
-                    <ConversionForm
-                      initialData={conv}
-                      items={items}
-                      conversions={conversions}
-                      units={units}
-                    />
+                    <Link
+                      href={`/admin/inventory/conversions/${encodeURIComponent(conv.id)}/edit?returnTo=${back}`}
+                      className="text-primary hover:text-primary-hover font-medium text-sm"
+                    >
+                      Sửa
+                    </Link>
                   </div>
                   <div className="flex items-center min-h-[44px]">
                     {canDelete && (

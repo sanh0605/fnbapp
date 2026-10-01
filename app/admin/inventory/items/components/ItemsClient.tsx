@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useFilterForm } from "@/lib/shared/use-filter-form";
 import { EmptyState } from "@/components/ui/EmptyState";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { PurchasedItemForm } from "./PurchasedItemForm";
-import { PurchaseHistoryButton } from "./PurchaseHistoryButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { deletePurchasedItemAction } from "../actions";
 import { alert } from "@/lib/shared/dialog";
@@ -26,6 +24,13 @@ interface ItemsClientProps {
 }
 
 export default function ItemsClient({ categories, items, conversions, units, unitLockedItemIds, canDelete }: ItemsClientProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentUrl = useMemo(() => {
+    const qs = searchParams?.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }, [pathname, searchParams]);
+
   const unitLockedSet = useMemo(() => new Set(unitLockedItemIds), [unitLockedItemIds]);
   const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
     q: "",
@@ -51,10 +56,12 @@ export default function ItemsClient({ categories, items, conversions, units, uni
       <Link href="/admin/inventory/conversions" className="border border-border bg-surface-card text-text-primary flex items-center justify-center font-bold text-sm transition-colors hover:bg-page rounded-button h-11 px-4">
         Bảng quy đổi
       </Link>
-      <PurchasedItemForm
-        itemCategories={categories}
-        units={units}
-      />
+      <Link
+        href={`/admin/inventory/items/new?returnTo=${encodeURIComponent(currentUrl)}`}
+        className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition inline-flex items-center justify-center min-h-[44px]"
+      >
+        + Thêm Hàng Mua Vào
+      </Link>
     </div>
   );
 
@@ -154,14 +161,18 @@ export default function ItemsClient({ categories, items, conversions, units, uni
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end items-center gap-2">
-                          <PurchaseHistoryButton itemId={item.id} itemName={item.name} />
-                          <PurchasedItemForm
-                            initialData={item}
-                            initialConversions={itemConversions}
-                            itemCategories={categories}
-                            units={units}
-                            isUnitLocked={unitLockedSet.has(item.id)}
-                          />
+                          <Link
+                            href={`/admin/inventory/items/${encodeURIComponent(item.id)}/history?returnTo=${encodeURIComponent(currentUrl)}`}
+                            className="inline-flex items-center justify-center font-medium rounded-button transition-colors bg-surface-secondary text-text-primary hover:bg-border active:bg-border text-xs px-3 py-1.5 min-h-[32px]"
+                          >
+                            Lịch sử nhập
+                          </Link>
+                          <Link
+                            href={`/admin/inventory/items/${encodeURIComponent(item.id)}/edit?returnTo=${encodeURIComponent(currentUrl)}`}
+                            className="inline-flex items-center justify-center font-medium rounded-button transition-colors bg-transparent text-primary hover:bg-primary-soft active:bg-primary-soft text-xs px-3 py-1.5 min-h-[32px] mr-2"
+                          >
+                            Sửa
+                          </Link>
                           {canDelete && <DeleteItemButton id={item.id} name={item.name} />}
                         </div>
                       </td>
@@ -211,16 +222,20 @@ export default function ItemsClient({ categories, items, conversions, units, uni
 
                   <div className="flex justify-end items-center gap-2 pt-3 mt-2 border-t border-border/50">
                     <div className="flex items-center">
-                      <PurchaseHistoryButton itemId={item.id} itemName={item.name} />
+                      <Link
+                        href={`/admin/inventory/items/${encodeURIComponent(item.id)}/history?returnTo=${encodeURIComponent(currentUrl)}`}
+                        className="inline-flex items-center justify-center font-medium rounded-button transition-colors bg-surface-secondary text-text-primary hover:bg-border active:bg-border text-xs px-3 py-1.5 min-h-[32px]"
+                      >
+                        Lịch sử nhập
+                      </Link>
                     </div>
                     <div className="flex items-center">
-                      <PurchasedItemForm
-                        initialData={item}
-                        initialConversions={itemConversions}
-                        itemCategories={categories}
-                        units={units}
-                        isUnitLocked={unitLockedSet.has(item.id)}
-                      />
+                      <Link
+                        href={`/admin/inventory/items/${encodeURIComponent(item.id)}/edit?returnTo=${encodeURIComponent(currentUrl)}`}
+                        className="inline-flex items-center justify-center font-medium rounded-button transition-colors bg-transparent text-primary hover:bg-primary-soft active:bg-primary-soft text-xs px-3 py-1.5 min-h-[32px]"
+                      >
+                        Sửa
+                      </Link>
                     </div>
                     <div className="flex items-center">
                       {canDelete && <DeleteItemButton id={item.id} name={item.name} />}

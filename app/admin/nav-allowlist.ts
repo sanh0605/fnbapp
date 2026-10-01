@@ -25,6 +25,22 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the issue-slips list -- legitimately unlinked",
   },
   {
+    route: "/admin/inventory/items/new",
+    reason: "reached from the items list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/inventory/categories/new",
+    reason: "reached from the categories list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/inventory/units/new",
+    reason: "reached from the units list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/inventory/conversions/new",
+    reason: "reached from the conversions list -- legitimately unlinked",
+  },
+  {
     route: "/admin/suppliers/new",
     reason: "reached from the suppliers list -- legitimately unlinked",
   },

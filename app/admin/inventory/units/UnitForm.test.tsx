@@ -16,13 +16,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import React from "react";
-import { DeleteBtn } from "./UnitForm";
+import { DeleteBtn, UnitForm } from "./UnitForm";
 
 const mocks = vi.hoisted(() => ({
   deleteUnit: vi.fn(),
   confirmDialog: vi.fn(),
   alertDialog: vi.fn(),
   routerRefresh: vi.fn(),
+  push: vi.fn(),
 }));
 
 vi.mock("@/app/admin/inventory/actions", () => ({
@@ -35,7 +36,7 @@ vi.mock("@/lib/shared/dialog", () => ({
   alert: mocks.alertDialog,
 }));
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.routerRefresh }),
+  useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.push }),
 }));
 
 const roots: Root[] = [];
@@ -115,3 +116,18 @@ describe("UnitForm's DeleteBtn -- the owner's Combo 2 case", () => {
     expect(mocks.routerRefresh).not.toHaveBeenCalled();
   });
 });
+
+describe("UnitForm on-page behaviour", () => {
+  it("renders on page showing 'Tên đơn vị' and Bỏ navigates to returnTo without saving", async () => {
+    const container = await renderTracked(<UnitForm returnTo="/admin/inventory/units" />);
+    const nameInput = container.querySelector('input[name="name"]') as HTMLInputElement;
+    expect(nameInput).not.toBeNull();
+    const boBtn = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent?.trim() === "Bỏ",
+    )!;
+    expect(boBtn).not.toBeUndefined();
+    await fireClick(boBtn);
+    expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/units");
+  });
+});
+

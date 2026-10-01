@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/db/tables";
-import { UnitForm, DeleteBtn } from "./UnitForm";
+import Link from "next/link";
+import { DeleteBtn } from "./UnitForm";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { resolveActor } from "@/lib/auth/auth";
@@ -21,7 +22,14 @@ export default async function UnitsPage() {
       <PageHeader 
         title="Đơn vị tính" 
         subtitle="Quản lý danh sách các đơn vị tính hợp lệ (kg, lít, hộp...)"
-        actions={<UnitForm />}
+        actions={
+          <Link
+            href="/admin/inventory/units/new"
+            className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition inline-flex items-center justify-center min-h-[44px]"
+          >
+            + Thêm Đơn vị
+          </Link>
+        }
       />
 
       <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
@@ -34,7 +42,7 @@ export default async function UnitsPage() {
                 <th scope="col" className="px-6 py-4 font-bold text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y border-b border-border">
               {units.length === 0 ? (
                 <tr>
                 <td colSpan={3} className="p-0">
@@ -52,7 +60,12 @@ export default async function UnitsPage() {
                     <td className="px-6 py-4 text-text-muted">{unit.description || "—"}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        <UnitForm initialData={unit} />
+                        <Link
+                          href={`/admin/inventory/units/${encodeURIComponent(unit.id)}/edit`}
+                          className="text-primary hover:text-primary-active text-sm font-medium"
+                        >
+                          Sửa
+                        </Link>
                         {canDelete && <DeleteBtn id={unit.id} />}
                       </div>
                     </td>
@@ -82,7 +95,12 @@ export default async function UnitsPage() {
                 </div>
                 <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                   <div className="flex items-center min-h-[44px]">
-                    <UnitForm initialData={unit} />
+                    <Link
+                      href={`/admin/inventory/units/${encodeURIComponent(unit.id)}/edit`}
+                      className="text-primary hover:text-primary-active text-sm font-medium"
+                    >
+                      Sửa
+                    </Link>
                   </div>
                   <div className="flex items-center min-h-[44px]">
                     {canDelete && <DeleteBtn id={unit.id} />}

@@ -1,7 +1,7 @@
 # Inventory catalog flow
 
 ```flow-decl
-routes: /admin/inventory/items, /admin/inventory/categories, /admin/inventory/units, /admin/inventory/conversions
+routes: /admin/inventory/items, /admin/inventory/categories, /admin/inventory/units, /admin/inventory/conversions, /admin/inventory/items/new, /admin/inventory/items/[id]/edit, /admin/inventory/items/[id]/history, /admin/inventory/categories/new, /admin/inventory/categories/[id]/edit, /admin/inventory/units/new, /admin/inventory/units/[id]/edit, /admin/inventory/conversions/new, /admin/inventory/conversions/[id]/edit
 files: app/admin/inventory/actions.ts, app/admin/inventory/items/actions.ts, app/admin/inventory/conversions/actions.ts
 tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002

@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/db/tables";
-import { ItemCategoryForm, DeleteBtn } from "@/app/admin/inventory/components/InventoryForms";
+import Link from "next/link";
+import { DeleteBtn } from "@/app/admin/inventory/components/InventoryForms";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { deleteItemCategory } from "@/app/admin/inventory/actions";
@@ -28,7 +29,14 @@ export default async function CategoriesPage() {
       <PageHeader 
         title="Phân loại hàng" 
         subtitle="Tự do tạo các phân loại tuỳ chỉnh (Bao bì, Nguyên liệu ướt, v.v.)."
-        actions={<ItemCategoryForm />}
+        actions={
+          <Link
+            href="/admin/inventory/categories/new"
+            className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition inline-flex items-center justify-center min-h-[44px]"
+          >
+            + Phân loại Hàng Hoá
+          </Link>
+        }
       />
 
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
@@ -61,7 +69,12 @@ export default async function CategoriesPage() {
                   <td className="px-6 py-4">{getTypeLabel(c.system_type)}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-3">
-                      <ItemCategoryForm initialData={c} />
+                      <Link
+                        href={`/admin/inventory/categories/${encodeURIComponent(c.id)}/edit`}
+                        className="text-primary hover:text-primary text-sm font-medium"
+                      >
+                        Sửa
+                      </Link>
                       {canDelete && <DeleteBtn id={c.id} actionFn={deleteItemCategory} />}
                     </div>
                   </td>
@@ -93,7 +106,12 @@ export default async function CategoriesPage() {
                 </div>
                 <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                   <div className="flex items-center min-h-[44px]">
-                    <ItemCategoryForm initialData={c} />
+                    <Link
+                      href={`/admin/inventory/categories/${encodeURIComponent(c.id)}/edit`}
+                      className="text-primary hover:text-primary text-sm font-medium"
+                    >
+                      Sửa
+                    </Link>
                   </div>
                   <div className="flex items-center min-h-[44px]">
                     {canDelete && <DeleteBtn id={c.id} actionFn={deleteItemCategory} />}
