@@ -68,7 +68,6 @@ describe("SupplierDetailView", () => {
         orders={ordersWithTwelve}
         returnTo={returnTo}
         canDelete={false}
-        poPageHref={(p) => `/admin/suppliers/NCC-029?returnTo=${encodeURIComponent(returnTo)}&poPage=${p}`}
       />
     );
 
@@ -85,6 +84,13 @@ describe("SupplierDetailView", () => {
     // canDelete=false thì không có nút "Xoá"
     expect(screen.queryByRole("button", { name: /Xoá/ })).toBeNull();
 
+    // Phân trang trang 2
+    const page2Link = screen.getByRole("link", { name: "2" });
+    expect(page2Link).toHaveAttribute(
+      "href",
+      "/admin/suppliers/NCC-029?returnTo=%2Fadmin%2Fsuppliers%3Fq%3Dvina&poPage=2"
+    );
+
     // Mã số thuế rỗng hiện "—"
     expect(screen.getByText("Mã số thuế")).toBeInTheDocument();
     expect(screen.getByText("—")).toBeInTheDocument();
@@ -97,7 +103,6 @@ describe("SupplierDetailView", () => {
         orders={ordersWithTwelve}
         returnTo="/admin/suppliers"
         canDelete={true}
-        poPageHref={(p) => `?poPage=${p}`}
       />
     );
 
@@ -112,7 +117,7 @@ describe("SupplierDetailView", () => {
       pageCount: 1,
       firstIndex: 0,
       lastIndex: 0,
-  rangeError: false,
+      rangeError: false,
     };
 
     render(
@@ -121,7 +126,6 @@ describe("SupplierDetailView", () => {
         orders={emptyOrders}
         returnTo="/admin/suppliers"
         canDelete={false}
-        poPageHref={(p) => `?poPage=${p}`}
       />
     );
 

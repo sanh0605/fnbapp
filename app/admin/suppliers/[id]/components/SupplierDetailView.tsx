@@ -17,7 +17,6 @@ export interface SupplierDetailViewProps {
   orders: PurchaseOrderListPage;
   returnTo: string;
   canDelete: boolean;
-  poPageHref: (page: number) => string;
 }
 
 function renderPoStatusBadge(status: string) {
@@ -47,8 +46,11 @@ export function SupplierDetailView({
   orders,
   returnTo,
   canDelete,
-  poPageHref,
 }: SupplierDetailViewProps): JSX.Element {
+  const poPageHref = (p: number): string => {
+    const base = `/admin/suppliers/${encodeURIComponent(supplier.id)}?returnTo=${encodeURIComponent(returnTo)}`;
+    return p > 1 ? `${base}&poPage=${p}` : base;
+  };
   const fields: Field[] = [
     { label: "Mã", value: supplier.id },
     { label: "Tên", value: supplier.name },

@@ -31,27 +31,12 @@ export default async function SupplierDetailPage({
     ? "/admin/suppliers"
     : rawReturnTo;
 
-  function poPageHref(page: number): string {
-    const p = new URLSearchParams();
-    if (searchParams?.returnTo) {
-      p.set("returnTo", searchParams.returnTo);
-    }
-    if (page > 1) {
-      p.set("poPage", String(page));
-    }
-    const qs = p.toString();
-    return qs
-      ? `/admin/suppliers/${encodeURIComponent(params.id)}?${qs}`
-      : `/admin/suppliers/${encodeURIComponent(params.id)}`;
-  }
-
   return (
     <SupplierDetailView
       supplier={supplier}
       orders={orders}
       returnTo={returnTo}
       canDelete={canDelete}
-      poPageHref={poPageHref}
     />
   );
 }
