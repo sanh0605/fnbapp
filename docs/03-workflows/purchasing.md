@@ -1,7 +1,7 @@
 # Purchasing flow (purchase orders and suppliers)
 
 ```flow-decl
-routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/suppliers
+routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/suppliers, /admin/suppliers/new, /admin/suppliers/[id]/edit
 files: lib/purchasing/purchase-order-transaction.ts, app/admin/inventory/purchase-orders/actions.ts, app/admin/suppliers/actions.ts
 tables: purchase_orders, purchase_order_lines, purchase_order_edits, Purchase_Sources, assets, Suppliers
 brCodes: BR-INV-002
@@ -57,8 +57,11 @@ when an existing order is edited — see question 5.
    save as draft or save as completed; the "save as completed" path should not be
    offered until a supplier, a source, and at least one line are present, since
    the action rejects a completed order missing any of them. The suppliers screen
-   at `/admin/suppliers` offers add, edit (including deactivating a supplier via
-   its status field), and delete. Delete is ADMIN-only per `BR-ACCESS-003` (owner
+   at `/admin/suppliers` offers add and edit, each on its own page
+   (`/admin/suppliers/new`, `/admin/suppliers/[id]/edit`, `BR-DATA-007`; the list's
+   filters ride in the URL and come back after Lưu), and delete, confirmed in a box.
+   The form has no status field: nothing on screen sets a supplier to "Ngừng hợp tác"
+   (checked 2026-10-01). Delete is ADMIN-only per `BR-ACCESS-003` (owner
    decision 2026-09-08, `requireOwner`), with the button hidden for anyone else
    (`canDelete` computed from `resolveActor()` in `page.tsx`).
 3. **What each list contains, and what is excluded.** The purchase-order list

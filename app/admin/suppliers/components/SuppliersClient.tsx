@@ -2,20 +2,37 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { SupplierForm, DeleteSupplierButton } from "./SupplierForm";
+import { DeleteSupplierButton } from "./SupplierForm";
 import type { DBSupplier } from "@/types/db";
 
 interface SuppliersClientProps {
   suppliers: DBSupplier[];
   // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
   canDelete: boolean;
+  initialSearch: string;
+  initialStatus: "ALL" | "ACTIVE" | "INACTIVE";
 }
 
-export default function SuppliersClient({ suppliers, canDelete }: SuppliersClientProps) {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
+function listUrl(search: string, status: string): string {
+  const p = new URLSearchParams();
+  if (search) p.set("q", search);
+  if (status !== "ALL") p.set("status", status);
+  const qs = p.toString();
+  return qs ? `/admin/suppliers?${qs}` : "/admin/suppliers";
+}
+
+export default function SuppliersClient({
+  suppliers,
+  canDelete,
+  initialSearch,
+  initialStatus,
+}: SuppliersClientProps) {
+  const router = useRouter();
+  const [search, setSearch] = useState(initialSearch);
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
 
   const filteredSuppliers = useMemo(() => {
     return suppliers.filter((s) => {
@@ -23,31 +40,51 @@ export default function SuppliersClient({ suppliers, canDelete }: SuppliersClien
         s.name.toLowerCase().includes(search.toLowerCase()) ||
         s.phone?.toLowerCase().includes(search.toLowerCase()) ||
         s.address?.toLowerCase().includes(search.toLowerCase());
-      
+
       const matchesStatus = statusFilter === "ALL" || s.status === statusFilter;
-      
+
       return matchesSearch && matchesStatus;
     });
   }, [suppliers, search, statusFilter]);
 
-  const rightContent = <SupplierForm />;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    setSearch(next);
+    router.replace(listUrl(next, statusFilter), { scroll: false });
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const next = e.target.value as "ALL" | "ACTIVE" | "INACTIVE";
+    setStatusFilter(next);
+    router.replace(listUrl(search, next), { scroll: false });
+  };
+
+  const back = encodeURIComponent(listUrl(search, statusFilter));
+
+  const rightContent = (
+    <Link
+      href={`/admin/suppliers/new?returnTo=${back}`}
+      className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px]"
+    >
+      + Thêm nhà cung cấp
+    </Link>
+  );
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Nhà cung cấp" 
+      <PageHeader
+        title="Nhà cung cấp"
         subtitle="Quản lý thông tin liên hệ và danh sách các đối tác cung ứng."
         actions={rightContent}
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">
-
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Tên, SĐT, địa chỉ..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full md:w-48 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
           />
         </div>
@@ -55,7 +92,7 @@ export default function SuppliersClient({ suppliers, canDelete }: SuppliersClien
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trạng thái</label>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={handleStatusChange}
             className="w-full md:w-36 border border-border rounded-lg px-3 py-3 md:py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả</option>
@@ -63,7 +100,6 @@ export default function SuppliersClient({ suppliers, canDelete }: SuppliersClien
             <option value="INACTIVE">Ngừng hợp tác</option>
           </select>
         </div>
-      
       </div>
 
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
@@ -82,14 +118,14 @@ export default function SuppliersClient({ suppliers, canDelete }: SuppliersClien
             <tbody className="divide-y divide-border">
               {filteredSuppliers.length === 0 ? (
                 <tr>
-                <td colSpan={6} className="p-0">
-                  <EmptyState 
-                    icon="🚚" 
-                    title="Chưa có nhà cung cấp" 
-                    description="Thêm nhà cung cấp để quản lý nguồn nhập hàng."
-                  />
-                </td>
-              </tr>
+                  <td colSpan={6} className="p-0">
+                    <EmptyState
+                      icon="🚚"
+                      title="Chưa có nhà cung cấp"
+                      description="Thêm nhà cung cấp để quản lý nguồn nhập hàng."
+                    />
+                  </td>
+                </tr>
               ) : (
                 filteredSuppliers.map((s) => (
                   <tr key={s.id} className="hover:bg-surface-secondary/50 transition-colors">
@@ -118,7 +154,12 @@ export default function SuppliersClient({ suppliers, canDelete }: SuppliersClien
                         >
                           Xem đơn nhập
                         </Link>
-                        <SupplierForm initialData={s} />
+                        <Link
+                          href={`/admin/suppliers/${encodeURIComponent(s.id)}/edit?returnTo=${back}`}
+                          className="text-primary hover:text-primary-hover font-medium text-sm"
+                        >
+                          Sửa
+                        </Link>
                         {canDelete && <DeleteSupplierButton id={s.id} />}
                       </div>
                     </td>
@@ -132,9 +173,9 @@ export default function SuppliersClient({ suppliers, canDelete }: SuppliersClien
         {/* Mobile Card Layout (< 768px) */}
         <div className="md:hidden flex flex-col gap-3 p-4 bg-surface-secondary/30">
           {filteredSuppliers.length === 0 ? (
-            <EmptyState 
-              icon="🚚" 
-              title="Chưa có nhà cung cấp" 
+            <EmptyState
+              icon="🚚"
+              title="Chưa có nhà cung cấp"
               description="Thêm nhà cung cấp để quản lý nguồn nhập hàng."
             />
           ) : (
@@ -151,18 +192,18 @@ export default function SuppliersClient({ suppliers, canDelete }: SuppliersClien
                     </span>
                   )}
                 </div>
-                
+
                 <div className="flex flex-col gap-1 mt-1 text-sm">
                   <div className="flex gap-2">
-                    <span className="text-text-muted shrink-0">LH:</span> 
+                    <span className="text-text-muted shrink-0">LH:</span>
                     <span className="text-text-primary font-medium">{s.phone || "---"}</span>
                   </div>
                   <div className="flex gap-2">
-                    <span className="text-text-muted shrink-0">MST:</span> 
+                    <span className="text-text-muted shrink-0">MST:</span>
                     <span className="font-mono text-text-secondary">{s.tax_id || "---"}</span>
                   </div>
                   <div className="flex gap-2">
-                    <span className="text-text-muted shrink-0">ĐC:</span> 
+                    <span className="text-text-muted shrink-0">ĐC:</span>
                     <span className="text-text-secondary line-clamp-2">{s.address || "---"}</span>
                   </div>
                 </div>
@@ -177,7 +218,12 @@ export default function SuppliersClient({ suppliers, canDelete }: SuppliersClien
                     </Link>
                   </div>
                   <div className="flex items-center min-h-[44px]">
-                    <SupplierForm initialData={s} />
+                    <Link
+                      href={`/admin/suppliers/${encodeURIComponent(s.id)}/edit?returnTo=${back}`}
+                      className="text-primary hover:text-primary-hover font-medium text-sm"
+                    >
+                      Sửa
+                    </Link>
                   </div>
                   <div className="flex items-center min-h-[44px]">
                     {canDelete && <DeleteSupplierButton id={s.id} />}
