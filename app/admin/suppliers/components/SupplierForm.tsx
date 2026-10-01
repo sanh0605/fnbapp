@@ -6,16 +6,24 @@ import { addSupplier, editSupplier, deleteSupplierAction } from "../actions";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { alert, confirm } from "@/lib/shared/dialog";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo, safePoReturnTo } from "./return-to";
 import type { DBSupplier } from "@/types/db";
 
 interface SupplierFormProps {
   initialData?: DBSupplier;
   returnTo?: string;
+  returnMode?: "list" | "po";
+  initialName?: string;
 }
 
-export function SupplierForm({ initialData, returnTo: rawReturnTo }: SupplierFormProps) {
-  const returnTo = safeReturnTo(rawReturnTo);
+export function SupplierForm({
+  initialData,
+  returnTo: rawReturnTo,
+  returnMode = "list",
+  initialName,
+}: SupplierFormProps) {
+  const returnTo = returnMode === "po" ? safePoReturnTo(rawReturnTo) : safeReturnTo(rawReturnTo);
+
   const isEdit = !!initialData;
   const formId = useId();
   const router = useRouter();
@@ -54,7 +62,12 @@ export function SupplierForm({ initialData, returnTo: rawReturnTo }: SupplierFor
     if (res?.error) {
       setError(res.error);
     } else {
-      router.push(returnTo);
+      let targetUrl = returnTo;
+      if (returnMode === "po" && (res as any)?.id) {
+        const sep = returnTo.includes("?") ? "&" : "?";
+        targetUrl = `${returnTo}${sep}newSupplier=${encodeURIComponent(String((res as any).id))}`;
+      }
+      router.push(targetUrl);
       router.refresh();
     }
   }
@@ -76,7 +89,7 @@ export function SupplierForm({ initialData, returnTo: rawReturnTo }: SupplierFor
             type="text"
             name="name"
             required
-            defaultValue={initialData?.name}
+            defaultValue={initialData?.name ?? initialName}
             className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="VD: Cửa hàng ABC"
           />

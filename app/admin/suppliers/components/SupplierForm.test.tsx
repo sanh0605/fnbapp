@@ -142,4 +142,35 @@ describe("SupplierForm", () => {
     expect(push).toHaveBeenCalledWith("/admin/suppliers?status=INACTIVE");
     expect(mocks.addSupplier).not.toHaveBeenCalled();
   });
+
+  it("supports returnMode='po' with initialName, appending newSupplier on save and returning to PO on Bỏ", async () => {
+    mocks.addSupplier.mockResolvedValue({ success: true, id: "SUP-9" });
+    const { unmount } = render(
+      <SupplierForm
+        returnTo="/admin/inventory/purchase-orders/new?draft=1"
+        returnMode="po"
+        initialName="Đại Phát"
+      />
+    );
+    expect(screen.getByLabelText("Tên Nhà Cung Cấp")).toHaveValue("Đại Phát");
+    fireEvent.click(screen.getByRole("button", { name: "Lưu nhà cung cấp" }));
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith(
+        "/admin/inventory/purchase-orders/new?draft=1&newSupplier=SUP-9"
+      );
+    });
+    expect(refresh).toHaveBeenCalled();
+
+    unmount();
+    render(
+      <SupplierForm
+        returnTo="/admin/inventory/purchase-orders/new?draft=1"
+        returnMode="po"
+        initialName="Đại Phát"
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
+    expect(push).toHaveBeenCalledWith("/admin/inventory/purchase-orders/new?draft=1");
+  });
 });
+

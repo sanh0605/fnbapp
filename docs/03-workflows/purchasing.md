@@ -56,7 +56,10 @@ when an existing order is edited — see question 5.
    existing order at `/admin/inventory/purchase-orders/[id]`. The order form can
    save as draft or save as completed; the "save as completed" path should not be
    offered until a supplier, a source, and at least one line are present, since
-   the action rejects a completed order missing any of them. The suppliers screen
+   the action rejects a completed order missing any of them. Adding a supplier
+   from the order form saves the order's draft to browser storage, navigates to
+   `/admin/suppliers/new?from=po`, and restores the in-progress order with the
+   new supplier selected upon return (`BR-DATA-007`). The suppliers screen
    at `/admin/suppliers` offers add and edit, each on its own page
    (`/admin/suppliers/new`, `/admin/suppliers/[id]/edit`, `BR-DATA-007`; the list's
    filters ride in the URL and come back after Lưu), and delete, confirmed in a box.

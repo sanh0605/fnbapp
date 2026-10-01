@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useId } from "react";
+import { useState, useId, useRef, useEffect } from "react";
 import { savePurchaseOrder, addPurchaseSource } from "../actions";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { SupplierModal } from "./SupplierQuickAddModal";
+import { draftKey, saveDraft, takeDraft, type PoDraftState } from "./po-draft";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
@@ -73,6 +73,9 @@ interface PurchaseOrderFormProps {
 export default function PurchaseOrderForm({ suppliers, sources = [], items, conversions, units = [], initialData }: PurchaseOrderFormProps) {
   const formId = useId();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const restoredRef = useRef(false);
   const isEdit = !!initialData?.po;
   const po = initialData?.po || ({} as Partial<DBPurchaseOrder>);
   const initialLines = initialData?.lines || [];
@@ -122,8 +125,53 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
   const [voucherAmount, setVoucherAmount] = useState<number>(Number(po?.voucher_amount || 0));
   const [discountAmount, setDiscountAmount] = useState<number>(Number(po?.discount_amount || 0));
   
-  const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
-  const [newSupplierName, setNewSupplierName] = useState("");
+  const [restoreFailed, setRestoreFailed] = useState(false);
+
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+
+    const isDraftParam = searchParams?.get("draft") === "1";
+    if (!isDraftParam) return;
+
+    const storage = typeof window !== "undefined" ? window.localStorage : null;
+    const key = draftKey(po.id);
+    const draft = takeDraft(storage, key, Date.now());
+
+    const newSupplierParam = searchParams?.get("newSupplier");
+    const isValidSupplier = !!newSupplierParam && suppliers.some((s: any) => s.id === newSupplierParam);
+
+    if (draft) {
+      if (draft.supplierId !== undefined) setSupplierId(draft.supplierId);
+      if (draft.sourceId !== undefined) setSourceId(draft.sourceId);
+      if (draft.supplierInvoiceCode !== undefined) setSupplierInvoiceCode(draft.supplierInvoiceCode);
+      if (draft.transactionDate) {
+        setTransactionDate(new Date(draft.transactionDate));
+      } else {
+        setTransactionDate(null);
+      }
+      if (draft.notes !== undefined) setNotes(draft.notes);
+      if (Array.isArray(draft.lines)) setLines(draft.lines);
+      if (draft.shippingFee !== undefined) setShippingFee(Number(draft.shippingFee));
+      if (draft.taxAmount !== undefined) setTaxAmount(Number(draft.taxAmount));
+      if (draft.voucherAmount !== undefined) setVoucherAmount(Number(draft.voucherAmount));
+      if (draft.discountAmount !== undefined) setDiscountAmount(Number(draft.discountAmount));
+    } else {
+      setRestoreFailed(true);
+    }
+
+    if (isValidSupplier) {
+      setSupplierId(newSupplierParam!);
+    }
+
+    const nextParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
+    nextParams.delete("draft");
+    nextParams.delete("newSupplier");
+    const nextQuery = nextParams.toString();
+    const currentPath = pathname || (isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders/new");
+    const nextUrl = nextQuery ? `${currentPath}?${nextQuery}` : currentPath;
+    router.replace(nextUrl);
+  }, []);
 
   const addLine = () => {
     setLines([...lines, {
@@ -215,6 +263,14 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
 
   return (
     <div className="bg-surface-card rounded-xl shadow-sm border border-border p-6">
+      {restoreFailed && (
+        <div
+          role="status"
+          className="mb-6 p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium"
+        >
+          Không khôi phục được phiếu đang nhập dở
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-card p-6 rounded-2xl shadow-sm border border-border mb-6">
         <div>
           <label htmlFor={`${formId}-supplierId`} className="block text-sm font-semibold text-text-secondary mb-2">Nhà Cung Cấp *</label>
@@ -225,8 +281,30 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             options={suppliers.map((s: any) => ({ id: s.id, label: s.name }))}
             placeholder="Chọn nhà cung cấp..."
             onCreateNew={(searchTerm) => {
-              setNewSupplierName(searchTerm);
-              setIsSupplierModalOpen(true);
+              const currentParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
+              currentParams.delete("newSupplier");
+              currentParams.set("draft", "1");
+              const currentPath = pathname || (isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders/new");
+              const returnTo = `${currentPath}?${currentParams.toString()}`;
+
+              const storage = typeof window !== "undefined" ? window.localStorage : null;
+              const draftState: PoDraftState = {
+                supplierId,
+                sourceId,
+                supplierInvoiceCode,
+                transactionDate: transactionDate ? transactionDate.toISOString() : null,
+                notes,
+                lines,
+                shippingFee,
+                taxAmount,
+                voucherAmount,
+                discountAmount,
+              };
+              saveDraft(storage, draftKey(po.id), draftState, Date.now());
+
+              router.push(
+                `/admin/suppliers/new?from=po&name=${encodeURIComponent(searchTerm)}&returnTo=${encodeURIComponent(returnTo)}`
+              );
             }}
           />
         </div>
@@ -496,17 +574,6 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           <option key={u.id} value={u.name} />
         ))}
       </datalist>
-
-      <SupplierModal 
-        isOpen={isSupplierModalOpen} 
-        onClose={() => setIsSupplierModalOpen(false)} 
-        initialName={newSupplierName}
-        onSuccess={async (id) => {
-          setSupplierId(id);
-          router.refresh();
-          await alert({ title: "Thành công", message: "Đã thêm nhà cung cấp thành công!" });
-        }}
-      />
     </div>
   );
 }
