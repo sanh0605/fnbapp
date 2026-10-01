@@ -1,5 +1,5 @@
+import Link from "next/link";
 import { formatNumber } from "@/lib/shared/format";
-import { DisposeAssetForm } from "./DisposeAssetForm";
 import type { AssetView } from "../actions";
 
 const BUCKET_LABEL: Record<AssetView["bucket"], string> = {
@@ -16,8 +16,14 @@ const BUCKET_CLASS: Record<AssetView["bucket"], string> = {
 
 // Section 5.1: "one card per asset: name, quantity held, acquired date,
 // cost, term, months elapsed, remaining value. No horizontal table."
-// Extracted from page.tsx so it renders on its own (OPEN-ITEMS 38).
-export function AssetCard({ asset }: { asset: AssetView }) {
+// Wave 4: disposal button is a direct Link to the dispose page with returnTo.
+export function AssetCard({
+  asset,
+  returnTo,
+}: {
+  asset: AssetView;
+  returnTo: string;
+}) {
   const acquiredLabel = new Date(asset.acquiredDate).toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
@@ -51,7 +57,12 @@ export function AssetCard({ asset }: { asset: AssetView }) {
       </div>
       {asset.bucket !== "DISPOSED" && (
         <div className="flex justify-end pt-2 mt-1 border-t border-border">
-          <DisposeAssetForm asset={asset} />
+          <Link
+            href={`/admin/inventory/assets/${asset.id}/dispose?returnTo=${encodeURIComponent(returnTo)}`}
+            className="text-danger hover:text-danger-active font-medium text-sm min-h-[44px] px-2 flex items-center"
+          >
+            Đánh dấu hỏng / thanh lý
+          </Link>
         </div>
       )}
     </div>

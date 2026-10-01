@@ -17,15 +17,16 @@ const mocks = vi.hoisted(() => ({
   disposeAsset: vi.fn(),
   previewDisposalCharge: vi.fn(),
   routerRefresh: vi.fn(),
+  routerPush: vi.fn(),
 }));
 
 vi.mock("../actions", () => ({
   disposeAsset: mocks.disposeAsset,
   previewDisposalCharge: mocks.previewDisposalCharge,
 }));
-// section B: this component now calls useRouter().refresh() on save.
+// section B: this component calls useRouter().refresh() and push() on save/cancel.
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.routerRefresh }),
+  useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.routerPush }),
 }));
 
 const roots: Root[] = [];
@@ -85,19 +86,57 @@ const ASSET = {
 describe("DisposeAssetForm -- default disposal date", () => {
   it("defaults to today's Saigon date, not the UTC date, just after Saigon midnight", async () => {
     // Fake only Date -- setTimeout must stay real, since flush() below
-    // relies on a genuine macrotask to let ModalPortal's effect mount.
+    // relies on a genuine macrotask to let effects settle.
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-05-31T17:30:00.000Z")); // 2026-06-01T00:30 Saigon
     mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
 
-    const container = await renderTracked(<DisposeAssetForm asset={ASSET} />);
-    const trigger = Array.from(container.querySelectorAll("button")).find(
-      b => b.textContent?.trim() === "Đánh dấu hỏng / thanh lý",
-    )!;
-    await fireClick(trigger);
+    await renderTracked(<DisposeAssetForm asset={ASSET} returnTo="/admin/inventory/assets" />);
     await flush();
 
     const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
     expect(dateInput.value).toBe("2026-06-01");
+  });
+});
+
+describe("DisposeAssetForm on-page behaviour", () => {
+  it("renders on page and immediately shows 'Số lượng thanh lý'", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    const container = await renderTracked(
+      <DisposeAssetForm asset={ASSET} returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED" />,
+    );
+    await flush();
+
+    const qtyInput = container.querySelector('input[name="quantity"]') as HTMLInputElement;
+    expect(qtyInput).not.toBeNull();
+    expect(qtyInput.value).toBe("1");
+    expect(container.textContent).toContain("Số lượng thanh lý");
+  });
+
+  it("calls previewDisposalCharge once on mount without clicking anything", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    await renderTracked(
+      <DisposeAssetForm asset={ASSET} returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED" />,
+    );
+    await flush();
+
+    expect(mocks.previewDisposalCharge).toHaveBeenCalledTimes(1);
+    expect(mocks.previewDisposalCharge).toHaveBeenCalledWith(ASSET.id, 1, expect.any(String));
+  });
+
+  it("navigates to returnTo when 'Bỏ' is clicked", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    const container = await renderTracked(
+      <DisposeAssetForm asset={ASSET} returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED" />,
+    );
+    await flush();
+
+    const cancelButton = Array.from(container.querySelectorAll("button")).find(
+      b => b.textContent?.trim() === "Bỏ",
+    )!;
+    expect(cancelButton).toBeDefined();
+    await fireClick(cancelButton);
+
+    expect(mocks.routerPush).toHaveBeenCalledWith("/admin/inventory/assets?tab=FULLY_DEPRECIATED");
   });
 });

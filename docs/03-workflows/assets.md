@@ -1,7 +1,7 @@
 # Assets flow (tools, depreciation, disposal)
 
 ```flow-decl
-routes: /admin/inventory/assets, /admin/inventory/asset-bands
+routes: /admin/inventory/assets, /admin/inventory/assets/[id]/dispose, /admin/inventory/asset-bands, /admin/inventory/asset-bands/new, /admin/inventory/asset-bands/[id]/edit
 files: app/admin/inventory/assets/actions.ts, app/admin/inventory/asset-bands/actions.ts
 tables: asset_disposals, asset_depreciation_bands
 brCodes: BR-COGS-008

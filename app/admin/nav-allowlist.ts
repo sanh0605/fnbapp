@@ -41,6 +41,10 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the conversions list -- legitimately unlinked",
   },
   {
+    route: "/admin/inventory/asset-bands/new",
+    reason: "reached from the asset-bands list -- legitimately unlinked",
+  },
+  {
     route: "/admin/suppliers/new",
     reason: "reached from the suppliers list -- legitimately unlinked",
   },

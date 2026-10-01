@@ -54,24 +54,24 @@ Chưa xem: `AssetCard.test.tsx`, `DeleteBandButton.tsx`.
 
 ### Task 1: Mở rộng `InventoryList`
 
-- [ ] Thêm hai địa chỉ vào kiểu và hai ca vào `app/admin/inventory/components/return-to.test.ts`: `"/admin/inventory/assets?tab=DISPOSED"` với list assets giữ nguyên; `"/admin/inventory/asset-bands"` với list assets thành `"/admin/inventory/assets"`.
+- [x] Thêm hai địa chỉ vào kiểu và hai ca vào `app/admin/inventory/components/return-to.test.ts`: `"/admin/inventory/assets?tab=DISPOSED"` với list assets giữ nguyên; `"/admin/inventory/asset-bands"` với list assets thành `"/admin/inventory/assets"`.
 
 ### Task 2: Thanh lý
 
 **Files:** `assets/components/DisposeAssetForm.tsx`, `DisposeAssetForm.test.tsx`, `AssetCard.tsx`, `AssetCard.test.tsx`, `assets/page.tsx`, tạo `assets/[id]/dispose/page.tsx`.
 
-- [ ] Test form (đỏ trên bản cũ): render `<DisposeAssetForm asset={…} returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED" />` thấy ngay ô "Số lượng thanh lý"; `previewDisposalCharge` được gọi một lần lúc hiện mà không bấm gì; "Bỏ" thì `push("/admin/inventory/assets?tab=FULLY_DEPRECIATED")`. Sửa các test cũ: bỏ bước bấm nút mở khung, mock `useRouter` trả cả `push`.
-- [ ] Test thẻ: `AssetCard` với `returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED"` có liên kết "Đánh dấu hỏng / thanh lý" tới `/admin/inventory/assets/<id>/dispose?returnTo=%2Fadmin%2Finventory%2Fassets%3Ftab%3DFULLY_DEPRECIATED`; tài sản `bucket: "DISPOSED"` không có liên kết đó.
-- [ ] Code: `AssetCard` nhận prop `returnTo: string`; trang danh sách truyền `tabHref(activeTab)`.
+- [x] Test form (đỏ trên bản cũ): render `<DisposeAssetForm asset={…} returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED" />` thấy ngay ô "Số lượng thanh lý"; `previewDisposalCharge` được gọi một lần lúc hiện mà không bấm gì; "Bỏ" thì `push("/admin/inventory/assets?tab=FULLY_DEPRECIATED")`. Sửa các test cũ: bỏ bước bấm nút mở khung, mock `useRouter` trả cả `push`.
+- [x] Test thẻ: `AssetCard` với `returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED"` có liên kết "Đánh dấu hỏng / thanh lý" tới `/admin/inventory/assets/<id>/dispose?returnTo=%2Fadmin%2Finventory%2Fassets%3Ftab%3DFULLY_DEPRECIATED`; tài sản `bucket: "DISPOSED"` không có liên kết đó.
+- [x] Code: `AssetCard` nhận prop `returnTo: string`; trang danh sách truyền `tabHref(activeTab)`.
 
 ### Task 3: Khung khấu hao
 
 **Files:** `asset-bands/components/AddBandForm.tsx`, `BandEditForm.tsx`, `asset-bands/page.tsx`, tạo `asset-bands/new/page.tsx`, `asset-bands/[id]/edit/page.tsx`, `AddBandForm.test.tsx`, `BandEditForm.test.tsx`.
 
-- [ ] Test (đỏ): mỗi form render thấy ngay ô "Số tháng khấu hao"; `BandEditForm` điền sẵn số tháng của khung; "Bỏ" về `/admin/inventory/asset-bands`.
-- [ ] Code: như mục Hiện trạng. Câu nhắc "Khung mới phải khớp khít…" và "Sửa khung chỉ áp dụng cho tài sản mua sau khi lưu…" giữ nguyên.
+- [x] Test (đỏ): mỗi form render thấy ngay ô "Số tháng khấu hao"; `BandEditForm` điền sẵn số tháng của khung; "Bỏ" về `/admin/inventory/asset-bands`.
+- [x] Code: như mục Hiện trạng. Câu nhắc "Khung mới phải khớp khít…" và "Sửa khung chỉ áp dụng cho tài sản mua sau khi lưu…" giữ nguyên.
 
 ### Task 4: Menu, tài liệu
 
-- [ ] `app/admin/nav-allowlist.ts`, `docs/03-workflows/assets.md` như mục Thêm.
+- [x] `app/admin/nav-allowlist.ts`, `docs/03-workflows/assets.md` như mục Thêm.
 - [ ] Opus: chứng minh đỏ trên bản cũ, chạy đủ năm lệnh, commit trên `feat/no-popups`.

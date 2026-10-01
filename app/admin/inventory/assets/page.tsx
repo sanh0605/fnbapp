@@ -69,7 +69,7 @@ export default async function AssetsPage({
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map(asset => (
-            <AssetCard key={asset.id} asset={asset} />
+            <AssetCard key={asset.id} asset={asset} returnTo={tabHref(activeTab)} />
           ))}
         </div>
       )}

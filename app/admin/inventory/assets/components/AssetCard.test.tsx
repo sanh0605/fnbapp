@@ -58,7 +58,9 @@ const BASE_ASSET: AssetView = {
 
 describe("AssetCard", () => {
   it("shows the Vietnamese bucket label and remaining value for an in-use asset", async () => {
-    const container = await renderTracked(<AssetCard asset={BASE_ASSET} />);
+    const container = await renderTracked(
+      <AssetCard asset={BASE_ASSET} returnTo="/admin/inventory/assets" />,
+    );
 
     expect(container.textContent).toContain("Còn dùng");
     expect(container.textContent).toContain("Bình nhựa có bơm 1000ml");
@@ -69,7 +71,10 @@ describe("AssetCard", () => {
 
   it("shows 'Đã hết khấu hao' and offers no disposal action changes when fully depreciated, still owned", async () => {
     const container = await renderTracked(
-      <AssetCard asset={{ ...BASE_ASSET, bucket: "FULLY_DEPRECIATED", remainingValue: 0 }} />,
+      <AssetCard
+        asset={{ ...BASE_ASSET, bucket: "FULLY_DEPRECIATED", remainingValue: 0 }}
+        returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED"
+      />,
     );
 
     expect(container.textContent).toContain("Đã hết khấu hao");
@@ -78,12 +83,36 @@ describe("AssetCard", () => {
     expect(container.textContent).toContain("Đánh dấu hỏng / thanh lý");
   });
 
+  it("links 'Đánh dấu hỏng / thanh lý' to the dispose page with encoded returnTo", async () => {
+    const container = await renderTracked(
+      <AssetCard
+        asset={{ ...BASE_ASSET, bucket: "FULLY_DEPRECIATED", remainingValue: 0 }}
+        returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED"
+      />,
+    );
+
+    const link = Array.from(container.querySelectorAll("a")).find(
+      a => a.textContent?.trim() === "Đánh dấu hỏng / thanh lý",
+    );
+    expect(link).toBeDefined();
+    expect(link?.getAttribute("href")).toBe(
+      `/admin/inventory/assets/${BASE_ASSET.id}/dispose?returnTo=%2Fadmin%2Finventory%2Fassets%3Ftab%3DFULLY_DEPRECIATED`,
+    );
+  });
+
   it("shows 'Đã thanh lý' and hides the disposal action once fully disposed", async () => {
     const container = await renderTracked(
-      <AssetCard asset={{ ...BASE_ASSET, bucket: "DISPOSED", remainingQuantity: 0, remainingValue: 0 }} />,
+      <AssetCard
+        asset={{ ...BASE_ASSET, bucket: "DISPOSED", remainingQuantity: 0, remainingValue: 0 }}
+        returnTo="/admin/inventory/assets?tab=DISPOSED"
+      />,
     );
 
     expect(container.textContent).toContain("Đã thanh lý");
     expect(container.textContent).not.toContain("Đánh dấu hỏng / thanh lý");
+    const link = Array.from(container.querySelectorAll("a")).find(
+      a => a.textContent?.trim() === "Đánh dấu hỏng / thanh lý",
+    );
+    expect(link).toBeUndefined();
   });
 });

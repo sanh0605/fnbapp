@@ -1,6 +1,5 @@
+import Link from "next/link";
 import { getAssetBands } from "./actions";
-import { BandEditForm } from "./components/BandEditForm";
-import { AddBandForm } from "./components/AddBandForm";
 import { DeleteBandButton } from "./components/DeleteBandButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatBandRange } from "@/lib/assets/asset-depreciation";
@@ -11,6 +10,7 @@ export const dynamic = "force-dynamic";
 // Batch 3, section 5.3, extended 2026-08-23 (section 1 bound fix, section 2
 // add/delete). Phone-first, phone-only for this batch (CLAUDE.md "Viết code",
 // owner 2026-08-17): one card per band, no horizontal table.
+// Wave 4: Add and Edit open dedicated pages.
 export default async function AssetBandsPage() {
   const [bands, auth] = await Promise.all([getAssetBands(), resolveActor()]);
   // BR-ACCESS-003: permanent deletion is ADMIN only -- hiding the button is
@@ -29,7 +29,14 @@ export default async function AssetBandsPage() {
         </div>
       </div>
 
-      <AddBandForm />
+      <div>
+        <Link
+          href="/admin/inventory/asset-bands/new"
+          className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition inline-flex items-center justify-center min-h-[44px]"
+        >
+          + Thêm khung
+        </Link>
+      </div>
 
       {bands.length === 0 ? (
         <EmptyState title="Chưa có khung khấu hao nào." />
@@ -46,7 +53,12 @@ export default async function AssetBandsPage() {
                 <span className="font-bold text-primary">{band.term_months} tháng</span>
               </div>
               <div className="flex justify-end items-center gap-4 pt-2 mt-1 border-t border-border">
-                <BandEditForm band={band} />
+                <Link
+                  href={`/admin/inventory/asset-bands/${band.id}/edit`}
+                  className="text-primary hover:text-primary-hover font-medium text-sm min-h-[44px] px-2 flex items-center"
+                >
+                  Sửa
+                </Link>
                 {canDelete && <DeleteBandButton band={band} />}
               </div>
             </div>

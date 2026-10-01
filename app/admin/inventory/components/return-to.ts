@@ -2,7 +2,9 @@ export type InventoryList =
   | "/admin/inventory/items"
   | "/admin/inventory/categories"
   | "/admin/inventory/units"
-  | "/admin/inventory/conversions";
+  | "/admin/inventory/conversions"
+  | "/admin/inventory/assets"
+  | "/admin/inventory/asset-bands";
 
 // Only a path inside the specified inventory list screen is accepted,
 // so a crafted link cannot send the user off-site or to a different list after saving.
