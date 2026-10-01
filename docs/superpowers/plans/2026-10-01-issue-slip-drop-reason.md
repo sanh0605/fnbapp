@@ -49,3 +49,31 @@ Thêm:
       - Phiếu có note "" thì không có chữ "Lý do:".
       - Phiếu đã huỷ vẫn hiện "Lý do huỷ:".
 - [ ] **Opus soát lại**: chạy đủ năm lệnh, mở trang tạo phiếu trên máy tính và điện thoại.
+
+## Phần 2: xoá lý do trên phiếu cũ (chủ quán 2026-10-01)
+
+Chủ quán: *"Các phiếu cũ thực ra đều xuất để pha chế nhưng làm vội nên chưa tối ưu lại, em cho thay đổi lại hết lí do hoặc xoá hết nhé, tránh nhầm lần."* Chọn xoá, vì phiếu mới cũng không có ghi chú.
+
+Đo 2026-10-01 (truy vấn chỉ đọc):
+- `issue_slips`: 83 dòng; `note` = "Khác" 77 dòng, "Hao hụt / hư hỏng" 6 dòng.
+- `stock_issues` có `source = 'MANUAL'` và `reverses_issue_id` rỗng: 155 dòng; note "Khác" 149 dòng, "Hao hụt / hư hỏng" 6 dòng.
+- 4 dòng trả hàng (`reverses_issue_id` khác rỗng), ví dụ "Đảo phiếu ISS-00120 (ghi nhầm) -- Huỷ cả phiếu ISL-00042 -- ". **Không đụng**: `parseCancelReason` đọc lý do huỷ từ đây.
+- Không có trigger trên `issue_slips`, `stock_issues`; bảng `stock_transactions` không còn.
+
+Chỗ đọc `note` và việc sẽ đổi:
+- `lib/stock/issue-slip-list.ts`: nhãn "Phiếu xuất · Khác" thành "Phiếu xuất". Không cần sửa code.
+- `lib/stock/issue-slip-detail.ts`: dòng "Lý do:" biến mất (phần 1 đã làm). Không cần sửa code.
+- `lib/stock/issue-slip-status.ts`: chỉ đọc note của dòng trả hàng, mà những dòng này không bị đụng.
+- `lib/reports/issued-value-report.ts` dòng 96: thẻ "Theo lần xuất" lấy note làm tiêu đề. Sau khi xoá, mọi thẻ sẽ ghi "Không có ghi chú", nên phải sửa.
+- Không phép tính giá vốn hay tồn kho nào đọc `note`. Số trong báo cáo không đổi.
+
+- [ ] **Sonnet (backend):**
+  - Viết `scripts/clear-issue-slip-notes.ts`:
+    - Mặc định chạy thử: in số dòng sẽ sửa của từng bảng và 5 mã đầu.
+    - `--apply` mới ghi:
+      - `issue_slips.note` thành `''` khi note khác rỗng.
+      - `stock_issues.note` thành `''` khi `source='MANUAL'`, `reverses_issue_id is null` và note thuộc ("Khác", "Hao hụt / hư hỏng").
+    - Ghi xong đọc lại: 0 dòng còn chữ trên tổng số dòng, và 4 dòng trả hàng giữ nguyên note.
+    - Lõi lọc dòng tách thành hàm thuần có test.
+  - `computeIssuedEventFigures`: thẻ phiếu xuất lấy tiêu đề theo tên mặt hàng, không theo note. Ví dụ: "Sữa tươi Mlekovita, Trứng gà và 3 mặt hàng khác". Nhiều nhất 2 tên, theo thứ tự dòng, trùng tên thì gộp làm một. Không còn chữ "Không có ghi chú". Tên lấy từ nơi trang `app/admin/reports/issued/page.tsx` đang có, hoặc truyền thêm một map tên. Test phải đỏ trước khi sửa.
+- [ ] **Opus:** chạy thử script, soát, rồi chạy `--apply` (chủ quán đã yêu cầu sửa dữ liệu trong câu trên).
