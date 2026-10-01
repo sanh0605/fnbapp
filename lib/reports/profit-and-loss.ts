@@ -224,7 +224,7 @@ export function computeProfitAndLoss(input: PnlInput): PnlFigures {
   const notShrinkageSessionIds = new Set(
     input.stocktakeSessions.filter(s => s.is_shrinkage === false).map(s => s.id),
   );
-  for (const event of computeIssuedEventFigures(costedIssues, purchases)) {
+  for (const event of computeIssuedEventFigures(costedIssues, purchases, new Map<string, string>(input.purchasedItems.map(p => [p.id, p.name])))) {
     const keys = saigonBucketKeys(event.at);
     const m = byMonth.get(keys.monthKey);
     if (!m || Math.abs(event.valueExact) <= NEAR_ZERO) continue;
