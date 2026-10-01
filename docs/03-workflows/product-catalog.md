@@ -1,7 +1,7 @@
 # Product catalogue flow
 
 ```flow-decl
-routes: /admin/products, /admin/products/categories, /admin/products/modifiers, /admin/products/toppings
+routes: /admin/products, /admin/products/new, /admin/products/[id]/edit, /admin/products/[id]/history, /admin/products/categories, /admin/products/categories/new, /admin/products/categories/[id]/edit, /admin/products/modifiers, /admin/products/modifiers/new, /admin/products/modifiers/[id]/edit, /admin/products/toppings
 files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
 tables: Products, products, Product_Variants, product_variants, product_price_history, Product_Categories, Modifiers
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003

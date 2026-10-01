@@ -2,10 +2,10 @@
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatNumber } from "@/lib/shared/format";
-import { deleteModifierAction } from "../actions";
-import { ModifierForm } from "./ModifierForm";
+import { deleteModifierAction } from "@/app/admin/products/modifiers/actions";
 import { StandaloneToppingSwitch } from "./StandaloneToppingSwitch";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { Button } from "@/components/ui/Button";
@@ -15,6 +15,14 @@ import type { DBModifier } from "@/types/db";
 interface ModifiersClientProps {
   modifiers: DBModifier[];
   toppings: any[];
+  initialSearch?: string;
+}
+
+function listUrl(search: string): string {
+  const p = new URLSearchParams();
+  if (search) p.set("q", search);
+  const qs = p.toString();
+  return qs ? `/admin/products/modifiers?${qs}` : "/admin/products/modifiers";
 }
 
 // docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 1. One table,
@@ -22,8 +30,12 @@ interface ModifiersClientProps {
 // row), not a separate list of something else. The BR-CATALOG-003 join
 // (modifiers.product_id) makes this map possible: a tab that used to be its
 // own screen (ToppingsManager.tsx) collapses into one column here.
-export default function ModifiersClient({ modifiers, toppings }: ModifiersClientProps) {
-  const [search, setSearch] = useState("");
+export default function ModifiersClient({
+  modifiers,
+  toppings,
+  initialSearch = "",
+}: ModifiersClientProps) {
+  const [search, setSearch] = useState(initialSearch);
   const router = useRouter();
 
   const productStatusById = useMemo(
@@ -40,12 +52,30 @@ export default function ModifiersClient({ modifiers, toppings }: ModifiersClient
     ));
   }, [modifiers, search]);
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    setSearch(next);
+    router.replace(listUrl(next), { scroll: false });
+  };
+
+  const currentUrl = listUrl(search);
+  const back = encodeURIComponent(currentUrl);
+
+  const rightContent = (
+    <Link
+      href={`/admin/products/modifiers/new?returnTo=${back}`}
+      className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition inline-flex items-center justify-center min-h-[44px]"
+    >
+      + Thêm Tùy Chọn
+    </Link>
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Topping & tuỳ chọn"
         subtitle="Quản lý tùy chọn và cài đặt bán độc lập (POS)."
-        actions={<ModifierForm />}
+        actions={rightContent}
       />
 
       <div className="shrink-0">
@@ -54,8 +84,8 @@ export default function ModifiersClient({ modifiers, toppings }: ModifiersClient
           type="text"
           placeholder="Tên hoặc nhóm..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full sm:w-64 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
+          onChange={handleSearchChange}
+          className="w-full sm:w-64 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm text-text-primary"
         />
       </div>
 
@@ -106,11 +136,13 @@ export default function ModifiersClient({ modifiers, toppings }: ModifiersClient
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end items-center gap-1">
-                        <ModifierForm
-                          initialData={m}
-                          productStatus={m.product_id ? productStatusById.get(m.product_id) : undefined}
-                        />
+                      <div className="flex justify-end items-center gap-3">
+                        <Link
+                          href={`/admin/products/modifiers/${encodeURIComponent(m.id)}/edit?returnTo=${back}`}
+                          className="text-primary hover:text-primary-hover font-medium text-sm min-h-[44px] inline-flex items-center"
+                        >
+                          Sửa
+                        </Link>
                         <DeleteModifierButton id={m.id} name={m.name} onDeleted={() => router.refresh()} />
                       </div>
                     </td>
@@ -156,8 +188,13 @@ export default function ModifiersClient({ modifiers, toppings }: ModifiersClient
                   />
                 </div>
 
-                <div className="flex justify-end items-center gap-1 pt-1">
-                  <ModifierForm initialData={m} />
+                <div className="flex justify-end items-center gap-3 pt-1">
+                  <Link
+                    href={`/admin/products/modifiers/${encodeURIComponent(m.id)}/edit?returnTo=${back}`}
+                    className="text-primary hover:text-primary-hover font-medium text-sm min-h-[44px] inline-flex items-center"
+                  >
+                    Sửa
+                  </Link>
                   <DeleteModifierButton id={m.id} name={m.name} onDeleted={() => router.refresh()} />
                 </div>
               </div>
@@ -191,7 +228,15 @@ function DeleteModifierButton({ id, name, onDeleted }: { id: string; name: strin
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)} disabled={loading} className="text-danger hover:text-danger-active hover:bg-danger/10">{loading ? "..." : "Xóa"}</Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setIsOpen(true)}
+        disabled={loading}
+        className="text-danger hover:text-danger-active hover:bg-danger/10 min-h-[44px]"
+      >
+        {loading ? "..." : "Xóa"}
+      </Button>
       <DeleteConfirmModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

@@ -2,12 +2,13 @@
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
-import ProductForm from "@/app/admin/products/components/ProductForm";
-import HistoryModal from "@/app/admin/products/components/HistoryModal";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ProductRowActions } from "@/app/admin/products/components/ProductRowActions";
 import { formatNumber } from "@/lib/shared/format";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
-import { Search, Image as ImageIcon } from "lucide-react";
+import { Search, Image as ImageIcon, Plus, History } from "lucide-react";
 
 interface Product {
   id: string;
@@ -19,12 +20,15 @@ interface Product {
   priceHistory: any[];
   neverSold: boolean;
   hasNoSellableVariant: boolean;
+  [key: string]: any;
 }
 
 interface Category {
   id: string;
   name: string;
 }
+
+const VALID_STATUSES = ["ACTIVE", "INACTIVE", "DELETED"] as const;
 
 // Owner decision 2026-08-29: no "Tất cả" status option any more -- the
 // default (ACTIVE) already covers the everyday case, and a paused/deleted
@@ -35,22 +39,43 @@ const STATUS_LABELS: Record<string, string> = {
   DELETED: "Đã xóa",
 };
 
-export default function ProductsClient({
-  enhancedProducts,
-  activeCategories,
-  categories,
-  canDelete,
-}: {
+function listUrl(q: string, category: string, status: string): string {
+  const p = new URLSearchParams();
+  if (q) p.set("q", q);
+  if (category) p.set("category", category);
+  if (status && status !== "ACTIVE") p.set("status", status);
+  const qs = p.toString();
+  return qs ? `/admin/products?${qs}` : "/admin/products";
+}
+
+interface ProductsClientProps {
   enhancedProducts: Product[];
   activeCategories: Category[];
-  categories: Category[];
+  categories?: Category[];
   // BR-ACCESS-003 (I2, final-fix-brief.md) -- ADMIN only; everyone else
   // may add and edit. Server-computed in page.tsx via resolveActor().
   canDelete: boolean;
-}) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ACTIVE");
+  initialFilters?: {
+    q?: string;
+    category?: string;
+    status?: string;
+  };
+}
+
+export default function ProductsClient({
+  enhancedProducts,
+  activeCategories,
+  canDelete,
+  initialFilters,
+}: ProductsClientProps) {
+  const router = useRouter();
+
+  const [searchQuery, setSearchQuery] = useState(initialFilters?.q || "");
+  const [categoryId, setCategoryId] = useState(initialFilters?.category || "");
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    const raw = initialFilters?.status;
+    return raw && (VALID_STATUSES as readonly string[]).includes(raw) ? raw : "ACTIVE";
+  });
 
   const filteredProducts = useMemo(() => {
     return enhancedProducts.filter(p => {
@@ -76,14 +101,40 @@ export default function ProductsClient({
     return match ? match.status : null;
   }, [enhancedProducts, categoryId, statusFilter, searchQuery, filteredProducts.length]);
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    setSearchQuery(next);
+    router.replace(listUrl(next, categoryId, statusFilter), { scroll: false });
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const next = e.target.value;
+    setCategoryId(next);
+    router.replace(listUrl(searchQuery, next, statusFilter), { scroll: false });
+  };
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const next = e.target.value;
+    const valid = (VALID_STATUSES as readonly string[]).includes(next) ? next : "ACTIVE";
+    setStatusFilter(valid);
+    router.replace(listUrl(searchQuery, categoryId, valid), { scroll: false });
+  };
+
+  const currentUrl = listUrl(searchQuery, categoryId, statusFilter);
+  const back = encodeURIComponent(currentUrl);
+
   const rightContent = (
     <div className="flex items-center gap-3">
       <div className="hidden sm:block text-xs font-bold text-text-secondary whitespace-nowrap px-3 py-1.5 bg-surface-secondary rounded-lg">
         {filteredProducts.length} / {enhancedProducts.length} món
       </div>
-      <ProductForm
-        categories={categories}
-      />
+      <Link
+        href={`/admin/products/new?returnTo=${back}`}
+        className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition inline-flex items-center justify-center min-h-[44px]"
+      >
+        <Plus className="w-4 h-4 mr-1.5" />
+        Thêm Món Mới
+      </Link>
     </div>
   );
 
@@ -95,14 +146,13 @@ export default function ProductsClient({
         actions={rightContent}
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">
-
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm món</label>
           <input
             type="text"
             placeholder="Tên món..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none shadow-sm bg-surface-card text-text-primary"
           />
         </div>
@@ -110,7 +160,7 @@ export default function ProductsClient({
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Danh mục</label>
           <select
             value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
+            onChange={handleCategoryChange}
             className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary shadow-sm"
           >
             <option value="">Tất cả danh mục</option>
@@ -123,7 +173,7 @@ export default function ProductsClient({
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trạng thái</label>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={handleStatusChange}
             className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary shadow-sm"
           >
             <option value="ACTIVE">Đang bán</option>
@@ -131,7 +181,6 @@ export default function ProductsClient({
             <option value="DELETED">Đã xóa</option>
           </select>
         </div>
-      
       </div>
 
       {filteredProducts.length === 0 ? (
@@ -142,7 +191,10 @@ export default function ProductsClient({
             description={`Có món khớp nhưng đang ở trạng thái "${STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}".`}
             action={{
               label: `Xem "${STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}"`,
-              onClick: () => setStatusFilter(matchingOtherStatus),
+              onClick: () => {
+                setStatusFilter(matchingOtherStatus);
+                router.replace(listUrl(searchQuery, categoryId, matchingOtherStatus), { scroll: false });
+              },
             }}
           />
         ) : (
@@ -217,14 +269,18 @@ export default function ProductsClient({
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2 items-center">
-                            <HistoryModal
-                              title={product.name}
-                              priceHistory={product.priceHistory}
-                            />
-                            <ProductForm
-                              categories={categories}
-                              initialData={product}
+                            <Link
+                              href={`/admin/products/${encodeURIComponent(product.id)}/history?returnTo=${back}`}
+                              className="text-sm font-medium text-warning flex items-center gap-1 hover:underline min-h-[44px]"
+                              title="Xem lịch sử thay đổi"
+                            >
+                              <History className="w-4 h-4" />
+                              Lịch sử
+                            </Link>
+                            <ProductRowActions
+                              product={product}
                               canDelete={canDelete}
+                              returnTo={currentUrl}
                             />
                           </div>
                         </td>
@@ -286,14 +342,18 @@ export default function ProductsClient({
                         )}
                       </div>
                       <div className="flex gap-2 items-center">
-                        <HistoryModal
-                          title={product.name}
-                          priceHistory={product.priceHistory}
-                        />
-                        <ProductForm
-                          categories={categories}
-                          initialData={product}
+                        <Link
+                          href={`/admin/products/${encodeURIComponent(product.id)}/history?returnTo=${back}`}
+                          className="text-sm font-medium text-warning flex items-center gap-1 hover:underline min-h-[44px]"
+                          title="Xem lịch sử thay đổi"
+                        >
+                          <History className="w-4 h-4" />
+                          Lịch sử
+                        </Link>
+                        <ProductRowActions
+                          product={product}
                           canDelete={canDelete}
+                          returnTo={currentUrl}
                         />
                       </div>
                     </div>

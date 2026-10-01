@@ -2,17 +2,32 @@
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ProductCategoryForm } from "./ProductCategoryForm";
+import { DeleteProductCategoryButton } from "./DeleteProductCategoryButton";
 import type { DBProductCategory } from "@/types/db";
 
 interface CategoriesClientProps {
   categories: DBProductCategory[];
   counts: Record<string, number>;
+  initialSearch?: string;
 }
 
-export default function CategoriesClient({ categories, counts }: CategoriesClientProps) {
-  const [search, setSearch] = useState("");
+function listUrl(search: string): string {
+  const p = new URLSearchParams();
+  if (search) p.set("q", search);
+  const qs = p.toString();
+  return qs ? `/admin/products/categories?${qs}` : "/admin/products/categories";
+}
+
+export default function CategoriesClient({
+  categories,
+  counts,
+  initialSearch = "",
+}: CategoriesClientProps) {
+  const router = useRouter();
+  const [search, setSearch] = useState(initialSearch);
 
   const filteredCategories = useMemo(() => {
     return categories.filter((c) =>
@@ -20,7 +35,23 @@ export default function CategoriesClient({ categories, counts }: CategoriesClien
     );
   }, [categories, search]);
 
-  const rightContent = <ProductCategoryForm />;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    setSearch(next);
+    router.replace(listUrl(next), { scroll: false });
+  };
+
+  const currentUrl = listUrl(search);
+  const back = encodeURIComponent(currentUrl);
+
+  const rightContent = (
+    <Link
+      href={`/admin/products/categories/new?returnTo=${back}`}
+      className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition inline-flex items-center justify-center min-h-[44px]"
+    >
+      + Thêm Danh Mục
+    </Link>
+  );
 
   return (
     <div className="space-y-6">
@@ -30,18 +61,16 @@ export default function CategoriesClient({ categories, counts }: CategoriesClien
         actions={rightContent}
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">
-
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
           <input
             type="text"
             placeholder="Tên danh mục..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
+            onChange={handleSearchChange}
+            className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm text-text-primary"
           />
         </div>
-      
       </div>
 
       {filteredCategories.length === 0 ? (
@@ -76,7 +105,15 @@ export default function CategoriesClient({ categories, counts }: CategoriesClien
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <ProductCategoryForm initialData={c} />
+                        <div className="flex justify-end items-center gap-4">
+                          <Link
+                            href={`/admin/products/categories/${encodeURIComponent(c.id)}/edit?returnTo=${back}`}
+                            className="text-primary hover:text-primary-hover font-medium text-sm min-h-[44px] inline-flex items-center"
+                          >
+                            Sửa
+                          </Link>
+                          <DeleteProductCategoryButton category={c} />
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -102,8 +139,14 @@ export default function CategoriesClient({ categories, counts }: CategoriesClien
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-border flex justify-end">
-                  <ProductCategoryForm initialData={c} />
+                <div className="pt-3 border-t border-border flex justify-end items-center gap-4">
+                  <Link
+                    href={`/admin/products/categories/${encodeURIComponent(c.id)}/edit?returnTo=${back}`}
+                    className="text-primary hover:text-primary-hover font-medium text-sm min-h-[44px] inline-flex items-center"
+                  >
+                    Sửa
+                  </Link>
+                  <DeleteProductCategoryButton category={c} />
                 </div>
               </div>
             ))}
