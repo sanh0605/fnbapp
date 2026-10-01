@@ -172,7 +172,7 @@ describe("cost of goods and shrinkage", () => {
     const f = computeProfitAndLoss(input(base));
     const jul = month(f, "2026-07");
     expect(jul.sources.cogs).toHaveLength(1);
-    expect(jul.sources.cogs[0]).toMatchObject({ kind: "ISSUE_SLIP", id: "ISL-1", date: "2026-07-10", label: "Phiếu xuất: Pha chế" });
+    expect(jul.sources.cogs[0]).toMatchObject({ kind: "ISSUE_SLIP", id: "ISL-1", date: "2026-07-10", label: "Phiếu xuất: Sữa tươi" });
     const aug = month(f, "2026-08");
     expect(aug.sources.cogs.map(s => [s.kind, s.id, s.date, s.label])).toEqual([["STOCKTAKE", "STK-001", "2026-08-09", "Kiểm kê định kỳ"]]);
     expect(aug.sources.shrinkage.map(s => s.id)).toEqual(["STK-003"]);

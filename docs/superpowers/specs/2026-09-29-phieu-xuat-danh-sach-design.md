@@ -16,7 +16,7 @@ Chủ quán chọn làm Phiếu xuất trước trong bước 4 (2026-09-29). Ng
 | "Chỉnh sửa" làm được gì | Xoá dòng, sửa số lượng, thêm dòng |
 | Nút "Huỷ phiếu" | Giữ. Xoá hết dòng thì phiếu hỏi có huỷ không; không huỷ thì phải có ít nhất 1 dòng mới lưu |
 | Lý do huỷ phiếu | Vẫn bắt buộc |
-| Danh sách lý do (đang viết cứng 3 lý do) | Để bước sau; ghi vào việc chưa xong. Không có ô lọc theo lý do |
+| Danh sách lý do (đang viết cứng 3 lý do) | Để bước sau; không có ô lọc theo lý do. Ngày 2026-10-01 chủ quán bỏ hẳn ô lý do và ô chi tiết (`BR-INV-014`) |
 | Cột Giá trị | Có |
 | Ô lọc Loại (Tất cả, Phiếu xuất, Kiểm kê, Đã huỷ) | Có |
 | Phiếu đã huỷ trong danh sách | Ẩn khi lọc "Tất cả"; chỉ hiện khi chọn Loại = "Đã huỷ" (chủ quán 2026-09-29, sau khi xem bản mẫu) |

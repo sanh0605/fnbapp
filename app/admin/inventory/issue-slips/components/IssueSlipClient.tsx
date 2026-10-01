@@ -11,12 +11,6 @@ import { formatConvertedOnHand } from "@/lib/stock/issue-slip-onhand-display";
 import { createIssueSlip, type IssueSlipItemView } from "../actions";
 import { buildIssueUnitOptions, toBaseQuantity } from "@/lib/stock/issue-unit-options";
 
-const REASONS = [
-  { value: "HAO_HUT", label: "Hao hụt / hư hỏng" },
-  { value: "NOI_BO", label: "Dùng nội bộ" },
-  { value: "KHAC", label: "Khác" },
-] as const;
-
 function toLocalInputValue(d: Date): string {
   const offsetMs = d.getTimezoneOffset() * 60000;
   return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
@@ -35,8 +29,6 @@ function emptyLine(): DraftLine {
 export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
   const router = useRouter();
   const [lines, setLines] = useState<DraftLine[]>([emptyLine()]);
-  const [reason, setReason] = useState<(typeof REASONS)[number]["value"]>("HAO_HUT");
-  const [detail, setDetail] = useState("");
   const [issuedAtLocal, setIssuedAtLocal] = useState(() => toLocalInputValue(new Date()));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,13 +117,10 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
       if (!approved) return;
     }
 
-    const reasonLabel = REASONS.find(r => r.value === reason)?.label ?? reason;
-    const note = detail.trim() ? `${reasonLabel}: ${detail.trim()}` : reasonLabel;
-
     setSubmitting(true);
     const res = await createIssueSlip({
       issuedAtIso: issuedAt.toISOString(),
-      note,
+      note: "",
       lines: payloadLines,
     });
     setSubmitting(false);
@@ -235,30 +224,6 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
           <p className="text-xs text-text-muted text-center">
             Đã điền đủ: {filledLineCount}/{lines.length} dòng
           </p>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Lý do</label>
-          <select
-            value={reason}
-            onChange={e => setReason(e.target.value as (typeof REASONS)[number]["value"])}
-            className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
-          >
-            {REASONS.map(r => (
-              <option key={r.value} value={r.value}>{r.label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Chi tiết (không bắt buộc)</label>
-          <input
-            type="text"
-            value={detail}
-            onChange={e => setDetail(e.target.value)}
-            placeholder="Ví dụ: rơi vỡ khi vận chuyển..."
-            className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
-          />
         </div>
 
         <div>
