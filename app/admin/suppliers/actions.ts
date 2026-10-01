@@ -4,6 +4,7 @@ import { findAll, insert, update, remove, generateNewId } from "@/lib/db/tables"
 import { revalidatePath } from "next/cache";
 import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
+import { formatNumber } from "@/lib/shared/format";
 import type { DBSupplier } from "@/types/db";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import {
@@ -175,5 +176,22 @@ export async function deleteSupplierAction(formData: FormData): Promise<ActionRe
 
   const id = formData.get("id") as string;
   if (!id) return fail("ID khong hop le");
+
+  // Refuse up front with a readable reason; the RESTRICT foreign key would
+  // otherwise only surface a generic error.
+  try {
+    const [suppliers, purchaseOrders] = (await Promise.all([
+      findAll(SHEET),
+      findAll("Purchase_Orders"),
+    ])) as [DBSupplier[], { supplier_id?: string }[]];
+    const supplier = suppliers.find((s) => s.id === id);
+    if (!supplier) return fail("Không tìm thấy nhà cung cấp.");
+    const orderCount = purchaseOrders.filter((po) => po.supplier_id === id).length;
+    if (orderCount > 0) {
+      return fail(`Không xoá được ${supplier.name}: đã có ${formatNumber(orderCount)} phiếu nhập.`);
+    }
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
   return deleteEntity(SHEET, id, PATH);
 }

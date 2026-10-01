@@ -6,11 +6,20 @@ describe("safeReturnTo", () => {
     expect(safeReturnTo("/admin/suppliers?q=C%C3%A0%20ph%C3%AA&status=ACTIVE"))
       .toBe("/admin/suppliers?q=C%C3%A0%20ph%C3%AA&status=ACTIVE");
   });
+  it("keeps a suppliers detail URL with query params", () => {
+    expect(
+      safeReturnTo("/admin/suppliers/NCC-029?returnTo=%2Fadmin%2Fsuppliers%3Fq%3Dvina")
+    ).toBe("/admin/suppliers/NCC-029?returnTo=%2Fadmin%2Fsuppliers%3Fq%3Dvina");
+  });
+  it("falls back to suppliers list for /admin/suppliers/new", () => {
+    expect(safeReturnTo("/admin/suppliers/new")).toBe("/admin/suppliers");
+  });
   it("falls back for a missing value", () => {
     expect(safeReturnTo(undefined)).toBe("/admin/suppliers");
     expect(safeReturnTo("")).toBe("/admin/suppliers");
   });
   it("falls back for an outside or other-screen URL", () => {
+    expect(safeReturnTo("https://x.com")).toBe("/admin/suppliers");
     expect(safeReturnTo("https://evil.example")).toBe("/admin/suppliers");
     expect(safeReturnTo("//evil.example/admin/suppliers")).toBe("/admin/suppliers");
     expect(safeReturnTo("/admin/users")).toBe("/admin/suppliers");

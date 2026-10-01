@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function SuppliersPage({
   searchParams,
 }: {
-  searchParams?: { q?: string };
+  searchParams?: { q?: string; page?: string };
 }) {
   const [suppliers, auth] = await Promise.all([getSuppliers(), resolveActor()]);
   // BR-ACCESS-003: permanent deletion is ADMIN only -- hiding the button is
@@ -19,6 +19,7 @@ export default async function SuppliersPage({
       suppliers={suppliers}
       canDelete={canDelete}
       initialSearch={searchParams?.q ?? ""}
+      initialPage={searchParams?.page}
     />
   );
 }

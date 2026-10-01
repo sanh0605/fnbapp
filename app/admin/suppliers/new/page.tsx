@@ -1,7 +1,7 @@
 import { SupplierForm } from "../components/SupplierForm";
 import { safeReturnTo, safePoReturnTo } from "../components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -17,15 +17,18 @@ export default function NewSupplierPage({
   const label = fromPo ? "Phiếu nhập" : "Nhà cung cấp";
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label={label} />
-      <PageHeader title="Thêm nhà cung cấp" subtitle="Thông tin liên hệ của đối tác cung ứng." />
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel={label}
+        title="Thêm nhà cung cấp"
+        subtitle="Thông tin liên hệ của đối tác cung ứng."
+      />
       <SupplierForm
         returnTo={returnTo}
         returnMode={fromPo ? "po" : "list"}
         initialName={searchParams?.name}
       />
-    </div>
+    </DetailFrame>
   );
 }
-

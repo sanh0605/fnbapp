@@ -2,10 +2,9 @@
 
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
-import { addSupplier, editSupplier, deleteSupplierAction } from "../actions";
+import { addSupplier, editSupplier } from "../actions";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
-import { alert, confirm } from "@/lib/shared/dialog";
+import { confirm } from "@/lib/shared/dialog";
 import { safeReturnTo, safePoReturnTo } from "./return-to";
 import type { DBSupplier } from "@/types/db";
 
@@ -73,141 +72,132 @@ export function SupplierForm({
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="bg-surface-card rounded-2xl border border-border overflow-hidden">
+      <form onSubmit={handleSubmit} className="divide-y divide-border">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+          <div
+            role="alert"
+            aria-live="polite"
+            className="p-4 bg-danger/10 text-danger text-sm font-medium"
+          >
             {error}
           </div>
         )}
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-center">
+          <label
+            htmlFor={`${formId}-name`}
+            className="text-text-muted font-medium md:text-text-secondary"
+          >
             Tên Nhà Cung Cấp
           </label>
-          <input
-            id={`${formId}-name`}
-            type="text"
-            name="name"
-            required
-            defaultValue={initialData?.name ?? initialName}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Cửa hàng ABC"
-          />
+          <div>
+            <input
+              id={`${formId}-name`}
+              type="text"
+              name="name"
+              required
+              maxLength={120}
+              defaultValue={initialData?.name ?? initialName}
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+              placeholder="VD: Cửa hàng ABC"
+            />
+          </div>
         </div>
-        <div>
-          <label htmlFor={`${formId}-phone`} className="block text-sm font-medium text-text-secondary mb-1">
+
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-center">
+          <label
+            htmlFor={`${formId}-phone`}
+            className="text-text-muted font-medium md:text-text-secondary"
+          >
             Số Điện Thoại
           </label>
-          <input
-            id={`${formId}-phone`}
-            type="tel"
-            name="phone"
-            defaultValue={initialData?.phone}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: 0901234567"
-          />
+          <div>
+            <input
+              id={`${formId}-phone`}
+              type="tel"
+              name="phone"
+              defaultValue={initialData?.phone}
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+              placeholder="VD: 0901234567"
+            />
+          </div>
         </div>
-        <div>
-          <label htmlFor={`${formId}-tax-id`} className="block text-sm font-medium text-text-secondary mb-1">
+
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-center">
+          <label
+            htmlFor={`${formId}-tax-id`}
+            className="text-text-muted font-medium md:text-text-secondary"
+          >
             Mã Số Thuế
           </label>
-          <input
-            id={`${formId}-tax-id`}
-            type="text"
-            name="tax_id"
-            defaultValue={initialData?.tax_id}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: 0123456789"
-          />
+          <div>
+            <input
+              id={`${formId}-tax-id`}
+              type="text"
+              name="tax_id"
+              defaultValue={initialData?.tax_id}
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+              placeholder="VD: 0123456789"
+            />
+          </div>
         </div>
-        <div>
-          <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-text-secondary mb-1">
+
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-center">
+          <label
+            htmlFor={`${formId}-address`}
+            className="text-text-muted font-medium md:text-text-secondary"
+          >
             Địa Chỉ
           </label>
-          <input
-            id={`${formId}-address`}
-            type="text"
-            name="address"
-            defaultValue={initialData?.address}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: 123 Đường ABC, Quận XYZ"
-          />
+          <div>
+            <input
+              id={`${formId}-address`}
+              type="text"
+              name="address"
+              defaultValue={initialData?.address}
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+              placeholder="VD: 123 Đường ABC, Quận XYZ"
+            />
+          </div>
         </div>
-        <div>
-          <label htmlFor={`${formId}-links`} className="block text-sm font-medium text-text-secondary mb-1">
+
+        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-start">
+          <label
+            htmlFor={`${formId}-links`}
+            className="text-text-muted font-medium md:text-text-secondary pt-2"
+          >
             Ghi chú / Links
           </label>
-          <textarea
-            id={`${formId}-links`}
-            name="links"
-            rows={2}
-            defaultValue={initialData?.links}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="Các liên kết hoặc ghi chú thêm..."
-          />
+          <div>
+            <textarea
+              id={`${formId}-links`}
+              name="links"
+              rows={3}
+              defaultValue={initialData?.links}
+              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+              placeholder="Các liên kết hoặc ghi chú thêm..."
+            />
+          </div>
         </div>
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
+
+        <div className="p-4 bg-surface-secondary/50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
           <button
             type="button"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px] flex items-center justify-center border border-border"
           >
-            Bỏ
+            {isEdit ? "Bỏ thay đổi" : "Bỏ"}
           </button>
           <LoadingButton
             type="submit"
             loading={loading}
             loadingText="Đang lưu..."
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto min-h-[44px]"
           >
-            {isEdit ? "Cập nhật" : "Lưu nhà cung cấp"}
+            {isEdit ? "Lưu thay đổi" : "Lưu nhà cung cấp"}
           </LoadingButton>
         </div>
       </form>
     </div>
-  );
-}
-
-interface DeleteSupplierButtonProps {
-  id: string;
-}
-
-export function DeleteSupplierButton({ id }: DeleteSupplierButtonProps) {
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // section A4b/B: the action's result was discarded -- a refusal failed in
-  // total silence, and a successful delete never told the browser to
-  // redraw.
-  async function handleDelete() {
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("id", id);
-    const res = await deleteSupplierAction(formData);
-    setLoading(false);
-    if (res?.error) {
-      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
-      return;
-    }
-    router.refresh();
-  }
-
-  return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        disabled={loading}
-        className="text-danger hover:text-danger-active font-medium text-sm disabled:opacity-50"
-      >
-        {loading ? "..." : "Xóa"}
-      </button>
-      <DeleteConfirmModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        onConfirm={handleDelete}
-        description="Bạn có chắc chắn muốn xóa nhà cung cấp này? Các liên kết hàng hóa có thể bị ảnh hưởng."
-      />
-    </>
   );
 }

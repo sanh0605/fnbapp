@@ -1,7 +1,7 @@
 # Purchasing flow (purchase orders and suppliers)
 
 ```flow-decl
-routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/suppliers, /admin/suppliers/new, /admin/suppliers/[id]/edit
+routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/suppliers, /admin/suppliers/new, /admin/suppliers/[id], /admin/suppliers/[id]/edit
 files: lib/purchasing/purchase-order-transaction.ts, app/admin/inventory/purchase-orders/actions.ts, app/admin/suppliers/actions.ts
 tables: purchase_orders, purchase_order_lines, purchase_order_edits, Purchase_Sources, assets, Suppliers
 brCodes: BR-INV-002

@@ -30,8 +30,8 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("./SupplierForm", () => ({
-  DeleteSupplierButton: () => <button>Xóa</button>,
+vi.mock("../actions", () => ({
+  deleteSupplierAction: vi.fn(),
 }));
 
 function sup(id: string, name: string, status: string = "ACTIVE"): DBSupplier {
@@ -87,7 +87,8 @@ describe("SuppliersClient", () => {
     );
   });
 
-  it("Sửa links to that supplier's edit page", () => {
+  it("links to that supplier's detail page instead of a removed Sửa button", () => {
+    // Sửa button was removed from list rows; clicking row now links to the detail page
     render(
       <SuppliersClient
         suppliers={[sup("SUP-001", "Cà phê Phin")]}
@@ -95,11 +96,18 @@ describe("SuppliersClient", () => {
         initialSearch=""
       />
     );
-    const links = screen.getAllByRole("link", { name: "Sửa" });
-    expect(links[0]).toHaveAttribute("href", "/admin/suppliers/SUP-001/edit?returnTo=" + encodeURIComponent("/admin/suppliers"));
+    const links = screen.getAllByRole("link", { name: /Cà phê Phin/ });
+    expect(
+      links.some(
+        (l) =>
+          l.getAttribute("href") ===
+          "/admin/suppliers/SUP-001?returnTo=" + encodeURIComponent("/admin/suppliers")
+      )
+    ).toBe(true);
   });
 
-  it("an INACTIVE supplier still has a Sửa link", () => {
+  it("an INACTIVE supplier links to detail page and displays inactive badge", () => {
+    // Sửa button was removed; row links to detail and shows 'Ngừng hợp tác'
     render(
       <SuppliersClient
         suppliers={[sup("SUP-003", "Cũ", "INACTIVE")]}
@@ -107,11 +115,72 @@ describe("SuppliersClient", () => {
         initialSearch=""
       />
     );
-    expect(screen.getAllByRole("link", { name: "Sửa" }).length).toBeGreaterThan(0);
+    const links = screen.getAllByRole("link", { name: /Cũ/ });
+    expect(links.length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Ngừng hợp tác").length).toBeGreaterThan(0);
   });
 
   it("does not render a status select filter", () => {
     render(<SuppliersClient suppliers={[]} canDelete={false} initialSearch="" />);
     expect(screen.queryByText("Trạng thái")).toBeNull();
+  });
+
+  it("initialSearch='vina' links Vinamilk row to its detail page carrying returnTo", () => {
+    render(
+      <SuppliersClient
+        suppliers={[sup("NCC-029", "Vinamilk")]}
+        canDelete={false}
+        initialSearch="vina"
+      />
+    );
+    const vinamilkLinks = screen.getAllByRole("link", { name: /Vinamilk/ });
+    expect(
+      vinamilkLinks.some(
+        (l) =>
+          l.getAttribute("href") ===
+          "/admin/suppliers/NCC-029?returnTo=" + encodeURIComponent("/admin/suppliers?q=vina")
+      )
+    ).toBe(true);
+  });
+
+  it("does not render Sửa or Xem đơn nhập in list rows", () => {
+    render(
+      <SuppliersClient
+        suppliers={[sup("NCC-029", "Vinamilk")]}
+        canDelete={true}
+        initialSearch=""
+      />
+    );
+    expect(screen.queryByRole("link", { name: "Sửa" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Xem đơn nhập" })).toBeNull();
+    expect(screen.queryByText("Sửa")).toBeNull();
+    expect(screen.queryByText("Xem đơn nhập")).toBeNull();
+  });
+
+  it("canDelete=false renders no checkboxes", () => {
+    render(
+      <SuppliersClient
+        suppliers={[sup("NCC-029", "Vinamilk")]}
+        canDelete={false}
+        initialSearch=""
+      />
+    );
+    expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
+  });
+
+  it("46 suppliers with initialPage='3' shows '41–46 trên 46'", () => {
+    const fortySixSuppliers: DBSupplier[] = Array.from({ length: 46 }, (_, i) =>
+      sup(`NCC-${String(i + 1).padStart(3, "0")}`, `Nhà cung cấp ${i + 1}`)
+    );
+    render(
+      <SuppliersClient
+        suppliers={fortySixSuppliers}
+        canDelete={false}
+        initialSearch=""
+        initialPage="3"
+      />
+    );
+    // The footer splits the numbers into bold spans, so match the whole line.
+    expect(screen.getByText((_, el) => el?.textContent === "41–46 trên 46 nhà cung cấp")).toBeInTheDocument();
   });
 });

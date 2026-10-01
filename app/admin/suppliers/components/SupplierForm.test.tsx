@@ -172,5 +172,33 @@ describe("SupplierForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
     expect(push).toHaveBeenCalledWith("/admin/inventory/purchase-orders/new?draft=1");
   });
+
+  it("when editing, Bỏ thay đổi and successful save both push to returnTo", async () => {
+    mocks.editSupplier.mockResolvedValue({});
+    const detailReturnTo = "/admin/suppliers/NCC-029?returnTo=%2Fadmin%2Fsuppliers";
+    const { unmount } = render(
+      <SupplierForm
+        returnTo={detailReturnTo}
+        initialData={supplier({ id: "NCC-029", name: "Vinamilk" })}
+      />
+    );
+
+    // Cancel button in edit mode is labeled "Bỏ thay đổi"
+    fireEvent.click(screen.getByRole("button", { name: "Bỏ thay đổi" }));
+    expect(push).toHaveBeenCalledWith(detailReturnTo);
+
+    unmount();
+    render(
+      <SupplierForm
+        returnTo={detailReturnTo}
+        initialData={supplier({ id: "NCC-029", name: "Vinamilk" })}
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith(detailReturnTo);
+    });
+    expect(refresh).toHaveBeenCalled();
+  });
 });
 
