@@ -94,6 +94,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 - **A short yes/no confirmation is asked inline on the same page**, not in a box and not on a separate page (answer 1B). Example: "Xoá nhà cung cấp ABC?" shows as a line with Có / Không where the button was.
 - **Browser dialogs (`window.confirm`, `window.alert`) count as popups** and go the same way.
 - **POS is exempt** (answer 2B): choosing size, toppings and payment keep their current boxes, because a page change slows selling at a busy moment.
+- **Adding a supplier while entering a purchase order** (owner 2026-10-01, *"B"*): it opens the new-supplier page. The half-entered order is kept on that device and refilled on return, with the new supplier selected (owner: *"chỗ nhà cung cấp sẽ tự chọn nhà cung cấp vừa tạo"*). It replaces any supplier picked before. Design: `docs/superpowers/specs/2026-10-01-bo-popup-design.md` §6.
 - **Not popups:** a dropdown list and a date picker's calendar. They open in place and are kept (owner asked on 2026-09-30 for dropdowns to float above tables, not to become pages).
 ## Backup and retention rules
 
