@@ -245,4 +245,151 @@ describe("DataList", () => {
     expect(checkbox).toBeChecked();
     expect(mobileCardText.closest("a")).toBeNull();
   });
+
+  it("rowVerb: two rows, rowVerb returns 'Ngừng dùng' for row A and 'Xoá' for row B -> bins have aria-labels 'Ngừng dùng A' and 'Xoá B'", () => {
+    const twoRows: SampleSupplier[] = [
+      { id: "A", name: "A" },
+      { id: "B", name: "B" },
+    ];
+
+    render(
+      <DataList
+        rows={twoRows}
+        getId={(r) => r.id}
+        getName={(r) => r.name}
+        getHref={(r) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        renderCard={(r) => <div>{r.name}</div>}
+        removal={{
+          verb: "Xoá",
+          rowVerb: (row: SampleSupplier) => (row.id === "A" ? "Ngừng dùng" : "Xoá"),
+          confirmMessage: (count) => `Xoá ${count} dòng?`,
+          remove: vi.fn(),
+        }}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    const aBins = screen.getAllByRole("button", { name: "Ngừng dùng A" });
+    const bBins = screen.getAllByRole("button", { name: "Xoá B" });
+    expect(aBins.length).toBeGreaterThan(0);
+    expect(bBins.length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: "Xoá A" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Ngừng dùng B" })).toBeNull();
+  });
+
+  it("mixed bulk: select 3 rows, remove resolves {deactivated:true} for one, {} for two -> status text contains 'Đã xoá 2 dòng. Đã ngừng dùng 1 dòng.'", async () => {
+    confirmMock.mockResolvedValue(true);
+    const removeMock = vi.fn().mockImplementation(async (id: string) => {
+      if (id === "NCC-029") {
+        return { deactivated: true };
+      }
+      return {};
+    });
+
+    render(
+      <DataList
+        rows={suppliers}
+        getId={(r) => r.id}
+        getName={(r) => r.name}
+        getHref={(r) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        renderCard={(r) => <div>{r.name}</div>}
+        removal={{
+          verb: "Xoá",
+          confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
+          remove: removeMock,
+        }}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    // Tick all 3 items via "Chọn tất cả"
+    const selectAllCheckbox = screen.getByRole("checkbox", { name: "Chọn tất cả" });
+    fireEvent.click(selectAllCheckbox);
+
+    // Click "Xoá 3 dòng đã chọn"
+    const deleteBtn = screen.getByRole("button", { name: "Xoá 3 dòng đã chọn" });
+    fireEvent.click(deleteBtn);
+
+    await waitFor(() => {
+      expect(removeMock).toHaveBeenCalledTimes(3);
+    });
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("Đã xoá 2 dòng. Đã ngừng dùng 1 dòng.");
+  });
+
+  it("all deactivated: 2 rows both deactivated -> 'Đã ngừng dùng 2 dòng.' and does NOT contain 'Đã xoá'", async () => {
+    confirmMock.mockResolvedValue(true);
+    const removeMock = vi.fn().mockResolvedValue({ deactivated: true });
+
+    render(
+      <DataList
+        rows={suppliers.slice(0, 2)}
+        getId={(r) => r.id}
+        getName={(r) => r.name}
+        getHref={(r) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        renderCard={(r) => <div>{r.name}</div>}
+        removal={{
+          verb: "Xoá",
+          confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
+          remove: removeMock,
+        }}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    // Tick both items via "Chọn tất cả"
+    const selectAllCheckbox = screen.getByRole("checkbox", { name: "Chọn tất cả" });
+    fireEvent.click(selectAllCheckbox);
+
+    // Click "Xoá 2 dòng đã chọn"
+    const deleteBtn = screen.getByRole("button", { name: "Xoá 2 dòng đã chọn" });
+    fireEvent.click(deleteBtn);
+
+    await waitFor(() => {
+      expect(removeMock).toHaveBeenCalledTimes(2);
+    });
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("Đã ngừng dùng 2 dòng.");
+    expect(status.textContent).not.toContain("Đã xoá");
+  });
+
+  it("per-row verb list, nothing deactivated -> 'Đã xoá 2 dòng.', not the list-wide verb", async () => {
+    confirmMock.mockResolvedValue(true);
+    const removeMock = vi.fn().mockResolvedValue({});
+
+    render(
+      <DataList
+        rows={suppliers.slice(0, 2)}
+        getId={(r) => r.id}
+        getName={(r) => r.name}
+        getHref={(r) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        renderCard={(r) => <div>{r.name}</div>}
+        removal={{
+          verb: "Xoá hoặc ngừng dùng",
+          rowVerb: () => "Xoá",
+          confirmMessage: (count) => `Xoá hoặc ngừng dùng ${count} dòng?`,
+          remove: removeMock,
+        }}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Chọn tất cả" }));
+    fireEvent.click(screen.getByRole("button", { name: "Xoá hoặc ngừng dùng 2 dòng đã chọn" }));
+
+    await waitFor(() => {
+      expect(removeMock).toHaveBeenCalledTimes(2);
+    });
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("Đã xoá 2 dòng.");
+    expect(status.textContent).not.toContain("Đã xoá hoặc ngừng dùng");
+  });
 });
+

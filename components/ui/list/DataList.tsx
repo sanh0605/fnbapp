@@ -15,6 +15,7 @@ export interface DataColumn<T> {
 
 export interface RemoveResult {
   error?: string;
+  deactivated?: boolean;
 }
 
 export interface DataListProps<T> {
@@ -27,6 +28,7 @@ export interface DataListProps<T> {
   removal?: {
     // omitted -> no tick boxes, no bin
     verb: string; // "Xoá" or "Ngừng dùng"
+    rowVerb?: (row: T) => string;
     confirmMessage: (count: number) => string;
     remove: (id: string) => Promise<RemoveResult>;
   };
@@ -50,6 +52,30 @@ function formatRemoveError(verb: string, name: string, error?: string): string {
     return error;
   }
   return `Không ${verbLower} được ${name}: ${error}`;
+}
+
+function formatSuccessMessage(
+  deletedCount: number,
+  deactivatedCount: number,
+  defaultVerb: string,
+  // A list with a per-row verb mixes deletes and switch-offs, so its
+  // list-wide verb ("Xoá hoặc ngừng dùng") cannot describe the outcome.
+  perRowVerb: boolean
+): string | null {
+  if (deletedCount === 0 && deactivatedCount === 0) {
+    return null;
+  }
+  if (deactivatedCount === 0 && !perRowVerb) {
+    return `Đã ${defaultVerb.toLowerCase()} ${deletedCount} dòng.`;
+  }
+  const parts: string[] = [];
+  if (deletedCount > 0) {
+    parts.push(`Đã xoá ${deletedCount} dòng.`);
+  }
+  if (deactivatedCount > 0) {
+    parts.push(`Đã ngừng dùng ${deactivatedCount} dòng.`);
+  }
+  return parts.join(" ");
 }
 
 function TrashIcon() {
@@ -91,7 +117,8 @@ export function DataList<T>({
     total: number;
   } | null>(null);
   const [statusResult, setStatusResult] = useState<{
-    successCount: number;
+    deletedCount: number;
+    deactivatedCount: number;
     errors: string[];
   } | null>(null);
 
@@ -131,7 +158,8 @@ export function DataList<T>({
     });
     if (!ok) return;
 
-    let successCount = 0;
+    let deletedCount = 0;
+    let deactivatedCount = 0;
     const errors: string[] = [];
 
     for (let i = 0; i < idsToDelete.length; i++) {
@@ -143,14 +171,16 @@ export function DataList<T>({
       const res = await removal.remove(id);
       if (res?.error) {
         errors.push(formatRemoveError(removal.verb, name, res.error));
+      } else if (res?.deactivated) {
+        deactivatedCount++;
       } else {
-        successCount++;
+        deletedCount++;
       }
     }
 
     setDeletingProgress(null);
     setSelectedIds(new Set());
-    setStatusResult({ successCount, errors });
+    setStatusResult({ deletedCount, deactivatedCount, errors });
     router.refresh();
   }
 
@@ -158,9 +188,10 @@ export function DataList<T>({
     if (!removal) return;
     const id = getId(row);
     const name = getName(row);
+    const verb = removal.rowVerb ? removal.rowVerb(row) : removal.verb;
 
     const ok = await confirm({
-      title: removal.verb,
+      title: verb,
       message: removal.confirmMessage(1),
       variant: "danger",
     });
@@ -169,12 +200,15 @@ export function DataList<T>({
     const res = await removal.remove(id);
     if (res?.error) {
       setStatusResult({
-        successCount: 0,
-        errors: [formatRemoveError(removal.verb, name, res.error)],
+        deletedCount: 0,
+        deactivatedCount: 0,
+        errors: [formatRemoveError(verb, name, res.error)],
       });
     } else {
+      const isDeactivated = Boolean(res?.deactivated);
       setStatusResult({
-        successCount: 1,
+        deletedCount: isDeactivated ? 0 : 1,
+        deactivatedCount: isDeactivated ? 1 : 0,
         errors: [],
       });
       setSelectedIds((prev) => {
@@ -186,6 +220,15 @@ export function DataList<T>({
     router.refresh();
   }
 
+  const successMessage = statusResult
+    ? formatSuccessMessage(
+        statusResult.deletedCount,
+        statusResult.deactivatedCount,
+        removal?.verb ?? "xoá",
+        Boolean(removal?.rowVerb)
+      )
+    : null;
+
   if (rows.length === 0) {
     return (
       <div className="space-y-4">
@@ -194,9 +237,9 @@ export function DataList<T>({
             role="status"
             className="bg-surface-secondary border border-border rounded-xl p-4 text-sm space-y-1"
           >
-            {statusResult.successCount > 0 && (
+            {successMessage && (
               <div className="text-text-primary font-medium">
-                Đã {removal?.verb.toLowerCase() ?? "xoá"} {statusResult.successCount} dòng.
+                {successMessage}
               </div>
             )}
             {statusResult.errors.map((err, i) => (
@@ -220,9 +263,9 @@ export function DataList<T>({
           role="status"
           className="bg-surface-secondary border border-border rounded-xl p-4 text-sm space-y-1"
         >
-          {statusResult.successCount > 0 && (
+          {successMessage && (
             <div className="text-text-primary font-medium">
-              Đã {removal?.verb.toLowerCase() ?? "xoá"} {statusResult.successCount} dòng.
+              {successMessage}
             </div>
           )}
           {statusResult.errors.map((err, i) => (
@@ -319,6 +362,7 @@ export function DataList<T>({
                 const name = getName(row);
                 const href = getHref(row);
                 const isSelected = selectedIds.has(id);
+                const verb = removal?.rowVerb ? removal.rowVerb(row) : removal?.verb;
 
                 return (
                   <tr
@@ -360,8 +404,8 @@ export function DataList<T>({
                       <td className="px-4 py-4 text-center relative z-20">
                         <button
                           type="button"
-                          title={removal.verb}
-                          aria-label={`${removal.verb} ${name}`}
+                          title={verb}
+                          aria-label={`${verb} ${name}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleRemoveSingle(row);
@@ -369,6 +413,7 @@ export function DataList<T>({
                           className="p-2 text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors inline-flex items-center justify-center min-w-[36px] min-h-[36px]"
                         >
                           <TrashIcon />
+                          <span className="sr-only">{verb}</span>
                         </button>
                       </td>
                     )}
@@ -386,6 +431,7 @@ export function DataList<T>({
             const name = getName(row);
             const href = getHref(row);
             const isSelected = selectedIds.has(id);
+            const verb = removal?.rowVerb ? removal.rowVerb(row) : removal?.verb;
 
             return (
               <div
@@ -432,8 +478,8 @@ export function DataList<T>({
                   <div className="absolute top-2 right-2 z-20">
                     <button
                       type="button"
-                      title={removal.verb}
-                      aria-label={`${removal.verb} ${name}`}
+                      title={verb}
+                      aria-label={`${verb} ${name}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveSingle(row);
@@ -441,6 +487,7 @@ export function DataList<T>({
                       className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors"
                     >
                       <TrashIcon />
+                      <span className="sr-only">{verb}</span>
                     </button>
                   </div>
                 )}
