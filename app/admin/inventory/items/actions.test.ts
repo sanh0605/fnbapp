@@ -442,10 +442,92 @@ describe("addPurchasedItem/updatePurchasedItem/deletePurchasedItemAction -- reva
   it("deletePurchasedItemAction revalidates sheets-Purchased_Items", async () => {
     const formData = new FormData();
     formData.set("id", "SPM-100");
+    // the action now looks the item up first, so it has to exist
+    mocks.findAll.mockImplementation((sheet: string) =>
+      Promise.resolve(sheet === "Purchased_Items" ? [{ id: "SPM-100", name: "Trứng gà" }] : []),
+    );
 
     const res = await actions.deletePurchasedItemAction(formData);
 
     expect(res.error).toBeUndefined();
     expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"));
+  });
+});
+
+// Wave 2: the RESTRICT foreign keys refuse every delete of a used item, but
+// the owner only saw the generic error. The action now counts what uses the
+// item and says so.
+describe("deletePurchasedItemAction -- refuses with a readable reason", () => {
+  function fd(id: string): FormData {
+    const f = new FormData();
+    f.set("id", id);
+    return f;
+  }
+
+  function rows(n: number, itemId: string) {
+    return Array.from({ length: n }, (_, i) => ({ id: `R-${i}`, purchased_item_id: itemId }));
+  }
+
+  function seed(opts: { items?: any[]; po?: number; issues?: number; convs?: number; assets?: number; id?: string }) {
+    const id = opts.id ?? "SPM-002";
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") return Promise.resolve(opts.items ?? [{ id, name: "Sữa tươi Mlekovita" }]);
+      if (sheet === "Purchase_Order_Lines") return Promise.resolve([...rows(opts.po ?? 0, id), ...rows(3, "SPM-OTHER")]);
+      if (sheet === "Stock_Issues") return Promise.resolve(rows(opts.issues ?? 0, id));
+      if (sheet === "UOM_Conversions") return Promise.resolve(rows(opts.convs ?? 0, id));
+      if (sheet.toLowerCase() === "assets") return Promise.resolve(rows(opts.assets ?? 0, id));
+      return Promise.resolve([]);
+    });
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findAllWhere.mockResolvedValue([]);
+  });
+
+  it("names every kind of use, with counts, and does not delete (Sữa tươi Mlekovita)", async () => {
+    seed({ po: 5, issues: 35, convs: 1 });
+    const res = await actions.deletePurchasedItemAction(fd("SPM-002"));
+    expect(res.error).toBe("Không xoá được Sữa tươi Mlekovita: đã có 5 dòng phiếu nhập, 35 lần xuất kho, 1 quy đổi.");
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("names only the one kind of use that exists (Túi lọc đa năng 200x300mm)", async () => {
+    seed({ id: "SPM-103", items: [{ id: "SPM-103", name: "Túi lọc đa năng 200x300mm" }], convs: 1 });
+    const res = await actions.deletePurchasedItemAction(fd("SPM-103"));
+    expect(res.error).toBe("Không xoá được Túi lọc đa năng 200x300mm: đã có 1 quy đổi.");
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("counts assets too", async () => {
+    seed({ assets: 2 });
+    const res = await actions.deletePurchasedItemAction(fd("SPM-002"));
+    expect(res.error).toBe("Không xoá được Sữa tươi Mlekovita: đã có 2 tài sản.");
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("deletes an item nothing uses", async () => {
+    seed({});
+    const res = await actions.deletePurchasedItemAction(fd("SPM-002"));
+    expect(res.error).toBeUndefined();
+    expect(mocks.remove).toHaveBeenCalledTimes(1);
+    expect(mocks.remove).toHaveBeenCalledWith("Purchased_Items", "SPM-002");
+  });
+
+  it("says so when the item does not exist", async () => {
+    seed({ items: [] });
+    const res = await actions.deletePurchasedItemAction(fd("SPM-404"));
+    expect(res.error).toBe("Không tìm thấy hàng hoá.");
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("refuses a non-owner before reading anything", async () => {
+    mocks.requireOwner.mockResolvedValue({ ok: false, error: "Chỉ chủ quán mới được xoá." });
+    const res = await actions.deletePurchasedItemAction(fd("SPM-002"));
+    expect(res.error).toBe("Chỉ chủ quán mới được xoá.");
+    expect(mocks.findAll).not.toHaveBeenCalled();
+    expect(mocks.remove).not.toHaveBeenCalled();
   });
 });

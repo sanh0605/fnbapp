@@ -246,7 +246,8 @@ export async function deleteConversionAction(formData: FormData): Promise<Action
     }
     revalidateTag(getCacheTag("UOM_Conversions"));
     revalidatePath(PATH);
-    return ok();
+    // Lets the caller tell "deleted" from "only switched off".
+    return isReferenced ? ok({ deactivated: true }) : ok();
   } catch (error: unknown) {
     return describeActionError(error);
   }

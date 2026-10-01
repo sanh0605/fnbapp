@@ -4,6 +4,7 @@ import { findAll, findAllWhere, insert, update, updateMany, remove, generateNewI
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
+import { formatNumber } from "@/lib/shared/format";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import {
@@ -326,6 +327,29 @@ export async function deletePurchasedItemAction(formData: FormData): Promise<Act
 
   const id = formData.get("id") as string;
   try {
+    // Refuse up front with a readable reason; the RESTRICT foreign keys
+    // would otherwise only surface a generic error.
+    const [items, poLines, stockIssues, conversions, assets] = (await Promise.all([
+      findAll(SHEET),
+      findAll("Purchase_Order_Lines"),
+      findAll("Stock_Issues"),
+      findAll("UOM_Conversions"),
+      findAll("assets"),
+    ])) as [DBPurchasedItem[], { purchased_item_id?: string }[], { purchased_item_id?: string }[], { purchased_item_id?: string }[], { purchased_item_id?: string }[]];
+    const item = items.find((i) => i.id === id);
+    if (!item) return fail("Không tìm thấy hàng hoá.");
+    const countOf = (rows: { purchased_item_id?: string }[]) => rows.filter((r) => r.purchased_item_id === id).length;
+    const uses: Array<[number, string]> = [
+      [countOf(poLines), "dòng phiếu nhập"],
+      [countOf(stockIssues), "lần xuất kho"],
+      [countOf(conversions), "quy đổi"],
+      [countOf(assets), "tài sản"],
+    ];
+    const parts = uses.filter(([n]) => n > 0).map(([n, label]) => `${formatNumber(n)} ${label}`);
+    if (parts.length > 0) {
+      return fail(`Không xoá được ${item.name}: đã có ${parts.join(", ")}.`);
+    }
+
     await remove(SHEET, id);
     revalidateTag(getCacheTag("Purchased_Items"));
     revalidatePath(PATH);

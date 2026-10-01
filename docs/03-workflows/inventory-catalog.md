@@ -7,6 +7,13 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002
 ```
 
+**Behaviour change — 2026-10-02:** `deletePurchasedItemAction` counts the item's
+purchase lines, stock issues, conversions and assets first and refuses in Vietnamese
+naming them ("Không xoá được Sữa tươi Mlekovita: đã có 5 dòng phiếu nhập, 35 lần xuất
+kho, 1 quy đổi."); before, every live item hit the foreign key and showed a generic
+error. `deleteItemCategory` refuses with the count of items in the category instead of
+the raw database message. `deleteConversionAction` returns `deactivated: true` when it
+only switches a conversion used in a purchase order to `INACTIVE`.
 **Behaviour change — 2026-09-28:** `deleteUnit`'s in-use check no longer queries
 `Base_Ingredients`, a table dropped by migration `0090` on 2026-09-01. Since then,
 deleting a unit that no conversion or purchased item uses failed with a
