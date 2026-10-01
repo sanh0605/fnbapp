@@ -20,7 +20,7 @@ import { networkInterfaces } from "node:os";
 import { spawn } from "node:child_process";
 import { lanAddresses } from "./lan-address";
 
-const port = process.env.PORT || "3000";
+const port = process.env.PORT || "8386";
 const addresses = lanAddresses(networkInterfaces());
 
 console.log("");
