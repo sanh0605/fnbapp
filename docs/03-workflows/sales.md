@@ -1,7 +1,7 @@
 # Sales flow (POS, orders, promotions)
 
 ```flow-decl
-routes: /pos, /admin/orders, /admin/promotions, /admin/promotions/new, /admin/promotions/[id]/edit
+routes: /pos, /admin/orders, /admin/orders/[id], /admin/orders/[id]/edit, /admin/promotions, /admin/promotions/new, /admin/promotions/[id]/edit
 files: app/pos/actions.ts, lib/sales/void-order-transaction.ts, app/admin/promotions/actions.ts
 tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006

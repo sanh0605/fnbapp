@@ -4,14 +4,11 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
-import { voidOrderV2 } from "./actions";
-import OrderDetailModal from "./OrderDetailModal";
-import OrderEditModal from "./OrderEditModal";
+import { VoidOrderButton } from "./components/VoidOrderButton";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { AlertCircle, X } from "lucide-react";
 
 import type { OrderListItem } from "./actions";
 
@@ -81,9 +78,6 @@ export default function OrderTable({
     return `${y}-${m}-${d}`;
   };
 
-  const [orderToVoid, setOrderToVoid] = useState<Order | null>(null);
-  const [voidReason, setVoidReason] = useState("");
-  const [voidError, setVoidError] = useState<string | null>(null);
   // Wraps the URL sync below so isPendingFilter can show a loading
   // indicator -- Next's loading.tsx does not fire for a same-route
   // searchParams-only change, so without this there is no visible feedback
@@ -111,8 +105,8 @@ export default function OrderTable({
     return searchParams.get("brand") || "";
   });
 
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const currentUrl = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
+  const returnTo = encodeURIComponent(currentUrl);
 
   // Sync URL changes back to local states (handles back/forward navigation)
   useEffect(() => {
@@ -210,32 +204,6 @@ export default function OrderTable({
   const ITEMS_PER_PAGE = itemsPerPage;
   const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
   const currentOrders = orders;
-
-  const confirmVoid = async () => {
-    setVoidError(null);
-    if (!orderToVoid || !voidReason.trim()) return;
-    const orderId = orderToVoid.id;
-    const reasonToSend = voidReason;
-    
-    const res = await voidOrderV2(orderId, reasonToSend);
-    if (!res.success) {
-      setVoidError("Lỗi hủy đơn: " + res.error);
-      return;
-    }
-    // Update local state immediately; no page reload needed.
-    setOrderToVoid(null);
-    setVoidReason("");
-    setOrders(prev =>
-      prev.map(o => o.id === orderId ? { ...o, status: "VOIDED" } : o)
-    );
-  };
-
-  const handleEditSave = () => {
-    setEditingOrder(null);
-    setSelectedOrder(null);
-    // Soft refresh to get updated data from server (edit creates a new row)
-    router.refresh();
-  };
 
   const clearFilters = () => {
     handleFilterChange({
@@ -367,7 +335,7 @@ export default function OrderTable({
                   <tr
                     key={order.id}
                     className={`hover:bg-page transition-colors cursor-pointer`}
-                    onClick={() => setSelectedOrder(order)}
+                    onClick={() => router.push(`/admin/orders/${encodeURIComponent(order.id)}?returnTo=${returnTo}`)}
                   >
                     <td className="px-6 py-4 font-bold text-text-primary">
                       {order.display_order_no || order.order_no}
@@ -405,15 +373,16 @@ export default function OrderTable({
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="!text-danger hover:!bg-danger/10"
-                        onClick={(e) => { e.stopPropagation(); setOrderToVoid(order); }}
+                      <VoidOrderButton
+                        orderId={order.id}
+                        orderNo={order.display_order_no || order.order_no}
                         disabled={order.status !== "COMPLETED"}
-                      >
-                        Hủy đơn
-                      </Button>
+                        onVoided={() => {
+                          setOrders((prev) =>
+                            prev.map((o) => (o.id === order.id ? { ...o, status: "VOIDED" } : o))
+                          );
+                        }}
+                      />
                     </td>
                   </tr>
                 ))
@@ -434,7 +403,7 @@ export default function OrderTable({
             <div
               key={order.id}
               className="bg-surface-card rounded-card border border-border p-4 shadow-sm space-y-3 active:bg-page transition-colors cursor-pointer"
-              onClick={() => setSelectedOrder(order)}
+              onClick={() => router.push(`/admin/orders/${encodeURIComponent(order.id)}?returnTo=${returnTo}`)}
             >
               <div className="flex justify-between items-start">
                 <div>
@@ -478,15 +447,16 @@ export default function OrderTable({
               </div>
 
               <div className="flex justify-end pt-2 border-t border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="!text-danger hover:!bg-danger/10"
-                  onClick={(e) => { e.stopPropagation(); setOrderToVoid(order); }}
+                <VoidOrderButton
+                  orderId={order.id}
+                  orderNo={order.display_order_no || order.order_no}
                   disabled={order.status !== "COMPLETED"}
-                >
-                  Hủy đơn
-                </Button>
+                  onVoided={() => {
+                    setOrders((prev) =>
+                      prev.map((o) => (o.id === order.id ? { ...o, status: "VOIDED" } : o))
+                    );
+                  }}
+                />
               </div>
             </div>
           ))
@@ -523,81 +493,6 @@ export default function OrderTable({
         </div>
       )}
 
-      {/* Void Confirmation Modal */}
-      {orderToVoid && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface-card w-full max-w-sm rounded-card shadow-xl flex flex-col overflow-hidden">
-            <div className="p-5 border-b border-border bg-danger/10 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-danger/20 text-danger flex items-center justify-center shrink-0"><AlertCircle className="w-5 h-5"/></div>
-              <div>
-                <h3 className="font-bold text-danger">Hủy đơn hàng</h3>
-                <p className="text-sm text-danger font-medium">{orderToVoid.display_order_no}</p>
-              </div>
-            </div>
-            <div className="p-5 space-y-3">
-              <p className="text-text-secondary text-sm">
-                Đơn sẽ chuyển sang trạng thái VOIDED. Nguyên liệu sẽ được hoàn trả vào kho. Lịch sử đơn được giữ nguyên.
-              </p>
-              {voidError && (
-                <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/30 flex justify-between">
-                  <span>{voidError}</span>
-                  <button onClick={() => setVoidError(null)} className="ml-2 text-danger hover:opacity-80" aria-label="Đóng"><X className="w-4 h-4"/></button>
-                </div>
-              )}
-              <textarea
-                aria-label="Lý do hủy đơn"
-                placeholder="Lý do hủy đơn (bắt buộc)"
-                value={voidReason}
-                onChange={(e) => setVoidReason(e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
-              />
-            </div>
-            <div className="p-4 border-t border-border bg-page flex gap-3">
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => { setOrderToVoid(null); setVoidReason(""); setVoidError(null); }}
-              >
-                Hủy bỏ
-              </Button>
-              <Button
-                variant="primary"
-                className="flex-1 !bg-danger hover:!bg-danger/90"
-                onClick={confirmVoid}
-                disabled={!voidReason.trim()}
-              >
-                Đồng ý hủy
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Order Detail Modal */}
-      {selectedOrder && !editingOrder && (
-        <OrderDetailModal
-          order={selectedOrder}
-          brands={brands}
-          onClose={() => setSelectedOrder(null)}
-          onEdit={(freshOrder) => setEditingOrder(freshOrder)}
-          onVoid={() => { setOrderToVoid(selectedOrder); setSelectedOrder(null); }}
-        />
-      )}
-
-      {/* Order Edit Modal */}
-      {editingOrder && (
-        <OrderEditModal
-          order={editingOrder}
-          brands={brands}
-          products={products}
-          variants={variants}
-          modifiers={modifiers}
-          categories={categories}
-          onClose={() => setEditingOrder(null)}
-          onSave={handleEditSave}
-        />
-      )}
     </div>
   );
 }
