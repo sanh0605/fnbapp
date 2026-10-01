@@ -221,4 +221,30 @@ describe("IssueSlipDetailClient", () => {
     // The slip has one line, so the line cell and the live total both read 36.803đ.
     expect(within(table).getAllByText("36.803đ")).toHaveLength(2);
   });
+
+  describe("Reason (note) display rules (BR-INV-014)", () => {
+    it("renders 'Lý do: Khác' when note is 'Khác'", () => {
+      const detailWithNote = { ...defaultDetail, note: "Khác" };
+      render(<IssueSlipDetailClient detail={detailWithNote} items={mockItems} />);
+      expect(screen.getByText("Lý do:", { exact: false })).toHaveTextContent("Lý do: Khác");
+    });
+
+    it("does not render 'Lý do:' at all when note is empty", () => {
+      const detailEmptyNote = { ...defaultDetail, note: "" };
+      render(<IssueSlipDetailClient detail={detailEmptyNote} items={mockItems} />);
+      expect(screen.queryByText(/Lý do:/)).not.toBeInTheDocument();
+    });
+
+    it("still renders 'Lý do huỷ:' when cancelled", () => {
+      const detailCancelled = {
+        ...defaultDetail,
+        note: "",
+        cancellation: { at: "2026-09-29T10:00:00Z", dateText: "29/09/2026 17:00", reason: "Sai số lượng" },
+        canEdit: false,
+      };
+      render(<IssueSlipDetailClient detail={detailCancelled} items={mockItems} />);
+      expect(screen.getByText(/Lý do huỷ:/)).toBeInTheDocument();
+      expect(screen.getByText(/Sai số lượng/)).toBeInTheDocument();
+    });
+  });
 });

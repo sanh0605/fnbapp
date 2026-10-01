@@ -300,7 +300,9 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
           <div className="flex gap-6 text-sm text-text-secondary">
             <span>Ngày xuất: <b className="text-text-primary">{detail.dateText}</b></span>
             <span>Người ghi: <b className="text-text-primary">{detail.createdByName}</b></span>
-            <span>Lý do: <b className="text-text-primary">{detail.note?.trim() || "—"}</b></span>
+            {detail.note?.trim() ? (
+              <span>Lý do: <b className="text-text-primary">{detail.note.trim()}</b></span>
+            ) : null}
           </div>
           {detail.cancellation && detail.cancellation.reason && (
             <div className="text-sm text-text-secondary">

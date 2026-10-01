@@ -163,3 +163,41 @@ describe("computeIssuedMonthFigures: the G5 sum gate", () => {
     expect(sumOfMonthValuesExact).toBeCloseTo(grandTotalExact, 6);
   });
 });
+
+// BR-INV-014 (2026-10-01): an issue slip carries no note, so its card is
+// titled by the items on it, not by the note.
+describe("computeIssuedEventFigures: labels", () => {
+  const purchases: Purchase[] = [
+    { purchased_item_id: "A", at: "2026-01-01T00:00:00Z", base_quantity: 100, subtotal: 1000 },
+    { purchased_item_id: "B", at: "2026-01-01T00:00:00Z", base_quantity: 100, subtotal: 1000 },
+    { purchased_item_id: "C", at: "2026-01-01T00:00:00Z", base_quantity: 100, subtotal: 1000 },
+    { purchased_item_id: "D", at: "2026-01-01T00:00:00Z", base_quantity: 100, subtotal: 1000 },
+  ];
+  const names = new Map([["A", "Sữa tươi Mlekovita"], ["B", "Trứng gà"], ["C", "Đường"], ["D", "Cà phê"]]);
+  const row = (id: string, item: string, slip: string, note = "") =>
+    ({ id, purchased_item_id: item, issued_at: "2026-01-02T00:00:00Z", base_quantity: 1, source: "MANUAL", issue_slip_id: slip, note });
+
+  it("one item: its name; ignores any leftover note", () => {
+    const [f] = computeIssuedEventFigures([row("1", "A", "S1", "Khác")], purchases, names);
+    expect(f.label).toBe("Sữa tươi Mlekovita");
+  });
+
+  it("two items in line order, duplicates merged", () => {
+    const rows = [row("1", "B", "S1"), row("2", "A", "S1"), row("3", "B", "S1")];
+    const [f] = computeIssuedEventFigures(rows, purchases, names);
+    expect(f.label).toBe("Trứng gà, Sữa tươi Mlekovita");
+  });
+
+  it("more than two distinct items: first two names then 'và N mặt hàng khác'", () => {
+    const rows = [row("1", "A", "S1"), row("2", "B", "S1"), row("3", "C", "S1"), row("4", "D", "S1")];
+    const [f] = computeIssuedEventFigures(rows, purchases, names);
+    expect(f.label).toBe("Sữa tươi Mlekovita, Trứng gà và 2 mặt hàng khác");
+  });
+
+  it("never reads 'Không có ghi chú'; stocktake label unchanged", () => {
+    const rows = [row("1", "A", "S1"), { ...row("2", "A", "x"), source: "STOCKTAKE", session_id: "SES" }];
+    const figures = computeIssuedEventFigures(rows, purchases, names);
+    expect(figures.map(f => f.label).sort()).toEqual(["Kiểm kê định kỳ", "Sữa tươi Mlekovita"]);
+    expect(figures.some(f => f.label.includes("Không có ghi chú"))).toBe(false);
+  });
+});

@@ -101,7 +101,7 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
   // unfiltered stockIssues here, so an equipment or bought-for-immediate-use
   // issue slip would still show up in the by-event list even though it is
   // excluded everywhere else on this page.
-  const eventFigures = computeIssuedEventFigures(costedIssues, purchases);
+  const eventFigures = computeIssuedEventFigures(costedIssues, purchases, nameById);
   const events: IssuedEventRow[] = eventFigures.map(f => ({
     key: f.key,
     kind: f.kind,

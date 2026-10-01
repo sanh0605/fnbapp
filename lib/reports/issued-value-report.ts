@@ -28,6 +28,19 @@ export function computeIssuedItemFigures(purchases: Purchase[], allIssues: Issue
   }));
 }
 
+// Up to two distinct item names in line order, then " và N mặt hàng khác".
+// An item with no known name is skipped rather than shown as a code.
+function slipLabel(rows: any[], itemNameById: ReadonlyMap<string, string>): string {
+  const names: string[] = [];
+  for (const r of rows) {
+    const name = itemNameById.get(r.purchased_item_id);
+    if (name && !names.includes(name)) names.push(name);
+  }
+  if (names.length === 0) return "Phiếu xuất";
+  const head = names.slice(0, 2).join(", ");
+  return names.length > 2 ? `${head} và ${names.length - 2} mặt hàng khác` : head;
+}
+
 export type IssuedEventFigure = {
   key: string;
   kind: "STOCKTAKE" | "MANUAL";
@@ -65,7 +78,11 @@ export type IssuedEventFigure = {
 // total exactly (a telescoping sum) -- rounding each one independently for
 // display, as the page does, does not preserve that; see
 // lib/reports/display-rounding.ts.
-export function computeIssuedEventFigures(stockIssues: any[], purchases: Purchase[]): IssuedEventFigure[] {
+export function computeIssuedEventFigures(
+  stockIssues: any[],
+  purchases: Purchase[],
+  itemNameById: ReadonlyMap<string, string> = new Map(),
+): IssuedEventFigure[] {
   type Group = {
     key: string;
     kind: "STOCKTAKE" | "MANUAL";
@@ -93,7 +110,9 @@ export function computeIssuedEventFigures(stockIssues: any[], purchases: Purchas
         // CLAUDE.md "Nói chuyện với chủ quán": never read a code to the owner. The date is
         // already on the card, so the session id adds nothing a person
         // reading the card needs.
-        label: isStocktake ? "Kiểm kê định kỳ" : (row.note?.trim() || "Không có ghi chú"),
+        // BR-INV-014: a slip has no note; its card is titled by its items,
+        // filled in below once every row of the group is known.
+        label: isStocktake ? "Kiểm kê định kỳ" : "",
         at: atMs,
         rows: [],
       };
@@ -101,6 +120,10 @@ export function computeIssuedEventFigures(stockIssues: any[], purchases: Purchas
     }
     group.rows.push(row);
     group.at = Math.min(group.at, atMs);
+  }
+
+  for (const group of groups.values()) {
+    if (group.kind === "MANUAL") group.label = slipLabel(group.rows, itemNameById);
   }
 
   const orderedGroups = [...groups.values()].sort((a, b) => a.at - b.at);

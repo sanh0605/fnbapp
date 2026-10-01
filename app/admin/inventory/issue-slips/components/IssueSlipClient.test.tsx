@@ -470,8 +470,8 @@ describe("IssueSlipClient -- sends every line in ONE RPC call, not one per item 
   });
 });
 
-describe("IssueSlipClient -- shares one time field and one reason across the whole slip (D9)", () => {
-  it("stays at exactly one datetime-local input and one reason select as lines are added", async () => {
+describe("IssueSlipClient -- shares one time field across the whole slip (D9)", () => {
+  it("stays at exactly one datetime-local input and zero reason selects as lines are added", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await clickButtonWithText(container, "+ Thêm mặt hàng");
     await clickButtonWithText(container, "+ Thêm mặt hàng");
@@ -480,7 +480,30 @@ describe("IssueSlipClient -- shares one time field and one reason across the who
     expect(container.textContent).toContain("áp dụng cho cả phiếu");
     const allSelects = Array.from(container.querySelectorAll("select"));
     const lineBlockSelects = getLineBlocks(container).flatMap(b => Array.from(b.querySelectorAll("select")));
-    expect(allSelects.length - lineBlockSelects.length).toBe(1);
+    expect(allSelects.length - lineBlockSelects.length).toBe(0);
+  });
+});
+
+describe("IssueSlipClient -- removes Lý do and Chi tiết fields", () => {
+  it("does not render Lý do or Chi tiết texts", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    expect(container.textContent).not.toContain("Lý do");
+    expect(container.textContent).not.toContain("Chi tiết (không bắt buộc)");
+  });
+
+  it("submits the RPC with note: ''", async () => {
+    mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const block = getLineBlocks(container)[0];
+
+    await selectItemInBlock(block, "Sữa tươi Vinamilk");
+    await selectPackage(block, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(block), "3");
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+
+    expect(mocks.createIssueSlip).toHaveBeenCalledTimes(1);
+    const call = mocks.createIssueSlip.mock.calls[0][0];
+    expect(call.note).toBe("");
   });
 });
 
@@ -522,21 +545,11 @@ describe("IssueSlipClient -- per-line validation names which line is wrong, befo
   });
 });
 
-describe("IssueSlipClient -- Số lượng field sizing and Chi tiết input shape (D10)", () => {
+describe("IssueSlipClient -- Số lượng field sizing (D10)", () => {
   it("the Số lượng field carries the compact w-24 width class (class presence, not measured width)", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const qtyInput = findQtyInput(getLineBlocks(container)[0]);
     expect(qtyInput.closest(".w-24")).toBeTruthy();
-  });
-
-  it("Chi tiết is a single-line text input, not a multi-row textarea", async () => {
-    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
-    expect(container.querySelector("textarea")).toBeNull();
-    const detailInput = container.querySelector(
-      'input[placeholder="Ví dụ: rơi vỡ khi vận chuyển..."]',
-    ) as HTMLInputElement | null;
-    expect(detailInput).toBeTruthy();
-    expect(detailInput?.type).toBe("text");
   });
 });
 
