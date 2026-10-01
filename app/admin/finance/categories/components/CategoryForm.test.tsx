@@ -1,15 +1,23 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import { CategoryForm, shouldConfirmAffectsPnlChange } from "./CategoryForm";
+import { CategoriesList } from "./CategoriesList";
 import type { DBCashCategory } from "@/types/db";
 
+const { push, refresh } = vi.hoisted(() => ({
+  push: vi.fn(),
+  refresh: vi.fn(),
+}));
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: vi.fn() }),
+  useRouter: () => ({ push, refresh }),
 }));
 vi.mock("../actions", () => ({
   addCashCategory: vi.fn().mockResolvedValue({}),
   updateCashCategory: vi.fn().mockResolvedValue({}),
+  setCashCategoryStatus: vi.fn(),
+  deleteCashCategory: vi.fn(),
 }));
 vi.mock("@/lib/shared/dialog", () => ({
   confirm: vi.fn(),
@@ -18,6 +26,11 @@ vi.mock("@/lib/shared/dialog", () => ({
 
 afterEach(() => {
   cleanup();
+});
+
+beforeEach(() => {
+  push.mockClear();
+  refresh.mockClear();
   vi.clearAllMocks();
 });
 
@@ -29,13 +42,25 @@ const CATEGORY: DBCashCategory = {
   status: "ACTIVE",
 } as DBCashCategory;
 
+describe("CategoryForm on-page behaviour", () => {
+  it("renders the fields on the page without opening a dialog", () => {
+    render(<CategoryForm returnTo="/admin/finance/categories" />);
+    expect(screen.getByLabelText("Tên nhóm")).toBeInTheDocument();
+  });
+
+  it("Bỏ navigates to returnTo without saving", () => {
+    render(<CategoryForm returnTo="/admin/finance/categories" />);
+    fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
+    expect(push).toHaveBeenCalledWith("/admin/finance/categories");
+  });
+});
+
 // I3 -- owner decision 2026-09-11 ("Khoá, tạo nhóm mới"): a category that
 // already has entries can no longer change its Thu/Chi side; the select
 // must show as locked, not just be blocked server-side with no explanation.
 describe("CategoryForm kind lock (I3)", () => {
   it("leaves the Thu/Chi select enabled when the category has no entries", () => {
     render(<CategoryForm category={CATEGORY} hasEntries={false} />);
-    fireEvent.click(screen.getByText("Sửa"));
 
     const select = document.querySelector('select[name="kind"]') as HTMLSelectElement;
     expect(select.disabled).toBe(false);
@@ -44,7 +69,6 @@ describe("CategoryForm kind lock (I3)", () => {
 
   it("disables the Thu/Chi select and shows the hint when the category has entries", () => {
     render(<CategoryForm category={CATEGORY} hasEntries={true} />);
-    fireEvent.click(screen.getByText("Sửa"));
 
     const select = document.querySelector('select[disabled]') as HTMLSelectElement | null;
     expect(select).not.toBeNull();
@@ -53,7 +77,6 @@ describe("CategoryForm kind lock (I3)", () => {
 
   it("carries the category's real kind via a hidden input when locked, so the value still reaches the server", () => {
     render(<CategoryForm category={CATEGORY} hasEntries={true} />);
-    fireEvent.click(screen.getByText("Sửa"));
 
     const hidden = document.querySelector('input[type="hidden"][name="kind"]') as HTMLInputElement;
     expect(hidden.value).toBe("EXPENSE");
@@ -65,7 +88,6 @@ describe("CategoryForm kind lock (I3)", () => {
 
   it("defaults to unlocked (no hasEntries prop) for a brand-new add form", () => {
     render(<CategoryForm />);
-    fireEvent.click(screen.getByText("+ Thêm nhóm"));
 
     const select = document.querySelector('select[name="kind"]') as HTMLSelectElement;
     expect(select.disabled).toBe(false);
@@ -112,7 +134,6 @@ const MANUAL_REVENUE: DBCashCategory = {
 describe("CategoryForm sales-revenue box (BR-CASH-006)", () => {
   function open(ui: React.ReactElement) {
     render(ui);
-    fireEvent.click(screen.getByRole("button", { name: /Sửa|Thêm nhóm/ }));
   }
 
   it("shows the box, ticked, on an income category already marked", () => {
@@ -138,5 +159,19 @@ describe("CategoryForm sales-revenue box (BR-CASH-006)", () => {
     expect(screen.queryByLabelText("Tính là doanh thu bán hàng")).toBeNull();
     fireEvent.click(screen.getByLabelText("Tính vào lãi lỗ"));
     expect((screen.getByLabelText("Tính là doanh thu bán hàng") as HTMLInputElement).checked).toBe(false);
+  });
+});
+
+describe("CategoriesList edit link", () => {
+  it("renders edit link for CFC-001", () => {
+    render(
+      <CategoriesList
+        categories={[CATEGORY]}
+        canDelete={false}
+        usedCategoryIds={[]}
+      />
+    );
+    const editLinks = screen.getAllByRole("link", { name: "Sửa" });
+    expect(editLinks[0]).toHaveAttribute("href", "/admin/finance/categories/CFC-001/edit");
   });
 });

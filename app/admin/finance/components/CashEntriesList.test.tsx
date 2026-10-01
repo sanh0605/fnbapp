@@ -29,7 +29,7 @@ const entries = [
     created_by_name: "Sanh" },
 ] as DBCashEntry[];
 
-const props = { entries, categories, accounts: [], canDelete: false };
+const props = { entries, categories, accounts: [], canDelete: false, returnTo: "/admin/finance" };
 
 describe("CashEntriesList", () => {
   it("shows a cancelled row rather than hiding it", () => {
@@ -82,6 +82,19 @@ describe("CashEntriesList", () => {
     expect(outside).toHaveTextContent("5.000.000");
     expect(screen.getByTestId("total-income").contains(outside)).toBe(true);
   });
+
+  it("links live entry CE-001 to its edit page with returnTo, and omits edit link on cancelled entry CE-002", () => {
+    render(<CashEntriesList {...props} returnTo="/admin/finance?preset=LAST_MONTH" />);
+    const links = screen.getAllByRole("link", { name: "Sửa" });
+    const expectedHref =
+      "/admin/finance/CE-001/edit?returnTo=" +
+      encodeURIComponent("/admin/finance?preset=LAST_MONTH");
+    expect(links.some((l) => l.getAttribute("href") === expectedHref)).toBe(true);
+
+    expect(
+      links.some((l) => l.getAttribute("href")?.includes("/admin/finance/CE-002/edit"))
+    ).toBe(false);
+  });
 });
 
 // M2 (final-review.md): entries were listed in id order, not date order, so
@@ -100,7 +113,7 @@ describe("CashEntriesList sort order", () => {
   ] as DBCashEntry[];
 
   it("lists rows newest entry_date first, then id descending within the same date, on the desktop table", () => {
-    render(<CashEntriesList entries={unsorted} categories={categories} accounts={[]} canDelete={false} />);
+    render(<CashEntriesList entries={unsorted} categories={categories} accounts={[]} canDelete={false} returnTo="/admin/finance" />);
     const table = within(screen.getByRole("table"));
     const amounts = table.getAllByText(/^\d[\d.]*đ$/).map((el) => el.textContent);
     // Same entry_date (2026-09-03) for CE-060 and CE-030 -- id descending
@@ -109,7 +122,7 @@ describe("CashEntriesList sort order", () => {
   });
 
   it("lists rows in the same order on the phone cards", () => {
-    render(<CashEntriesList entries={unsorted} categories={categories} accounts={[]} canDelete={false} />);
+    render(<CashEntriesList entries={unsorted} categories={categories} accounts={[]} canDelete={false} returnTo="/admin/finance" />);
     const phone = within(screen.getByTestId("cash-entries-phone"));
     const amounts = phone.getAllByText(/^\d[\d.]*đ$/).map((el) => el.textContent);
     // Same entry_date (2026-09-03) for CE-060 and CE-030 -- id descending
@@ -138,7 +151,7 @@ describe("CashEntriesList by-category breakdown", () => {
         payment_method: "CASH", bank_account_id: null, note: null, status: "ACTIVE",
         created_by_name: "Sanh" } as DBCashEntry,
     ];
-    render(<CashEntriesList entries={withUnknown} categories={categories} accounts={[]} canDelete={false} />);
+    render(<CashEntriesList entries={withUnknown} categories={categories} accounts={[]} canDelete={false} returnTo="/admin/finance" />);
     expect(screen.getByTestId("by-category")).toHaveTextContent(
       "Có dòng thuộc nhóm không còn trong danh sách",
     );

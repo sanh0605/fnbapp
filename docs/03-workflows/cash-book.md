@@ -1,7 +1,7 @@
 # Cash book flow (sổ thu chi)
 
 ```flow-decl
-routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance
+routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance, /admin/finance/new, /admin/finance/[id]/edit, /admin/finance/categories/new, /admin/finance/categories/[id]/edit, /admin/finance/bank-accounts/new, /admin/finance/bank-accounts/[id]/edit
 files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts
 tables: Cash_Categories, Bank_Accounts, Cash_Entries
 brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006

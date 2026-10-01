@@ -29,6 +29,18 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the suppliers list -- legitimately unlinked",
   },
   {
+    route: "/admin/finance/new",
+    reason: "reached from the finance list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/finance/categories/new",
+    reason: "reached from the categories list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/finance/bank-accounts/new",
+    reason: "reached from the bank-accounts list -- legitimately unlinked",
+  },
+  {
     route: "/admin/pos-sync",
     reason:
       "reached from the Tổng quan page (app/admin/page.tsx links it)",

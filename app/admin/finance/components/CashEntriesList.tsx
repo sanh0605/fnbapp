@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CashEntryForm } from "./CashEntryForm";
+import Link from "next/link";
 import { cancelCashEntry, deleteCashEntry } from "../actions";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -18,6 +18,7 @@ interface CashEntriesListProps {
   accounts: DBBankAccount[];
   // ADMIN only (BR-ACCESS-003) -- everyone else may add, edit and cancel.
   canDelete: boolean;
+  returnTo: string;
 }
 
 const STATUS_LABEL: Record<DBCashEntry["status"], string> = {
@@ -59,7 +60,7 @@ function StatusBadge({ status }: { status: DBCashEntry["status"] }) {
 
 // Extracted out of page.tsx so it is directly render-testable -- same
 // reason as app/admin/finance/categories/components/CategoriesList.tsx.
-export function CashEntriesList({ entries, categories, accounts, canDelete }: CashEntriesListProps) {
+export function CashEntriesList({ entries, categories, accounts, canDelete, returnTo }: CashEntriesListProps) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DBCashEntry | null>(null);
@@ -203,7 +204,12 @@ export function CashEntriesList({ entries, categories, accounts, canDelete }: Ca
                       <td className="px-4 py-3">
                         <div className="flex justify-end items-center gap-4">
                           {!isCancelled && (
-                            <CashEntryForm entry={entry} categories={categories} accounts={accounts} />
+                            <Link
+                              href={`/admin/finance/${encodeURIComponent(entry.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`}
+                              className="text-primary hover:text-primary-hover font-medium text-sm"
+                            >
+                              Sửa
+                            </Link>
                           )}
                           {!isCancelled && (
                             <button
@@ -281,7 +287,12 @@ export function CashEntriesList({ entries, categories, accounts, canDelete }: Ca
                   <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
                     {!isCancelled && (
                       <div className="flex items-center min-h-[44px]">
-                        <CashEntryForm entry={entry} categories={categories} accounts={accounts} />
+                        <Link
+                          href={`/admin/finance/${encodeURIComponent(entry.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`}
+                          className="text-primary hover:text-primary-hover font-medium text-sm inline-flex items-center"
+                        >
+                          Sửa
+                        </Link>
                       </div>
                     )}
                     {!isCancelled && (

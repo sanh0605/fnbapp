@@ -3,19 +3,15 @@
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addCashCategory, updateCashCategory } from "../actions";
-import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { confirm } from "@/lib/shared/dialog";
+import { safeReturnTo } from "../../components/return-to";
 import type { DBCashCategory } from "@/types/db";
 
 interface CategoryFormProps {
-  // Present -> edit this category. Absent -> add a new one. Same fields,
-  // same modal, same shape as app/admin/outlets/components/OutletForm.tsx.
   category?: DBCashCategory;
-  // I3 -- computed server-side (categories/page.tsx): true when any
-  // Cash_Entries row (any status) already references this category. Locks
-  // the Thu/Chi select; affects_pnl stays editable behind a confirm step.
   hasEntries?: boolean;
+  returnTo?: string;
 }
 
 const AFFECTS_PNL_CHANGE_WARNING =
@@ -35,13 +31,13 @@ export function shouldConfirmAffectsPnlChange(
   return isKindLocked && previousAffectsPnl !== nextAffectsPnl;
 }
 
-export function CategoryForm({ category, hasEntries }: CategoryFormProps) {
+export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: CategoryFormProps) {
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/finance/categories");
   const isEdit = !!category;
   const isKindLocked = isEdit && !!hasEntries;
   const formId = useId();
   const router = useRouter();
 
-  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [affectsPnl, setAffectsPnl] = useState(category ? category.affects_pnl : true);
@@ -52,12 +48,9 @@ export function CategoryForm({ category, hasEntries }: CategoryFormProps) {
   // condition goes away, so a hidden box can never submit "on".
   const canBeSalesRevenue = kind === "INCOME" && affectsPnl;
 
-  function handleClose() {
-    setIsOpen(false);
-    setError(null);
-  }
-
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setError(null);
 
     if (category) {
@@ -84,129 +77,111 @@ export function CategoryForm({ category, hasEntries }: CategoryFormProps) {
       setError(result.error);
       return;
     }
-    setIsOpen(false);
+    router.push(returnTo);
     router.refresh();
   }
 
   return (
-    <>
-      {isEdit ? (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="text-primary hover:text-primary-hover font-medium text-sm"
-        >
-          Sửa
-        </button>
-      ) : (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition"
-        >
-          + Thêm nhóm
-        </button>
-      )}
-
-      <FormModal
-        isOpen={isOpen}
-        onClose={handleClose}
-        title={isEdit ? "Sửa nhóm thu chi" : "Thêm nhóm thu chi"}
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium"
-            >
-              Huỷ
-            </button>
-            <LoadingButton type="submit" form={formId} loading={loading} loadingText="Đang lưu…">
-              {isEdit ? "Cập nhật" : "Lưu nhóm"}
-            </LoadingButton>
-          </>
-        }
-      >
-        <form id={formId} action={handleSubmit} className="space-y-4">
-          {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
-              Tên nhóm
-            </label>
-            <input
-              id={`${formId}-name`}
-              type="text"
-              name="name"
-              required
-              defaultValue={category?.name}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-              placeholder="VD: Vận hành"
-            />
+    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+            {error}
           </div>
+        )}
 
-          <div>
-            <label htmlFor={`${formId}-kind`} className="block text-sm font-medium text-text-secondary mb-1">
-              Bên
-            </label>
-            <select
-              id={`${formId}-kind`}
-              name={isKindLocked ? undefined : "kind"}
-              disabled={isKindLocked}
-              value={kind}
-              onChange={(e) => {
-                const next = e.target.value as "EXPENSE" | "INCOME";
-                setKind(next);
-                if (next !== "INCOME") setIsSalesRevenue(false);
-              }}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary disabled:opacity-60"
-            >
-              <option value="EXPENSE">Chi</option>
-              <option value="INCOME">Thu</option>
-            </select>
-            {isKindLocked && (
-              <>
-                <input type="hidden" name="kind" value={category!.kind} />
-                <p className="mt-1 text-xs text-text-muted">Đã có dòng sổ — không đổi được bên</p>
-              </>
-            )}
-          </div>
-
-          <label className="flex items-center gap-2 text-sm text-text-primary">
-            <input
-              type="checkbox"
-              name="affects_pnl"
-              checked={affectsPnl}
-              onChange={(e) => {
-                setAffectsPnl(e.target.checked);
-                if (!e.target.checked) setIsSalesRevenue(false);
-              }}
-              className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
-            />
-            Tính vào lãi lỗ
+        <div>
+          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
+            Tên nhóm
           </label>
+          <input
+            id={`${formId}-name`}
+            type="text"
+            name="name"
+            required
+            defaultValue={category?.name}
+            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+            placeholder="VD: Vận hành"
+          />
+        </div>
 
-          {canBeSalesRevenue && (
-            <div>
-              <label className="flex items-center gap-2 text-sm text-text-primary">
-                <input
-                  type="checkbox"
-                  name="is_sales_revenue"
-                  checked={isSalesRevenue}
-                  onChange={(e) => setIsSalesRevenue(e.target.checked)}
-                  className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
-                />
-                Tính là doanh thu bán hàng
-              </label>
-              <p className="mt-1 text-xs text-text-muted">
-                Đánh dấu khi tiền của nhóm này là tiền bán hàng ghi tay. Trang Báo cáo tài chính cộng vào dòng Doanh thu thay vì Thu khác.
-              </p>
-            </div>
+        <div>
+          <label htmlFor={`${formId}-kind`} className="block text-sm font-medium text-text-secondary mb-1">
+            Bên
+          </label>
+          <select
+            id={`${formId}-kind`}
+            name={isKindLocked ? undefined : "kind"}
+            disabled={isKindLocked}
+            value={kind}
+            onChange={(e) => {
+              const next = e.target.value as "EXPENSE" | "INCOME";
+              setKind(next);
+              if (next !== "INCOME") setIsSalesRevenue(false);
+            }}
+            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary disabled:opacity-60"
+          >
+            <option value="EXPENSE">Chi</option>
+            <option value="INCOME">Thu</option>
+          </select>
+          {isKindLocked && (
+            <>
+              <input type="hidden" name="kind" value={category!.kind} />
+              <p className="mt-1 text-xs text-text-muted">Đã có dòng sổ — không đổi được bên</p>
+            </>
           )}
-        </form>
-      </FormModal>
-    </>
+        </div>
+
+        <label className="flex items-center gap-2 text-sm text-text-primary">
+          <input
+            type="checkbox"
+            name="affects_pnl"
+            checked={affectsPnl}
+            onChange={(e) => {
+              setAffectsPnl(e.target.checked);
+              if (!e.target.checked) setIsSalesRevenue(false);
+            }}
+            className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
+          />
+          Tính vào lãi lỗ
+        </label>
+
+        {canBeSalesRevenue && (
+          <div>
+            <label className="flex items-center gap-2 text-sm text-text-primary">
+              <input
+                type="checkbox"
+                name="is_sales_revenue"
+                checked={isSalesRevenue}
+                onChange={(e) => setIsSalesRevenue(e.target.checked)}
+                className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
+              />
+              Tính là doanh thu bán hàng
+            </label>
+            <p className="mt-1 text-xs text-text-muted">
+              Đánh dấu khi tiền của nhóm này là tiền bán hàng ghi tay. Trang Báo cáo tài chính cộng vào dòng Doanh thu thay vì Thu khác.
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
+          <button
+            type="button"
+            onClick={() => router.push(returnTo)}
+            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+          >
+            Bỏ
+          </button>
+          <LoadingButton
+            type="submit"
+            loading={loading}
+            loadingText="Đang lưu…"
+            className="w-full sm:w-auto"
+          >
+            {isEdit ? "Cập nhật" : "Lưu nhóm"}
+          </LoadingButton>
+        </div>
+      </form>
+    </div>
   );
 }

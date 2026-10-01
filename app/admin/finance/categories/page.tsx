@@ -1,8 +1,8 @@
+import Link from "next/link";
 import { resolveActor } from "@/lib/auth/auth";
 import { findAll } from "@/lib/db/tables";
 import { getCashCategories } from "./actions";
 import { CategoriesList } from "./components/CategoriesList";
-import { CategoryForm } from "./components/CategoryForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import type { DBCashEntry } from "@/types/db";
 
@@ -28,7 +28,14 @@ export default async function CashCategoriesPage() {
       <PageHeader
         title="Nhóm thu chi"
         subtitle="Đặt tên các nhóm chi và thu. Nhóm đã có dòng sổ thì ngừng dùng, không xoá."
-        actions={<CategoryForm />}
+        actions={
+          <Link
+            href="/admin/finance/categories/new"
+            className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition inline-flex items-center justify-center min-h-[44px]"
+          >
+            + Thêm nhóm
+          </Link>
+        }
       />
       <CategoriesList categories={categories} canDelete={canDelete} usedCategoryIds={usedCategoryIds} />
     </div>

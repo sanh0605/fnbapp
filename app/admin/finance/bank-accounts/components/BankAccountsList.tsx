@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BankAccountForm } from "./BankAccountForm";
+import Link from "next/link";
 import { setBankAccountStatus, deleteBankAccount } from "../actions";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -123,7 +123,12 @@ export function BankAccountsList({ accounts, canDelete }: BankAccountsListProps)
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end items-center gap-4">
-                    <BankAccountForm account={account} />
+                    <Link
+                      href={`/admin/finance/bank-accounts/${encodeURIComponent(account.id)}/edit`}
+                      className="text-primary hover:text-primary-hover font-medium text-sm"
+                    >
+                      Sửa
+                    </Link>
                     <button
                       onClick={() => handleToggleStatus(account)}
                       disabled={busyId === account.id}
@@ -169,7 +174,12 @@ export function BankAccountsList({ accounts, canDelete }: BankAccountsListProps)
 
             <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
               <div className="flex items-center min-h-[44px]">
-                <BankAccountForm account={account} />
+                <Link
+                  href={`/admin/finance/bank-accounts/${encodeURIComponent(account.id)}/edit`}
+                  className="text-primary hover:text-primary-hover font-medium text-sm"
+                >
+                  Sửa
+                </Link>
               </div>
               <div className="flex items-center min-h-[44px]">
                 <button

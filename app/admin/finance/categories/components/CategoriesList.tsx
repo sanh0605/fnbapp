@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CategoryForm } from "./CategoryForm";
+import Link from "next/link";
 import { setCashCategoryStatus, deleteCashCategory } from "../actions";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -134,7 +134,12 @@ export function CategoriesList({ categories, canDelete, usedCategoryIds }: Categ
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end items-center gap-4">
-                    <CategoryForm category={category} hasEntries={usedIds.has(category.id)} />
+                    <Link
+                      href={`/admin/finance/categories/${encodeURIComponent(category.id)}/edit`}
+                      className="text-primary hover:text-primary-hover font-medium text-sm"
+                    >
+                      Sửa
+                    </Link>
                     <button
                       onClick={() => handleToggleStatus(category)}
                       disabled={busyId === category.id}
@@ -180,7 +185,12 @@ export function CategoriesList({ categories, canDelete, usedCategoryIds }: Categ
 
             <div className="flex justify-end items-center gap-4 pt-3 mt-1 border-t border-border">
               <div className="flex items-center min-h-[44px]">
-                <CategoryForm category={category} hasEntries={usedIds.has(category.id)} />
+                <Link
+                  href={`/admin/finance/categories/${encodeURIComponent(category.id)}/edit`}
+                  className="text-primary hover:text-primary-hover font-medium text-sm"
+                >
+                  Sửa
+                </Link>
               </div>
               <div className="flex items-center min-h-[44px]">
                 <button
