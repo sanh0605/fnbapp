@@ -9,6 +9,7 @@ import { FilterCard } from "@/components/ui/list/FilterCard";
 import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
+import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { deletePurchasedItemAction } from "../actions";
 import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
 
@@ -30,11 +31,19 @@ function getUnitName(unitIdOrName: string | undefined, units: DBUnit[]): string 
   return found?.name || unitIdOrName;
 }
 
-function listUrl(search: string, category: string, page: number = 1): string {
+function listUrl(
+  search: string,
+  category: string,
+  page: number = 1,
+  sort?: string,
+  dir?: string,
+): string {
   const p = new URLSearchParams();
   if (search) p.set("q", search);
   if (category && category !== "ALL") p.set("category", category);
   if (page > 1) p.set("page", String(page));
+  if (sort) p.set("sort", sort);
+  if (dir) p.set("dir", dir);
   const qs = p.toString();
   return qs ? `/admin/inventory/items?${qs}` : "/admin/inventory/items";
 }
@@ -51,6 +60,8 @@ export default function ItemsClient({
 }: ItemsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const rawSort = searchParams?.get("sort");
+  const rawDir = searchParams?.get("dir");
 
   const [search, setSearch] = useState(() => initialSearch ?? searchParams?.get("q") ?? "");
   const [category, setCategory] = useState(
@@ -83,6 +94,81 @@ export default function ItemsClient({
     return map;
   }, [categories]);
 
+  const columns: DataColumn<DBPurchasedItem>[] = useMemo(
+    () => [
+      {
+        key: "id",
+        header: "Mã",
+        sortValue: (item) => item.id,
+        render: (item) => (
+          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+            {item.id}
+          </span>
+        ),
+      },
+      {
+        key: "name",
+        header: "Tên",
+        sortValue: (item) => item.name,
+        render: (item) => (
+          <div>
+            <div className="font-bold text-text-primary">{item.name}</div>
+            {item.status === "INACTIVE" && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary mt-1 border border-border">
+                Ngừng dùng
+              </span>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: "category",
+        header: "Phân loại",
+        sortValue: (item) => categoryMap[item.item_category_id] || "",
+        render: (item) => (
+          <span className="text-text-secondary font-medium">
+            {categoryMap[item.item_category_id] || "—"}
+          </span>
+        ),
+      },
+      {
+        key: "conversions",
+        header: "Quy đổi",
+        secondary: true,
+        sortValue: (item) => {
+          const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
+          if (itemConversions.length === 0) return null;
+          return itemConversions
+            .map(
+              (conv) =>
+                `1 ${getUnitName(conv.purchased_unit, units)} = ${conv.conversion_rate} ${getUnitName(conv.base_unit, units)}`,
+            )
+            .join(", ");
+        },
+        render: (item) => {
+          const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
+          if (itemConversions.length === 0) return <span className="text-text-muted">—</span>;
+          return (
+            <div className="flex flex-col gap-0.5 text-xs text-text-secondary">
+              {itemConversions.map((conv) => (
+                <div key={conv.id}>
+                  1 {getUnitName(conv.purchased_unit, units)} = {conv.conversion_rate}{" "}
+                  {getUnitName(conv.base_unit, units)}
+                </div>
+              ))}
+            </div>
+          );
+        },
+      },
+    ],
+    [categoryMap, conversions, units],
+  );
+
+  const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const sortParam = rawSort ? sortKey : undefined;
+  const dirParam = rawSort ? sortDir : undefined;
+
   const filteredItems = useMemo(() => {
     const q = search.toLowerCase();
     return items.filter((item) => {
@@ -95,91 +181,42 @@ export default function ItemsClient({
     });
   }, [items, search, category]);
 
+  const sortedItems = useMemo(() => {
+    const col = columns.find((c) => c.key === sortKey);
+    return col?.sortValue ? sortRows(filteredItems, col.sortValue, sortDir) : filteredItems;
+  }, [filteredItems, columns, sortKey, sortDir]);
+
   const slice = useMemo(() => {
-    return paginate(filteredItems, page);
-  }, [filteredItems, page]);
+    return paginate(sortedItems, page);
+  }, [sortedItems, page]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const next = e.target.value;
     setSearch(next);
     setPage(1);
-    router.replace(listUrl(next, category, 1), { scroll: false });
+    router.replace(listUrl(next, category, 1, sortParam, dirParam), { scroll: false });
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const nextCat = e.target.value;
     setCategory(nextCat);
     setPage(1);
-    router.replace(listUrl(search, nextCat, 1), { scroll: false });
+    router.replace(listUrl(search, nextCat, 1, sortParam, dirParam), { scroll: false });
   };
 
   const handleApplyFilter = () => {
     setPage(1);
-    router.replace(listUrl(search, category, 1), { scroll: false });
+    router.replace(listUrl(search, category, 1, sortParam, dirParam), { scroll: false });
   };
 
   const handleClearFilter = () => {
     setSearch("");
     setCategory("ALL");
     setPage(1);
-    router.replace(listUrl("", "ALL", 1), { scroll: false });
+    router.replace(listUrl("", "ALL", 1, sortParam, dirParam), { scroll: false });
   };
 
-  const currentListUrl = listUrl(search, category, slice.page);
-
-  const columns: DataColumn<DBPurchasedItem>[] = [
-    {
-      key: "id",
-      header: "Mã",
-      render: (item) => (
-        <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
-          {item.id}
-        </span>
-      ),
-    },
-    {
-      key: "name",
-      header: "Tên",
-      render: (item) => (
-        <div>
-          <div className="font-bold text-text-primary">{item.name}</div>
-          {item.status === "INACTIVE" && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary mt-1 border border-border">
-              Ngừng dùng
-            </span>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "category",
-      header: "Phân loại",
-      render: (item) => (
-        <span className="text-text-secondary font-medium">
-          {categoryMap[item.item_category_id] || "—"}
-        </span>
-      ),
-    },
-    {
-      key: "conversions",
-      header: "Quy đổi",
-      secondary: true,
-      render: (item) => {
-        const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
-        if (itemConversions.length === 0) return <span className="text-text-muted">—</span>;
-        return (
-          <div className="flex flex-col gap-0.5 text-xs text-text-secondary">
-            {itemConversions.map((conv) => (
-              <div key={conv.id}>
-                1 {getUnitName(conv.purchased_unit, units)} = {conv.conversion_rate}{" "}
-                {getUnitName(conv.base_unit, units)}
-              </div>
-            ))}
-          </div>
-        );
-      },
-    },
-  ];
+  const currentListUrl = listUrl(search, category, slice.page, sortParam, dirParam);
 
   const renderCard = (item: DBPurchasedItem) => {
     const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
@@ -305,6 +342,11 @@ export default function ItemsClient({
         }
         columns={columns}
         renderCard={renderCard}
+        sort={{
+          key: sortKey,
+          dir: sortDir,
+          href: (k, d) => listUrl(search, category, 1, k, d),
+        }}
         removal={removal}
         empty={
           <EmptyState
@@ -320,7 +362,7 @@ export default function ItemsClient({
           <ListPagination
             slice={slice}
             unit="hàng hoá"
-            pageHref={(p) => listUrl(search, category, p)}
+            pageHref={(p) => listUrl(search, category, p, sortParam, dirParam)}
           />
         </div>
       )}

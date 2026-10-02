@@ -8,6 +8,7 @@ import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
+import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { deleteUnit } from "@/app/admin/inventory/actions";
 import type { DBUnit } from "@/types/db";
 
@@ -17,9 +18,11 @@ interface UnitsClientProps {
   initialPage?: string;
 }
 
-function listUrl(page: number = 1): string {
+function listUrl(page: number = 1, sort?: string, dir?: string): string {
   const p = new URLSearchParams();
   if (page > 1) p.set("page", String(page));
+  if (sort) p.set("sort", sort);
+  if (dir) p.set("dir", dir);
   const qs = p.toString();
   return qs ? `/admin/inventory/units?${qs}` : "/admin/inventory/units";
 }
@@ -30,6 +33,9 @@ export default function UnitsClient({
   initialPage,
 }: UnitsClientProps) {
   const searchParams = useSearchParams();
+  const rawSort = searchParams?.get("sort");
+  const rawDir = searchParams?.get("dir");
+
   const [page, setPage] = useState<string | number | undefined>(
     () => initialPage ?? searchParams?.get("page") ?? undefined,
   );
@@ -40,28 +46,49 @@ export default function UnitsClient({
       setPage(searchParams?.get("page") || undefined);
   }, [initialPage, searchParams]);
 
+  const columns: DataColumn<DBUnit>[] = useMemo(
+    () => [
+      {
+        key: "name",
+        header: "Tên",
+        sortValue: (unit) => unit.name,
+        render: (unit) => (
+          <span className="font-bold text-text-primary">{unit.name}</span>
+        ),
+      },
+      {
+        key: "description",
+        header: "Ghi chú",
+        sortValue: (unit) => unit.description || null,
+        render: (unit) => (
+          <span className="text-text-muted">{unit.description || "—"}</span>
+        ),
+      },
+    ],
+    [],
+  );
+
+  const validSortKeys = useMemo(
+    () => ["id", ...columns.map((c) => c.key)],
+    [columns],
+  );
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const sortParam = rawSort ? sortKey : undefined;
+  const dirParam = rawSort ? sortDir : undefined;
+
+  const sortedUnits = useMemo(() => {
+    if (sortKey === "id") {
+      return sortRows(units, (u) => u.id, sortDir);
+    }
+    const col = columns.find((c) => c.key === sortKey);
+    return col?.sortValue ? sortRows(units, col.sortValue, sortDir) : units;
+  }, [units, columns, sortKey, sortDir]);
+
   const slice = useMemo(() => {
-    return paginate(units, page);
-  }, [units, page]);
+    return paginate(sortedUnits, page);
+  }, [sortedUnits, page]);
 
-  const currentListUrl = listUrl(slice.page);
-
-  const columns: DataColumn<DBUnit>[] = [
-    {
-      key: "name",
-      header: "Tên",
-      render: (unit) => (
-        <span className="font-bold text-text-primary">{unit.name}</span>
-      ),
-    },
-    {
-      key: "description",
-      header: "Ghi chú",
-      render: (unit) => (
-        <span className="text-text-muted">{unit.description || "—"}</span>
-      ),
-    },
-  ];
+  const currentListUrl = listUrl(slice.page, sortParam, dirParam);
 
   const renderCard = (unit: DBUnit) => (
     <div className="flex flex-col gap-1">
@@ -114,6 +141,11 @@ export default function UnitsClient({
         }
         columns={columns}
         renderCard={renderCard}
+        sort={{
+          key: sortKey,
+          dir: sortDir,
+          href: (k, d) => listUrl(1, k, d),
+        }}
         removal={removal}
         empty={
           <EmptyState
@@ -129,7 +161,7 @@ export default function UnitsClient({
           <ListPagination
             slice={slice}
             unit="đơn vị"
-            pageHref={(p) => listUrl(p)}
+            pageHref={(p) => listUrl(p, sortParam, dirParam)}
           />
         </div>
       )}

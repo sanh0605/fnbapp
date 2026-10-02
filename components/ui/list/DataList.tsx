@@ -4,11 +4,13 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { confirm } from "@/lib/shared/dialog";
+import type { SortDir } from "./sort";
 
 export interface DataColumn<T> {
   key: string;
   header: string;
   render: (row: T) => React.ReactNode;
+  sortValue?: (row: T) => string | number | null | undefined;
   align?: "right";
   secondary?: boolean;
 }
@@ -25,6 +27,11 @@ export interface DataListProps<T> {
   getHref: (row: T) => string; // whole row / card opens this
   columns: DataColumn<T>[];
   renderCard: (row: T) => React.ReactNode; // phone card body
+  sort?: {
+    key: string;
+    dir: SortDir;
+    href: (key: string, dir: SortDir) => string;
+  };
   removal?: {
     // omitted -> no tick boxes, no bin
     verb: string; // "Xoá" or "Ngừng dùng"
@@ -106,6 +113,7 @@ export function DataList<T>({
   getHref,
   columns,
   renderCard,
+  sort,
   removal,
   empty,
 }: DataListProps<T>): JSX.Element {
@@ -121,6 +129,8 @@ export function DataList<T>({
     deactivatedCount: number;
     errors: string[];
   } | null>(null);
+
+  const sortableColumns = columns.filter((col) => col.sortValue !== undefined);
 
   const selectedCount = selectedIds.size;
   const allSelected =
@@ -304,23 +314,50 @@ export function DataList<T>({
         </div>
       )}
 
-      {removal && (
-        <div className="md:hidden flex justify-end">
-          <button
-            type="button"
-            onClick={() => {
-              const next = !isMobileSelecting;
-              setIsMobileSelecting(next);
-              if (!next) {
-                setSelectedIds(new Set());
-              }
-            }}
-            className="text-sm font-medium text-primary hover:text-primary-hover px-3 py-1.5 rounded-lg border border-border hover:bg-surface-secondary transition min-h-[44px] flex items-center justify-center"
-          >
-            {isMobileSelecting ? "Xong" : "Chọn"}
-          </button>
+      {(sort && sortableColumns.length > 0) || removal ? (
+        <div className="md:hidden flex items-center justify-between gap-3">
+          {sort && sortableColumns.length > 0 ? (
+            <div className="flex-1">
+              <label htmlFor="sort-select" className="sr-only">
+                Sắp xếp
+              </label>
+              <select
+                id="sort-select"
+                aria-label="Sắp xếp"
+                value={sort.href(sort.key, sort.dir)}
+                onChange={(e) => router.replace(e.target.value)}
+                className="w-full bg-surface-card border border-border text-text-primary text-sm rounded-lg px-3 py-2 min-h-[44px] focus:ring-2 focus:ring-primary outline-none"
+              >
+                {sortableColumns.map((col) => (
+                  <React.Fragment key={col.key}>
+                    <option value={sort.href(col.key, "asc")}>
+                      {col.header} tăng dần
+                    </option>
+                    <option value={sort.href(col.key, "desc")}>
+                      {col.header} giảm dần
+                    </option>
+                  </React.Fragment>
+                ))}
+              </select>
+            </div>
+          ) : <div />}
+          {removal && (
+            <button
+              type="button"
+              onClick={() => {
+                const next = !isMobileSelecting;
+                setIsMobileSelecting(next);
+                if (!next) {
+                  setSelectedIds(new Set());
+                }
+              }}
+              className="text-sm font-medium text-primary hover:text-primary-hover px-3 py-1.5 rounded-lg border border-border hover:bg-surface-secondary transition min-h-[44px] flex items-center justify-center shrink-0"
+            >
+              {isMobileSelecting ? "Xong" : "Chọn"}
+            </button>
+          )}
         </div>
-      )}
+      ) : null}
 
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col">
         {/* Desktop Table */}
@@ -339,16 +376,44 @@ export function DataList<T>({
                     />
                   </th>
                 )}
-                {columns.map((col) => (
-                  <th
-                    key={col.key}
-                    className={`px-6 py-4 font-bold text-[11px] ${
-                      col.align === "right" ? "text-right" : ""
-                    } ${col.secondary ? "hidden xl:table-cell" : ""}`}
-                  >
-                    {col.header}
-                  </th>
-                ))}
+                {columns.map((col) => {
+                  const isSortable = Boolean(sort && col.sortValue);
+                  const isActive = Boolean(isSortable && sort && sort.key === col.key);
+                  const nextDir: SortDir = isActive && sort?.dir === "asc" ? "desc" : "asc";
+                  const ariaSort = isActive
+                    ? sort?.dir === "asc"
+                      ? "ascending"
+                      : "descending"
+                    : undefined;
+
+                  return (
+                    <th
+                      key={col.key}
+                      aria-sort={ariaSort}
+                      className={`px-6 py-4 font-bold text-[11px] ${
+                        col.align === "right" ? "text-right" : ""
+                      } ${col.secondary ? "hidden xl:table-cell" : ""}`}
+                    >
+                      {isSortable && sort ? (
+                        <Link
+                          href={sort.href(col.key, nextDir)}
+                          className={`inline-flex items-center gap-1 hover:text-text-primary transition-colors ${
+                            isActive ? "text-text-primary" : ""
+                          } ${col.align === "right" ? "justify-end" : ""}`}
+                        >
+                          <span>{col.header}</span>
+                          {isActive && (
+                            <span aria-hidden="true">
+                              {sort.dir === "asc" ? "▲" : "▼"}
+                            </span>
+                          )}
+                        </Link>
+                      ) : (
+                        col.header
+                      )}
+                    </th>
+                  );
+                })}
                 {removal && (
                   <th className="px-4 py-4 w-16 text-center">
                     <span className="sr-only">{removal.verb}</span>

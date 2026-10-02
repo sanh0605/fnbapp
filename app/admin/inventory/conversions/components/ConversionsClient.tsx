@@ -9,6 +9,7 @@ import { FilterCard } from "@/components/ui/list/FilterCard";
 import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
+import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { deleteConversionAction } from "../actions";
 import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
 
@@ -22,10 +23,12 @@ interface ConversionsClientProps {
   initialPage?: string;
 }
 
-function listUrl(search: string, page: number = 1): string {
+function listUrl(search: string, page: number = 1, sort?: string, dir?: string): string {
   const p = new URLSearchParams();
   if (search) p.set("q", search);
   if (page > 1) p.set("page", String(page));
+  if (sort) p.set("sort", sort);
+  if (dir) p.set("dir", dir);
   const qs = p.toString();
   return qs ? `/admin/inventory/conversions?${qs}` : "/admin/inventory/conversions";
 }
@@ -41,6 +44,8 @@ export default function ConversionsClient({
 }: ConversionsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const rawSort = searchParams?.get("sort");
+  const rawDir = searchParams?.get("dir");
 
   const [search, setSearch] = useState(() => initialSearch ?? searchParams?.get("q") ?? "");
   const [page, setPage] = useState<string | number | undefined>(
@@ -72,6 +77,91 @@ export default function ConversionsClient({
 
   const usedSet = useMemo(() => new Set(usedConversionIds), [usedConversionIds]);
 
+  const columns: DataColumn<DBUOMConversion>[] = useMemo(
+    () => [
+      {
+        key: "purchased_item_id",
+        header: "Hàng hoá",
+        sortValue: (conv) => itemMap[conv.purchased_item_id] || conv.purchased_item_id,
+        render: (conv) => {
+          const itemName = itemMap[conv.purchased_item_id] || conv.purchased_item_id;
+          return (
+            <div>
+              <div className="font-bold text-text-primary">{itemName}</div>
+              {conv.status === "INACTIVE" && (
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary mt-1 border border-border">
+                  Ngừng dùng
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        key: "purchased_unit",
+        header: "Đơn vị mua",
+        sortValue: (conv) =>
+          conv.purchased_unit
+            ? unitMap[conv.purchased_unit] || conv.purchased_unit
+            : conv.from_unit_id
+            ? unitMap[conv.from_unit_id] || conv.from_unit_id
+            : "",
+        render: (conv) => {
+          const pUnit = conv.purchased_unit
+            ? unitMap[conv.purchased_unit] || conv.purchased_unit
+            : !conv.purchased_unit && conv.from_unit_id
+            ? unitMap[conv.from_unit_id] || conv.from_unit_id
+            : "";
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-text-primary font-medium">{pUnit}</span>
+              {conv.purchase_only && (
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning/20 text-warning-active border border-warning/30">
+                  Chỉ cách mua
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        key: "conversion_rate",
+        header: "Tỷ lệ",
+        sortValue: (conv) => Number(conv.conversion_rate) || 0,
+        render: (conv) => (
+          <span className="font-mono text-text-muted">x{conv.conversion_rate}</span>
+        ),
+      },
+      {
+        key: "base_unit",
+        header: "Đơn vị gốc",
+        sortValue: (conv) =>
+          conv.base_unit
+            ? unitMap[conv.base_unit] || conv.base_unit
+            : conv.to_unit_id
+            ? unitMap[conv.to_unit_id] || conv.to_unit_id
+            : "",
+        render: (conv) => {
+          const bUnit = conv.base_unit
+            ? unitMap[conv.base_unit] || conv.base_unit
+            : !conv.base_unit && conv.to_unit_id
+            ? unitMap[conv.to_unit_id] || conv.to_unit_id
+            : "";
+          return <span className="text-text-secondary font-medium">{bUnit}</span>;
+        },
+      },
+    ],
+    [itemMap, unitMap],
+  );
+
+  const validSortKeys = useMemo(
+    () => ["id", ...columns.map((c) => c.key)],
+    [columns],
+  );
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const sortParam = rawSort ? sortKey : undefined;
+  const dirParam = rawSort ? sortDir : undefined;
+
   const filteredConversions = useMemo(() => {
     const q = search.toLowerCase();
     return conversions.filter((conv) => {
@@ -80,89 +170,39 @@ export default function ConversionsClient({
     });
   }, [conversions, search, itemMap]);
 
+  const sortedConversions = useMemo(() => {
+    if (sortKey === "id") {
+      return sortRows(filteredConversions, (c) => c.id, sortDir);
+    }
+    const col = columns.find((c) => c.key === sortKey);
+    return col?.sortValue
+      ? sortRows(filteredConversions, col.sortValue, sortDir)
+      : filteredConversions;
+  }, [filteredConversions, columns, sortKey, sortDir]);
+
   const slice = useMemo(() => {
-    return paginate(filteredConversions, page);
-  }, [filteredConversions, page]);
+    return paginate(sortedConversions, page);
+  }, [sortedConversions, page]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const next = e.target.value;
     setSearch(next);
     setPage(1);
-    router.replace(listUrl(next, 1), { scroll: false });
+    router.replace(listUrl(next, 1, sortParam, dirParam), { scroll: false });
   };
 
   const handleApplyFilter = () => {
     setPage(1);
-    router.replace(listUrl(search, 1), { scroll: false });
+    router.replace(listUrl(search, 1, sortParam, dirParam), { scroll: false });
   };
 
   const handleClearFilter = () => {
     setSearch("");
     setPage(1);
-    router.replace(listUrl("", 1), { scroll: false });
+    router.replace(listUrl("", 1, sortParam, dirParam), { scroll: false });
   };
 
-  const currentListUrl = listUrl(search, slice.page);
-
-  const columns: DataColumn<DBUOMConversion>[] = [
-    {
-      key: "purchased_item_id",
-      header: "Hàng hoá",
-      render: (conv) => {
-        const itemName = itemMap[conv.purchased_item_id] || conv.purchased_item_id;
-        return (
-          <div>
-            <div className="font-bold text-text-primary">{itemName}</div>
-            {conv.status === "INACTIVE" && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary mt-1 border border-border">
-                Ngừng dùng
-              </span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: "purchased_unit",
-      header: "Đơn vị mua",
-      render: (conv) => {
-        const pUnit = conv.purchased_unit
-          ? unitMap[conv.purchased_unit] || conv.purchased_unit
-          : !conv.purchased_unit && conv.from_unit_id
-          ? unitMap[conv.from_unit_id] || conv.from_unit_id
-          : "";
-        return (
-          <div className="flex items-center gap-2">
-            <span className="text-text-primary font-medium">{pUnit}</span>
-            {conv.purchase_only && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning/20 text-warning-active border border-warning/30">
-                Chỉ cách mua
-              </span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      key: "conversion_rate",
-      header: "Tỷ lệ",
-      render: (conv) => (
-        <span className="font-mono text-text-muted">x{conv.conversion_rate}</span>
-      ),
-    },
-    {
-      key: "base_unit",
-      header: "Đơn vị gốc",
-      render: (conv) => {
-        const bUnit = conv.base_unit
-          ? unitMap[conv.base_unit] || conv.base_unit
-          : !conv.base_unit && conv.to_unit_id
-          ? unitMap[conv.to_unit_id] || conv.to_unit_id
-          : "";
-        return <span className="text-text-secondary font-medium">{bUnit}</span>;
-      },
-    },
-  ];
+  const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
   const renderCard = (conv: DBUOMConversion) => {
     const itemName = itemMap[conv.purchased_item_id] || conv.purchased_item_id;
@@ -277,6 +317,11 @@ export default function ConversionsClient({
         }
         columns={columns}
         renderCard={renderCard}
+        sort={{
+          key: sortKey,
+          dir: sortDir,
+          href: (k, d) => listUrl(search, 1, k, d),
+        }}
         removal={removal}
         empty={
           <EmptyState
@@ -292,7 +337,7 @@ export default function ConversionsClient({
           <ListPagination
             slice={slice}
             unit="quy đổi"
-            pageHref={(p) => listUrl(search, p)}
+            pageHref={(p) => listUrl(search, p, sortParam, dirParam)}
           />
         </div>
       )}

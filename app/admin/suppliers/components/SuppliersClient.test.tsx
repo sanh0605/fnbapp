@@ -20,6 +20,7 @@ const { replace, refresh, back, push, router } = vi.hoisted(() => {
 
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock("next/link", () => ({

@@ -49,20 +49,22 @@ export default async function AssetsPage({
         }
       />
 
-      <div className="flex rounded-xl border border-border overflow-hidden">
-        {TABS.map(({ tab, label }) => (
-          <Link
-            key={tab}
-            href={tabHref(tab)}
-            className={`flex-1 text-center px-1 py-2.5 text-xs font-bold leading-tight transition-colors min-h-[44px] flex items-center justify-center ${
-              activeTab === tab
-                ? "bg-primary text-on-primary"
-                : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
+      <div className="flex md:justify-end">
+        <div className="flex rounded-xl border border-border overflow-hidden w-full md:w-auto">
+          {TABS.map(({ tab, label }) => (
+            <Link
+              key={tab}
+              href={tabHref(tab)}
+              className={`flex-1 md:flex-none text-center px-1 py-2.5 md:px-3 md:py-1.5 text-xs md:text-sm font-bold leading-tight transition-colors min-h-[44px] md:min-h-0 flex items-center justify-center ${
+                activeTab === tab
+                  ? "bg-primary text-on-primary"
+                  : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <AssetsClient

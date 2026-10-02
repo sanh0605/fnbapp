@@ -67,6 +67,7 @@ afterEach(() => {
 beforeEach(() => {
   refresh.mockClear();
   confirmMock.mockReset();
+  router.replace.mockClear();
 });
 
 describe("DataList", () => {
@@ -82,11 +83,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={suppliers}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -126,11 +127,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={suppliers}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -151,11 +152,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={suppliers}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         empty={<div>Trống</div>}
       />
     );
@@ -168,11 +169,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={suppliers}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         empty={<div>Trống</div>}
       />
     );
@@ -187,11 +188,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={suppliers}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} dòng?`,
@@ -212,11 +213,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={suppliers}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} dòng?`,
@@ -255,11 +256,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={twoRows}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         removal={{
           verb: "Xoá",
           rowVerb: (row: SampleSupplier) => (row.id === "A" ? "Ngừng dùng" : "Xoá"),
@@ -290,11 +291,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={suppliers}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -327,11 +328,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={suppliers.slice(0, 2)}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -365,11 +366,11 @@ describe("DataList", () => {
     render(
       <DataList
         rows={suppliers.slice(0, 2)}
-        getId={(r) => r.id}
-        getName={(r) => r.name}
-        getHref={(r) => `/admin/suppliers/${r.id}`}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r) => <div>{r.name}</div>}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
         removal={{
           verb: "Xoá hoặc ngừng dùng",
           rowVerb: () => "Xoá",
@@ -390,6 +391,147 @@ describe("DataList", () => {
     const status = screen.getByRole("status");
     expect(status).toHaveTextContent("Đã xoá 2 dòng.");
     expect(status.textContent).not.toContain("Đã xoá hoặc ngừng dùng");
+  });
+
+  describe("sorting (BR-DATA-008)", () => {
+    const sortColumns = [
+      {
+        key: "id",
+        header: "Mã",
+        render: (row: SampleSupplier) => row.id,
+        sortValue: (row: SampleSupplier) => row.id,
+      },
+      {
+        key: "name",
+        header: "Tên",
+        render: (row: SampleSupplier) => row.name,
+        sortValue: (row: SampleSupplier) => row.name,
+      },
+      {
+        key: "notes",
+        header: "Ghi chú",
+        render: () => "---",
+      },
+    ];
+
+    it("renders column headers with sort links, arrow ▲, and aria-sort='ascending' when active sort is asc", () => {
+      render(
+        <DataList
+          rows={suppliers}
+          getId={(r: SampleSupplier) => r.id}
+          getName={(r: SampleSupplier) => r.name}
+          getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+          columns={sortColumns as any}
+          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          empty={<div>Trống</div>}
+          {...({
+            sort: {
+              key: "id",
+              dir: "asc",
+              href: (key: string, dir: string) => `/admin/suppliers?sort=${key}&dir=${dir}`,
+            },
+          } as any)}
+        />
+      );
+
+      // Active column: id (asc)
+      const idTh = screen.getByRole("columnheader", { name: /Mã/i });
+      expect(idTh).toHaveAttribute("aria-sort", "ascending");
+      expect(idTh.textContent).toContain("▲");
+      const idLink = idTh.querySelector("a");
+      expect(idLink).not.toBeNull();
+      // Clicking active asc column should toggle to desc
+      expect(idLink?.getAttribute("href")).toBe("/admin/suppliers?sort=id&dir=desc");
+
+      // Inactive sortable column: name
+      const nameTh = screen.getByRole("columnheader", { name: /Tên/i });
+      expect(nameTh).not.toHaveAttribute("aria-sort", "ascending");
+      expect(nameTh).not.toHaveAttribute("aria-sort", "descending");
+      expect(nameTh.textContent).not.toContain("▲");
+      expect(nameTh.textContent).not.toContain("▼");
+      const nameLink = nameTh.querySelector("a");
+      expect(nameLink).not.toBeNull();
+      // Clicking inactive column should sort asc
+      expect(nameLink?.getAttribute("href")).toBe("/admin/suppliers?sort=name&dir=asc");
+
+      // Non-sortable column
+      const unsortableTh = screen.getByRole("columnheader", { name: /Ghi chú/i });
+      expect(unsortableTh).not.toHaveAttribute("aria-sort");
+      expect(unsortableTh.querySelector("a")).toBeNull();
+    });
+
+    it("renders column header with arrow ▼, and aria-sort='descending' when active sort is desc", () => {
+      render(
+        <DataList
+          rows={suppliers}
+          getId={(r: SampleSupplier) => r.id}
+          getName={(r: SampleSupplier) => r.name}
+          getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+          columns={sortColumns as any}
+          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          empty={<div>Trống</div>}
+          {...({
+            sort: {
+              key: "id",
+              dir: "desc",
+              href: (key: string, dir: string) => `/admin/suppliers?sort=${key}&dir=${dir}`,
+            },
+          } as any)}
+        />
+      );
+
+      const idTh = screen.getByRole("columnheader", { name: /Mã/i });
+      expect(idTh).toHaveAttribute("aria-sort", "descending");
+      expect(idTh.textContent).toContain("▼");
+      const idLink = idTh.querySelector("a");
+      expect(idLink).not.toBeNull();
+      // Clicking active desc column should toggle back to asc
+      expect(idLink?.getAttribute("href")).toBe("/admin/suppliers?sort=id&dir=asc");
+    });
+
+    it("renders phone layout sort select with all sortable column options and navigates on change", () => {
+      render(
+        <DataList
+          rows={suppliers}
+          getId={(r: SampleSupplier) => r.id}
+          getName={(r: SampleSupplier) => r.name}
+          getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+          columns={sortColumns as any}
+          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          empty={<div>Trống</div>}
+          {...({
+            sort: {
+              key: "id",
+              dir: "asc",
+              href: (key: string, dir: string) => `/admin/suppliers?sort=${key}&dir=${dir}`,
+            },
+          } as any)}
+        />
+      );
+
+      const select = screen.getByRole("combobox", { name: "Sắp xếp" }) as HTMLSelectElement;
+      expect(select).toBeInTheDocument();
+      expect(select.className).toContain("min-h-[44px]");
+
+      const options = Array.from(select.querySelectorAll("option"));
+      const optionTexts = options.map((o) => o.textContent?.trim());
+
+      // Each sortable column has both 'tăng dần' and 'giảm dần'
+      expect(optionTexts).toContain("Mã tăng dần");
+      expect(optionTexts).toContain("Mã giảm dần");
+      expect(optionTexts).toContain("Tên tăng dần");
+      expect(optionTexts).toContain("Tên giảm dần");
+
+      // Column without sortValue is not in select options
+      expect(optionTexts.some((t) => t?.includes("Ghi chú"))).toBe(false);
+
+      // Select 'Tên giảm dần' and verify router.replace is called
+      const nameDescOpt = options.find((o) => o.textContent?.includes("Tên giảm dần"));
+      expect(nameDescOpt).toBeDefined();
+
+      fireEvent.change(select, { target: { value: nameDescOpt!.value } });
+      expect(router.replace).toHaveBeenCalledWith("/admin/suppliers?sort=name&dir=desc");
+    });
   });
 });
 

@@ -96,6 +96,17 @@ If a post-apply invariant fails, stop further writes and compare against the app
 - **POS is exempt** (answer 2B): choosing size, toppings and payment keep their current boxes, because a page change slows selling at a busy moment.
 - **Adding a supplier while entering a purchase order** (owner 2026-10-01, *"B"*): it opens the new-supplier page. The half-entered order is kept on that device and refilled on return, with the new supplier selected (owner: *"chỗ nhà cung cấp sẽ tự chọn nhà cung cấp vừa tạo"*). It replaces any supplier picked before. Design: `docs/superpowers/specs/2026-10-01-bo-popup-design.md` §6.
 - **Not popups:** a dropdown list and a date picker's calendar. They open in place and are kept (owner asked on 2026-09-30 for dropdowns to float above tables, not to become pages).
+
+### BR-DATA-008 — Every list sorts by any column; by code by default
+
+**Status:** `APPROVED` — owner decision 2026-10-02, typed on the Tài sản list: *"Tất cả các bạn đều có thể sort tất cả các tiêu đề của từng cột. Ví dụ bảng có 7 cột thì cả 7 cột anh đều có thể bấm vào tên để sort tăng dần hoặc giảm dần. Tuy nhiên đối với tất cả danh sách thì mặc định đều sẽ sort theo mã"*.
+
+- **Every column header is clickable.** First click sorts ascending, the next click descending. An arrow on the header shows the column and direction in use.
+- **Default order is the code, ascending** (TS-001, TS-002, …), on every list, until someone clicks a header.
+- **Sorting covers the whole list, not only the page on screen**, and goes back to page 1. Sort column and direction sit in the page address (`?sort=&dir=`), so returning from a detail page keeps them, like the filter.
+- **Text sorts the Vietnamese way, numbers by value, dates by date**; codes compare their number part by value.
+- **Phone:** there are no column headers, so the same choices sit in one "Sắp xếp" picker above the cards.
+- Applies to every list on the list/detail template (`docs/superpowers/specs/2026-10-02-khuon-danh-sach-chi-tiet-design.md`); lists not yet moved get it in their wave.
 ## Backup and retention rules
 
 ### BR-BACKUP-001 — Scheduled backups are full snapshots

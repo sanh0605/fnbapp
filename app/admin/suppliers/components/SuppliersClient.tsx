@@ -2,13 +2,14 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
 import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
+import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { deleteSupplierAction } from "../actions";
 import type { DBSupplier } from "@/types/db";
 
@@ -20,10 +21,12 @@ interface SuppliersClientProps {
   initialPage?: string;
 }
 
-function listUrl(search: string, page: number = 1): string {
+function listUrl(search: string, page: number = 1, sort?: string, dir?: string): string {
   const p = new URLSearchParams();
   if (search) p.set("q", search);
   if (page > 1) p.set("page", String(page));
+  if (sort) p.set("sort", sort);
+  if (dir) p.set("dir", dir);
   const qs = p.toString();
   return qs ? `/admin/suppliers?${qs}` : "/admin/suppliers";
 }
@@ -35,6 +38,10 @@ export default function SuppliersClient({
   initialPage,
 }: SuppliersClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawSort = searchParams?.get("sort");
+  const rawDir = searchParams?.get("dir");
+
   const [search, setSearch] = useState(initialSearch);
   const [page, setPage] = useState<string | number | undefined>(initialPage);
 
@@ -45,6 +52,70 @@ export default function SuppliersClient({
   useEffect(() => {
     setPage(initialPage);
   }, [initialPage]);
+
+  const columns: DataColumn<DBSupplier>[] = useMemo(
+    () => [
+      {
+        key: "id",
+        header: "Mã",
+        sortValue: (s) => s.id,
+        render: (s) => (
+          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+            {s.id}
+          </span>
+        ),
+      },
+      {
+        key: "name",
+        header: "Tên",
+        sortValue: (s) => s.name,
+        render: (s) => (
+          <div>
+            <div className="font-bold text-text-primary">{s.name}</div>
+            {s.status === "INACTIVE" && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary mt-1 border border-border">
+                Ngừng hợp tác
+              </span>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: "phone",
+        header: "Điện thoại",
+        sortValue: (s) => s.phone || null,
+        render: (s) => (
+          <span className="text-text-primary font-medium">{s.phone || "—"}</span>
+        ),
+      },
+      {
+        key: "address",
+        header: "Địa chỉ",
+        secondary: true,
+        sortValue: (s) => s.address || null,
+        render: (s) => (
+          <span className="text-text-secondary truncate max-w-[240px] block">
+            {s.address || "—"}
+          </span>
+        ),
+      },
+      {
+        key: "tax_id",
+        header: "Mã số thuế",
+        secondary: true,
+        sortValue: (s) => s.tax_id || null,
+        render: (s) => (
+          <span className="font-mono text-text-secondary">{s.tax_id || "—"}</span>
+        ),
+      },
+    ],
+    [],
+  );
+
+  const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const sortParam = rawSort ? sortKey : undefined;
+  const dirParam = rawSort ? sortDir : undefined;
 
   const filteredSuppliers = useMemo(() => {
     const q = search.toLowerCase();
@@ -57,80 +128,36 @@ export default function SuppliersClient({
     });
   }, [suppliers, search]);
 
+  const sortedSuppliers = useMemo(() => {
+    const col = columns.find((c) => c.key === sortKey);
+    return col?.sortValue
+      ? sortRows(filteredSuppliers, col.sortValue, sortDir)
+      : filteredSuppliers;
+  }, [filteredSuppliers, columns, sortKey, sortDir]);
+
   const slice = useMemo(() => {
-    return paginate(filteredSuppliers, page);
-  }, [filteredSuppliers, page]);
+    return paginate(sortedSuppliers, page);
+  }, [sortedSuppliers, page]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const next = e.target.value;
     setSearch(next);
     setPage(1);
-    router.replace(listUrl(next, 1), { scroll: false });
+    router.replace(listUrl(next, 1, sortParam, dirParam), { scroll: false });
   };
 
   const handleApplyFilter = () => {
     setPage(1);
-    router.replace(listUrl(search, 1), { scroll: false });
+    router.replace(listUrl(search, 1, sortParam, dirParam), { scroll: false });
   };
 
   const handleClearFilter = () => {
     setSearch("");
     setPage(1);
-    router.replace(listUrl("", 1), { scroll: false });
+    router.replace(listUrl("", 1, sortParam, dirParam), { scroll: false });
   };
 
-  const currentListUrl = listUrl(search, slice.page);
-
-  const columns: DataColumn<DBSupplier>[] = [
-    {
-      key: "id",
-      header: "Mã",
-      render: (s) => (
-        <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
-          {s.id}
-        </span>
-      ),
-    },
-    {
-      key: "name",
-      header: "Tên",
-      render: (s) => (
-        <div>
-          <div className="font-bold text-text-primary">{s.name}</div>
-          {s.status === "INACTIVE" && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary mt-1 border border-border">
-              Ngừng hợp tác
-            </span>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "phone",
-      header: "Điện thoại",
-      render: (s) => (
-        <span className="text-text-primary font-medium">{s.phone || "—"}</span>
-      ),
-    },
-    {
-      key: "address",
-      header: "Địa chỉ",
-      secondary: true,
-      render: (s) => (
-        <span className="text-text-secondary truncate max-w-[240px] block">
-          {s.address || "—"}
-        </span>
-      ),
-    },
-    {
-      key: "tax_id",
-      header: "Mã số thuế",
-      secondary: true,
-      render: (s) => (
-        <span className="font-mono text-text-secondary">{s.tax_id || "—"}</span>
-      ),
-    },
-  ];
+  const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
   const renderCard = (s: DBSupplier) => (
     <div className="flex flex-col gap-2">
@@ -237,6 +264,11 @@ export default function SuppliersClient({
         }
         columns={columns}
         renderCard={renderCard}
+        sort={{
+          key: sortKey,
+          dir: sortDir,
+          href: (k, d) => listUrl(search, 1, k, d),
+        }}
         removal={removal}
         empty={
           <EmptyState
@@ -252,7 +284,7 @@ export default function SuppliersClient({
           <ListPagination
             slice={slice}
             unit="nhà cung cấp"
-            pageHref={(p) => listUrl(search, p)}
+            pageHref={(p) => listUrl(search, p, sortParam, dirParam)}
           />
         </div>
       )}

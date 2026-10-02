@@ -16,9 +16,11 @@ const { replace, refresh, push, router } = vi.hoisted(() => {
   };
 });
 
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
   usePathname: () => "/admin/inventory/assets",
 }));
 
@@ -50,6 +52,7 @@ afterEach(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockSearchParams = new URLSearchParams();
 });
 
 describe("AssetsClient", () => {
@@ -106,5 +109,69 @@ describe("AssetsClient", () => {
     render(<AssetsClient assets={[]} />);
 
     expect(screen.getByText("Không có tài sản nào ở mục này.")).toBeInTheDocument();
+  });
+
+  describe("sorting (BR-DATA-008)", () => {
+    const ASSET_A: AssetView = {
+      id: "TS-010",
+      name: "Bình giữ nhiệt 1L",
+      quantity: 5,
+      remainingQuantity: 5,
+      acquiredDate: "2026-03-01",
+      unitCost: 200000,
+      totalCost: 1000000,
+      termMonths: 12,
+      remainingValue: 50000,
+      bucket: "IN_USE",
+    };
+
+    const ASSET_B: AssetView = {
+      id: "TS-002",
+      name: "Máy pha cà phê Expobar",
+      quantity: 1,
+      remainingQuantity: 1,
+      acquiredDate: "2026-01-01",
+      unitCost: 35000000,
+      totalCost: 35000000,
+      termMonths: 36,
+      remainingValue: 25000000,
+      bucket: "IN_USE",
+    };
+
+    const ASSET_C: AssetView = {
+      id: "TS-001",
+      name: "Máy xay sinh tố Omniblend",
+      quantity: 2,
+      remainingQuantity: 2,
+      acquiredDate: "2026-02-01",
+      unitCost: 3500000,
+      totalCost: 7000000,
+      termMonths: 24,
+      remainingValue: 4000000,
+      bucket: "IN_USE",
+    };
+
+    it("sorts assets by code ascending by default", () => {
+      // Pass unsorted assets: TS-010, TS-002, TS-001
+      render(<AssetsClient assets={[ASSET_A, ASSET_B, ASSET_C]} />);
+
+      const rows = screen.getAllByRole("row").slice(1);
+      expect(rows).toHaveLength(3);
+      expect(rows[0]).toHaveTextContent("TS-001");
+      expect(rows[1]).toHaveTextContent("TS-002");
+      expect(rows[2]).toHaveTextContent("TS-010");
+    });
+
+    it("puts the largest first when ?sort=remainingValue&dir=desc", () => {
+      mockSearchParams = new URLSearchParams("sort=remainingValue&dir=desc");
+      render(<AssetsClient assets={[ASSET_A, ASSET_B, ASSET_C]} />);
+
+      const rows = screen.getAllByRole("row").slice(1);
+      expect(rows).toHaveLength(3);
+      // Largest remainingValue (TS-002: 25.000.000đ) first, followed by TS-001 (4.000.000đ), then TS-010 (50.000đ)
+      expect(rows[0]).toHaveTextContent("TS-002");
+      expect(rows[1]).toHaveTextContent("TS-001");
+      expect(rows[2]).toHaveTextContent("TS-010");
+    });
   });
 });

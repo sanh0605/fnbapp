@@ -110,14 +110,39 @@ export function UiFeedbackTool() {
   const [composingGeneral, setComposingGeneral] = useState(false);
   const [note, setNote] = useState("");
   const [entries, setEntries] = useState<FeedbackEntry[]>([]);
+  const [showEntries, setShowEntries] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     setContainer(getOrCreateContainer());
   }, []);
 
   const composing = pendingFingerprint !== null || composingGeneral;
+  const isExpanded = showEntries ?? (entries.length <= 1);
+
+  useEffect(() => {
+    if ((!isOpen && !composing) || picking) return;
+
+    function handlePointerDown(e: Event) {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (panelRef.current?.contains(target)) return;
+      if (triggerButtonRef.current?.contains(target)) return;
+
+      setIsOpen(false);
+      setComposingGeneral(false);
+      setPendingFingerprint(null);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isOpen, composing, picking]);
 
   async function loadEntries() {
     try {
@@ -274,13 +299,13 @@ export function UiFeedbackTool() {
 
       <div style={{ pointerEvents: "auto" }}>
         {!picking && (
-          <button type="button" onClick={toggleOpen} style={buttonStyle}>
+          <button ref={triggerButtonRef} type="button" onClick={toggleOpen} style={buttonStyle}>
             {isOpen ? "Đóng" : "Góp ý"}
           </button>
         )}
 
         {isOpen && !composing && (
-          <div style={panelStyle}>
+          <div ref={panelRef} style={panelStyle}>
             <div style={{ fontWeight: 600, marginBottom: 10 }}>Góp ý giao diện</div>
             <button type="button" style={actionButtonStyle} onClick={startPicking}>
               Chọn phần tử để góp ý
@@ -295,44 +320,54 @@ export function UiFeedbackTool() {
               {entries.length === 0 ? (
                 <div style={{ color: "#9ca3af" }}>Chưa có góp ý nào.</div>
               ) : (
-                entries.map(entry => (
-                  <div
-                    key={entry.id}
-                    style={{
-                      background: "#2d3344",
-                      borderRadius: 8,
-                      padding: 8,
-                      marginBottom: 8,
-                    }}
+                <>
+                  <button
+                    type="button"
+                    style={actionButtonStyle}
+                    onClick={() => setShowEntries(!isExpanded)}
                   >
-                    <div style={{ color: "#9ca3af", fontSize: 11, marginBottom: 4 }}>
-                      {entry.route} · {entry.viewportWidth}px
-                    </div>
-                    <div style={{ marginBottom: 6, whiteSpace: "pre-wrap" }}>{entry.note}</div>
-                    <button
-                      type="button"
-                      onClick={() => void deleteEntry(entry.id)}
-                      style={{
-                        background: "transparent",
-                        color: "#f87171",
-                        border: "none",
-                        cursor: "pointer",
-                        fontFamily: "inherit",
-                        fontSize: 12,
-                        padding: 0,
-                      }}
-                    >
-                      Xoá
-                    </button>
-                  </div>
-                ))
+                    Góp ý đã gửi ({entries.length})
+                  </button>
+                  {isExpanded &&
+                    entries.map(entry => (
+                      <div
+                        key={entry.id}
+                        style={{
+                          background: "#2d3344",
+                          borderRadius: 8,
+                          padding: 8,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div style={{ color: "#9ca3af", fontSize: 11, marginBottom: 4 }}>
+                          {entry.route} · {entry.viewportWidth}px
+                        </div>
+                        <div style={{ marginBottom: 6, whiteSpace: "pre-wrap" }}>{entry.note}</div>
+                        <button
+                          type="button"
+                          onClick={() => void deleteEntry(entry.id)}
+                          style={{
+                            background: "transparent",
+                            color: "#f87171",
+                            border: "none",
+                            cursor: "pointer",
+                            fontFamily: "inherit",
+                            fontSize: 12,
+                            padding: 0,
+                          }}
+                        >
+                          Xoá
+                        </button>
+                      </div>
+                    ))}
+                </>
               )}
             </div>
           </div>
         )}
 
         {composing && (
-          <div style={panelStyle}>
+          <div ref={panelRef} style={panelStyle}>
             <div style={{ fontWeight: 600, marginBottom: 10 }}>
               {pendingFingerprint ? "Ghi chú cho phần tử đã chọn" : "Góp ý chung"}
             </div>

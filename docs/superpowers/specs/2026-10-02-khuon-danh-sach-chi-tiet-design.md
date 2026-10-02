@@ -138,3 +138,11 @@ Xoá nhiều dòng gọi lần lượt hàm xoá từng dòng đang có. Không 
   - Chọn 3 dòng, 1 dòng bị chặn: báo đúng tên dòng bị chặn, 2 dòng kia đã xoá.
 - Phép kiểm canh, cùng kiểu `app/admin/no-popups.test.ts`: không file danh sách nào trong `app/admin` còn liên kết tới `/edit`. Trang chi tiết là lối duy nhất vào trang sửa.
 - Mở bằng mắt ở ba cỡ: 1568px (màn của chủ quán), 1024px, 390px (điện thoại).
+
+## 8. Sắp xếp theo cột (chủ quán chốt 2026-10-02, `BR-DATA-008`)
+
+- Mọi tiêu đề cột bấm được: lần đầu tăng dần, lần sau giảm dần; mũi tên trên tiêu đề cho biết đang sắp theo cột nào.
+- Mặc định mọi danh sách sắp theo mã, tăng dần.
+- Sắp cả danh sách rồi mới chia trang, về trang 1. `?sort=&dir=` nằm trên địa chỉ trang, quay lại từ chi tiết vẫn giữ.
+- Điện thoại: một ô "Sắp xếp" trên đầu các thẻ.
+- Dựng trong mảnh chung (`components/ui/list/`); đợt 4–8 dùng luôn.
