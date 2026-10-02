@@ -1,18 +1,26 @@
 import { UnitForm } from "../UnitForm";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
-export default function NewUnitPage() {
+export default function NewUnitPage({
+  searchParams,
+}: {
+  searchParams?: { returnTo?: string };
+}) {
+  const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/inventory/units");
+
   return (
-    <div className="space-y-6">
-      <BackLink href="/admin/inventory/units" label="Đơn vị tính" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Đơn vị tính"
         title="Thêm Đơn Vị Mới"
         subtitle="Quản lý danh sách các đơn vị tính hợp lệ (kg, lít, hộp...)"
       />
-      <UnitForm returnTo="/admin/inventory/units" />
-    </div>
+      <UnitForm returnTo={returnTo} />
+    </DetailFrame>
   );
 }

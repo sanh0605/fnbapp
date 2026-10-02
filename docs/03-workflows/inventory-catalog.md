@@ -1,7 +1,7 @@
 # Inventory catalog flow
 
 ```flow-decl
-routes: /admin/inventory/items, /admin/inventory/categories, /admin/inventory/units, /admin/inventory/conversions, /admin/inventory/items/new, /admin/inventory/items/[id]/edit, /admin/inventory/items/[id]/history, /admin/inventory/categories/new, /admin/inventory/categories/[id]/edit, /admin/inventory/units/new, /admin/inventory/units/[id]/edit, /admin/inventory/conversions/new, /admin/inventory/conversions/[id]/edit
+routes: /admin/inventory/items, /admin/inventory/categories, /admin/inventory/units, /admin/inventory/conversions, /admin/inventory/items/new, /admin/inventory/items/[id]/edit, /admin/inventory/items/[id], /admin/inventory/categories/[id], /admin/inventory/units/[id], /admin/inventory/conversions/[id], /admin/inventory/categories/new, /admin/inventory/categories/[id]/edit, /admin/inventory/units/new, /admin/inventory/units/[id]/edit, /admin/inventory/conversions/new, /admin/inventory/conversions/[id]/edit
 files: app/admin/inventory/actions.ts, app/admin/inventory/items/actions.ts, app/admin/inventory/conversions/actions.ts
 tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002
@@ -13,7 +13,10 @@ naming them ("Không xoá được Sữa tươi Mlekovita: đã có 5 dòng phi�
 kho, 1 quy đổi."); before, every live item hit the foreign key and showed a generic
 error. `deleteItemCategory` refuses with the count of items in the category instead of
 the raw database message. `deleteConversionAction` returns `deactivated: true` when it
-only switches a conversion used in a purchase order to `INACTIVE`.
+only switches a conversion used in a purchase order to `INACTIVE`. Same day, the four
+screens moved to the list/detail template: each row opens `/[id]`, editing starts only
+from there, the old `/admin/inventory/items/[id]/history` page is now a section of the
+item detail page, and on Bảng quy đổi a used conversion's bin and button say "Ngừng dùng".
 **Behaviour change — 2026-09-28:** `deleteUnit`'s in-use check no longer queries
 `Base_Ingredients`, a table dropped by migration `0090` on 2026-09-01. Since then,
 deleting a unit that no conversion or purchased item uses failed with a

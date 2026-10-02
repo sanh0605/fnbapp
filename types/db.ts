@@ -130,6 +130,7 @@ export interface DBUnit {
   id: string;
   name: string;
   abbreviation: string;
+  description?: string | null;
   status: string;
   created_at: string;
 }

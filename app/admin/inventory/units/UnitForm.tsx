@@ -2,8 +2,8 @@
 
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
-import { addUnit, updateUnit, deleteUnit } from "@/app/admin/inventory/actions";
-import { alert, confirm } from "@/lib/shared/dialog";
+import { addUnit, updateUnit } from "@/app/admin/inventory/actions";
+import { alert } from "@/lib/shared/dialog";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
 
 interface UnitFormProps {
@@ -39,7 +39,7 @@ export function UnitForm({ initialData, returnTo: rawReturnTo }: UnitFormProps) 
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
@@ -85,40 +85,5 @@ export function UnitForm({ initialData, returnTo: rawReturnTo }: UnitFormProps) 
         </div>
       </form>
     </div>
-  );
-}
-
-export function DeleteBtn({ id }: { id: string }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  const handleDelete = async () => {
-    if (await confirm({ title: "Xác nhận xóa", message: "Xác nhận xoá đơn vị này?", variant: "danger" })) {
-      setLoading(true);
-      const fd = new FormData();
-      fd.append("id", id);
-      const res = await deleteUnit(fd);
-      setLoading(false);
-      // section A4: this is the exact site the owner hit -- Combo 2's
-      // delete was refused server-side and nothing here ever read the
-      // result. res.error is now a real Vietnamese sentence naming the
-      // unit and what is using it (app/admin/inventory/actions.ts's
-      // deleteUnit, section A3/A7), not a raw code or silence.
-      if (res?.error) {
-        await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
-        return;
-      }
-      router.refresh();
-    }
-  };
-
-  return (
-    <button 
-      onClick={handleDelete} 
-      disabled={loading}
-      className="text-danger hover:text-danger-active text-sm font-medium disabled:opacity-50"
-    >
-      {loading ? "..." : "Xoá"}
-    </button>
   );
 }

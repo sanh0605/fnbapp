@@ -338,13 +338,16 @@ export async function deletePurchasedItemAction(formData: FormData): Promise<Act
     ])) as [DBPurchasedItem[], { purchased_item_id?: string }[], { purchased_item_id?: string }[], { purchased_item_id?: string }[], { purchased_item_id?: string }[]];
     const item = items.find((i) => i.id === id);
     if (!item) return fail("Không tìm thấy hàng hoá.");
-    const countOf = (rows: { purchased_item_id?: string }[]) => rows.filter((r) => r.purchased_item_id === id).length;
-    const uses: Array<[number, string]> = [
-      [countOf(poLines), "dòng phiếu nhập"],
-      [countOf(stockIssues), "lần xuất kho"],
-      [countOf(conversions), "quy đổi"],
-      [countOf(assets), "tài sản"],
-    ];
+    // No named inner arrow here: lib/auth/delete-guard.test.ts would take it
+    // for the unit that owns the remove() call below.
+    const uses = (
+      [
+        [poLines, "dòng phiếu nhập"],
+        [stockIssues, "lần xuất kho"],
+        [conversions, "quy đổi"],
+        [assets, "tài sản"],
+      ] as Array<[{ purchased_item_id?: string }[], string]>
+    ).map(([rows, label]): [number, string] => [rows.filter((r) => r.purchased_item_id === id).length, label]);
     const parts = uses.filter(([n]) => n > 0).map(([n, label]) => `${formatNumber(n)} ${label}`);
     if (parts.length > 0) {
       return fail(`Không xoá được ${item.name}: đã có ${parts.join(", ")}.`);

@@ -97,5 +97,6 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - users (id, username, password_hash, name, role, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
 
 ## UNRESOLVED write-sites (need a human)
+- app/admin/inventory/items/actions.ts: remove(...) with a non-literal table argument: 
 - app/admin/products/modifiers/actions.ts: update(...) with a non-literal table argument: 
 - app/admin/users/actions.ts: update(...) with a non-literal table argument: only if non-blank

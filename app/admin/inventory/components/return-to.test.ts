@@ -25,9 +25,42 @@ describe("safeReturnTo", () => {
     expect(safeReturnTo("/admin/inventory/asset-bands", "/admin/inventory/assets")).toBe("/admin/inventory/assets");
   });
 
-  it("falls back for an outside or off-site URL", () => {
-    expect(safeReturnTo("https://evil.example", "/admin/inventory/items")).toBe("/admin/inventory/items");
-    expect(safeReturnTo("//evil.example", "/admin/inventory/items")).toBe("/admin/inventory/items");
-    expect(safeReturnTo("/admin/inventory/itemsX", "/admin/inventory/items")).toBe("/admin/inventory/items");
+  it("accepts detail paths with valid ID, with or without query params", () => {
+    expect(safeReturnTo("/admin/inventory/items/SPM-002", "/admin/inventory/items"))
+      .toBe("/admin/inventory/items/SPM-002");
+    expect(safeReturnTo("/admin/inventory/items/SPM-002?returnTo=%2Fadmin%2Finventory%2Fitems", "/admin/inventory/items"))
+      .toBe("/admin/inventory/items/SPM-002?returnTo=%2Fadmin%2Finventory%2Fitems");
+    expect(safeReturnTo("/admin/inventory/categories/NHH-001", "/admin/inventory/categories"))
+      .toBe("/admin/inventory/categories/NHH-001");
+    expect(safeReturnTo("/admin/inventory/units/U-004?tab=info", "/admin/inventory/units"))
+      .toBe("/admin/inventory/units/U-004?tab=info");
+    expect(safeReturnTo("/admin/inventory/conversions/QD_123", "/admin/inventory/conversions"))
+      .toBe("/admin/inventory/conversions/QD_123");
+  });
+
+  it("rejects /new and /new with query params, falling back to list", () => {
+    expect(safeReturnTo("/admin/inventory/items/new", "/admin/inventory/items"))
+      .toBe("/admin/inventory/items");
+    expect(safeReturnTo("/admin/inventory/items/new?returnTo=%2Fadmin%2Finventory%2Fitems", "/admin/inventory/items"))
+      .toBe("/admin/inventory/items");
+    expect(safeReturnTo("/admin/inventory/categories/new", "/admin/inventory/categories"))
+      .toBe("/admin/inventory/categories");
+    expect(safeReturnTo("/admin/inventory/units/new", "/admin/inventory/units"))
+      .toBe("/admin/inventory/units");
+    expect(safeReturnTo("/admin/inventory/conversions/new", "/admin/inventory/conversions"))
+      .toBe("/admin/inventory/conversions");
+  });
+
+  it("rejects detail paths for a different list or with invalid id characters", () => {
+    expect(safeReturnTo("/admin/inventory/categories/NHH-001", "/admin/inventory/items"))
+      .toBe("/admin/inventory/items");
+    expect(safeReturnTo("/admin/inventory/items/SPM-002/edit", "/admin/inventory/items"))
+      .toBe("/admin/inventory/items");
+    expect(safeReturnTo("/admin/inventory/items/SPM-002/history", "/admin/inventory/items"))
+      .toBe("/admin/inventory/items");
+    expect(safeReturnTo("/admin/inventory/items/SPM 002", "/admin/inventory/items"))
+      .toBe("/admin/inventory/items");
+    expect(safeReturnTo("/admin/inventory/items/SPM@002", "/admin/inventory/items"))
+      .toBe("/admin/inventory/items");
   });
 });

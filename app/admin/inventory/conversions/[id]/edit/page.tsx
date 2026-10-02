@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import { getConversionsData } from "../../actions";
 import { ConversionForm } from "../../components/ConversionForm";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,11 @@ export default async function EditConversionPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/inventory/conversions");
+  const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/inventory/conversions");
+  const listReturnTo = rawReturnTo.startsWith("/admin/inventory/conversions/")
+    ? "/admin/inventory/conversions"
+    : rawReturnTo;
+
   const { items, conversions, units } = await getConversionsData();
 
   const conv = conversions.find((c) => c.id === params.id);
@@ -22,20 +26,24 @@ export default async function EditConversionPage({
     notFound();
   }
 
+  const detailHref = `/admin/inventory/conversions/${encodeURIComponent(conv.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
+  const item = items.find((i) => i.id === conv.purchased_item_id);
+
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Bảng quy đổi" />
-      <PageHeader
-        title="Sửa Quy Đổi"
-        subtitle="Cập nhật tỷ lệ quy đổi đơn vị mua hàng sang đơn vị cơ bản."
+    <DetailFrame>
+      <DetailHeader
+        backHref={detailHref}
+        backLabel={item?.name || conv.id}
+        title="Chỉnh sửa"
+        subtitle={conv.id}
       />
       <ConversionForm
         initialData={conv}
         items={items}
         conversions={conversions}
         units={units}
-        returnTo={returnTo}
+        returnTo={detailHref}
       />
-    </div>
+    </DetailFrame>
   );
 }

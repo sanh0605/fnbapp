@@ -99,8 +99,3 @@ export function ActionGroup({
     </>
   );
 }
-
-// Reusable Delete Button (Backward compatibility if needed)
-export function DeleteBtn({ id, actionFn }: { id: string; actionFn: any }) {
-  return <ActionGroup id={id} deleteFn={actionFn} />;
-}

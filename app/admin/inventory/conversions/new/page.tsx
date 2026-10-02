@@ -1,8 +1,8 @@
 import { getConversionsData } from "../actions";
 import { ConversionForm } from "../components/ConversionForm";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +15,10 @@ export default async function NewConversionPage({
   const { items, conversions, units } = await getConversionsData();
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Bảng quy đổi" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Bảng quy đổi"
         title="Thêm Quy Đổi Mới"
         subtitle="Thiết lập tỷ lệ quy đổi từ đơn vị mua hàng sang đơn vị cơ bản dùng trong pha chế."
       />
@@ -27,6 +28,6 @@ export default async function NewConversionPage({
         units={units}
         returnTo={returnTo}
       />
-    </div>
+    </DetailFrame>
   );
 }

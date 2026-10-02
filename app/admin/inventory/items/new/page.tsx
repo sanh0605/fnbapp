@@ -1,8 +1,8 @@
 import { getItemsData } from "../actions";
 import { PurchasedItemForm } from "../components/PurchasedItemForm";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +15,10 @@ export default async function NewPurchasedItemPage({
   const { categories, units } = await getItemsData();
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Hàng hoá" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Hàng hoá"
         title="Thêm Hàng Hóa Mua Vào"
         subtitle="Thêm mặt hàng mới vào danh mục hàng hóa."
       />
@@ -26,6 +27,6 @@ export default async function NewPurchasedItemPage({
         units={units}
         returnTo={returnTo}
       />
-    </div>
+    </DetailFrame>
   );
 }

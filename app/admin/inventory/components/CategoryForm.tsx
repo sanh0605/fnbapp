@@ -39,7 +39,7 @@ export function CategoryForm({ initialData, returnTo: rawReturnTo }: CategoryFor
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-primary mb-1">
