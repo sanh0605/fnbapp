@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import { getAssetBands } from "@/app/admin/inventory/asset-bands/actions";
 import { BandEditForm } from "@/app/admin/inventory/asset-bands/components/BandEditForm";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { formatBandRange } from "@/lib/assets/asset-depreciation";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,6 @@ export default async function EditAssetBandPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/inventory/asset-bands");
   const bands = await getAssetBands();
   const band = bands.find((b) => b.id === params.id);
 
@@ -22,14 +22,27 @@ export default async function EditAssetBandPage({
     notFound();
   }
 
+  const rawReturnTo = safeReturnTo(
+    searchParams?.returnTo,
+    "/admin/inventory/asset-bands",
+  );
+  const listReturnTo = rawReturnTo.startsWith("/admin/inventory/asset-bands/")
+    ? "/admin/inventory/asset-bands"
+    : rawReturnTo;
+
+  const detailHref = `/admin/inventory/asset-bands/${encodeURIComponent(band.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
+
+  const returnTo = searchParams?.returnTo ? rawReturnTo : detailHref;
+
   return (
-    <div className="p-4 max-w-2xl mx-auto space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-      <BackLink href={returnTo} label="Thời hạn khấu hao" />
-      <PageHeader
-        title="Sửa khung khấu hao"
-        subtitle="Cập nhật khoảng giá và số tháng khấu hao."
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel={formatBandRange(band)}
+        title="Chỉnh sửa"
+        subtitle={band.id}
       />
       <BandEditForm band={band} returnTo={returnTo} />
-    </div>
+    </DetailFrame>
   );
 }

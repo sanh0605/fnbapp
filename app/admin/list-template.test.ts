@@ -14,7 +14,6 @@ const PENDING: string[] = [
   "app/admin/finance/bank-accounts/components/BankAccountsList.tsx",
   "app/admin/finance/categories/components/CategoriesList.tsx",
   "app/admin/finance/components/CashEntriesList.tsx",
-  "app/admin/inventory/asset-bands/page.tsx",
   "app/admin/outlets/components/OutletsList.tsx",
   "app/admin/products/categories/components/CategoriesClient.tsx",
   "app/admin/products/components/ProductRowActions.tsx",

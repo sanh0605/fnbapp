@@ -1,13 +1,13 @@
 # Assets flow (tools, depreciation, disposal)
 
 ```flow-decl
-routes: /admin/inventory/assets, /admin/inventory/assets/[id]/dispose, /admin/inventory/asset-bands, /admin/inventory/asset-bands/new, /admin/inventory/asset-bands/[id]/edit
+routes: /admin/inventory/assets, /admin/inventory/assets/[id], /admin/inventory/assets/[id]/dispose, /admin/inventory/asset-bands, /admin/inventory/asset-bands/new, /admin/inventory/asset-bands/[id], /admin/inventory/asset-bands/[id]/edit
 files: app/admin/inventory/assets/actions.ts, app/admin/inventory/asset-bands/actions.ts
 tables: asset_disposals, asset_depreciation_bands
 brCodes: BR-COGS-008
 ```
 
-**Behaviour change — 2026-10-02 (list/detail template, wave 3):** new read-only `getAssetDetail(id)` returns one asset's summary, its monthly depreciation schedule and its disposals for the asset detail page; `null` for an unknown or INACTIVE asset. `getAssetsData` now builds each row through the same helper; its output is unchanged.
+**Behaviour change — 2026-10-02 (list/detail template, wave 3):** new read-only `getAssetDetail(id)` returns one asset's summary, its monthly depreciation schedule and its disposals for the asset detail page; `null` for an unknown or INACTIVE asset. `getAssetsData` now builds each row through the same helper; its output is unchanged. On screen: an asset row now opens `/admin/inventory/assets/[id]` (info, monthly depreciation, disposals) and "Thanh lý" lives only on that page; a band row opens `/admin/inventory/asset-bands/[id]`, where "Chỉnh sửa" and the ADMIN-only "Xoá" live; the band list keeps an ADMIN-only bin and no longer shows "Sửa".
 
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 10):** a declared source file's import path only -- cross-cutting lib/ helpers (action-error, datetime, dialog, duplicate-name-guard, use-filter-form, nav-completeness, client-error-report, report-time) moved to `lib/shared/`, rewritten by the move helper; no logic changed.

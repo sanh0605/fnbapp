@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { formatNumber } from "@/lib/shared/format";
 import type { AssetView } from "../actions";
 
@@ -14,26 +13,20 @@ const BUCKET_CLASS: Record<AssetView["bucket"], string> = {
   DISPOSED: "bg-surface-secondary text-text-secondary",
 };
 
-// Section 5.1: "one card per asset: name, quantity held, acquired date,
-// cost, term, months elapsed, remaining value. No horizontal table."
-// Wave 4: disposal button is a direct Link to the dispose page with returnTo.
 export function AssetCard({
   asset,
-  returnTo,
 }: {
   asset: AssetView;
-  returnTo: string;
 }) {
-  const acquiredLabel = new Date(asset.acquiredDate).toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const [y, m, d] = asset.acquiredDate.split("-");
+  const acquiredLabel = y && m && d ? `${d}/${m}/${y}` : asset.acquiredDate;
 
   return (
-    <div className="bg-surface-card border border-border rounded-xl p-4 flex flex-col gap-2">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${BUCKET_CLASS[asset.bucket]}`}>
+        <span
+          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${BUCKET_CLASS[asset.bucket]}`}
+        >
           {BUCKET_LABEL[asset.bucket]}
         </span>
         <span className="text-xs text-text-secondary">Mua ngày {acquiredLabel}</span>
@@ -41,11 +34,15 @@ export function AssetCard({
       <p className="font-bold text-text-primary text-sm leading-snug">{asset.name}</p>
       <div className="flex items-baseline justify-between text-sm">
         <span className="text-text-secondary">Số lượng còn</span>
-        <span className="font-semibold text-text-primary">{asset.remainingQuantity} / {asset.quantity} cái</span>
+        <span className="font-semibold text-text-primary">
+          {asset.remainingQuantity} / {asset.quantity} cái
+        </span>
       </div>
       <div className="flex items-baseline justify-between text-sm">
         <span className="text-text-secondary">Đơn giá</span>
-        <span className="font-semibold text-text-primary">{formatNumber(asset.unitCost)}đ</span>
+        <span className="font-semibold text-text-primary">
+          {formatNumber(Math.round(asset.unitCost))}đ
+        </span>
       </div>
       <div className="flex items-baseline justify-between text-sm">
         <span className="text-text-secondary">Thời hạn khấu hao</span>
@@ -53,18 +50,10 @@ export function AssetCard({
       </div>
       <div className="flex items-baseline justify-between text-sm">
         <span className="text-text-secondary">Giá trị còn lại</span>
-        <span className="font-bold text-primary">{formatNumber(asset.remainingValue)}đ</span>
+        <span className="font-bold text-primary">
+          {formatNumber(Math.round(asset.remainingValue))}đ
+        </span>
       </div>
-      {asset.bucket !== "DISPOSED" && (
-        <div className="flex justify-end pt-2 mt-1 border-t border-border">
-          <Link
-            href={`/admin/inventory/assets/${asset.id}/dispose?returnTo=${encodeURIComponent(returnTo)}`}
-            className="text-danger hover:text-danger-active font-medium text-sm min-h-[44px] px-2 flex items-center"
-          >
-            Đánh dấu hỏng / thanh lý
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

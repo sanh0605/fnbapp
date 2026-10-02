@@ -12,7 +12,7 @@ import type { DBAssetDepreciationBand } from "@/types/db";
 // and phone-only for this batch (owner 2026-08-17): one card per band, no
 // horizontal table, min-h-[44px] tap targets, inputMode="numeric" on every
 // number field.
-// Wave 4: full-page form instead of modal, returns to list view on submit/cancel.
+// Wave 4: full-page form instead of modal, returns to detail view on submit/cancel.
 export function BandEditForm({
   band,
   returnTo: rawReturnTo,
@@ -20,7 +20,10 @@ export function BandEditForm({
   band: DBAssetDepreciationBand;
   returnTo?: string;
 }) {
-  const returnTo = safeReturnTo(rawReturnTo, "/admin/inventory/asset-bands");
+  const returnTo = safeReturnTo(
+    rawReturnTo || `/admin/inventory/asset-bands/${band.id}`,
+    "/admin/inventory/asset-bands",
+  );
   const formId = useId();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -46,7 +49,7 @@ export function BandEditForm({
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">

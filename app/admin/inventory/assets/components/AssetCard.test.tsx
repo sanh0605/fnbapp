@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 //
-// Render test (OPEN-ITEMS 38/46's limit -- render assertion, no submission
-// needed to check what a card displays) for the "one card per asset" shape
-// section 5.1 asks for: bucket label, remaining quantity, remaining value.
+// Render test for the "one card per asset" shape: bucket label, remaining
+// quantity, remaining value, and phone card content without disposal link.
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
@@ -14,8 +13,7 @@ vi.mock("../actions", () => ({
   disposeAsset: vi.fn(),
   previewDisposalCharge: vi.fn(),
 }));
-// section B: DisposeAssetForm (rendered inside AssetCard) now calls
-// useRouter().refresh() on save.
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));
@@ -59,7 +57,7 @@ const BASE_ASSET: AssetView = {
 describe("AssetCard", () => {
   it("shows the Vietnamese bucket label and remaining value for an in-use asset", async () => {
     const container = await renderTracked(
-      <AssetCard asset={BASE_ASSET} returnTo="/admin/inventory/assets" />,
+      <AssetCard asset={BASE_ASSET} />,
     );
 
     expect(container.textContent).toContain("Còn dùng");
@@ -67,44 +65,25 @@ describe("AssetCard", () => {
     expect(container.textContent).toContain("8 / 8 cái");
     expect(container.textContent).toContain("634.367đ");
     expect(container.textContent).toContain("12 tháng");
+    expect(container.textContent).not.toContain("Đánh dấu hỏng / thanh lý");
   });
 
-  it("shows 'Đã hết khấu hao' and offers no disposal action changes when fully depreciated, still owned", async () => {
+  it("shows 'Đã hết khấu hao' and offers no disposal action when fully depreciated", async () => {
     const container = await renderTracked(
       <AssetCard
         asset={{ ...BASE_ASSET, bucket: "FULLY_DEPRECIATED", remainingValue: 0 }}
-        returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED"
       />,
     );
 
     expect(container.textContent).toContain("Đã hết khấu hao");
     expect(container.textContent).toContain("0đ");
-    // Still offered for disposal -- the shop still owns it (section 1).
-    expect(container.textContent).toContain("Đánh dấu hỏng / thanh lý");
-  });
-
-  it("links 'Đánh dấu hỏng / thanh lý' to the dispose page with encoded returnTo", async () => {
-    const container = await renderTracked(
-      <AssetCard
-        asset={{ ...BASE_ASSET, bucket: "FULLY_DEPRECIATED", remainingValue: 0 }}
-        returnTo="/admin/inventory/assets?tab=FULLY_DEPRECIATED"
-      />,
-    );
-
-    const link = Array.from(container.querySelectorAll("a")).find(
-      a => a.textContent?.trim() === "Đánh dấu hỏng / thanh lý",
-    );
-    expect(link).toBeDefined();
-    expect(link?.getAttribute("href")).toBe(
-      `/admin/inventory/assets/${BASE_ASSET.id}/dispose?returnTo=%2Fadmin%2Finventory%2Fassets%3Ftab%3DFULLY_DEPRECIATED`,
-    );
+    expect(container.textContent).not.toContain("Đánh dấu hỏng / thanh lý");
   });
 
   it("shows 'Đã thanh lý' and hides the disposal action once fully disposed", async () => {
     const container = await renderTracked(
       <AssetCard
         asset={{ ...BASE_ASSET, bucket: "DISPOSED", remainingQuantity: 0, remainingValue: 0 }}
-        returnTo="/admin/inventory/assets?tab=DISPOSED"
       />,
     );
 
@@ -112,6 +91,16 @@ describe("AssetCard", () => {
     expect(container.textContent).not.toContain("Đánh dấu hỏng / thanh lý");
     const link = Array.from(container.querySelectorAll("a")).find(
       a => a.textContent?.trim() === "Đánh dấu hỏng / thanh lý",
+    );
+    expect(link).toBeUndefined();
+  });
+
+  it("does not render any disposal link", async () => {
+    const container = await renderTracked(
+      <AssetCard asset={BASE_ASSET} />,
+    );
+    const link = Array.from(container.querySelectorAll("a")).find(
+      a => a.textContent?.includes("thanh lý") || a.textContent?.includes("Thanh lý"),
     );
     expect(link).toBeUndefined();
   });

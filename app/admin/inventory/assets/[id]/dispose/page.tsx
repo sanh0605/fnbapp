@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import { getAssetsData } from "@/app/admin/inventory/assets/actions";
 import { DisposeAssetForm } from "@/app/admin/inventory/assets/components/DisposeAssetForm";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -22,14 +22,17 @@ export default async function DisposeAssetPage({
     notFound();
   }
 
+  const backLabel = returnTo.startsWith("/admin/inventory/assets/") ? asset.name : "Tài sản";
+
   return (
-    <div className="p-4 max-w-2xl mx-auto space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-      <BackLink href={returnTo} label="Tài sản" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel={backLabel}
         title={`Thanh lý: ${asset.name}`}
-        subtitle="Ghi nhận tài sản hỏng hoặc thanh lý."
+        subtitle={asset.id}
       />
       <DisposeAssetForm asset={asset} returnTo={returnTo} />
-    </div>
+    </DetailFrame>
   );
 }
