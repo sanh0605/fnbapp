@@ -9,9 +9,11 @@ import {
   buildAssetSchedule,
   chargeForMonth,
   summarizeAsset,
+  totalScheduledCharge,
   validateDisposalDate,
   type AssetSummary,
   type DisposalInput,
+  type MonthlyCharge,
 } from "@/lib/assets/asset-depreciation";
 import type { DBAsset, DBAssetDisposal } from "@/types/db";
 
@@ -41,6 +43,22 @@ function toDisposalInputs(disposals: DBAssetDisposal[]): DisposalInput[] {
   return disposals.map(d => ({ quantity: Number(d.quantity), disposed_date: d.disposed_date }));
 }
 
+function summarizeDbAsset(asset: DBAsset, disposals: DBAssetDisposal[], asOfMonth: string): AssetView {
+  return summarizeAsset(
+    {
+      id: asset.id,
+      name: asset.name_snapshot,
+      acquired_date: asset.acquired_date,
+      unit_cost: Number(asset.unit_cost),
+      total_cost: Number(asset.total_cost),
+      quantity: Number(asset.quantity),
+      term_months: Number(asset.term_months),
+    },
+    toDisposalInputs(disposals),
+    asOfMonth,
+  );
+}
+
 export async function getAssetsData(): Promise<AssetView[]> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
@@ -66,24 +84,64 @@ export async function getAssetsData(): Promise<AssetView[]> {
 
     return activeAssets
       .map(asset =>
-        summarizeAsset(
-          {
-            id: asset.id,
-            name: asset.name_snapshot,
-            acquired_date: asset.acquired_date,
-            unit_cost: Number(asset.unit_cost),
-            total_cost: Number(asset.total_cost),
-            quantity: Number(asset.quantity),
-            term_months: Number(asset.term_months),
-          },
-          toDisposalInputs(disposalsByAsset.get(asset.id) ?? []),
-          thisMonth,
-        ),
+        summarizeDbAsset(asset, disposalsByAsset.get(asset.id) ?? [], thisMonth),
       )
       .sort((a, b) => a.name.localeCompare(b.name, "vi"));
   } catch (error) {
     // rethrow instead of a fabricated empty list -- app/error.tsx handles it.
     console.error("Loi getAssetsData:", error);
+    throw error;
+  }
+}
+
+export type AssetDisposalView = { id: string; quantity: number; disposedDate: string; reason: string };
+export type AssetDetail = {
+  asset: AssetView;
+  schedule: MonthlyCharge[];
+  disposals: AssetDisposalView[];
+  chargedToDate: number;
+};
+
+// Read-only: one asset's summary, monthly depreciation schedule and disposals
+// for the detail page. null = not found or administratively INACTIVE.
+export async function getAssetDetail(id: string): Promise<AssetDetail | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  try {
+    const [assets, disposals] = await Promise.all([
+      findAll(ASSETS_SHEET) as Promise<DBAsset[]>,
+      findAll(DISPOSALS_SHEET) as Promise<DBAssetDisposal[]>,
+    ]);
+    const row = assets.find(a => a.id === id);
+    if (!row || row.status === "INACTIVE") return null;
+
+    const own = disposals
+      .filter(d => d.asset_id === id)
+      .sort((a, b) => a.disposed_date.localeCompare(b.disposed_date));
+    const asset = summarizeDbAsset(row, own, currentSaigonMonth());
+    const schedule = buildAssetSchedule(
+      {
+        acquired_date: row.acquired_date,
+        total_cost: Number(row.total_cost),
+        quantity: Number(row.quantity),
+        term_months: Number(row.term_months),
+      },
+      toDisposalInputs(own),
+    );
+    return {
+      asset,
+      schedule,
+      disposals: own.map(d => ({
+        id: d.id,
+        quantity: Number(d.quantity),
+        disposedDate: d.disposed_date,
+        reason: d.reason ?? "",
+      })),
+      chargedToDate: totalScheduledCharge(schedule) - asset.remainingValue,
+    };
+  } catch (error) {
+    console.error("Loi getAssetDetail:", error);
     throw error;
   }
 }

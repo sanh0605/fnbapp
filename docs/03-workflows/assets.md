@@ -7,6 +7,8 @@ tables: asset_disposals, asset_depreciation_bands
 brCodes: BR-COGS-008
 ```
 
+**Behaviour change — 2026-10-02 (list/detail template, wave 3):** new read-only `getAssetDetail(id)` returns one asset's summary, its monthly depreciation schedule and its disposals for the asset detail page; `null` for an unknown or INACTIVE asset. `getAssetsData` now builds each row through the same helper; its output is unchanged.
+
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 10):** a declared source file's import path only -- cross-cutting lib/ helpers (action-error, datetime, dialog, duplicate-name-guard, use-filter-form, nav-completeness, client-error-report, report-time) moved to `lib/shared/`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 9):** a declared source file's import path only -- sheets_db.ts/supabase.ts/shared-actions.ts/backup-restore.ts moved to `lib/db/` (spec D6), rewritten by the move helper; no logic changed.

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("@/lib/db/tables", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { getAssetsData, previewDisposalCharge, disposeAsset } from "./actions";
+import { getAssetsData, getAssetDetail, previewDisposalCharge, disposeAsset } from "./actions";
 
 const ASSET = {
   id: "TS-001",
@@ -243,5 +243,74 @@ describe("disposeAsset -- section 3.3", () => {
       "asset_disposals",
       expect.objectContaining({ asset_id: "TS-002", disposed_date: "2026-05-15" }),
     );
+  });
+});
+
+describe("getAssetDetail", () => {
+  const TS004 = {
+    id: "TS-004",
+    name_snapshot: "Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)",
+    acquired_date: "2026-04-04",
+    unit_cost: 205_920,
+    quantity: 2,
+    total_cost: 411_840,
+    term_months: 24,
+    status: "ACTIVE",
+  };
+  const TL002 = { id: "TL-002", asset_id: "TS-004", quantity: 1, disposed_date: "2026-07-02", reason: null };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-15T05:00:00Z"));
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns summary, schedule, disposals and charged-to-date for TS-004", async () => {
+    mocks.findAll.mockImplementation(findAllMockFor([TS004], [TL002]));
+
+    const detail = await getAssetDetail("TS-004");
+
+    expect(detail).not.toBeNull();
+    const { asset, schedule, disposals, chargedToDate } = detail!;
+    expect(schedule).toHaveLength(24);
+    expect(schedule[0]).toEqual({ month: "2026-04", unitsHeld: 2, charge: 17160 });
+    const jul = schedule.find(m => m.month === "2026-07")!;
+    expect(jul.charge).toBeCloseTo(188760, 6);
+    const aug = schedule.find(m => m.month === "2026-08")!;
+    expect(aug.unitsHeld).toBe(1);
+    expect(aug.charge).toBeCloseTo(8580, 6);
+    expect(schedule[schedule.length - 1].month).toBe("2028-03");
+    expect(asset.remainingQuantity).toBe(1);
+    expect(asset.remainingValue).toBeCloseTo(145860, 6);
+    expect(chargedToDate).toBeCloseTo(265980, 6);
+    expect(disposals).toEqual([{ id: "TL-002", quantity: 1, disposedDate: "2026-07-02", reason: "" }]);
+  });
+
+  it("returns null for an unknown id and for an INACTIVE asset", async () => {
+    mocks.findAll.mockImplementation(findAllMockFor([TS004, { ...CA_DONG, status: "INACTIVE" }]));
+
+    await expect(getAssetDetail("TS-404")).resolves.toBeNull();
+    await expect(getAssetDetail("TS-002")).resolves.toBeNull();
+  });
+
+  it("does not include another asset's disposals", async () => {
+    mocks.findAll.mockImplementation(
+      findAllMockFor([TS004, CA_DONG], [TL002, { id: "TL-009", asset_id: "TS-002", quantity: 1, disposed_date: "2026-05-15", reason: "x" }]),
+    );
+
+    const detail = await getAssetDetail("TS-004");
+
+    expect(detail!.disposals.map(d => d.id)).toEqual(["TL-002"]);
+  });
+
+  it("rejects without reading data when requireAdmin refuses", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "no" });
+
+    await expect(getAssetDetail("TS-004")).rejects.toThrow("no");
+    expect(mocks.findAll).not.toHaveBeenCalled();
   });
 });
