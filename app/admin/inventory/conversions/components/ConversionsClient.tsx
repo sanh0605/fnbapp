@@ -202,7 +202,7 @@ export default function ConversionsClient({
           </div>
         </div>
         <div className="text-sm text-text-secondary">
-          1 {pUnit} = x{conv.conversion_rate} {bUnit}
+          1 {pUnit} = {conv.conversion_rate} {bUnit}
         </div>
       </div>
     );
