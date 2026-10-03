@@ -157,6 +157,52 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
   });
 
+  describe("an existing order saved again", () => {
+    const equipmentPlan = () => ({
+      order: {},
+      // Line ids are recreated by every replace-existing save: "POL-NEW" is the id THIS save wrote.
+      lines: [{ id: "POL-NEW", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
+      ledgerRows: [],
+    });
+
+    it("DRAFT -> COMPLETED creates the asset, pointing at the line id written by this save", async () => {
+      mocks.findById.mockResolvedValue({ status: "DRAFT", subtotal_amount: 761_200 });
+      mocks.buildPurchaseOrderWritePlan.mockReturnValue(equipmentPlan());
+
+      const res = await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
+
+      expect(res.error).toBeUndefined();
+      const assetInserts = mocks.insert.mock.calls.filter(c => c[0] === "assets");
+      expect(assetInserts).toHaveLength(1);
+      expect(assetInserts[0][1]).toEqual(
+        expect.objectContaining({
+          purchase_order_line_id: "POL-NEW",
+          purchased_item_id: "SPM-200",
+          total_cost: 761_200,
+          quantity: 8,
+        }),
+      );
+    });
+
+    it("COMPLETED -> COMPLETED creates no asset", async () => {
+      mocks.findById.mockResolvedValue({ status: "COMPLETED", subtotal_amount: 761_200 });
+      mocks.buildPurchaseOrderWritePlan.mockReturnValue(equipmentPlan());
+
+      await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
+
+      expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    });
+
+    it("DRAFT -> DRAFT creates no asset", async () => {
+      mocks.findById.mockResolvedValue({ status: "DRAFT", subtotal_amount: 761_200 });
+      mocks.buildPurchaseOrderWritePlan.mockReturnValue(equipmentPlan());
+
+      await savePurchaseOrder(buildFormData("DRAFT", "PO-001"));
+
+      expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    });
+  });
+
   // section 6,
   // the owner's own numbers: 1 line, 1 "Combo 10", 108.000d, conversion
   // 1 Combo 10 = 10 Chai -> asset quantity 10, unit_cost 10.800d. Against

@@ -179,15 +179,21 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     // created -- this is the mechanism, inferred rather than stated
     // outright; flagged as such in the handoff.
     //
-    // Deliberately scoped to a brand-new order only (!id): what should
-    // happen to an already-created asset if its source purchase order is
-    // later EDITED is not addressed anywhere in the plan, and silently
-    // re-deriving or overwriting a depreciation record on every PO edit
-    // risks corrupting term_months' freeze (section 9.1) or a disposal
-    // history that already exists on that asset. Left as a known
-    // limitation rather than guessed at.
+    // Assets are created the first time an order becomes COMPLETED: either
+    // brand new (!id) or an existing order whose stored status, read above
+    // before the atomic save replaced it, was not COMPLETED (DRAFT ->
+    // COMPLETED). Still open and deliberately NOT handled: editing an
+    // order that was ALREADY completed. What should happen to an
+    // already-created asset then is an undecided owner question, and
+    // silently re-deriving or overwriting a depreciation record on every
+    // PO edit risks corrupting term_months' freeze (section 9.1) or a
+    // disposal history that already exists on that asset. Left as a known
+    // limitation rather than guessed at. An id with no stored order found
+    // is also skipped (status unknown, avoid duplicate assets).
+    const becomesCompletedNow =
+      status === "COMPLETED" && (!id || (previousPo !== null && previousPo.status !== "COMPLETED"));
     let assetWarning: string | undefined;
-    if (!id && status === "COMPLETED") {
+    if (becomesCompletedNow) {
       try {
         const equipmentCategoryIds = new Set(
           (itemCategories as DBItemCategory[])

@@ -36,8 +36,15 @@ goods later leave stock is driven by these purchase prices.
 **Durable tools bought on a purchase order create `assets` rows.** When a new
 order is completed, its equipment lines are turned into asset records: the action
 plans the assets (`lib/assets/asset-purchase-allocation.ts`) and inserts one `assets`
-row per durable tool. This happens only when a **new** order is completed, not
-when an existing order is edited — see question 5.
+row per durable tool. This happens the first time an order becomes completed:
+saved straight as completed, or saved as a draft and completed later. It does not
+happen when an already-completed order is edited — see question 5.
+
+**Behaviour change — 2026-10-03:** a draft order completed later now creates its
+assets too. Before, only an order saved straight as completed did, so a draft
+completed later left its equipment out of depreciation. Measured that day: 83
+equipment lines on completed orders, all 83 with an asset, so no past order was
+affected.
 
 ## Five-question current-state description
 
@@ -87,8 +94,8 @@ when an existing order is edited — see question 5.
 5. **Which data it serves, and which it deliberately does not.** This flow serves
    purchases into the shared warehouse and the supplier and source records those
    purchases reference. It deliberately does **not** re-derive assets on an
-   **edit**: assets are created only for a newly completed order, so editing an
-   existing completed order does not create, overwrite, or remove the asset rows
+   **edit**: assets are created only when an order first becomes completed, so editing an
+   already-completed order does not create, overwrite, or remove the asset rows
    that its original completion produced. It also does not manage what happens to
    an already-created asset when its source order is later edited — that is out of
    scope here and handled (if at all) by the assets flow, not this one.
@@ -97,7 +104,7 @@ when an existing order is edited — see question 5.
 
 The atomic function writes the order header (`purchase_orders`) and one row per
 line (`purchase_order_lines`). The purchase-orders action additionally writes
-`assets` (one row per durable tool on a newly completed order),
+`assets` (one row per durable tool on an order that has just become completed),
 `purchase_order_edits` (the edit trail, since purchase orders keep no
 `order_events`), and `Purchase_Sources` (the buying-channel lookup). The
 suppliers action writes `Suppliers`. The generated map at
