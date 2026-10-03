@@ -9,9 +9,7 @@ import { describe, expect, it } from "vitest";
 // PENDING lists the screens not yet moved to the list/detail template.
 // Each wave removes its screens; a file that no longer links to an edit
 // page but is still listed also turns this red, so the list cannot rot.
-const PENDING: string[] = [
-  "app/admin/users/components/UsersClient.tsx",
-];
+const PENDING: string[] = [];
 
 const EDIT_LINK = /\/edit[?`"'/]/;
 

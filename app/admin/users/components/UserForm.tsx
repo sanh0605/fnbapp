@@ -2,10 +2,8 @@
 
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
-import { addUser, deleteUserAction } from "@/app/admin/users/actions";
+import { addUser } from "@/app/admin/users/actions";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
-import { alert } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
 
 interface UserFormProps {
@@ -105,49 +103,5 @@ export function UserForm({ returnTo: rawReturnTo }: UserFormProps = {}) {
         </div>
       </form>
     </div>
-  );
-}
-
-interface DeleteUserButtonProps {
-  id: string;
-  username: string;
-}
-
-export function DeleteUserButton({ id, username }: DeleteUserButtonProps) {
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // section A4b/B: the action's result was discarded -- a refusal failed in
-  // total silence, and a successful delete never told the browser to
-  // redraw.
-  async function handleDelete() {
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("id", id);
-    const res = await deleteUserAction(formData);
-    setLoading(false);
-    if (res?.error) {
-      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
-      return;
-    }
-    router.refresh();
-  }
-
-  return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="px-3 py-1.5 min-h-[44px] bg-danger/10 hover:bg-danger/20 border border-danger/20 text-danger font-bold text-xs rounded-lg transition active:scale-95 inline-flex items-center"
-      >
-        Xóa
-      </button>
-      <DeleteConfirmModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        onConfirm={handleDelete}
-        description={`Bạn có chắc chắn muốn xóa nhân sự "${username}"?`}
-      />
-    </>
   );
 }

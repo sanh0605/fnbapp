@@ -533,5 +533,145 @@ describe("DataList", () => {
       expect(router.replace).toHaveBeenCalledWith("/admin/suppliers?sort=name&dir=desc");
     });
   });
+
+  describe("canRemove (selective row removal)", () => {
+    it("with canRemove excluding one row: excluded row has no checkbox and no bin button; tick-all ticks every other row and the bar reads 'Xoá 2 dòng đã chọn'; remove is never called with the excluded id", async () => {
+      confirmMock.mockResolvedValue(true);
+      const removeMock = vi.fn().mockResolvedValue({});
+
+      render(
+        <DataList
+          rows={suppliers}
+          getId={(r: SampleSupplier) => r.id}
+          getName={(r: SampleSupplier) => r.name}
+          getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+          columns={columns}
+          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          removal={{
+            verb: "Xoá",
+            confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
+            remove: removeMock,
+            canRemove: (r: SampleSupplier) => r.id !== "NCC-020",
+          }}
+          empty={<div>Trống</div>}
+        />
+      );
+
+      expect(screen.queryByRole("checkbox", { name: "Chọn The Garden Tea & Coffee" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "Xoá The Garden Tea & Coffee" })).toBeNull();
+
+      expect(screen.getAllByRole("checkbox", { name: "Chọn Vinamilk" }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole("checkbox", { name: "Chọn Circle K" }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole("button", { name: "Xoá Vinamilk" }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole("button", { name: "Xoá Circle K" }).length).toBeGreaterThan(0);
+
+      const selectAll = screen.getByRole("checkbox", { name: "Chọn tất cả" });
+      fireEvent.click(selectAll);
+
+      const deleteSelectedBtn = screen.getByRole("button", { name: "Xoá 2 dòng đã chọn" });
+      expect(deleteSelectedBtn).toBeInTheDocument();
+
+      fireEvent.click(deleteSelectedBtn);
+
+      await waitFor(() => {
+        expect(removeMock).toHaveBeenCalledTimes(2);
+      });
+
+      expect(removeMock).toHaveBeenCalledWith("NCC-029");
+      expect(removeMock).toHaveBeenCalledWith("NCC-023");
+      expect(removeMock).not.toHaveBeenCalledWith("NCC-020");
+    });
+
+    it("without canRemove every row still has a checkbox", () => {
+      render(
+        <DataList
+          rows={suppliers}
+          getId={(r: SampleSupplier) => r.id}
+          getName={(r: SampleSupplier) => r.name}
+          getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+          columns={columns}
+          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          removal={{
+            verb: "Xoá",
+            confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
+            remove: vi.fn(),
+          }}
+          empty={<div>Trống</div>}
+        />
+      );
+
+      expect(screen.getAllByRole("checkbox", { name: "Chọn Vinamilk" }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole("checkbox", { name: "Chọn The Garden Tea & Coffee" }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole("checkbox", { name: "Chọn Circle K" }).length).toBeGreaterThan(0);
+    });
+
+    it("hides header checkbox (tick-all) when the page has no removable row", () => {
+      render(
+        <DataList
+          rows={suppliers}
+          getId={(r: SampleSupplier) => r.id}
+          getName={(r: SampleSupplier) => r.name}
+          getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+          columns={columns}
+          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          removal={{
+            verb: "Xoá",
+            confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
+            remove: vi.fn(),
+            canRemove: () => false,
+          }}
+          empty={<div>Trống</div>}
+        />
+      );
+
+      expect(screen.queryByRole("checkbox", { name: "Chọn tất cả" })).toBeNull();
+      expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
+    });
+
+    it("with every row excluded by canRemove, there is no button named 'Chọn'", () => {
+      render(
+        <DataList
+          rows={suppliers}
+          getId={(r: SampleSupplier) => r.id}
+          getName={(r: SampleSupplier) => r.name}
+          getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+          columns={columns}
+          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          removal={{
+            verb: "Xoá",
+            confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
+            remove: vi.fn(),
+            canRemove: () => false,
+          }}
+          empty={<div>Trống</div>}
+        />
+      );
+
+      expect(screen.queryByRole("button", { name: "Chọn" })).toBeNull();
+    });
+
+    it("with one removable row, the 'Chọn' button exists", () => {
+      render(
+        <DataList
+          rows={suppliers}
+          getId={(r: SampleSupplier) => r.id}
+          getName={(r: SampleSupplier) => r.name}
+          getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+          columns={columns}
+          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          removal={{
+            verb: "Xoá",
+            confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
+            remove: vi.fn(),
+            canRemove: (r: SampleSupplier) => r.id === "NCC-020",
+          }}
+          empty={<div>Trống</div>}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: "Chọn" })).toBeInTheDocument();
+    });
+  });
 });
+
 

@@ -38,6 +38,7 @@ export interface DataListProps<T> {
     rowVerb?: (row: T) => string;
     confirmMessage: (count: number) => string;
     remove: (id: string) => Promise<RemoveResult>;
+    canRemove?: (row: T) => boolean; // omitted → every row is removable
   };
   empty: React.ReactNode;
 }
@@ -132,19 +133,29 @@ export function DataList<T>({
 
   const sortableColumns = columns.filter((col) => col.sortValue !== undefined);
 
+  const isRowRemovable = (row: T) =>
+    !removal?.canRemove || removal.canRemove(row);
+  const removableRows = removal ? rows.filter(isRowRemovable) : [];
+  const hasRemovableRows = removableRows.length > 0;
+
   const selectedCount = selectedIds.size;
   const allSelected =
-    rows.length > 0 && rows.every((row) => selectedIds.has(getId(row)));
+    hasRemovableRows &&
+    removableRows.every((row) => selectedIds.has(getId(row)));
 
   function toggleSelectAll() {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(rows.map(getId)));
+      setSelectedIds(new Set(removableRows.map(getId)));
     }
   }
 
   function toggleSelectRow(id: string) {
+    const row = rows.find((r) => getId(r) === id);
+    if (row && !isRowRemovable(row)) {
+      return;
+    }
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -158,7 +169,9 @@ export function DataList<T>({
 
   async function handleRemoveSelected() {
     if (!removal) return;
-    const idsToDelete = rows.map(getId).filter((id) => selectedIds.has(id));
+    const idsToDelete = removableRows
+      .map(getId)
+      .filter((id) => selectedIds.has(id));
     if (idsToDelete.length === 0) return;
 
     const ok = await confirm({
@@ -196,6 +209,7 @@ export function DataList<T>({
 
   async function handleRemoveSingle(row: T) {
     if (!removal) return;
+    if (!isRowRemovable(row)) return;
     const id = getId(row);
     const name = getName(row);
     const verb = removal.rowVerb ? removal.rowVerb(row) : removal.verb;
@@ -314,7 +328,7 @@ export function DataList<T>({
         </div>
       )}
 
-      {(sort && sortableColumns.length > 0) || removal ? (
+      {(sort && sortableColumns.length > 0) || (removal && hasRemovableRows) ? (
         <div className="md:hidden flex items-center justify-between gap-3">
           {sort && sortableColumns.length > 0 ? (
             <div className="flex-1">
@@ -341,7 +355,7 @@ export function DataList<T>({
               </select>
             </div>
           ) : <div />}
-          {removal && (
+          {removal && hasRemovableRows && (
             <button
               type="button"
               onClick={() => {
@@ -367,13 +381,15 @@ export function DataList<T>({
               <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                 {removal && (
                   <th className="px-4 py-4 w-12 text-center">
-                    <input
-                      type="checkbox"
-                      aria-label="Chọn tất cả"
-                      checked={allSelected}
-                      onChange={toggleSelectAll}
-                      className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
-                    />
+                    {hasRemovableRows && (
+                      <input
+                        type="checkbox"
+                        aria-label="Chọn tất cả"
+                        checked={allSelected}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                      />
+                    )}
                   </th>
                 )}
                 {columns.map((col) => {
@@ -426,6 +442,7 @@ export function DataList<T>({
                 const id = getId(row);
                 const name = getName(row);
                 const href = getHref(row);
+                const isRemovable = isRowRemovable(row);
                 const isSelected = selectedIds.has(id);
                 const verb = removal?.rowVerb ? removal.rowVerb(row) : removal?.verb;
 
@@ -438,13 +455,15 @@ export function DataList<T>({
                   >
                     {removal && (
                       <td className="px-4 py-4 text-center relative z-20">
-                        <input
-                          type="checkbox"
-                          aria-label={`Chọn ${name}`}
-                          checked={isSelected}
-                          onChange={() => toggleSelectRow(id)}
-                          className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
-                        />
+                        {isRemovable && (
+                          <input
+                            type="checkbox"
+                            aria-label={`Chọn ${name}`}
+                            checked={isSelected}
+                            onChange={() => toggleSelectRow(id)}
+                            className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                          />
+                        )}
                       </td>
                     )}
                     {columns.map((col, idx) => (
@@ -467,19 +486,21 @@ export function DataList<T>({
                     ))}
                     {removal && (
                       <td className="px-4 py-4 text-center relative z-20">
-                        <button
-                          type="button"
-                          title={verb}
-                          aria-label={`${verb} ${name}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveSingle(row);
-                          }}
-                          className="p-2 text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors inline-flex items-center justify-center min-w-[36px] min-h-[36px]"
-                        >
-                          <TrashIcon />
-                          <span className="sr-only">{verb}</span>
-                        </button>
+                        {isRemovable && (
+                          <button
+                            type="button"
+                            title={verb}
+                            aria-label={`${verb} ${name}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveSingle(row);
+                            }}
+                            className="p-2 text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors inline-flex items-center justify-center min-w-[36px] min-h-[36px]"
+                          >
+                            <TrashIcon />
+                            <span className="sr-only">{verb}</span>
+                          </button>
+                        )}
                       </td>
                     )}
                   </tr>
@@ -495,6 +516,7 @@ export function DataList<T>({
             const id = getId(row);
             const name = getName(row);
             const href = getHref(row);
+            const isRemovable = isRowRemovable(row);
             const isSelected = selectedIds.has(id);
             const verb = removal?.rowVerb ? removal.rowVerb(row) : removal?.verb;
 
@@ -505,7 +527,7 @@ export function DataList<T>({
                   isSelected ? "bg-primary-soft/30" : ""
                 }`}
               >
-                {removal && isMobileSelecting && (
+                {removal && isMobileSelecting && isRemovable && (
                   <div className="relative z-20 mb-2 flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -521,25 +543,31 @@ export function DataList<T>({
                 )}
 
                 {isMobileSelecting ? (
-                  <button
-                    type="button"
-                    onClick={() => toggleSelectRow(id)}
-                    className="w-full text-left focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px]"
-                  >
-                    {renderCard(row)}
-                  </button>
+                  isRemovable ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleSelectRow(id)}
+                      className="w-full text-left focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px]"
+                    >
+                      {renderCard(row)}
+                    </button>
+                  ) : (
+                    <div className="w-full text-left min-h-[44px]">
+                      {renderCard(row)}
+                    </div>
+                  )
                 ) : (
                   <Link
                     href={href}
                     className={`block focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px] ${
-                      removal ? "pr-12" : ""
+                      removal && isRemovable ? "pr-12" : ""
                     }`}
                   >
                     {renderCard(row)}
                   </Link>
                 )}
 
-                {removal && !isMobileSelecting && (
+                {removal && !isMobileSelecting && isRemovable && (
                   <div className="absolute top-2 right-2 z-20">
                     <button
                       type="button"

@@ -83,7 +83,7 @@ export function listAdminPageRoutes(repoRoot: string): string[] {
 // Walks ALL of app/**/page.tsx and returns each one as its route path, with
 // segments joined from the app/ dir. Unlike listAdminPageRoutes, this covers
 // non-admin routes (/pos, /login, /settings/password) and keeps dynamic
-// segments literally (e.g. /admin/users/edit/[id]) instead of skipping the
+// segments literally (e.g. /admin/users/[id]/edit) instead of skipping the
 // subtree -- the flow-doc route check needs to resolve every declared route,
 // dynamic ones included.
 export function listAllPageRoutes(repoRoot: string): string[] {
