@@ -2,11 +2,11 @@
 
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
-import { addOutlet, editOutlet, retireOutlet } from "@/app/admin/outlets/actions";
+import { addOutlet, editOutlet } from "@/app/admin/outlets/actions";
 import { nextOutletCode } from "@/lib/catalog/outlet-code";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { confirm, alert } from "@/lib/shared/dialog";
+import { alert } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
@@ -208,56 +208,5 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
         </div>
       </form>
     </div>
-  );
-}
-
-interface RetireOutletButtonProps {
-  outlet: DBOutlet;
-}
-
-// Never deletes -- calls retireOutlet, which sets status/end_date only
-// (plan section 2). The server refuses the last active outlet; that refusal
-// is surfaced here rather than pre-checked client-side, so the rule lives
-// in exactly one place.
-export function RetireOutletButton({ outlet }: RetireOutletButtonProps) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  if (outlet.status !== "ACTIVE") return null;
-
-  // section B: outlet is a server-fetched prop -- without this, the button
-  // above stays visible (still reading the stale ACTIVE status) after a
-  // successful retire, until the owner navigates away and back.
-  async function handleRetire() {
-    const approved = await confirm({
-      title: "Ngừng hoạt động điểm bán",
-      message: `Ngừng hoạt động "${outlet.name}"? Điểm bán sẽ không còn dùng để mở máy POS, nhưng dữ liệu và mã ${outlet.code} vẫn được giữ nguyên.`,
-      okText: "Ngừng hoạt động",
-      cancelText: "Huỷ",
-      variant: "warning",
-    });
-    if (!approved) return;
-
-    setLoading(true);
-    const formData = new FormData();
-    formData.set("id", outlet.id);
-    const res = await retireOutlet(formData);
-    setLoading(false);
-
-    if (res.error) {
-      await alert({ title: "Không thể ngừng hoạt động", message: res.error, variant: "danger" });
-      return;
-    }
-    router.refresh();
-  }
-
-  return (
-    <button
-      onClick={handleRetire}
-      disabled={loading}
-      className="text-danger hover:text-danger-active font-medium text-sm disabled:opacity-50 min-h-[44px] inline-flex items-center"
-    >
-      {loading ? "…" : "Ngừng hoạt động"}
-    </button>
   );
 }

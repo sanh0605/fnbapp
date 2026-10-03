@@ -26,7 +26,7 @@ interface PosOutletPickerProps {
 // breakdown exists to compare. Extracted out of app/admin/layout.tsx so
 // this flow is render-testable without next-auth/next-navigation mocking
 // (layout.tsx's useSession/usePathname/useRouter have no test precedent in
-// this repo) -- the same reason OutletsList was extracted from an async
+// this repo) -- the same reason list clients are extracted from an async
 // Server Component.
 export function PosOutletPicker({ outlets, nowHHMM, onOpenTill }: PosOutletPickerProps) {
   async function handleSelect(outlet: PickerOutlet) {

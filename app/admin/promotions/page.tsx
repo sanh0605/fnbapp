@@ -5,7 +5,11 @@ import { resolveActor } from "@/lib/auth/auth";
 
 export const dynamic = "force-dynamic";
 
-export default async function PromotionsPage() {
+export default async function PromotionsPage({
+  searchParams,
+}: {
+  searchParams?: { q?: string; status?: string; type?: string; page?: string };
+}) {
   const [{ promotions, brands, products, variants, categories }, auth] = await Promise.all([
     getPromotionsData(),
     resolveActor(),
@@ -16,25 +20,24 @@ export default async function PromotionsPage() {
   const canDelete = auth.ok && auth.actor.role === "ADMIN";
 
   // Filter out DELETED entities (preserving current behavior)
-  const activeBrands = brands.filter(b => b.status !== "DELETED");
-  const activeProducts = products.filter(p => p.status !== "DELETED");
-  const activeVariants = variants.filter(v => v.status !== "DELETED");
-  const activeCategories = categories.filter(c => c.status !== "DELETED");
-
-  // Sort promotions by created_at descending
-  const sorted = [...promotions].sort((a, b) =>
-    (b.created_at || "").localeCompare(a.created_at || "")
-  ).reverse(); // Reverse because localeCompare(a, b) sorts ascending by default if b.created_at is first
+  const activeBrands = brands.filter((b) => b.status !== "DELETED");
+  const activeProducts = products.filter((p) => p.status !== "DELETED");
+  const activeVariants = variants.filter((v) => v.status !== "DELETED");
+  const activeCategories = categories.filter((c) => c.status !== "DELETED");
 
   return (
     <Suspense fallback={<div>Đang tải...</div>}>
       <PromotionsClient
-        promotions={sorted}
+        promotions={promotions}
         brands={activeBrands}
         products={activeProducts}
         variants={activeVariants}
         categories={activeCategories}
         canDelete={canDelete}
+        initialSearch={searchParams?.q}
+        initialStatus={searchParams?.status}
+        initialType={searchParams?.type}
+        initialPage={searchParams?.page}
       />
     </Suspense>
   );

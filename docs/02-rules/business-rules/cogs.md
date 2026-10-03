@@ -142,7 +142,7 @@ What is true is narrower: a count taken first would have been *reviewed* against
 - Saving an item whose chosen category is not `EQUIPMENT` while it still has assets that are not `INACTIVE` asks a yes/no: *"Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?"* Yes saves and marks those assets `INACTIVE` (entered by mistake: off the register and off the P&L, every month, never deleted). No saves nothing. The test is the item's state, not the change, so an item already moved asks on its next save.
 - If any of those assets has a disposal, the save is refused: that month's charge stands.
 - The reverse creates nothing: an item moved into equipment gets assets only from purchases completed afterwards; its earlier purchases stay counted as goods.
-- `TS-067` itself is retired by `scripts/retire-misfiled-assets.ts` (dry run 2026-10-03: 1 of 84 assets, 0 refused), written only on the owner's yes. Code: `lib/assets/asset-removal.ts`, `updatePurchasedItem`.
+- `TS-067` itself is retired by `scripts/retire-misfiled-assets.ts` (dry run 2026-10-03: 1 of 84 assets, 0 refused), written only on the owner's yes. Owner said *"Ghi"* on 2026-10-03; applied that day: re-read shows 1 `INACTIVE` (`TS-067`), 83 `ACTIVE`, 0 of the 83 on an item outside equipment. Code: `lib/assets/asset-removal.ts`, `updatePurchasedItem`.
 
 **Consumed by the P&L.** From 2026-09-11 the monthly charge feeds the Khấu hao line (`lib/reports/profit-and-loss.ts`), every asset except `INACTIVE` ones, the current month charged in full.
 

@@ -2,9 +2,8 @@
 
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
-import { addBrand, deleteBrand, editBrand } from "@/app/admin/brands/actions";
+import { addBrand, editBrand } from "@/app/admin/brands/actions";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
-import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { alert } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
@@ -131,49 +130,5 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
         </div>
       </form>
     </div>
-  );
-}
-
-interface DeleteBrandButtonProps {
-  id: string;
-}
-
-export function DeleteBrandButton({ id }: DeleteBrandButtonProps) {
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // section A4b/B: the action's result was discarded -- a refusal (e.g. a
-  // brand still in use) failed in total silence, and a successful delete
-  // never told the browser to redraw.
-  async function handleDelete() {
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("id", id);
-    const res = await deleteBrand(formData);
-    setLoading(false);
-    if (res?.error) {
-      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
-      return;
-    }
-    router.refresh();
-  }
-
-  return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        disabled={loading}
-        className="text-danger hover:text-danger-active font-medium text-sm disabled:opacity-50 min-h-[44px] inline-flex items-center"
-      >
-        {loading ? "…" : "Xoá"}
-      </button>
-      <DeleteConfirmModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        onConfirm={handleDelete}
-        description="Bạn có chắc chắn muốn xoá thương hiệu này?"
-      />
-    </>
   );
 }

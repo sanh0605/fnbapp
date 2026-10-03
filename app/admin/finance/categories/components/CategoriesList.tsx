@@ -50,7 +50,7 @@ function StatusBadge({ status }: { status: DBCashCategory["status"] }) {
 }
 
 // Extracted out of page.tsx so it is directly render-testable -- same
-// reason as app/admin/outlets/components/OutletsList.tsx.
+// reason as app/admin/outlets/components/OutletsClient.tsx.
 export function CategoriesList({ categories, canDelete, usedCategoryIds }: CategoriesListProps) {
   const router = useRouter();
   const usedIds = new Set(usedCategoryIds);

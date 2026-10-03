@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import { getPromotionsData } from "@/app/admin/promotions/actions";
 import { PromotionForm } from "@/app/admin/promotions/components/PromotionForm";
 import { safeReturnTo } from "@/app/admin/promotions/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -12,15 +12,33 @@ export default async function EditPromotionPage({
   searchParams,
 }: {
   params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?: { returnTo?: string };
 }) {
-  const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined);
-  const { promotions, brands, products, variants, categories } = await getPromotionsData();
+  const rawReturnTo = safeReturnTo(searchParams?.returnTo);
+
+  const { promotions, brands, products, variants, categories } =
+    await getPromotionsData();
   const promo = promotions.find((p) => p.id === params.id);
 
   if (!promo) {
     notFound();
   }
+
+  const ownDetailPath = `/admin/promotions/${encodeURIComponent(promo.id)}`;
+  const ownDetailPathRaw = `/admin/promotions/${promo.id}`;
+  const isOwnDetail =
+    rawReturnTo === ownDetailPath ||
+    rawReturnTo.startsWith(`${ownDetailPath}?`) ||
+    rawReturnTo === ownDetailPathRaw ||
+    rawReturnTo.startsWith(`${ownDetailPathRaw}?`);
+
+  const listReturnTo = rawReturnTo.startsWith("/admin/promotions/")
+    ? "/admin/promotions"
+    : rawReturnTo;
+
+  const detailHref = isOwnDetail
+    ? rawReturnTo
+    : `/admin/promotions/${encodeURIComponent(promo.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
 
   const activeBrands = brands.filter((b) => b.status !== "DELETED");
   const activeProducts = products.filter((p) => p.status !== "DELETED");
@@ -28,11 +46,12 @@ export default async function EditPromotionPage({
   const activeCategories = categories.filter((c) => c.status !== "DELETED");
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Khuyến mãi" />
-      <PageHeader
-        title={`Sửa khuyến mãi: ${promo.name}`}
-        subtitle="Cập nhật thông tin chương trình khuyến mãi."
+    <DetailFrame>
+      <DetailHeader
+        backHref={detailHref}
+        backLabel={promo.name}
+        title="Chỉnh sửa"
+        subtitle={promo.name}
       />
       <PromotionForm
         initialData={promo}
@@ -40,8 +59,8 @@ export default async function EditPromotionPage({
         categories={activeCategories}
         products={activeProducts}
         variants={activeVariants}
-        returnTo={returnTo}
+        returnTo={detailHref}
       />
-    </div>
+    </DetailFrame>
   );
 }

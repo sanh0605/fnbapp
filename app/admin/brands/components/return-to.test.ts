@@ -19,4 +19,15 @@ describe("safeReturnTo (brands)", () => {
     expect(safeReturnTo("/admin/users")).toBe("/admin/brands");
     expect(safeReturnTo("/admin/brandsX")).toBe("/admin/brands");
   });
+
+  it("accepts valid detail path inside list and refuses 'new'", () => {
+    expect(safeReturnTo("/admin/brands/BR-001?returnTo=x"))
+      .toBe("/admin/brands/BR-001?returnTo=x");
+    expect(safeReturnTo("/admin/brands/BR-002"))
+      .toBe("/admin/brands/BR-002");
+    expect(safeReturnTo("/admin/brands/new"))
+      .toBe("/admin/brands");
+    expect(safeReturnTo("/admin/brands/new?returnTo=x"))
+      .toBe("/admin/brands");
+  });
 });

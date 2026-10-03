@@ -21,7 +21,7 @@ interface OutletBreakdownSectionProps {
 // same outletBreakdown array the cards always rendered, nothing recomputed.
 //
 // Extracted out of page.tsx (an async Server Component) so it is directly
-// render-testable, same reason as app/admin/outlets/components/OutletsList.tsx.
+// render-testable, same reason as app/admin/outlets/components/OutletsClient.tsx.
 export function OutletBreakdownSection({ outletBreakdown }: OutletBreakdownSectionProps) {
   if (outletBreakdown.length === 0) {
     return <div className="text-center py-6 text-text-muted text-sm">Không có dữ liệu</div>;

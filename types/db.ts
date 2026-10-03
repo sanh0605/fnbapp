@@ -37,7 +37,7 @@ export interface DBPromotion {
   code: string;
   brand_id: string;
   type: "ORDER_DISCOUNT" | "PRODUCT_DISCOUNT";
-  discount_type: "PERCENT" | "FLAT_PRICE";
+  discount_type: "PERCENT" | "FLAT_PRICE" | "FLAT_VND";
   discount_value: string;
   min_order_value: string;
   start_date: string;

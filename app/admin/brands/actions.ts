@@ -1,7 +1,9 @@
 "use server";
 
-import { findAll } from "@/lib/db/tables";
-import { createEntity, updateEntity, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
+import { findAll, findAllWhere } from "@/lib/db/tables";
+import { createEntity, updateEntity, deleteEntity, fail, type ActionResponse } from "@/lib/db/shared-actions";
+import { describeActionError } from "@/lib/shared/action-error";
+import { formatNumber } from "@/lib/shared/format";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 
 const SHEET = "Brands";
@@ -59,5 +61,29 @@ export async function deleteBrand(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   if (!id) return { error: "ID khong hop le" };
 
+  try {
+    // Every row counts, whatever its status: the foreign keys refuse any row.
+    const [brands, outlets, promotions, products, orders] = await Promise.all([
+      findAll(SHEET) as Promise<{ id: string; name: string }[]>,
+      findAllWhere("Outlets", { eq: { brand_id: id } }),
+      findAllWhere("Promotions", { eq: { brand_id: id } }),
+      findAllWhere("Products", { eq: { brand_id: id } }),
+      findAllWhere("Orders_V2", { eq: { brand_id: id } }),
+    ]);
+    const parts = [
+      [outlets.length, "điểm bán"],
+      [promotions.length, "khuyến mãi"],
+      [products.length, "món"],
+      [orders.length, "đơn hàng"],
+    ]
+      .filter(([n]) => (n as number) > 0)
+      .map(([n, label]) => `${formatNumber(n as number)} ${label}`);
+    if (parts.length > 0) {
+      const brand = brands.find(b => b.id === id);
+      return fail(`Không xoá được thương hiệu "${brand?.name ?? id}": còn ${parts.join(", ")}.`);
+    }
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
   return deleteEntity(SHEET, id, PATH);
 }
