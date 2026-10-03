@@ -3,8 +3,8 @@ import { getModifiersData } from "@/app/admin/products/modifiers/actions";
 import { findAll } from "@/lib/db/tables";
 import { ModifierForm } from "@/app/admin/products/modifiers/components/ModifierForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,11 @@ export default async function EditModifierPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/products/modifiers");
+  const rawReturnTo = safeReturnTo(
+    searchParams?.returnTo,
+    "/admin/products/modifiers",
+  );
+
   const [{ modifiers }, products] = await Promise.all([
     getModifiersData(),
     findAll("Products") as Promise<any[]>,
@@ -31,18 +35,35 @@ export default async function EditModifierPage({
     : undefined;
   const productStatus = linkedProduct?.status;
 
+  const ownDetailPath = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}`;
+  const ownDetailPathRaw = `/admin/products/modifiers/${modifier.id}`;
+  const isOwnDetail =
+    rawReturnTo === ownDetailPath ||
+    rawReturnTo.startsWith(`${ownDetailPath}?`) ||
+    rawReturnTo === ownDetailPathRaw ||
+    rawReturnTo.startsWith(`${ownDetailPathRaw}?`);
+
+  const listReturnTo = rawReturnTo.startsWith("/admin/products/modifiers/")
+    ? "/admin/products/modifiers"
+    : rawReturnTo;
+
+  const detailHref = isOwnDetail
+    ? rawReturnTo
+    : `/admin/products/modifiers/${encodeURIComponent(modifier.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
+
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Topping & tuỳ chọn" />
-      <PageHeader
-        title={`Sửa Tùy Chọn: ${modifier.name}`}
-        subtitle="Cập nhật thông tin tùy chọn và cài đặt bán độc lập."
+    <DetailFrame>
+      <DetailHeader
+        backHref={detailHref}
+        backLabel={modifier.name}
+        title="Chỉnh sửa"
+        subtitle={modifier.name}
       />
       <ModifierForm
         initialData={modifier}
         productStatus={productStatus}
-        returnTo={returnTo}
+        returnTo={detailHref}
       />
-    </div>
+    </DetailFrame>
   );
 }

@@ -23,11 +23,23 @@ describe("safeReturnTo", () => {
     expect(safeReturnTo("/admin/products/categories", "/admin/products")).toBe("/admin/products");
     expect(safeReturnTo("/admin/products", "/admin/products/categories")).toBe("/admin/products/categories");
     expect(safeReturnTo("/admin/products/modifiers", "/admin/products")).toBe("/admin/products");
+    expect(safeReturnTo("/admin/products/modifiers/MOD-1", "/admin/products")).toBe("/admin/products");
   });
 
   it("falls back for an outside or off-site URL", () => {
     expect(safeReturnTo("https://evil.example", "/admin/products")).toBe("/admin/products");
     expect(safeReturnTo("//evil.example", "/admin/products")).toBe("/admin/products");
+    expect(safeReturnTo("https://evil.com", "/admin/products")).toBe("/admin/products");
+    expect(safeReturnTo("//evil.com", "/admin/products")).toBe("/admin/products");
     expect(safeReturnTo("/admin/productsX", "/admin/products")).toBe("/admin/products");
+  });
+
+  it("accepts valid detail path inside list and refuses 'new'", () => {
+    expect(safeReturnTo("/admin/products/PROD-005?returnTo=x", "/admin/products"))
+      .toBe("/admin/products/PROD-005?returnTo=x");
+    expect(safeReturnTo("/admin/products/new", "/admin/products"))
+      .toBe("/admin/products");
+    expect(safeReturnTo("/admin/products/categories/CAT-001", "/admin/products/categories"))
+      .toBe("/admin/products/categories/CAT-001");
   });
 });

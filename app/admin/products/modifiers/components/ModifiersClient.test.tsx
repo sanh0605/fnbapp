@@ -15,17 +15,34 @@ const { replace, refresh, router } = vi.hoisted(() => {
   };
 });
 
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
+  usePathname: () => "/admin/products/modifiers",
+  useSearchParams: () => mockSearchParams,
 }));
 
-vi.mock("./StandaloneToppingSwitch", () => ({
-  StandaloneToppingSwitch: () => <span>switch</span>,
+vi.mock("next/link", () => ({
+  default: ({ children, href, onClick, ...props }: any) => (
+    <a href={href} onClick={onClick} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
+vi.mock("../actions", () => ({
+  deleteModifierAction: vi.fn(),
+}));
+
+vi.mock("@/app/admin/products/modifiers/actions", () => ({
+  deleteModifierAction: vi.fn(),
 }));
 
 afterEach(() => {
   cleanup();
   document.body.innerHTML = "";
+  mockSearchParams = new URLSearchParams();
 });
 
 beforeEach(() => {
@@ -39,55 +56,111 @@ const sampleModifiers: DBModifier[] = [
     group_name: "Thêm Topping",
     price: "5000",
     status: "ACTIVE",
+    product_id: "PROD-035",
+  },
+  {
+    id: "MOD-002",
+    name: "Size L",
+    group_name: "Chọn Size",
+    price: "10000",
+    status: "ACTIVE",
     product_id: null,
   },
 ];
 
+const sampleToppings = [
+  { id: "PROD-035", name: "Trân châu đen", category_id: "CAT-007", status: "ACTIVE" },
+];
+
 describe("ModifiersClient", () => {
-  it("renders '+ Thêm Tùy Chọn' link pointing to new modifier page with returnTo", () => {
+  it("has no 'Sửa' or '/edit' link", () => {
     render(
       <ModifiersClient
         modifiers={sampleModifiers}
-        toppings={[]}
-        initialSearch="Trân châu"
-      />
+        toppings={sampleToppings}
+      />,
     );
 
-    const addLink = screen.getByRole("link", { name: "+ Thêm Tùy Chọn" });
-    expect(addLink).toHaveAttribute(
-      "href",
-      "/admin/products/modifiers/new?returnTo=" + encodeURIComponent("/admin/products/modifiers?q=Tr%C3%A2n+ch%C3%A2u")
-    );
+    expect(screen.queryByRole("link", { name: "Sửa" })).toBeNull();
+    const allLinks = screen.getAllByRole("link");
+    expect(allLinks.some((l) => l.getAttribute("href")?.includes("/edit"))).toBe(false);
   });
 
-  it("renders 'Sửa' as a link pointing to the modifier's edit page", () => {
+  it("row link for MOD-001 starts with /admin/products/modifiers/MOD-001?returnTo=", () => {
     render(
       <ModifiersClient
         modifiers={sampleModifiers}
-        toppings={[]}
-        initialSearch=""
-      />
+        toppings={sampleToppings}
+      />,
     );
 
-    const editLinks = screen.getAllByRole("link", { name: "Sửa" });
-    expect(editLinks[0]).toHaveAttribute(
-      "href",
-      "/admin/products/modifiers/MOD-001/edit?returnTo=" + encodeURIComponent("/admin/products/modifiers")
+    const allLinks = screen.getAllByRole("link");
+    const mod1Links = allLinks.filter((l) =>
+      l.getAttribute("href")?.startsWith("/admin/products/modifiers/MOD-001?returnTo="),
     );
+    expect(mod1Links.length).toBeGreaterThan(0);
   });
 
-  it("typing in search field replaces URL with ?q= and scroll: false", () => {
+  it("bin 'Xoá' is present", () => {
     render(
       <ModifiersClient
         modifiers={sampleModifiers}
-        toppings={[]}
-        initialSearch=""
-      />
+        toppings={sampleToppings}
+      />,
     );
 
-    const searchInput = screen.getByPlaceholderText("Tên hoặc nhóm...");
-    fireEvent.change(searchInput, { target: { value: "Thạch" } });
+    const binButtons = screen.getAllByRole("button", { name: /Xoá/i });
+    expect(binButtons.length).toBeGreaterThan(0);
+  });
 
-    expect(replace).toHaveBeenLastCalledWith("/admin/products/modifiers?q=Th%E1%BA%A1ch", { scroll: false });
+  it("renders in default order newest code first", () => {
+    render(
+      <ModifiersClient
+        modifiers={sampleModifiers}
+        toppings={sampleToppings}
+      />,
+    );
+
+    const codeElements = screen.getAllByText(/^MOD-00[12]$/);
+    expect(codeElements[0].textContent).toBe("MOD-002");
+    expect(codeElements[1].textContent).toBe("MOD-001");
+  });
+
+  it("'Bán độc lập' shows 'Có' for a modifier linked to an ACTIVE topping product and 'Không' for one with product_id null", () => {
+    render(
+      <ModifiersClient
+        modifiers={sampleModifiers}
+        toppings={sampleToppings}
+      />,
+    );
+
+    expect(screen.getAllByText("Có").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Không").length).toBeGreaterThan(0);
+  });
+
+  it("has no switch (no role 'switch') on the list", () => {
+    render(
+      <ModifiersClient
+        modifiers={sampleModifiers}
+        toppings={sampleToppings}
+      />,
+    );
+
+    expect(screen.queryAllByRole("switch")).toHaveLength(0);
+  });
+
+  it("search by group name works", () => {
+    render(
+      <ModifiersClient
+        modifiers={sampleModifiers}
+        toppings={sampleToppings}
+      />,
+    );
+
+    const searchInput = screen.getByPlaceholderText(/Tên, nhóm hoặc mã/i);
+    fireEvent.change(searchInput, { target: { value: "Chọn Size" } });
+
+    expect(screen.getAllByText("Size L").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Trân châu đen")).toBeNull();
   });
 });

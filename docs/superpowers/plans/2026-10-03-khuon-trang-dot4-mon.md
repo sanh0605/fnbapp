@@ -50,7 +50,7 @@ Thêm, riêng cho việc này:
   - Today `/admin/products/[id]/history` draws one timeline across all sizes. "Đến" and "Đang áp dụng" are worked out across sizes, and no row says which size it is. For a dish with 3 sizes changed at the same moment, only one size reads "Đang áp dụng".
   - The detail page shows a plain table instead, newest first: Ngày áp dụng · Size · Giá cũ · Giá mới · Lý do. Each row is shown exactly as recorded; nothing is computed across rows. The current price of each size sits in the "Size & giá" table above it.
   - `/admin/products/[id]/history` becomes a redirect to the detail page, keeping `returnTo`. `PriceHistoryView.tsx` is removed.
-  - `buildPriceHistoryTimeline` (`lib/products/price-history.ts`) then has only its own test as a caller. Reported to the owner as dead code, not deleted.
+  - `buildPriceHistoryTimeline` then had only its own test as a caller, and the orphan-modules doc gate refuses such a module, so it was removed with its test (2026-10-03). Git keeps it.
 - **Real figures (measured 2026-10-03, read-only):**
   - 48 dishes: 45 `ACTIVE`, 0 `INACTIVE`, 3 `DELETED`. "Đang bán" has 3 pages (20, 20, 5).
   - 7 groups, 6 not `DELETED`. 9 options, 8 not `DELETED`. 55 price-history rows.
@@ -67,7 +67,7 @@ Thêm, riêng cho việc này:
 
 Đã xem:
 - The three list pages and clients, `ProductRowActions`, `load-product-rows.ts`, and the three `actions.ts`.
-- The edit and history pages, `PriceHistoryView`, `lib/products/price-history.ts`.
+- The edit and history pages, `PriceHistoryView`, and the timeline helper behind it.
 - `return-to.ts` (products and inventory), and how POS reads groups.
 - The real figures above.
 

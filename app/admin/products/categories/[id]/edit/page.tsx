@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import { getCategoriesWithCounts } from "@/app/admin/products/categories/actions";
 import { ProductCategoryForm } from "@/app/admin/products/categories/components/ProductCategoryForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,11 @@ export default async function EditProductCategoryPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/products/categories");
+  const rawReturnTo = safeReturnTo(
+    searchParams?.returnTo,
+    "/admin/products/categories",
+  );
+
   const { categories } = await getCategoriesWithCounts();
 
   const category = categories.find((c) => c.id === params.id);
@@ -22,17 +26,34 @@ export default async function EditProductCategoryPage({
     notFound();
   }
 
+  const ownDetailPath = `/admin/products/categories/${encodeURIComponent(category.id)}`;
+  const ownDetailPathRaw = `/admin/products/categories/${category.id}`;
+  const isOwnDetail =
+    rawReturnTo === ownDetailPath ||
+    rawReturnTo.startsWith(`${ownDetailPath}?`) ||
+    rawReturnTo === ownDetailPathRaw ||
+    rawReturnTo.startsWith(`${ownDetailPathRaw}?`);
+
+  const listReturnTo = rawReturnTo.startsWith("/admin/products/categories/")
+    ? "/admin/products/categories"
+    : rawReturnTo;
+
+  const detailHref = isOwnDetail
+    ? rawReturnTo
+    : `/admin/products/categories/${encodeURIComponent(category.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
+
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Nhóm món" />
-      <PageHeader
-        title={`Sửa Danh Mục: ${category.name}`}
-        subtitle="Cập nhật thông tin nhóm sản phẩm."
+    <DetailFrame>
+      <DetailHeader
+        backHref={detailHref}
+        backLabel={category.name}
+        title="Chỉnh sửa"
+        subtitle={category.name}
       />
       <ProductCategoryForm
         initialData={category}
-        returnTo={returnTo}
+        returnTo={detailHref}
       />
-    </div>
+    </DetailFrame>
   );
 }

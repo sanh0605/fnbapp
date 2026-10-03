@@ -78,5 +78,20 @@ export async function deleteCategory(formData: FormData): Promise<ActionResponse
 
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
+
+  try {
+    const [categories, products] = await Promise.all([
+      findAll(SHEET) as Promise<DBProductCategory[]>,
+      findAll("Products") as Promise<DBProduct[]>,
+    ]);
+    // same predicate as getCategoriesWithCounts
+    const inUse = products.filter(p => p.category_id === id && p.status !== "DELETED").length;
+    if (inUse > 0) {
+      const cat = categories.find(c => c.id === id);
+      return fail(`Không xoá được nhóm "${cat?.name ?? id}": còn ${inUse} món đang dùng.`);
+    }
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
   return softDeleteEntity(SHEET, id, PATH);
 }

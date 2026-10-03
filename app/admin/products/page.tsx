@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { loadProductRows } from "./load-product-rows";
 import ProductsClient from "./ProductsClient";
 
@@ -6,23 +7,20 @@ export const dynamic = "force-dynamic";
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams?: { q?: string; category?: string; status?: string };
+  searchParams?: { q?: string; category?: string; status?: string; page?: string };
 }) {
-  const { enhancedProducts, activeCategories, canDelete } = await loadProductRows();
+  const { enhancedProducts, activeCategories } = await loadProductRows();
 
   return (
-    <div className="space-y-6">
+    <Suspense fallback={<div>Đang tải...</div>}>
       <ProductsClient
         enhancedProducts={enhancedProducts}
         activeCategories={activeCategories}
-        categories={activeCategories}
-        canDelete={canDelete}
-        initialFilters={{
-          q: searchParams?.q || "",
-          category: searchParams?.category || "",
-          status: searchParams?.status,
-        }}
+        initialSearch={searchParams?.q ?? ""}
+        initialCategory={searchParams?.category ?? "ALL"}
+        initialStatus={searchParams?.status}
+        initialPage={searchParams?.page}
       />
-    </div>
+    </Suspense>
   );
 }

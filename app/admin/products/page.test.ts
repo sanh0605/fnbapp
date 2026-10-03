@@ -97,26 +97,3 @@ describe("ProductsPage marks a topping sold via its linked modifier", () => {
     expect(byId.get("PROD-C").isLinkedTopping).toBe(false);
   });
 });
-
-// I2 (final-fix-brief.md): eraseProduct is now requireOwner() server-side;
-// canDelete hides the button for non-ADMIN as a courtesy, same pattern as
-// commit e41968d's other nine screens (resolveActor() in page.tsx).
-describe("ProductsPage computes canDelete from the signed-in actor's role (I2)", () => {
-  it("is true for ADMIN", async () => {
-    mocks.resolveActor.mockResolvedValue({ ok: true, actor: { id: "u1", name: "Chủ quán", role: "ADMIN" } });
-    const element: any = await ProductsPage({});
-    expect(element.props.children.props.canDelete).toBe(true);
-  });
-
-  it("is false for MANAGER", async () => {
-    mocks.resolveActor.mockResolvedValue({ ok: true, actor: { id: "u2", name: "Quản lý", role: "MANAGER" } });
-    const element: any = await ProductsPage({});
-    expect(element.props.children.props.canDelete).toBe(false);
-  });
-
-  it("is false when resolveActor fails", async () => {
-    mocks.resolveActor.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
-    const element: any = await ProductsPage({});
-    expect(element.props.children.props.canDelete).toBe(false);
-  });
-});

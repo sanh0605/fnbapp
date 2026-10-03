@@ -1,14 +1,25 @@
 "use client";
 
-import { PageHeader } from "@/components/ui/PageHeader";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ProductRowActions } from "@/app/admin/products/components/ProductRowActions";
-import { formatNumber } from "@/lib/shared/format";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Image as ImageIcon } from "lucide-react";
+import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
+import { FilterCard } from "@/components/ui/list/FilterCard";
+import { ListPagination } from "@/components/ui/list/ListPagination";
+import { DataList, type DataColumn } from "@/components/ui/list/DataList";
+import { paginate } from "@/components/ui/list/paginate";
+import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { Badge } from "@/components/ui/Badge";
-import { Search, Image as ImageIcon, Plus, History } from "lucide-react";
+import { formatNumber } from "@/lib/shared/format";
+import { pauseProduct } from "./actions";
+
+interface ProductVariant {
+  id?: string;
+  size_name: string;
+  price: number | string;
+  status: string;
+}
 
 interface Product {
   id: string;
@@ -16,10 +27,11 @@ interface Product {
   category_id: string;
   status: string;
   image_url?: string;
-  variants: any[];
+  variants: ProductVariant[];
   priceHistory: any[];
   neverSold: boolean;
   hasNoSellableVariant: boolean;
+  isLinkedTopping?: boolean;
   [key: string]: any;
 }
 
@@ -28,341 +40,475 @@ interface Category {
   name: string;
 }
 
-const VALID_STATUSES = ["ACTIVE", "INACTIVE", "DELETED"] as const;
+interface ProductsClientProps {
+  enhancedProducts: Product[];
+  activeCategories: Category[];
+  initialSearch?: string;
+  initialCategory?: string;
+  initialStatus?: string;
+  initialPage?: string;
+  canDelete?: boolean;
+}
 
-// Owner decision 2026-08-29: no "Tất cả" status option any more -- the
-// default (ACTIVE) already covers the everyday case, and a paused/deleted
-// product is reachable only by switching this filter, which is the point.
+const VALID_STATUSES = ["ACTIVE", "INACTIVE", "DELETED"] as const;
+type ProductStatus = typeof VALID_STATUSES[number];
+
 const STATUS_LABELS: Record<string, string> = {
   ACTIVE: "Đang bán",
   INACTIVE: "Ngừng bán",
   DELETED: "Đã xóa",
 };
 
-function listUrl(q: string, category: string, status: string): string {
-  const p = new URLSearchParams();
-  if (q) p.set("q", q);
-  if (category) p.set("category", category);
-  if (status && status !== "ACTIVE") p.set("status", status);
-  const qs = p.toString();
-  return qs ? `/admin/products?${qs}` : "/admin/products";
+function parseStatus(raw: string | null | undefined): ProductStatus {
+  if (raw && (VALID_STATUSES as readonly string[]).includes(raw)) {
+    return raw as ProductStatus;
+  }
+  return "ACTIVE";
 }
 
-interface ProductsClientProps {
-  enhancedProducts: Product[];
-  activeCategories: Category[];
-  categories?: Category[];
-  // BR-ACCESS-003 (I2, final-fix-brief.md) -- ADMIN only; everyone else
-  // may add and edit. Server-computed in page.tsx via resolveActor().
-  canDelete: boolean;
-  initialFilters?: {
-    q?: string;
-    category?: string;
-    status?: string;
-  };
+function listUrl(
+  search: string,
+  category: string,
+  status: string,
+  page: number = 1,
+  sort?: string,
+  dir?: string,
+): string {
+  const p = new URLSearchParams();
+  const trimmed = search.trim();
+  if (trimmed) p.set("q", trimmed);
+  if (category && category !== "ALL") p.set("category", category);
+  if (status && status !== "ACTIVE") p.set("status", status);
+  if (page > 1) p.set("page", String(page));
+  if (sort) p.set("sort", sort);
+  if (dir) p.set("dir", dir);
+  const qs = p.toString();
+  return qs ? `/admin/products?${qs}` : "/admin/products";
 }
 
 export default function ProductsClient({
   enhancedProducts,
   activeCategories,
-  canDelete,
-  initialFilters,
+  initialSearch,
+  initialCategory,
+  initialStatus,
+  initialPage,
 }: ProductsClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawSort = searchParams?.get("sort");
+  const rawDir = searchParams?.get("dir");
 
-  const [searchQuery, setSearchQuery] = useState(initialFilters?.q || "");
-  const [categoryId, setCategoryId] = useState(initialFilters?.category || "");
-  const [statusFilter, setStatusFilter] = useState<string>(() => {
-    const raw = initialFilters?.status;
-    return raw && (VALID_STATUSES as readonly string[]).includes(raw) ? raw : "ACTIVE";
-  });
+  const [search, setSearch] = useState(
+    () => initialSearch ?? searchParams?.get("q") ?? "",
+  );
+  const [category, setCategory] = useState(
+    () => initialCategory || searchParams?.get("category") || "ALL",
+  );
+  const [status, setStatus] = useState<ProductStatus>(
+    () => parseStatus(initialStatus ?? searchParams?.get("status")),
+  );
+  const [page, setPage] = useState<string | number | undefined>(
+    () => initialPage ?? searchParams?.get("page") ?? undefined,
+  );
+
+  useEffect(() => {
+    if (initialSearch !== undefined) setSearch(initialSearch);
+    else if (searchParams?.get("q") !== null) setSearch(searchParams?.get("q") || "");
+  }, [initialSearch, searchParams]);
+
+  useEffect(() => {
+    if (initialCategory !== undefined) setCategory(initialCategory);
+    else if (searchParams?.get("category") !== null)
+      setCategory(searchParams?.get("category") || "ALL");
+  }, [initialCategory, searchParams]);
+
+  useEffect(() => {
+    if (initialStatus !== undefined) setStatus(parseStatus(initialStatus));
+    else if (searchParams?.get("status") !== null)
+      setStatus(parseStatus(searchParams?.get("status")));
+  }, [initialStatus, searchParams]);
+
+  useEffect(() => {
+    if (initialPage !== undefined) setPage(initialPage);
+    else if (searchParams?.get("page") !== null)
+      setPage(searchParams?.get("page") || undefined);
+  }, [initialPage, searchParams]);
+
+  const categoryMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    activeCategories.forEach((c) => (map[c.id] = c.name));
+    return map;
+  }, [activeCategories]);
+
+  const columns: DataColumn<Product>[] = useMemo(
+    () => [
+      {
+        key: "id",
+        header: "Mã",
+        sortValue: (product) => product.id,
+        render: (product) => (
+          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+            {product.id}
+          </span>
+        ),
+      },
+      {
+        key: "image",
+        header: "Ảnh",
+        secondary: true,
+        render: (product) => (
+          <div className="w-10 h-10 rounded-lg bg-page border border-border flex items-center justify-center overflow-hidden shrink-0">
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <ImageIcon className="w-5 h-5 text-text-muted" />
+            )}
+          </div>
+        ),
+      },
+      {
+        key: "name",
+        header: "Tên",
+        sortValue: (product) => product.name,
+        render: (product) => (
+          <div className="font-bold text-text-primary">{product.name}</div>
+        ),
+      },
+      {
+        key: "category",
+        header: "Nhóm",
+        sortValue: (product) => categoryMap[product.category_id] || "Chưa phân loại",
+        render: (product) => (
+          <span className="text-text-secondary font-medium">
+            {categoryMap[product.category_id] || "Chưa phân loại"}
+          </span>
+        ),
+      },
+      {
+        key: "sizes",
+        header: "Size & giá",
+        sortValue: (product) => {
+          if (!product.variants || product.variants.length === 0) return null;
+          const prices = product.variants
+            .map((v) => Number(v.price))
+            .filter((p) => Number.isFinite(p));
+          if (prices.length === 0) return null;
+          return Math.min(...prices);
+        },
+        render: (product) => {
+          const sizeTexts = (product.variants || []).map(
+            (v) => `${v.size_name} ${formatNumber(v.price)}`,
+          );
+          const text = sizeTexts.join(" · ");
+          return (
+            <div className="flex flex-col gap-1 items-start">
+              {text ? (
+                <span className="text-text-primary text-xs font-medium">{text}</span>
+              ) : (
+                <span className="text-text-muted text-xs">—</span>
+              )}
+              {product.hasNoSellableVariant && (
+                <Badge variant="danger">Không có size nào đang bán</Badge>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        key: "status",
+        header: "Trạng thái",
+        sortValue: (product) => STATUS_LABELS[product.status] || product.status,
+        render: (product) => {
+          if (product.status === "ACTIVE") {
+            return <Badge variant="success">Đang bán</Badge>;
+          }
+          if (product.status === "INACTIVE") {
+            return <Badge variant="warning">Ngừng bán</Badge>;
+          }
+          return <Badge variant="neutral">Đã xóa</Badge>;
+        },
+      },
+    ],
+    [categoryMap],
+  );
+
+  const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const sortParam = rawSort ? sortKey : undefined;
+  const dirParam = rawSort ? sortDir : undefined;
 
   const filteredProducts = useMemo(() => {
-    return enhancedProducts.filter(p => {
-      if (categoryId && p.category_id !== categoryId) return false;
-      if (statusFilter && p.status !== statusFilter) return false;
-      if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    const q = search.trim().toLocaleLowerCase("vi");
+    return enhancedProducts.filter((product) => {
+      const matchCategory =
+        category === "ALL" || !category || product.category_id === category;
+      const matchStatus = status ? product.status === status : product.status === "ACTIVE";
+      if (!matchCategory || !matchStatus) return false;
+
+      if (q) {
+        const matchName = (product.name || "").toLocaleLowerCase("vi").includes(q);
+        const matchId = (product.id || "").toLocaleLowerCase("vi").includes(q);
+        return matchName || matchId;
+      }
       return true;
     });
-  }, [enhancedProducts, categoryId, statusFilter, searchQuery]);
+  }, [enhancedProducts, category, status, search]);
 
-  // Without "Tất cả", a search for a paused drink while viewing "Đang bán"
-  // returns zero rows -- the same lie OPEN-ITEMS 69 already names: an empty
-  // list reads as "it is gone", not "it is somewhere else". Say which
-  // status actually has it, and offer to switch straight there, instead of
-  // going silent the way a plain empty state would.
   const matchingOtherStatus = useMemo(() => {
-    if (!searchQuery || filteredProducts.length > 0) return null;
-    const match = enhancedProducts.find(p => {
-      if (categoryId && p.category_id !== categoryId) return false;
-      if (p.status === statusFilter) return false;
-      return p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = search.trim().toLocaleLowerCase("vi");
+    if (!q || filteredProducts.length > 0) return null;
+    const match = enhancedProducts.find((product) => {
+      const matchCategory =
+        category === "ALL" || !category || product.category_id === category;
+      if (!matchCategory) return false;
+      if (product.status === status) return false;
+
+      const matchName = (product.name || "").toLocaleLowerCase("vi").includes(q);
+      const matchId = (product.id || "").toLocaleLowerCase("vi").includes(q);
+      return matchName || matchId;
     });
-    return match ? match.status : null;
-  }, [enhancedProducts, categoryId, statusFilter, searchQuery, filteredProducts.length]);
+    return match ? (match.status as ProductStatus) : null;
+  }, [enhancedProducts, category, status, search, filteredProducts.length]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const next = e.target.value;
-    setSearchQuery(next);
-    router.replace(listUrl(next, categoryId, statusFilter), { scroll: false });
+  const sortedProducts = useMemo(() => {
+    const col = columns.find((c) => c.key === sortKey);
+    return col?.sortValue
+      ? sortRows(filteredProducts, col.sortValue, sortDir)
+      : filteredProducts;
+  }, [filteredProducts, columns, sortKey, sortDir]);
+
+  const slice = useMemo(() => {
+    return paginate(sortedProducts, page);
+  }, [sortedProducts, page]);
+
+  const handleApplyFilter = () => {
+    setPage(1);
+    router.replace(listUrl(search, category, status, 1, sortParam, dirParam), {
+      scroll: false,
+    });
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const next = e.target.value;
-    setCategoryId(next);
-    router.replace(listUrl(searchQuery, next, statusFilter), { scroll: false });
+  const handleClearFilter = () => {
+    setSearch("");
+    setCategory("ALL");
+    setStatus("ACTIVE");
+    setPage(1);
+    router.replace(listUrl("", "ALL", "ACTIVE", 1, sortParam, dirParam), {
+      scroll: false,
+    });
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const next = e.target.value;
-    const valid = (VALID_STATUSES as readonly string[]).includes(next) ? next : "ACTIVE";
-    setStatusFilter(valid);
-    router.replace(listUrl(searchQuery, categoryId, valid), { scroll: false });
-  };
+  const currentListUrl = listUrl(search, category, status, slice.page, sortParam, dirParam);
 
-  const currentUrl = listUrl(searchQuery, categoryId, statusFilter);
-  const back = encodeURIComponent(currentUrl);
+  const renderCard = (product: Product) => {
+    const catName = categoryMap[product.category_id] || "Chưa phân loại";
+    const sizeTexts = (product.variants || []).map(
+      (v) => `${v.size_name} ${formatNumber(v.price)}`,
+    );
+    const sizesSummary = sizeTexts.join(" · ");
 
-  const rightContent = (
-    <div className="flex items-center gap-3">
-      <div className="hidden sm:block text-xs font-bold text-text-secondary whitespace-nowrap px-3 py-1.5 bg-surface-secondary rounded-lg">
-        {filteredProducts.length} / {enhancedProducts.length} món
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between items-start gap-2">
+          <div>
+            <div className="font-bold text-text-primary text-base leading-tight">
+              {product.name}
+            </div>
+            <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+              {product.id}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-secondary text-text-secondary border border-border">
+              {catName}
+            </span>
+            {product.status === "ACTIVE" ? (
+              <Badge variant="success">Đang bán</Badge>
+            ) : product.status === "INACTIVE" ? (
+              <Badge variant="warning">Ngừng bán</Badge>
+            ) : (
+              <Badge variant="neutral">Đã xóa</Badge>
+            )}
+          </div>
+        </div>
+        <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
+          {sizesSummary && <div>{sizesSummary}</div>}
+          {product.hasNoSellableVariant && (
+            <div>
+              <Badge variant="danger">Không có size nào đang bán</Badge>
+            </div>
+          )}
+        </div>
       </div>
-      <Link
-        href={`/admin/products/new?returnTo=${back}`}
-        className="bg-primary text-on-primary px-4 py-2 rounded-button font-medium hover:bg-primary-hover transition inline-flex items-center justify-center min-h-[44px]"
-      >
-        <Plus className="w-4 h-4 mr-1.5" />
-        Thêm Món Mới
-      </Link>
-    </div>
-  );
+    );
+  };
+
+  const removal =
+    status === "ACTIVE"
+      ? {
+          verb: "Ngừng bán",
+          confirmMessage: (count: number) =>
+            `Ngừng bán ${count} món? Món sẽ ẩn khỏi máy bán hàng.`,
+          remove: async (id: string) => {
+            const fd = new FormData();
+            fd.append("id", id);
+            const res = await pauseProduct(fd);
+            if (res?.error) {
+              return { error: res.error };
+            }
+            return { deactivated: true };
+          },
+        }
+      : undefined;
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <ListPageHeader
+        group="Món"
         title="Món"
-        subtitle="Quản lý Menu bán hàng, cấu hình Size và Định mức pha chế."
-        actions={rightContent}
+        action={
+          <Link
+            href={`/admin/products/new?returnTo=${encodeURIComponent(currentListUrl)}`}
+            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+          >
+            + Thêm món
+          </Link>
+        }
       />
-      <div className="flex flex-wrap items-end gap-3 mb-6">
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm món</label>
+
+      <FilterCard
+        onApply={handleApplyFilter}
+        onClear={handleClearFilter}
+        showClear={Boolean(search || (category && category !== "ALL") || status !== "ACTIVE")}
+      >
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+          <label
+            htmlFor="products-search"
+            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
+          >
+            Tìm món
+          </label>
           <input
+            id="products-search"
             type="text"
-            placeholder="Tên món..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none shadow-sm bg-surface-card text-text-primary"
+            placeholder="Tên hoặc mã món..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
           />
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Danh mục</label>
-          <select
-            value={categoryId}
-            onChange={handleCategoryChange}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary shadow-sm"
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+          <label
+            htmlFor="products-category"
+            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
           >
-            <option value="">Tất cả danh mục</option>
-            {activeCategories.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+            Nhóm món
+          </label>
+          <select
+            id="products-category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+          >
+            <option value="ALL">Tất cả nhóm</option>
+            {activeCategories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trạng thái</label>
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+          <label
+            htmlFor="products-status"
+            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
+          >
+            Trạng thái
+          </label>
           <select
-            value={statusFilter}
-            onChange={handleStatusChange}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary shadow-sm"
+            id="products-status"
+            value={status}
+            onChange={(e) => setStatus(parseStatus(e.target.value))}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
           >
             <option value="ACTIVE">Đang bán</option>
             <option value="INACTIVE">Ngừng bán</option>
             <option value="DELETED">Đã xóa</option>
           </select>
         </div>
-      </div>
+      </FilterCard>
 
-      {filteredProducts.length === 0 ? (
-        matchingOtherStatus ? (
-          <EmptyState
-            icon={<Search className="w-8 h-8" />}
-            title={`Không có món ${(STATUS_LABELS[statusFilter] || "").toLowerCase()} nào khớp`}
-            description={`Có món khớp nhưng đang ở trạng thái "${STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}".`}
-            action={{
-              label: `Xem "${STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}"`,
-              onClick: () => {
-                setStatusFilter(matchingOtherStatus);
-                router.replace(listUrl(searchQuery, categoryId, matchingOtherStatus), { scroll: false });
-              },
-            }}
-          />
-        ) : (
-          <EmptyState
-            icon={<Search className="w-8 h-8" />}
-            title="Không tìm thấy món nào"
-            description="Vui lòng thử điều chỉnh lại bộ lọc tìm kiếm."
-          />
-        )
-      ) : (
-        <>
-          {/* Desktop Table View (>= 768px) */}
-          <div className="hidden md:block bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-                    <th className="px-6 py-4 font-bold w-20">Ảnh</th>
-                    <th className="px-6 py-4 font-bold">Tên Món</th>
-                    <th className="px-6 py-4 font-bold">Phân Loại</th>
-                    <th className="px-6 py-4 font-bold">Size & Giá Bán</th>
-                    <th className="px-6 py-4 font-bold">Trạng Thái</th>
-                    <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filteredProducts.map(product => {
-                    const categoryName = activeCategories.find(c => c.id === product.category_id)?.name || "Chưa phân loại";
-                    return (
-                      <tr key={product.id} className="hover:bg-page transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="w-12 h-12 rounded-lg bg-page border border-border flex items-center justify-center overflow-hidden shrink-0">
-                            {product.image_url ? (
-                              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <ImageIcon className="w-6 h-6 text-text-muted" />
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="font-bold text-text-primary text-sm">{product.name}</div>
-                          <div className="text-[10px] font-mono text-text-muted mt-0.5">ID: {product.id}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <Badge variant="neutral">{categoryName}</Badge>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex flex-wrap gap-2 max-w-lg">
-                            {product.variants.map((v: any, idx: number) => (
-                              <div
-                                key={idx}
-                                className="flex items-center gap-2 bg-page border border-border px-2.5 py-1 rounded-lg text-xs"
-                              >
-                                <span className="font-bold text-text-primary">{v.size_name}</span>
-                                <span className="text-border">|</span>
-                                <span className="font-black text-primary">{formatNumber(v.price)}</span>
-                              </div>
-                            ))}
-                            {product.hasNoSellableVariant && (
-                              <Badge variant="danger">Không có size nào đang bán</Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          {product.status === "ACTIVE" ? (
-                            <Badge variant="success">Đang bán</Badge>
-                          ) : product.status === "INACTIVE" ? (
-                            <Badge variant="warning">Ngừng bán</Badge>
-                          ) : (
-                            <Badge variant="neutral">Đã xóa</Badge>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2 items-center">
-                            <Link
-                              href={`/admin/products/${encodeURIComponent(product.id)}/history?returnTo=${back}`}
-                              className="text-sm font-medium text-warning flex items-center gap-1 hover:underline min-h-[44px]"
-                              title="Xem lịch sử thay đổi"
-                            >
-                              <History className="w-4 h-4" />
-                              Lịch sử
-                            </Link>
-                            <ProductRowActions
-                              product={product}
-                              canDelete={canDelete}
-                              returnTo={currentUrl}
-                            />
-                          </div>
-                        </td>
-                      </tr>
+      <DataList
+        rows={slice.rows}
+        getId={(product) => product.id}
+        getName={(product) => product.name}
+        getHref={(product) =>
+          `/admin/products/${encodeURIComponent(product.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
+        }
+        columns={columns}
+        renderCard={renderCard}
+        sort={{
+          key: sortKey,
+          dir: sortDir,
+          href: (k, d) => listUrl(search, category, status, 1, k, d),
+        }}
+        removal={removal}
+        empty={
+          matchingOtherStatus ? (
+            <div className="bg-surface-card rounded-2xl border border-border p-8 text-center space-y-3">
+              <div className="text-text-primary font-medium">
+                Có món khớp nhưng đang ở trạng thái &ldquo;
+                {STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}&rdquo;.
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatus(matchingOtherStatus);
+                    setPage(1);
+                    router.replace(
+                      listUrl(search, category, matchingOtherStatus, 1, sortParam, dirParam),
+                      { scroll: false },
                     );
-                  })}
-                </tbody>
-              </table>
+                  }}
+                  className="text-primary hover:text-primary-hover font-medium underline text-sm min-h-[44px] inline-flex items-center"
+                >
+                  Xem &ldquo;{STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}&rdquo;
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-surface-card rounded-2xl border border-border p-8 text-center space-y-3">
+              <div className="text-text-secondary text-sm">
+                Không có dòng nào khớp bộ lọc
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={handleClearFilter}
+                  className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
+                >
+                  Xoá lọc
+                </button>
+              </div>
+            </div>
+          )
+        }
+      />
 
-          {/* Mobile Card View (< 768px) */}
-          <div className="md:hidden grid grid-cols-1 gap-4">
-            {filteredProducts.map(product => {
-              const categoryName = activeCategories.find(c => c.id === product.category_id)?.name || "Chưa phân loại";
-              return (
-                <div key={product.id} className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden flex flex-col">
-                  {/* Card Image Banner */}
-                  <div className="h-28 bg-page flex items-center justify-center border-b border-border relative">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <ImageIcon className="w-8 h-8 text-text-muted" />
-                    )}
-                    <div className="absolute top-3 right-3 bg-surface-card/90 backdrop-blur px-2 py-0.5 rounded-full text-[10px] font-bold text-primary border border-primary/20 shadow-sm">
-                      {categoryName}
-                    </div>
-                  </div>
-
-                  <div className="p-4 flex-1 flex flex-col gap-3">
-                    <div>
-                      <h3 className="text-base font-extrabold text-text-primary leading-tight">{product.name}</h3>
-                      <div className="text-[10px] font-mono text-text-muted mt-0.5">ID: {product.id}</div>
-                    </div>
-
-                    <div className="space-y-2 flex-1">
-                      <div className="text-[10px] uppercase font-bold text-text-muted">Các Size & Giá:</div>
-                      <div className="grid grid-cols-1 gap-1.5">
-                        {product.variants.map((v: any, idx: number) => (
-                          <div key={idx} className="flex justify-between items-center bg-page p-2 rounded-lg border border-border text-xs">
-                            <span className="font-bold text-text-primary">{v.size_name}</span>
-                            <span className="font-black text-primary">{formatNumber(v.price)}</span>
-                          </div>
-                        ))}
-                        {product.hasNoSellableVariant && (
-                          <Badge variant="danger">Không có size nào đang bán</Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-border flex justify-between items-center gap-2">
-                      <div>
-                        {product.status === "ACTIVE" ? (
-                          <Badge variant="success">Đang bán</Badge>
-                        ) : product.status === "INACTIVE" ? (
-                          <Badge variant="warning">Ngừng bán</Badge>
-                        ) : (
-                          <Badge variant="neutral">Đã xóa</Badge>
-                        )}
-                      </div>
-                      <div className="flex gap-2 items-center">
-                        <Link
-                          href={`/admin/products/${encodeURIComponent(product.id)}/history?returnTo=${back}`}
-                          className="text-sm font-medium text-warning flex items-center gap-1 hover:underline min-h-[44px]"
-                          title="Xem lịch sử thay đổi"
-                        >
-                          <History className="w-4 h-4" />
-                          Lịch sử
-                        </Link>
-                        <ProductRowActions
-                          product={product}
-                          canDelete={canDelete}
-                          returnTo={currentUrl}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
+      {slice.total > 0 && (
+        <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
+          <ListPagination
+            slice={slice}
+            unit="món"
+            pageHref={(p) => listUrl(search, category, status, p, sortParam, dirParam)}
+          />
+        </div>
       )}
     </div>
   );
