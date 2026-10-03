@@ -22,6 +22,14 @@ taken as paid in full on its own date (owner answer "3a", 2026-10-04); it
 gains a "Trả bằng" choice, cash or transfer, and the 198 completed orders that
 exist on 2026-10-04 count as cash until the owner changes one.
 
+**One row per day and payment method, for sales and for purchases** (owner
+2026-10-04). Sales: *"Theo em khuyến nghị"*, after being shown that September
+2026 had 624 sales against 8 hand-typed rows, and the example for 2026-09-15:
+"Bán hàng · Tiền mặt · 23 đơn · 522.000đ" and "Bán hàng · Chuyển khoản · 11 đơn
+· 482.000đ". Purchases, the same day: *"Anh nghĩ nhập hàng em cũng làm giống đơn
+bán hàng đi, cho nó gọn"*. A day with no cash sale has no cash row. Opening a
+row lists that day's orders, or purchase orders, paid that way.
+
 What still holds from 2026-09-08: sales live in the POS, purchases in
 purchase orders, and nobody types a sale or a purchase into the cash book by
 hand — that would count it twice. Hand-typed rows remain for everything else:
