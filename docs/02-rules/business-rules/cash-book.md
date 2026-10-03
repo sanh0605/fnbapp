@@ -133,6 +133,18 @@ negative from June 2026 (end of September 2026: cash −7.351.887đ, bank
 The total is right; only its split between cash and bank is off for those
 months.
 
-**Open (asked 2026-10-04):** how money moved between the drawer and a bank
-account (depositing cash, withdrawing it) is recorded. Until it is, a balance
-counts each movement only where it was paid.
+### BR-CASH-008 — Money moved between the drawer and a bank account is a transfer, not income or expense
+
+**Status:** `APPROVED` — owner decision 2026-10-04 (not built yet).
+
+Depositing cash into a bank account, or withdrawing it into the drawer, is
+recorded as one "Chuyển tiền" row: from where, to where, how much, which day.
+It lowers one balance and raises the other by the same amount, leaves the total
+unchanged, and counts in neither Tổng thu nor Tổng chi, nor in profit and loss
+(owner answer "1a", 2026-10-04, *"Làm theo em khuyến nghị"*). Example given
+before choosing: 5.000.000đ deposited into ACB on 2026-09-10 shows cash −5.000.000đ,
+bank +5.000.000đ, total unchanged. Why: in accounting this is one internal
+transfer (cash account 111 to bank account 112), not money the shop earned or
+spent; recording it as an expense row plus an income row would inflate both
+totals. The owner had asked whether two rows matched accounting better; he was
+told this, and chose the single row.
