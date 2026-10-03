@@ -7,6 +7,8 @@ tables: asset_disposals, asset_depreciation_bands
 brCodes: BR-COGS-008
 ```
 
+**Behaviour change — 2026-10-03 (asset register per purchased item, owner choices 2026-10-02):** the asset list shows one row per purchased item, grouping its purchase lines (new pure `lib/assets/asset-items.ts`; new read-only `getAssetItemsData`, `getAssetItemDetail`, `findItemIdForAsset`; `getAssetDetail` removed). `/admin/inventory/assets/[id]` now takes the item code, and an old `TS-…` address redirects to its item. The detail page lists each purchase, each disposal with the amount it moved into that month's depreciation, and the monthly charge summed over purchases. Disposal picks the purchase line (oldest with stock preselected) and still writes through the unchanged `disposeAsset`. No figure changes.
+
 **Behaviour change — 2026-10-02 (list/detail template, wave 3):** new read-only `getAssetDetail(id)` returns one asset's summary, its monthly depreciation schedule and its disposals for the asset detail page; `null` for an unknown or INACTIVE asset. `getAssetsData` now builds each row through the same helper; its output is unchanged. On screen: an asset row now opens `/admin/inventory/assets/[id]` (info, monthly depreciation, disposals) and "Thanh lý" lives only on that page; a band row opens `/admin/inventory/asset-bands/[id]`, where "Chỉnh sửa" and the ADMIN-only "Xoá" live; the band list keeps an ADMIN-only bin and no longer shows "Sửa".
 
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
@@ -51,11 +53,11 @@ table of its own.
    ADMIN-only per `BR-ACCESS-003` (owner decision 2026-09-08, `requireOwner`):
    the button is hidden for anyone else (`canDelete` computed from
    `resolveActor()` in `page.tsx`), on top of the gap/overlap refusal above.
-3. **What each list contains, and what is excluded.** The asset list shows every
-   owned asset, one row per purchase line (eight identical pumps bought together
-   are one row with quantity 8, not eight rows). Rows flagged `INACTIVE` are
-   excluded. Fully disposed assets fall out because their remaining quantity is
-   zero. The band list shows every depreciation band, sorted by lowest price. It
+3. **What each list contains, and what is excluded.** The asset list shows one
+   row per purchased item, summing its purchase lines (the same item bought three
+   times is one row; each purchase is listed on the item's detail page). Rows
+   flagged `INACTIVE` are excluded. An item whose every purchase is fully disposed
+   is hidden unless "Hiện cả món đã thanh lý hết" is ticked. The band list shows every depreciation band, sorted by lowest price. It
    deliberately excludes the assets themselves.
 4. **Valid inputs, and what happens outside the range.** A disposal needs a
    positive quantity no greater than what remains (asset quantity minus prior

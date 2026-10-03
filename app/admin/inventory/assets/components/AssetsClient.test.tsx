@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import AssetsClient from "./AssetsClient";
-import type { AssetView } from "../actions";
+import type { AssetItemRow } from "@/lib/assets/asset-items";
 
 const { replace, refresh, push, router } = vi.hoisted(() => {
   const replaceFn = vi.fn();
@@ -22,6 +22,8 @@ vi.mock("next/navigation", () => ({
   useRouter: () => router,
   useSearchParams: () => mockSearchParams,
   usePathname: () => "/admin/inventory/assets",
+  redirect: vi.fn(),
+  notFound: vi.fn(),
 }));
 
 vi.mock("next/link", () => ({
@@ -32,17 +34,53 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-const TS004_ASSET: AssetView = {
-  id: "TS-004",
+// Real figures from the plan:
+// Bình bơm (thuỷ tinh, 1300ml, 10ml/lần): 2 mua, còn 1, đã thanh lý 1, ngày mua 04/04/2026, còn lại 145.860đ
+const BINH_BOM: AssetItemRow = {
+  itemId: "SPM-BINH",
   name: "Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)",
   quantity: 2,
   remainingQuantity: 1,
-  acquiredDate: "2026-04-04",
-  unitCost: 205920,
-  totalCost: 411840,
-  termMonths: 24,
+  disposedQuantity: 1,
   remainingValue: 145860,
-  bucket: "IN_USE",
+  latestAcquiredDate: "2026-04-04",
+  fullyDisposed: false,
+};
+
+// Cốc đong 100ml: 3 lần mua (TS-025, TS-030, TS-057), tổng mua 8, còn 6, đã thanh lý 2, mua gần nhất 01/07/2026
+const COC_DONG: AssetItemRow = {
+  itemId: "SPM-COC",
+  name: "Cốc đong 100ml",
+  quantity: 8,
+  remainingQuantity: 6,
+  disposedQuantity: 2,
+  remainingValue: 90000,
+  latestAcquiredDate: "2026-07-01",
+  fullyDisposed: false,
+};
+
+// Item with 0 disposals to test the dash '—' in 'Đã thanh lý'
+const CA_DONG: AssetItemRow = {
+  itemId: "SPM-CA",
+  name: "Ca đong chia vạch 500ml",
+  quantity: 3,
+  remainingQuantity: 3,
+  disposedQuantity: 0,
+  remainingValue: 150000,
+  latestAcquiredDate: "2026-05-15",
+  fullyDisposed: false,
+};
+
+// Fully disposed item
+const KHAY_CU: AssetItemRow = {
+  itemId: "SPM-CU",
+  name: "Khay inox cũ",
+  quantity: 2,
+  remainingQuantity: 0,
+  disposedQuantity: 2,
+  remainingValue: 0,
+  latestAcquiredDate: "2026-01-10",
+  fullyDisposed: true,
 };
 
 afterEach(() => {
@@ -56,122 +94,114 @@ beforeEach(() => {
 });
 
 describe("AssetsClient", () => {
-  it("renders rows linking to /admin/inventory/assets/TS-004?returnTo=...", () => {
-    render(<AssetsClient assets={[TS004_ASSET]} />);
+  it("renders desktop columns in exact order: Mã hàng, Tên, Còn / Đã mua, Đã thanh lý, Giá trị còn lại, Mua gần nhất", () => {
+    render(<AssetsClient items={[BINH_BOM, COC_DONG]} />);
+
+    const headers = screen.getAllByRole("columnheader");
+    const headerTexts = headers.map((h) => h.textContent?.replace(/[▲▼]/g, "").trim());
+    expect(headerTexts).toEqual([
+      "Mã hàng",
+      "Tên",
+      "Còn / Đã mua",
+      "Đã thanh lý",
+      "Giá trị còn lại",
+      "Mua gần nhất",
+    ]);
+  });
+
+  it("renders formatted numbers and dates for real items (Cốc đong 100ml and Bình bơm)", () => {
+    render(<AssetsClient items={[BINH_BOM, COC_DONG, CA_DONG]} />);
+
+    // Cốc đong 100ml: còn 6 / mua 8, đã thanh lý 2, mua gần nhất 01/07/2026
+    expect(screen.getAllByText("SPM-COC").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Cốc đong 100ml").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("6 / 8 cái").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("2 cái").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("01/07/2026").length).toBeGreaterThan(0);
+
+    // Bình bơm: còn 1 / mua 2, đã thanh lý 1, giá trị còn lại 145.860đ, mua gần nhất 04/04/2026
+    expect(screen.getAllByText("SPM-BINH").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("1 / 2 cái").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("1 cái").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("145.860đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("04/04/2026").length).toBeGreaterThan(0);
+
+    // Ca đong: 0 thanh lý renders as '—'
+    expect(screen.getAllByText("SPM-CA").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("3 / 3 cái").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+  });
+
+  it("renders rows linking to /admin/inventory/assets/[itemId]?returnTo=...", () => {
+    render(<AssetsClient items={[BINH_BOM]} />);
 
     const links = screen.getAllByRole("link").filter((l) =>
-      l.getAttribute("href")?.startsWith("/admin/inventory/assets/TS-004?returnTo="),
+      l.getAttribute("href")?.startsWith("/admin/inventory/assets/SPM-BINH?returnTo="),
     );
     expect(links.length).toBeGreaterThan(0);
   });
 
-  it("does not render 'Đánh dấu hỏng / thanh lý'", () => {
-    render(<AssetsClient assets={[TS004_ASSET]} />);
+  it("orders items by item code naturally by default (BR-DATA-008)", () => {
+    const item1 = { ...BINH_BOM, itemId: "SPM-101", name: "Món 101" };
+    const item2 = { ...BINH_BOM, itemId: "SPM-9", name: "Món 9" };
+    const item3 = { ...BINH_BOM, itemId: "SPM-10", name: "Món 10" };
 
-    expect(screen.queryByText("Đánh dấu hỏng / thanh lý")).toBeNull();
-    expect(screen.queryByRole("link", { name: "Đánh dấu hỏng / thanh lý" })).toBeNull();
+    render(<AssetsClient items={[item1, item2, item3]} />);
+
+    const rows = screen.getAllByRole("row").slice(1);
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toHaveTextContent("SPM-9");
+    expect(rows[1]).toHaveTextContent("SPM-10");
+    expect(rows[2]).toHaveTextContent("SPM-101");
   });
 
-  it("does not render 'Sửa'", () => {
-    render(<AssetsClient assets={[TS004_ASSET]} />);
+  it("hides fullyDisposed items by default", () => {
+    render(<AssetsClient items={[BINH_BOM, KHAY_CU]} />);
 
-    expect(screen.queryByText("Sửa")).toBeNull();
-    expect(screen.queryByRole("link", { name: "Sửa" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Sửa" })).toBeNull();
+    expect(screen.queryByText("Khay inox cũ")).toBeNull();
+    expect(screen.queryByText("SPM-CU")).toBeNull();
+    expect(screen.getAllByText("Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)").length).toBeGreaterThan(0);
   });
 
-  it("does not render any checkbox", () => {
-    render(<AssetsClient assets={[TS004_ASSET]} />);
+  it("shows fullyDisposed items with badge when ?all=1", () => {
+    mockSearchParams = new URLSearchParams("all=1");
+    render(<AssetsClient items={[BINH_BOM, KHAY_CU]} />);
 
-    expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
+    expect(screen.getAllByText("Khay inox cũ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("SPM-CU").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Đã thanh lý hết").length).toBeGreaterThan(0);
   });
 
-  it("does not render delete button", () => {
-    render(<AssetsClient assets={[TS004_ASSET]} />);
+  it("filters items by case-insensitive Vietnamese query ?q=", () => {
+    mockSearchParams = new URLSearchParams("q=BÌNH bơm");
+    render(<AssetsClient items={[BINH_BOM, COC_DONG]} />);
 
+    expect(screen.getAllByText("Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Cốc đong 100ml")).toBeNull();
+  });
+
+  it("does not render row selection checkboxes or bin/delete buttons", () => {
+    render(<AssetsClient items={[BINH_BOM, COC_DONG]} />);
+
+    // Table rows must not contain selection checkboxes
+    const table = screen.getByRole("table");
+    expect(within(table).queryAllByRole("checkbox")).toHaveLength(0);
+
+    // No delete or bin button
     expect(screen.queryByRole("button", { name: /Xoá/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /Trash/i })).toBeNull();
   });
 
-  it("renders desktop columns with formatted asset details", () => {
-    render(<AssetsClient assets={[TS004_ASSET]} />);
+  it("renders phone card with 'Còn 1 / mua 2 · Đã thanh lý 1'", () => {
+    render(<AssetsClient items={[BINH_BOM]} />);
 
-    expect(screen.getByText("TS-004")).toBeInTheDocument();
-    expect(
-      screen.getAllByText("Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)").length,
-    ).toBeGreaterThan(0);
-    expect(screen.getAllByText("1 / 2 cái").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("145.860đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Còn dùng").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Còn 1 / mua 2 · Đã thanh lý 1").length).toBeGreaterThan(0);
   });
 
-  it("renders empty state when there are no assets", () => {
-    render(<AssetsClient assets={[]} />);
+  it("renders empty state when there are no matching items", () => {
+    render(<AssetsClient items={[]} />);
 
-    expect(screen.getByText("Không có tài sản nào ở mục này.")).toBeInTheDocument();
-  });
-
-  describe("sorting (BR-DATA-008)", () => {
-    const ASSET_A: AssetView = {
-      id: "TS-010",
-      name: "Bình giữ nhiệt 1L",
-      quantity: 5,
-      remainingQuantity: 5,
-      acquiredDate: "2026-03-01",
-      unitCost: 200000,
-      totalCost: 1000000,
-      termMonths: 12,
-      remainingValue: 50000,
-      bucket: "IN_USE",
-    };
-
-    const ASSET_B: AssetView = {
-      id: "TS-002",
-      name: "Máy pha cà phê Expobar",
-      quantity: 1,
-      remainingQuantity: 1,
-      acquiredDate: "2026-01-01",
-      unitCost: 35000000,
-      totalCost: 35000000,
-      termMonths: 36,
-      remainingValue: 25000000,
-      bucket: "IN_USE",
-    };
-
-    const ASSET_C: AssetView = {
-      id: "TS-001",
-      name: "Máy xay sinh tố Omniblend",
-      quantity: 2,
-      remainingQuantity: 2,
-      acquiredDate: "2026-02-01",
-      unitCost: 3500000,
-      totalCost: 7000000,
-      termMonths: 24,
-      remainingValue: 4000000,
-      bucket: "IN_USE",
-    };
-
-    it("sorts assets by code ascending by default", () => {
-      // Pass unsorted assets: TS-010, TS-002, TS-001
-      render(<AssetsClient assets={[ASSET_A, ASSET_B, ASSET_C]} />);
-
-      const rows = screen.getAllByRole("row").slice(1);
-      expect(rows).toHaveLength(3);
-      expect(rows[0]).toHaveTextContent("TS-001");
-      expect(rows[1]).toHaveTextContent("TS-002");
-      expect(rows[2]).toHaveTextContent("TS-010");
-    });
-
-    it("puts the largest first when ?sort=remainingValue&dir=desc", () => {
-      mockSearchParams = new URLSearchParams("sort=remainingValue&dir=desc");
-      render(<AssetsClient assets={[ASSET_A, ASSET_B, ASSET_C]} />);
-
-      const rows = screen.getAllByRole("row").slice(1);
-      expect(rows).toHaveLength(3);
-      // Largest remainingValue (TS-002: 25.000.000đ) first, followed by TS-001 (4.000.000đ), then TS-010 (50.000đ)
-      expect(rows[0]).toHaveTextContent("TS-002");
-      expect(rows[1]).toHaveTextContent("TS-001");
-      expect(rows[2]).toHaveTextContent("TS-010");
-    });
+    expect(screen.getAllByText(/Không có tài sản/i).length).toBeGreaterThan(0);
   });
 });

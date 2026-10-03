@@ -155,7 +155,7 @@ Model chủ quán chốt 2026-10-01 (thay bản 2026-09-29): *"giao cho model m�
 | `scripts/`, `supabase/`, `app/pos/`, `lib/costing/` | có `CLAUDE.md` riêng, máy nạp khi mở file trong đó |
 
 Module mới đặt vào đúng vùng; không có vùng hợp thì hỏi trước khi tạo vùng mới. Gốc `lib/` không chứa file — có phép kiểm canh.
-Import cùng thư mục viết tương đối (`./TenFile`); import khác thư mục viết bằng alias `@/...`. Ví dụ có sẵn: `app/admin/inventory/assets/components/AssetCard.tsx` import `./DisposeAssetForm`.
+Import cùng thư mục viết tương đối (`./TenFile`); import khác thư mục viết bằng alias `@/...`. Ví dụ có sẵn: `app/admin/inventory/assets/components/AssetsClient.tsx` import `./AssetItemCard`.
 Đường dẫn viết bắt đầu bằng tên thư mục gốc (`app`, `lib`, `components`, `tests`, `scripts`, `docs`, `supabase`, `types`, `.claude`), không mở đầu bằng dấu gạch chéo. Phép kiểm chỉ nhận dạng lối này, nên đừng lấy đường dẫn không có thật ra làm ví dụ.
 
 ## Tài liệu

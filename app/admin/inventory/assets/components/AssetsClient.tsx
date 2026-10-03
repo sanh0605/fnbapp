@@ -1,37 +1,35 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { FilterCard } from "@/components/ui/list/FilterCard";
 import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
-import { sortRows, parseSort, type SortDir } from "@/components/ui/list/sort";
+import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { formatNumber } from "@/lib/shared/format";
-import { AssetCard } from "./AssetCard";
-import type { AssetView } from "../actions";
+import { AssetItemCard } from "./AssetItemCard";
+import type { AssetItemRow } from "@/lib/assets/asset-items";
 
 interface AssetsClientProps {
-  assets: AssetView[];
-  activeTab?: string;
+  items: AssetItemRow[];
+  initialSearch?: string;
+  initialAll?: boolean;
   initialPage?: string;
 }
 
-const BUCKET_LABEL: Record<AssetView["bucket"], string> = {
-  IN_USE: "Còn dùng",
-  FULLY_DEPRECIATED: "Đã hết khấu hao",
-  DISPOSED: "Đã thanh lý",
-};
-
-const BUCKET_BADGE_CLASS: Record<AssetView["bucket"], string> = {
-  IN_USE: "bg-primary-soft text-primary-active border-primary/20",
-  FULLY_DEPRECIATED: "bg-warning/10 text-warning-active border-warning/20",
-  DISPOSED: "bg-surface-secondary text-text-secondary border-border",
-};
-
-function listUrl(page: number = 1, tab?: string, sort?: string, dir?: string): string {
+function listUrl(
+  search: string,
+  showAll: boolean,
+  page: number = 1,
+  sort?: string,
+  dir?: string,
+): string {
   const p = new URLSearchParams();
-  if (tab) p.set("tab", tab);
+  const trimmed = search.trim();
+  if (trimmed) p.set("q", trimmed);
+  if (showAll) p.set("all", "1");
   if (page > 1) p.set("page", String(page));
   if (sort) p.set("sort", sort);
   if (dir) p.set("dir", dir);
@@ -40,33 +38,50 @@ function listUrl(page: number = 1, tab?: string, sort?: string, dir?: string): s
 }
 
 export default function AssetsClient({
-  assets,
-  activeTab,
+  items,
+  initialSearch,
+  initialAll,
   initialPage,
 }: AssetsClientProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const currentTab = searchParams?.get("tab") ?? activeTab;
+  const rawQ = searchParams?.get("q");
+  const rawAll = searchParams?.get("all");
   const rawSort = searchParams?.get("sort");
   const rawDir = searchParams?.get("dir");
+  const rawPage = searchParams?.get("page");
 
+  const [search, setSearch] = useState(() => initialSearch ?? rawQ ?? "");
+  const [showAll, setShowAll] = useState<boolean>(() =>
+    initialAll !== undefined ? initialAll : rawAll === "1",
+  );
   const [page, setPage] = useState<string | number | undefined>(
-    () => initialPage ?? searchParams?.get("page") ?? undefined,
+    () => initialPage ?? rawPage ?? undefined,
   );
 
   useEffect(() => {
-    if (initialPage !== undefined) setPage(initialPage);
-    else if (searchParams?.get("page") !== null)
-      setPage(searchParams?.get("page") || undefined);
-  }, [initialPage, searchParams]);
+    if (initialSearch !== undefined) setSearch(initialSearch);
+    else if (rawQ !== null && rawQ !== undefined) setSearch(rawQ);
+  }, [initialSearch, rawQ]);
 
-  const columns: DataColumn<AssetView>[] = useMemo(
+  useEffect(() => {
+    if (initialAll !== undefined) setShowAll(initialAll);
+    else setShowAll(rawAll === "1");
+  }, [initialAll, rawAll]);
+
+  useEffect(() => {
+    if (initialPage !== undefined) setPage(initialPage);
+    else if (rawPage !== null && rawPage !== undefined) setPage(rawPage);
+  }, [initialPage, rawPage]);
+
+  const columns: DataColumn<AssetItemRow>[] = useMemo(
     () => [
       {
-        key: "id",
-        header: "Mã",
-        sortValue: (asset) => asset.id,
+        key: "itemId",
+        header: "Mã hàng",
+        sortValue: (asset) => asset.itemId,
         render: (asset) => (
-          <span className="font-mono text-text-secondary">{asset.id}</span>
+          <span className="font-mono text-text-secondary">{asset.itemId}</span>
         ),
       },
       {
@@ -74,22 +89,19 @@ export default function AssetsClient({
         header: "Tên",
         sortValue: (asset) => asset.name,
         render: (asset) => (
-          <span className="font-bold text-text-primary">{asset.name}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-text-primary">{asset.name}</span>
+            {asset.fullyDisposed && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary border border-border shrink-0">
+                Đã thanh lý hết
+              </span>
+            )}
+          </div>
         ),
       },
       {
-        key: "acquiredDate",
-        header: "Ngày mua",
-        sortValue: (asset) => asset.acquiredDate,
-        render: (asset) => {
-          const [y, m, d] = asset.acquiredDate.split("-");
-          const formatted = y && m && d ? `${d}/${m}/${y}` : asset.acquiredDate;
-          return <span className="text-text-secondary">{formatted}</span>;
-        },
-      },
-      {
         key: "quantity",
-        header: "Số lượng còn",
+        header: "Còn / Đã mua",
         sortValue: (asset) => asset.remainingQuantity,
         render: (asset) => (
           <span className="text-text-primary">
@@ -98,24 +110,14 @@ export default function AssetsClient({
         ),
       },
       {
-        key: "unitCost",
-        header: "Đơn giá",
-        align: "right",
+        key: "disposedQuantity",
+        header: "Đã thanh lý",
         secondary: true,
-        sortValue: (asset) => asset.unitCost,
+        sortValue: (asset) => asset.disposedQuantity,
         render: (asset) => (
           <span className="text-text-secondary">
-            {formatNumber(Math.round(asset.unitCost))}đ
+            {asset.disposedQuantity > 0 ? `${asset.disposedQuantity} cái` : "—"}
           </span>
-        ),
-      },
-      {
-        key: "termMonths",
-        header: "Thời hạn",
-        secondary: true,
-        sortValue: (asset) => asset.termMonths,
-        render: (asset) => (
-          <span className="text-text-secondary">{asset.termMonths} tháng</span>
         ),
       },
       {
@@ -130,28 +132,40 @@ export default function AssetsClient({
         ),
       },
       {
-        key: "bucket",
-        header: "Trạng thái",
-        sortValue: (asset) => BUCKET_LABEL[asset.bucket],
-        render: (asset) => (
-          <span
-            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${BUCKET_BADGE_CLASS[asset.bucket]}`}
-          >
-            {BUCKET_LABEL[asset.bucket]}
-          </span>
-        ),
+        key: "latestAcquiredDate",
+        header: "Mua gần nhất",
+        secondary: true,
+        sortValue: (asset) => asset.latestAcquiredDate,
+        render: (asset) => {
+          const [y, m, d] = asset.latestAcquiredDate.split("-");
+          const formatted = y && m && d ? `${d}/${m}/${y}` : asset.latestAcquiredDate;
+          return <span className="text-text-secondary">{formatted}</span>;
+        },
       },
     ],
     [],
   );
 
   const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
-  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "itemId");
+
+  const filteredAssets = useMemo(() => {
+    const q = search.trim().toLocaleLowerCase("vi");
+    return items.filter((asset) => {
+      if (!showAll && asset.fullyDisposed) return false;
+      if (q) {
+        const matchName = asset.name.toLocaleLowerCase("vi").includes(q);
+        const matchId = asset.itemId.toLocaleLowerCase("vi").includes(q);
+        return matchName || matchId;
+      }
+      return true;
+    });
+  }, [items, search, showAll]);
 
   const sortedAssets = useMemo(() => {
     const col = columns.find((c) => c.key === sortKey);
-    return col?.sortValue ? sortRows(assets, col.sortValue, sortDir) : assets;
-  }, [assets, columns, sortKey, sortDir]);
+    return col?.sortValue ? sortRows(filteredAssets, col.sortValue, sortDir) : filteredAssets;
+  }, [filteredAssets, columns, sortKey, sortDir]);
 
   const slice = useMemo(() => {
     return paginate(sortedAssets, page, 20);
@@ -159,25 +173,71 @@ export default function AssetsClient({
 
   const sortParam = rawSort ? sortKey : undefined;
   const dirParam = rawSort ? sortDir : undefined;
-  const currentListUrl = listUrl(slice.page, currentTab, sortParam, dirParam);
+  const currentListUrl = listUrl(search, showAll, slice.page, sortParam, dirParam);
+
+  const handleApplyFilter = () => {
+    setPage(1);
+    router.replace(listUrl(search, showAll, 1, sortParam, dirParam), { scroll: false });
+  };
+
+  const handleClearFilter = () => {
+    setSearch("");
+    setShowAll(false);
+    setPage(1);
+    router.replace(listUrl("", false, 1, sortParam, dirParam), { scroll: false });
+  };
 
   return (
     <div className="space-y-4">
+      <FilterCard
+        onApply={handleApplyFilter}
+        onClear={handleClearFilter}
+        showClear={Boolean(search.trim() || showAll)}
+      >
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+          <label
+            htmlFor="assets-search"
+            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
+          >
+            Tìm kiếm
+          </label>
+          <input
+            id="assets-search"
+            type="text"
+            placeholder="Tên tài sản..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+          />
+        </div>
+        <div className="shrink-0 flex items-center h-10 mt-auto pb-1">
+          <label className="inline-flex items-center gap-2 cursor-pointer text-sm text-text-primary select-none">
+            <input
+              type="checkbox"
+              checked={showAll}
+              onChange={(e) => setShowAll(e.target.checked)}
+              className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+            />
+            <span>Hiện cả món đã thanh lý hết</span>
+          </label>
+        </div>
+      </FilterCard>
+
       <DataList
         rows={slice.rows}
-        getId={(asset) => asset.id}
+        getId={(asset) => asset.itemId}
         getName={(asset) => asset.name}
         getHref={(asset) =>
-          `/admin/inventory/assets/${encodeURIComponent(asset.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
+          `/admin/inventory/assets/${encodeURIComponent(asset.itemId)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={(asset) => <AssetCard asset={asset} />}
+        renderCard={(asset) => <AssetItemCard item={asset} />}
         sort={{
           key: sortKey,
           dir: sortDir,
-          href: (k, d) => listUrl(1, currentTab, k, d),
+          href: (k, d) => listUrl(search, showAll, 1, k, d),
         }}
-        empty={<EmptyState title="Không có tài sản nào ở mục này." />}
+        empty={<EmptyState title="Không có tài sản nào khớp bộ lọc." />}
       />
 
       {slice.total > 0 && (
@@ -185,11 +245,10 @@ export default function AssetsClient({
           <ListPagination
             slice={slice}
             unit="tài sản"
-            pageHref={(p) => listUrl(p, currentTab, sortParam, dirParam)}
+            pageHref={(p) => listUrl(search, showAll, p, sortParam, dirParam)}
           />
         </div>
       )}
     </div>
   );
 }
-

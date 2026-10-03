@@ -5,7 +5,7 @@ import { CashEntriesList } from "./CashEntriesList";
 import type { DBCashCategory, DBCashEntry } from "@/types/db";
 
 // CashEntriesList calls useRouter().refresh() after a cancel/delete write --
-// same pattern as app/admin/inventory/assets/components/AssetCard.test.tsx.
+// same pattern as app/admin/inventory/assets/components/DisposeAssetForm.test.tsx.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }));

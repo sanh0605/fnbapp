@@ -1,18 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import AssetDetailPage from "./page";
-import type { AssetDetail } from "../actions";
+import type { AssetItemDetail } from "@/lib/assets/asset-items";
 
-const { mockGetAssetDetail, mockNotFound } = vi.hoisted(() => ({
-  mockGetAssetDetail: vi.fn(),
+const { mockGetAssetItemDetail, mockFindItemIdForAsset, mockNotFound, mockRedirect } = vi.hoisted(() => ({
+  mockGetAssetItemDetail: vi.fn(),
+  mockFindItemIdForAsset: vi.fn(),
   mockNotFound: vi.fn(),
+  mockRedirect: vi.fn(),
 }));
 
 vi.mock("../actions", () => ({
-  getAssetDetail: mockGetAssetDetail,
+  getAssetItemDetail: mockGetAssetItemDetail,
+  findItemIdForAsset: mockFindItemIdForAsset,
 }));
 
 vi.mock("@/app/admin/inventory/assets/actions", () => ({
-  getAssetDetail: mockGetAssetDetail,
+  getAssetItemDetail: mockGetAssetItemDetail,
+  findItemIdForAsset: mockFindItemIdForAsset,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -20,6 +24,13 @@ vi.mock("next/navigation", () => ({
     mockNotFound();
     throw new Error("NEXT_NOT_FOUND");
   },
+  redirect: (url: string) => {
+    mockRedirect(url);
+    throw new Error(`NEXT_REDIRECT: ${url}`);
+  },
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/admin/inventory/assets/SPM-BINH",
 }));
 
 vi.mock("@/lib/auth/auth", () => ({
@@ -33,26 +44,49 @@ vi.mock("@/lib/auth/auth", () => ({
   }),
 }));
 
-const MOCK_DETAIL: AssetDetail = {
-  asset: {
-    id: "TS-004",
+const MOCK_DETAIL: AssetItemDetail = {
+  item: {
+    itemId: "SPM-BINH",
     name: "Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)",
     quantity: 2,
     remainingQuantity: 1,
-    acquiredDate: "2026-04-04",
-    unitCost: 205920,
-    totalCost: 411840,
-    termMonths: 24,
+    disposedQuantity: 1,
     remainingValue: 145860,
-    bucket: "IN_USE",
+    latestAcquiredDate: "2026-04-04",
+    fullyDisposed: false,
+    totalCost: 411840,
+    chargedToDate: 265980,
   },
-  schedule: [
-    { month: "2026-04", unitsHeld: 2, charge: 17160 },
+  lots: [
+    {
+      id: "TS-004",
+      name: "Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)",
+      nameSnapshot: "Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)",
+      purchaseOrderId: "PO-009",
+      acquiredDate: "2026-04-04",
+      unitCost: 205920,
+      totalCost: 411840,
+      quantity: 2,
+      remainingQuantity: 1,
+      termMonths: 24,
+      remainingValue: 145860,
+      bucket: "IN_USE",
+    },
   ],
   disposals: [
-    { id: "TL-002", quantity: 1, disposedDate: "2026-07-02", reason: "" },
+    {
+      id: "TL-002",
+      assetId: "TS-004",
+      lotAcquiredDate: "2026-04-04",
+      quantity: 1,
+      disposedDate: "2026-07-02",
+      reason: "",
+      charge: 171600,
+    },
   ],
-  chargedToDate: 265980,
+  months: [
+    { month: "2026-07", unitsHeld: 1, charge: 188760, disposalCharge: 171600 },
+  ],
 };
 
 beforeEach(() => {
@@ -61,27 +95,57 @@ beforeEach(() => {
 
 describe("AssetDetailPage", () => {
   it("does not pass function props to Client Component", async () => {
-    mockGetAssetDetail.mockResolvedValue(MOCK_DETAIL);
+    mockGetAssetItemDetail.mockResolvedValue(MOCK_DETAIL);
 
     const element = await AssetDetailPage({
-      params: { id: "TS-004" },
+      params: { id: "SPM-BINH" },
       searchParams: { returnTo: "/admin/inventory/assets" },
     });
 
     const props = element.props;
     expect(props).toBeDefined();
     expect(Object.values(props).every((v) => typeof v !== "function")).toBe(true);
+    expect(props.detail).toEqual(MOCK_DETAIL);
   });
 
-  it("calls notFound when asset detail is null", async () => {
-    mockGetAssetDetail.mockResolvedValue(null);
+  it("redirects TS-004 param to the item page, preserving returnTo", async () => {
+    mockFindItemIdForAsset.mockResolvedValue("SPM-BINH");
 
     await expect(
       AssetDetailPage({
-        params: { id: "NON_EXISTENT" },
+        params: { id: "TS-004" },
         searchParams: { returnTo: "/admin/inventory/assets" },
       }),
-    ).rejects.toThrow();
+    ).rejects.toThrow("NEXT_REDIRECT");
+
+    expect(mockFindItemIdForAsset).toHaveBeenCalledWith("TS-004");
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringMatching(/\/admin\/inventory\/assets\/SPM-BINH\?returnTo=/),
+    );
+  });
+
+  it("calls notFound when findItemIdForAsset returns null for an unknown or inactive TS- code", async () => {
+    mockFindItemIdForAsset.mockResolvedValue(null);
+
+    await expect(
+      AssetDetailPage({
+        params: { id: "TS-999" },
+        searchParams: { returnTo: "/admin/inventory/assets" },
+      }),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
+
+    expect(mockNotFound).toHaveBeenCalled();
+  });
+
+  it("calls notFound when item detail is null for an unknown item code", async () => {
+    mockGetAssetItemDetail.mockResolvedValue(null);
+
+    await expect(
+      AssetDetailPage({
+        params: { id: "SPM-UNKNOWN" },
+        searchParams: { returnTo: "/admin/inventory/assets" },
+      }),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
 
     expect(mockNotFound).toHaveBeenCalled();
   });

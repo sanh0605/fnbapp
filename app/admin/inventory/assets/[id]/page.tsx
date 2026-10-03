@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation";
-import { getAssetDetail } from "../actions";
+import { notFound, redirect } from "next/navigation";
+import { getAssetItemDetail, findItemIdForAsset } from "../actions";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
-import { AssetDetailView } from "./components/AssetDetailView";
+import { AssetItemDetailView } from "./components/AssetItemDetailView";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,20 @@ export default async function AssetDetailPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const detail = await getAssetDetail(params.id);
+  if (params.id.startsWith("TS-")) {
+    const itemId = await findItemIdForAsset(params.id);
+    if (!itemId) {
+      notFound();
+    }
+    const q = new URLSearchParams();
+    if (searchParams?.returnTo) {
+      q.set("returnTo", searchParams.returnTo);
+    }
+    const qs = q.toString();
+    redirect(`/admin/inventory/assets/${itemId}${qs ? `?${qs}` : ""}`);
+  }
+
+  const detail = await getAssetItemDetail(params.id);
   if (!detail) {
     notFound();
   }
@@ -22,13 +35,5 @@ export default async function AssetDetailPage({
     ? "/admin/inventory/assets"
     : rawReturnTo;
 
-  return (
-    <AssetDetailView
-      asset={detail.asset}
-      schedule={detail.schedule}
-      disposals={detail.disposals}
-      chargedToDate={detail.chargedToDate}
-      returnTo={returnTo}
-    />
-  );
+  return <AssetItemDetailView detail={detail} returnTo={returnTo} />;
 }

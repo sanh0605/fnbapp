@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, insert, generateNewId } from "@/lib/db/tables";
+import { findAll, findAllWhere, findAllWhereInBatches, insert, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
@@ -9,13 +9,19 @@ import {
   buildAssetSchedule,
   chargeForMonth,
   summarizeAsset,
-  totalScheduledCharge,
   validateDisposalDate,
   type AssetSummary,
   type DisposalInput,
-  type MonthlyCharge,
 } from "@/lib/assets/asset-depreciation";
-import type { DBAsset, DBAssetDisposal } from "@/types/db";
+import {
+  buildAssetItemDetail,
+  groupAssetItems,
+  type AssetItemDetail,
+  type AssetItemRow,
+  type AssetLotInput,
+  type DisposalRowInput,
+} from "@/lib/assets/asset-items";
+import type { DBAsset, DBAssetDisposal, DBPurchaseOrderLine, DBPurchasedItem } from "@/types/db";
 
 const ASSETS_SHEET = "assets";
 const DISPOSALS_SHEET = "asset_disposals";
@@ -94,17 +100,34 @@ export async function getAssetsData(): Promise<AssetView[]> {
   }
 }
 
-export type AssetDisposalView = { id: string; quantity: number; disposedDate: string; reason: string };
-export type AssetDetail = {
-  asset: AssetView;
-  schedule: MonthlyCharge[];
-  disposals: AssetDisposalView[];
-  chargedToDate: number;
-};
+function toLotInput(asset: DBAsset, purchaseOrderId: string | null): AssetLotInput {
+  return {
+    id: asset.id,
+    purchased_item_id: asset.purchased_item_id,
+    purchase_order_id: purchaseOrderId,
+    name_snapshot: asset.name_snapshot,
+    acquired_date: asset.acquired_date,
+    unit_cost: Number(asset.unit_cost),
+    total_cost: Number(asset.total_cost),
+    quantity: Number(asset.quantity),
+    term_months: Number(asset.term_months),
+  };
+}
 
-// Read-only: one asset's summary, monthly depreciation schedule and disposals
-// for the detail page. null = not found or administratively INACTIVE.
-export async function getAssetDetail(id: string): Promise<AssetDetail | null> {
+function toDisposalRows(disposals: DBAssetDisposal[]): DisposalRowInput[] {
+  return disposals.map(d => ({
+    id: d.id,
+    asset_id: d.asset_id,
+    quantity: Number(d.quantity),
+    disposed_date: d.disposed_date,
+    reason: d.reason ?? null,
+  }));
+}
+
+// Read-only: one row per purchased item (lots of the same item folded
+// together), ACTIVE lots only. Items that are fully disposed are still returned
+// with fullyDisposed = true; the page decides whether to show them.
+export async function getAssetItemsData(): Promise<AssetItemRow[]> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
@@ -113,35 +136,66 @@ export async function getAssetDetail(id: string): Promise<AssetDetail | null> {
       findAll(ASSETS_SHEET) as Promise<DBAsset[]>,
       findAll(DISPOSALS_SHEET) as Promise<DBAssetDisposal[]>,
     ]);
-    const row = assets.find(a => a.id === id);
-    if (!row || row.status === "INACTIVE") return null;
-
-    const own = disposals
-      .filter(d => d.asset_id === id)
-      .sort((a, b) => a.disposed_date.localeCompare(b.disposed_date));
-    const asset = summarizeDbAsset(row, own, currentSaigonMonth());
-    const schedule = buildAssetSchedule(
-      {
-        acquired_date: row.acquired_date,
-        total_cost: Number(row.total_cost),
-        quantity: Number(row.quantity),
-        term_months: Number(row.term_months),
-      },
-      toDisposalInputs(own),
+    const lots = assets.filter(a => a.status !== "INACTIVE");
+    const itemIds = [...new Set(lots.map(a => a.purchased_item_id))];
+    const items = await findAllWhereInBatches<DBPurchasedItem>("purchased_items", "id", itemIds);
+    const names = new Map(items.map(i => [i.id, i.name]));
+    return groupAssetItems(
+      lots.map(a => toLotInput(a, null)),
+      toDisposalRows(disposals),
+      names,
+      currentSaigonMonth(),
     );
-    return {
-      asset,
-      schedule,
-      disposals: own.map(d => ({
-        id: d.id,
-        quantity: Number(d.quantity),
-        disposedDate: d.disposed_date,
-        reason: d.reason ?? "",
-      })),
-      chargedToDate: totalScheduledCharge(schedule) - asset.remainingValue,
-    };
   } catch (error) {
-    console.error("Loi getAssetDetail:", error);
+    console.error("Loi getAssetItemsData:", error);
+    throw error;
+  }
+}
+
+// Read-only: one purchased item's lots, disposals (with the amount each one
+// charged into its month) and monthly depreciation. null = no ACTIVE lot.
+export async function getAssetItemDetail(itemId: string): Promise<AssetItemDetail | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  try {
+    const assets = (await findAllWhere<DBAsset>(ASSETS_SHEET, { eq: { purchased_item_id: itemId } }))
+      .filter(a => a.status !== "INACTIVE");
+    if (assets.length === 0) return null;
+
+    const lineIds = assets.map(a => a.purchase_order_line_id).filter((id): id is string => !!id);
+    const [disposals, lines, items] = await Promise.all([
+      findAllWhereInBatches<DBAssetDisposal>(DISPOSALS_SHEET, "asset_id", assets.map(a => a.id)),
+      findAllWhereInBatches<DBPurchaseOrderLine>("purchase_order_lines", "id", lineIds),
+      findAllWhere<DBPurchasedItem>("purchased_items", { eq: { id: itemId } }),
+    ]);
+    const orderByLine = new Map(lines.map(l => [l.id, l.purchase_order_id]));
+    return buildAssetItemDetail(
+      itemId,
+      assets.map(a => toLotInput(a, a.purchase_order_line_id ? orderByLine.get(a.purchase_order_line_id) ?? null : null)),
+      toDisposalRows(disposals),
+      items[0]?.name,
+      currentSaigonMonth(),
+    );
+  } catch (error) {
+    console.error("Loi getAssetItemDetail:", error);
+    throw error;
+  }
+}
+
+// Maps an old lot code (TS-...) to its purchased item so old links can
+// redirect. null = unknown or administratively INACTIVE.
+export async function findItemIdForAsset(assetId: string): Promise<string | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  try {
+    const rows = await findAllWhere<DBAsset>(ASSETS_SHEET, { eq: { id: assetId } });
+    const row = rows[0];
+    if (!row || row.status === "INACTIVE") return null;
+    return row.purchased_item_id;
+  } catch (error) {
+    console.error("Loi findItemIdForAsset:", error);
     throw error;
   }
 }
