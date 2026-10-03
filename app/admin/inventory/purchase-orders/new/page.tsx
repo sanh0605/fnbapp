@@ -7,15 +7,17 @@ import { BackLink } from "@/components/ui/BackLink";
 export const dynamic = "force-dynamic";
 
 export default async function NewPurchaseOrderPage() {
-  const [suppliers, items, conversions, allUnits, sources] = await Promise.all([
+  const [suppliers, items, conversions, allUnits, sources, allBankAccounts] = await Promise.all([
     findAll("Suppliers"),
     findAll("Purchased_Items"),
     findAll("UOM_Conversions"),
     findAll("Units"),
-    findAll("Purchase_Sources")
+    findAll("Purchase_Sources"),
+    findAll("Bank_Accounts"),
   ]);
 
   const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
+  const bankAccounts = (allBankAccounts as any[]).filter(a => a.status === "ACTIVE");
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -33,6 +35,7 @@ export default async function NewPurchaseOrderPage() {
         items={items}
         conversions={conversions}
         units={units}
+        bankAccounts={bankAccounts}
       />
     </div>
   );

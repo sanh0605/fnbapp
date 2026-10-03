@@ -62,6 +62,8 @@ function buildFormData(status = "COMPLETED", id = ""): FormData {
   // change; flagged in the handoff, not fixed here.
   formData.set("transaction_date", "2026-08-20T00:00:00.000Z");
   formData.set("status", status);
+  // Migration 0107: a completed order must say how it was paid.
+  formData.set("payment_method", "CASH");
   formData.set("lines_json", JSON.stringify([{ subtotal: 761_200 }]));
   formData.set("subtotal_amount", "761200");
   if (id) formData.set("id", id);

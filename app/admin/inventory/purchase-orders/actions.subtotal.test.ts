@@ -43,6 +43,8 @@ function buildFormData(fields: Record<string, string>): FormData {
   // (the subtotal guard) rather than tripping the new header check first.
   formData.set("source_id", "SRC-1");
   formData.set("transaction_date", "2026-07-29");
+  // Migration 0107: a completed order must say how it was paid.
+  formData.set("payment_method", "CASH");
   for (const [key, value] of Object.entries(fields)) {
     formData.set(key, value);
   }

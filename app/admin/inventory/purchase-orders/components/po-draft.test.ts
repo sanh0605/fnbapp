@@ -33,6 +33,8 @@ describe("po-draft", () => {
     taxAmount: 5000,
     voucherAmount: 2000,
     discountAmount: 1000,
+    paymentMethod: "BANK_TRANSFER",
+    bankAccountId: "BA-001",
   };
 
   it("computes draft key properly", () => {

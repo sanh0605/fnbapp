@@ -9,6 +9,10 @@ import { creationAudit, updateAudit } from "@/lib/finance/audit-columns";
 import { parseCashEntry, type CashEntryInput } from "@/lib/finance/cash-entry-rules";
 import { getCashCategories } from "./categories/actions";
 import { getBankAccounts } from "./bank-accounts/actions";
+import { getCashTransfers } from "./transfers/actions";
+import { readCashBookDaily } from "@/lib/finance/cash-book-daily";
+import { buildCashBookRows, type CashBookRow } from "@/lib/finance/cash-book-rows";
+import { summariseCashBook, type CashBookSummary } from "@/lib/finance/cash-flow";
 import type { DBCashEntry, DBCashCategory, DBBankAccount } from "@/types/db";
 
 const SHEET = "Cash_Entries";
@@ -37,17 +41,43 @@ export async function getCashEntries(start: string, end: string): Promise<DBCash
   });
 }
 
+// Everything up to and including `end`: the opening balance of a range needs
+// every hand row before it, not only those inside it.
+async function getCashEntriesThrough(end: string): Promise<DBCashEntry[]> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+  return await findAllWhere<DBCashEntry>(SHEET, { lte: { entry_date: end } });
+}
+
 export async function getFinancePageData(start: string, end: string): Promise<{
-  entries: DBCashEntry[];
+  rows: CashBookRow[]; // only start..end, all statuses
+  summary: CashBookSummary;
   categories: DBCashCategory[];
   accounts: DBBankAccount[];
 }> {
-  const [entries, categories, accounts] = await Promise.all([
-    getCashEntries(start, end),
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const [allEntries, transfers, dayRows, categories, accounts] = await Promise.all([
+    getCashEntriesThrough(end),
+    getCashTransfers(end),
+    readCashBookDaily(end),
     getCashCategories(),
     getBankAccounts(),
   ]);
-  return { entries, categories, accounts };
+
+  const summary = summariseCashBook({ dayRows, entries: allEntries, transfers, categories, start, end });
+
+  // "YYYY-MM-DD" strings compare in calendar order.
+  const inRange = (day: string) => day >= start && day <= end;
+  const rows = buildCashBookRows({
+    dayRows: dayRows.filter((d) => inRange(d.day)),
+    entries: allEntries.filter((e) => inRange(e.entry_date)),
+    transfers: transfers.filter((t) => inRange(t.transfer_date)),
+    categories,
+    accounts,
+  });
+  return { rows, summary, categories, accounts };
 }
 
 export async function addCashEntry(formData: FormData): Promise<ActionResponse> {

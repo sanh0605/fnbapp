@@ -117,4 +117,44 @@ describe("PurchaseOrdersClient", () => {
     
     expect(screen.getByRole("button", { name: "Xoá lọc" })).toBeTruthy();
   });
+
+  it("T6: Renders Trả bằng secondary column in table and card", () => {
+    const dataWithRow: typeof pageData = {
+      ...pageData,
+      total: 1,
+      firstIndex: 1,
+      lastIndex: 1,
+      rows: [
+        {
+          id: "PO-181",
+          dateText: "15/09/2026 10:00:00",
+          supplierName: "Thế Kỷ Xanh",
+          sourceName: "Shopee",
+          status: "COMPLETED",
+          totalAmount: 506023,
+          paymentLabel: "Tiền mặt",
+        },
+      ],
+    };
+
+    render(<PurchaseOrdersClient pageData={dataWithRow} />);
+    expect(screen.getByRole("columnheader", { name: "Trả bằng" })).toBeTruthy();
+    // Tiền mặt appears in both desktop table and phone card
+    const labels = screen.getAllByText("Tiền mặt");
+    expect(labels.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("T7: Filter by Trả bằng", async () => {
+    render(<PurchaseOrdersClient pageData={pageData} />);
+    const paySelect = screen.getByLabelText("Trả bằng");
+    fireEvent.change(paySelect, { target: { value: "BANK_TRANSFER" } });
+
+    const filterBtn = screen.getByRole("button", { name: "Lọc" });
+    fireEvent.click(filterBtn);
+
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledTimes(1);
+    });
+    expect(replace).toHaveBeenCalledWith(expect.stringContaining("pay=BANK_TRANSFER"), expect.anything());
+  });
 });

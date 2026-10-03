@@ -42,6 +42,8 @@ function buildFormData(fields: Record<string, string>): FormData {
   formData.set("source_id", "SRC-1");
   formData.set("transaction_date", "2026-07-29");
   formData.set("status", "COMPLETED");
+  // Migration 0107: a completed order must say how it was paid.
+  formData.set("payment_method", "CASH");
   formData.set("subtotal_amount", "102000");
   formData.set(
     "lines_json",

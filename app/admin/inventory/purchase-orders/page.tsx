@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export default async function PurchaseOrdersPage({
   searchParams,
 }: {
-  searchParams: { q?: string; status?: string; supplier?: string; from?: string; to?: string; page?: string };
+  searchParams: { q?: string; status?: string; supplier?: string; from?: string; to?: string; page?: string; pay?: string };
 }) {
   const filters: PurchaseOrderListFilters = {
     q: searchParams.q,
@@ -16,6 +16,7 @@ export default async function PurchaseOrdersPage({
     from: searchParams.from,
     to: searchParams.to,
     page: searchParams.page,
+    pay: searchParams.pay,
   };
   const pageData = await getPurchaseOrdersPage(filters);
   return <PurchaseOrdersClient pageData={pageData} />;

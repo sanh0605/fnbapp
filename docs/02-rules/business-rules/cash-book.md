@@ -1,15 +1,17 @@
 # Cash book rules
 
 The cash book (`/admin/finance`, tables `cash_categories`, `bank_accounts`,
-`cash_entries`) records money that moves outside the sale and purchase flows.
-Design: `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`. Flow:
-`docs/03-workflows/cash-book.md`.
+`cash_entries`, `cash_transfers`, view `cash_book_daily`) shows every movement
+of money: hand-typed rows, transfers, and the sale and purchase money read from
+the orders themselves. Design: `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`,
+changed by `docs/superpowers/specs/2026-10-04-so-thu-chi-dong-tien-design.md`.
+Flow: `docs/03-workflows/cash-book.md`.
 
 ### BR-CASH-001 — Sale and purchase money shows in the cash book but is never typed into it, with one dated exception
 
 **Status:** `APPROVED` — owner decision 2026-09-08; exception 2026-09-11;
-changed 2026-10-04 (not built yet; design to follow in
-`docs/superpowers/specs/`).
+changed 2026-10-04 and built the same day (migration `0107`; design
+`docs/superpowers/specs/2026-10-04-so-thu-chi-dong-tien-design.md`).
 
 **Changed 2026-10-04.** Owner: *"lưu tất cả các lần ảnh hưởng đến dòng tiền
 vào, tức là bao gồm cả tiền thanh toán đơn nhập hàng và tiền bán hàng."* The
@@ -124,7 +126,8 @@ An income category that counts in profit and loss can carry a second flag, "Tín
 
 ### BR-CASH-007 — Opening and closing balances, for cash and bank apart and together
 
-**Status:** `APPROVED` — owner decision 2026-10-04 (not built yet).
+**Status:** `APPROVED` — owner decision 2026-10-04; built 2026-10-04
+(`lib/finance/cash-flow.ts`).
 
 For the date range being viewed, the cash book shows an opening balance (the
 first day, before any of its movements) and a closing balance (after the last
@@ -146,7 +149,8 @@ months.
 
 ### BR-CASH-008 — Money moved between the drawer and a bank account is a transfer, not income or expense
 
-**Status:** `APPROVED` — owner decision 2026-10-04 (not built yet).
+**Status:** `APPROVED` — owner decision 2026-10-04; built 2026-10-04 (table
+`cash_transfers`, migration `0107`; rules in `lib/finance/cash-transfer-rules.ts`).
 
 Depositing cash into a bank account, or withdrawing it into the drawer, is
 recorded as one "Chuyển tiền" row: from where, to where, how much, which day.

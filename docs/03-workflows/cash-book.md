@@ -1,11 +1,45 @@
 # Cash book flow (sổ thu chi)
 
 ```flow-decl
-routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance, /admin/finance/new, /admin/finance/[id], /admin/finance/[id]/edit, /admin/finance/categories/new, /admin/finance/categories/[id], /admin/finance/categories/[id]/edit, /admin/finance/bank-accounts/new, /admin/finance/bank-accounts/[id], /admin/finance/bank-accounts/[id]/edit
-files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts
-tables: Cash_Categories, Bank_Accounts, Cash_Entries
-brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006
+routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance, /admin/finance/new, /admin/finance/[id], /admin/finance/[id]/edit, /admin/finance/categories/new, /admin/finance/categories/[id], /admin/finance/categories/[id]/edit, /admin/finance/bank-accounts/new, /admin/finance/bank-accounts/[id], /admin/finance/bank-accounts/[id]/edit, /admin/finance/transfers/new, /admin/finance/transfers/[id], /admin/finance/transfers/[id]/edit
+files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, app/admin/finance/transfers/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts, lib/finance/cash-transfer-rules.ts, lib/finance/cash-flow.ts, lib/finance/cash-book-daily.ts, lib/finance/cash-book-rows.ts
+tables: Cash_Categories, Bank_Accounts, Cash_Entries, Cash_Transfers
+brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006, BR-CASH-007, BR-CASH-008
 ```
+
+**Behaviour change — 2026-10-04 (money flow, migration `0107`):** the ledger
+now shows every movement of money, not only the hand-typed rows
+(`BR-CASH-001` as changed 2026-10-04). Spec:
+`docs/superpowers/specs/2026-10-04-so-thu-chi-dong-tien-design.md`.
+
+- **Day rows, read, never typed.** The read-only view `cash_book_daily` gives
+  one row per Saigon day and payment method for completed sales and for
+  completed purchase orders; on 2026-09-15 these read "Bán hàng · Tiền mặt ·
+  23 đơn" and "Nhập hàng · Tiền mặt · 2 đơn nhập". A sale with payment rows counts each row under its own
+  method; one without counts its `net_total` under `orders_v2.payment_method`
+  (a missing method reads as cash). A purchase order counts on its
+  `transaction_date` (else `created_at`) under its new `payment_method`. Day
+  rows have no code, no tick box and no status; each links to the order list
+  or purchase-order list filtered to that day and method.
+- **Transfers.** A "Chuyển tiền" row (`cash_transfers`, code `CT-xxx`) moves
+  money between the drawer (`null` account) and a bank account, or between two
+  accounts (`BR-CASH-008`). It counts in neither Tổng thu nor Tổng chi. Pages
+  `/admin/finance/transfers/new`, `[id]`, `[id]/edit`; cancel like a hand row;
+  "Xoá" ADMIN only.
+- **Balances.** Two cards, "Đầu kỳ" and "Cuối kỳ", each with Tiền mặt, Ngân
+  hàng and Tổng (`BR-CASH-007`), computed by `summariseCashBook`
+  (`lib/finance/cash-flow.ts`) from every row through the range's last day,
+  counting from zero. Cuối kỳ tổng = Đầu kỳ tổng + Tổng thu − Tổng chi.
+- **"Trả bằng" on purchase orders.** Tiền mặt or Chuyển khoản (with an
+  account); required to complete an order, chosen by hand on every new order;
+  editable afterwards on a completed order's page (`setPurchaseOrderPayment`).
+  Orders that existed when `0107` ran count as cash.
+- **"Loại" filter** on the ledger: Tất cả, Bán hàng, Nhập hàng, Ghi tay,
+  Chuyển tiền. Under "Đã huỷ" no day row shows.
+
+The five answers below describe the hand-typed rows; where they say the ledger
+holds no sale and no running balance, the 2026-10-04 change above supersedes
+them.
 
 This doc covers all three cash-book screens: the cash-category (nhóm thu chi)
 screen, task 4 of the plan at `docs/superpowers/plans/2026-09-08-so-thu-chi.md`;

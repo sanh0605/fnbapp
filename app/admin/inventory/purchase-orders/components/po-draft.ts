@@ -9,6 +9,8 @@ export interface PoDraftState {
   taxAmount: number;
   voucherAmount: number;
   discountAmount: number;
+  paymentMethod?: string | null;
+  bankAccountId?: string | null;
 }
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;

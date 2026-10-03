@@ -68,6 +68,19 @@ function substituteJsonbNullLiterals(table: string, row: JsonRow): { row: JsonRo
 }
 
 /**
+ * Bundles taken before migration 0107 have no payment columns on
+ * purchase_orders, and the new check refuses a COMPLETED row without a
+ * payment_method. The migration backfilled every existing order as cash
+ * (BR-CASH-001 answer 3a), so an old-shaped row gets the same values here.
+ * A row that already carries the key (even null: an undecided draft) is left
+ * exactly as saved.
+ */
+function backfillPurchaseOrderPayment(table: string, row: JsonRow): JsonRow {
+  if (table !== "purchase_orders" || "payment_method" in row) return row;
+  return { ...row, payment_method: "CASH", bank_account_id: null };
+}
+
+/**
  * Inserts every table's rows from a backup bundle into the target client, in
  * BACKUP_TABLES order so foreign keys resolve (parent tables restored before
  * the children that reference them). The caller is responsible for having
@@ -99,7 +112,7 @@ export async function restoreBundleToTarget(
     const rows = rawRows.map(row => {
       const result = substituteJsonbNullLiterals(table, row);
       if (result.changed) substituted += 1;
-      return result.row;
+      return backfillPurchaseOrderPayment(table, result.row);
     });
 
     for (let offset = 0; offset < rows.length; offset += batchSize) {

@@ -44,6 +44,7 @@ const ordersWithTwelve: PurchaseOrderListPage = {
       sourceName: "Kho Tổng",
       status: "COMPLETED",
       totalAmount: 12500000,
+      paymentLabel: "Tiền mặt",
     },
   ],
   total: 12,

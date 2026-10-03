@@ -11,14 +11,24 @@ const DAY_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
 export interface PurchaseOrderListFilters {
   q?: string; status?: string; supplier?: string; from?: string; to?: string; page?: string;
+  // "CASH" | "BANK_TRANSFER"; anything else is ignored.
+  pay?: string;
 }
 export interface PurchaseOrderListRow {
   id: string; dateText: string; supplierName: string; sourceName: string;
   status: string; totalAmount: number;
+  // "Tiền mặt" | "Chuyển khoản" | "—" (a draft that has not chosen yet)
+  paymentLabel: string;
 }
 export interface PurchaseOrderListPage {
   rows: PurchaseOrderListRow[]; total: number; page: number; pageCount: number;
   firstIndex: number; lastIndex: number; rangeError: boolean;
+}
+
+function paymentLabelOf(method: DBPurchaseOrder["payment_method"]): string {
+  if (method === "CASH") return "Tiền mặt";
+  if (method === "BANK_TRANSFER") return "Chuyển khoản";
+  return "—";
 }
 
 function slipTime(po: DBPurchaseOrder): number {
@@ -57,7 +67,10 @@ export function listPurchaseOrdersPage(input: {
   const startMs = from && range ? range.startUtc.getTime() : -Infinity;
   const endMs = to && range ? range.endUtc.getTime() : Infinity;
 
+  const pay = filters.pay === "CASH" || filters.pay === "BANK_TRANSFER" ? filters.pay : undefined;
+
   const matched = orders.filter(po => {
+    if (pay && po.payment_method !== pay) return false;
     if (filters.status && filters.status !== "ALL" && po.status !== filters.status) return false;
     if (filters.supplier && filters.supplier !== "ALL" && po.supplier_id !== filters.supplier) return false;
     const t = slipTime(po);
@@ -86,6 +99,7 @@ export function listPurchaseOrdersPage(input: {
       sourceName: sourceName.get(po.source_id) ?? "—",
       status: po.status,
       totalAmount: Number(po.total_amount) || 0,
+      paymentLabel: paymentLabelOf(po.payment_method),
     })),
     total,
     page,

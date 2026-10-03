@@ -1,10 +1,11 @@
 "use server";
 
-import { findAll, findById, insert, generateNewId } from "@/lib/db/tables";
+import { findAll, findById, insert, update, generateNewId } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
-import type { DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DBItemCategory } from "@/types/db";
+import { parsePurchaseOrderPayment } from "@/lib/purchasing/purchase-order-payment";
+import type { DBBankAccount, DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DBItemCategory } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchasing/purchase-order-write-plan";
 import { savePurchaseOrderAtomic } from "@/lib/purchasing/purchase-order-transaction";
 import { requireAdmin } from "@/lib/auth/auth";
@@ -140,6 +141,23 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       ).length;
     }
 
+    // How it was paid. A form that leaves the two fields out entirely (key
+    // absent) keeps what the saved order has, so re-saving a completed order
+    // never blanks its payment; a key that is present, even empty, is the
+    // user's answer and is checked. Both fields are always sent below, because
+    // the atomic function overwrites them on replace (migration 0107).
+    const formHasPayment = formData.has("payment_method") || formData.has("bank_account_id");
+    const keepSaved = Boolean(id) && previousPo !== null && !formHasPayment;
+    const accounts = (await findAll("Bank_Accounts")) as DBBankAccount[];
+    const payment = parsePurchaseOrderPayment({
+      status,
+      method: keepSaved ? previousPo.payment_method || "" : ((formData.get("payment_method") as string) || ""),
+      bankAccountId: keepSaved ? previousPo.bank_account_id || "" : ((formData.get("bank_account_id") as string) || ""),
+      activeAccountIds: accounts.filter(a => a.status === "ACTIVE").map(a => a.id),
+      currentAccountId: previousPo?.bank_account_id ?? null,
+    });
+    if (payment.ok === false) return fail(payment.error);
+
     const createdAt = new Date().toISOString();
     const writePlan = buildPurchaseOrderWritePlan({
       order: {
@@ -158,6 +176,8 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         status,
         created_by_id: auth.actor.id,
         created_by_name: created_by,
+        payment_method: payment.value.payment_method,
+        bank_account_id: payment.value.bank_account_id,
       },
       lines,
       purchasedItems: purchasedItems as any[],
@@ -292,6 +312,45 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     revalidatePath("/admin/inventory/purchase-orders");
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
     return ok({ po_id, ...(assetWarning ? { assetWarning } : {}) });
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
+
+// Changes only how a COMPLETED order was paid: lines, amounts, stock and the
+// asset register do not read these two columns (spec section 7).
+export async function setPurchaseOrderPayment(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  const id = ((formData.get("id") as string) || "").trim();
+  if (!id) return fail("Thiếu mã phiếu nhập");
+
+  try {
+    const existing = (await findById("Purchase_Orders", id)) as DBPurchaseOrder | null;
+    if (!existing) return fail("Không tìm thấy phiếu nhập");
+    if (existing.status === "DRAFT") return fail("Phiếu nháp: chọn cách trả trong phiếu");
+    if (existing.status !== "COMPLETED") return fail("Chỉ phiếu đã hoàn thành mới đổi được cách trả");
+
+    const accounts = (await findAll("Bank_Accounts")) as DBBankAccount[];
+    const payment = parsePurchaseOrderPayment({
+      status: "COMPLETED",
+      method: ((formData.get("payment_method") as string) || "").trim(),
+      bankAccountId: ((formData.get("bank_account_id") as string) || "").trim(),
+      activeAccountIds: accounts.filter(a => a.status === "ACTIVE").map(a => a.id),
+      currentAccountId: existing.bank_account_id ?? null,
+    });
+    if (payment.ok === false) return fail(payment.error);
+
+    await update("Purchase_Orders", id, {
+      payment_method: payment.value.payment_method,
+      bank_account_id: payment.value.bank_account_id,
+    });
+    revalidateTag("sheets-Purchase_Orders");
+    revalidatePath(PATH);
+    revalidatePath(`${PATH}/${id}`);
+    revalidatePath("/admin/finance");
+    return ok();
   } catch (error: unknown) {
     return describeActionError(error);
   }

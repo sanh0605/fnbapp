@@ -27,7 +27,7 @@ describe("listPurchaseOrdersPage", () => {
     expect(r.rows.map(x => x.id)).toEqual(["PO-191", "PO-190", "PO-188"]);
     expect(r.rows[0]).toEqual({
       id: "PO-191", dateText: "28/09/2026 16:13:06", supplierName: "Không rõ",
-      sourceName: "Mua ngoài", status: "COMPLETED", totalAmount: 165000,
+      sourceName: "Mua ngoài", status: "COMPLETED", totalAmount: 165000, paymentLabel: "—",
     });
     expect(r.rows[2].dateText).toBe("23/09/2026 00:00:00");
   });
@@ -101,5 +101,34 @@ describe("listPurchaseOrdersPage", () => {
   it("returns one empty page when nothing matches", () => {
     const r = listPurchaseOrdersPage({ ...base, orders: real, filters: { q: "không có" } });
     expect(r).toMatchObject({ rows: [], total: 0, page: 1, pageCount: 1, firstIndex: 0, lastIndex: 0 });
+  });
+
+  describe("payment method (migration 0107)", () => {
+    const paid = [
+      po("PO-1", "2026-09-10T03:00:00+00:00", { payment_method: "CASH" }),
+      po("PO-2", "2026-09-11T03:00:00+00:00", { payment_method: "BANK_TRANSFER", bank_account_id: "BA-001" }),
+      po("PO-3", "2026-09-12T03:00:00+00:00", { status: "DRAFT", payment_method: null }),
+    ];
+
+    it("labels each row: Tiền mặt, Chuyển khoản, or a dash while undecided", () => {
+      const r = listPurchaseOrdersPage({ ...base, orders: paid, filters: {} });
+      const label = Object.fromEntries(r.rows.map(x => [x.id, x.paymentLabel]));
+      expect(label).toEqual({ "PO-1": "Tiền mặt", "PO-2": "Chuyển khoản", "PO-3": "—" });
+    });
+
+    it("pay=BANK_TRANSFER keeps only transfer orders", () => {
+      const r = listPurchaseOrdersPage({ ...base, orders: paid, filters: { pay: "BANK_TRANSFER" } });
+      expect(r.rows.map(x => x.id)).toEqual(["PO-2"]);
+    });
+
+    it("pay=CASH keeps only cash orders", () => {
+      const r = listPurchaseOrdersPage({ ...base, orders: paid, filters: { pay: "CASH" } });
+      expect(r.rows.map(x => x.id)).toEqual(["PO-1"]);
+    });
+
+    it("any other pay value is ignored", () => {
+      const r = listPurchaseOrdersPage({ ...base, orders: paid, filters: { pay: "whatever" } });
+      expect(r.total).toBe(3);
+    });
   });
 });

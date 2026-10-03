@@ -5,9 +5,10 @@ Việt dùng trong `docs/02-rules/GLOSSARY.md` và `docs/02-rules/business-rules
 Mở file này khi thấy một tên bảng trong log lỗi, trong mã nguồn, hay trong một
 báo cáo kỹ thuật, và cần biết nó nói về cái gì trong thực tế quán.
 
-**Số bảng đang sống: 34** (đếm theo file migration, 2026-09-28). Lịch sử migration từng tạo 50 bảng
-(ba bảng cuối là sổ thu chi, migration `0101`: `cash_categories`,
-`bank_accounts`, `cash_entries`), nhưng 16 bảng đã bị `DROP TABLE` thật sự.
+**Số bảng đang sống: 35** (đếm theo file migration, 2026-10-04). Lịch sử migration từng tạo 51 bảng
+(bốn bảng cuối là sổ thu chi: migration `0101` tạo `cash_categories`,
+`bank_accounts`, `cash_entries`; migration `0107` tạo `cash_transfers`), nhưng 16 bảng đã bị `DROP TABLE` thật sự.
+Migration `0107` còn tạo view chỉ đọc `cash_book_daily` (tiền bán hàng và nhập hàng gộp theo ngày và cách trả); view không phải bảng, không tính vào số trên.
 
 Migration `0105` gỡ 10 bảng bỏ hoang, chủ quán duyệt 2026-09-28
 (`docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md`):
@@ -24,7 +25,7 @@ Trước đó đã gỡ 6 bảng: `stock_ledger`,
 hai, chủ quán quyết định xoá 2026-09-01), và `backdated_ledger_events`,
 `backdated_recipe_events`, `audit_baseline_locks` (migration `0054` — bộ máy
 soát lùi ngày, chưa từng chạy thật, chủ quán duyệt gỡ 2026-08-05). Bảng dưới
-đây chỉ liệt kê 34 bảng đang sống, xác nhận bằng cách đọc từng file migration,
+đây chỉ liệt kê 35 bảng đang sống, xác nhận bằng cách đọc từng file migration,
 không đọc theo số liệu trong bất cứ tài liệu nào khác.
 
 Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh doanh) ghi
@@ -39,6 +40,7 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `brands` | Thương hiệu | Nhãn gắn với điểm bán, ví dụ Phin Đi, Uchako |
 | `cash_categories` | Nhóm thu chi | Nhóm của sổ thu chi, ví dụ Vận hành, Marketing; mỗi nhóm thuộc bên Thu hoặc Chi và có cờ tính vào lãi lỗ hay không |
 | `cash_entries` | Sổ thu chi | Một khoản tiền ra/vào ngoài bán hàng và mua hàng: ngày, nhóm, số tiền, tiền mặt hay chuyển khoản |
+| `cash_transfers` | Chuyển tiền | Một lần chuyển tiền giữa két và tài khoản ngân hàng (hoặc giữa hai tài khoản); không phải thu, không phải chi (migration `0107`) |
 | `issue_slips` | Phiếu xuất kho | Chứng từ nhân viên lập khi cho nguyên liệu ra khỏi kho ngoài việc bán |
 | `item_categories` | Nhóm vật tư | Phân loại vật tư mua vào: nguyên liệu, vật tư tiêu hao, hoặc dụng cụ |
 | `modifiers` | Topping / tuỳ chọn thêm | Món phụ thêm vào một đơn, có giá riêng |
@@ -56,7 +58,7 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `promotions` | Khuyến mãi | Chương trình giảm giá theo đơn hoặc theo món |
 | `purchase_order_edits` | Nhật ký sửa đơn mua hàng | Ghi mỗi lần một đơn mua hàng đã hoàn tất bị sửa |
 | `purchase_order_lines` | Dòng đơn mua hàng | Từng dòng vật tư trong một đơn mua hàng: số lượng, đơn giá |
-| `purchase_orders` | Đơn mua hàng | Một lần nhập hàng từ nhà cung cấp |
+| `purchase_orders` | Đơn mua hàng | Một lần nhập hàng từ nhà cung cấp; từ migration `0107` ghi cả "Trả bằng" (tiền mặt hay chuyển khoản, tài khoản nào) |
 | `purchase_sources` | Nguồn nhập | Kênh/nơi mua hàng cho một đơn mua, khác với nhà cung cấp |
 | `purchased_items` | Vật tư mua vào | Một loại nguyên liệu/vật tư có thể mua; tồn kho tính theo từng dòng ở đây |
 | `stock_issues` | Hàng rời kho | Ghi nhận nguyên liệu đã ra khỏi kho; đây là chỗ tính giá vốn |
