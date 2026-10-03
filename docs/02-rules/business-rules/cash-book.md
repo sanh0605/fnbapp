@@ -125,6 +125,14 @@ first cash-book row (owner answer "1b", 2026-10-04). No opening amount is typed
 in; the owner was told before choosing that the cash figure then will not match
 what is physically in the drawer.
 
+**Data before 2026-10-04 stays as it is** (owner answer "2b", 2026-10-04): no
+back-filling of past deposits or withdrawals, no re-marking of old purchase
+orders paid by transfer. Measured 2026-10-04 on that basis, the cash figure is
+negative from June 2026 (end of September 2026: cash −7.351.887đ, bank
+27.972.578đ, total 20.620.691đ); the owner saw these figures before choosing.
+The total is right; only its split between cash and bank is off for those
+months.
+
 **Open (asked 2026-10-04):** how money moved between the drawer and a bank
 account (depositing cash, withdrawing it) is recorded. Until it is, a balance
 counts each movement only where it was paid.
