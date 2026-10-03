@@ -5,13 +5,27 @@ The cash book (`/admin/finance`, tables `cash_categories`, `bank_accounts`,
 Design: `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`. Flow:
 `docs/03-workflows/cash-book.md`.
 
-### BR-CASH-001 — The cash book never holds sale or purchase money, with one dated exception
+### BR-CASH-001 — Sale and purchase money shows in the cash book but is never typed into it, with one dated exception
 
-**Status:** `APPROVED` — owner decision 2026-09-08; exception 2026-09-11.
+**Status:** `APPROVED` — owner decision 2026-09-08; exception 2026-09-11;
+changed 2026-10-04 (not built yet; design to follow in
+`docs/superpowers/specs/`).
 
-Sales live in the POS, purchases in purchase orders. The cash book takes
-everything else: running costs, other income, capital put in. Recording a
-sale or a purchase here counts it twice.
+**Changed 2026-10-04.** Owner: *"lưu tất cả các lần ảnh hưởng đến dòng tiền
+vào, tức là bao gồm cả tiền thanh toán đơn nhập hàng và tiền bán hàng."* The
+cash book shows every movement of money: each completed sale (cash or
+transfer, split by its payment rows where it has them) and each completed
+purchase order, next to the rows typed by hand. Those two kinds are read from
+the orders and purchase orders themselves, never copied or retyped, so nothing
+is counted twice and profit and loss does not change. A purchase order is
+taken as paid in full on its own date (owner answer "3a", 2026-10-04); it
+gains a "Trả bằng" choice, cash or transfer, and the 198 completed orders that
+exist on 2026-10-04 count as cash until the owner changes one.
+
+What still holds from 2026-09-08: sales live in the POS, purchases in
+purchase orders, and nobody types a sale or a purchase into the cash book by
+hand — that would count it twice. Hand-typed rows remain for everything else:
+running costs, other income, capital put in.
 
 **Exception.** Two rows (1.728.578đ by transfer, 6.683.290đ in cash,
 8.411.868đ together) are sales revenue whose order data was lost while the app
@@ -96,3 +110,21 @@ An income category that counts in profit and loss can carry a second flag, "Tín
 - **Only an income category that counts in profit and loss** can carry it. The form hides the box otherwise and clears it when the category switches to Chi or stops counting in profit and loss; the server refuses it ("Chỉ nhóm Thu có tính vào lãi lỗ mới đánh dấu được là doanh thu bán hàng."); a database check refuses it a third time (migration `0102`).
 - **It sits on the category, not on each row**, like `affects_pnl` (`BR-CASH-003`). Changing it moves every past month of that category, so on a category that already has rows the form asks before saving.
 - **Only the owner sets it.** The migration adds the column as false everywhere; after release the owner ticks it on "Doanh thu ghi tay" (`CFC-006`) himself. Until then that category's two rows show under Thu khác, and April's revenue reads 8.411.868đ short while net profit is unchanged.
+
+### BR-CASH-007 — Opening and closing balances, for cash and bank apart and together
+
+**Status:** `APPROVED` — owner decision 2026-10-04 (not built yet).
+
+For the date range being viewed, the cash book shows an opening balance (the
+first day, before any of its movements) and a closing balance (after the last
+day): one for cash, one for the bank accounts, and their total. Owner: *"2a nhưng
+có số tổng không?"* — the answer is yes, three figures each.
+
+**Starting point.** Every balance counts from zero on 2026-03-26, the date of the
+first cash-book row (owner answer "1b", 2026-10-04). No opening amount is typed
+in; the owner was told before choosing that the cash figure then will not match
+what is physically in the drawer.
+
+**Open (asked 2026-10-04):** how money moved between the drawer and a bank
+account (depositing cash, withdrawing it) is recorded. Until it is, a balance
+counts each movement only where it was paid.
