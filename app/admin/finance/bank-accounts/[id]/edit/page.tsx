@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { getBankAccounts } from "../../actions";
 import { BankAccountForm } from "../../components/BankAccountForm";
-import { safeReturnTo } from "../../../components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { safeReturnTo } from "@/app/admin/finance/components/return-to";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,10 @@ export default async function EditBankAccountPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance/bank-accounts");
+  const rawReturnTo = safeReturnTo(
+    searchParams?.returnTo,
+    "/admin/finance/bank-accounts",
+  );
   const accounts = await getBankAccounts();
   const account = accounts.find((a) => a.id === params.id);
 
@@ -22,14 +25,31 @@ export default async function EditBankAccountPage({
     notFound();
   }
 
+  const ownDetailPath = `/admin/finance/bank-accounts/${encodeURIComponent(account.id)}`;
+  const ownDetailPathRaw = `/admin/finance/bank-accounts/${account.id}`;
+  const isOwnDetail =
+    rawReturnTo === ownDetailPath ||
+    rawReturnTo.startsWith(`${ownDetailPath}?`) ||
+    rawReturnTo === ownDetailPathRaw ||
+    rawReturnTo.startsWith(`${ownDetailPathRaw}?`);
+
+  const listReturnTo = rawReturnTo.startsWith("/admin/finance/bank-accounts/")
+    ? "/admin/finance/bank-accounts"
+    : rawReturnTo;
+
+  const detailHref = isOwnDetail
+    ? rawReturnTo
+    : `/admin/finance/bank-accounts/${encodeURIComponent(account.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
+
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Tài khoản ngân hàng" />
-      <PageHeader
-        title={`Sửa tài khoản: ${account.name}`}
-        subtitle="Cập nhật thông tin tài khoản ngân hàng."
+    <DetailFrame>
+      <DetailHeader
+        backHref={detailHref}
+        backLabel={account.name}
+        title="Chỉnh sửa"
+        subtitle={account.name}
       />
-      <BankAccountForm account={account} returnTo={returnTo} />
-    </div>
+      <BankAccountForm account={account} returnTo={detailHref} />
+    </DetailFrame>
   );
 }

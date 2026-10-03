@@ -10,9 +10,6 @@ import { describe, expect, it } from "vitest";
 // Each wave removes its screens; a file that no longer links to an edit
 // page but is still listed also turns this red, so the list cannot rot.
 const PENDING: string[] = [
-  "app/admin/finance/bank-accounts/components/BankAccountsList.tsx",
-  "app/admin/finance/categories/components/CategoriesList.tsx",
-  "app/admin/finance/components/CashEntriesList.tsx",
   "app/admin/users/components/UsersClient.tsx",
 ];
 

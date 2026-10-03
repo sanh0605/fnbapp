@@ -2,7 +2,6 @@
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import { BankAccountForm } from "./BankAccountForm";
-import { BankAccountsList } from "./BankAccountsList";
 
 const { push, refresh } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -54,13 +53,3 @@ describe("BankAccountForm on-page behaviour", () => {
   });
 });
 
-describe("BankAccountsList edit link", () => {
-  it("renders edit link for BA-001", () => {
-    const accounts = [
-      { id: "BA-001", name: "VCB", bank_name: "Vietcombank", account_number: "123", status: "ACTIVE" },
-    ] as any;
-    render(<BankAccountsList accounts={accounts} canDelete={false} />);
-    const editLinks = screen.getAllByRole("link", { name: "Sửa" });
-    expect(editLinks[0]).toHaveAttribute("href", "/admin/finance/bank-accounts/BA-001/edit");
-  });
-});

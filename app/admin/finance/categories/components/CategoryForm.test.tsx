@@ -2,7 +2,6 @@
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import { CategoryForm, shouldConfirmAffectsPnlChange } from "./CategoryForm";
-import { CategoriesList } from "./CategoriesList";
 import type { DBCashCategory } from "@/types/db";
 
 const { push, refresh } = vi.hoisted(() => ({
@@ -162,16 +161,3 @@ describe("CategoryForm sales-revenue box (BR-CASH-006)", () => {
   });
 });
 
-describe("CategoriesList edit link", () => {
-  it("renders edit link for CFC-001", () => {
-    render(
-      <CategoriesList
-        categories={[CATEGORY]}
-        canDelete={false}
-        usedCategoryIds={[]}
-      />
-    );
-    const editLinks = screen.getAllByRole("link", { name: "Sửa" });
-    expect(editLinks[0]).toHaveAttribute("href", "/admin/finance/categories/CFC-001/edit");
-  });
-});
