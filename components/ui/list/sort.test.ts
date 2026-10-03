@@ -148,22 +148,26 @@ describe("BR-DATA-008: List sorting (sortRows & parseSort)", () => {
       });
     });
 
-    it("falls back to defaultKey and asc when rawKey is unknown or invalid", () => {
+    it("falls back to defaultKey and desc when rawKey is unknown or missing", () => {
       expect(parseSort("unknown_column", "desc", validKeys, defaultKey)).toEqual({
         key: "id",
-        dir: "asc",
+        dir: "desc",
+      });
+      expect(parseSort("unknown_column", "asc", validKeys, defaultKey)).toEqual({
+        key: "id",
+        dir: "desc",
       });
       expect(parseSort("", "desc", validKeys, defaultKey)).toEqual({
         key: "id",
-        dir: "asc",
+        dir: "desc",
       });
       expect(parseSort(null, "desc", validKeys, defaultKey)).toEqual({
         key: "id",
-        dir: "asc",
+        dir: "desc",
       });
       expect(parseSort(undefined, "desc", validKeys, defaultKey)).toEqual({
         key: "id",
-        dir: "asc",
+        dir: "desc",
       });
     });
 

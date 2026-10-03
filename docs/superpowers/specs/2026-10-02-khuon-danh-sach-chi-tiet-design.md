@@ -142,7 +142,7 @@ Xoá nhiều dòng gọi lần lượt hàm xoá từng dòng đang có. Không 
 ## 8. Sắp xếp theo cột (chủ quán chốt 2026-10-02, `BR-DATA-008`)
 
 - Mọi tiêu đề cột bấm được: lần đầu tăng dần, lần sau giảm dần; mũi tên trên tiêu đề cho biết đang sắp theo cột nào.
-- Mặc định mọi danh sách sắp theo mã, tăng dần.
+- Mặc định mọi danh sách sắp theo mã, giảm dần: mã mới nhất lên đầu (chủ quán đổi 2026-10-03, thay mặc định tăng dần).
 - Sắp cả danh sách rồi mới chia trang, về trang 1. `?sort=&dir=` nằm trên địa chỉ trang, quay lại từ chi tiết vẫn giữ.
 - Điện thoại: một ô "Sắp xếp" trên đầu các thẻ.
 - Dựng trong mảnh chung (`components/ui/list/`); đợt 4–8 dùng luôn.

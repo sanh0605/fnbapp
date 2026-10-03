@@ -142,7 +142,22 @@ describe("AssetsClient", () => {
     expect(links.length).toBeGreaterThan(0);
   });
 
-  it("orders items by item code naturally by default (BR-DATA-008)", () => {
+  it("orders items by item code naturally, newest first, by default (BR-DATA-008)", () => {
+    const item1 = { ...BINH_BOM, itemId: "SPM-101", name: "Món 101" };
+    const item2 = { ...BINH_BOM, itemId: "SPM-9", name: "Món 9" };
+    const item3 = { ...BINH_BOM, itemId: "SPM-10", name: "Món 10" };
+
+    render(<AssetsClient items={[item1, item2, item3]} />);
+
+    const rows = screen.getAllByRole("row").slice(1);
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toHaveTextContent("SPM-101");
+    expect(rows[1]).toHaveTextContent("SPM-10");
+    expect(rows[2]).toHaveTextContent("SPM-9");
+  });
+
+  it("orders items by item code ascending when sort=itemId&dir=asc", () => {
+    mockSearchParams = new URLSearchParams("sort=itemId&dir=asc");
     const item1 = { ...BINH_BOM, itemId: "SPM-101", name: "Món 101" };
     const item2 = { ...BINH_BOM, itemId: "SPM-9", name: "Món 9" };
     const item3 = { ...BINH_BOM, itemId: "SPM-10", name: "Món 10" };

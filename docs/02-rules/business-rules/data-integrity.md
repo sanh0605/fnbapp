@@ -102,7 +102,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 **Status:** `APPROVED` — owner decision 2026-10-02, typed on the Tài sản list: *"Tất cả các bạn đều có thể sort tất cả các tiêu đề của từng cột. Ví dụ bảng có 7 cột thì cả 7 cột anh đều có thể bấm vào tên để sort tăng dần hoặc giảm dần. Tuy nhiên đối với tất cả danh sách thì mặc định đều sẽ sort theo mã"*.
 
 - **Every column header is clickable.** First click sorts ascending, the next click descending. An arrow on the header shows the column and direction in use.
-- **Default order is the code, ascending** (TS-001, TS-002, …), on every list, until someone clicks a header.
+- **Default order is the code, descending** (TS-065, TS-064, …: newest first), on every list, until someone clicks a header. Owner 2026-10-03, typed on the Tài sản list: *"Mã hàng sắp xếp mặc định theo chiều giảm dần"*, then chose "A" (every list, not only Tài sản). It replaces the ascending default of 2026-10-02. Clicking the code header then sorts ascending.
 - **Sorting covers the whole list, not only the page on screen**, and goes back to page 1. Sort column and direction sit in the page address (`?sort=&dir=`), so returning from a detail page keeps them, like the filter.
 - **Text sorts the Vietnamese way, numbers by value, dates by date**; codes compare their number part by value.
 - **Phone:** there are no column headers, so the same choices sit in one "Sắp xếp" picker above the cards.

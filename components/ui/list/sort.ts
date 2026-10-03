@@ -46,7 +46,7 @@ export function sortRows<T>(
 
 /**
  * Parses and validates sort key and dir from URL search params.
- * Unknown key -> defaultKey / asc.
+ * Unknown or missing key -> defaultKey / desc (BR-DATA-008: newest code first).
  * Dir other than "desc" -> "asc".
  */
 export function parseSort(
@@ -56,7 +56,7 @@ export function parseSort(
   defaultKey: string
 ): { key: string; dir: SortDir } {
   if (!rawKey || !validKeys.includes(rawKey)) {
-    return { key: defaultKey, dir: "asc" };
+    return { key: defaultKey, dir: "desc" };
   }
   const dir: SortDir = rawDir === "desc" ? "desc" : "asc";
   return { key: rawKey, dir };
