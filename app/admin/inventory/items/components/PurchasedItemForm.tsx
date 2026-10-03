@@ -275,6 +275,23 @@ export function PurchasedItemForm({
         return;
       }
     }
+    // Task C: ask before retiring assets when item is moved out of equipment
+    if ((res as any).needsAssetRemoval) {
+      const approved = await confirm({
+        title: "Gỡ tài sản khỏi trang Tài sản?",
+        message: (res as any).needsAssetRemoval.message,
+        okText: "Gỡ và lưu",
+        cancelText: "Không lưu",
+        variant: "warning",
+      });
+      if (approved) {
+        formData.append("asset_removal_confirmed", "true");
+        res = await submitFn(formData);
+      } else {
+        setLoading(false);
+        return;
+      }
+    }
     setLoading(false);
     if (res.error) {
       setError(res.error);

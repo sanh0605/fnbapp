@@ -20,6 +20,12 @@ import {
   findDiacriticStrippedMatch,
   duplicateWarningMessage,
 } from "@/lib/shared/duplicate-name-guard";
+import {
+  decideAssetRemoval,
+  assetRemovalAskMessage,
+  assetRemovalRefusalMessage,
+  type RemovableAsset,
+} from "@/lib/assets/asset-removal";
 import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/catalog/unit-lock";
 
 const SHEET = "Purchased_Items";
@@ -172,6 +178,7 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
   const update_history = formData.get("update_history") === "true";
   const is_non_inventory = formData.get("is_non_inventory") === "true";
   const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
+  const assetRemovalConfirmed = formData.get("asset_removal_confirmed") === "true";
 
   try {
     const existingItems = await findAll("Purchased_Items");
@@ -216,6 +223,28 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       }
     }
 
+    // Plan 2026-10-03-go-tai-san-khi-doi-loai (BR-COGS-008): an item saved
+    // with a category that is not EQUIPMENT must not keep depreciating. State
+    // based, so a half-failed save asks again on retry. Decided before any
+    // write; refuse and ask both leave the database untouched.
+    const itemCategories = (await findAll("Item_Categories")) as Array<{ id: string; system_type?: string }>;
+    const systemType = itemCategories.find(c => c.id === item_category_id)?.system_type ?? null;
+    let assetsToRetire: RemovableAsset[] = [];
+    if (systemType !== null && systemType !== "EQUIPMENT") {
+      const itemAssets = await findAllWhere<RemovableAsset>("assets", { eq: { purchased_item_id: id } });
+      const itemDisposals = itemAssets.length > 0
+        ? await findAllWhere<{ asset_id: string }>("asset_disposals", { in: { asset_id: itemAssets.map(a => a.id) } })
+        : [];
+      const decision = decideAssetRemoval({ systemType, assets: itemAssets, disposals: itemDisposals });
+      if (decision.kind === "refuse") return fail(assetRemovalRefusalMessage(decision.assetIds));
+      if (decision.kind === "ask") {
+        if (!assetRemovalConfirmed) {
+          return { needsAssetRemoval: { message: assetRemovalAskMessage(decision) } };
+        }
+        assetsToRetire = decision.assets;
+      }
+    }
+
     // base_ingredient_id is intentionally not written here. The tier-2
     // group link field was removed from the form 2026-09-01
     // (section 2.2) but the column itself is untouched this batch (section
@@ -234,6 +263,11 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
           }
         : {}),
     });
+
+    // Item first, assets second: if this fails, the next save asks again.
+    for (const a of assetsToRetire) {
+      await update("assets", a.id, { status: "INACTIVE" });
+    }
 
     // Batch 1, item B, gate 4 of 4 (section B1): same relaxation as the
     // create path above.
@@ -314,6 +348,10 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
     revalidateTag(getCacheTag("UOM_Conversions"));
     revalidatePath("/admin/inventory/items");
     revalidatePath("/admin/inventory/conversions");
+    if (assetsToRetire.length > 0) {
+      revalidatePath("/admin/inventory/assets");
+      revalidatePath("/admin/reports/pnl");
+    }
     return ok();
   } catch (error: unknown) {
     return describeActionError(error);

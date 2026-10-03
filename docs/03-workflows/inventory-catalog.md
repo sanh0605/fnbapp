@@ -7,6 +7,12 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002
 ```
 
+**Behaviour change — 2026-10-03:** saving an item (`updatePurchasedItem`) whose chosen category
+is not equipment while it still has assets that are not `INACTIVE` asks a yes/no listing them
+("Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 …"); yes saves the item and
+marks those assets `INACTIVE`, no saves nothing; refused if one already has a disposal
+(`BR-COGS-008`). Before, Hộp đựng topping liền nắp moved to Vật tư tiêu hao kept depreciating.
+
 **Behaviour change — 2026-10-02:** `deletePurchasedItemAction` counts the item's
 purchase lines, stock issues, conversions and assets first and refuses in Vietnamese
 naming them ("Không xoá được Sữa tươi Mlekovita: đã có 5 dòng phiếu nhập, 35 lần xuất
@@ -93,7 +99,8 @@ The declared files write `Purchased_Items` (the catalogue rows),
 `Item_Categories` (the single category tier), `Units` (units of measure), and
 `UOM_Conversions` (purchase-unit to base-unit conversions). The generated map at
 `docs/generated/system-map.md` confirms these write relations for the three
-declared files.
+declared files. `app/admin/inventory/items/actions.ts` also writes `assets`, only to
+mark an item's assets `INACTIVE` (above); the assets flow owns that table.
 
 **Cross-flow note:** `app/admin/inventory/actions.ts` also writes
 `Purchase_Order_Lines`. That belongs to the purchasing flow and is documented

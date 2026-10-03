@@ -531,3 +531,121 @@ describe("deletePurchasedItemAction -- refuses with a readable reason", () => {
     expect(mocks.remove).not.toHaveBeenCalled();
   });
 });
+
+// Plan 2026-10-03-go-tai-san-khi-doi-loai, Task A (BR-COGS-008): saving an
+// item with a category that is not EQUIPMENT while it still has assets asks,
+// then retires them (status INACTIVE, never deleted).
+describe("updatePurchasedItem -- retiring assets when the item leaves EQUIPMENT", () => {
+  const asset = {
+    id: "TS-067", purchased_item_id: "SPM-134", name_snapshot: "Hộp đựng topping liền nắp",
+    quantity: 200, total_cost: 80352, status: "ACTIVE",
+  };
+  let assetsOfItem: any[];
+  let disposals: any[];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    assetsOfItem = [asset];
+    disposals = [];
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Item_Categories") {
+        return Promise.resolve([
+          { id: "NHH-002", system_type: "CONSUMABLE" },
+          { id: "NHH-009", system_type: "EQUIPMENT" },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+    mocks.findAllWhere.mockImplementation((sheet: string) => {
+      if (sheet === "assets") return Promise.resolve(assetsOfItem);
+      if (sheet === "asset_disposals") return Promise.resolve(disposals);
+      return Promise.resolve([]);
+    });
+  });
+
+  function form(category: string, confirmed?: string): FormData {
+    const fd = new FormData();
+    fd.set("id", "SPM-134");
+    fd.set("name", "Hộp đựng topping liền nắp");
+    fd.set("item_category_id", category);
+    if (confirmed !== undefined) fd.set("asset_removal_confirmed", confirmed);
+    return fd;
+  }
+
+  it("asks, writes nothing, when the category is not equipment and the item has an active asset", async () => {
+    const res: any = await actions.updatePurchasedItem(form("NHH-002"));
+
+    expect(res.error).toBeUndefined();
+    expect(res.needsAssetRemoval).toEqual({
+      message: "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?",
+    });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("with asset_removal_confirmed=true saves the item first, then sets the asset INACTIVE", async () => {
+    const res: any = await actions.updatePurchasedItem(form("NHH-002", "true"));
+
+    expect(res.error).toBeUndefined();
+    expect(res.success).toBe(true);
+    expect(mocks.update).toHaveBeenNthCalledWith(1, "Purchased_Items", "SPM-134", expect.objectContaining({ item_category_id: "NHH-002" }));
+    expect(mocks.update).toHaveBeenNthCalledWith(2, "assets", "TS-067", { status: "INACTIVE" });
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("any value other than 'true' counts as no", async () => {
+    const res: any = await actions.updatePurchasedItem(form("NHH-002", "false"));
+
+    expect(res.needsAssetRemoval).toBeTruthy();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses the whole save when an asset already has a disposal, even if confirmed", async () => {
+    disposals = [{ id: "TL-1", asset_id: "TS-067" }];
+
+    const res: any = await actions.updatePurchasedItem(form("NHH-002", "true"));
+
+    expect(res.error).toBe("Không đổi loại được: tài sản TS-067 của món này đã có lần thanh lý. Giữ loại Thiết bị.");
+    expect(res.needsAssetRemoval).toBeUndefined();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("saves normally, touching no asset, when the category stays equipment", async () => {
+    const res: any = await actions.updatePurchasedItem(form("NHH-009"));
+
+    expect(res.success).toBe(true);
+    expect(mocks.update).toHaveBeenCalledTimes(1);
+    expect(mocks.update).toHaveBeenCalledWith("Purchased_Items", "SPM-134", expect.anything());
+  });
+
+  it("saves normally when the item has no assets", async () => {
+    assetsOfItem = [];
+
+    const res: any = await actions.updatePurchasedItem(form("NHH-002"));
+
+    expect(res.success).toBe(true);
+    expect(mocks.update).toHaveBeenCalledTimes(1);
+  });
+
+  it("an already INACTIVE asset is neither asked about nor touched", async () => {
+    assetsOfItem = [{ ...asset, status: "INACTIVE" }];
+    disposals = [{ id: "TL-1", asset_id: "TS-067" }];
+
+    const res: any = await actions.updatePurchasedItem(form("NHH-002"));
+
+    expect(res.success).toBe(true);
+    expect(mocks.update).toHaveBeenCalledTimes(1);
+  });
+
+  it("a refused duplicate name still writes nothing and reaches no asset", async () => {
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") return Promise.resolve([{ id: "SPM-200", name: "Hộp đựng topping liền nắp", status: "ACTIVE" }]);
+      return Promise.resolve([]);
+    });
+
+    const res: any = await actions.updatePurchasedItem(form("NHH-002"));
+
+    expect(res.error).toBeTruthy();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+});

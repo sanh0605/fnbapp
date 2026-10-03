@@ -31,6 +31,7 @@ app/admin/inventory/asset-bands/actions.ts -> asset_depreciation_bands (write)
 app/admin/inventory/assets/actions.ts -> asset_disposals (write)
 app/admin/inventory/conversions/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/conversions/actions.ts -> UOM_Conversions (write)
+app/admin/inventory/items/actions.ts -> assets (write)
 app/admin/inventory/items/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/items/actions.ts -> Purchased_Items (write)
 app/admin/inventory/items/actions.ts -> UOM_Conversions (write)
@@ -110,13 +111,15 @@ variant for an unlinked topping, `BR-CATALOG-003`).
 **Inventory catalog.** `app/admin/inventory/actions.ts` writes `Purchased_Items`,
 `Item_Categories`, `Units`, `UOM_Conversions`, and `Purchase_Order_Lines`.
 `app/admin/inventory/items/actions.ts` writes `Purchased_Items`,
-`UOM_Conversions`, and `Purchase_Order_Lines`.
+`UOM_Conversions`, `Purchase_Order_Lines`, and `assets` (only to mark an
+item's assets `INACTIVE` when it leaves the equipment category, BR-COGS-008).
 `app/admin/inventory/conversions/actions.ts` writes `UOM_Conversions` and
 `Purchase_Order_Lines`.
 
 **Assets.** `app/admin/inventory/assets/actions.ts` writes `asset_disposals`;
 `app/admin/inventory/asset-bands/actions.ts` writes `asset_depreciation_bands`.
-(`assets` rows are created via purchasing.)
+(`assets` rows are created via purchasing, and marked `INACTIVE` from the
+item edit page.)
 
 **Users.** `app/actions/auth.ts` writes `users`; `app/admin/users/actions.ts`
 writes `Users`.
