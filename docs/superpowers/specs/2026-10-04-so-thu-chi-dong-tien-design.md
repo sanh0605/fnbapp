@@ -1,6 +1,6 @@
 # Sổ thu chi: mọi dòng tiền, chuyển tiền, đầu kỳ và cuối kỳ
 
-**Status:** draft for owner review, 2026-10-04.
+**Status:** approved by the owner 2026-10-04 (*"2 duyệt"*).
 **Rules this implements:** `BR-CASH-001` (changed 2026-10-04), `BR-CASH-007`, `BR-CASH-008` in
 `docs/02-rules/business-rules/cash-book.md`. Earlier design, still valid where not replaced here:
 `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`. List template:
@@ -48,7 +48,9 @@ Decided on 2026-10-04 (each recorded in the rules above, with his words):
    - Transfer: date (required, a real calendar date); amount (whole đồng > 0, the `MoneyInput`
      box of `BR-CASH-005`); "Từ" and "Đến", each "Tiền mặt (két)" or an active bank account, and
      they must differ; note (optional). Refused with a Vietnamese message otherwise.
-   - Purchase order "Trả bằng": Tiền mặt / Chuyển khoản, required. "Tài khoản": active bank
+   - Purchase order "Trả bằng": Tiền mặt / Chuyển khoản, required, **nothing chosen in advance**
+     on a new order (owner answer "1a", 2026-10-04: so nobody forgets to switch it for a
+     transfer); saving without a choice is refused with "Chọn cách trả tiền". "Tài khoản": active bank
      accounts, required for Chuyển khoản, hidden and cleared for Tiền mặt; with exactly one
      active account it is preselected.
    - Filters: date range (as today), status (as today), new "Loại": Tất cả / Bán hàng / Nhập hàng
@@ -98,7 +100,9 @@ transfer has neither.
 - `bank_account_id text null → bank_accounts.id RESTRICT`; check: `BANK_TRANSFER` needs it,
   `CASH` must not have it.
 - Adding the column with a default fills the 198 completed orders (and any draft) with `CASH`
-  inside the `alter table`; no row trigger fires and `updated_at` does not move.
+  inside the `alter table`; no row trigger fires and `updated_at` does not move. The same
+  migration then drops the default, so a writer that forgets the field fails loudly instead of
+  quietly writing `CASH` (matches answer 1a: no choice made for the user).
 - **Writer inventory** (`fnbapp-bulk-data-change` §6): the live `save_purchase_order_atomic`
   (last redefined in `supabase/migrations/0078_retire_ledger_purchase_order.sql`) is the only
   insert; it must take and write the two fields. Sonnet confirms no other writer before the

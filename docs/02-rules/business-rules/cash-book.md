@@ -20,7 +20,10 @@ the orders and purchase orders themselves, never copied or retyped, so nothing
 is counted twice and profit and loss does not change. A purchase order is
 taken as paid in full on its own date (owner answer "3a", 2026-10-04); it
 gains a "Trả bằng" choice, cash or transfer, and the 198 completed orders that
-exist on 2026-10-04 count as cash until the owner changes one.
+exist on 2026-10-04 count as cash until the owner changes one. On a new purchase
+order nothing is chosen in advance: whoever enters it must pick "Tiền mặt" or
+"Chuyển khoản", so nobody forgets to switch it for a transfer (owner answer
+"1a", 2026-10-04).
 
 **One row per day and payment method, for sales and for purchases** (owner
 2026-10-04). Sales: *"Theo em khuyến nghị"*, after being shown that September
