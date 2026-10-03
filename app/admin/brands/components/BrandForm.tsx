@@ -4,6 +4,7 @@ import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addBrand, editBrand } from "@/app/admin/brands/actions";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
+import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { alert } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
@@ -14,12 +15,6 @@ interface BrandFormProps {
   returnTo?: string;
 }
 
-function formatDateToYYYYMMDD(date: Date): string {
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60 * 1000);
-  return localDate.toISOString().split("T")[0];
-}
-
 export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps) {
   const returnTo = safeReturnTo(rawReturnTo);
   const isEdit = !!initialData;
@@ -28,8 +23,8 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    initialData?.start_date ? new Date(initialData.start_date) : null
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
+    isoDayToPickerDate(initialData?.start_date)
   );
 
   // section A4b/B: found while fixing this file's delete button -- this
@@ -45,7 +40,7 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
       formData.append("id", initialData.id);
     }
     if (selectedDate) {
-      formData.set("start_date", formatDateToYYYYMMDD(selectedDate));
+      formData.set("start_date", pickerDateToIsoDay(selectedDate));
     } else {
       formData.delete("start_date");
     }

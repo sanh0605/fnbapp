@@ -2,6 +2,7 @@ import { getDailyDigest } from "./actions";
 import { DailyDigestFilter } from "./DailyDigestFilter";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatNumber } from "@/lib/shared/format";
+import { formatVnDayWithWeekday } from "@/lib/shared/datetime";
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +23,7 @@ export default async function DailyDigestPage({
   searchParams: { date?: string };
 }) {
   const digest = await getDailyDigest(searchParams.date);
-  const dateLabel = new Date(`${digest.date}T00:00:00`).toLocaleDateString("vi-VN", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const dateLabel = formatVnDayWithWeekday(digest.date);
 
   return (
     <div className="space-y-6">

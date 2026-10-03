@@ -5,22 +5,11 @@ import { useRouter } from "next/navigation";
 import { addOutlet, editOutlet } from "@/app/admin/outlets/actions";
 import { nextOutletCode } from "@/lib/catalog/outlet-code";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
+import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { alert } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
 import type { DBOutlet, DBBrand } from "@/types/db";
-
-function formatDateToYYYYMMDD(date: Date): string {
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60 * 1000);
-  return localDate.toISOString().split("T")[0];
-}
-
-function parseYYYYMMDD(value: string | null | undefined): Date | null {
-  if (!value) return null;
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
 
 // <input type="time"> wants "HH:MM"; Postgres time comes back "HH:MM:SS".
 function toTimeInputValue(value: string | null | undefined): string {
@@ -46,17 +35,23 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [brandId, setBrandId] = useState(initialData?.brand_id || "");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(() => parseYYYYMMDD(initialData?.start_date));
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => isoDayToPickerDate(initialData?.start_date));
 
   const previewCode = isEdit ? initialData!.code : nextOutletCode(outlets.map(o => o.code));
 
   // section B: revalidatePath (in editOutlet/addOutlet) marks the server
   // cache stale but does not repaint this already-open page.
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setLoading(true);
     setError(null);
 
-    if (selectedDate) formData.set("start_date", formatDateToYYYYMMDD(selectedDate));
+    if (selectedDate) {
+      formData.set("start_date", pickerDateToIsoDay(selectedDate));
+    } else {
+      formData.delete("start_date");
+    }
 
     if (isEdit && initialData) {
       formData.set("id", initialData.id);
@@ -83,7 +78,7 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
 
   return (
     <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl shadow-sm">
-      <form id={formId} action={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
             {error}
@@ -202,7 +197,7 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
           >
             Bỏ
           </button>
-          <LoadingButton type="submit" form={formId} loading={loading} loadingText="Đang lưu…" className="w-full sm:w-auto min-h-[44px]">
+          <LoadingButton type="submit" loading={loading} loadingText="Đang lưu…" className="w-full sm:w-auto min-h-[44px]">
             {isEdit ? "Cập nhật" : "Lưu điểm bán"}
           </LoadingButton>
         </div>

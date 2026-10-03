@@ -64,6 +64,7 @@ function brandFixture(overrides: Partial<DBBrand> = {}): DBBrand {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   document.body.innerHTML = "";
 });
 
@@ -122,5 +123,26 @@ describe("BrandForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
     expect(push).toHaveBeenCalledWith("/admin/brands");
     expect(mocks.addBrand).not.toHaveBeenCalled();
+  });
+
+  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z and preserves start_date", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
+    try {
+      mocks.editBrand.mockResolvedValue({});
+      render(
+        <BrandForm
+          initialData={brandFixture({ start_date: "2026-09-15" })}
+          returnTo="/admin/brands"
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+      await waitFor(() => expect(mocks.editBrand).toHaveBeenCalledTimes(1));
+      const formData = mocks.editBrand.mock.calls[0][0] as FormData;
+      expect(formData.get("start_date")).toBe("2026-09-15");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

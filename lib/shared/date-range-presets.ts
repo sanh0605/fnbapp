@@ -36,7 +36,7 @@ function toUtc(iso: string): Date {
 
 const fmt = (d: Date) => d.toISOString().slice(0, 10);
 
-function addDays(iso: string, days: number): string {
+export function addDays(iso: string, days: number): string {
   const d = toUtc(iso);
   d.setUTCDate(d.getUTCDate() + days);
   return fmt(d);

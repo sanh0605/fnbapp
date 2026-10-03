@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { savePromotion } from "@/app/admin/promotions/actions";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { formatNumber } from "@/lib/shared/format";
+import { toSaigonIsoString } from "@/lib/shared/datetime";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { safeReturnTo } from "./return-to";
@@ -57,8 +58,7 @@ export function PromotionForm({
       const getLocalISOTime = (dateString: string) => {
         const d = new Date(dateString);
         if (isNaN(d.getTime())) return "";
-        const tzOffset = d.getTimezoneOffset() * 60000;
-        return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
+        return toSaigonIsoString(d).slice(0, 16);
       };
 
       if (initialData.start_date) {
@@ -106,13 +106,10 @@ export function PromotionForm({
       setMinOrderValue("0");
       
       const now = new Date();
-      const tzOffset = now.getTimezoneOffset() * 60000;
-      const localISOTime = new Date(now.getTime() - tzOffset).toISOString().slice(0, 16);
-      setStartDate(localISOTime);
+      setStartDate(toSaigonIsoString(now).slice(0, 16));
       
       const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      const localEndISOTime = new Date(nextWeek.getTime() - tzOffset).toISOString().slice(0, 16);
-      setEndDate(localEndISOTime);
+      setEndDate(toSaigonIsoString(nextWeek).slice(0, 16));
       
       setSelectedVariants([]);
       setVariantValues({});
@@ -128,7 +125,7 @@ export function PromotionForm({
       return setError("Giảm giá theo % không được vượt quá 100%.");
     }
     if (!startDate) return setError("Vui lòng chọn ngày bắt đầu.");
-    if (endDate && new Date(endDate) <= new Date(startDate)) {
+    if (endDate && new Date(endDate + ":00+07:00") <= new Date(startDate + ":00+07:00")) {
       return setError("Ngày kết thúc phải sau ngày bắt đầu.");
     }
     if (type === "PRODUCT_DISCOUNT" && selectedVariants.length === 0) {
@@ -159,8 +156,8 @@ export function PromotionForm({
       discount_type: discountType,
       discount_value: Number(discountValue),
       min_order_value: Number(minOrderValue || 0),
-      start_date: new Date(startDate).toISOString(),
-      end_date: endDate ? new Date(endDate).toISOString() : "",
+      start_date: new Date(startDate + ":00+07:00").toISOString(),
+      end_date: endDate ? new Date(endDate + ":00+07:00").toISOString() : "",
       applicable_products_json: applicableProductsJson,
       status,
     };

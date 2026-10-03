@@ -4,6 +4,8 @@ import SalesFilter from "@/app/admin/reports/components/SalesFilter";
 import SalesCharts from "@/app/admin/reports/components/SalesCharts";
 import CategoryPieChart from "@/app/admin/reports/components/CategoryPieChart";
 import { formatNumber } from "@/lib/shared/format";
+import { saigonToday } from "@/lib/shared/datetime";
+import { resolvePreset } from "@/lib/shared/date-range-presets";
 
 import ProductTable from "@/app/admin/reports/components/ProductTable";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -11,14 +13,6 @@ import { OutletBreakdownSection } from "./OutletBreakdownSection";
 import { ChevronDown, AlertCircle } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
-
-// Format Date as YYYY-MM-DD using local date parts (matches SalesFilter semantics).
-function toDateOnlyForUrl(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
 
 export default async function SalesReportPage({
   searchParams,
@@ -52,10 +46,10 @@ export default async function SalesReportPage({
     filters.startDate = startParam;
     filters.endDate = endParam;
   } else {
-    const today = new Date();
-    const d1 = new Date(today.getFullYear(), today.getMonth(), 1);
-    filters.startDate = toDateOnlyForUrl(d1);
-    filters.endDate = toDateOnlyForUrl(today);
+    // Default range: first of the Saigon month to the Saigon today.
+    const range = resolvePreset("MONTH_TO_DATE", saigonToday());
+    filters.startDate = range.start;
+    filters.endDate = range.end;
   }
 
   const [data, heatmapData] = await Promise.all([

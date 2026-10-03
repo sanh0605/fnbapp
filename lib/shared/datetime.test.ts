@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDateTime, formatDate, formatTime, toSaigonIsoString, formatDateTimeFull, parseVnDay, formatVnDay } from "./datetime";
+import { formatDateTime, formatDate, formatTime, toSaigonIsoString, formatDateTimeFull, parseVnDay, formatVnDay, saigonToday, formatVnDayWithWeekday } from "./datetime";
 
 describe("formatDateTime", () => {
   it("formats UTC instant as Asia/Saigon local time", () => {
@@ -81,5 +81,27 @@ describe("parseVnDay / formatVnDay", () => {
   it("formats an ISO day for display", () => {
     expect(formatVnDay("2026-09-01")).toBe("01/09/2026");
     expect(formatVnDay("bad")).toBe("");
+  });
+});
+
+describe("saigonToday", () => {
+  it("06:30 Saigon belongs to the Saigon day, not the UTC day before", () => {
+    expect(saigonToday(new Date("2026-09-14T23:30:00Z"))).toBe("2026-09-15");
+  });
+  it("23:59:59 Saigon is still the same day", () => {
+    expect(saigonToday(new Date("2026-09-15T16:59:59Z"))).toBe("2026-09-15");
+  });
+  it("00:00:00 Saigon starts the next day", () => {
+    expect(saigonToday(new Date("2026-09-15T17:00:00Z"))).toBe("2026-09-16");
+  });
+});
+
+describe("formatVnDayWithWeekday", () => {
+  it("keeps the long weekday wording for a day-only value", () => {
+    expect(formatVnDayWithWeekday("2026-09-15")).toBe("Thứ Ba, 15/09/2026");
+    expect(formatVnDayWithWeekday("2026-09-20")).toBe("Chủ Nhật, 20/09/2026");
+  });
+  it("returns empty for a non day value", () => {
+    expect(formatVnDayWithWeekday("")).toBe("");
   });
 });

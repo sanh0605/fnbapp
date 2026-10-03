@@ -1,17 +1,18 @@
 import { Suspense } from "react";
 import { getOrdersV2 } from "./actions";
 import OrderTable from "./OrderTable";
+import { toSaigonUtcRange } from "@/lib/shared/report-time";
 
 export const dynamic = "force-dynamic";
 
 // "from"/"to" arrive as date-only (yyyy-mm-dd) from OrderTable's URL sync;
 // expand to full-day bounds so a selected day is inclusive on both ends,
-// matching the previous client-side filtering behavior exactly.
+// whole days in Asia/Saigon (BR-DATA-006), whatever zone the server runs in.
 function toStartOfDayIso(dateOnly: string): string {
-  return new Date(`${dateOnly}T00:00:00`).toISOString();
+  return toSaigonUtcRange(dateOnly, dateOnly)!.startUtc.toISOString();
 }
 function toEndOfDayIso(dateOnly: string): string {
-  return new Date(`${dateOnly}T23:59:59.999`).toISOString();
+  return toSaigonUtcRange(dateOnly, dateOnly)!.endUtc.toISOString();
 }
 
 export default async function OrdersPage({

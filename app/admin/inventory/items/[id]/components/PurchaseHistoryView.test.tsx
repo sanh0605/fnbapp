@@ -1,8 +1,13 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { PurchaseHistoryView } from "./PurchaseHistoryView";
 import type { ItemPurchaseHistoryRow } from "@/lib/purchasing/item-purchase-history";
+
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe("PurchaseHistoryView", () => {
   it("renders empty message when rows is empty", () => {
@@ -48,5 +53,29 @@ describe("PurchaseHistoryView", () => {
     const po1Links = links.filter((l) => l.getAttribute("href") === "/admin/inventory/purchase-orders/PO-001");
     expect(po2Links.length).toBeGreaterThan(0);
     expect(po1Links.length).toBeGreaterThan(0);
+  });
+
+  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z: renders 15/09/2026", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
+    try {
+      const rows: ItemPurchaseHistoryRow[] = [
+        {
+          poId: "PO-001",
+          supplierId: "SUP-1",
+          date: "2026-09-15",
+          supplierName: "Nhà cung cấp A",
+          quantity: 10,
+          unitLabel: "Bao",
+          unitCost: 40000,
+          lineTotal: 400000,
+        },
+      ];
+
+      render(<PurchaseHistoryView rows={rows} itemName="Cà phê Robusta" />);
+      expect(screen.getAllByText("15/09/2026").length).toBeGreaterThan(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

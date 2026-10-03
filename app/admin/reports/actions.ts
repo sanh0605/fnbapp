@@ -793,9 +793,9 @@ export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promis
     }
 
     for (const o of filteredOrders) {
-      const d = new Date(o.created_at);
-      const day = days[d.getDay()];
-      const hour = d.getHours();
+      // Saigon weekday and hour, never the runtime's own zone (Vercel is UTC).
+      const { dowLabel: day, hourKey } = saigonBucketKeys(o.created_at);
+      const hour = Number(hourKey.slice(0, 2));
       const key = `${day}_${hour}`;
       
       const cell = cellsMap.get(key);

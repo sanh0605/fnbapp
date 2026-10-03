@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
 import { formatNumber } from "@/lib/shared/format";
+import { formatDate } from "@/lib/shared/datetime";
 import { getPriceTrend, type ItemPurchaseHistoryRow } from "@/lib/purchasing/item-purchase-history";
 
 interface PurchaseHistoryViewProps {
@@ -45,7 +46,7 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
               {rows.map((row, idx) => (
                 <tr key={`${row.poId}-${idx}`} className="hover:bg-page transition-colors">
                   <td className="px-4 py-3 text-text-secondary whitespace-nowrap">
-                    {row.date ? new Date(row.date).toLocaleDateString("vi-VN") : "---"}
+                    {row.date ? formatDate(row.date) : "---"}
                   </td>
                   <td className="px-4 py-3 font-medium text-text-primary">{row.supplierName}</td>
                   <td className="px-4 py-3 text-right text-text-primary">
@@ -74,7 +75,7 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
           <div key={`${row.poId}-${idx}`} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm space-y-2">
             <div className="flex justify-between items-center text-sm">
               <span className="text-text-secondary">
-                {row.date ? new Date(row.date).toLocaleDateString("vi-VN") : "---"}
+                {row.date ? formatDate(row.date) : "---"}
               </span>
               <Link
                 href={`/admin/inventory/purchase-orders/${row.poId}`}

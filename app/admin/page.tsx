@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ORDER_STATUS } from "@/lib/sales/order-types";
 import { breakdownRevenueByProduct } from "@/lib/reports/report-v2-allocators";
 import { formatNumber } from "@/lib/shared/format";
+import { formatTime } from "@/lib/shared/datetime";
+import { buildSevenDayChart, resolveDashboardPeriods } from "@/lib/reports/dashboard-periods";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
 import { getSupabaseClient } from "@/lib/db/supabase";
@@ -36,83 +38,7 @@ export default async function AdminDashboard({
   const filterParam = searchParams.filter as string || 'this_month';
 
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const currentDate = now.getDate();
-
-  const todayStart = new Date(currentYear, currentMonth, currentDate);
-  const yesterdayStart = new Date(currentYear, currentMonth, currentDate - 1);
-  const sevenDayChartStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-  const diffDays = (d1: Date, d2: Date) => (d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24);
-
-  let isCurrent = (d: Date) => true;
-  let isPrev = (d: Date) => false;
-  // Lower bound for the Orders_V2/Order_Lines_V2 fetch below -- must be <=
-  // the earliest date isCurrent/isPrev/the always-shown 7-day chart could
-  // possibly need, or revenue silently under-counts. null means "all" (no
-  // bound, fetch everything -- the only filter that genuinely needs it).
-  let queryStartDate: Date | null = sevenDayChartStart;
-
-  switch(filterParam) {
-    case 'today':
-      isCurrent = (d) => d >= todayStart;
-      isPrev = (d) => d >= yesterdayStart && d < todayStart;
-      queryStartDate = new Date(Math.min(yesterdayStart.getTime(), sevenDayChartStart.getTime()));
-      break;
-    case '7days':
-      isCurrent = (d) => diffDays(now, d) <= 7;
-      isPrev = (d) => { const diff = diffDays(now, d); return diff > 7 && diff <= 14; };
-      queryStartDate = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000);
-      break;
-    case '30days':
-      isCurrent = (d) => diffDays(now, d) <= 30;
-      isPrev = (d) => { const diff = diffDays(now, d); return diff > 30 && diff <= 60; };
-      queryStartDate = new Date(now.getTime() - 61 * 24 * 60 * 60 * 1000);
-      break;
-    case 'this_month':
-      isCurrent = (d) => d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-      isPrev = (d) => {
-        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-        const limitDate = new Date(lastMonthYear, lastMonth, currentDate + 1);
-        return d.getFullYear() === lastMonthYear && d.getMonth() === lastMonth && d < limitDate;
-      };
-      {
-        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-        queryStartDate = new Date(Math.min(new Date(lastMonthYear, lastMonth, 1).getTime(), sevenDayChartStart.getTime()));
-      }
-      break;
-    case 'last_month':
-      const lm = currentMonth === 0 ? 11 : currentMonth - 1;
-      const lmy = currentMonth === 0 ? currentYear - 1 : currentYear;
-      isCurrent = (d) => d.getFullYear() === lmy && d.getMonth() === lm;
-
-      const prevLm = lm === 0 ? 11 : lm - 1;
-      const prevLmy = lm === 0 ? lmy - 1 : lmy;
-      isPrev = (d) => d.getFullYear() === prevLmy && d.getMonth() === prevLm;
-      queryStartDate = new Date(Math.min(new Date(prevLmy, prevLm, 1).getTime(), sevenDayChartStart.getTime()));
-      break;
-    case 'this_year':
-      isCurrent = (d) => d.getFullYear() === currentYear;
-      isPrev = (d) => {
-        const limitDate = new Date(currentYear - 1, currentMonth, currentDate + 1);
-        return d.getFullYear() === currentYear - 1 && d < limitDate;
-      };
-      queryStartDate = new Date(Math.min(new Date(currentYear - 1, 0, 1).getTime(), sevenDayChartStart.getTime()));
-      break;
-    case 'last_year':
-      isCurrent = (d) => d.getFullYear() === currentYear - 1;
-      isPrev = (d) => d.getFullYear() === currentYear - 2;
-      queryStartDate = new Date(Math.min(new Date(currentYear - 2, 0, 1).getTime(), sevenDayChartStart.getTime()));
-      break;
-    case 'all':
-      isCurrent = (d) => true;
-      isPrev = (d) => false;
-      queryStartDate = null;
-      break;
-  }
+  const { isCurrent, isPrev, queryStartDate } = resolveDashboardPeriods(filterParam, now);
 
   const dateFilter = queryStartDate ? { gte: { created_at: queryStartDate.toISOString() } } : {};
 
@@ -166,8 +92,8 @@ export default async function AdminDashboard({
     )
     .map(normalizeV2Order);
 
-  const currOrders = validOrders.filter((o:any) => isCurrent(new Date(o.created_at)));
-  const prevOrders = validOrders.filter((o:any) => isPrev(new Date(o.created_at)));
+  const currOrders = validOrders.filter((o:any) => isCurrent(o.created_at));
+  const prevOrders = validOrders.filter((o:any) => isPrev(o.created_at));
 
   const currRev = currOrders.reduce((sum:number, o:any) => sum + (parseFloat(o.total_amount) || 0), 0);
   const prevRev = prevOrders.reduce((sum:number, o:any) => sum + (parseFloat(o.total_amount) || 0), 0);
@@ -233,26 +159,7 @@ export default async function AdminDashboard({
       revenue: p.revenue
     }));
 
-  const salesByDate: Record<string, number> = {};
-  for(let i=6; i>=0; i--) {
-    const d = new Date();
-    d.setDate(now.getDate() - i);
-    salesByDate[d.toLocaleDateString("en-GB")] = 0;
-  }
-
-  const allCompletedOrders = validOrders;
-  allCompletedOrders.forEach((o:any) => {
-    if(!o.created_at) return;
-    const dateStr = new Date(o.created_at).toLocaleDateString("en-GB");
-    if(salesByDate[dateStr] !== undefined) {
-      salesByDate[dateStr] += Number(o.total_amount || 0);
-    }
-  });
-
-  const chartData = Object.entries(salesByDate).map(([date, amount]) => ({
-    date: date.substring(0, 5),
-    amount
-  }));
+  const chartData = buildSevenDayChart(validOrders, now);
   const maxAmount = Math.max(...chartData.map(d => d.amount), 1);
 
   return (
@@ -283,7 +190,7 @@ export default async function AdminDashboard({
             <Link href="?filter=all" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'all' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tất cả</Link>
           </div>
           <div className="text-sm font-medium text-text-muted bg-surface-card px-4 py-2.5 rounded-lg border border-border shadow-sm hidden 2xl:block whitespace-nowrap">
-            Cập nhật lúc: {new Date().toLocaleTimeString('vi-VN')}
+            Cập nhật lúc: {formatTime(now, true)}
           </div>
         </div>
       </div>

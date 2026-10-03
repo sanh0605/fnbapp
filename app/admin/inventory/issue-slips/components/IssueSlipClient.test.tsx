@@ -42,6 +42,7 @@ const roots: Root[] = [];
 const containers: HTMLElement[] = [];
 
 afterEach(() => {
+  vi.useRealTimers();
   while (roots.length) {
     const root = roots.pop()!;
     act(() => {
@@ -324,7 +325,7 @@ describe("IssueSlipClient -- backdated slip warns which months move and requires
   });
 
   it("confirm() names the affected months; declining it blocks the RPC call", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-08-17T12:00:00.000Z"));
     mocks.confirmDialog.mockResolvedValue(false);
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
@@ -345,7 +346,7 @@ describe("IssueSlipClient -- backdated slip warns which months move and requires
   });
 
   it("approving the confirm proceeds to call the RPC", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-08-17T12:00:00.000Z"));
     mocks.confirmDialog.mockResolvedValue(true);
     mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
@@ -386,7 +387,7 @@ describe("IssueSlipClient -- time field defaults near now and submits a real ins
   it("the datetime-local input starts within a minute of now", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const datetimeInput = container.querySelector('input[type="datetime-local"]') as HTMLInputElement;
-    const initial = new Date(datetimeInput.value).getTime();
+    const initial = new Date(datetimeInput.value + ":00+07:00").getTime();
     expect(Math.abs(Date.now() - initial)).toBeLessThan(60_000);
   });
 
@@ -404,7 +405,31 @@ describe("IssueSlipClient -- time field defaults near now and submits a real ins
     await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
 
     const call = mocks.createIssueSlip.mock.calls[0][0];
-    expect(call.issuedAtIso).toBe(new Date(raw).toISOString());
+    expect(call.issuedAtIso).toBe("2026-08-17T07:30:00.000Z");
+  });
+
+  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z: default is 2026-09-15T06:30 and submit sends 2026-09-14T23:30:00.000Z", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
+    try {
+      mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
+      const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+      const datetimeInput = container.querySelector('input[type="datetime-local"]') as HTMLInputElement;
+      expect(datetimeInput.value).toBe("2026-09-15T06:30");
+
+      const block = getLineBlocks(container)[0];
+      await selectItemInBlock(block, "Sữa tươi Vinamilk");
+      await selectPackage(block, "Thùng 12 hộp");
+      await setInputValue(findQtyInput(block), "2");
+
+      await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+
+      expect(mocks.createIssueSlip).toHaveBeenCalledTimes(1);
+      const call = mocks.createIssueSlip.mock.calls[0][0];
+      expect(call.issuedAtIso).toBe("2026-09-14T23:30:00.000Z");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

@@ -39,6 +39,7 @@ vi.mock("@/components/ui/CustomDatePicker", () => ({
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   document.body.innerHTML = "";
 });
 
@@ -119,5 +120,31 @@ describe("OrderTable navigation", () => {
     expect(push).toHaveBeenCalledWith(
       `/admin/orders/ORD-1?returnTo=${encodeURIComponent(expectedCurrentUrl)}`
     );
+  });
+
+  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
+    try {
+      mockSearchParams.set("from", "2026-09-15");
+      mockSearchParams.set("to", "2026-09-15");
+
+      render(
+        <OrderTable
+          initialOrders={[makeOrder("ORD-1", "000001")]}
+          totalCount={1}
+          itemsPerPage={20}
+          brands={[]}
+          products={[]}
+          variants={[]}
+          modifiers={[]}
+          categories={[]}
+        />
+      );
+
+      expect(screen.getAllByText("ORD000001")[0]).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

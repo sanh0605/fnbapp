@@ -18,7 +18,10 @@ if (typeof window.matchMedia !== "function") {
   })) as unknown as typeof window.matchMedia;
 }
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe("DayInput", () => {
   it("shows the stored day as dd/mm/yyyy", () => {
@@ -48,5 +51,16 @@ describe("DayInput", () => {
     fireEvent.change(input, { target: { value: "" } });
     fireEvent.blur(input);
     expect(onChange).toHaveBeenLastCalledWith("");
+  });
+
+  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
+    try {
+      render(<DayInput label="Từ ngày" value="2026-09-15" onChange={() => {}} />);
+      expect((screen.getByLabelText("Từ ngày") as HTMLInputElement).value).toBe("15/09/2026");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

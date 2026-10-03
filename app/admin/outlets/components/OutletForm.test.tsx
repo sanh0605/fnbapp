@@ -55,6 +55,12 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
   })) as unknown as typeof window.matchMedia;
 }
 
+if (typeof window !== "undefined" && !HTMLFormElement.prototype.requestSubmit) {
+  HTMLFormElement.prototype.requestSubmit = function () {
+    this.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+  };
+}
+
 const BRANDS: DBBrand[] = [
   { id: "BR-001", name: "Phin Đi", code: "PHD", start_date: "", status: "ACTIVE", created_at: "" },
 ];
@@ -67,6 +73,7 @@ const OUTLET: DBOutlet = {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   document.body.innerHTML = "";
 });
 
@@ -141,5 +148,52 @@ describe("OutletForm add mode", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
     expect(push).toHaveBeenCalledWith("/admin/outlets");
     expect(mocks.addOutlet).not.toHaveBeenCalled();
+  });
+
+  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z and preserves start_date", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
+    try {
+      mocks.editOutlet.mockResolvedValue({});
+      const { unmount } = render(
+        <OutletForm
+          initialData={{ ...OUTLET, start_date: "2026-09-15" }}
+          brands={BRANDS}
+          outlets={[OUTLET]}
+          returnTo="/admin/outlets"
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+      await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
+      const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
+      expect(formData.get("start_date")).toBe("2026-09-15");
+      unmount();
+
+      // Second assertion path: ADD mode without passing start_date in
+      mocks.addOutlet.mockResolvedValue({});
+      render(
+        <OutletForm
+          brands={BRANDS}
+          outlets={[]}
+          returnTo="/admin/outlets"
+        />
+      );
+
+      fireEvent.change(document.querySelector('input[name="name"]')!, {
+        target: { value: "Điểm bán 2" },
+      });
+      fireEvent.change(document.querySelector('select[name="brand_id"]')!, {
+        target: { value: "BR-001" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Lưu điểm bán" }));
+      await waitFor(() => expect(mocks.addOutlet).toHaveBeenCalledTimes(1));
+      const addFormData = mocks.addOutlet.mock.calls[0][0] as FormData;
+      // The outlet form has no default day: start_date is not set (null)
+      expect(addFormData.get("start_date")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

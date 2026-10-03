@@ -8,27 +8,12 @@ import {
   type DateRangePresetKey,
 } from "@/lib/shared/date-range-presets";
 import { CustomDatePicker } from "./CustomDatePicker";
+import { pickerDateToIsoDay, isoDayToPickerDate } from "./picker-date";
 
 export interface DateRangeValue {
   preset: DateRangePresetKey;
   start: string;
   end: string;
-}
-
-// "YYYY-MM-DD" <-> Date using local calendar fields only (no time-zone
-// conversion) -- CustomDatePicker/react-datepicker works with a plain
-// calendar day, and start/end never carry a time component.
-function isoToLocalDate(iso: string): Date | null {
-  if (!iso) return null;
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
-
-function localDateToIso(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
 }
 
 const CUSTOM_RANGE_ORDER_ERROR = "Ngày đầu phải trước ngày cuối";
@@ -41,10 +26,10 @@ export function DateRangeFilter(props: {
   const { value, onChange, today } = props;
   const [uiPreset, setUiPreset] = useState<DateRangePresetKey>(value.preset);
   const [customStart, setCustomStart] = useState<Date | null>(
-    value.preset === "CUSTOM" ? isoToLocalDate(value.start) : null,
+    value.preset === "CUSTOM" ? isoDayToPickerDate(value.start) : null,
   );
   const [customEnd, setCustomEnd] = useState<Date | null>(
-    value.preset === "CUSTOM" ? isoToLocalDate(value.end) : null,
+    value.preset === "CUSTOM" ? isoDayToPickerDate(value.end) : null,
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -53,8 +38,8 @@ export function DateRangeFilter(props: {
   useEffect(() => {
     setUiPreset(value.preset);
     if (value.preset === "CUSTOM") {
-      setCustomStart(isoToLocalDate(value.start));
-      setCustomEnd(isoToLocalDate(value.end));
+      setCustomStart(isoDayToPickerDate(value.start));
+      setCustomEnd(isoDayToPickerDate(value.end));
     }
   }, [value.preset, value.start, value.end]);
 
@@ -81,8 +66,8 @@ export function DateRangeFilter(props: {
       setError(null);
       return;
     }
-    const startIso = localDateToIso(nextStart);
-    const endIso = localDateToIso(nextEnd);
+    const startIso = pickerDateToIsoDay(nextStart);
+    const endIso = pickerDateToIsoDay(nextEnd);
     if (startIso > endIso) {
       setError(CUSTOM_RANGE_ORDER_ERROR);
       return;

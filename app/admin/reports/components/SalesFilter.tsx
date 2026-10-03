@@ -4,21 +4,12 @@ import React, { useState, useMemo, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { saigonToday } from "@/lib/shared/datetime";
+import { addDays } from "@/lib/shared/date-range-presets";
+import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
 
-// Claude code — UI-3: encode URL date as YYYY-MM-DD (friendly + shareable).
-// Backward compat: accept both ISO datetime and date-only when reading.
-function toDateOnlyForUrl(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function parseDateParam(value: string): Date {
-  // ISO datetime (legacy) → use as-is.
-  if (value.includes("T")) return new Date(value);
-  // Date only YYYY-MM-DD → treat as local midnight (browser TZ = Saigon for vn users).
-  return new Date(`${value}T00:00:00`);
+function parseDateParam(value: string): Date | null {
+  return isoDayToPickerDate(value.includes("T") ? value.slice(0, 10) : value);
 }
 
 interface Brand {
@@ -70,14 +61,16 @@ function SalesFilterInner({
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const [startDate, setStartDate] = useState<Date | null>(
+  const [startDate, setStartDate] = useState<Date | null>(() =>
     searchParams.get("start")
       ? parseDateParam(searchParams.get("start")!)
-      : new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      : isoDayToPickerDate(saigonToday().slice(0, 8) + "01")
   );
 
-  const [endDate, setEndDate] = useState<Date | null>(
-    searchParams.get("end") ? parseDateParam(searchParams.get("end")!) : new Date(new Date().setHours(23,59,59,999))
+  const [endDate, setEndDate] = useState<Date | null>(() =>
+    searchParams.get("end")
+      ? parseDateParam(searchParams.get("end")!)
+      : isoDayToPickerDate(saigonToday())
   );
 
   const [brandId, setBrandId] = useState(searchParams.get("brandId") || "");
@@ -102,8 +95,8 @@ function SalesFilterInner({
 
     const params = new URLSearchParams();
     // Claude code — UI-3: YYYY-MM-DD friendly URL; server toSaigonUtcRange handles date-only.
-    params.set("start", toDateOnlyForUrl(effectiveStart));
-    params.set("end", toDateOnlyForUrl(effectiveEnd));
+    params.set("start", pickerDateToIsoDay(effectiveStart));
+    params.set("end", pickerDateToIsoDay(effectiveEnd));
     if (effectiveBrandId) params.set("brandId", effectiveBrandId);
     if (effectiveStaffName) params.set("staffName", effectiveStaffName);
     if (effectiveCategoryId) params.set("categoryId", effectiveCategoryId);
@@ -114,10 +107,9 @@ function SalesFilterInner({
   };
 
   const setPreset = (days: number) => {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - days);
-    start.setHours(0,0,0,0);
+    const today = saigonToday();
+    const start = isoDayToPickerDate(addDays(today, -days));
+    const end = isoDayToPickerDate(today);
     setStartDate(start);
     setEndDate(end);
     // A preset click is itself a single, deliberate action -- apply immediately.

@@ -2,15 +2,16 @@ import { Suspense } from "react";
 
 import { getActivityLogEvents } from "./actions";
 import ActivityLogClient from "./components/ActivityLogClient";
+import { toSaigonUtcRange } from "@/lib/shared/report-time";
 
 export const dynamic = "force-dynamic";
 
 function toStartOfDayIso(dateOnly: string): string {
-  return new Date(`${dateOnly}T00:00:00`).toISOString();
+  return toSaigonUtcRange(dateOnly, dateOnly)!.startUtc.toISOString();
 }
 
 function toEndOfDayIso(dateOnly: string): string {
-  return new Date(`${dateOnly}T23:59:59.999`).toISOString();
+  return toSaigonUtcRange(dateOnly, dateOnly)!.endUtc.toISOString();
 }
 
 export default async function ActivityLogPage({

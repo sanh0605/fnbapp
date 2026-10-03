@@ -66,6 +66,7 @@ function promoFixture(overrides: Partial<DBPromotion> = {}): DBPromotion {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   document.body.innerHTML = "";
 });
 
@@ -156,5 +157,36 @@ describe("PromotionForm", () => {
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Mã khuyến mãi đã tồn tại"));
     expect(push).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Tên chương trình *")).toHaveValue("Giảm 10%");
+  });
+
+  it("edit of start_date 2026-09-14T23:30:00Z shows 2026-09-15T06:30; saving sends 2026-09-14T23:30:00.000Z", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
+    try {
+      mocks.savePromotion.mockResolvedValue({ success: true, data: { id: "PRM-001" } });
+      render(
+        <PromotionForm
+          initialData={promoFixture({
+            start_date: "2026-09-14T23:30:00Z",
+            end_date: "",
+          })}
+          brands={mockBrands}
+          categories={mockCategories}
+          products={mockProducts}
+          variants={mockVariants}
+          returnTo="/admin/promotions"
+        />
+      );
+
+      const startInput = screen.getByLabelText("Ngày/Giờ bắt đầu *") as HTMLInputElement;
+      expect(startInput.value).toBe("2026-09-15T06:30");
+
+      fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+      await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
+      const payload = mocks.savePromotion.mock.calls[0][0];
+      expect(payload.start_date).toBe("2026-09-14T23:30:00.000Z");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

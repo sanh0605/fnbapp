@@ -10,11 +10,7 @@ import { computeAffectedMonths } from "@/lib/stock/issue-slip-warnings";
 import { formatConvertedOnHand } from "@/lib/stock/issue-slip-onhand-display";
 import { createIssueSlip, type IssueSlipItemView } from "../actions";
 import { buildIssueUnitOptions, toBaseQuantity } from "@/lib/stock/issue-unit-options";
-
-function toLocalInputValue(d: Date): string {
-  const offsetMs = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
-}
+import { toSaigonIsoString } from "@/lib/shared/datetime";
 
 type DraftLine = {
   purchasedItemId: string;
@@ -29,14 +25,15 @@ function emptyLine(): DraftLine {
 export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
   const router = useRouter();
   const [lines, setLines] = useState<DraftLine[]>([emptyLine()]);
-  const [issuedAtLocal, setIssuedAtLocal] = useState(() => toLocalInputValue(new Date()));
+  const [issuedAtLocal, setIssuedAtLocal] = useState(() => toSaigonIsoString(new Date()).slice(0, 16));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const itemOptions = useMemo(() => items.map(i => ({ id: i.id, label: i.name })), [items]);
 
   const affectedMonths = useMemo(() => {
-    const d = new Date(issuedAtLocal);
+    if (!issuedAtLocal) return [];
+    const d = new Date(issuedAtLocal + ":00+07:00");
     if (Number.isNaN(d.getTime())) return [];
     return computeAffectedMonths(d);
   }, [issuedAtLocal]);
@@ -102,7 +99,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
       payloadLines.push({ purchasedItemId: item.id, baseQuantity: toBaseQuantity(parsedQty, option) });
     }
 
-    const issuedAt = new Date(issuedAtLocal);
+    const issuedAt = new Date(issuedAtLocal + ":00+07:00");
     if (Number.isNaN(issuedAt.getTime())) {
       setError("Thời điểm xuất không hợp lệ");
       return;

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
+import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
 import { VoidOrderButton } from "./components/VoidOrderButton";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
@@ -66,16 +67,12 @@ export default function OrderTable({
 
   const parseDateParam = (value: string | null): Date | null => {
     if (!value) return null;
-    if (value.includes("T")) return new Date(value);
-    return new Date(`${value}T00:00:00`);
+    return isoDayToPickerDate(value.includes("T") ? value.slice(0, 10) : value);
   };
 
   const toDateOnlyForUrl = (date: Date | null): string => {
     if (!date) return "";
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+    return pickerDateToIsoDay(date);
   };
 
   // Wraps the URL sync below so isPendingFilter can show a loading

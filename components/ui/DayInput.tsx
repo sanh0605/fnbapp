@@ -4,6 +4,7 @@ import { useId, useState, useEffect, KeyboardEvent, forwardRef } from "react";
 import { Calendar } from "lucide-react";
 import { parseVnDay, formatVnDay } from "@/lib/shared/datetime";
 import { CustomDatePicker } from "./CustomDatePicker";
+import { pickerDateToIsoDay, isoDayToPickerDate } from "./picker-date";
 
 export interface DayInputProps {
   label: string;
@@ -63,9 +64,7 @@ export function DayInput({ label, value, onChange, error }: DayInputProps) {
 
   function parseIsoToLocal(isoDay: string): Date | null {
     if (!isoDay || isoDay === "invalid") return null;
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDay);
-    if (!m) return null;
-    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    return isoDayToPickerDate(isoDay);
   }
 
   function handleDateSelect(date: Date | null) {
@@ -73,10 +72,7 @@ export function DayInput({ label, value, onChange, error }: DayInputProps) {
       onChange("");
       setText("");
     } else {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      const iso = `${y}-${m}-${d}`;
+      const iso = pickerDateToIsoDay(date);
       onChange(iso);
       setText(formatVnDay(iso));
     }
