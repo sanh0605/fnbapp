@@ -96,6 +96,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 - **A box only for viewing becomes a page too**, e.g. a dish's price history.
 - **POS is exempt** (answer 2B): choosing size, toppings and payment keep their current boxes, because a page change slows selling at a busy moment.
 - **Adding a supplier while entering a purchase order** (owner 2026-10-01, *"B"*): it opens the new-supplier page. The half-entered order is kept on that device and refilled on return, with the new supplier selected (owner: *"chỗ nhà cung cấp sẽ tự chọn nhà cung cấp vừa tạo"*). It replaces any supplier picked before. Design: `docs/superpowers/specs/2026-10-01-bo-popup-design.md` §6.
+- **Orders and issue slips are cancelled one at a time, from their own page**, each with its own typed reason; their lists get no tick boxes and no bin (owner 2026-10-05, answer *"a"*). He was shown, measured that day: 34 voided orders out of 3.270 between 22/06 and 02/10/2026, about 10 a month and always one at a time, and 0 of 87 issue slips cancelled whole. A batch cancel would serve no real use, and one mistaken batch would move revenue, stock and the cash book for those days at once. Purchase orders have no cancel at all on 2026-10-05; whether they should is a separate question.
 - **Not popups:** a dropdown list and a date picker's calendar. They open in place and are kept (owner asked on 2026-09-30 for dropdowns to float above tables, not to become pages).
 
 ### BR-DATA-008 — Every list sorts by any column; by code by default
