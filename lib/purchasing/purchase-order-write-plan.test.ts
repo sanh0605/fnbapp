@@ -188,4 +188,48 @@ describe("buildPurchaseOrderWritePlan", () => {
       }),
     ).toThrow("SPM-001");
   });
+  describe("line ids on an edit", () => {
+    const eggLine = { purchased_item_id: "SPM-EGG", unit: "box", quantity: 2, subtotal: 196, conversion_id: "QD-EGG", base_unit: "U-PCS" };
+    const milkLine = { purchased_item_id: "SPM-MILK", unit: "box", quantity: 2, subtotal: 196, conversion_id: "QD-MILK", base_unit: "U-ML" };
+    const edit = {
+      order,
+      purchasedItems: [{ id: "SPM-EGG" }, { id: "SPM-MILK" }],
+      conversions: [
+        { id: "QD-EGG", purchased_item_id: "SPM-EGG", purchased_unit: "box", conversion_rate: 5 },
+        { id: "QD-MILK", purchased_item_id: "SPM-MILK", purchased_unit: "box", conversion_rate: 5 },
+      ],
+      createdAt: "2026-07-01T04:00:00.000Z",
+    };
+
+    it("reuses the saved line id of the same item on an edit", () => {
+      const plan = buildPurchaseOrderWritePlan({
+        ...edit,
+        lines: [{ ...eggLine }, { ...milkLine }],
+        existingLines: [
+          { id: "POL-old-milk", purchased_item_id: "SPM-MILK" },
+          { id: "POL-old-egg", purchased_item_id: "SPM-EGG" },
+        ],
+        idFactory: () => "new",
+      });
+      expect(plan.lines.map(l => l.id)).toEqual(["POL-old-egg", "POL-old-milk"]);
+    });
+
+    it("matches two lines of one item in order and mints an id for a third", () => {
+      const plan = buildPurchaseOrderWritePlan({
+        ...edit,
+        lines: [{ ...eggLine }, { ...eggLine }, { ...eggLine }],
+        existingLines: [
+          { id: "POL-a", purchased_item_id: "SPM-EGG" },
+          { id: "POL-b", purchased_item_id: "SPM-EGG" },
+        ],
+        idFactory: () => "new",
+      });
+      expect(plan.lines.map(l => l.id)).toEqual(["POL-a", "POL-b", "POL-new"]);
+    });
+
+    it("mints every id for a new order", () => {
+      const plan = buildPurchaseOrderWritePlan({ ...edit, lines: [{ ...eggLine }], idFactory: () => "new" });
+      expect(plan.lines[0].id).toBe("POL-new");
+    });
+  });
 });

@@ -27,6 +27,13 @@ function renderPoStatusBadge(status: string) {
       </span>
     );
   }
+  if (status === "CANCELLED") {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-surface-secondary text-text-muted border border-border">
+        Đã huỷ
+      </span>
+    );
+  }
   if (status === "DRAFT") {
     return (
       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-surface-secondary text-text-secondary border border-border">

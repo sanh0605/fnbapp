@@ -248,6 +248,11 @@ export interface DBPurchaseOrder {
   // Added by migration 0107. Nullable: a draft may not have chosen yet.
   payment_method?: "CASH" | "BANK_TRANSFER" | null;
   bank_account_id?: string | null;
+  // Added by migration 0108 (BR-INV-015); all null unless status is CANCELLED.
+  cancelled_at?: string | null;
+  cancelled_by_id?: string | null;
+  cancelled_by_name?: string | null;
+  cancel_reason?: string | null;
 }
 
 export interface DBPurchaseOrderLine {

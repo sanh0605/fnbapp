@@ -44,11 +44,12 @@ export default async function PurchaseOrderDetail({
 
   const poLines = lines.filter((l: any) => (l.po_id === params.id || l.purchase_order_id === params.id));
   const isDraft = po.status === "DRAFT";
+  const isCancelled = po.status === "CANCELLED";
   const isAdmin = role === "ADMIN";
   const canEditPayment = role === "ADMIN" || role === "MANAGER";
   const bankAccounts = (allBankAccounts as any[]).filter(a => a.status === "ACTIVE" || a.id === po?.bank_account_id);
   const editRequested = searchParams?.edit === "1";
-  const { showForm } = resolvePurchaseOrderEditGate({ role, editRequested, isDraft });
+  const { showForm } = resolvePurchaseOrderEditGate({ role, editRequested: editRequested && !isCancelled, isDraft });
 
   return (
     <div className="space-y-6">
@@ -59,10 +60,18 @@ export default async function PurchaseOrderDetail({
           <p className="text-text-muted">Ngày tạo: {formatDateTimeFull(po.created_at)} | Ngày giao dịch: {po.transaction_date ? formatDateTimeFull(po.transaction_date) : 'N/A'}</p>
         </div>
         <div className="ml-auto flex items-center gap-3">
-          <span className={`px-3 py-1 text-sm font-bold rounded-full ${po.status === 'COMPLETED' ? 'bg-success/20 text-success-active' : 'bg-warning/20 text-warning-active'}`}>
-            {po.status === 'COMPLETED' ? 'Đã Hoàn Thành' : 'Nháp'}
+          <span
+            className={`px-3 py-1 text-sm font-bold rounded-full ${
+              po.status === "COMPLETED"
+                ? "bg-success/20 text-success-active"
+                : isCancelled
+                ? "bg-surface-secondary text-text-muted"
+                : "bg-warning/20 text-warning-active"
+            }`}
+          >
+            {po.status === "COMPLETED" ? "Đã Hoàn Thành" : isCancelled ? "Đã huỷ" : "Nháp"}
           </span>
-          {po.status === 'COMPLETED' && isAdmin && !showForm && (
+          {po.status === "COMPLETED" && isAdmin && !showForm && (
             <Link
               href={`/admin/inventory/purchase-orders/${po.id}?edit=1`}
               className="px-3 py-1 text-sm font-bold rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition"
@@ -70,8 +79,22 @@ export default async function PurchaseOrderDetail({
               Sửa phiếu
             </Link>
           )}
+          {(po.status === "COMPLETED" || po.status === "DRAFT") && (role === "ADMIN" || role === "MANAGER") && !showForm && (
+            <Link
+              href={`/admin/inventory/purchase-orders/${po.id}/cancel`}
+              className="px-3 py-1 text-sm font-bold rounded-full border border-danger text-danger hover:bg-danger/10 transition"
+            >
+              Huỷ phiếu
+            </Link>
+          )}
         </div>
       </div>
+
+      {isCancelled && (
+        <div className="p-4 rounded-xl border border-border bg-surface-secondary/50 text-text-secondary text-sm">
+          Lý do huỷ: {po.cancel_reason} · Huỷ bởi {po.cancelled_by_name} lúc {formatDateTimeFull(po.cancelled_at)}
+        </div>
+      )}
 
       {showForm ? (
         <>
@@ -161,13 +184,13 @@ export default async function PurchaseOrderDetail({
               </div>
             </div>
 
-            {po.status === "COMPLETED" && (
+            {(po.status === "COMPLETED" || isCancelled) && (
               <PurchasePaymentBlock
                 poId={po.id}
                 paymentMethod={po.payment_method}
                 bankAccountId={po.bank_account_id}
                 bankAccounts={bankAccounts}
-                canEdit={canEditPayment}
+                canEdit={canEditPayment && !isCancelled}
               />
             )}
           </div>

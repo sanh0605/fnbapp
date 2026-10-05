@@ -17,7 +17,8 @@ export default async function SupplierDetailPage({
   const [suppliers, auth, orders] = await Promise.all([
     getSuppliers(),
     resolveActor(),
-    getPurchaseOrdersPage({ supplier: params.id, page: searchParams?.poPage }),
+    // "ALL": the default list hides cancelled orders; here they show with a badge.
+    getPurchaseOrdersPage({ supplier: params.id, page: searchParams?.poPage, status: "ALL" }),
   ]);
 
   const supplier = suppliers.find((s) => s.id === params.id);

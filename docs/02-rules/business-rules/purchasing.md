@@ -11,7 +11,7 @@ Purchase orders, reviewed recoveries, and other critical flows that change multi
 
 ### BR-INV-015 — A completed purchase order can be cancelled; it is kept, marked "Đã huỷ"
 
-**Status:** `APPROVED` — owner decision 2026-10-05. **Not built yet**; design `docs/superpowers/specs/2026-10-05-huy-phieu-nhap-design.md`, approved by him the same day.
+**Status:** `APPROVED` — owner decision 2026-10-05. Built 2026-10-05 (migration `0108`, page `/admin/inventory/purchase-orders/[id]/cancel`); works once `0108` has run on the server, until then the page says the data is not updated. Design `docs/superpowers/specs/2026-10-05-huy-phieu-nhap-design.md`, approved by him the same day.
 
 Until 2026-10-05 a completed purchase order could only be edited, never removed, and it must keep at least one line, so an order entered twice stayed counted twice in stock, cost and the cash book with no way out (measured that day: 199 purchase orders, all completed). Offered "no cancel" or "cancel with a typed reason, kept and marked", the owner answered *"Làm theo em khuyến nghị"* (the second).
 

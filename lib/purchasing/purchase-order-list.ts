@@ -10,6 +10,8 @@ const MAX_QUERY_LENGTH = 100;
 const DAY_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
 export interface PurchaseOrderListFilters {
+  // "ACTIVE" (default: drafts and completed) | "DRAFT" | "COMPLETED" | "CANCELLED" | "ALL";
+  // anything else, missing included, reads as "ACTIVE" (BR-INV-015).
   q?: string; status?: string; supplier?: string; from?: string; to?: string; page?: string;
   // "CASH" | "BANK_TRANSFER"; anything else is ignored.
   pay?: string;
@@ -25,7 +27,7 @@ export interface PurchaseOrderListPage {
   firstIndex: number; lastIndex: number; rangeError: boolean;
 }
 
-function paymentLabelOf(method: DBPurchaseOrder["payment_method"]): string {
+export function paymentLabelOf(method: DBPurchaseOrder["payment_method"]): string {
   if (method === "CASH") return "Tiền mặt";
   if (method === "BANK_TRANSFER") return "Chuyển khoản";
   return "—";
@@ -67,11 +69,16 @@ export function listPurchaseOrdersPage(input: {
   const startMs = from && range ? range.startUtc.getTime() : -Infinity;
   const endMs = to && range ? range.endUtc.getTime() : Infinity;
 
+  const status = filters.status === "ALL" || filters.status === "DRAFT"
+    || filters.status === "COMPLETED" || filters.status === "CANCELLED"
+    ? filters.status
+    : "ACTIVE";
+
   const pay = filters.pay === "CASH" || filters.pay === "BANK_TRANSFER" ? filters.pay : undefined;
 
   const matched = orders.filter(po => {
     if (pay && po.payment_method !== pay) return false;
-    if (filters.status && filters.status !== "ALL" && po.status !== filters.status) return false;
+    if (status === "ACTIVE" ? po.status === "CANCELLED" : status !== "ALL" && po.status !== status) return false;
     if (filters.supplier && filters.supplier !== "ALL" && po.supplier_id !== filters.supplier) return false;
     const t = slipTime(po);
     if (t < startMs || t > endMs) return false;

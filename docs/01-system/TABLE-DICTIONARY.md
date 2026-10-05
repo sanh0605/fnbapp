@@ -58,7 +58,7 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `promotions` | Khuyến mãi | Chương trình giảm giá theo đơn hoặc theo món |
 | `purchase_order_edits` | Nhật ký sửa đơn mua hàng | Ghi mỗi lần một đơn mua hàng đã hoàn tất bị sửa |
 | `purchase_order_lines` | Dòng đơn mua hàng | Từng dòng vật tư trong một đơn mua hàng: số lượng, đơn giá |
-| `purchase_orders` | Đơn mua hàng | Một lần nhập hàng từ nhà cung cấp; từ migration `0107` ghi cả "Trả bằng" (tiền mặt hay chuyển khoản, tài khoản nào) |
+| `purchase_orders` | Đơn mua hàng | Một lần nhập hàng từ nhà cung cấp; từ migration `0107` ghi cả "Trả bằng" (tiền mặt hay chuyển khoản, tài khoản nào); từ `0108` có thể ở trạng thái `CANCELLED` ("Đã huỷ") kèm `cancelled_at`, `cancelled_by_id`, `cancelled_by_name`, `cancel_reason`, không bao giờ bị xoá (`BR-INV-015`) |
 | `purchase_sources` | Nguồn nhập | Kênh/nơi mua hàng cho một đơn mua, khác với nhà cung cấp |
 | `purchased_items` | Vật tư mua vào | Một loại nguyên liệu/vật tư có thể mua; tồn kho tính theo từng dòng ở đây |
 | `stock_issues` | Hàng rời kho | Ghi nhận nguyên liệu đã ra khỏi kho; đây là chỗ tính giá vốn |

@@ -16,7 +16,7 @@ interface PurchaseOrdersClientProps {
 export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientProps) {
   const searchParams = useSearchParams();
   
-  const defaultFilters = { q: "", status: "ALL", supplier: "ALL", from: "", to: "", page: "1", pay: "ALL" };
+  const defaultFilters = { q: "", status: "ACTIVE", supplier: "ALL", from: "", to: "", page: "1", pay: "ALL" };
   const { draft, setField, applyFilters, isPending } = useFilterForm(defaultFilters);
   const [fromError, setFromError] = useState("");
   const [toError, setToError] = useState("");
@@ -59,12 +59,12 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
     setToError("");
     setRangeMsg("");
     setField("q", "");
-    setField("status", "ALL");
+    setField("status", "ACTIVE");
     setField("supplier", "ALL");
     setField("from", "");
     setField("to", "");
     setField("pay", "ALL");
-    applyFilters({ q: "", status: "ALL", supplier: "ALL", from: "", to: "", page: "1", pay: "ALL" });
+    applyFilters({ q: "", status: "ACTIVE", supplier: "ALL", from: "", to: "", page: "1", pay: "ALL" });
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -85,6 +85,13 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
       return (
         <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-primary-soft text-primary border border-primary/30">
           Hoàn thành
+        </span>
+      );
+    }
+    if (status === "CANCELLED") {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-surface-secondary text-text-muted border border-border">
+          Đã huỷ
         </span>
       );
     }
@@ -159,9 +166,11 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
               onChange={(e) => setField("status", e.target.value)}
               className="w-full min-h-[44px] border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
             >
-              <option value="ALL">Tất cả</option>
+              <option value="ACTIVE">Chưa huỷ</option>
               <option value="DRAFT">Nháp</option>
               <option value="COMPLETED">Hoàn thành</option>
+              <option value="CANCELLED">Đã huỷ</option>
+              <option value="ALL">Tất cả</option>
             </select>
           </div>
           <div className="w-full md:w-40">

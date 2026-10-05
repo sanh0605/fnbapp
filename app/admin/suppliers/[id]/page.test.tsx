@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import SupplierDetailPage from "./page";
+import { getPurchaseOrdersPage } from "@/app/admin/inventory/purchase-orders/actions";
 
 vi.mock("../actions", () => ({
   getSuppliers: vi.fn().mockResolvedValue([
@@ -45,5 +46,11 @@ describe("SupplierDetailPage", () => {
 
     const props = element.props;
     expect(Object.values(props).every((v) => typeof v !== "function")).toBe(true);
+  });
+
+  it("lists every order of the supplier, cancelled included (the default list hides them)", async () => {
+    await SupplierDetailPage({ params: { id: "NCC-029" }, searchParams: { poPage: "2" } });
+
+    expect(getPurchaseOrdersPage).toHaveBeenCalledWith({ supplier: "NCC-029", page: "2", status: "ALL" });
   });
 });
