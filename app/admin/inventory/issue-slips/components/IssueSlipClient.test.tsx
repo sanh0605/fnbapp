@@ -29,6 +29,12 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.routerPush }),
 }));
 
+vi.mock("@/components/ui/SaigonDateTimeInput", () => ({
+  SaigonDateTimeInput: (p: { value: string; onChange: (v: string) => void }) => (
+    <input data-testid="issued-at" value={p.value} onChange={e => p.onChange(e.target.value)} />
+  ),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.confirmDialog.mockResolvedValue(true);
@@ -333,7 +339,7 @@ describe("IssueSlipClient -- backdated slip warns which months move and requires
     await selectItemInBlock(block, "Sữa tươi Vinamilk");
     await selectPackage(block, "Thùng 12 hộp");
     await setInputValue(findQtyInput(block), "2");
-    const datetimeInput = container.querySelector('input[type="datetime-local"]') as HTMLInputElement;
+    const datetimeInput = container.querySelector('[data-testid="issued-at"]') as HTMLInputElement;
     await setInputValue(datetimeInput, "2026-06-01T09:00");
 
     await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
@@ -355,7 +361,7 @@ describe("IssueSlipClient -- backdated slip warns which months move and requires
     await selectItemInBlock(block, "Sữa tươi Vinamilk");
     await selectPackage(block, "Thùng 12 hộp");
     await setInputValue(findQtyInput(block), "2");
-    const datetimeInput = container.querySelector('input[type="datetime-local"]') as HTMLInputElement;
+    const datetimeInput = container.querySelector('[data-testid="issued-at"]') as HTMLInputElement;
     await setInputValue(datetimeInput, "2026-06-01T09:00");
 
     await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
@@ -386,7 +392,7 @@ describe("IssueSlipClient -- does not pre-empt the RPC's on-hand refusal, for th
 describe("IssueSlipClient -- time field defaults near now and submits a real instant, not a bare date", () => {
   it("the datetime-local input starts within a minute of now", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
-    const datetimeInput = container.querySelector('input[type="datetime-local"]') as HTMLInputElement;
+    const datetimeInput = container.querySelector('[data-testid="issued-at"]') as HTMLInputElement;
     const initial = new Date(datetimeInput.value + ":00+07:00").getTime();
     expect(Math.abs(Date.now() - initial)).toBeLessThan(60_000);
   });
@@ -398,7 +404,7 @@ describe("IssueSlipClient -- time field defaults near now and submits a real ins
     await selectItemInBlock(block, "Sữa tươi Vinamilk");
     await selectPackage(block, "Thùng 12 hộp");
     await setInputValue(findQtyInput(block), "2");
-    const datetimeInput = container.querySelector('input[type="datetime-local"]') as HTMLInputElement;
+    const datetimeInput = container.querySelector('[data-testid="issued-at"]') as HTMLInputElement;
     const raw = "2026-08-17T14:30";
     await setInputValue(datetimeInput, raw);
 
@@ -414,7 +420,7 @@ describe("IssueSlipClient -- time field defaults near now and submits a real ins
     try {
       mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
       const container = await renderTracked(<IssueSlipClient items={[item()]} />);
-      const datetimeInput = container.querySelector('input[type="datetime-local"]') as HTMLInputElement;
+      const datetimeInput = container.querySelector('[data-testid="issued-at"]') as HTMLInputElement;
       expect(datetimeInput.value).toBe("2026-09-15T06:30");
 
       const block = getLineBlocks(container)[0];
@@ -496,12 +502,12 @@ describe("IssueSlipClient -- sends every line in ONE RPC call, not one per item 
 });
 
 describe("IssueSlipClient -- shares one time field across the whole slip (D9)", () => {
-  it("stays at exactly one datetime-local input and zero reason selects as lines are added", async () => {
+  it("stays at exactly one time box and zero reason selects as lines are added", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await clickButtonWithText(container, "+ Thêm mặt hàng");
     await clickButtonWithText(container, "+ Thêm mặt hàng");
 
-    expect(container.querySelectorAll('input[type="datetime-local"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-testid="issued-at"]')).toHaveLength(1);
     expect(container.textContent).toContain("áp dụng cho cả phiếu");
     const allSelects = Array.from(container.querySelectorAll("select"));
     const lineBlockSelects = getLineBlocks(container).flatMap(b => Array.from(b.querySelectorAll("select")));

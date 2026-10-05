@@ -80,6 +80,11 @@ const ALLOWLIST: Array<{ file: string; contains: string; reason: string }> = [
     contains: "d.getDate()",
     reason: "picker calendar-day round trip: local fields in, local fields out, same in every zone",
   },
+  ...["d.getFullYear()", "d.getMonth() + 1", "d.getDate()", "d.getHours()", "d.getMinutes()"].map(contains => ({
+    file: "components/ui/SaigonDateTimeInput.tsx",
+    contains,
+    reason: "picker wall-clock round trip (2026-10-05): local fields in, local fields out, same in every zone; its test passes under TZ=UTC",
+  })),
 ];
 
 function listSources(dir: string, out: string[]): void {

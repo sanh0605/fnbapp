@@ -19,6 +19,7 @@ interface CustomDatePickerProps {
   showTimeSelect?: boolean;
   customInput?: ReactElement;
   isClearable?: boolean;
+  timeIntervals?: number;
 }
 
 export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
@@ -43,7 +44,7 @@ export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
         onChange={(date: any) => onChange && onChange(date)}
         showTimeSelect={props.showTimeSelect !== undefined ? props.showTimeSelect : true}
         timeFormat="HH:mm"
-        timeIntervals={15}
+        timeIntervals={props.timeIntervals ?? 15}
         timeCaption="Giờ"
         dateFormat={props.dateFormat || "dd/MM/yyyy HH:mm:ss"}
         locale="vi"
