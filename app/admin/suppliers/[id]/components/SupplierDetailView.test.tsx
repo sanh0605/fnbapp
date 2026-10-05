@@ -133,4 +133,38 @@ describe("SupplierDetailView", () => {
     expect(screen.getByText("Phiếu nhập (0)")).toBeInTheDocument();
     expect(screen.getByText("Chưa có phiếu nhập nào.")).toBeInTheDocument();
   });
+
+  it("renders Đã huỷ badge for CANCELLED order", () => {
+    const ordersWithCancelled: PurchaseOrderListPage = {
+      rows: [
+        {
+          id: "PO-065",
+          dateText: "12/08/2026",
+          supplierName: "Vinamilk",
+          sourceName: "Kho Tổng",
+          status: "CANCELLED",
+          totalAmount: 180000,
+          paymentLabel: "Tiền mặt",
+        },
+      ],
+      total: 1,
+      page: 1,
+      pageCount: 1,
+      firstIndex: 1,
+      lastIndex: 1,
+      rangeError: false,
+    };
+
+    render(
+      <SupplierDetailView
+        supplier={vinamilkSupplier}
+        orders={ordersWithCancelled}
+        returnTo="/admin/suppliers"
+        canDelete={false}
+      />
+    );
+
+    const badges = screen.getAllByText("Đã huỷ");
+    expect(badges.length).toBeGreaterThanOrEqual(1);
+  });
 });

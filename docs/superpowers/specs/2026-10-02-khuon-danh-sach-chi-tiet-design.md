@@ -127,7 +127,7 @@ Xoá nhiều dòng gọi lần lượt hàm xoá từng dòng đang có. Không 
 
 ## 6. Còn chờ chủ quán
 
-- Phiếu nhập, Phiếu xuất, Đơn hàng có thêm thùng rác và chọn nhiều ở danh sách không? Huỷ ba loại này bắt buộc gõ lý do. Chọn nhiều thì dùng chung một lý do cho cả mẻ. Hỏi lúc làm đợt 8.
+- ~~Phiếu nhập, Phiếu xuất, Đơn hàng có thêm thùng rác và chọn nhiều ở danh sách không?~~ Chủ quán chốt 2026-10-05 (*"a"*): không. Đơn hàng và phiếu xuất huỷ từng cái ở trang chi tiết, gõ lý do riêng (`BR-DATA-007`). Phiếu nhập hiện không có nút huỷ nào; có nên có không là câu hỏi riêng.
 
 ## 7. Kiểm thế nào
 

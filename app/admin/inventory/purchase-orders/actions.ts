@@ -9,10 +9,20 @@ import type { DBBankAccount, DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPu
 import { buildPurchaseOrderWritePlan } from "@/lib/purchasing/purchase-order-write-plan";
 import { savePurchaseOrderAtomic } from "@/lib/purchasing/purchase-order-transaction";
 import { requireAdmin } from "@/lib/auth/auth";
-import { listPurchaseOrdersPage, type PurchaseOrderListFilters, type PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
+import { listPurchaseOrdersPage, paymentLabelOf, type PurchaseOrderListFilters, type PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
 import type { RawPurchaseOrderLine } from "@/lib/purchasing/item-purchase-history";
 import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine } from "@/lib/assets/asset-purchase-allocation";
-import { toSaigonIsoString } from "@/lib/shared/datetime";
+import { toSaigonIsoString, formatDateTimeFull } from "@/lib/shared/datetime";
+import {
+  describeCancelBlocker,
+  validateCancelReason,
+  type CancelAsset,
+} from "@/lib/purchasing/purchase-order-cancel";
+import {
+  CancelFunctionMissingError,
+  cancelPurchaseOrderAtomic,
+  fetchPurchaseOrderCancelCheck,
+} from "@/lib/purchasing/purchase-order-cancel-transaction";
 import type { Band } from "@/lib/assets/asset-depreciation";
 
 const PATH = "/admin/inventory/purchase-orders";
@@ -130,15 +140,23 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     // trail row inserted below can record what changed.
     let previousPo: any = null;
     let previousLineCount = 0;
+    // Stored lines of this order: an edit re-uses their ids (see write plan).
+    let storedLines: Array<{ id: string; purchased_item_id: string }> = [];
     if (id) {
       const [existingPo, existingLines] = await Promise.all([
         findById("Purchase_Orders", id),
         findAll("Purchase_Order_Lines") as Promise<RawPurchaseOrderLine[]>,
       ]);
       previousPo = existingPo;
-      previousLineCount = existingLines.filter(
+      // BR-INV-015: a cancelled order is never edited. Refused before any
+      // write, asset or trail row (works before migration 0108 runs too).
+      if (previousPo?.status === "CANCELLED") return fail("Phiếu đã huỷ, không sửa được");
+      const ownLines = existingLines.filter(
         (l: any) => l.po_id === id || l.purchase_order_id === id,
-      ).length;
+      );
+      previousLineCount = ownLines.length;
+      storedLines = ownLines.flatMap((l: any) =>
+        l.id && l.purchased_item_id ? [{ id: String(l.id), purchased_item_id: String(l.purchased_item_id) }] : []);
     }
 
     // How it was paid. A form that leaves the two fields out entirely (key
@@ -183,6 +201,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       purchasedItems: purchasedItems as any[],
       conversions: conversions as any[],
       createdAt,
+      existingLines: storedLines,
     });
     const saved = await savePurchaseOrderAtomic({
       order: writePlan.order,
@@ -352,6 +371,81 @@ export async function setPurchaseOrderPayment(formData: FormData): Promise<Actio
     revalidatePath("/admin/finance");
     return ok();
   } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
+
+const CANCEL_MIGRATION_PENDING = "Chưa cập nhật dữ liệu, chưa huỷ được phiếu.";
+
+export type PurchaseOrderCancelView =
+  | { state: "missing-migration" }
+  | { state: "not-found" }
+  | {
+      state: "ready";
+      order: { id: string; dateText: string; supplierName: string; totalAmount: number; paymentLabel: string; status: string };
+      blockedMessages: string[];
+      assets: CancelAsset[];
+    };
+
+// Everything the cancel page shows, from one read of the database check.
+export async function getPurchaseOrderCancelView(id: string): Promise<PurchaseOrderCancelView> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const order = (await findById("Purchase_Orders", id)) as DBPurchaseOrder | null;
+  if (!order) return { state: "not-found" };
+
+  let check;
+  try {
+    check = await fetchPurchaseOrderCancelCheck(id);
+  } catch (error) {
+    if (error instanceof CancelFunctionMissingError) return { state: "missing-migration" };
+    throw error;
+  }
+  const supplier = (await findById("Suppliers", order.supplier_id)) as DBSupplier | null;
+  return {
+    state: "ready",
+    order: {
+      id: order.id,
+      dateText: formatDateTimeFull(order.transaction_date || order.created_at),
+      supplierName: supplier?.name ?? "—",
+      totalAmount: Number(order.total_amount) || 0,
+      paymentLabel: paymentLabelOf(order.payment_method),
+      status: order.status,
+    },
+    blockedMessages: check.blocked.map(describeCancelBlocker),
+    assets: check.assets,
+  };
+}
+
+// Cancels a draft or completed order (BR-INV-015). The reason is checked here
+// and again by the database function; the name written is the signed-in one.
+export async function cancelPurchaseOrder(input: { id: string; reason: string }): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  const reason = validateCancelReason(input.reason);
+  if (reason.ok === false) return fail(reason.error);
+
+  try {
+    const outcome = await cancelPurchaseOrderAtomic({
+      id: input.id,
+      reason: reason.value,
+      actorId: auth.actor.id,
+      actorName: auth.actor.name,
+    });
+    if (outcome.cancelled === false) {
+      return fail(outcome.blocked.map(describeCancelBlocker).join("\n"));
+    }
+    revalidateTag("sheets-Purchase_Orders");
+    revalidatePath(PATH);
+    revalidatePath(`${PATH}/${input.id}`);
+    revalidatePath("/admin/inventory/assets");
+    revalidatePath("/admin/finance");
+    revalidatePath("/admin/reports/pnl");
+    return ok({ retiredAssetIds: outcome.retiredAssetIds });
+  } catch (error: unknown) {
+    if (error instanceof CancelFunctionMissingError) return fail(CANCEL_MIGRATION_PENDING);
     return describeActionError(error);
   }
 }

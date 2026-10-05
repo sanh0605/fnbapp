@@ -136,3 +136,16 @@ of it. A product created without its link would be a second place to edit a
 price, which is exactly what the rule above exists to prevent. Only the
 *Thêm Topping* group may do this: *Chọn Size*, *Chọn Đường* and *Chọn Đá* are
 choices inside a drink, and a món called "Size L" on the menu would be a defect.
+
+---
+
+### BR-CATALOG-004 — The Hàng hoá page shows each item's current stock, in its base unit; equipment points to Tài sản
+
+**Status:** `APPROVED` — owner decision 2026-10-05. **Not built yet.**
+
+Asked for it the same day: *"trang hàng hoá anh muốn xem được tồn kho hiện tại trong trang đó. Tồn kho có thể xem từ danh sách và xem được cả trong trang chi tiết hàng hoá."* Until then the only screen showing a stock figure was the stocktake.
+
+- **Where:** a "Tồn kho" column on the list, and "Tồn kho hiện tại" on the item's own page.
+- **What:** completed purchases minus every stock issue, stocktake corrections included — the one on-hand formula (`lib/stock/purchased-item-onhand.ts`), never a second copy.
+- **In the base unit only** (owner, *"1b"*): Sữa tươi Mlekovita shows "42.000 ml", not "42 Hộp (42.000 ml)". He was offered the package form first and chose the plain one.
+- **Dụng cụ shows no stock figure, only "Xem ở Tài sản"** (owner, *"2a"*): a broken or disposed tool is recorded on the Tài sản page (`asset_disposals`), not as a stock issue, so a stock figure would still count it. Measured 2026-10-05: 67 Dụng cụ items, 64 with purchases.

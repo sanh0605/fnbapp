@@ -11,6 +11,7 @@ import { formatConvertedOnHand } from "@/lib/stock/issue-slip-onhand-display";
 import { createIssueSlip, type IssueSlipItemView } from "../actions";
 import { buildIssueUnitOptions, toBaseQuantity } from "@/lib/stock/issue-unit-options";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
+import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
 
 type DraftLine = {
   purchasedItemId: string;
@@ -225,10 +226,9 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
 
         <div>
           <label className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Thời điểm xuất (áp dụng cho cả phiếu)</label>
-          <input
-            type="datetime-local"
+          <SaigonDateTimeInput
             value={issuedAtLocal}
-            onChange={e => setIssuedAtLocal(e.target.value)}
+            onChange={setIssuedAtLocal}
             className="w-full max-w-xs border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
           />
           {affectedMonths.length > 0 && (

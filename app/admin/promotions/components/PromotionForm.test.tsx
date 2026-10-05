@@ -33,6 +33,22 @@ vi.mock("@/app/admin/promotions/actions", () => ({
   savePromotion: mocks.savePromotion,
 }));
 
+// The start and end boxes are SaigonDateTimeInput (react-datepicker), whose
+// mount effect calls window.matchMedia, which jsdom does not implement.
+// Same stub as app/admin/products/components/ProductForm.test.tsx.
+if (typeof window.matchMedia !== "function") {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+}
+
 const mockBrands: DBBrand[] = [
   { id: "BR-001", name: "Phin Đi", code: "PHD", start_date: "2026-01-01", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
 ];
@@ -159,7 +175,7 @@ describe("PromotionForm", () => {
     expect(screen.getByLabelText("Tên chương trình *")).toHaveValue("Giảm 10%");
   });
 
-  it("edit of start_date 2026-09-14T23:30:00Z shows 2026-09-15T06:30; saving sends 2026-09-14T23:30:00.000Z", async () => {
+  it("edit of start_date 2026-09-14T23:30:00Z shows 15/09/2026 06:30; saving sends 2026-09-14T23:30:00.000Z", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
     try {
@@ -179,7 +195,8 @@ describe("PromotionForm", () => {
       );
 
       const startInput = screen.getByLabelText("Ngày/Giờ bắt đầu *") as HTMLInputElement;
-      expect(startInput.value).toBe("2026-09-15T06:30");
+      // 24-hour Saigon box (dd/MM/yyyy HH:mm), not the browser's 12-hour datetime-local.
+      expect(startInput.value).toBe("15/09/2026 06:30");
 
       fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
       await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));

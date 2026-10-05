@@ -1,4 +1,6 @@
-# Inventory, purchasing, and production rules
+# Inventory and production rules
+
+Purchase-order rules (`BR-INV-002`, `BR-INV-015`) are in `docs/02-rules/business-rules/purchasing.md`.
 
 ### BR-INV-001 — Quantity movement belongs in the stock ledger
 
@@ -7,12 +9,6 @@
 Purchase receipts, sale consumption, adjustments, production input, production yield, and reversals must be explainable through `stock_ledger` records and their business references.
 
 Superseded by `BR-COGS-005` (owner decision 2026-08-04, cutover 2026-08-07) in practice well before this retirement was recorded: once cost moved to the issue-based figure, no report or screen read `stock_ledger` for money, and by 2026-09-01 nothing wrote to it either — the table sat frozen, explaining nothing new. Phase D (owner-approved 2026-08-28/2026-09-02) drops `stock_ledger` and `inventory_balances` outright, along with their trigger and trigger function — migration `0096`, **applied on the server** (confirmed by `supabase migration list`, 2026-09-11). Quantity movement for cost purposes now runs on exactly one path: `stock_issues` (`BR-COGS-005`). This rule is retired regardless of whether the drop has run yet, since the table already explains nothing live either way.
-
-### BR-INV-002 — Critical multi-row writes are atomic
-
-**Status:** `APPROVED`
-
-Purchase orders, reviewed recoveries, and other critical flows that change multiple dependent rows must use an atomic transaction/RPC path or a reviewed equivalent. A partial success is not an acceptable business result.
 
 ### BR-INV-003 — BTP consumption follows reviewed recipe/yield evidence
 

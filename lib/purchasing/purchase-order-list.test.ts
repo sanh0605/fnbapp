@@ -77,6 +77,35 @@ describe("listPurchaseOrdersPage", () => {
     expect(listPurchaseOrdersPage({ ...base, orders, filters: { supplier: "SUP-2" } }).rows.map(x => x.id)).toEqual(["PO-190"]);
   });
 
+  describe("status filter and cancelled orders", () => {
+    const orders = [
+      po("PO-201", "2026-09-29T01:00:00+00:00", { status: "DRAFT" }),
+      po("PO-202", "2026-09-28T01:00:00+00:00"),
+      po("PO-203", "2026-09-27T01:00:00+00:00", { status: "CANCELLED" }),
+    ];
+    const ids = (status?: string) =>
+      listPurchaseOrdersPage({ ...base, orders, filters: { status } }).rows.map(x => x.id);
+
+    it("hides a cancelled order by default", () => {
+      expect(ids(undefined)).toEqual(["PO-201", "PO-202"]);
+      expect(ids("ACTIVE")).toEqual(["PO-201", "PO-202"]);
+    });
+    it("CANCELLED shows only the cancelled order", () => {
+      expect(ids("CANCELLED")).toEqual(["PO-203"]);
+    });
+    it("ALL shows every state", () => {
+      expect(ids("ALL")).toEqual(["PO-201", "PO-202", "PO-203"]);
+    });
+    it("an unknown status behaves as the default", () => {
+      expect(ids("XYZ")).toEqual(["PO-201", "PO-202"]);
+      expect(ids("")).toEqual(["PO-201", "PO-202"]);
+    });
+    it("DRAFT and COMPLETED still pick their own status", () => {
+      expect(ids("DRAFT")).toEqual(["PO-201"]);
+      expect(ids("COMPLETED")).toEqual(["PO-202"]);
+    });
+  });
+
   it("shows a dash for a supplier or source that no longer resolves", () => {
     const r = listPurchaseOrdersPage({ ...base, orders: [po("PO-9", "2026-09-01T00:00:00Z", { supplier_id: "GONE", source_id: "" })], filters: {} });
     expect(r.rows[0].supplierName).toBe("—");

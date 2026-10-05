@@ -9,6 +9,7 @@ import { toSaigonIsoString } from "@/lib/shared/datetime";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { safeReturnTo } from "./return-to";
+import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
 
 interface PromotionFormProps {
   initialData?: DBPromotion;
@@ -328,22 +329,21 @@ export function PromotionForm({
 
           <div>
             <label htmlFor={`${formId}-startDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ bắt đầu *</label>
-            <input
+            <SaigonDateTimeInput
               id={`${formId}-startDate`}
-              type="datetime-local"
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={setStartDate}
               className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
             />
           </div>
 
           <div>
             <label htmlFor={`${formId}-endDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ kết thúc (Tuỳ chọn)</label>
-            <input
+            <SaigonDateTimeInput
               id={`${formId}-endDate`}
-              type="datetime-local"
               value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={setEndDate}
+              clearable
               className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
             />
           </div>

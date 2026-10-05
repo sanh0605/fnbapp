@@ -52,6 +52,8 @@ lib/products/product-save-transaction.ts -> products (write)
 lib/products/topping-price-sync.ts -> modifiers (write)
 lib/products/topping-price-sync.ts -> product_price_history (write)
 lib/products/topping-price-sync.ts -> product_variants (write)
+lib/purchasing/purchase-order-cancel-transaction.ts -> assets (write)
+lib/purchasing/purchase-order-cancel-transaction.ts -> purchase_orders (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_orders (write)
 lib/sales/void-order-transaction.ts -> order_events (write)
@@ -89,7 +91,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - promotions (id, name, brand_id, code, type, discount_type, discount_value, applicable_products_json, start_date, end_date, status, created_at, updated_at, min_order_value) status: ACTIVE, INACTIVE, DELETED
 - purchase_order_edits (id, purchase_order_id, edited_by_id, edited_by_name, edited_at, previous_status, previous_subtotal_amount, previous_line_count, new_subtotal_amount, new_line_count)
 - purchase_order_lines (id, purchase_order_id, purchased_item_id, unit, quantity, unit_price, subtotal, conversion_id, base_unit, base_quantity, created_at)
-- purchase_orders (id, supplier_id, source_id, transaction_date, supplier_invoice_code, notes, subtotal_amount, shipping_fee, tax_amount, voucher_amount, discount_amount, total_amount, status, created_by_id, created_by_name, created_at, updated_at, payment_method) status: DRAFT, COMPLETED, CANCELLED
+- purchase_orders (id, supplier_id, source_id, transaction_date, supplier_invoice_code, notes, subtotal_amount, shipping_fee, tax_amount, voucher_amount, discount_amount, total_amount, status, created_by_id, created_by_name, created_at, updated_at, payment_method, cancelled_at) status: DRAFT, COMPLETED, CANCELLED
 - purchase_sources (id, name, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - purchased_items (id, name, item_category_id, base_ingredient_id, semi_product_id, default_unit_id, status, created_at, updated_at, duplicate_warning_confirmed, is_non_inventory) status: ACTIVE, INACTIVE, DELETED
 - stock_issues (id, purchased_item_id, issued_at, base_quantity, source, session_id, note, created_at, reverses_issue_id, issue_slip_id)

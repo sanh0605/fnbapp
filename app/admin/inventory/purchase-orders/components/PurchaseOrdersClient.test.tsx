@@ -157,4 +157,40 @@ describe("PurchaseOrdersClient", () => {
     });
     expect(replace).toHaveBeenCalledWith(expect.stringContaining("pay=BANK_TRANSFER"), expect.anything());
   });
+
+  it("T8: Status select default value is ACTIVE, has options Chưa huỷ and Đã huỷ", () => {
+    render(<PurchaseOrdersClient pageData={pageData} />);
+    const statusSelect = screen.getByLabelText("Trạng thái") as HTMLSelectElement;
+    expect(statusSelect.value).toBe("ACTIVE");
+
+    const optionActive = screen.getByRole("option", { name: "Chưa huỷ" }) as HTMLOptionElement;
+    expect(optionActive.value).toBe("ACTIVE");
+
+    const optionCancelled = screen.getByRole("option", { name: "Đã huỷ" }) as HTMLOptionElement;
+    expect(optionCancelled.value).toBe("CANCELLED");
+  });
+
+  it("T9: CANCELLED row renders the badge Đã huỷ", () => {
+    const cancelledData: typeof pageData = {
+      ...pageData,
+      total: 1,
+      firstIndex: 1,
+      lastIndex: 1,
+      rows: [
+        {
+          id: "PO-065",
+          dateText: "12/08/2026 10:00:00",
+          supplierName: "Trứng Ba Huân",
+          sourceName: "Shopee",
+          status: "CANCELLED",
+          totalAmount: 180000,
+          paymentLabel: "Tiền mặt",
+        },
+      ],
+    };
+
+    render(<PurchaseOrdersClient pageData={cancelledData} />);
+    const badges = screen.getAllByText("Đã huỷ");
+    expect(badges.length).toBeGreaterThanOrEqual(1);
+  });
 });

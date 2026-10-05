@@ -55,9 +55,19 @@ export function buildPurchaseOrderWritePlan(input: {
   conversions: ConversionWriteInput[];
   createdAt: string;
   idFactory?: () => string;
+  // Lines already stored for this order (read by the server, never the browser).
+  // An edit reuses their ids, matched by item in order, so a row that points at
+  // a line (an asset) keeps pointing at it.
+  existingLines?: ReadonlyArray<{ id: string; purchased_item_id: string }>;
 }): PurchaseOrderWritePlan {
   const idFactory = input.idFactory || randomUUID;
   const lineRows: Array<Record<string, unknown>> = [];
+  const reusableIds = new Map<string, string[]>();
+  for (const existing of input.existingLines ?? []) {
+    const ids = reusableIds.get(existing.purchased_item_id) ?? [];
+    ids.push(existing.id);
+    reusableIds.set(existing.purchased_item_id, ids);
+  }
 
   for (const line of input.lines) {
     const isCompleted = input.order.status === "COMPLETED";
@@ -100,7 +110,7 @@ export function buildPurchaseOrderWritePlan(input: {
     }
 
     lineRows.push({
-      id: `POL-${idFactory()}`,
+      id: reusableIds.get(line.purchased_item_id)?.shift() ?? `POL-${idFactory()}`,
       purchase_order_id: input.order.id,
       purchased_item_id: line.purchased_item_id,
       unit: line.unit,

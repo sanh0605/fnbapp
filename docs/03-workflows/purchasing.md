@@ -1,11 +1,26 @@
 # Purchasing flow (purchase orders and suppliers)
 
 ```flow-decl
-routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/suppliers, /admin/suppliers/new, /admin/suppliers/[id], /admin/suppliers/[id]/edit
+routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/inventory/purchase-orders/[id]/cancel, /admin/suppliers, /admin/suppliers/new, /admin/suppliers/[id], /admin/suppliers/[id]/edit
 files: lib/purchasing/purchase-order-transaction.ts, app/admin/inventory/purchase-orders/actions.ts, app/admin/suppliers/actions.ts
 tables: purchase_orders, purchase_order_lines, purchase_order_edits, Purchase_Sources, assets, Suppliers
-brCodes: BR-INV-002
+brCodes: BR-INV-002, BR-INV-015
 ```
+
+**Behaviour change — 2026-10-05 (cancel a purchase order, migration `0108`, `BR-INV-015`):**
+- **Cancelling.** A draft or completed order can be cancelled by ADMIN or MANAGER from its own page, "Huỷ phiếu", which opens `/admin/inventory/purchase-orders/[id]/cancel`. That page asks for a typed reason (required, 500 characters at most) and has no popup (`BR-DATA-007`).
+- **What a cancel does.** The order stays, marked `CANCELLED` ("Đã huỷ") with:
+  - the reason;
+  - who cancelled it and when (`cancelled_at`, `cancelled_by_id`, `cancelled_by_name`, `cancel_reason`).
+
+  Every stock, cost, profit-and-loss and cash-book reader counts `COMPLETED` orders only, so the order drops out of all of them. Assets made from its lines become `INACTIVE`.
+- **When a cancel is refused** (`purchase_order_cancel_check`, one check for the page and the cancel):
+  - the order is dated on or before the last confirmed stocktake;
+  - any item's stock would go below zero at any moment since the order;
+  - any of its assets has a disposal.
+- **Concurrency.** `cancel_purchase_order_atomic` takes the stock writers' lock and the order's row lock before checking, so an issue slip saved at the same instant waits.
+- **Editing.** A cancelled order is never edited: the action refuses it, and so does `save_purchase_order_atomic`.
+- **Line ids.** From this change an edit keeps each line's id, matched by item in order, so assets made from a line stay linked to it. Before, every save minted new line ids.
 
 **Behaviour change — 2026-10-04 (cash book money flow, migration `0107`):** a purchase order gains "Trả bằng": Tiền mặt, or Chuyển khoản with a bank account (`purchase_orders.payment_method`, `bank_account_id`). Nothing is pre-selected on a new order; completing an order without a choice is refused ("Chọn cách trả tiền"), a draft may stay undecided (`BR-CASH-001`, answer 1a). Orders that existed when `0107` ran count as cash (answer 3a). A completed order's page lets ADMIN or MANAGER change only these two fields (`setPurchaseOrderPayment`); lines, amounts and stock are untouched. The list gains a "Trả bằng" column and filter (`pay`). The money shows in the cash book as one "Nhập hàng" row per day and method (`docs/03-workflows/cash-book.md`).
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
@@ -49,8 +64,9 @@ affected.
 
 ## Five-question current-state description
 
-1. **States, and how each is set.** A purchase order has two states, set by the
-   `status` field on save: `DRAFT` and `COMPLETED`. A draft is a work-in-progress
+1. **States, and how each is set.** A purchase order has three states: `DRAFT` and
+   `COMPLETED`, set by the `status` field on save, and `CANCELLED`, set only by
+   `cancel_purchase_order_atomic` from the cancel page (`BR-INV-015`, see the top). A draft is a work-in-progress
    order that has not yet brought goods in. Completing an order (`status` =
    `COMPLETED`) is what makes it a real receipt: it requires a supplier, a
    purchase source, and at least one line, and it is the moment stock is raised
@@ -77,7 +93,8 @@ affected.
    decision 2026-09-08, `requireOwner`), with the button hidden for anyone else
    (`canDelete` computed from `resolveActor()` in `page.tsx`).
 3. **What each list contains, and what is excluded.** The purchase-order list
-   shows purchase orders (both drafts and completed orders). The suppliers list
+   shows drafts and completed orders by default ("Chưa huỷ", `status=ACTIVE`);
+   cancelled orders show under "Đã huỷ" or "Tất cả". The suppliers list
    shows suppliers; deactivated suppliers are marked inactive rather than removed,
    so a supplier that historical orders still reference is never dropped from the
    data. Purchase **sources** (`Purchase_Sources`) are a small lookup of buying
