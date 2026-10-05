@@ -4,8 +4,16 @@
 routes: /admin/inventory/items, /admin/inventory/categories, /admin/inventory/units, /admin/inventory/conversions, /admin/inventory/items/new, /admin/inventory/items/[id]/edit, /admin/inventory/items/[id], /admin/inventory/categories/[id], /admin/inventory/units/[id], /admin/inventory/conversions/[id], /admin/inventory/categories/new, /admin/inventory/categories/[id]/edit, /admin/inventory/units/new, /admin/inventory/units/[id]/edit, /admin/inventory/conversions/new, /admin/inventory/conversions/[id]/edit
 files: app/admin/inventory/actions.ts, app/admin/inventory/items/actions.ts, app/admin/inventory/conversions/actions.ts
 tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
-brCodes: BR-CATALOG-001, BR-CATALOG-002
+brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004
 ```
+
+**Behaviour change — 2026-10-05 (current stock, `BR-CATALOG-004`):** the Hàng hoá list gains a
+"Tồn kho" column (sortable; also a line on the phone card) and an item's page gains "Tồn kho
+hiện tại". The figure is today's on-hand in the base unit ("42.000 ml" for Sữa tươi Mlekovita)
+from `computeOnHandByPurchasedItem`, read by `getItemStockById` and worded by
+`lib/stock/item-stock-display.ts`. Dụng cụ shows "Xem ở Tài sản" (a link to the assets list on
+the item's page); an item marked non-inventory shows "Không theo dõi tồn". Read only: nothing
+is written.
 
 **Behaviour change — 2026-10-03:** saving an item (`updatePurchasedItem`) whose chosen category
 is not equipment while it still has assets that are not `INACTIVE` asks a yes/no listing them

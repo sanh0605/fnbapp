@@ -141,7 +141,7 @@ choices inside a drink, and a món called "Size L" on the menu would be a defect
 
 ### BR-CATALOG-004 — The Hàng hoá page shows each item's current stock, in its base unit; equipment points to Tài sản
 
-**Status:** `APPROVED` — owner decision 2026-10-05. **Not built yet.**
+**Status:** `APPROVED` — owner decision 2026-10-05. Built 2026-10-05 (`lib/stock/item-stock-display.ts`, `getItemStockById`; plan `docs/superpowers/plans/2026-10-05-ton-kho-hang-hoa.md`).
 
 Asked for it the same day: *"trang hàng hoá anh muốn xem được tồn kho hiện tại trong trang đó. Tồn kho có thể xem từ danh sách và xem được cả trong trang chi tiết hàng hoá."* Until then the only screen showing a stock figure was the stocktake.
 

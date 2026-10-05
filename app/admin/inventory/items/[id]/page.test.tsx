@@ -39,6 +39,9 @@ vi.mock("../actions", () => ({
     unitLockedItemIds: [],
   }),
   getItemPurchaseHistory: vi.fn().mockResolvedValue([]),
+  getItemStockById: vi.fn().mockResolvedValue({
+    "SPM-002": { kind: "figure", text: "42.000 ml", onHand: 42000 },
+  }),
   deletePurchasedItemAction: vi.fn(),
 }));
 
@@ -58,5 +61,6 @@ describe("ItemDetailPage", () => {
 
     const props = element.props;
     expect(Object.values(props).every((v) => typeof v !== "function")).toBe(true);
+    expect(props.stock).toEqual({ kind: "figure", text: "42.000 ml", onHand: 42000 });
   });
 });

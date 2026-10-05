@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getItemsData, getItemPurchaseHistory } from "../actions";
+import { getItemsData, getItemPurchaseHistory, getItemStockById } from "../actions";
 import { resolveActor } from "@/lib/auth/auth";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
 import { ItemDetailView } from "./components/ItemDetailView";
@@ -13,9 +13,10 @@ export default async function ItemDetailPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const [data, purchaseHistory, auth] = await Promise.all([
+  const [data, purchaseHistory, stockById, auth] = await Promise.all([
     getItemsData(),
     getItemPurchaseHistory(params.id),
+    getItemStockById(),
     resolveActor(),
   ]);
 
@@ -41,6 +42,7 @@ export default async function ItemDetailPage({
       conversions={conversions}
       units={units}
       purchaseHistory={purchaseHistory}
+      stock={stockById[item.id]}
       returnTo={returnTo}
       canDelete={canDelete}
     />

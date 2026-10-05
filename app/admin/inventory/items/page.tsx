@@ -1,4 +1,4 @@
-import { getItemsData } from "./actions";
+import { getItemsData, getItemStockById } from "./actions";
 import ItemsClient from "./components/ItemsClient";
 import { Suspense } from "react";
 import { resolveActor } from "@/lib/auth/auth";
@@ -10,7 +10,11 @@ export default async function ItemsPage({
 }: {
   searchParams?: { q?: string; category?: string; page?: string };
 }) {
-  const [data, auth] = await Promise.all([getItemsData(), resolveActor()]);
+  const [data, stockById, auth] = await Promise.all([
+    getItemsData(),
+    getItemStockById(),
+    resolveActor(),
+  ]);
   // BR-ACCESS-003: permanent deletion is ADMIN only -- hiding the button is
   // courtesy, the server-side requireOwner() in deletePurchasedItemAction is
   // what actually blocks it.
@@ -19,6 +23,7 @@ export default async function ItemsPage({
     <Suspense fallback={<div>Đang tải...</div>}>
       <ItemsClient
         {...data}
+        stockById={stockById}
         canDelete={canDelete}
         initialSearch={searchParams?.q ?? ""}
         initialCategory={searchParams?.category ?? "ALL"}
