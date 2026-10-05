@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useId } from "react";
+import { useState, useId, useRef, useEffect } from "react";
 import { savePurchaseOrder, addPurchaseSource } from "../actions";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { SupplierModal } from "./SupplierQuickAddModal";
+import { draftKey, saveDraft, takeDraft, type PoDraftState } from "./po-draft";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
-import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine } from "@/types/db";
+import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine, DBBankAccount } from "@/types/db";
 import { alert, confirm } from "@/lib/shared/dialog";
 
 // Batch 3 fix, 2026-08-22 (found while critiquing section 6's reconciliation, which needs equipment
@@ -64,15 +64,19 @@ interface PurchaseOrderFormProps {
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
   units: DBUnit[];
+  bankAccounts?: DBBankAccount[];
   initialData?: {
     po: DBPurchaseOrder;
     lines: DBPurchaseOrderLine[];
   };
 }
 
-export default function PurchaseOrderForm({ suppliers, sources = [], items, conversions, units = [], initialData }: PurchaseOrderFormProps) {
+export default function PurchaseOrderForm({ suppliers, sources = [], items, conversions, units = [], bankAccounts = [], initialData }: PurchaseOrderFormProps) {
   const formId = useId();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const restoredRef = useRef(false);
   const isEdit = !!initialData?.po;
   const po = initialData?.po || ({} as Partial<DBPurchaseOrder>);
   const initialLines = initialData?.lines || [];
@@ -83,6 +87,13 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
   const [supplierInvoiceCode, setSupplierInvoiceCode] = useState(po.supplier_invoice_code || "");
   const [transactionDate, setTransactionDate] = useState<Date | null>(po.transaction_date ? new Date(po.transaction_date) : null);
   const [notes, setNotes] = useState(po.notes || "");
+  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER" | "">(
+    (po.payment_method as "CASH" | "BANK_TRANSFER") || ""
+  );
+  const [bankAccountId, setBankAccountId] = useState<string>(
+    po.bank_account_id || ""
+  );
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   
   // Format initial lines to match form state structure
   const formattedInitialLines = initialLines.map((line: any) => {
@@ -122,8 +133,63 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
   const [voucherAmount, setVoucherAmount] = useState<number>(Number(po?.voucher_amount || 0));
   const [discountAmount, setDiscountAmount] = useState<number>(Number(po?.discount_amount || 0));
   
-  const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
-  const [newSupplierName, setNewSupplierName] = useState("");
+  const [restoreFailed, setRestoreFailed] = useState(false);
+
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+
+    const isDraftParam = searchParams?.get("draft") === "1";
+    if (!isDraftParam) return;
+
+    const storage = typeof window !== "undefined" ? window.localStorage : null;
+    const key = draftKey(po.id);
+    const draft = takeDraft(storage, key, Date.now());
+
+    const newSupplierParam = searchParams?.get("newSupplier");
+    const isValidSupplier = !!newSupplierParam && suppliers.some((s: any) => s.id === newSupplierParam);
+
+    if (draft) {
+      if (draft.supplierId !== undefined) setSupplierId(draft.supplierId);
+      if (draft.sourceId !== undefined) setSourceId(draft.sourceId);
+      if (draft.supplierInvoiceCode !== undefined) setSupplierInvoiceCode(draft.supplierInvoiceCode);
+      if (draft.transactionDate) {
+        setTransactionDate(new Date(draft.transactionDate));
+      } else {
+        setTransactionDate(null);
+      }
+      if (draft.notes !== undefined) setNotes(draft.notes);
+      if (Array.isArray(draft.lines)) setLines(draft.lines);
+      if (draft.shippingFee !== undefined) setShippingFee(Number(draft.shippingFee));
+      if (draft.taxAmount !== undefined) setTaxAmount(Number(draft.taxAmount));
+      if (draft.voucherAmount !== undefined) setVoucherAmount(Number(draft.voucherAmount));
+      if (draft.discountAmount !== undefined) setDiscountAmount(Number(draft.discountAmount));
+      if (draft.paymentMethod !== undefined) {
+        setPaymentMethod(
+          draft.paymentMethod === "CASH" || draft.paymentMethod === "BANK_TRANSFER"
+            ? draft.paymentMethod
+            : ""
+        );
+      }
+      if (draft.bankAccountId !== undefined) {
+        setBankAccountId(draft.bankAccountId || "");
+      }
+    } else {
+      setRestoreFailed(true);
+    }
+
+    if (isValidSupplier) {
+      setSupplierId(newSupplierParam!);
+    }
+
+    const nextParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
+    nextParams.delete("draft");
+    nextParams.delete("newSupplier");
+    const nextQuery = nextParams.toString();
+    const currentPath = pathname || (isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders/new");
+    const nextUrl = nextQuery ? `${currentPath}?${nextQuery}` : currentPath;
+    router.replace(nextUrl);
+  }, []);
 
   const addLine = () => {
     setLines([...lines, {
@@ -185,6 +251,7 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
     }
 
     setLoading(true);
+    setPaymentError(null);
     const formData = new FormData();
     if (isEdit) formData.append("id", po.id!);
     formData.append("supplier_id", supplierId);
@@ -200,6 +267,8 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
     formData.append("tax_amount", taxAmount.toString());
     formData.append("voucher_amount", voucherAmount.toString());
     formData.append("discount_amount", discountAmount.toString());
+    formData.append("payment_method", paymentMethod);
+    formData.append("bank_account_id", paymentMethod === "BANK_TRANSFER" ? bankAccountId : "");
     // Claude code — UI-20: removed hardcoded `created_by=ADMIN`; server uses authenticated actor (see CODE-22).
 
     const res = await savePurchaseOrder(formData);
@@ -209,12 +278,28 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
       router.push("/admin/inventory/purchase-orders");
       router.refresh();
     } else {
-      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+      if (
+        res.error === "Chọn cách trả tiền" ||
+        res.error === "Chọn tài khoản nhận chuyển khoản" ||
+        res.error === "Tài khoản không còn dùng"
+      ) {
+        setPaymentError(res.error);
+      } else {
+        await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+      }
     }
   };
 
   return (
     <div className="bg-surface-card rounded-xl shadow-sm border border-border p-6">
+      {restoreFailed && (
+        <div
+          role="status"
+          className="mb-6 p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium"
+        >
+          Không khôi phục được phiếu đang nhập dở
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-card p-6 rounded-2xl shadow-sm border border-border mb-6">
         <div>
           <label htmlFor={`${formId}-supplierId`} className="block text-sm font-semibold text-text-secondary mb-2">Nhà Cung Cấp *</label>
@@ -225,8 +310,32 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             options={suppliers.map((s: any) => ({ id: s.id, label: s.name }))}
             placeholder="Chọn nhà cung cấp..."
             onCreateNew={(searchTerm) => {
-              setNewSupplierName(searchTerm);
-              setIsSupplierModalOpen(true);
+              const currentParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
+              currentParams.delete("newSupplier");
+              currentParams.set("draft", "1");
+              const currentPath = pathname || (isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders/new");
+              const returnTo = `${currentPath}?${currentParams.toString()}`;
+
+              const storage = typeof window !== "undefined" ? window.localStorage : null;
+              const draftState: PoDraftState = {
+                supplierId,
+                sourceId,
+                supplierInvoiceCode,
+                transactionDate: transactionDate ? transactionDate.toISOString() : null,
+                notes,
+                lines,
+                shippingFee,
+                taxAmount,
+                voucherAmount,
+                discountAmount,
+                paymentMethod: paymentMethod || null,
+                bankAccountId: bankAccountId || null,
+              };
+              saveDraft(storage, draftKey(po.id), draftState, Date.now());
+
+              router.push(
+                `/admin/suppliers/new?from=po&name=${encodeURIComponent(searchTerm)}&returnTo=${encodeURIComponent(returnTo)}`
+              );
             }}
           />
         </div>
@@ -240,6 +349,76 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
             placeholderText="Chọn ngày nhập hàng (dd/mm/yyyy)"
           />
           <p className="text-xs text-text-muted mt-1">Để trống hệ thống sẽ lấy thời điểm hiện tại.</p>
+        </div>
+        <div>
+          <span className="block text-sm font-semibold text-text-secondary mb-2">Trả bằng</span>
+          <div className="flex items-center gap-6 min-h-[44px]">
+            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
+              <input
+                type="radio"
+                name="payment_method_radio"
+                value="CASH"
+                checked={paymentMethod === "CASH"}
+                onChange={() => {
+                  setPaymentMethod("CASH");
+                  setBankAccountId("");
+                  setPaymentError(null);
+                }}
+                className="w-4 h-4 text-primary focus:ring-focus-ring"
+              />
+              <span>Tiền mặt</span>
+            </label>
+            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
+              <input
+                type="radio"
+                name="payment_method_radio"
+                value="BANK_TRANSFER"
+                checked={paymentMethod === "BANK_TRANSFER"}
+                onChange={() => {
+                  setPaymentMethod("BANK_TRANSFER");
+                  setPaymentError(null);
+                  if (!bankAccountId && bankAccounts.length === 1) {
+                    setBankAccountId(bankAccounts[0].id);
+                  }
+                }}
+                className="w-4 h-4 text-primary focus:ring-focus-ring"
+              />
+              <span>Chuyển khoản</span>
+            </label>
+          </div>
+
+          {paymentMethod === "BANK_TRANSFER" && (
+            <div className="mt-3">
+              <label htmlFor={`${formId}-bankAccountId`} className="block text-xs font-semibold text-text-secondary mb-1">
+                Tài khoản
+              </label>
+              <select
+                id={`${formId}-bankAccountId`}
+                value={bankAccountId}
+                onChange={(e) => {
+                  setBankAccountId(e.target.value);
+                  setPaymentError(null);
+                }}
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+              >
+                <option value="">-- Chọn tài khoản --</option>
+                {bankAccounts.map((a: any) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+                {bankAccountId && !bankAccounts.some((a: any) => a.id === bankAccountId) && (
+                  <option value={bankAccountId}>{bankAccountId} (không còn dùng)</option>
+                )}
+              </select>
+            </div>
+          )}
+
+          {paymentError && (
+            <div role="alert" className="text-sm font-medium text-danger mt-2">
+              {paymentError}
+            </div>
+          )}
         </div>
         <div>
           <label htmlFor={`${formId}-sourceId`} className="block text-sm font-semibold text-text-secondary mb-2">Nguồn nhập hàng</label>
@@ -496,17 +675,6 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
           <option key={u.id} value={u.name} />
         ))}
       </datalist>
-
-      <SupplierModal 
-        isOpen={isSupplierModalOpen} 
-        onClose={() => setIsSupplierModalOpen(false)} 
-        initialName={newSupplierName}
-        onSuccess={async (id) => {
-          setSupplierId(id);
-          router.refresh();
-          await alert({ title: "Thành công", message: "Đã thêm nhà cung cấp thành công!" });
-        }}
-      />
     </div>
   );
 }

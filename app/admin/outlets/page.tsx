@@ -1,31 +1,30 @@
-import { getOutlets } from "./actions";
+import { Suspense } from "react";
+import { getOutlets } from "@/app/admin/outlets/actions";
 import { getBrands } from "@/app/admin/brands/actions";
-import { OutletForm } from "./components/OutletForm";
-import { OutletsList } from "./components/OutletsList";
-import { PageHeader } from "@/components/ui/PageHeader";
+import OutletsClient from "./components/OutletsClient";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-// section 2:
-// one card per outlet, no horizontal table -- phone-first (CLAUDE.md
-// section 8). Owner has no other way to rename or retire an outlet; this
-// screen is the whole point of the plan.
-export default async function OutletsPage() {
+export default async function OutletsPage({
+  searchParams,
+}: {
+  searchParams?: { q?: string; status?: string; page?: string };
+}) {
   const [outlets, brands] = await Promise.all([
     getOutlets() as Promise<DBOutlet[]>,
     getBrands() as Promise<DBBrand[]>,
   ]);
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Điểm bán"
-        subtitle="Thêm, đổi tên và ngừng hoạt động điểm bán. Mã điểm bán không bao giờ bị xoá hay dùng lại."
-        actions={<OutletForm brands={brands} outlets={outlets} />}
+    <Suspense fallback={<div>Đang tải...</div>}>
+      <OutletsClient
+        outlets={outlets}
+        brands={brands}
+        initialSearch={searchParams?.q}
+        initialStatus={searchParams?.status}
+        initialPage={searchParams?.page}
       />
-
-      <OutletsList outlets={outlets} brands={brands} />
-    </div>
+    </Suspense>
   );
 }

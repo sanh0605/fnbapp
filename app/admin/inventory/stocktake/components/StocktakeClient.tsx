@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/shared/format";
-import { formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTime, formatDateTimeFull } from "@/lib/shared/datetime";
 import { alert, confirm } from "@/lib/shared/dialog";
 import type { StocktakeApplyResult } from "@/lib/stock/stocktake-transaction";
 import {
@@ -238,7 +238,7 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
       />
       {error && <Alert variant="danger">{error}</Alert>}
       <Alert variant="warning" title={`Đang kiểm kê: ${session.id}`}>
-        Bắt đầu bởi {session.createdByName} lúc {new Date(session.createdAt).toLocaleString("vi-VN")}.
+        Bắt đầu bởi {session.createdByName} lúc {formatDateTimeFull(session.createdAt)}.
         Đã đếm {countedCount}/{session.lines.length} mặt hàng.
         {session.notes && <div className="mt-1 italic">Ghi chú: {session.notes}</div>}
       </Alert>

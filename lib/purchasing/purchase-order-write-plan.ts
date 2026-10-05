@@ -17,6 +17,10 @@ type PurchaseOrderWriteInput = {
   status: string;
   created_by_id: string;
   created_by_name: string;
+  // How it was paid (migration 0107). savePurchaseOrder always sets both (null
+  // while a draft is undecided); optional here only so plan-only callers need not.
+  payment_method?: "CASH" | "BANK_TRANSFER" | null;
+  bank_account_id?: string | null;
 };
 
 type PurchaseOrderLineWriteInput = {

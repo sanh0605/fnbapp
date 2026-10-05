@@ -4,6 +4,7 @@ import { findAll, findAllNoCache, findAllWhere, insert, update, remove, generate
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
+import { formatNumber } from "@/lib/shared/format";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
 import { buildUnitDeleteRestrictionMessage, type UnitBlockerFinding } from "@/lib/catalog/unit-delete-restriction";
@@ -65,12 +66,24 @@ export async function deleteItemCategory(formData: FormData): Promise<ActionResp
 
   const id = formData.get("id") as string;
   try {
+    // Refuse up front with a readable reason instead of the raw foreign key error.
+    const [categories, items] = (await Promise.all([
+      findAll("Item_Categories"),
+      findAll("Purchased_Items"),
+    ])) as [{ id: string; name: string }[], { item_category_id?: string }[]];
+    const category = categories.find((c) => c.id === id);
+    if (!category) return fail("Không tìm thấy phân loại.");
+    const itemCount = items.filter((i) => i.item_category_id === id).length;
+    if (itemCount > 0) {
+      return fail(`Không xoá được ${category.name}: còn ${formatNumber(itemCount)} hàng hoá thuộc phân loại này.`);
+    }
+
     await remove("Item_Categories", id);
     revalidateTag(getCacheTag("Item_Categories"));
     revalidatePath("/admin/inventory/categories");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 

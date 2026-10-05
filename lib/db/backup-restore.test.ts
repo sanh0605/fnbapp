@@ -180,12 +180,49 @@ describe("restoreBundleToTarget", () => {
       return { error: null };
     });
     const bundle = fakeBundle({
-      purchase_orders: [{ id: "PO-1", supplier_invoice_code: null }],
+      cash_entries: [{ id: "CE-1", note: null }],
+    });
+
+    const results = await restoreBundleToTarget(bundle, client, ["cash_entries"], 500);
+
+    expect(insertCalls[0]).toEqual([{ id: "CE-1", note: null }]);
+    expect(results).toEqual([{ table: "cash_entries", inserted: 1, skipped: [], substituted: 0 }]);
+  });
+
+  // BR-CASH-001 answer 3a: migration 0107 backfilled every existing purchase
+  // order as cash. A bundle taken before it has no such columns, and a
+  // COMPLETED row without payment_method would be refused by the new check.
+  it("fills CASH and no account on a purchase order row from a bundle taken before 0107", async () => {
+    const insertCalls: unknown[][] = [];
+    const client = fakeClient((_table, rows) => {
+      insertCalls.push(rows);
+      return { error: null };
+    });
+    const bundle = fakeBundle({
+      purchase_orders: [{ id: "PO-181", status: "COMPLETED", supplier_invoice_code: null }],
     });
 
     const results = await restoreBundleToTarget(bundle, client, ["purchase_orders"], 500);
 
-    expect(insertCalls[0]).toEqual([{ id: "PO-1", supplier_invoice_code: null }]);
+    expect(insertCalls[0]).toEqual([
+      { id: "PO-181", status: "COMPLETED", supplier_invoice_code: null, payment_method: "CASH", bank_account_id: null },
+    ]);
     expect(results).toEqual([{ table: "purchase_orders", inserted: 1, skipped: [], substituted: 0 }]);
+  });
+
+  it("leaves a purchase order row that already has the payment columns exactly as saved", async () => {
+    const insertCalls: unknown[][] = [];
+    const client = fakeClient((_table, rows) => {
+      insertCalls.push(rows);
+      return { error: null };
+    });
+    const rows = [
+      { id: "PO-1", status: "COMPLETED", payment_method: "BANK_TRANSFER", bank_account_id: "BA-001" },
+      { id: "PO-2", status: "DRAFT", payment_method: null, bank_account_id: null }, // undecided draft stays null
+    ];
+
+    await restoreBundleToTarget(fakeBundle({ purchase_orders: rows }), client, ["purchase_orders"], 500);
+
+    expect(insertCalls[0]).toEqual(rows);
   });
 });

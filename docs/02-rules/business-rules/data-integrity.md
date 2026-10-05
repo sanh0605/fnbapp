@@ -83,18 +83,32 @@ If a post-apply invariant fails, stop further writes and compare against the app
   - All 74 of 74 issue slips have :00 seconds, because the form asks only to the minute.
   - Sales orders do carry real seconds: 3.010 of 3.079 completed orders have non-zero seconds.
 - **Where no time was recorded, the time still shows, as 00:00:00** (owner 2026-09-29, chose this over showing the day alone): "28/09/2026 00:00:00". Every date outside a filter therefore has the same shape. Day-only fields are read as midnight Saigon time; nothing is invented beyond that.
+- **Every day and clock time is Saigon time, wherever the code runs** (owner 2026-10-04: *"chắc nên soát toàn diện lỗi này cho toàn hệ thống"*, after the same mistake was found a fourth time). The live server runs on UTC, seven hours behind, and a phone or laptop may be set to any zone. Code that asks the machine for "today", a month, an hour, or a date's text without saying Saigon gets the wrong day between 00:00 and 06:59 Saigon time. Measured 2026-10-04: 668 of 3.183 completed orders were created between 06:00 and 06:59, and 165 of 198 purchase orders are dated before 07:00. Example: the order list filtered to 15/09/2026 must run from 15/09 00:00:00 to 23:59:59 Saigon time, not from 07:00 to 06:59 the next morning. Every such computation goes through `lib/shared/datetime.ts` or `lib/shared/report-time.ts`. The guard test `lib/shared/timezone-guard.test.ts` reads the whole of `app/`, `lib/`, `components/` and `scripts/` and refuses the patterns that caused the four mistakes; the few places that are right on purpose are listed in it, each with its reason.
 
-### BR-DATA-007 — Admin screens never open a popup; anything with an input is its own page
+### BR-DATA-007 — On admin screens, anything with an input or for viewing is its own page; only yes/no and error boxes remain
 
 **Status:** `APPROVED` — owner decision 2026-09-30. **Not built yet**; its own plan, screen group by screen group. Counted 2026-09-30: 91 popup or browser-dialog uses in 38 files under `app/` (POS included in that count).
 
 *"hệ thống sẽ không bao giờ được sử dụng dạng popups. Tất cả đều phải áp dụng cách chuyển trang"*, then on the scope questions: *"1B 2B"*.
 
 - **A box that asks for input becomes a page**, with exceptions the owner will name case by case when they come up (owner 2026-09-30: *"Cái này sẽ có một số ngoại lệ, anh sẽ đề cập vào lúc cần thiết"*); until he names one, none is assumed. Example: "Huỷ phiếu" on an issue slip opens a page with the reason field and "Xác nhận huỷ", and returns to the slip afterwards; it no longer opens a box over the slip.
-- **A short yes/no confirmation is asked inline on the same page**, not in a box and not on a separate page (answer 1B). Example: "Xoá nhà cung cấp ABC?" shows as a line with Có / Không where the button was.
-- **Browser dialogs (`window.confirm`, `window.alert`) count as popups** and go the same way.
+- **Yes/no confirmations and error messages keep their box** (owner 2026-10-01, replacing answer 1B, on approving the design: *"2 cái này vẫn hiện theo kiểu bật khung nhé"*). Examples: "Xoá nhà cung cấp ABC?", "Xác nhận áp dụng kiểm kê", an error after Lưu. They stay the app's own box (`DeleteConfirmModal`, `confirm()`/`alert()` in `lib/shared/dialog.ts`); no browser dialog (`window.confirm`, `window.alert`) is used (none found 2026-10-01).
+- **A box only for viewing becomes a page too**, e.g. a dish's price history.
 - **POS is exempt** (answer 2B): choosing size, toppings and payment keep their current boxes, because a page change slows selling at a busy moment.
+- **Adding a supplier while entering a purchase order** (owner 2026-10-01, *"B"*): it opens the new-supplier page. The half-entered order is kept on that device and refilled on return, with the new supplier selected (owner: *"chỗ nhà cung cấp sẽ tự chọn nhà cung cấp vừa tạo"*). It replaces any supplier picked before. Design: `docs/superpowers/specs/2026-10-01-bo-popup-design.md` §6.
 - **Not popups:** a dropdown list and a date picker's calendar. They open in place and are kept (owner asked on 2026-09-30 for dropdowns to float above tables, not to become pages).
+
+### BR-DATA-008 — Every list sorts by any column; by code by default
+
+**Status:** `APPROVED` — owner decision 2026-10-02, typed on the Tài sản list: *"Tất cả các bạn đều có thể sort tất cả các tiêu đề của từng cột. Ví dụ bảng có 7 cột thì cả 7 cột anh đều có thể bấm vào tên để sort tăng dần hoặc giảm dần. Tuy nhiên đối với tất cả danh sách thì mặc định đều sẽ sort theo mã"*.
+
+- **Every column header is clickable.** First click sorts ascending, the next click descending. An arrow on the header shows the column and direction in use.
+- **Default order is the code, descending** (TS-065, TS-064, …: newest first), on every list, until someone clicks a header. Owner 2026-10-03, typed on the Tài sản list: *"Mã hàng sắp xếp mặc định theo chiều giảm dần"*, then chose "A" (every list, not only Tài sản). It replaces the ascending default of 2026-10-02. Clicking the code header then sorts ascending.
+- **Sorting covers the whole list, not only the page on screen**, and goes back to page 1. Sort column and direction sit in the page address (`?sort=&dir=`), so returning from a detail page keeps them, like the filter.
+- **Text sorts the Vietnamese way, numbers by value, dates by date**; codes compare their number part by value.
+- **Phone:** there are no column headers, so the same choices sit in one "Sắp xếp" picker above the cards.
+- Applies to every list on the list/detail template (`docs/superpowers/specs/2026-10-02-khuon-danh-sach-chi-tiet-design.md`); lists not yet moved get it in their wave.
+- **Exception: the cash book (Sổ thu chi) opens by date, newest first**, code descending within a day. Owner 2026-10-05: *"Làm theo em khuyến nghị"*, after being told that the day rows for sales and purchases carry no code, and that a row dated back (`CE-033`, `CE-034`, dated 30/04/2026, entered 02/09/2026) would otherwise sit among September's rows. Clicking "Mã" still sorts by code.
 ## Backup and retention rules
 
 ### BR-BACKUP-001 — Scheduled backups are full snapshots

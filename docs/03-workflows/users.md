@@ -1,12 +1,20 @@
 # Users and access flow
 
 ```flow-decl
-routes: /login, /admin/users, /admin/users/edit/[id], /settings/password
+routes: /login, /admin/users, /admin/users/new, /admin/users/[id], /admin/users/[id]/edit, /settings/password
 files: app/actions/auth.ts, app/admin/users/actions.ts
 tables: users, Users
 brCodes: BR-ACCESS-001, BR-ACCESS-002, BR-U-003
 ```
 
+**Behaviour change — 2026-10-03 (list/detail template, wave 7):** the list is on
+the shared template; each row opens `/admin/users/[id]`, and editing starts only
+from there, at `/admin/users/[id]/edit` (the old `/admin/users/edit/[id]` is
+gone). Search and the role filter apply on "Lọc" or Enter instead of on every
+keystroke; 20 accounts a page, newest code first. The ADMIN-only "Xoá" is a
+bin per row plus tick boxes on the list and a button on the detail page; the
+account named `admin` has none of them, as before (the list skips it through
+`DataList`'s `removal.canRemove`).
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 10):** a declared source file's import path only -- cross-cutting lib/ helpers (action-error, datetime, dialog, duplicate-name-guard, use-filter-form, nav-completeness, client-error-report, report-time) moved to `lib/shared/`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 9):** a declared source file's import path only -- sheets_db.ts/supabase.ts/shared-actions.ts/backup-restore.ts moved to `lib/db/` (spec D6), rewritten by the move helper; no logic changed.
@@ -39,7 +47,10 @@ see SYSTEM-OVERVIEW for the naming trap.
    per `BR-ACCESS-003` (owner decision 2026-09-08), only `ADMIN` may destroy an
    account for good (`requireOwner`), so the delete button is hidden for anyone
    else (`canDelete` computed from `resolveActor()` in `page.tsx`) and refused
-   server-side regardless. `/admin/users/edit/[id]` saves a changed role and,
+   server-side regardless. The list's rows open a detail page
+   (`/admin/users/[id]`) with "Chỉnh sửa" and, for `ADMIN`, "Xoá" (never on the
+   account named `admin`, in the list or on the detail page);
+   `/admin/users/[id]/edit` saves a changed role and,
    optionally, a new password. `/settings/password` offers a single
    change-password action for the signed-in person's own account. Delete is a
    hard delete with no self-protection guard — an admin can remove any account,
@@ -47,8 +58,9 @@ see SYSTEM-OVERVIEW for the naming trap.
    for that reason.
 
 3. **What each list contains, and what is excluded.** `/admin/users` lists every
-   account row in the `Users` table, one row per account. It shows the username and
-   role; it deliberately never shows the password hash (`BR-ACCESS-002`). There is
+   account row in the `Users` table, one row per account. It shows the code, username,
+   role and creation date, 20 a page, newest code first, narrowed by a
+   username-or-code search and a role filter; it deliberately never shows the password hash (`BR-ACCESS-002`). There is
    no separate list of deleted or inactive accounts, because deletion is permanent
    rather than a status flag.
 

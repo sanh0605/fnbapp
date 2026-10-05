@@ -12,7 +12,7 @@ const EXPECTED_TABLES = [
   "purchase_order_lines", "pos_drafts", "users", "order_payments",
   "stocktake_sessions", "stocktake_lines", "issue_slips", "stock_issues",
   "purchase_order_edits", "pos_sync_failures", "cash_categories",
-  "bank_accounts", "cash_entries",
+  "bank_accounts", "cash_entries", "cash_transfers",
 ];
 const DAILY_RETENTION_COUNT = 180;
 const DAILY_PREFIX = "fnbapp-backup-";

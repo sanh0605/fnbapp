@@ -1,12 +1,19 @@
 # Operations flow (POS sync, outlets, brands, activity log, cache)
 
 ```flow-decl
-routes: /admin/pos-sync, /admin/outlets, /admin/brands, /admin/activity-log, /admin/clear-cache
+routes: /admin/pos-sync, /admin/outlets, /admin/outlets/new, /admin/outlets/[id], /admin/outlets/[id]/edit, /admin/brands, /admin/brands/new, /admin/brands/[id], /admin/brands/[id]/edit, /admin/activity-log, /admin/clear-cache
 files: app/admin/pos-sync/actions.ts, app/admin/outlets/actions.ts, app/admin/brands/actions.ts
 tables: Pos_Sync_Failures, Outlets, Brands
 brCodes: BR-SALE-006
 ```
 
+**Behaviour change — 2026-10-03 (list/detail template, wave 5):** Điểm bán and Thương hiệu
+are tables on desktop and cards on phone; each row opens `/admin/outlets/[id]` or
+`/admin/brands/[id]`, and editing starts only from there. Điểm bán gains a status filter
+(Đang hoạt động by default, Ngừng hoạt động, Tất cả); its bin, "Ngừng hoạt động", shows only
+under Đang hoạt động and still refuses the last active outlet. `deleteBrand` now refuses a
+brand still in use in Vietnamese, naming what uses it ("Không xoá được thương hiệu "Phin Đi":
+còn 1 điểm bán, 2.357 đơn hàng."), instead of the database's raw refusal.
 **Reviewed, no behaviour change — 2026-09-07 (Task 17):** a declared source file's import path only -- outlet-code.ts moved to `lib/catalog/`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 10):** a declared source file's import path only -- cross-cutting lib/ helpers (action-error, datetime, dialog, duplicate-name-guard, use-filter-form, nav-completeness, client-error-report, report-time) moved to `lib/shared/`, rewritten by the move helper; no logic changed.
@@ -38,12 +45,16 @@ write no business table.
    and the cache tool hold no persisted business state of their own: the activity
    log reflects events that already happened, and the cache tool only clears
    cached data on demand.
-2. **Buttons per screen, and when to hide them.** The outlets screen at
-   `/admin/outlets` offers create and edit only — an outlet is never hard-deleted.
-   The brands screen at `/admin/brands` offers create, edit, and delete; delete is
+2. **Buttons per screen, and when to hide them.** The outlets list at
+   `/admin/outlets` offers "+ Thêm điểm bán" and the bin "Ngừng hoạt động" (only
+   while the filter is Đang hoạt động); the detail page offers "Chỉnh sửa" and,
+   for an active outlet, "Ngừng hoạt động". An outlet is never hard-deleted, and
+   the last active one cannot be retired. The brands list offers "+ Thêm thương
+   hiệu" and the bin "Xoá"; the detail page "Chỉnh sửa" and "Xoá". Delete is
    ADMIN-only per `BR-ACCESS-003` (owner decision 2026-09-08, `requireOwner`),
-   with the button hidden for anyone else (`canDelete` computed from
-   `resolveActor()` in `page.tsx`). The pos-sync screen at `/admin/pos-sync` lists
+   with the bin hidden for anyone else (`canDelete` from `resolveActor()`), and a
+   brand still used by an outlet, promotion, dish or order is refused with those
+   counts. The pos-sync screen at `/admin/pos-sync` lists
    recorded failures for review; its actions concern acknowledging or retrying a
    failed sync rather than editing sales data. The clear-cache screen at
    `/admin/clear-cache` offers a single action to clear cached data — a
@@ -51,7 +62,7 @@ write no business table.
    `/admin/activity-log` is read-only and offers no create/edit/delete, because
    it is a record of what already happened.
 3. **What each list contains, and what is excluded.** The outlets list contains
-   the outlets (`001`, `002`); the brands list contains the brands each outlet
+   the outlets (`001`, `002`) of the chosen status, active by default; the brands list contains the brands each outlet
    carries. The pos-sync list contains recorded sync failures — successful sends
    are not logged here, only failures, since the screen exists to surface what
    needs attention. The activity log contains operational events for review. None

@@ -1,15 +1,25 @@
 "use client";
 
-import { PageHeader } from "@/components/ui/PageHeader";
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { useFilterForm } from "@/lib/shared/use-filter-form";
-import { deletePromotionAction } from "../actions";
-import { PromotionForm } from "./PromotionForm";
+import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
+import { FilterCard } from "@/components/ui/list/FilterCard";
+import { ListPagination } from "@/components/ui/list/ListPagination";
+import { DataList, type DataColumn } from "@/components/ui/list/DataList";
+import { paginate } from "@/components/ui/list/paginate";
+import { sortRows, parseSort } from "@/components/ui/list/sort";
+import { Badge } from "@/components/ui/Badge";
+import { formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
-import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
-import { alert } from "@/lib/shared/dialog";
-import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
+import { deletePromotionAction } from "@/app/admin/promotions/actions";
+import type {
+  DBPromotion,
+  DBBrand,
+  DBProduct,
+  DBProductVariant,
+  DBProductCategory,
+} from "@/types/db";
 
 interface PromotionsClientProps {
   promotions: DBPromotion[];
@@ -17,329 +27,495 @@ interface PromotionsClientProps {
   products: DBProduct[];
   variants: DBProductVariant[];
   categories: DBProductCategory[];
-  // ADMIN only (BR-ACCESS-003) -- everyone else may add, edit and cancel.
+  // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
   canDelete: boolean;
+  initialSearch?: string;
+  initialStatus?: string;
+  initialType?: string;
+  initialPage?: string;
+}
+
+const VALID_STATUSES = ["ALL", "ACTIVE", "INACTIVE", "EXPIRED"] as const;
+type PromotionStatusFilter = (typeof VALID_STATUSES)[number];
+
+const VALID_TYPES = ["ALL", "ORDER_DISCOUNT", "PRODUCT_DISCOUNT"] as const;
+type PromotionTypeFilter = (typeof VALID_TYPES)[number];
+
+function parseStatus(raw: string | null | undefined): PromotionStatusFilter {
+  if (raw && (VALID_STATUSES as readonly string[]).includes(raw)) {
+    return raw as PromotionStatusFilter;
+  }
+  return "ALL";
+}
+
+function parseType(raw: string | null | undefined): PromotionTypeFilter {
+  if (raw && (VALID_TYPES as readonly string[]).includes(raw)) {
+    return raw as PromotionTypeFilter;
+  }
+  return "ALL";
+}
+
+function isExpired(endDate: string | null | undefined): boolean {
+  if (!endDate) return false;
+  const t = new Date(endDate).getTime();
+  return !Number.isNaN(t) && t < Date.now();
+}
+
+function formatDiscountText(promo: DBPromotion): string {
+  if (promo.discount_type === "PERCENT") {
+    return `Giảm ${promo.discount_value}%`;
+  }
+  if (promo.discount_type === "FLAT_PRICE") {
+    return `Đồng giá ${formatNumber(promo.discount_value)}đ`;
+  }
+  return `Giảm ${formatNumber(promo.discount_value)}đ`;
+}
+
+function getScopeText(
+  promo: DBPromotion,
+  variantMap: Map<string, DBProductVariant>,
+): string {
+  if (promo.type === "ORDER_DISCOUNT") {
+    return "Toàn đơn";
+  }
+  let keys: string[] = [];
+  if (promo.applicable_products_json) {
+    try {
+      const parsed = JSON.parse(promo.applicable_products_json);
+      if (parsed && typeof parsed === "object") {
+        keys = Array.isArray(parsed) ? parsed : Object.keys(parsed);
+      }
+    } catch {}
+  }
+  const M = keys.length;
+  const distinctProductIds = new Set<string>();
+  for (const vid of keys) {
+    const v = variantMap.get(vid);
+    if (v?.product_id) {
+      distinctProductIds.add(v.product_id);
+    }
+  }
+  const N = distinctProductIds.size;
+  return `${N} món, ${M} size`;
+}
+
+function listUrl(
+  search: string,
+  status: string,
+  type: string,
+  page: number = 1,
+  sort?: string,
+  dir?: string,
+): string {
+  const p = new URLSearchParams();
+  const trimmed = search.trim();
+  if (trimmed) p.set("q", trimmed);
+  if (status && status !== "ALL") p.set("status", status);
+  if (type && type !== "ALL") p.set("type", type);
+  if (page > 1) p.set("page", String(page));
+  if (sort) p.set("sort", sort);
+  if (dir) p.set("dir", dir);
+  const qs = p.toString();
+  return qs ? `/admin/promotions?${qs}` : "/admin/promotions";
 }
 
 export default function PromotionsClient({
   promotions,
   brands,
-  products,
+  products: _products,
   variants,
-  categories,
+  categories: _categories,
   canDelete,
+  initialSearch,
+  initialStatus,
+  initialType,
+  initialPage,
 }: PromotionsClientProps) {
   const router = useRouter();
-  const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
-    status: "ALL",
-    type: "ALL",
-    q: "",
-  }, { sync: "history" });
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingPromo, setEditingPromo] = useState<DBPromotion | undefined>(undefined);
-  const [deleteId, setDeleteConfirmId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const rawSort = searchParams?.get("sort");
+  const rawDir = searchParams?.get("dir");
 
-  // section A4b: the action's result was discarded -- a refusal failed in
-  // total silence (router.refresh() below was already correct, only the
-  // missing error check was the defect here).
-  const handleDelete = async () => {
-    if (deleteId) {
-      const res = await deletePromotionAction(deleteId);
-      setDeleteConfirmId(null);
-      if (res?.error) {
-        await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
-        return;
-      }
-      router.refresh();
-    }
-  };
+  const [search, setSearch] = useState(
+    () => initialSearch ?? searchParams?.get("q") ?? "",
+  );
+  const [status, setStatus] = useState<PromotionStatusFilter>(() =>
+    parseStatus(initialStatus ?? searchParams?.get("status")),
+  );
+  const [type, setType] = useState<PromotionTypeFilter>(() =>
+    parseType(initialType ?? searchParams?.get("type")),
+  );
+  const [page, setPage] = useState<string | number | undefined>(
+    () => initialPage ?? searchParams?.get("page") ?? undefined,
+  );
 
-  const getBrandName = (brandId: string) => {
-    if (!brandId) return "Toàn hệ thống";
-    const brand = brands.find((b) => b.id === brandId);
-    return brand ? brand.name : "Không xác định";
-  };
+  useEffect(() => {
+    if (initialSearch !== undefined) setSearch(initialSearch);
+    else if (searchParams?.get("q") !== null) setSearch(searchParams?.get("q") || "");
+  }, [initialSearch, searchParams]);
 
-  const isExpired = (endDate: string) => {
-    if (!endDate) return false;
-    return new Date(endDate).getTime() < new Date().getTime();
-  };
+  useEffect(() => {
+    if (initialStatus !== undefined) setStatus(parseStatus(initialStatus));
+    else if (searchParams?.get("status") !== null)
+      setStatus(parseStatus(searchParams?.get("status")));
+  }, [initialStatus, searchParams]);
 
-  const formatDateTime = (dateStr: string) => {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = d.getFullYear();
-    const HH = String(d.getHours()).padStart(2, '0');
-    const MIN = String(d.getMinutes()).padStart(2, '0');
-    const SS = String(d.getSeconds()).padStart(2, '0');
-    return `${dd}/${mm}/${yyyy} ${HH}:${MIN}:${SS}`;
-  };
+  useEffect(() => {
+    if (initialType !== undefined) setType(parseType(initialType));
+    else if (searchParams?.get("type") !== null)
+      setType(parseType(searchParams?.get("type")));
+  }, [initialType, searchParams]);
+
+  useEffect(() => {
+    if (initialPage !== undefined) setPage(initialPage);
+    else if (searchParams?.get("page") !== null)
+      setPage(searchParams?.get("page") || undefined);
+  }, [initialPage, searchParams]);
+
+  const brandMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    brands.forEach((b) => (map[b.id] = b.name));
+    return map;
+  }, [brands]);
+
+  const variantMap = useMemo(() => {
+    const map = new Map<string, DBProductVariant>();
+    variants.forEach((v) => map.set(v.id, v));
+    return map;
+  }, [variants]);
+
+  const columns: DataColumn<DBPromotion>[] = useMemo(
+    () => [
+      {
+        key: "id",
+        header: "Mã",
+        sortValue: (p) => p.id,
+        render: (p) => (
+          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+            {p.id}
+          </span>
+        ),
+      },
+      {
+        key: "name",
+        header: "Tên",
+        sortValue: (p) => p.name,
+        render: (p) => (
+          <div className="font-bold text-text-primary">{p.name}</div>
+        ),
+      },
+      {
+        key: "brand",
+        header: "Thương hiệu",
+        sortValue: (p) => (p.brand_id ? brandMap[p.brand_id] || "Toàn hệ thống" : "Toàn hệ thống"),
+        render: (p) => (
+          <span className="text-text-secondary font-medium">
+            {p.brand_id ? brandMap[p.brand_id] || "Toàn hệ thống" : "Toàn hệ thống"}
+          </span>
+        ),
+      },
+      {
+        key: "discount",
+        header: "Mức giảm",
+        sortValue: (p) => Number(p.discount_value) || 0,
+        render: (p) => (
+          <span className="text-text-primary font-medium">
+            {formatDiscountText(p)}
+          </span>
+        ),
+      },
+      {
+        key: "scope",
+        header: "Áp dụng",
+        sortValue: (p) => getScopeText(p, variantMap),
+        render: (p) => (
+          <span className="text-text-secondary font-medium">
+            {getScopeText(p, variantMap)}
+          </span>
+        ),
+      },
+      {
+        key: "start",
+        header: "Bắt đầu",
+        sortValue: (p) => p.start_date || "",
+        render: (p) => (
+          <span className="text-text-secondary text-sm">
+            {p.start_date ? formatDateTime(p.start_date) : "—"}
+          </span>
+        ),
+      },
+      {
+        key: "end",
+        header: "Kết thúc",
+        sortValue: (p) => p.end_date || "",
+        render: (p) => (
+          <span className="text-text-secondary text-sm">
+            {p.end_date ? formatDateTime(p.end_date) : "—"}
+          </span>
+        ),
+      },
+      {
+        key: "status",
+        header: "Trạng thái",
+        sortValue: (p) =>
+          isExpired(p.end_date)
+            ? "Đã hết hạn"
+            : p.status === "INACTIVE"
+            ? "Tạm ngưng"
+            : "Đang chạy",
+        render: (p) => {
+          if (isExpired(p.end_date)) {
+            return <Badge variant="danger">Đã hết hạn</Badge>;
+          }
+          if (p.status === "INACTIVE") {
+            return <Badge variant="warning">Tạm ngưng</Badge>;
+          }
+          return <Badge variant="success">Đang chạy</Badge>;
+        },
+      },
+    ],
+    [brandMap, variantMap],
+  );
+
+  const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const sortParam = rawSort ? sortKey : undefined;
+  const dirParam = rawSort ? sortDir : undefined;
 
   const filteredPromotions = useMemo(() => {
+    const q = search.trim().toLocaleLowerCase("vi");
     return promotions.filter((promo) => {
-      const matchesSearch =
-        promo.name.toLowerCase().includes(draft.q.toLowerCase()) ||
-        (promo.code && promo.code.toLowerCase().includes(draft.q.toLowerCase()));
-
-      if (!matchesSearch) return false;
-
-      const expired = isExpired(promo.end_date || "");
+      const expired = isExpired(promo.end_date);
       const matchesStatus =
-        draft.status === "ALL" ||
-        (draft.status === "ACTIVE" && promo.status === "ACTIVE" && !expired) ||
-        (draft.status === "INACTIVE" && (promo.status === "INACTIVE" || expired)) ||
-        (draft.status === "EXPIRED" && expired);
+        status === "ALL" ||
+        (status === "ACTIVE" && promo.status === "ACTIVE" && !expired) ||
+        (status === "INACTIVE" && (promo.status === "INACTIVE" || expired)) ||
+        (status === "EXPIRED" && expired);
 
       if (!matchesStatus) return false;
 
-      const matchesType = draft.type === "ALL" || promo.type === draft.type;
+      const matchesType = type === "ALL" || promo.type === type;
+      if (!matchesType) return false;
 
-      return matchesType;
+      if (q) {
+        const matchName = (promo.name || "").toLocaleLowerCase("vi").includes(q);
+        const matchCode = (promo.code || "").toLocaleLowerCase("vi").includes(q);
+        const matchId = (promo.id || "").toLocaleLowerCase("vi").includes(q);
+        return matchName || matchCode || matchId;
+      }
+
+      return true;
     });
-  }, [promotions, draft.q, draft.status, draft.type]);
+  }, [promotions, search, status, type]);
 
-  const rightContent = (
-    <button
-      onClick={() => {
-        setEditingPromo(undefined);
-        setIsFormOpen(true);
-      }}
-      className="bg-primary hover:bg-primary-hover text-on-primary font-bold px-4 py-2 rounded-lg text-sm transition shadow-md active:scale-[0.98]"
-    >
-      + Tạo Khuyến Mãi
-    </button>
-  );
+  const sortedPromotions = useMemo(() => {
+    const col = columns.find((c) => c.key === sortKey);
+    return col?.sortValue
+      ? sortRows(filteredPromotions, col.sortValue, sortDir)
+      : filteredPromotions;
+  }, [filteredPromotions, columns, sortKey, sortDir]);
+
+  const slice = useMemo(() => {
+    return paginate(sortedPromotions, page);
+  }, [sortedPromotions, page]);
+
+  const handleApplyFilter = () => {
+    setPage(1);
+    router.replace(listUrl(search, status, type, 1, sortParam, dirParam), {
+      scroll: false,
+    });
+  };
+
+  const handleClearFilter = () => {
+    setSearch("");
+    setStatus("ALL");
+    setType("ALL");
+    setPage(1);
+    router.replace(listUrl("", "ALL", "ALL", 1, sortParam, dirParam), {
+      scroll: false,
+    });
+  };
+
+  const currentListUrl = listUrl(search, status, type, slice.page, sortParam, dirParam);
+
+  const renderCard = (promo: DBPromotion) => {
+    const brandName = promo.brand_id ? brandMap[promo.brand_id] || "Toàn hệ thống" : "Toàn hệ thống";
+    const discountText = formatDiscountText(promo);
+    const scopeText = getScopeText(promo, variantMap);
+    const expired = isExpired(promo.end_date);
+
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between items-start gap-2">
+          <div>
+            <div className="font-bold text-text-primary text-base leading-tight">
+              {promo.name}
+            </div>
+            <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+              {promo.id}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-secondary text-text-secondary border border-border">
+              {brandName}
+            </span>
+            {expired ? (
+              <Badge variant="danger">Đã hết hạn</Badge>
+            ) : promo.status === "INACTIVE" ? (
+              <Badge variant="warning">Tạm ngưng</Badge>
+            ) : (
+              <Badge variant="success">Đang chạy</Badge>
+            )}
+          </div>
+        </div>
+        <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
+          <div className="flex justify-between items-center">
+            <span className="font-semibold text-text-primary">{discountText}</span>
+            <span>{scopeText}</span>
+          </div>
+          {(promo.start_date || promo.end_date) && (
+            <div className="text-[11px] text-text-muted">
+              {promo.start_date ? formatDateTime(promo.start_date) : "—"} &rarr;{" "}
+              {promo.end_date ? formatDateTime(promo.end_date) : "—"}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const removal = canDelete
+    ? {
+        verb: "Xoá",
+        confirmMessage: (count: number) =>
+          `Xoá ${count} khuyến mãi? Việc này không thể hoàn tác.`,
+        remove: async (id: string) => {
+          const res = await deletePromotionAction(id);
+          if (res?.error) {
+            return { error: res.error };
+          }
+          return {};
+        },
+      }
+    : undefined;
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <ListPageHeader
+        group="Bán hàng"
         title="Khuyến mãi"
-        subtitle="Quản lý mã giảm giá, chiết khấu hóa đơn và khuyến mãi theo sản phẩm."
-        actions={rightContent}
+        action={
+          <Link
+            href={`/admin/promotions/new?returnTo=${encodeURIComponent(currentListUrl)}`}
+            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+          >
+            + Thêm khuyến mãi
+          </Link>
+        }
       />
-      <div className="flex flex-wrap items-end gap-3 mb-6">
 
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
+      <FilterCard
+        onApply={handleApplyFilter}
+        onClear={handleClearFilter}
+        showClear={Boolean(search || status !== "ALL" || type !== "ALL")}
+      >
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+          <label
+            htmlFor="promotions-search"
+            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
+          >
+            Tìm khuyến mãi
+          </label>
           <input
+            id="promotions-search"
             type="text"
-            placeholder="Tên, mã code..."
-            value={draft.q}
-            onChange={(e) => setField("q", e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-            className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
+            placeholder="Tên, mã giảm giá hoặc mã..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
           />
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trạng thái</label>
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+          <label
+            htmlFor="promotions-status"
+            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
+          >
+            Trạng thái
+          </label>
           <select
-            value={draft.status}
-            onChange={(e) => { setField("status", e.target.value); applyFilters({ status: e.target.value }); }}
-            className="w-full md:w-48 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+            id="promotions-status"
+            value={status}
+            onChange={(e) => setStatus(parseStatus(e.target.value))}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
           >
             <option value="ALL">Tất cả</option>
             <option value="ACTIVE">Đang chạy</option>
-            <option value="INACTIVE">Tạm ngưng / Hết hạn</option>
+            <option value="INACTIVE">Tạm ngưng hoặc hết hạn</option>
             <option value="EXPIRED">Chỉ đã hết hạn</option>
           </select>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Loại hình</label>
-          <select
-            value={draft.type}
-            onChange={(e) => { setField("type", e.target.value); applyFilters({ type: e.target.value }); }}
-            className="w-full md:w-44 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+          <label
+            htmlFor="promotions-type"
+            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
           >
-            <option value="ALL">Mọi đối tượng</option>
+            Loại
+          </label>
+          <select
+            id="promotions-type"
+            value={type}
+            onChange={(e) => setType(parseType(e.target.value))}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+          >
+            <option value="ALL">Tất cả</option>
             <option value="ORDER_DISCOUNT">Giảm đơn hàng</option>
             <option value="PRODUCT_DISCOUNT">Giảm theo món</option>
           </select>
         </div>
-        <div className="shrink-0">
-          <button
-            onClick={() => applyFilters()}
-            disabled={isPendingFilter}
-            className="px-4 py-2 min-h-[44px] bg-primary text-on-primary rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
-          >
-            {isPendingFilter ? "Đang lọc..." : "Lọc"}
-          </button>
-        </div>
+      </FilterCard>
 
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPromotions.map((promo) => {
-          const expired = isExpired(promo.end_date || "");
-          const isActive = promo.status === "ACTIVE" && !expired;
-          const isProdDiscount = promo.type === "PRODUCT_DISCOUNT";
-
-          let discountLabel = "";
-          if (promo.discount_type === "PERCENT") {
-            discountLabel = `Giảm ${promo.discount_value}%`;
-          } else if (promo.discount_type === "FLAT_PRICE") {
-            discountLabel = `Đồng giá ${formatNumber(promo.discount_value)}`;
-          } else {
-            discountLabel = `Giảm ${formatNumber(promo.discount_value)}`;
-          }
-
-          const targetLabel = isProdDiscount ? "Áp dụng cho món ăn" : "Áp dụng toàn đơn hàng";
-
-          let applicableCount = 0;
-          if (isProdDiscount && promo.applicable_products_json) {
-            try {
-              const parsed = JSON.parse(promo.applicable_products_json);
-              applicableCount = Array.isArray(parsed) ? parsed.length : Object.keys(parsed).length;
-            } catch (e) {}
-          }
-
-          return (
-            <div
-              key={promo.id}
-              className={`bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col hover:shadow-md transition duration-200 ${
-                !isActive ? "opacity-75 bg-surface-secondary/50" : ""
-              }`}
-            >
-              <div className="p-4 bg-surface-secondary/50 border-b border-border flex justify-between items-center">
-                <span className="text-xs font-bold text-text-muted border-border/60 px-2.5 py-1 rounded-full">
-                  🏢 {getBrandName(promo.brand_id || "")}
-                </span>
-                <span
-                  className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                    expired
-                      ? "bg-danger/10 text-danger border border-danger/20"
-                      : promo.status === "INACTIVE"
-                      ? "bg-warning/10 text-warning border border-warning/20"
-                      : "bg-success/10 text-success border border-success/20"
-                  }`}
-                >
-                  {expired ? "Đã hết hạn" : promo.status === "INACTIVE" ? "Tạm ngưng" : "Đang chạy"}
-                </span>
-              </div>
-
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-text-primary leading-snug mb-2 line-clamp-1">
-                    {promo.name}
-                  </h3>
-
-                  {promo.code ? (
-                    <div className="inline-flex items-center gap-1.5 border border-dashed border-primary/40 bg-primary-soft/50 px-3 py-1 rounded-xl text-primary-active font-black text-sm tracking-wider uppercase mb-4">
-                      🎟️ {promo.code}
-                    </div>
-                  ) : (
-                    <div className="inline-flex items-center gap-1.5 bg-primary-soft text-primary px-3 py-1 rounded-xl font-bold text-xs mb-4">
-                      ⚡ Tự động áp dụng
-                    </div>
-                  )}
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-black text-warning">
-                        {discountLabel}
-                      </span>
-                      <span className="text-xs font-bold text-text-muted uppercase tracking-wider block">
-                        ({promo.discount_type})
-                      </span>
-                    </div>
-
-                    <div className="text-sm font-medium text-text-secondary">
-                      🎯 {targetLabel}{" "}
-                      {isProdDiscount && (
-                        <span className="text-primary font-bold bg-primary-soft px-1.5 py-0.5 rounded ml-1">
-                          ({applicableCount} món)
-                        </span>
-                      )}
-                    </div>
-
-                    {Number(promo.min_order_value) > 0 && (
-                      <div className="text-xs font-semibold text-text-muted bg-warning/10 border border-warning/20 px-2 py-1 rounded-lg w-fit">
-                        💰 Đơn tối thiểu: {formatNumber(promo.min_order_value)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="border-t border-border pt-4 mt-2">
-                  <div className="text-[11px] font-medium text-text-muted space-y-1">
-                    <div className="flex justify-between">
-                      <span>Bắt đầu:</span>
-                      <span className="font-bold text-text-secondary">
-                        {formatDateTime(promo.start_date || "")}
-                      </span>
-                    </div>
-                    {promo.end_date && (
-                      <div className="flex justify-between">
-                        <span>Kết thúc:</span>
-                        <span className="font-bold text-text-secondary">
-                          {formatDateTime(promo.end_date)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 border-t border-border bg-surface-secondary/30 flex justify-end gap-2.5">
-                <button
-                  onClick={() => {
-                    setEditingPromo(promo);
-                    setIsFormOpen(true);
-                  }}
-                  className="px-3.5 py-1.5 min-h-[44px] bg-primary-soft hover:bg-primary/20 border border-primary/20 text-primary-active font-bold text-xs rounded-lg transition active:scale-95"
-                >
-                  Sửa
-                </button>
-                {canDelete && (
-                  <button
-                    onClick={() => setDeleteConfirmId(promo.id)}
-                    className="px-3.5 py-1.5 min-h-[44px] bg-danger/10 hover:bg-danger/20 border border-danger/20 text-danger font-bold text-xs rounded-lg transition active:scale-95"
-                  >
-                    Xóa
-                  </button>
-                )}
-              </div>
+      <DataList
+        rows={slice.rows}
+        getId={(p) => p.id}
+        getName={(p) => p.name}
+        getHref={(p) =>
+          `/admin/promotions/${encodeURIComponent(p.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
+        }
+        columns={columns}
+        renderCard={renderCard}
+        sort={{
+          key: sortKey,
+          dir: sortDir,
+          href: (k, d) => listUrl(search, status, type, 1, k, d),
+        }}
+        removal={removal}
+        empty={
+          <div className="bg-surface-card rounded-2xl border border-border p-8 text-center space-y-3">
+            <div className="text-text-secondary text-sm">
+              Không có khuyến mãi nào khớp bộ lọc
             </div>
-          );
-        })}
-      </div>
-
-      {filteredPromotions.length === 0 && (
-        <div className="bg-surface-card rounded-2xl shadow-sm border border-border text-center py-16 px-4">
-          <div className="w-16 h-16 bg-primary-soft text-primary rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-            🏷️
+            <div>
+              <button
+                type="button"
+                onClick={handleClearFilter}
+                className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
+              >
+                Xoá lọc
+              </button>
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-text-primary mb-1">Không tìm thấy khuyến mãi nào</h3>
-          <p className="text-text-muted">
-            Hãy điều chỉnh bộ lọc hoặc tạo một chương trình khuyến mãi mới.
-          </p>
+        }
+      />
+
+      {slice.total > 0 && (
+        <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
+          <ListPagination
+            slice={slice}
+            unit="khuyến mãi"
+            pageHref={(p) => listUrl(search, status, type, p, sortParam, dirParam)}
+          />
         </div>
       )}
-
-      {isFormOpen && (
-        <PromotionForm
-          initialData={editingPromo}
-          brands={brands}
-          categories={categories}
-          products={products}
-          variants={variants}
-          onClose={() => {
-            setIsFormOpen(false);
-            setEditingPromo(undefined);
-          }}
-          onSuccess={() => {
-            router.refresh();
-          }}
-        />
-      )}
-
-      <DeleteConfirmModal
-        isOpen={!!deleteId}
-        onClose={() => setDeleteConfirmId(null)}
-        onConfirm={handleDelete}
-        description="Bạn có chắc chắn muốn xoá chương trình khuyến mãi này? Thao tác này không thể hoàn tác."
-      />
     </div>
   );
 }

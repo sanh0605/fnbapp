@@ -110,6 +110,10 @@ describe("Units/Item_Categories actions -- revalidate the table tag, not just th
   });
 
   it("deleteItemCategory revalidates sheets-Item_Categories", async () => {
+    // the action now looks the category up first, so it has to exist
+    mocks.findAll.mockImplementation((sheet: string) =>
+      Promise.resolve(sheet === "Item_Categories" ? [{ id: "NHH-001", name: "Bao bì" }] : []),
+    );
     const res = await deleteItemCategory(formData({ id: "NHH-001" }));
 
     expect(res.error).toBeUndefined();

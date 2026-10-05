@@ -72,7 +72,7 @@ describe("ProductsPage marks a topping sold via its linked modifier", () => {
   });
 
   it("marks PROD-A sold via its linked modifier, PROD-B stays never-sold, PROD-C stays sold via its own order line", async () => {
-    const element: any = await ProductsPage();
+    const element: any = await ProductsPage({});
     // page.tsx wraps <ProductsClient> in an outer <div>, unlike POSPage.
     const clientProps = element.props.children.props;
     const byId = new Map<string, any>(clientProps.enhancedProducts.map((p: any) => [p.id, p]));
@@ -88,35 +88,12 @@ describe("ProductsPage marks a topping sold via its linked modifier", () => {
   // have no modifier pointing at them at all -- not linked, even though
   // PROD-C is sold (via its own order line, unrelated to any modifier).
   it("flags isLinkedTopping only for a product with an ACTIVE modifier pointing at it", async () => {
-    const element: any = await ProductsPage();
+    const element: any = await ProductsPage({});
     const clientProps = element.props.children.props;
     const byId = new Map<string, any>(clientProps.enhancedProducts.map((p: any) => [p.id, p]));
 
     expect(byId.get("PROD-A").isLinkedTopping).toBe(true);
     expect(byId.get("PROD-B").isLinkedTopping).toBe(false);
     expect(byId.get("PROD-C").isLinkedTopping).toBe(false);
-  });
-});
-
-// I2 (final-fix-brief.md): eraseProduct is now requireOwner() server-side;
-// canDelete hides the button for non-ADMIN as a courtesy, same pattern as
-// commit e41968d's other nine screens (resolveActor() in page.tsx).
-describe("ProductsPage computes canDelete from the signed-in actor's role (I2)", () => {
-  it("is true for ADMIN", async () => {
-    mocks.resolveActor.mockResolvedValue({ ok: true, actor: { id: "u1", name: "Chủ quán", role: "ADMIN" } });
-    const element: any = await ProductsPage();
-    expect(element.props.children.props.canDelete).toBe(true);
-  });
-
-  it("is false for MANAGER", async () => {
-    mocks.resolveActor.mockResolvedValue({ ok: true, actor: { id: "u2", name: "Quản lý", role: "MANAGER" } });
-    const element: any = await ProductsPage();
-    expect(element.props.children.props.canDelete).toBe(false);
-  });
-
-  it("is false when resolveActor fails", async () => {
-    mocks.resolveActor.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
-    const element: any = await ProductsPage();
-    expect(element.props.children.props.canDelete).toBe(false);
   });
 });

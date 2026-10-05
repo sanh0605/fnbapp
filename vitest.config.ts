@@ -15,7 +15,7 @@ export default defineConfig({
   test: {
     environment: "node",
     setupFiles: ["./vitest.setup.ts"],
-    include: ["lib/**/*.test.ts", "lib/**/*.property.test.ts", "scripts/**/*.test.ts", "app/**/*.test.ts", "app/**/*.test.tsx", "components/**/*.test.tsx", "tests/**/*.test.ts"],
+    include: ["lib/**/*.test.ts", "lib/**/*.property.test.ts", "scripts/**/*.test.ts", "app/**/*.test.ts", "app/**/*.test.tsx", "components/**/*.test.ts", "components/**/*.test.tsx", "tests/**/*.test.ts"],
     exclude: ["node_modules", ".next", "dist"],
     coverage: {
       provider: "v8",

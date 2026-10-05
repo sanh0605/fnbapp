@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 8386",
     "preview": "vite-node scripts/preview.ts",
     "build": "next build",
     "start": "next start",

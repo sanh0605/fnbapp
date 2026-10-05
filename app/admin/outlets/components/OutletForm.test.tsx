@@ -1,34 +1,48 @@
 // @vitest-environment jsdom
-//
-// Render test per 
-// section 5: "the edit form shows brand, address, start date and both hour
-// fields; today it shows only the name." Same createRoot + act pattern as
-// components/POSScreen.itemModal.test.tsx.
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { createRoot, type Root } from "react-dom/client";
-import { act } from "react";
-import React from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { OutletForm } from "./OutletForm";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
-vi.mock("../actions", () => ({
+const { replace, refresh, back, push, searchParams, router } = vi.hoisted(() => {
+  const replaceFn = vi.fn();
+  const refreshFn = vi.fn();
+  const backFn = vi.fn();
+  const pushFn = vi.fn();
+  return {
+    replace: replaceFn,
+    refresh: refreshFn,
+    back: backFn,
+    push: pushFn,
+    searchParams: new URLSearchParams(),
+    router: { replace: replaceFn, refresh: refreshFn, back: backFn, push: pushFn },
+  };
+});
+
+const mocks = vi.hoisted(() => ({
   addOutlet: vi.fn(),
   editOutlet: vi.fn(),
   retireOutlet: vi.fn(),
 }));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/admin/outlets",
+  useSearchParams: () => searchParams,
+  useRouter: () => router,
+}));
+
+vi.mock("@/app/admin/outlets/actions", () => ({
+  addOutlet: mocks.addOutlet,
+  editOutlet: mocks.editOutlet,
+  retireOutlet: mocks.retireOutlet,
+}));
+
 vi.mock("@/lib/shared/dialog", () => ({
   confirm: vi.fn(),
   alert: vi.fn(),
 }));
-// section B: this component now calls useRouter().refresh() on save.
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: vi.fn() }),
-}));
 
-// OutletForm renders CustomDatePicker (react-datepicker) unconditionally;
-// that component calls window.matchMedia in a mount effect, which jsdom
-// does not implement. Same stub as components/ProductForm.test.tsx.
-if (typeof window.matchMedia !== "function") {
+if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
   window.matchMedia = ((query: string) => ({
     matches: false,
     media: query,
@@ -41,37 +55,10 @@ if (typeof window.matchMedia !== "function") {
   })) as unknown as typeof window.matchMedia;
 }
 
-const roots: Root[] = [];
-const containers: HTMLElement[] = [];
-
-afterEach(() => {
-  while (roots.length) {
-    const root = roots.pop()!;
-    act(() => {
-      root.unmount();
-    });
-  }
-  while (containers.length) {
-    containers.pop()!.remove();
-  }
-});
-
-async function renderTracked(element: React.ReactElement) {
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
-  await act(async () => {
-    root.render(element);
-  });
-  roots.push(root);
-  containers.push(container);
-  return container;
-}
-
-async function fireClick(el: Element) {
-  await act(async () => {
-    el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-  });
+if (typeof window !== "undefined" && !HTMLFormElement.prototype.requestSubmit) {
+  HTMLFormElement.prototype.requestSubmit = function () {
+    this.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+  };
 }
 
 const BRANDS: DBBrand[] = [
@@ -84,28 +71,36 @@ const OUTLET: DBOutlet = {
   open_time: "06:00", close_time: "21:00", created_at: "", updated_at: "",
 };
 
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+  document.body.innerHTML = "";
+});
+
+beforeEach(() => {
+  replace.mockClear();
+  refresh.mockClear();
+  back.mockClear();
+  push.mockClear();
+  mocks.addOutlet.mockReset();
+  mocks.editOutlet.mockReset();
+  mocks.retireOutlet.mockReset();
+});
+
 describe("OutletForm edit mode", () => {
-  it("opens with the retitled action, then shows brand, address, start date and both hour fields, not the name alone", async () => {
-    const container = await renderTracked(<OutletForm initialData={OUTLET} brands={BRANDS} outlets={[OUTLET]} />);
+  it("shows brand, address, start date and both hour fields, not the name alone", () => {
+    render(<OutletForm initialData={OUTLET} brands={BRANDS} outlets={[OUTLET]} returnTo="/admin/outlets" />);
 
-    const editButton = Array.from(container.querySelectorAll("button")).find(b => b.textContent === "Sửa");
-    expect(editButton).toBeTruthy();
-    await fireClick(editButton!);
-
-    expect(document.body.textContent).toContain("Sửa điểm bán");
+    expect(screen.queryByRole("dialog")).toBeNull();
     expect(document.querySelector('select[name="brand_id"]')).not.toBeNull();
     expect(document.querySelector('input[name="address"]')).not.toBeNull();
-    // The date picker renders as a plain text input driven by React state,
-    // not a native <input type="date">.
     expect(document.body.textContent).toContain("Ngày bắt đầu hoạt động");
     expect(document.querySelector('input[name="open_time"]')).not.toBeNull();
     expect(document.querySelector('input[name="close_time"]')).not.toBeNull();
   });
 
-  it("pre-fills brand, address and hours from the outlet being edited", async () => {
-    await renderTracked(<OutletForm initialData={OUTLET} brands={BRANDS} outlets={[OUTLET]} />);
-    const editButton = Array.from(document.querySelectorAll("button")).find(b => b.textContent === "Sửa")!;
-    await fireClick(editButton);
+  it("pre-fills brand, address and hours from the outlet being edited", () => {
+    render(<OutletForm initialData={OUTLET} brands={BRANDS} outlets={[OUTLET]} returnTo="/admin/outlets" />);
 
     const brandSelect = document.querySelector('select[name="brand_id"]') as HTMLSelectElement;
     const addressInput = document.querySelector('input[name="address"]') as HTMLInputElement;
@@ -118,27 +113,87 @@ describe("OutletForm edit mode", () => {
     expect(closeInput.value).toBe("21:00");
   });
 
-  it("shows the code, frozen and explained, not editable", async () => {
-    await renderTracked(<OutletForm initialData={OUTLET} brands={BRANDS} outlets={[OUTLET]} />);
-    const editButton = Array.from(document.querySelectorAll("button")).find(b => b.textContent === "Sửa")!;
-    await fireClick(editButton);
+  it("shows the code, frozen and explained, not editable", () => {
+    render(<OutletForm initialData={OUTLET} brands={BRANDS} outlets={[OUTLET]} returnTo="/admin/outlets" />);
 
     expect(document.body.textContent).toContain("001");
     expect(document.body.textContent).toContain("không đổi được");
-    // No input posts a "code" field at all.
     expect(document.querySelector('input[name="code"]')).toBeNull();
   });
 });
 
 describe("OutletForm add mode", () => {
-  it("also shows brand, address, start date and both hour fields", async () => {
-    await renderTracked(<OutletForm brands={BRANDS} outlets={[]} />);
-    const addButton = Array.from(document.querySelectorAll("button")).find(b => b.textContent?.includes("Thêm Điểm Bán"))!;
-    await fireClick(addButton);
+  it("also shows brand, address, start date and both hour fields", () => {
+    render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
 
     expect(document.querySelector('select[name="brand_id"]')).not.toBeNull();
     expect(document.querySelector('input[name="address"]')).not.toBeNull();
     expect(document.querySelector('input[name="open_time"]')).not.toBeNull();
     expect(document.querySelector('input[name="close_time"]')).not.toBeNull();
+  });
+
+  it("shows the next auto-assigned code previewing nextOutletCode (004 for 001 and 003)", () => {
+    const existingOutlets: DBOutlet[] = [
+      { ...OUTLET, id: "OUT-001", code: "001" },
+      { ...OUTLET, id: "OUT-003", code: "003" },
+    ];
+    render(<OutletForm brands={BRANDS} outlets={existingOutlets} returnTo="/admin/outlets" />);
+
+    expect(document.body.textContent).toContain("004");
+    expect(document.body.textContent).toContain("Mã điểm bán sẽ được gán tự động");
+  });
+
+  it("clicking Bỏ goes to returnTo without saving", () => {
+    render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
+    fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
+    expect(push).toHaveBeenCalledWith("/admin/outlets");
+    expect(mocks.addOutlet).not.toHaveBeenCalled();
+  });
+
+  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z and preserves start_date", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
+    try {
+      mocks.editOutlet.mockResolvedValue({});
+      const { unmount } = render(
+        <OutletForm
+          initialData={{ ...OUTLET, start_date: "2026-09-15" }}
+          brands={BRANDS}
+          outlets={[OUTLET]}
+          returnTo="/admin/outlets"
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+      await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
+      const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
+      expect(formData.get("start_date")).toBe("2026-09-15");
+      unmount();
+
+      // Second assertion path: ADD mode without passing start_date in
+      mocks.addOutlet.mockResolvedValue({});
+      render(
+        <OutletForm
+          brands={BRANDS}
+          outlets={[]}
+          returnTo="/admin/outlets"
+        />
+      );
+
+      fireEvent.change(document.querySelector('input[name="name"]')!, {
+        target: { value: "Điểm bán 2" },
+      });
+      fireEvent.change(document.querySelector('select[name="brand_id"]')!, {
+        target: { value: "BR-001" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Lưu điểm bán" }));
+      await waitFor(() => expect(mocks.addOutlet).toHaveBeenCalledTimes(1));
+      const addFormData = mocks.addOutlet.mock.calls[0][0] as FormData;
+      // The outlet form has no default day: start_date is not set (null)
+      expect(addFormData.get("start_date")).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

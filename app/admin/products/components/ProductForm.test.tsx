@@ -17,6 +17,8 @@ const mocks = vi.hoisted(() => ({
   pauseProduct: vi.fn(),
   resumeProduct: vi.fn(),
   eraseProduct: vi.fn(),
+  routerRefresh: vi.fn(),
+  push: vi.fn(),
 }));
 
 vi.mock("@/app/admin/products/actions", () => ({
@@ -24,6 +26,10 @@ vi.mock("@/app/admin/products/actions", () => ({
   pauseProduct: mocks.pauseProduct,
   resumeProduct: mocks.resumeProduct,
   eraseProduct: mocks.eraseProduct,
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.push }),
 }));
 
 // ProductForm renders CustomDatePicker (react-datepicker) unconditionally;
@@ -70,20 +76,13 @@ async function fireClick(el: Element) {
   await act(async () => { el.dispatchEvent(new MouseEvent("click", { bubbles: true })); });
 }
 
-async function flush() {
-  await act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); });
-}
-
 const CATEGORIES = [{ id: "CAT-007", name: "Topping" }];
 
 async function openEditForm(product: any, canDelete?: boolean) {
   const container = await renderTracked(
     <ProductForm categories={CATEGORIES} initialData={product} canDelete={canDelete} />,
   );
-  const editButton = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Sửa")!;
-  await fireClick(editButton);
-  await flush();
-  return document.querySelector('input[type="number"]') as HTMLInputElement;
+  return container.querySelector('input[type="number"]') as HTMLInputElement;
 }
 
 describe("ProductForm -- price field for a topping linked to an ACTIVE modifier", () => {
@@ -109,29 +108,16 @@ describe("ProductForm -- price field for a topping linked to an ACTIVE modifier"
   });
 });
 
-// I2 (final-fix-brief.md, BR-ACCESS-003): eraseProduct is now requireOwner()
-// server-side; canDelete hides the "Xoá vĩnh viễn" button as a courtesy for
-// a role that would be refused anyway, same pattern as commit e41968d.
-describe("ProductForm -- erase button gated by canDelete (I2)", () => {
-  const NEVER_SOLD_PRODUCT = {
-    id: "PROD-050", name: "Món chưa bán", category_id: "CAT-001", status: "ACTIVE",
-    neverSold: true, variants: [{ id: "VAR-050", size_name: "Mặc định", price: 10000 }],
-    isLinkedTopping: false,
-  };
-
-  it('shows "Xoá vĩnh viễn" for a never-sold product when canDelete is true', async () => {
+describe("ProductForm -- page form navigation and fields", () => {
+  it("renders 'Tên món *' immediately and 'Bỏ' goes to returnTo", async () => {
     const container = await renderTracked(
-      <ProductForm categories={CATEGORIES} initialData={NEVER_SOLD_PRODUCT} canDelete={true} />,
+      <ProductForm categories={CATEGORIES} returnTo="/admin/products?status=INACTIVE" />,
     );
-    const eraseButton = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Xoá vĩnh viễn");
-    expect(eraseButton).toBeTruthy();
-  });
+    const nameInput = container.querySelector('input[placeholder*="Cà phê"]') as HTMLInputElement;
+    expect(nameInput).toBeTruthy();
 
-  it('hides "Xoá vĩnh viễn" for a never-sold product when canDelete is false, even though the button would otherwise show', async () => {
-    const container = await renderTracked(
-      <ProductForm categories={CATEGORIES} initialData={NEVER_SOLD_PRODUCT} canDelete={false} />,
-    );
-    const eraseButton = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Xoá vĩnh viễn");
-    expect(eraseButton).toBeUndefined();
+    const cancelButton = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Bỏ")!;
+    await fireClick(cancelButton);
+    expect(mocks.push).toHaveBeenCalledWith("/admin/products?status=INACTIVE");
   });
 });

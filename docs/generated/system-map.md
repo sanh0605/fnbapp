@@ -9,6 +9,7 @@ app/admin/brands/actions.ts -> Brands (write)
 app/admin/finance/actions.ts -> Cash_Entries (write)
 app/admin/finance/bank-accounts/actions.ts -> Bank_Accounts (write)
 app/admin/finance/categories/actions.ts -> Cash_Categories (write)
+app/admin/finance/transfers/actions.ts -> Cash_Transfers (write)
 app/admin/inventory/actions.ts -> Item_Categories (write)
 app/admin/inventory/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/actions.ts -> Purchased_Items (write)
@@ -18,11 +19,13 @@ app/admin/inventory/asset-bands/actions.ts -> asset_depreciation_bands (write)
 app/admin/inventory/assets/actions.ts -> asset_disposals (write)
 app/admin/inventory/conversions/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/conversions/actions.ts -> UOM_Conversions (write)
+app/admin/inventory/items/actions.ts -> assets (write)
 app/admin/inventory/items/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/items/actions.ts -> Purchased_Items (write)
 app/admin/inventory/items/actions.ts -> UOM_Conversions (write)
 app/admin/inventory/purchase-orders/actions.ts -> assets (write)
 app/admin/inventory/purchase-orders/actions.ts -> purchase_order_edits (write)
+app/admin/inventory/purchase-orders/actions.ts -> Purchase_Orders (write)
 app/admin/inventory/purchase-orders/actions.ts -> Purchase_Sources (write)
 app/admin/outlets/actions.ts -> Outlets (write)
 app/admin/pos-sync/actions.ts -> Pos_Sync_Failures (write)
@@ -68,6 +71,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - brands (id, name, code, start_date, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
 - cash_categories (id, name, kind, affects_pnl, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, is_sales_revenue) status: ACTIVE, INACTIVE
 - cash_entries (id, entry_date, category_id, amount, payment_method, bank_account_id, payer, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, or) status: ACTIVE, CANCELLED
+- cash_transfers (id, transfer_date, amount, from_account_id, to_account_id, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, CANCELLED
 - issue_slips (id, issued_at, note, created_by_id, created_by_name, created_at)
 - item_categories (id, name, system_type, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - modifiers (id, name, group_name, price, status, sort_order, created_at, updated_at, product_id) status: ACTIVE, INACTIVE, DELETED
@@ -85,7 +89,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - promotions (id, name, brand_id, code, type, discount_type, discount_value, applicable_products_json, start_date, end_date, status, created_at, updated_at, min_order_value) status: ACTIVE, INACTIVE, DELETED
 - purchase_order_edits (id, purchase_order_id, edited_by_id, edited_by_name, edited_at, previous_status, previous_subtotal_amount, previous_line_count, new_subtotal_amount, new_line_count)
 - purchase_order_lines (id, purchase_order_id, purchased_item_id, unit, quantity, unit_price, subtotal, conversion_id, base_unit, base_quantity, created_at)
-- purchase_orders (id, supplier_id, source_id, transaction_date, supplier_invoice_code, notes, subtotal_amount, shipping_fee, tax_amount, voucher_amount, discount_amount, total_amount, status, created_by_id, created_by_name, created_at, updated_at) status: DRAFT, COMPLETED, CANCELLED
+- purchase_orders (id, supplier_id, source_id, transaction_date, supplier_invoice_code, notes, subtotal_amount, shipping_fee, tax_amount, voucher_amount, discount_amount, total_amount, status, created_by_id, created_by_name, created_at, updated_at, payment_method) status: DRAFT, COMPLETED, CANCELLED
 - purchase_sources (id, name, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - purchased_items (id, name, item_category_id, base_ingredient_id, semi_product_id, default_unit_id, status, created_at, updated_at, duplicate_warning_confirmed, is_non_inventory) status: ACTIVE, INACTIVE, DELETED
 - stock_issues (id, purchased_item_id, issued_at, base_quantity, source, session_id, note, created_at, reverses_issue_id, issue_slip_id)
@@ -97,5 +101,6 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - users (id, username, password_hash, name, role, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
 
 ## UNRESOLVED write-sites (need a human)
+- app/admin/inventory/items/actions.ts: remove(...) with a non-literal table argument: 
 - app/admin/products/modifiers/actions.ts: update(...) with a non-literal table argument: 
 - app/admin/users/actions.ts: update(...) with a non-literal table argument: only if non-blank

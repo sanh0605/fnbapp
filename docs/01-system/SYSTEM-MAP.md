@@ -22,6 +22,7 @@ app/admin/brands/actions.ts -> Brands (write)
 app/admin/finance/actions.ts -> Cash_Entries (write)
 app/admin/finance/bank-accounts/actions.ts -> Bank_Accounts (write)
 app/admin/finance/categories/actions.ts -> Cash_Categories (write)
+app/admin/finance/transfers/actions.ts -> Cash_Transfers (write)
 app/admin/inventory/actions.ts -> Item_Categories (write)
 app/admin/inventory/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/actions.ts -> Purchased_Items (write)
@@ -31,11 +32,13 @@ app/admin/inventory/asset-bands/actions.ts -> asset_depreciation_bands (write)
 app/admin/inventory/assets/actions.ts -> asset_disposals (write)
 app/admin/inventory/conversions/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/conversions/actions.ts -> UOM_Conversions (write)
+app/admin/inventory/items/actions.ts -> assets (write)
 app/admin/inventory/items/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/items/actions.ts -> Purchased_Items (write)
 app/admin/inventory/items/actions.ts -> UOM_Conversions (write)
 app/admin/inventory/purchase-orders/actions.ts -> assets (write)
 app/admin/inventory/purchase-orders/actions.ts -> purchase_order_edits (write)
+app/admin/inventory/purchase-orders/actions.ts -> Purchase_Orders (write)
 app/admin/inventory/purchase-orders/actions.ts -> Purchase_Sources (write)
 app/admin/outlets/actions.ts -> Outlets (write)
 app/admin/pos-sync/actions.ts -> Pos_Sync_Failures (write)
@@ -82,7 +85,9 @@ writes `orders_v2` and `order_events`. `app/admin/promotions/actions.ts` writes
 
 **Purchasing.** `lib/purchasing/purchase-order-transaction.ts` writes `purchase_orders` and
 `purchase_order_lines`. `app/admin/inventory/purchase-orders/actions.ts`
-writes `assets`, `purchase_order_edits`, and `Purchase_Sources`.
+writes `assets`, `purchase_order_edits`, and `Purchase_Sources`, and
+`Purchase_Orders` directly for one thing only: changing "Trả bằng" on a
+completed order (`setPurchaseOrderPayment`, the two payment columns).
 `app/admin/suppliers/actions.ts` writes `Suppliers`.
 
 **Stock issue.** `lib/stock/manual-issue-transaction.ts` writes
@@ -110,13 +115,15 @@ variant for an unlinked topping, `BR-CATALOG-003`).
 **Inventory catalog.** `app/admin/inventory/actions.ts` writes `Purchased_Items`,
 `Item_Categories`, `Units`, `UOM_Conversions`, and `Purchase_Order_Lines`.
 `app/admin/inventory/items/actions.ts` writes `Purchased_Items`,
-`UOM_Conversions`, and `Purchase_Order_Lines`.
+`UOM_Conversions`, `Purchase_Order_Lines`, and `assets` (only to mark an
+item's assets `INACTIVE` when it leaves the equipment category, BR-COGS-008).
 `app/admin/inventory/conversions/actions.ts` writes `UOM_Conversions` and
 `Purchase_Order_Lines`.
 
 **Assets.** `app/admin/inventory/assets/actions.ts` writes `asset_disposals`;
 `app/admin/inventory/asset-bands/actions.ts` writes `asset_depreciation_bands`.
-(`assets` rows are created via purchasing.)
+(`assets` rows are created via purchasing, and marked `INACTIVE` from the
+item edit page.)
 
 **Users.** `app/actions/auth.ts` writes `users`; `app/admin/users/actions.ts`
 writes `Users`.

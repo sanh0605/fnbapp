@@ -63,6 +63,7 @@ const roots: Root[] = [];
 const containers: HTMLElement[] = [];
 
 afterEach(() => {
+  vi.useRealTimers();
   while (roots.length) {
     const root = roots.pop()!;
     act(() => {
@@ -390,5 +391,20 @@ describe("StocktakeClient -- preview gates the apply confirmation (D6/D12)", () 
 
     expect(container.textContent).toContain("1 mặt hàng chưa xác nhận");
     expect(container.textContent).toContain("Đường cát");
+  });
+});
+
+describe("StocktakeClient -- Saigon timezone display", () => {
+  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z: shows 15/09/2026 06:30:00", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
+    try {
+      const sess = session([]);
+      sess.createdAt = "2026-09-14T23:30:00Z";
+      const container = await renderTracked(<StocktakeClient session={sess} lastConfirmed={null} />);
+      expect(container.textContent).toContain("15/09/2026 06:30:00");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

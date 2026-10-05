@@ -1,12 +1,13 @@
 # Purchasing flow (purchase orders and suppliers)
 
 ```flow-decl
-routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/suppliers
+routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/suppliers, /admin/suppliers/new, /admin/suppliers/[id], /admin/suppliers/[id]/edit
 files: lib/purchasing/purchase-order-transaction.ts, app/admin/inventory/purchase-orders/actions.ts, app/admin/suppliers/actions.ts
 tables: purchase_orders, purchase_order_lines, purchase_order_edits, Purchase_Sources, assets, Suppliers
 brCodes: BR-INV-002
 ```
 
+**Behaviour change — 2026-10-04 (cash book money flow, migration `0107`):** a purchase order gains "Trả bằng": Tiền mặt, or Chuyển khoản with a bank account (`purchase_orders.payment_method`, `bank_account_id`). Nothing is pre-selected on a new order; completing an order without a choice is refused ("Chọn cách trả tiền"), a draft may stay undecided (`BR-CASH-001`, answer 1a). Orders that existed when `0107` ran count as cash (answer 3a). A completed order's page lets ADMIN or MANAGER change only these two fields (`setPurchaseOrderPayment`); lines, amounts and stock are untouched. The list gains a "Trả bằng" column and filter (`pay`). The money shows in the cash book as one "Nhập hàng" row per day and method (`docs/03-workflows/cash-book.md`).
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 10):** a declared source file's import path only -- cross-cutting lib/ helpers (action-error, datetime, dialog, duplicate-name-guard, use-filter-form, nav-completeness, client-error-report, report-time) moved to `lib/shared/`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 9):** a declared source file's import path only -- sheets_db.ts/supabase.ts/shared-actions.ts/backup-restore.ts moved to `lib/db/` (spec D6), rewritten by the move helper; no logic changed.
@@ -36,8 +37,15 @@ goods later leave stock is driven by these purchase prices.
 **Durable tools bought on a purchase order create `assets` rows.** When a new
 order is completed, its equipment lines are turned into asset records: the action
 plans the assets (`lib/assets/asset-purchase-allocation.ts`) and inserts one `assets`
-row per durable tool. This happens only when a **new** order is completed, not
-when an existing order is edited — see question 5.
+row per durable tool. This happens the first time an order becomes completed:
+saved straight as completed, or saved as a draft and completed later. It does not
+happen when an already-completed order is edited — see question 5.
+
+**Behaviour change — 2026-10-03:** a draft order completed later now creates its
+assets too. Before, only an order saved straight as completed did, so a draft
+completed later left its equipment out of depreciation. Measured that day: 83
+equipment lines on completed orders, all 83 with an asset, so no past order was
+affected.
 
 ## Five-question current-state description
 
@@ -56,9 +64,16 @@ when an existing order is edited — see question 5.
    existing order at `/admin/inventory/purchase-orders/[id]`. The order form can
    save as draft or save as completed; the "save as completed" path should not be
    offered until a supplier, a source, and at least one line are present, since
-   the action rejects a completed order missing any of them. The suppliers screen
-   at `/admin/suppliers` offers add, edit (including deactivating a supplier via
-   its status field), and delete. Delete is ADMIN-only per `BR-ACCESS-003` (owner
+   the action rejects a completed order missing any of them. Adding a supplier
+   from the order form saves the order's draft to browser storage, navigates to
+   `/admin/suppliers/new?from=po`, and restores the in-progress order with the
+   new supplier selected upon return (`BR-DATA-007`). The suppliers screen
+   at `/admin/suppliers` offers add and edit, each on its own page
+   (`/admin/suppliers/new`, `/admin/suppliers/[id]/edit`, `BR-DATA-007`; the list's
+   filters ride in the URL and come back after Lưu), and delete, confirmed in a box.
+   The form has no status field: nothing on screen sets a supplier to "Ngừng hợp tác"
+   (checked 2026-10-01; all 48 suppliers ACTIVE). Asked whether to add one, the owner
+   chose to drop the list's status filter instead (2026-10-01, *"1b"*). Delete is ADMIN-only per `BR-ACCESS-003` (owner
    decision 2026-09-08, `requireOwner`), with the button hidden for anyone else
    (`canDelete` computed from `resolveActor()` in `page.tsx`).
 3. **What each list contains, and what is excluded.** The purchase-order list
@@ -80,8 +95,8 @@ when an existing order is edited — see question 5.
 5. **Which data it serves, and which it deliberately does not.** This flow serves
    purchases into the shared warehouse and the supplier and source records those
    purchases reference. It deliberately does **not** re-derive assets on an
-   **edit**: assets are created only for a newly completed order, so editing an
-   existing completed order does not create, overwrite, or remove the asset rows
+   **edit**: assets are created only when an order first becomes completed, so editing an
+   already-completed order does not create, overwrite, or remove the asset rows
    that its original completion produced. It also does not manage what happens to
    an already-created asset when its source order is later edited — that is out of
    scope here and handled (if at all) by the assets flow, not this one.
@@ -90,7 +105,7 @@ when an existing order is edited — see question 5.
 
 The atomic function writes the order header (`purchase_orders`) and one row per
 line (`purchase_order_lines`). The purchase-orders action additionally writes
-`assets` (one row per durable tool on a newly completed order),
+`assets` (one row per durable tool on an order that has just become completed),
 `purchase_order_edits` (the edit trail, since purchase orders keep no
 `order_events`), and `Purchase_Sources` (the buying-channel lookup). The
 suppliers action writes `Suppliers`. The generated map at

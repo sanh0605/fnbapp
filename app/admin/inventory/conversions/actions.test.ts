@@ -254,3 +254,29 @@ describe("addConversion/updateConversion/deleteConversionAction -- revalidate sh
     expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
   });
 });
+
+// Wave 2: the caller must be able to tell "deleted" from "only switched off".
+describe("deleteConversionAction -- tells a hard delete from a deactivation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("marks it INACTIVE and reports deactivated: true when a purchase line uses it", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "L-1", conversion_id: "QD-1" }]);
+    const res = await deleteConversionAction(formData({ id: "QD-1" }));
+    expect(res.success).toBe(true);
+    expect(res.deactivated).toBe(true);
+    expect(mocks.update).toHaveBeenCalledWith("UOM_Conversions", "QD-1", { status: "INACTIVE" });
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("hard-deletes an unused conversion and does not report deactivated", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "L-1", conversion_id: "QD-OTHER" }]);
+    const res = await deleteConversionAction(formData({ id: "QD-1" }));
+    expect(res.success).toBe(true);
+    expect(res.deactivated).toBeUndefined();
+    expect(mocks.remove).toHaveBeenCalledWith("UOM_Conversions", "QD-1");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+});

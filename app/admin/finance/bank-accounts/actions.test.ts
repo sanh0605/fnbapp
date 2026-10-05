@@ -184,6 +184,54 @@ describe("permanent delete refuses an account with entries, in Vietnamese (I5)",
   });
 });
 
+// Migration 0107: transfers and purchase orders also point at an account.
+// Same reason as I5 -- the foreign keys refuse, but only in ASCII English.
+describe("permanent delete also refuses an account used by a transfer or a purchase order", () => {
+  function usedBy(sheet: string, filterKey: string) {
+    mocks.findAllWhere.mockImplementation(async (name: string, filters: { eq?: Record<string, string> }) =>
+      name === sheet && filters.eq && filterKey in filters.eq ? [{ id: "X-001" }] : [],
+    );
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireOwner.mockResolvedValue(ADMIN);
+    mocks.findById.mockResolvedValue({ id: "BA-003", name: "ACB - Phin Di" });
+  });
+
+  it("refuses an account that is the source of a transfer", async () => {
+    usedBy("Cash_Transfers", "from_account_id");
+    const result = await deleteBankAccount(formData({ id: "BA-003" }));
+    expect(result.error).toBe(
+      'Tài khoản "ACB - Phin Di" đã có dòng chuyển tiền nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn tài khoản này.',
+    );
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("refuses an account that is the destination of a transfer", async () => {
+    usedBy("Cash_Transfers", "to_account_id");
+    const result = await deleteBankAccount(formData({ id: "BA-003" }));
+    expect(result.error).toContain("đã có dòng chuyển tiền");
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("refuses an account a purchase order was paid into", async () => {
+    usedBy("Purchase_Orders", "bank_account_id");
+    const result = await deleteBankAccount(formData({ id: "BA-003" }));
+    expect(result.error).toBe(
+      'Tài khoản "ACB - Phin Di" đã có phiếu nhập nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn tài khoản này.',
+    );
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("deletes an account nothing points at", async () => {
+    mocks.findAllWhere.mockResolvedValue([]);
+    const result = await deleteBankAccount(formData({ id: "BA-003" }));
+    expect(result.error).toBeUndefined();
+    expect(mocks.remove).toHaveBeenCalledWith("Bank_Accounts", "BA-003");
+  });
+});
+
 // M3 -- "Dùng lại" (reactivate) must re-check findDuplicateActiveName: another
 // ACTIVE account may have taken this name while this one was retired.
 describe('"Dùng lại" re-checks the duplicate-name guard (M3)', () => {

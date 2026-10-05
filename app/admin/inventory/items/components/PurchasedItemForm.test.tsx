@@ -35,6 +35,8 @@ const mocks = vi.hoisted(() => ({
   addPurchasedItem: vi.fn(),
   updatePurchasedItem: vi.fn(),
   routerRefresh: vi.fn(),
+  push: vi.fn(),
+  confirm: vi.fn(),
 }));
 
 vi.mock("../actions", () => ({
@@ -43,7 +45,10 @@ vi.mock("../actions", () => ({
 }));
 // section B: this component now calls useRouter().refresh() on save.
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.routerRefresh }),
+  useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.push }),
+}));
+vi.mock("@/lib/shared/dialog", () => ({
+  confirm: mocks.confirm,
 }));
 
 // SearchableSelect scrolls the highlighted option into view when the
@@ -148,28 +153,33 @@ async function openForm() {
       units={UNITS as any}
     />,
   );
-  const openBtn = findButtonWithText(container, "+ Thêm Hàng Mua Vào")!;
-  await fireClick(openBtn);
-  await flush();
   return container;
 }
 
 // 2026-08-20 fix: edit mode seeds its base-unit selector from
 // initialConversions -- the only way to reach the id-in-a-name-keyed-select
 // half of the defect (section 1, path #2).
-async function openEditForm(initialData: any, initialConversions: any[]) {
+async function openEditForm(initialData: any, initialConversions: any[], returnTo?: string) {
   const container = await renderTracked(
     <PurchasedItemForm
       itemCategories={CATEGORIES as any}
       units={UNITS as any}
       initialData={initialData}
       initialConversions={initialConversions}
+      returnTo={returnTo}
     />,
   );
-  const openBtn = findButtonWithText(container, "Sửa")!;
-  await fireClick(openBtn);
-  await flush();
   return container;
+}
+
+async function submitForm(container: HTMLElement) {
+  const form = container.querySelector("form")!;
+  await act(async () => {
+    form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+  });
+  for (let i = 0; i < 5; i++) {
+    await flush();
+  }
 }
 
 describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1, item B)", () => {
@@ -284,9 +294,6 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
         isUnitLocked={true}
       />,
     );
-    const openBtn = findButtonWithText(container, "Sửa")!;
-    await fireClick(openBtn);
-    await flush();
 
     // No interactive selector for the base unit -- its placeholder (only
     // ever rendered by the editable SearchableSelect variant) must not
@@ -382,3 +389,138 @@ describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-2
     expect(document.body.textContent).toContain("Không quản lý tồn kho");
   });
 });
+
+describe("PurchasedItemForm on-page behaviour", () => {
+  it("renders on page and Bỏ navigates to returnTo without saving", async () => {
+    const container = await renderTracked(
+      <PurchasedItemForm
+        itemCategories={CATEGORIES as any}
+        units={UNITS as any}
+        returnTo="/admin/inventory/items?category=CAT-1"
+      />,
+    );
+    const nameInput = container.querySelector('input[name="name"]') as HTMLInputElement;
+    expect(nameInput).not.toBeNull();
+    const boBtn = findButtonWithText(container, "Bỏ")!;
+    expect(boBtn).not.toBeUndefined();
+    await fireClick(boBtn);
+    expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/items?category=CAT-1");
+  });
+});
+
+describe("PurchasedItemForm -- asset removal confirmation on category change (Task C)", () => {
+  const EDIT_ITEM = {
+    id: "SPM-067",
+    name: "Hộp đựng topping liền nắp",
+    item_category_id: "NHH-002",
+    is_non_inventory: false,
+  };
+  const EDIT_CONVERSIONS = [
+    { id: "QD-067", purchased_item_id: "SPM-067", purchased_unit: "U-BAO", base_unit: "U-G", conversion_rate: "200" },
+  ];
+
+  // The form appends to one FormData and resubmits that same object, so a
+  // flag must be read at call time, not from mock.calls afterwards.
+  type Flags = { dup: string | null; asset: string | null };
+  function respondOnce(seen: Flags[], value: unknown) {
+    mocks.updatePurchasedItem.mockImplementationOnce(async (fd: FormData) => {
+      seen.push({
+        dup: fd.get("duplicate_warning_confirmed") as string | null,
+        asset: fd.get("asset_removal_confirmed") as string | null,
+      });
+      return value;
+    });
+  }
+
+  it("server returns needsAssetRemoval, user says yes → action called twice, second FormData has asset_removal_confirmed = 'true', then redirect to returnTo", async () => {
+    const seen: Flags[] = [];
+    respondOnce(seen, { needsAssetRemoval: { message: "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?" } });
+    respondOnce(seen, { ok: true });
+    mocks.confirm.mockResolvedValueOnce(true);
+
+    const container = await openEditForm(EDIT_ITEM, EDIT_CONVERSIONS, "/admin/inventory/items?category=NHH-002");
+    await submitForm(container);
+
+    expect(mocks.updatePurchasedItem).toHaveBeenCalledTimes(2);
+
+    expect(seen.map(f => f.asset)).toEqual([null, "true"]);
+
+    expect(mocks.confirm).toHaveBeenCalledTimes(1);
+    expect(mocks.confirm).toHaveBeenCalledWith({
+      title: "Gỡ tài sản khỏi trang Tài sản?",
+      message: "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?",
+      okText: "Gỡ và lưu",
+      cancelText: "Không lưu",
+      variant: "warning",
+    });
+
+    expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/items?category=NHH-002");
+    expect(mocks.routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("user says no → action called once, no redirect", async () => {
+    mocks.updatePurchasedItem.mockResolvedValueOnce({
+      needsAssetRemoval: {
+        message: "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?",
+      },
+    });
+    mocks.confirm.mockResolvedValueOnce(false);
+
+    const container = await openEditForm(EDIT_ITEM, EDIT_CONVERSIONS, "/admin/inventory/items?category=NHH-002");
+    await submitForm(container);
+
+    expect(mocks.updatePurchasedItem).toHaveBeenCalledTimes(1);
+    expect(mocks.confirm).toHaveBeenCalledTimes(1);
+    expect(mocks.push).not.toHaveBeenCalled();
+    expect(mocks.routerRefresh).not.toHaveBeenCalled();
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it("duplicate warning then asset removal both yes → third call carries both flags", async () => {
+    const seen: Flags[] = [];
+    respondOnce(seen, {
+      needsDuplicateWarning: {
+          conflictId: "SPM-999",
+          conflictName: "Hộp topping",
+          message: "Tên gần giống một mục đã có: Hộp topping",
+      },
+    });
+    respondOnce(seen, { needsAssetRemoval: { message: "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?" } });
+    respondOnce(seen, { ok: true });
+    mocks.confirm
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(true);
+
+    const container = await openEditForm(EDIT_ITEM, EDIT_CONVERSIONS, "/admin/inventory/items?category=NHH-002");
+    await submitForm(container);
+
+    expect(mocks.updatePurchasedItem).toHaveBeenCalledTimes(3);
+
+    expect(seen).toEqual([
+      { dup: null, asset: null },
+      { dup: "true", asset: null },
+      { dup: "true", asset: "true" },
+    ]);
+
+    expect(mocks.confirm).toHaveBeenCalledTimes(2);
+    expect(mocks.confirm).toHaveBeenNthCalledWith(1, {
+      title: "Tên gần giống một mục đã có",
+      message: "Tên gần giống một mục đã có: Hộp topping",
+      okText: "Món khác",
+      cancelText: "Tôi gõ nhầm",
+      variant: "warning",
+    });
+    expect(mocks.confirm).toHaveBeenNthCalledWith(2, {
+      title: "Gỡ tài sản khỏi trang Tài sản?",
+      message: "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?",
+      okText: "Gỡ và lưu",
+      cancelText: "Không lưu",
+      variant: "warning",
+    });
+
+    expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/items?category=NHH-002");
+    expect(mocks.routerRefresh).toHaveBeenCalledTimes(1);
+  });
+});
+
+

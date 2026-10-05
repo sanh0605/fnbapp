@@ -1,15 +1,24 @@
 "use client";
 
 import { useState, useId } from "react";
-import { saveProduct, pauseProduct, resumeProduct, eraseProduct } from "@/app/admin/products/actions";
+import { useRouter } from "next/navigation";
+import { saveProduct } from "@/app/admin/products/actions";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
-import { ModalPortal } from "@/components/ui/ModalPortal";
-import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { Button } from "@/components/ui/Button";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { alert, confirm } from "@/lib/shared/dialog";
+import { safeReturnTo } from "./return-to";
 
-export default function ProductForm({ categories, initialData, canDelete }: any) {
+interface ProductFormProps {
+  categories: Array<{ id: string; name: string }>;
+  initialData?: any;
+  returnTo?: string;
+  canDelete?: boolean;
+}
+
+export default function ProductForm({ categories, initialData, returnTo: rawReturnTo }: ProductFormProps) {
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/products");
+  const router = useRouter();
   const isEdit = !!initialData;
   // docs/superpowers/plans/2026-09-07-one-price-per-topping.md Task 2:
   // BR-CATALOG-003's price sync (migration 0098) makes the Topping & Tuỳ
@@ -17,10 +26,7 @@ export default function ProductForm({ categories, initialData, canDelete }: any)
   // modifier -- this form must stop being a second editor for that price.
   const priceReadOnly = isEdit && !!initialData?.isLinkedTopping;
   const formId = useId();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isEraseOpen, setIsEraseOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [statusLoading, setStatusLoading] = useState(false);
 
   const [categoryId, setCategoryId] = useState(initialData?.category_id || "");
   const [name, setName] = useState(initialData?.name || "");
@@ -29,12 +35,18 @@ export default function ProductForm({ categories, initialData, canDelete }: any)
   const [variants, setVariants] = useState<any[]>(
     initialData?.variants || [{ size_name: "Mặc định", price: 0 }]
   );
-  const [effectiveDate, setEffectiveDate] = useState<Date | null>(initialData?.effective_date ? new Date(initialData.effective_date) : null);
+  const [effectiveDate, setEffectiveDate] = useState<Date | null>(
+    initialData?.effective_date ? new Date(initialData.effective_date) : null
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !categoryId) return await alert({ title: "Thiếu thông tin", message: "Vui lòng nhập Tên món và chọn Nhóm.", variant: "warning" });
-    if (variants.length === 0) return await alert({ title: "Thiếu thông tin", message: "Phải có ít nhất 1 size.", variant: "warning" });
+    if (!name || !categoryId) {
+      return await alert({ title: "Thiếu thông tin", message: "Vui lòng nhập Tên món và chọn Nhóm.", variant: "warning" });
+    }
+    if (variants.length === 0) {
+      return await alert({ title: "Thiếu thông tin", message: "Phải có ít nhất 1 size.", variant: "warning" });
+    }
 
     setLoading(true);
     const formData = new FormData();
@@ -70,53 +82,10 @@ export default function ProductForm({ categories, initialData, canDelete }: any)
     setLoading(false);
 
     if (res.success) {
-      setIsOpen(false);
-      if (!isEdit) {
-        setName("");
-        setCategoryId("");
-        setVariants([{ size_name: "Mặc định", price: 0 }]);
-      }
+      router.push(returnTo);
+      router.refresh();
     } else {
       await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
-    }
-  };
-
-  // Pause/resume are one-click, reversible -- no confirm modal, matching
-  // the state table's "Ngừng bán: Reversible: one click" (the plan's
-  // section 2). Erase is the only irreversible action here and keeps its
-  // confirm modal.
-  const handlePause = async () => {
-    setStatusLoading(true);
-    const formData = new FormData();
-    formData.append("id", initialData.id);
-    const res = await pauseProduct(formData);
-    setStatusLoading(false);
-    if (res?.error) {
-      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
-    }
-  };
-
-  const handleResume = async () => {
-    setStatusLoading(true);
-    const formData = new FormData();
-    formData.append("id", initialData.id);
-    const res = await resumeProduct(formData);
-    setStatusLoading(false);
-    if (res?.error) {
-      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
-    }
-  };
-
-  const handleErase = async () => {
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("id", initialData.id);
-    const res = await eraseProduct(formData);
-    setLoading(false);
-    if (res?.error) {
-      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
-    } else {
-      setIsEraseOpen(false);
     }
   };
 
@@ -134,143 +103,140 @@ export default function ProductForm({ categories, initialData, canDelete }: any)
   };
 
   return (
-    <>
-      {!isEdit ? (
-        <Button variant="primary" onClick={() => setIsOpen(true)}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          Thêm Món Mới
-        </Button>
-      ) : (
-        <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)}>Sửa</Button>
-          {initialData.status === "ACTIVE" ? (
-            <Button variant="ghost" size="sm" onClick={handlePause} loading={statusLoading}>Ngừng bán</Button>
-          ) : (
-            <Button variant="ghost" size="sm" onClick={handleResume} loading={statusLoading}>Bán lại</Button>
-          )}
-          {initialData.neverSold && canDelete && (
-            <Button variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10" onClick={() => setIsEraseOpen(true)}>Xoá vĩnh viễn</Button>
-          )}
-        </div>
-      )}
-
-      {isOpen && (
-        <ModalPortal>
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className="bg-surface-card rounded-card shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-border flex justify-between items-center bg-page">
-              <h2 className="text-xl font-bold text-text-primary">
-                {isEdit ? "Sửa Món" : "Tạo Món Mới (Product Builder)"}
-              </h2>
-              <button onClick={() => setIsOpen(false)} className="text-text-muted hover:text-text-primary" aria-label="Đóng">
-                <X className="w-5 h-5" />
-              </button>
+    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-4xl shadow-sm">
+      <form id={isEdit ? `editProd-${initialData.id}` : "addProd"} onSubmit={handleSubmit} className="space-y-6">
+        {/* THÔNG TIN CHUNG */}
+        <div className="bg-page p-5 rounded-xl border border-border">
+          <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
+            <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
+            Thông Tin Cơ Bản
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor={`${formId}-name`} className="block text-sm font-bold text-text-primary mb-1">Tên món *</label>
+              <input
+                id={`${formId}-name`}
+                type="text"
+                required
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full border border-border rounded-lg px-4 py-2.5 min-h-[44px] focus:ring-focus-ring bg-surface-card text-text-primary"
+                placeholder="VD: Cà phê sữa đá..."
+              />
             </div>
-
-            <div className="p-6 overflow-y-auto bg-page">
-              <form id={isEdit ? `editProd-${initialData.id}` : "addProd"} onSubmit={handleSubmit} className="space-y-6 pb-48">
-
-                {/* THÔNG TIN CHUNG */}
-                <div className="bg-surface-card p-5 rounded-xl border border-border shadow-sm">
-                  <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-                    <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
-                    Thông Tin Cơ Bản
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor={`${formId}-name`} className="block text-sm font-bold text-text-primary mb-1">Tên món *</label>
-                      <input id={`${formId}-name`} type="text" required value={name} onChange={e => setName(e.target.value)} className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-focus-ring bg-surface-card text-text-primary" placeholder="VD: Cà phê sữa đá..." />
-                    </div>
-                    <div>
-                      <label htmlFor={`${formId}-category-id`} className="block text-sm font-bold text-text-primary mb-1">Nhóm món *</label>
-                      <select id={`${formId}-category-id`} required value={categoryId} onChange={e => setCategoryId(e.target.value)} className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-focus-ring bg-surface-card text-text-primary">
-                        <option value="">-- Chọn nhóm --</option>
-                        {categories.map((c:any) => (
-                          <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <label htmlFor={`${formId}-effective-date`} className="block text-sm font-bold text-text-primary mb-1">Ngày áp dụng giá (Tuỳ chọn)</label>
-                    <p className="text-xs text-text-secondary mb-2">Bỏ trống hệ thống sẽ lấy thời gian hiện tại. Dành cho việc cập nhật lịch sử bán hàng cũ.</p>
-                    <div className="w-full md:w-1/2">
-                      <CustomDatePicker
-                        id={`${formId}-effective-date`}
-                        name="effective_date"
-                        selected={effectiveDate}
-                        onChange={(date) => setEffectiveDate(date)}
-                        placeholderText="dd/mm/yyyy hh:mm:ss"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* VARIANTS */}
-                <div className="bg-surface-card p-5 rounded-xl border border-border shadow-sm">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                      <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
-                      Các Size
-                    </h3>
-                    <Button variant="secondary" size="sm" onClick={addVariant}><Plus className="w-4 h-4 mr-1"/> Thêm Size</Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {variants.map((variant, vIdx) => {
-                      const variantRowId = `${formId}-variant-${vIdx}`;
-                      return (
-                        <div key={vIdx} className="bg-page p-4 border border-border rounded-xl flex gap-4 items-end">
-                          <div className="flex-1">
-                            <label htmlFor={`${variantRowId}-size-name`} className="block text-xs font-bold text-text-secondary uppercase mb-1">Tên Size</label>
-                            <input id={`${variantRowId}-size-name`} type="text" required value={variant.size_name} onChange={e => updateVariant(vIdx, "size_name", e.target.value)} className="w-full border border-border rounded-md px-3 py-2 text-sm font-bold focus:ring-focus-ring bg-surface-card text-text-primary" placeholder="VD: Mặc định, Size M..." />
-                          </div>
-                          <div className="flex-1">
-                            <label htmlFor={`${variantRowId}-price`} className="block text-xs font-bold text-text-secondary uppercase mb-1">Giá bán (VNĐ)</label>
-                            <input id={`${variantRowId}-price`} type="number" required min="0" value={variant.price} readOnly={priceReadOnly} onChange={e => updateVariant(vIdx, "price", e.target.value === "" ? "" : e.target.value)} className={`w-full border border-border rounded-md px-3 py-2 text-sm font-bold text-primary focus:ring-focus-ring ${priceReadOnly ? "bg-surface-secondary cursor-not-allowed" : "bg-surface-card"}`} />
-                            {priceReadOnly && (
-                              <p className="text-xs text-text-secondary mt-1">Giá này đặt ở màn hình Topping &amp; Tuỳ chọn.</p>
-                            )}
-                          </div>
-                          {variants.length > 1 && (
-                            <Button variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10" onClick={() => removeVariant(vIdx)}>Xoá Size</Button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* End of form */}
-
-              </form>
-            </div>
-
-            <div className="p-5 border-t border-border bg-page flex justify-end gap-3 mt-auto">
-              <Button variant="secondary" onClick={() => setIsOpen(false)}>Huỷ</Button>
-              <Button
-                variant="primary"
-                type="submit"
-                form={isEdit ? `editProd-${initialData.id}` : "addProd"}
-                loading={loading}
+            <div>
+              <label htmlFor={`${formId}-category-id`} className="block text-sm font-bold text-text-primary mb-1">Nhóm món *</label>
+              <select
+                id={`${formId}-category-id`}
+                required
+                value={categoryId}
+                onChange={e => setCategoryId(e.target.value)}
+                className="w-full border border-border rounded-lg px-4 py-2.5 min-h-[44px] focus:ring-focus-ring bg-surface-card text-text-primary"
               >
-                Lưu Menu
-              </Button>
+                <option value="">-- Chọn nhóm --</option>
+                {categories.map((c: any) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-border">
+            <label htmlFor={`${formId}-effective-date`} className="block text-sm font-bold text-text-primary mb-1">Ngày áp dụng giá (Tuỳ chọn)</label>
+            <p className="text-xs text-text-secondary mb-2">Bỏ trống hệ thống sẽ lấy thời gian hiện tại. Dành cho việc cập nhật lịch sử bán hàng cũ.</p>
+            <div className="w-full md:w-1/2">
+              <CustomDatePicker
+                id={`${formId}-effective-date`}
+                name="effective_date"
+                selected={effectiveDate}
+                onChange={(date) => setEffectiveDate(date)}
+                placeholderText="dd/mm/yyyy hh:mm:ss"
+              />
             </div>
           </div>
         </div>
-        </ModalPortal>
-      )}
 
-      {isEraseOpen && (
-        <DeleteConfirmModal
-          isOpen={isEraseOpen}
-          onClose={() => setIsEraseOpen(false)}
-          onConfirm={handleErase}
-          title="Xác nhận xoá vĩnh viễn"
-          description={`Xoá vĩnh viễn món "${initialData.name}"? Toàn bộ lịch sử giá và size của món này sẽ mất theo. Việc này KHÔNG THỂ hoàn tác.`}
-        />
-      )}
-    </>
+        {/* VARIANTS */}
+        <div className="bg-page p-5 rounded-xl border border-border">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+              <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
+              Các Size
+            </h3>
+            <Button variant="secondary" size="sm" type="button" onClick={addVariant} className="min-h-[44px]">
+              <Plus className="w-4 h-4 mr-1"/> Thêm Size
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            {variants.map((variant, vIdx) => {
+              const variantRowId = `${formId}-variant-${vIdx}`;
+              return (
+                <div key={vIdx} className="bg-surface-card p-4 border border-border rounded-xl flex flex-col sm:flex-row gap-4 sm:items-end">
+                  <div className="flex-1">
+                    <label htmlFor={`${variantRowId}-size-name`} className="block text-xs font-bold text-text-secondary uppercase mb-1">Tên Size</label>
+                    <input
+                      id={`${variantRowId}-size-name`}
+                      type="text"
+                      required
+                      value={variant.size_name}
+                      onChange={e => updateVariant(vIdx, "size_name", e.target.value)}
+                      className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm font-bold focus:ring-focus-ring bg-surface-card text-text-primary"
+                      placeholder="VD: Mặc định, Size M..."
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label htmlFor={`${variantRowId}-price`} className="block text-xs font-bold text-text-secondary uppercase mb-1">Giá bán (VNĐ)</label>
+                    <input
+                      id={`${variantRowId}-price`}
+                      type="number"
+                      inputMode="numeric"
+                      required
+                      min="0"
+                      value={variant.price}
+                      readOnly={priceReadOnly}
+                      onChange={e => updateVariant(vIdx, "price", e.target.value === "" ? "" : e.target.value)}
+                      className={`w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm font-bold text-primary focus:ring-focus-ring ${priceReadOnly ? "bg-surface-secondary cursor-not-allowed" : "bg-surface-card"}`}
+                    />
+                    {priceReadOnly && (
+                      <p className="text-xs text-text-secondary mt-1">Giá này đặt ở màn hình Topping &amp; Tuỳ chọn.</p>
+                    )}
+                  </div>
+                  {variants.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      type="button"
+                      className="!text-danger hover:!bg-danger/10 min-h-[44px] self-end sm:self-auto"
+                      onClick={() => removeVariant(vIdx)}
+                    >
+                      Xoá Size
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
+          <button
+            type="button"
+            onClick={() => router.push(returnTo)}
+            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px]"
+          >
+            Bỏ
+          </button>
+          <Button
+            variant="primary"
+            type="submit"
+            loading={loading}
+            className="w-full sm:w-auto min-h-[44px]"
+          >
+            Lưu Menu
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

@@ -39,7 +39,7 @@ const NBSP = String.fromCharCode(160);
 // parsing). Anything else -- a decimal point, a comma, scientific or hex
 // notation, a malformed grouping like "1.50.000" -- is a format error, not
 // a "too small" one.
-function parseAmountVn(raw: string): ParseResult<number> {
+export function parseAmountVn(raw: string): ParseResult<number> {
   if (!raw) return { ok: false, error: AMOUNT_NOT_POSITIVE_ERROR };
 
   const noSpaces = raw.split(" ").join("").split(NBSP).join("");

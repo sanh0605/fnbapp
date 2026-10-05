@@ -105,3 +105,22 @@ export function formatVnDay(isoDay: string): string {
   const m = DAY_ONLY.exec(isoDay);
   return m ? `${m[3]}/${m[2]}/${m[1]}` : "";
 }
+
+/** "YYYY-MM-DD" of the Saigon calendar day that `now` falls on. */
+export function saigonToday(now: Date = new Date()): string {
+  const p = getSaigonParts(now);
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+/**
+ * Long weekday + day for a day-only value, e.g. "Thứ Ba, 15/09/2026".
+ * Weekday is computed for the calendar day itself (midnight UTC is 07:00
+ * that same day in Saigon), so it never depends on the process zone.
+ */
+export function formatVnDayWithWeekday(isoDay: string): string {
+  const m = DAY_ONLY.exec(isoDay);
+  if (!m) return "";
+  const probe = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  const weekday = probe.toLocaleDateString("vi-VN", { weekday: "long", timeZone: SAIGON_TZ });
+  return `${weekday}, ${m[3]}/${m[2]}/${m[1]}`;
+}

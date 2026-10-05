@@ -13,7 +13,7 @@ export default async function NewIssueSlipPage() {
   return (
     <div className="space-y-6">
       <BackLink href="/admin/inventory/issue-slips" label="Phiếu xuất" />
-      <PageHeader title="Tạo phiếu xuất" subtitle="Ghi nhận hao hụt, hư hỏng, hoặc dùng nội bộ cho hàng mua vào." />
+      <PageHeader title="Tạo phiếu xuất" subtitle="Ghi nhận nguyên liệu lấy ra khỏi kho." />
       <IssueSlipClient items={items} />
     </div>
   );

@@ -1,3 +1,5 @@
+import { saigonBucketKeys } from "@/lib/shared/report-time";
+
 // Plan D I6: a backdated issue slip changes a closed period's cost, not just
 // its own day. computeIssueCosting replays chronologically, so the weighted
 // average shifts starting at the slip's own instant and stays shifted
@@ -6,10 +8,13 @@
 // month. Understating this to "only this month changes" would be wrong, not
 // just incomplete (plan section 8, D7a).
 export function computeAffectedMonths(issuedAt: Date, now: Date = new Date()): string[] {
-  const startY = issuedAt.getFullYear();
-  const startM = issuedAt.getMonth();
-  const endY = now.getFullYear();
-  const endM = now.getMonth();
+  // Months are Saigon months (BR-DATA-006), not the runtime's own zone.
+  const start = saigonBucketKeys(issuedAt.toISOString()).monthKey;
+  const end = saigonBucketKeys(now.toISOString()).monthKey;
+  const startY = Number(start.slice(0, 4));
+  const startM = Number(start.slice(5, 7)) - 1;
+  const endY = Number(end.slice(0, 4));
+  const endM = Number(end.slice(5, 7)) - 1;
 
   if (startY > endY || (startY === endY && startM > endM)) {
     return []; // future-dated -- the RPC itself refuses this, nothing to warn about here

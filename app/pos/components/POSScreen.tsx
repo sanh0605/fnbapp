@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { formatNumber } from "@/lib/shared/format";
+import { formatDate } from "@/lib/shared/datetime";
 import { submitOrderV2, getPOSDrafts, savePOSDraft, deletePOSDraft } from "@/app/pos/actions";
 import type { CartInput } from "@/lib/sales/order-cart";
 import Link from "next/link";
@@ -1006,7 +1007,7 @@ export default function POSScreen({
               📝 Nháp <span className="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
             </button>
             <div className="text-sm font-medium text-text-secondary bg-surface-secondary px-3 py-1.5 rounded-full">
-              {new Date().toLocaleDateString("vi-VN")}
+              {formatDate(new Date())}
             </div>
           </div>
         </header>

@@ -1,12 +1,28 @@
 # Inventory catalog flow
 
 ```flow-decl
-routes: /admin/inventory/items, /admin/inventory/categories, /admin/inventory/units, /admin/inventory/conversions
+routes: /admin/inventory/items, /admin/inventory/categories, /admin/inventory/units, /admin/inventory/conversions, /admin/inventory/items/new, /admin/inventory/items/[id]/edit, /admin/inventory/items/[id], /admin/inventory/categories/[id], /admin/inventory/units/[id], /admin/inventory/conversions/[id], /admin/inventory/categories/new, /admin/inventory/categories/[id]/edit, /admin/inventory/units/new, /admin/inventory/units/[id]/edit, /admin/inventory/conversions/new, /admin/inventory/conversions/[id]/edit
 files: app/admin/inventory/actions.ts, app/admin/inventory/items/actions.ts, app/admin/inventory/conversions/actions.ts
 tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002
 ```
 
+**Behaviour change — 2026-10-03:** saving an item (`updatePurchasedItem`) whose chosen category
+is not equipment while it still has assets that are not `INACTIVE` asks a yes/no listing them
+("Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 …"); yes saves the item and
+marks those assets `INACTIVE`, no saves nothing; refused if one already has a disposal
+(`BR-COGS-008`). Before, Hộp đựng topping liền nắp moved to Vật tư tiêu hao kept depreciating.
+
+**Behaviour change — 2026-10-02:** `deletePurchasedItemAction` counts the item's
+purchase lines, stock issues, conversions and assets first and refuses in Vietnamese
+naming them ("Không xoá được Sữa tươi Mlekovita: đã có 5 dòng phiếu nhập, 35 lần xuất
+kho, 1 quy đổi."); before, every live item hit the foreign key and showed a generic
+error. `deleteItemCategory` refuses with the count of items in the category instead of
+the raw database message. `deleteConversionAction` returns `deactivated: true` when it
+only switches a conversion used in a purchase order to `INACTIVE`. Same day, the four
+screens moved to the list/detail template: each row opens `/[id]`, editing starts only
+from there, the old `/admin/inventory/items/[id]/history` page is now a section of the
+item detail page, and on Bảng quy đổi a used conversion's bin and button say "Ngừng dùng".
 **Behaviour change — 2026-09-28:** `deleteUnit`'s in-use check no longer queries
 `Base_Ingredients`, a table dropped by migration `0090` on 2026-09-01. Since then,
 deleting a unit that no conversion or purchased item uses failed with a
@@ -83,7 +99,8 @@ The declared files write `Purchased_Items` (the catalogue rows),
 `Item_Categories` (the single category tier), `Units` (units of measure), and
 `UOM_Conversions` (purchase-unit to base-unit conversions). The generated map at
 `docs/generated/system-map.md` confirms these write relations for the three
-declared files.
+declared files. `app/admin/inventory/items/actions.ts` also writes `assets`, only to
+mark an item's assets `INACTIVE` (above); the assets flow owns that table.
 
 **Cross-flow note:** `app/admin/inventory/actions.ts` also writes
 `Purchase_Order_Lines`. That belongs to the purchasing flow and is documented

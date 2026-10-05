@@ -1,28 +1,16 @@
 // @vitest-environment jsdom
-//
-// section 3 (Part A and Part B, both required, not just one): the owner's
-// own case -- clicking Xoá on Combo 2 -- covered end to end at the
-// component level: the action's result is read (not discarded), an error
-// is surfaced via lib/dialog's alert (not silence), and a successful
-// delete tells the browser to redraw (router.refresh()), not just the
-// server-side revalidatePath already in deleteUnit.
-//
-// DeleteBtn's onClick handler is directly testable in jsdom (a plain
-// button click, not a <form action={...}> submit) -- unlike UnitForm's own
-// add/edit handleSubmit, which react-dom 18.3.1 (this repo's version) does
-// not reach via any dispatched event under plain vitest+jsdom (see
-// PurchasedItemForm.tsx's own comment on this for the full explanation).
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import React from "react";
-import { DeleteBtn } from "./UnitForm";
+import { UnitForm } from "./UnitForm";
 
 const mocks = vi.hoisted(() => ({
   deleteUnit: vi.fn(),
   confirmDialog: vi.fn(),
   alertDialog: vi.fn(),
   routerRefresh: vi.fn(),
+  push: vi.fn(),
 }));
 
 vi.mock("@/app/admin/inventory/actions", () => ({
@@ -35,7 +23,7 @@ vi.mock("@/lib/shared/dialog", () => ({
   alert: mocks.alertDialog,
 }));
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: mocks.routerRefresh }),
+  useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.push }),
 }));
 
 const roots: Root[] = [];
@@ -70,48 +58,18 @@ async function fireClick(el: Element) {
   });
 }
 
-describe("UnitForm's DeleteBtn -- the owner's Combo 2 case", () => {
-  it("A7's exact case: a refused delete shows the real message via alert, and never refreshes", async () => {
-    mocks.confirmDialog.mockResolvedValue(true);
-    mocks.deleteUnit.mockResolvedValue({
-      error:
-        "Không xoá được đơn vị Combo 2 vì đang được dùng trong 1 dòng quy đổi của Bột cà phê MR.PHIN Robusta Đắk Mil. Xoá dòng quy đổi đó trước.",
-    });
-
-    const container = await renderTracked(<DeleteBtn id="UNT-010" />);
-    const button = container.querySelector("button")!;
-    await fireClick(button);
-
-    expect(mocks.deleteUnit).toHaveBeenCalled();
-    expect(mocks.alertDialog).toHaveBeenCalledWith(
-      expect.objectContaining({
-        message: expect.stringContaining("Bột cà phê MR.PHIN Robusta Đắk Mil"),
-      }),
-    );
-    expect(mocks.routerRefresh).not.toHaveBeenCalled();
-  });
-
-  it("a successful delete refreshes the route and shows no alert", async () => {
-    mocks.confirmDialog.mockResolvedValue(true);
-    mocks.deleteUnit.mockResolvedValue({});
-
-    const container = await renderTracked(<DeleteBtn id="UNT-002" />);
-    const button = container.querySelector("button")!;
-    await fireClick(button);
-
-    expect(mocks.deleteUnit).toHaveBeenCalled();
-    expect(mocks.alertDialog).not.toHaveBeenCalled();
-    expect(mocks.routerRefresh).toHaveBeenCalledTimes(1);
-  });
-
-  it("declining the confirm dialog never calls deleteUnit at all", async () => {
-    mocks.confirmDialog.mockResolvedValue(false);
-
-    const container = await renderTracked(<DeleteBtn id="UNT-002" />);
-    const button = container.querySelector("button")!;
-    await fireClick(button);
-
-    expect(mocks.deleteUnit).not.toHaveBeenCalled();
-    expect(mocks.routerRefresh).not.toHaveBeenCalled();
+// Note: The DeleteBtn test suite ("the owner's Combo 2 case") was moved
+// to UnitsClient.test.tsx via the DataList bin button per Wave 2 brief B §3.
+describe("UnitForm on-page behaviour", () => {
+  it("renders on page showing 'Tên đơn vị' and Bỏ navigates to returnTo without saving", async () => {
+    const container = await renderTracked(<UnitForm returnTo="/admin/inventory/units" />);
+    const nameInput = container.querySelector('input[name="name"]') as HTMLInputElement;
+    expect(nameInput).not.toBeNull();
+    const boBtn = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent?.trim() === "Bỏ",
+    )!;
+    expect(boBtn).not.toBeUndefined();
+    await fireClick(boBtn);
+    expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/units");
   });
 });

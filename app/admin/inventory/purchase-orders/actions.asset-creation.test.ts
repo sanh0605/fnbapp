@@ -62,6 +62,8 @@ function buildFormData(status = "COMPLETED", id = ""): FormData {
   // change; flagged in the handoff, not fixed here.
   formData.set("transaction_date", "2026-08-20T00:00:00.000Z");
   formData.set("status", status);
+  // Migration 0107: a completed order must say how it was paid.
+  formData.set("payment_method", "CASH");
   formData.set("lines_json", JSON.stringify([{ subtotal: 761_200 }]));
   formData.set("subtotal_amount", "761200");
   if (id) formData.set("id", id);
@@ -155,6 +157,52 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
 
     expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+  });
+
+  describe("an existing order saved again", () => {
+    const equipmentPlan = () => ({
+      order: {},
+      // Line ids are recreated by every replace-existing save: "POL-NEW" is the id THIS save wrote.
+      lines: [{ id: "POL-NEW", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
+      ledgerRows: [],
+    });
+
+    it("DRAFT -> COMPLETED creates the asset, pointing at the line id written by this save", async () => {
+      mocks.findById.mockResolvedValue({ status: "DRAFT", subtotal_amount: 761_200 });
+      mocks.buildPurchaseOrderWritePlan.mockReturnValue(equipmentPlan());
+
+      const res = await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
+
+      expect(res.error).toBeUndefined();
+      const assetInserts = mocks.insert.mock.calls.filter(c => c[0] === "assets");
+      expect(assetInserts).toHaveLength(1);
+      expect(assetInserts[0][1]).toEqual(
+        expect.objectContaining({
+          purchase_order_line_id: "POL-NEW",
+          purchased_item_id: "SPM-200",
+          total_cost: 761_200,
+          quantity: 8,
+        }),
+      );
+    });
+
+    it("COMPLETED -> COMPLETED creates no asset", async () => {
+      mocks.findById.mockResolvedValue({ status: "COMPLETED", subtotal_amount: 761_200 });
+      mocks.buildPurchaseOrderWritePlan.mockReturnValue(equipmentPlan());
+
+      await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
+
+      expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    });
+
+    it("DRAFT -> DRAFT creates no asset", async () => {
+      mocks.findById.mockResolvedValue({ status: "DRAFT", subtotal_amount: 761_200 });
+      mocks.buildPurchaseOrderWritePlan.mockReturnValue(equipmentPlan());
+
+      await savePurchaseOrder(buildFormData("DRAFT", "PO-001"));
+
+      expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    });
   });
 
   // section 6,

@@ -1,11 +1,45 @@
 # Cash book flow (sổ thu chi)
 
 ```flow-decl
-routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance
-files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts
-tables: Cash_Categories, Bank_Accounts, Cash_Entries
-brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006
+routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance, /admin/finance/new, /admin/finance/[id], /admin/finance/[id]/edit, /admin/finance/categories/new, /admin/finance/categories/[id], /admin/finance/categories/[id]/edit, /admin/finance/bank-accounts/new, /admin/finance/bank-accounts/[id], /admin/finance/bank-accounts/[id]/edit, /admin/finance/transfers/new, /admin/finance/transfers/[id], /admin/finance/transfers/[id]/edit
+files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, app/admin/finance/transfers/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts, lib/finance/cash-transfer-rules.ts, lib/finance/cash-flow.ts, lib/finance/cash-book-daily.ts, lib/finance/cash-book-rows.ts
+tables: Cash_Categories, Bank_Accounts, Cash_Entries, Cash_Transfers
+brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006, BR-CASH-007, BR-CASH-008
 ```
+
+**Behaviour change — 2026-10-04 (money flow, migration `0107`):** the ledger
+now shows every movement of money, not only the hand-typed rows
+(`BR-CASH-001` as changed 2026-10-04). Spec:
+`docs/superpowers/specs/2026-10-04-so-thu-chi-dong-tien-design.md`.
+
+- **Day rows, read, never typed.** The read-only view `cash_book_daily` gives
+  one row per Saigon day and payment method for completed sales and for
+  completed purchase orders; on 2026-09-15 these read "Bán hàng · Tiền mặt ·
+  23 đơn" and "Nhập hàng · Tiền mặt · 2 đơn nhập". A sale with payment rows counts each row under its own
+  method; one without counts its `net_total` under `orders_v2.payment_method`
+  (a missing method reads as cash). A purchase order counts on its
+  `transaction_date` (else `created_at`) under its new `payment_method`. Day
+  rows have no code, no tick box and no status; each links to the order list
+  or purchase-order list filtered to that day and method.
+- **Transfers.** A "Chuyển tiền" row (`cash_transfers`, code `CT-xxx`) moves
+  money between the drawer (`null` account) and a bank account, or between two
+  accounts (`BR-CASH-008`). It counts in neither Tổng thu nor Tổng chi. Pages
+  `/admin/finance/transfers/new`, `[id]`, `[id]/edit`; cancel like a hand row;
+  "Xoá" ADMIN only.
+- **Balances.** Two cards, "Đầu kỳ" and "Cuối kỳ", each with Tiền mặt, Ngân
+  hàng and Tổng (`BR-CASH-007`), computed by `summariseCashBook`
+  (`lib/finance/cash-flow.ts`) from every row through the range's last day,
+  counting from zero. Cuối kỳ tổng = Đầu kỳ tổng + Tổng thu − Tổng chi.
+- **"Trả bằng" on purchase orders.** Tiền mặt or Chuyển khoản (with an
+  account); required to complete an order, chosen by hand on every new order;
+  editable afterwards on a completed order's page (`setPurchaseOrderPayment`).
+  Orders that existed when `0107` ran count as cash.
+- **"Loại" filter** on the ledger: Tất cả, Bán hàng, Nhập hàng, Ghi tay,
+  Chuyển tiền. Under "Đã huỷ" no day row shows.
+
+The five answers below describe the hand-typed rows; where they say the ledger
+holds no sale and no running balance, the 2026-10-04 change above supersedes
+them.
 
 This doc covers all three cash-book screens: the cash-category (nhóm thu chi)
 screen, task 4 of the plan at `docs/superpowers/plans/2026-09-08-so-thu-chi.md`;
@@ -14,6 +48,18 @@ ledger itself (sổ thu chi, task 6, the main screen the other two feed) — spe
 at `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`. This is
 deliberately not an accounting system: no ledger, no double-entry, no
 running balance.
+
+**Behaviour change — 2026-10-03 (list/detail template, wave 6):** the three
+lists are on the shared template; each row opens `/admin/finance/[id]`,
+`/admin/finance/categories/[id]` or `/admin/finance/bank-accounts/[id]`, and
+editing, "Dùng lại" and "Xoá hẳn" (ADMIN) start only from there. Each list
+gains a status filter whose default hides the retired rows: the ledger's
+Đang dùng / Đã huỷ / Tất cả, the other two's Đang dùng / Ngừng dùng / Tất cả.
+The list bin is "Huỷ" on the ledger and "Ngừng dùng" on the other two, shown
+only under Đang dùng. The ledger's totals still cover every row of the date
+range, whatever the status filter or page. The ledger still opens newest
+`entry_date` first; on 2026-10-05 the owner kept that order as the one
+exception to `BR-DATA-008` (newest code first).
 
 ## Five-question current-state description
 
@@ -30,12 +76,16 @@ the two settings screens where they still apply.
 2. **Buttons per screen, and when to hide them.** The ledger offers add,
    edit and cancel (`requireAdmin`, i.e. ADMIN or MANAGER) and a permanent
    delete gated on `requireOwner` (ADMIN only, `BR-ACCESS-003`) — rendered
-   only when the signed-in actor's role is `ADMIN`. Edit and cancel are
+   only when the signed-in actor's role is `ADMIN`. The list carries only
+   add and a "Huỷ" bin (with tick boxes, under the Đang dùng filter); edit,
+   cancel and delete sit on the entry's detail page. Edit and cancel are
    hidden on a row already `CANCELLED` (`updateCashEntry` itself also
    refuses with "Dòng đã huỷ, không sửa được"); delete stays available on a
    cancelled row too, so ADMIN can still remove a mistaken entry outright.
    The two settings screens offer add, edit, retire/reinstate
-   (`requireAdmin`) and the same ADMIN-only permanent delete. Deleting a
+   (`requireAdmin`) and the same ADMIN-only permanent delete; their lists
+   carry only add and a "Ngừng dùng" bin under Đang dùng, the rest is on
+   the detail page. Deleting a
    category or account that any entry uses (cancelled entries included) is
    refused before the database is touched, with a Vietnamese sentence naming
    it and pointing to "Ngừng dùng"; the `RESTRICT` foreign key stays as the
@@ -44,13 +94,15 @@ the two settings screens where they still apply.
 
 3. **What each list contains, and what is excluded.** The ledger reads one
    date range at a time (`getCashEntries(start, end)`, filtered server-side
-   on `entry_date`, both `ACTIVE` and `CANCELLED` rows shown — a cancelled
-   row stays visible with a badge, it just drops out of the totals), newest
-   `entry_date` first, then newest id. A hand-edited range in the URL that is
+   on `entry_date`), then narrows the table by status — Đang dùng by
+   default, Đã huỷ, or Tất cả; a cancelled row keeps its badge and drops out
+   of the totals, which always cover the whole range — newest `entry_date`
+   first, then newest id, 20 rows a page. A hand-edited range in the URL that is
    not two real calendar dates written `YYYY-MM-DD`, in order, falls back to
    "Tháng này" (`app/admin/finance/resolve-date-range.ts`; `2026-02-30` counts
    as not real). The two
-   settings screens show every row of their own table regardless of status;
+   settings screens show their own table filtered by status (Đang dùng by
+   default, Ngừng dùng, Tất cả) and by a name-or-code search, newest code first;
    only the ledger's own add/edit form narrows their pickers to `ACTIVE`
    rows (plus the row's own category/account if it has since been retired,
    so opening an old entry to edit never silently drops its group).

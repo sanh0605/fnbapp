@@ -3,11 +3,10 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addPurchasedItem, updatePurchasedItem } from "../actions";
-import { FormModal } from "@/components/ui/FormModal";
 import { LoadingButton } from "@/components/ui/LoadingButton";
-import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { confirm } from "@/lib/shared/dialog";
+import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 
 // Batch 1, item B: the part of handleSubmit that decides what goes into
@@ -104,6 +103,7 @@ interface PurchasedItemFormProps {
   // current base unit, so the selector below renders read-only instead of
   // editable. Absent (undefined) for a brand-new item, which is always free.
   isUnitLocked?: boolean;
+  returnTo?: string;
 }
 
 export function PurchasedItemForm({
@@ -112,11 +112,12 @@ export function PurchasedItemForm({
   initialData,
   initialConversions,
   isUnitLocked = false,
+  returnTo: rawReturnTo,
 }: PurchasedItemFormProps) {
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/inventory/items");
   const formId = useId();
   const router = useRouter();
   const isEdit = !!initialData;
-  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -195,7 +196,9 @@ export function PurchasedItemForm({
     setUnitsState(unitsState.filter((_, i) => i !== index));
   }
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setLoading(true);
     setError(null);
 
@@ -272,81 +275,43 @@ export function PurchasedItemForm({
         return;
       }
     }
-    // section B: revalidatePath (in addPurchasedItem/updatePurchasedItem)
-    // marks the server cache stale but does not repaint this already-open
-    // page.
-    if (res.error) setError(res.error);
-    else if (isEdit) {
-      setIsOpen(false);
-      router.refresh();
-    } else {
-      setIsOpen(false);
-      setSelectedCategoryId("");
-      setUnitsState([{ name: "", conversion_rate: "" }]);
-      setIsNonInventory(false);
-      router.refresh();
+    // Task C: ask before retiring assets when item is moved out of equipment
+    if ((res as any).needsAssetRemoval) {
+      const approved = await confirm({
+        title: "Gỡ tài sản khỏi trang Tài sản?",
+        message: (res as any).needsAssetRemoval.message,
+        okText: "Gỡ và lưu",
+        cancelText: "Không lưu",
+        variant: "warning",
+      });
+      if (approved) {
+        formData.append("asset_removal_confirmed", "true");
+        res = await submitFn(formData);
+      } else {
+        setLoading(false);
+        return;
+      }
     }
     setLoading(false);
+    if (res.error) {
+      setError(res.error);
+      return;
+    }
+    router.push(returnTo);
+    router.refresh();
   }
 
   const categoryOptions = itemCategories.map(c => ({ id: c.id, label: c.name }));
   const unitOptions = units.map(u => ({ id: u.name, label: u.name }));
 
   return (
-    <>
-      {isEdit ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="mr-2"
-        >
-          Sửa
-        </Button>
-      ) : (
-        <Button
-          variant="primary"
-          onClick={() => setIsOpen(true)}
-        >
-          + Thêm Hàng Mua Vào
-        </Button>
-      )}
-
-      <FormModal
-        isOpen={isOpen}
-        onClose={() => {
-          setIsOpen(false);
-          setError(null);
-        }}
-        title={isEdit ? "Sửa Hàng Hóa Mua Vào" : "Thêm Hàng Hóa Mua Vào"}
-        maxWidth="max-w-2xl"
-        footer={
-          <>
-            <Button
-              variant="ghost"
-              type="button"
-              onClick={() => setIsOpen(false)}
-            >
-              Hủy
-            </Button>
-            <LoadingButton
-              type="submit"
-              form="purchased-item-form"
-              loading={loading}
-              loadingText="Đang lưu..."
-            >
-              {isEdit ? "Cập nhật" : "Lưu"}
-            </LoadingButton>
-          </>
-        }
-      >
-        <form id="purchased-item-form" action={handleSubmit} className="space-y-4">
-          {error && (
-            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
-              {error}
-            </div>
-          )}
+    <div className="bg-surface-card rounded-2xl border border-border p-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+            {error}
+          </div>
+        )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -493,11 +458,28 @@ export function PurchasedItemForm({
               </span>
             </label>
           )}
+
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={() => router.push(returnTo)}
+              className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+            >
+              Bỏ
+            </button>
+            <LoadingButton
+              type="submit"
+              loading={loading}
+              loadingText="Đang lưu..."
+              className="w-full sm:w-auto"
+            >
+              {isEdit ? "Cập nhật" : "Lưu"}
+            </LoadingButton>
+          </div>
         </form>
-      </FormModal>
-    </>
-  );
-}
+      </div>
+    );
+  }
 
 // section 4/5.1:
 // one implementation shared by RAW, CONSUMABLE and EQUIPMENT, so the locked

@@ -1,19 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { useFilterForm } from "@/lib/shared/use-filter-form";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { PurchasedItemForm } from "./PurchasedItemForm";
-import { PurchaseHistoryButton } from "./PurchaseHistoryButton";
-import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
+import { useRouter, useSearchParams } from "next/navigation";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
+import { FilterCard } from "@/components/ui/list/FilterCard";
+import { ListPagination } from "@/components/ui/list/ListPagination";
+import { DataList, type DataColumn } from "@/components/ui/list/DataList";
+import { paginate } from "@/components/ui/list/paginate";
+import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { deletePurchasedItemAction } from "../actions";
-import { alert } from "@/lib/shared/dialog";
-import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
+import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
 
 interface ItemsClientProps {
   categories: DBItemCategory[];
@@ -21,258 +19,353 @@ interface ItemsClientProps {
   conversions: DBUOMConversion[];
   units: DBUnit[];
   unitLockedItemIds: string[];
-  // ADMIN only (BR-ACCESS-003) -- everyone else may add and edit.
   canDelete: boolean;
+  initialSearch?: string;
+  initialCategory?: string;
+  initialPage?: string;
 }
 
-export default function ItemsClient({ categories, items, conversions, units, unitLockedItemIds, canDelete }: ItemsClientProps) {
-  const unitLockedSet = useMemo(() => new Set(unitLockedItemIds), [unitLockedItemIds]);
-  const { draft, setField, applyFilters, isPending: isPendingFilter } = useFilterForm({
-    q: "",
-    category: "ALL",
-  });
+function getUnitName(unitIdOrName: string | undefined, units: DBUnit[]): string {
+  if (!unitIdOrName) return "";
+  const found = units.find((u) => u.id === unitIdOrName || u.name === unitIdOrName);
+  return found?.name || unitIdOrName;
+}
 
-  const filteredItems = useMemo(() => {
-    return items.filter(item => {
-      const matchSearch = item.name.toLowerCase().includes(draft.q.toLowerCase());
-      const matchCategory = draft.category === "ALL" || item.item_category_id === draft.category;
-      return matchSearch && matchCategory;
-    });
-  }, [items, draft.q, draft.category]);
+function listUrl(
+  search: string,
+  category: string,
+  page: number = 1,
+  sort?: string,
+  dir?: string,
+): string {
+  const p = new URLSearchParams();
+  if (search) p.set("q", search);
+  if (category && category !== "ALL") p.set("category", category);
+  if (page > 1) p.set("page", String(page));
+  if (sort) p.set("sort", sort);
+  if (dir) p.set("dir", dir);
+  const qs = p.toString();
+  return qs ? `/admin/inventory/items?${qs}` : "/admin/inventory/items";
+}
+
+export default function ItemsClient({
+  categories,
+  items,
+  conversions,
+  units,
+  canDelete,
+  initialSearch,
+  initialCategory,
+  initialPage,
+}: ItemsClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawSort = searchParams?.get("sort");
+  const rawDir = searchParams?.get("dir");
+
+  const [search, setSearch] = useState(() => initialSearch ?? searchParams?.get("q") ?? "");
+  const [category, setCategory] = useState(
+    () => initialCategory ?? searchParams?.get("category") ?? "ALL",
+  );
+  const [page, setPage] = useState<string | number | undefined>(
+    () => initialPage ?? searchParams?.get("page") ?? undefined,
+  );
+
+  useEffect(() => {
+    if (initialSearch !== undefined) setSearch(initialSearch);
+    else if (searchParams?.get("q") !== null) setSearch(searchParams?.get("q") || "");
+  }, [initialSearch, searchParams]);
+
+  useEffect(() => {
+    if (initialCategory !== undefined) setCategory(initialCategory);
+    else if (searchParams?.get("category") !== null)
+      setCategory(searchParams?.get("category") || "ALL");
+  }, [initialCategory, searchParams]);
+
+  useEffect(() => {
+    if (initialPage !== undefined) setPage(initialPage);
+    else if (searchParams?.get("page") !== null)
+      setPage(searchParams?.get("page") || undefined);
+  }, [initialPage, searchParams]);
 
   const categoryMap = useMemo(() => {
     const map: Record<string, string> = {};
-    categories.forEach(c => map[c.id] = c.name);
+    categories.forEach((c) => (map[c.id] = c.name));
     return map;
   }, [categories]);
 
-  const rightContent = (
-    <div className="flex items-center gap-2">
-      <Link href="/admin/inventory/conversions" className="border border-border bg-surface-card text-text-primary flex items-center justify-center font-bold text-sm transition-colors hover:bg-page rounded-button h-11 px-4">
-        Bảng quy đổi
-      </Link>
-      <PurchasedItemForm
-        itemCategories={categories}
-        units={units}
-      />
-    </div>
+  const columns: DataColumn<DBPurchasedItem>[] = useMemo(
+    () => [
+      {
+        key: "id",
+        header: "Mã",
+        sortValue: (item) => item.id,
+        render: (item) => (
+          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+            {item.id}
+          </span>
+        ),
+      },
+      {
+        key: "name",
+        header: "Tên",
+        sortValue: (item) => item.name,
+        render: (item) => (
+          <div>
+            <div className="font-bold text-text-primary">{item.name}</div>
+            {item.status === "INACTIVE" && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary mt-1 border border-border">
+                Ngừng dùng
+              </span>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: "category",
+        header: "Phân loại",
+        sortValue: (item) => categoryMap[item.item_category_id] || "",
+        render: (item) => (
+          <span className="text-text-secondary font-medium">
+            {categoryMap[item.item_category_id] || "—"}
+          </span>
+        ),
+      },
+      {
+        key: "conversions",
+        header: "Quy đổi",
+        secondary: true,
+        sortValue: (item) => {
+          const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
+          if (itemConversions.length === 0) return null;
+          return itemConversions
+            .map(
+              (conv) =>
+                `1 ${getUnitName(conv.purchased_unit, units)} = ${conv.conversion_rate} ${getUnitName(conv.base_unit, units)}`,
+            )
+            .join(", ");
+        },
+        render: (item) => {
+          const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
+          if (itemConversions.length === 0) return <span className="text-text-muted">—</span>;
+          return (
+            <div className="flex flex-col gap-0.5 text-xs text-text-secondary">
+              {itemConversions.map((conv) => (
+                <div key={conv.id}>
+                  1 {getUnitName(conv.purchased_unit, units)} = {conv.conversion_rate}{" "}
+                  {getUnitName(conv.base_unit, units)}
+                </div>
+              ))}
+            </div>
+          );
+        },
+      },
+    ],
+    [categoryMap, conversions, units],
   );
+
+  const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const sortParam = rawSort ? sortKey : undefined;
+  const dirParam = rawSort ? sortDir : undefined;
+
+  const filteredItems = useMemo(() => {
+    const q = search.toLowerCase();
+    return items.filter((item) => {
+      const matchSearch =
+        item.name.toLowerCase().includes(q) ||
+        item.id.toLowerCase().includes(q);
+      const matchCategory =
+        category === "ALL" || !category || item.item_category_id === category;
+      return matchSearch && matchCategory;
+    });
+  }, [items, search, category]);
+
+  const sortedItems = useMemo(() => {
+    const col = columns.find((c) => c.key === sortKey);
+    return col?.sortValue ? sortRows(filteredItems, col.sortValue, sortDir) : filteredItems;
+  }, [filteredItems, columns, sortKey, sortDir]);
+
+  const slice = useMemo(() => {
+    return paginate(sortedItems, page);
+  }, [sortedItems, page]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    setSearch(next);
+    setPage(1);
+    router.replace(listUrl(next, category, 1, sortParam, dirParam), { scroll: false });
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextCat = e.target.value;
+    setCategory(nextCat);
+    setPage(1);
+    router.replace(listUrl(search, nextCat, 1, sortParam, dirParam), { scroll: false });
+  };
+
+  const handleApplyFilter = () => {
+    setPage(1);
+    router.replace(listUrl(search, category, 1, sortParam, dirParam), { scroll: false });
+  };
+
+  const handleClearFilter = () => {
+    setSearch("");
+    setCategory("ALL");
+    setPage(1);
+    router.replace(listUrl("", "ALL", 1, sortParam, dirParam), { scroll: false });
+  };
+
+  const currentListUrl = listUrl(search, category, slice.page, sortParam, dirParam);
+
+  const renderCard = (item: DBPurchasedItem) => {
+    const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
+    const catName = categoryMap[item.item_category_id] || "—";
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between items-start gap-2">
+          <div>
+            <div className="font-bold text-text-primary text-base leading-tight">
+              {item.name}
+            </div>
+            <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+              {item.id}
+            </div>
+          </div>
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-secondary text-text-secondary border border-border shrink-0">
+            {catName}
+          </span>
+        </div>
+        {itemConversions.length > 0 && (
+          <div className="text-xs text-text-secondary pt-1 border-t border-border/50">
+            {itemConversions.map((conv) => (
+              <div key={conv.id}>
+                1 {getUnitName(conv.purchased_unit, units)} = {conv.conversion_rate}{" "}
+                {getUnitName(conv.base_unit, units)}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const removal = canDelete
+    ? {
+        verb: "Xoá",
+        confirmMessage: (count: number) => `Xoá ${count} hàng hoá đã chọn?`,
+        remove: async (id: string) => {
+          const fd = new FormData();
+          fd.append("id", id);
+          const res = await deletePurchasedItemAction(fd);
+          if (res?.error) {
+            return { error: res.error };
+          }
+          return {};
+        },
+      }
+    : undefined;
 
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Hàng hoá" 
-        subtitle="Danh sách các mặt hàng thực tế nhập từ nhà cung cấp."
-        actions={rightContent}
+      <ListPageHeader
+        group="Kho"
+        title="Hàng hoá"
+        action={
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <Link
+              href="/admin/inventory/conversions"
+              className="border border-border bg-surface-card text-text-primary flex items-center justify-center font-bold text-sm transition-colors hover:bg-page rounded-lg h-11 px-4 min-h-[44px]"
+            >
+              Bảng quy đổi
+            </Link>
+            <Link
+              href={`/admin/inventory/items/new?returnTo=${encodeURIComponent(currentListUrl)}`}
+              className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            >
+              + Thêm Hàng Mua Vào
+            </Link>
+          </div>
+        }
       />
-      <div className="flex flex-wrap items-end gap-3 mb-6">
 
-        <div className="shrink-0">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm kiếm</label>
+      <FilterCard
+        onApply={handleApplyFilter}
+        onClear={handleClearFilter}
+        showClear={Boolean(search || (category && category !== "ALL"))}
+      >
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+          <label
+            htmlFor="items-search"
+            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
+          >
+            Tìm kiếm
+          </label>
           <input
+            id="items-search"
             type="text"
             placeholder="Tên hàng hóa..."
-            value={draft.q}
-            onChange={(e) => setField("q", e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && applyFilters()}
-            className="w-48 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm text-text-primary"
+            value={search}
+            onChange={handleSearchChange}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
           />
         </div>
-        <div className="shrink-0">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Phân loại</label>
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+          <label
+            htmlFor="items-category"
+            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
+          >
+            Phân loại
+          </label>
           <select
-            value={draft.category}
-            onChange={(e) => { setField("category", e.target.value); applyFilters({ category: e.target.value }); }}
-            className="w-40 border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm text-text-primary"
+            id="items-category"
+            value={category}
+            onChange={handleCategoryChange}
+            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
           >
             <option value="ALL">Tất cả</option>
-            {categories.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
         </div>
-        <div className="shrink-0">
-          <button
-            onClick={() => applyFilters()}
-            disabled={isPendingFilter}
-            className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
-          >
-            {isPendingFilter ? "Đang lọc..." : "Lọc"}
-          </button>
-        </div>
+      </FilterCard>
 
-      </div>
-
-      <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
-        <div className="overflow-x-auto hidden md:block">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-                <th className="px-6 py-4 font-bold">ID</th>
-                <th className="px-6 py-4 font-bold">Tên Hàng Hóa</th>
-                <th className="px-6 py-4 font-bold">Phân Loại</th>
-                <th className="px-6 py-4 font-bold text-right">Thao Tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredItems.length === 0 ? (
-                <tr>
-                <td colSpan={4} className="p-0">
-                  <EmptyState 
-                    icon="📦" 
-                    title="Chưa có hàng hóa" 
-                    description="Thêm hàng hóa để quản lý tồn kho."
-                  />
-                </td>
-              </tr>
-              ) : (
-                filteredItems.map(item => {
-                  const itemConversions = conversions.filter(c => c.purchased_item_id === item.id);
-                  return (
-                    <tr key={item.id} className="hover:bg-page transition-colors">
-                      <td className="px-6 py-4 font-mono text-[11px] text-text-muted">{item.id}</td>
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-text-primary">{item.name}</div>
-                        {itemConversions.length > 0 && (
-                          <div className="flex gap-1 mt-1">
-                            {itemConversions.map((conv, idx) => {
-                              const baseUnitName = units.find(u => u.id === conv.base_unit)?.name || "";
-                              const purchasedUnitName = units.find(u => u.id === conv.purchased_unit)?.name || conv.purchased_unit;
-                              return (
-                                <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-page text-text-secondary border border-border">
-                                  1 {purchasedUnitName} = {conv.conversion_rate} {baseUnitName}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Badge variant="processing">
-                          {categoryMap[item.item_category_id] || "---"}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end items-center gap-2">
-                          <PurchaseHistoryButton itemId={item.id} itemName={item.name} />
-                          <PurchasedItemForm
-                            initialData={item}
-                            initialConversions={itemConversions}
-                            itemCategories={categories}
-                            units={units}
-                            isUnitLocked={unitLockedSet.has(item.id)}
-                          />
-                          {canDelete && <DeleteItemButton id={item.id} name={item.name} />}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-        {/* Mobile Card Layout (< 768px) */}
-        <div className="md:hidden flex flex-col gap-3 p-4 bg-page/30">
-          {filteredItems.length === 0 ? (
-          <EmptyState 
-            icon="📦" 
-            title="Chưa có hàng hóa" 
+      <DataList
+        rows={slice.rows}
+        getId={(item) => item.id}
+        getName={(item) => item.name}
+        getHref={(item) =>
+          `/admin/inventory/items/${encodeURIComponent(item.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
+        }
+        columns={columns}
+        renderCard={renderCard}
+        sort={{
+          key: sortKey,
+          dir: sortDir,
+          href: (k, d) => listUrl(search, category, 1, k, d),
+        }}
+        removal={removal}
+        empty={
+          <EmptyState
+            icon="📦"
+            title="Chưa có hàng hóa"
             description="Thêm hàng hóa để quản lý tồn kho."
           />
-        ) : (
-            filteredItems.map(item => {
-              const itemConversions = conversions.filter(c => c.purchased_item_id === item.id);
-              return (
-                <div key={item.id} className="bg-surface-card rounded-card border border-border p-4 shadow-sm flex flex-col gap-3">
-                  <div>
-                    <div className="font-bold text-text-primary">{item.name}</div>
-                    <div className="text-[11px] font-mono text-text-muted mt-1.5 flex items-center gap-1.5">
-                      {item.id} <span className="opacity-50">•</span> <Badge variant="processing">{categoryMap[item.item_category_id] || "---"}</Badge>
-                    </div>
-                  </div>
-                  
-                  {itemConversions.length > 0 && (
-                    <div className="flex flex-col gap-1 mt-1">
-                      <div className="text-[10px] uppercase font-bold text-text-muted">Quy đổi</div>
-                      <div className="flex flex-wrap gap-1">
-                        {itemConversions.map((conv, idx) => {
-                          const baseUnitName = units.find(u => u.id === conv.base_unit)?.name || "";
-                          const purchasedUnitName = units.find(u => u.id === conv.purchased_unit)?.name || conv.purchased_unit;
-                          return (
-                            <span key={idx} className="inline-flex items-center px-2 py-1 rounded text-[11px] bg-page text-text-secondary border border-border">
-                              1 {purchasedUnitName} = {conv.conversion_rate} {baseUnitName}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex justify-end items-center gap-2 pt-3 mt-2 border-t border-border/50">
-                    <div className="flex items-center">
-                      <PurchaseHistoryButton itemId={item.id} itemName={item.name} />
-                    </div>
-                    <div className="flex items-center">
-                      <PurchasedItemForm
-                        initialData={item}
-                        initialConversions={itemConversions}
-                        itemCategories={categories}
-                        units={units}
-                        isUnitLocked={unitLockedSet.has(item.id)}
-                      />
-                    </div>
-                    <div className="flex items-center">
-                      {canDelete && <DeleteItemButton id={item.id} name={item.name} />}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DeleteItemButton({ id, name }: { id: string; name: string }) {
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // section A4b/B: the action's result was discarded -- a refusal (e.g. a
-  // purchased item referenced by purchase/issue history) failed in total
-  // silence, and a successful delete never told the browser to redraw.
-  async function handleDelete() {
-    setLoading(true);
-    const fd = new FormData();
-    fd.append("id", id);
-    const res = await deletePurchasedItemAction(fd);
-    setLoading(false);
-    if (res?.error) {
-      await alert({ title: "Không xoá được", message: res.error, variant: "danger" });
-      return;
-    }
-    router.refresh();
-  }
-
-  return (
-    <>
-      <Button
-        variant="danger"
-        size="sm"
-        onClick={() => setIsOpen(true)}
-        disabled={loading}
-      >
-        {loading ? "..." : "Xóa"}
-      </Button>
-      <DeleteConfirmModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        onConfirm={handleDelete}
-        description={`Bạn có chắc chắn muốn xóa hàng hóa "${name}"? Thao tác này có thể để lại dữ liệu rác trong bảng quy đổi và các đơn nhập hàng.`}
+        }
       />
-    </>
+
+      {slice.total > 0 && (
+        <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
+          <ListPagination
+            slice={slice}
+            unit="hàng hoá"
+            pageHref={(p) => listUrl(search, category, p, sortParam, dirParam)}
+          />
+        </div>
+      )}
+    </div>
   );
 }

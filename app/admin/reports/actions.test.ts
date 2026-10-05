@@ -1387,6 +1387,22 @@ describe("getHourlyHeatmapV2", () => {
     });
   });
 
+  it("places an order in its Saigon weekday and hour column (A7)", async () => {
+    (findAllNoCache as any).mockResolvedValue([
+      // 2026-09-14T23:30:00Z = Tuesday 15/09/2026 06:30 Saigon
+      { id: "O-1", status: "COMPLETED", created_at: "2026-09-14T23:30:00Z", net_total: "50000" },
+      // 2026-09-15T01:15:00Z = Tuesday 15/09/2026 08:15 Saigon
+      { id: "O-2", status: "COMPLETED", created_at: "2026-09-15T01:15:00Z", net_total: "30000" },
+    ]);
+
+    const result = await getHourlyHeatmapV2({ startDate: "2026-09-15", endDate: "2026-09-15" });
+    const cell = (day: string, hour: number) => result.find(c => c.dayOfWeek === day && c.hour === hour)!;
+
+    expect(cell("T3", 6)).toMatchObject({ revenue: 50000, orderCount: 1 });
+    expect(cell("T3", 8)).toMatchObject({ revenue: 30000, orderCount: 1 });
+    expect(result.reduce((n, c) => n + c.orderCount, 0)).toBe(2);
+  });
+
   // section 5, the other required test -- "pushes the completed-status..."
   // above already covers the genuinely-empty half (a real, zero-order
   // result returns the full 7*24 zeroed grid, not []; on failure the old

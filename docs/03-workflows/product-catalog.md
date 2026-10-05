@@ -1,11 +1,13 @@
 # Product catalogue flow
 
 ```flow-decl
-routes: /admin/products, /admin/products/categories, /admin/products/modifiers, /admin/products/toppings
+routes: /admin/products, /admin/products/new, /admin/products/[id], /admin/products/[id]/edit, /admin/products/[id]/history, /admin/products/categories, /admin/products/categories/new, /admin/products/categories/[id], /admin/products/categories/[id]/edit, /admin/products/modifiers, /admin/products/modifiers/new, /admin/products/modifiers/[id], /admin/products/modifiers/[id]/edit, /admin/products/toppings
 files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
 tables: Products, products, Product_Variants, product_variants, product_price_history, Product_Categories, Modifiers
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003
 ```
+
+**Behaviour change — 2026-10-03 (list/detail template, wave 4, plan `docs/superpowers/plans/2026-10-03-khuon-trang-dot4-mon.md`):** on screen only; no server action, table or figure changes. A dish row opens `/admin/products/[id]`: its fields, its sizes and prices, and its price history as recorded, one row per change with the size named (the old timeline worked out "Đến" and "Đang áp dụng" across sizes, so a dish with three sizes showed one of them as current). "Chỉnh sửa", "Ngừng bán" or "Bán lại", and the ADMIN-only "Xoá vĩnh viễn" live on that page. The list keeps a "Ngừng bán" bin and multi-select, shown only while the filter is "Đang bán". `/admin/products/[id]/history` now redirects to the detail page. Nhóm món and Topping & tuỳ chọn rows open their own `[id]` pages, with "Chỉnh sửa" and "Xoá" there and a "Xoá" bin on the list. The "Bán độc lập" switch moved from the option list to the option detail page; the list shows "Có" or "Không".
 
 **A topping with no standalone món can grow one, 2026-09-08 (`BR-CATALOG-003`,
 plan `docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md`, migration
@@ -95,21 +97,23 @@ product (`MOD-009` today) updates only itself.
    (`MOD-009`'s shape, until the switch is used to create the link — see
    above). `/admin/products/toppings` no longer has its own list; it redirects
    to the merged screen for old links/bookmarks.
-2. **Buttons per screen, and when to hide them.** `/admin/products` offers create,
-   edit/save, hide, and delete. Delete should be offered only for a never-sold
-   product — for a product that has been sold, the RESTRICT foreign key would
-   reject it, so the screen should present hide instead of delete. The category
-   screen offers create, edit, and remove for its own rows; a row still in use
-   by a live product should not be silently deleted. The modifier screen offers
-   create, edit, remove, and (only inside the *Thêm Topping* group) the "Bán
-   độc lập" switch — hidden entirely for every other group, since only a
-   topping can be sold standalone.
+2. **Buttons per screen, and when to hide them.** Every row opens its detail
+   page; edits happen only from there (list/detail template, wave 4). The
+   product list offers create and, while the filter is "Đang bán", a "Ngừng
+   bán" bin and multi-select. The product detail page offers edit, "Ngừng bán"
+   or "Bán lại", and "Xoá vĩnh viễn" — the last only for a never-sold product and
+   only for ADMIN; for a sold product the RESTRICT foreign key would reject it.
+   The category list and detail offer create, edit, and remove; a category still
+   used by a dish that is not deleted is refused with its dish count, not
+   silently removed. The modifier list and detail offer create, edit, and
+   remove; the "Bán độc lập" switch sits on the modifier detail page, only inside
+   the *Thêm Topping* group, since only a topping can be sold standalone.
 3. **What each list contains, and what is excluded.** The product list shows the
    catalogue including hidden products (filterable), one row per product with its
    variants. The category list shows product categories only — it does not show
    the purchased-item categories of the ingredient catalogue, which are a
    separate flow. The modifier list shows every live modifier, with its
-   standalone-sale state as a column rather than a second list. Purchased
+   standalone-sale state as a "Có"/"Không" column rather than a second list. Purchased
    materials and ingredients are excluded from every list here; they belong to
    the inventory catalogue flow.
 4. **Valid inputs, and what happens outside the range.** A product needs a name

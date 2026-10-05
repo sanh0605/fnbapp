@@ -37,7 +37,7 @@ export interface DBPromotion {
   code: string;
   brand_id: string;
   type: "ORDER_DISCOUNT" | "PRODUCT_DISCOUNT";
-  discount_type: "PERCENT" | "FLAT_PRICE";
+  discount_type: "PERCENT" | "FLAT_PRICE" | "FLAT_VND";
   discount_value: string;
   min_order_value: string;
   start_date: string;
@@ -130,6 +130,7 @@ export interface DBUnit {
   id: string;
   name: string;
   abbreviation: string;
+  description?: string | null;
   status: string;
   created_at: string;
 }
@@ -244,6 +245,9 @@ export interface DBPurchaseOrder {
   notes?: string;
   shipping_fee?: string;
   voucher_amount?: string;
+  // Added by migration 0107. Nullable: a draft may not have chosen yet.
+  payment_method?: "CASH" | "BANK_TRANSFER" | null;
+  bank_account_id?: string | null;
 }
 
 export interface DBPurchaseOrderLine {
@@ -314,4 +318,35 @@ export interface DBCashEntry {
   updated_at: string;
   updated_by_id: string | null;
   updated_by_name: string | null;
+}
+
+export interface DBCashTransfer {
+  id: string;
+  // "YYYY-MM-DD" -- Postgres date: no time, no zone.
+  transfer_date: string;
+  // Whole dong, always > 0.
+  amount: number;
+  // null = the cash drawer
+  from_account_id: string | null;
+  to_account_id: string | null;
+  note: string;
+  status: "ACTIVE" | "CANCELLED";
+  created_at: string;
+  created_by_id: string | null;
+  created_by_name: string | null;
+  updated_at: string;
+  updated_by_id: string | null;
+  updated_by_name: string | null;
+}
+
+// One row of the read-only view public.cash_book_daily (migration 0107):
+// sales or purchase money of one Saigon day and one payment method.
+export interface DBCashBookDailyRow {
+  source: "SALE" | "PURCHASE";
+  // "YYYY-MM-DD", Asia/Saigon calendar day
+  day: string;
+  method: "CASH" | "BANK_TRANSFER";
+  bank_account_id: string | null;
+  doc_count: number;
+  amount: number;
 }

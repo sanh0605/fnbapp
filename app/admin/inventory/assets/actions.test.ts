@@ -1,8 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findAll: vi.fn(),
+  findAllWhere: vi.fn(),
+  findAllWhereInBatches: vi.fn(),
   insert: vi.fn(),
   generateNewId: vi.fn(),
   revalidatePath: vi.fn(),
@@ -11,12 +13,21 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  findAllWhere: mocks.findAllWhere,
+  findAllWhereInBatches: mocks.findAllWhereInBatches,
   insert: mocks.insert,
   generateNewId: mocks.generateNewId,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { getAssetsData, previewDisposalCharge, disposeAsset } from "./actions";
+import {
+  getAssetsData,
+  getAssetItemsData,
+  getAssetItemDetail,
+  findItemIdForAsset,
+  previewDisposalCharge,
+  disposeAsset,
+} from "./actions";
 
 const ASSET = {
   id: "TS-001",
@@ -243,5 +254,164 @@ describe("disposeAsset -- section 3.3", () => {
       "asset_disposals",
       expect.objectContaining({ asset_id: "TS-002", disposed_date: "2026-05-15" }),
     );
+  });
+});
+
+// Filter-aware in-memory stand-ins for findAllWhere (eq) and
+// findAllWhereInBatches (column in values), so a wrong filter shows up as a
+// wrong result instead of passing against a canned answer.
+function wireTables(tables: Record<string, any[]>) {
+  mocks.findAll.mockImplementation((sheet: string) => Promise.resolve(tables[sheet] ?? []));
+  mocks.findAllWhere.mockImplementation((sheet: string, filters: { eq?: Record<string, string | number> }) =>
+    Promise.resolve(
+      (tables[sheet] ?? []).filter(row =>
+        Object.entries(filters.eq ?? {}).every(([col, val]) => row[col] === val),
+      ),
+    ),
+  );
+  mocks.findAllWhereInBatches.mockImplementation((sheet: string, column: string, values: Array<string | number>) =>
+    Promise.resolve((tables[sheet] ?? []).filter(row => values.includes(row[column]))),
+  );
+}
+
+const TS004 = {
+  id: "TS-004",
+  purchased_item_id: "SPM-BINH",
+  purchase_order_line_id: "POL-004",
+  name_snapshot: "Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)",
+  acquired_date: "2026-04-04",
+  unit_cost: 205_920,
+  quantity: 2,
+  total_cost: 411_840,
+  term_months: 24,
+  status: "ACTIVE",
+};
+const TL002 = { id: "TL-002", asset_id: "TS-004", quantity: 1, disposed_date: "2026-07-02", reason: null };
+const ITEM_TABLES = {
+  assets: [TS004, ASSET, { ...CA_DONG, id: "TS-999", status: "INACTIVE" }],
+  asset_disposals: [TL002],
+  purchase_order_lines: [{ id: "POL-004", purchase_order_id: "PO-009" }],
+  purchased_items: [
+    { id: "SPM-BINH", name: "Bình bơm" },
+    { id: "SPM-200", name: "Bình nhựa có bơm 1000ml" },
+    { id: "SPM-201", name: "Ca đong" },
+  ],
+};
+
+describe("getAssetItemsData", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-15T05:00:00Z"));
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("gives one row per purchased item, using the item's name, and leaves out INACTIVE lots", async () => {
+    wireTables(ITEM_TABLES);
+
+    const rows = await getAssetItemsData();
+
+    expect(rows.map(r => r.itemId)).toEqual(["SPM-200", "SPM-BINH"]);
+    expect(rows.find(r => r.itemId === "SPM-BINH")).toMatchObject({
+      name: "Bình bơm", quantity: 2, remainingQuantity: 1, disposedQuantity: 1, fullyDisposed: false,
+    });
+  });
+
+  it("rejects without reading data when requireAdmin refuses", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "no" });
+
+    await expect(getAssetItemsData()).rejects.toThrow("no");
+    expect(mocks.findAll).not.toHaveBeenCalled();
+    expect(mocks.findAllWhere).not.toHaveBeenCalled();
+    expect(mocks.findAllWhereInBatches).not.toHaveBeenCalled();
+  });
+});
+
+describe("getAssetItemDetail", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-15T05:00:00Z"));
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns the item's lots, disposals and months, attaching the purchase order id from the line", async () => {
+    wireTables(ITEM_TABLES);
+
+    const detail = await getAssetItemDetail("SPM-BINH");
+
+    expect(detail).not.toBeNull();
+    expect(detail!.item.name).toBe("Bình bơm");
+    expect(detail!.lots).toHaveLength(1);
+    expect(detail!.lots[0]).toMatchObject({ id: "TS-004", purchaseOrderId: "PO-009" });
+    expect(detail!.disposals[0].charge).toBeCloseTo(171_600, 6);
+    expect(detail!.months.find(m => m.month === "2026-07")!.disposalCharge).toBeCloseTo(171_600, 6);
+    expect(detail!.item.chargedToDate).toBeCloseTo(265_980, 6);
+  });
+
+  it("gives a null purchase order id when the lot has no purchase order line", async () => {
+    wireTables({ ...ITEM_TABLES, assets: [{ ...TS004, purchase_order_line_id: null }] });
+
+    const detail = await getAssetItemDetail("SPM-BINH");
+
+    expect(detail!.lots[0].purchaseOrderId).toBeNull();
+  });
+
+  it("returns null for an unknown item and for an item whose only lots are INACTIVE", async () => {
+    wireTables(ITEM_TABLES);
+
+    await expect(getAssetItemDetail("SPM-404")).resolves.toBeNull();
+    await expect(getAssetItemDetail("SPM-201")).resolves.toBeNull();
+  });
+
+  it("does not include another item's disposals", async () => {
+    wireTables({
+      ...ITEM_TABLES,
+      asset_disposals: [TL002, { id: "TL-009", asset_id: "TS-001", quantity: 1, disposed_date: "2026-05-15", reason: "x" }],
+    });
+
+    const detail = await getAssetItemDetail("SPM-BINH");
+
+    expect(detail!.disposals.map(d => d.id)).toEqual(["TL-002"]);
+  });
+
+  it("rejects without reading data when requireAdmin refuses", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "no" });
+
+    await expect(getAssetItemDetail("SPM-BINH")).rejects.toThrow("no");
+    expect(mocks.findAllWhere).not.toHaveBeenCalled();
+  });
+});
+
+describe("findItemIdForAsset", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("gives the purchased item id of a lot", async () => {
+    wireTables(ITEM_TABLES);
+
+    await expect(findItemIdForAsset("TS-004")).resolves.toBe("SPM-BINH");
+  });
+
+  it("gives null for an unknown lot and for an INACTIVE lot", async () => {
+    wireTables(ITEM_TABLES);
+
+    await expect(findItemIdForAsset("TS-404")).resolves.toBeNull();
+    await expect(findItemIdForAsset("TS-999")).resolves.toBeNull();
+  });
+
+  it("rejects without reading data when requireAdmin refuses", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "no" });
+
+    await expect(findItemIdForAsset("TS-004")).rejects.toThrow("no");
+    expect(mocks.findAllWhere).not.toHaveBeenCalled();
   });
 });

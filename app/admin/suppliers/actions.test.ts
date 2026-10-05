@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   insert: vi.fn(),
   update: vi.fn(),
@@ -10,7 +11,10 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({
+  requireAdmin: mocks.requireAdmin,
+  requireOwner: mocks.requireOwner,
+}));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   insert: mocks.insert,
@@ -20,7 +24,7 @@ vi.mock("@/lib/db/tables", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { addSupplier, editSupplier, getSuppliers } from "./actions";
+import { addSupplier, editSupplier, getSuppliers, deleteSupplierAction } from "./actions";
 
 function baseFormData(name: string): FormData {
   const formData = new FormData();
@@ -125,6 +129,59 @@ describe("addSupplier -- level 2, diacritic-stripped warning (Batch 1 follow-up)
 
     expect(res.error).toBeTruthy();
     expect(res.needsDuplicateWarning).toBeUndefined();
+  });
+});
+
+describe("deleteSupplierAction -- refuses a supplier that already has purchase orders", () => {
+  function deleteForm(id: string): FormData {
+    const formData = new FormData();
+    formData.set("id", id);
+    return formData;
+  }
+
+  function mockTables(suppliers: unknown[], purchaseOrders: unknown[]) {
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Suppliers" ? suppliers : sheet === "Purchase_Orders" ? purchaseOrders : [],
+    );
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "owner-1", name: "Owner" } });
+  });
+
+  it("names the supplier and the order count, and does not call remove", async () => {
+    mockTables(
+      [{ id: "NCC-029", name: "Vinamilk" }],
+      Array.from({ length: 12 }, (_, i) => ({ id: `PO-${i}`, supplier_id: "NCC-029" })),
+    );
+
+    const res = await deleteSupplierAction(deleteForm("NCC-029"));
+
+    expect(res).toEqual({ error: "Không xoá được Vinamilk: đã có 12 phiếu nhập." });
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("deletes a supplier with no purchase orders", async () => {
+    mockTables(
+      [{ id: "NCC-030", name: "Nhà Vườn Dừa" }],
+      [{ id: "PO-1", supplier_id: "NCC-029" }],
+    );
+
+    const res = await deleteSupplierAction(deleteForm("NCC-030"));
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.remove).toHaveBeenCalledTimes(1);
+    expect(mocks.remove).toHaveBeenCalledWith("Suppliers", "NCC-030");
+  });
+
+  it("an unknown id says so and does not call remove", async () => {
+    mockTables([{ id: "NCC-029", name: "Vinamilk" }], []);
+
+    const res = await deleteSupplierAction(deleteForm("NCC-999"));
+
+    expect(res).toEqual({ error: "Không tìm thấy nhà cung cấp." });
+    expect(mocks.remove).not.toHaveBeenCalled();
   });
 });
 

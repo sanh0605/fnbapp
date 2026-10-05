@@ -1,23 +1,30 @@
+import { Suspense } from "react";
 import { resolveActor } from "@/lib/auth/auth";
 import { getBankAccounts } from "./actions";
-import { BankAccountsList } from "./components/BankAccountsList";
-import { BankAccountForm } from "./components/BankAccountForm";
-import { PageHeader } from "@/components/ui/PageHeader";
+import BankAccountsClient from "./components/BankAccountsClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function BankAccountsPage() {
-  const [accounts, auth] = await Promise.all([getBankAccounts(), resolveActor()]);
-  const canDelete = auth.ok && auth.actor.role === "ADMIN";
+export default async function BankAccountsPage({
+  searchParams,
+}: {
+  searchParams?: { q?: string; status?: string; page?: string };
+}) {
+  const [accounts, auth] = await Promise.all([
+    getBankAccounts(),
+    resolveActor(),
+  ]);
+  const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Tài khoản ngân hàng"
-        subtitle="Khai báo tài khoản để ghi các khoản chuyển khoản. Tài khoản đã dùng thì ngừng dùng, không xoá."
-        actions={<BankAccountForm />}
+    <Suspense fallback={<div>Đang tải...</div>}>
+      <BankAccountsClient
+        accounts={accounts}
+        canDelete={canDelete}
+        initialSearch={searchParams?.q}
+        initialStatus={searchParams?.status}
+        initialPage={searchParams?.page}
       />
-      <BankAccountsList accounts={accounts} canDelete={canDelete} />
-    </div>
+    </Suspense>
   );
 }

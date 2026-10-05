@@ -16,15 +16,15 @@ interface PurchaseOrdersClientProps {
 export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientProps) {
   const searchParams = useSearchParams();
   
-  const defaultFilters = { q: "", status: "ALL", supplier: "ALL", from: "", to: "", page: "1" };
+  const defaultFilters = { q: "", status: "ALL", supplier: "ALL", from: "", to: "", page: "1", pay: "ALL" };
   const { draft, setField, applyFilters, isPending } = useFilterForm(defaultFilters);
   const [fromError, setFromError] = useState("");
   const [toError, setToError] = useState("");
   const [rangeMsg, setRangeMsg] = useState("");
   const [applyRequested, setApplyRequested] = useState(false);
 
-  const hasAnyFilter = Boolean(searchParams.get("q") || searchParams.get("status") || searchParams.get("supplier") || searchParams.get("from") || searchParams.get("to"));
-  const draftChanged = draft.q !== defaultFilters.q || draft.status !== defaultFilters.status || draft.supplier !== defaultFilters.supplier || draft.from !== defaultFilters.from || draft.to !== defaultFilters.to;
+  const hasAnyFilter = Boolean(searchParams.get("q") || searchParams.get("status") || searchParams.get("supplier") || searchParams.get("from") || searchParams.get("to") || searchParams.get("pay"));
+  const draftChanged = draft.q !== defaultFilters.q || draft.status !== defaultFilters.status || draft.supplier !== defaultFilters.supplier || draft.from !== defaultFilters.from || draft.to !== defaultFilters.to || draft.pay !== defaultFilters.pay;
   const showClear = hasAnyFilter || draftChanged;
 
   useEffect(() => {
@@ -63,7 +63,8 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
     setField("supplier", "ALL");
     setField("from", "");
     setField("to", "");
-    applyFilters({ q: "", status: "ALL", supplier: "ALL", from: "", to: "", page: "1" });
+    setField("pay", "ALL");
+    applyFilters({ q: "", status: "ALL", supplier: "ALL", from: "", to: "", page: "1", pay: "ALL" });
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -163,6 +164,19 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
               <option value="COMPLETED">Hoàn thành</option>
             </select>
           </div>
+          <div className="w-full md:w-40">
+            <label htmlFor="pay-select" className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trả bằng</label>
+            <select
+              id="pay-select"
+              value={draft.pay}
+              onChange={(e) => setField("pay", e.target.value)}
+              className="w-full min-h-[44px] border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="CASH">Tiền mặt</option>
+              <option value="BANK_TRANSFER">Chuyển khoản</option>
+            </select>
+          </div>
           <div className="w-full md:w-48">
             <label htmlFor="supplier-select" className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Nhà cung cấp</label>
             <select
@@ -244,6 +258,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
                     <th className="px-6 py-4 font-bold">Nhà cung cấp</th>
                     <th className="px-6 py-4 font-bold">Nguồn mua</th>
                     <th className="px-6 py-4 font-bold">Trạng thái</th>
+                    <th className="px-6 py-4 font-bold">Trả bằng</th>
                     <th className="px-6 py-4 font-bold text-right">Tổng tiền</th>
                   </tr>
                 </thead>
@@ -267,6 +282,9 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
                       </td>
                       <td className="px-6 py-4">
                         {renderStatusBadge(po.status)}
+                      </td>
+                      <td className="px-6 py-4 text-text-secondary whitespace-nowrap">
+                        {po.paymentLabel}
                       </td>
                       <td className="px-6 py-4 text-right font-bold text-text-primary">
                         {formatNumber(po.totalAmount)}đ
@@ -294,7 +312,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
                   </div>
                   <div className="flex justify-between items-end gap-2">
                     <div className="text-xs text-text-muted">
-                      {po.dateText} · {po.sourceName}
+                      {po.dateText} · {po.sourceName} · {po.paymentLabel}
                     </div>
                     <div>
                       {renderStatusBadge(po.status)}

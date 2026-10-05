@@ -5,7 +5,9 @@ import { findById, findAll } from "@/lib/db/tables";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
+import PurchasePaymentBlock from "./components/PurchasePaymentBlock";
 import { formatNumber } from "@/lib/shared/format";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { resolvePurchaseOrderEditGate } from "@/lib/purchasing/purchase-order-edit-gate";
 
 import { BackLink } from "@/components/ui/BackLink";
@@ -25,14 +27,15 @@ export default async function PurchaseOrderDetail({
   }
   const role = (session.user as any)?.role || "STAFF";
 
-  const [po, lines, allItems, allUnits, allSuppliers, allConversions, allSources] = await Promise.all([
+  const [po, lines, allItems, allUnits, allSuppliers, allConversions, allSources, allBankAccounts] = await Promise.all([
     findById("Purchase_Orders", params.id),
     findAll("Purchase_Order_Lines"),
     findAll("Purchased_Items"),
     findAll("Units"),
     findAll("Suppliers"),
     findAll("UOM_Conversions"),
-    findAll("Purchase_Sources")
+    findAll("Purchase_Sources"),
+    findAll("Bank_Accounts"),
   ]);
 
   if (!po) {
@@ -42,6 +45,8 @@ export default async function PurchaseOrderDetail({
   const poLines = lines.filter((l: any) => (l.po_id === params.id || l.purchase_order_id === params.id));
   const isDraft = po.status === "DRAFT";
   const isAdmin = role === "ADMIN";
+  const canEditPayment = role === "ADMIN" || role === "MANAGER";
+  const bankAccounts = (allBankAccounts as any[]).filter(a => a.status === "ACTIVE" || a.id === po?.bank_account_id);
   const editRequested = searchParams?.edit === "1";
   const { showForm } = resolvePurchaseOrderEditGate({ role, editRequested, isDraft });
 
@@ -51,7 +56,7 @@ export default async function PurchaseOrderDetail({
       <div className="flex items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">{isDraft ? "Tiếp tục tạo Phiếu Nhập Kho" : "Chi tiết Phiếu Nhập Kho"}: {po.id}</h1>
-          <p className="text-text-muted">Ngày tạo: {new Date(po.created_at).toLocaleString('vi-VN')} | Ngày giao dịch: {po.transaction_date ? new Date(po.transaction_date).toLocaleString('vi-VN') : 'N/A'}</p>
+          <p className="text-text-muted">Ngày tạo: {formatDateTimeFull(po.created_at)} | Ngày giao dịch: {po.transaction_date ? formatDateTimeFull(po.transaction_date) : 'N/A'}</p>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <span className={`px-3 py-1 text-sm font-bold rounded-full ${po.status === 'COMPLETED' ? 'bg-success/20 text-success-active' : 'bg-warning/20 text-warning-active'}`}>
@@ -81,6 +86,7 @@ export default async function PurchaseOrderDetail({
             items={allItems}
             conversions={allConversions}
             units={allUnits}
+            bankAccounts={bankAccounts}
             initialData={{ po, lines: poLines }}
           />
         </>
@@ -154,6 +160,16 @@ export default async function PurchaseOrderDetail({
                 <span className="text-primary">{formatNumber(po.total_amount)}</span>
               </div>
             </div>
+
+            {po.status === "COMPLETED" && (
+              <PurchasePaymentBlock
+                poId={po.id}
+                paymentMethod={po.payment_method}
+                bankAccountId={po.bank_account_id}
+                bankAccounts={bankAccounts}
+                canEdit={canEditPayment}
+              />
+            )}
           </div>
 
           <div className="bg-surface-secondary rounded-xl p-5 border border-border/60 text-sm text-text-secondary">

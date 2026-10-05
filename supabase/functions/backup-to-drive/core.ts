@@ -54,6 +54,11 @@ export const BACKUP_TABLES = [
   // migration 0101 is live -- dumpTable throws on a 404, and one missing
   // table kills the whole night's backup.
   "cash_entries",
+  // References bank_accounts (from_account_id, to_account_id), so it must
+  // come after it. Added 2026-10-04. WARNING: this function must not be
+  // deployed until migration 0107 is live -- dumpTable throws on a 404, and
+  // one missing table kills the whole night's backup.
+  "cash_transfers",
 ] as const;
 
 export const PAGE_SIZE = 1000;

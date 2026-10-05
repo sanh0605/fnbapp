@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { resolvePosSyncFailure } from "./actions";
 import type { PosSyncFailureItem, PosSyncLateOrder } from "./actions";
 
@@ -43,7 +44,7 @@ export function PosSyncClient({
                 <tr key={f.id} className="border-b border-border/50">
                   <td className="py-2 font-mono text-xs">{f.request_token}</td>
                   <td className="py-2">{f.error_message}</td>
-                  <td className="py-2">{new Date(f.occurred_at).toLocaleString("vi-VN")}</td>
+                  <td className="py-2">{formatDateTimeFull(f.occurred_at)}</td>
                   <td className="py-2">
                     <button
                       onClick={() => handleResolve(f.id)}
@@ -78,7 +79,7 @@ export function PosSyncClient({
               {lateOrders.map(o => (
                 <tr key={o.id} className="border-b border-border/50">
                   <td className="py-2">{o.order_no}</td>
-                  <td className="py-2">{new Date(o.created_at).toLocaleString("vi-VN")}</td>
+                  <td className="py-2">{formatDateTimeFull(o.created_at)}</td>
                   <td className="py-2">{o.delayMinutes} phút</td>
                 </tr>
               ))}

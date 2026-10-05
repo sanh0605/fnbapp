@@ -1,17 +1,44 @@
 # Cash book rules
 
 The cash book (`/admin/finance`, tables `cash_categories`, `bank_accounts`,
-`cash_entries`) records money that moves outside the sale and purchase flows.
-Design: `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`. Flow:
-`docs/03-workflows/cash-book.md`.
+`cash_entries`, `cash_transfers`, view `cash_book_daily`) shows every movement
+of money: hand-typed rows, transfers, and the sale and purchase money read from
+the orders themselves. Design: `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`,
+changed by `docs/superpowers/specs/2026-10-04-so-thu-chi-dong-tien-design.md`.
+Flow: `docs/03-workflows/cash-book.md`.
 
-### BR-CASH-001 — The cash book never holds sale or purchase money, with one dated exception
+### BR-CASH-001 — Sale and purchase money shows in the cash book but is never typed into it, with one dated exception
 
-**Status:** `APPROVED` — owner decision 2026-09-08; exception 2026-09-11.
+**Status:** `APPROVED` — owner decision 2026-09-08; exception 2026-09-11;
+changed 2026-10-04 and built the same day (migration `0107`; design
+`docs/superpowers/specs/2026-10-04-so-thu-chi-dong-tien-design.md`).
 
-Sales live in the POS, purchases in purchase orders. The cash book takes
-everything else: running costs, other income, capital put in. Recording a
-sale or a purchase here counts it twice.
+**Changed 2026-10-04.** Owner: *"lưu tất cả các lần ảnh hưởng đến dòng tiền
+vào, tức là bao gồm cả tiền thanh toán đơn nhập hàng và tiền bán hàng."* The
+cash book shows every movement of money: each completed sale (cash or
+transfer, split by its payment rows where it has them) and each completed
+purchase order, next to the rows typed by hand. Those two kinds are read from
+the orders and purchase orders themselves, never copied or retyped, so nothing
+is counted twice and profit and loss does not change. A purchase order is
+taken as paid in full on its own date (owner answer "3a", 2026-10-04); it
+gains a "Trả bằng" choice, cash or transfer, and the 198 completed orders that
+exist on 2026-10-04 count as cash until the owner changes one. On a new purchase
+order nothing is chosen in advance: whoever enters it must pick "Tiền mặt" or
+"Chuyển khoản", so nobody forgets to switch it for a transfer (owner answer
+"1a", 2026-10-04).
+
+**One row per day and payment method, for sales and for purchases** (owner
+2026-10-04). Sales: *"Theo em khuyến nghị"*, after being shown that September
+2026 had 624 sales against 8 hand-typed rows, and the example for 2026-09-15:
+"Bán hàng · Tiền mặt · 23 đơn · 522.000đ" and "Bán hàng · Chuyển khoản · 11 đơn
+· 482.000đ". Purchases, the same day: *"Anh nghĩ nhập hàng em cũng làm giống đơn
+bán hàng đi, cho nó gọn"*. A day with no cash sale has no cash row. Opening a
+row lists that day's orders, or purchase orders, paid that way.
+
+What still holds from 2026-09-08: sales live in the POS, purchases in
+purchase orders, and nobody types a sale or a purchase into the cash book by
+hand — that would count it twice. Hand-typed rows remain for everything else:
+running costs, other income, capital put in.
 
 **Exception.** Two rows (1.728.578đ by transfer, 6.683.290đ in cash,
 8.411.868đ together) are sales revenue whose order data was lost while the app
@@ -96,3 +123,43 @@ An income category that counts in profit and loss can carry a second flag, "Tín
 - **Only an income category that counts in profit and loss** can carry it. The form hides the box otherwise and clears it when the category switches to Chi or stops counting in profit and loss; the server refuses it ("Chỉ nhóm Thu có tính vào lãi lỗ mới đánh dấu được là doanh thu bán hàng."); a database check refuses it a third time (migration `0102`).
 - **It sits on the category, not on each row**, like `affects_pnl` (`BR-CASH-003`). Changing it moves every past month of that category, so on a category that already has rows the form asks before saving.
 - **Only the owner sets it.** The migration adds the column as false everywhere; after release the owner ticks it on "Doanh thu ghi tay" (`CFC-006`) himself. Until then that category's two rows show under Thu khác, and April's revenue reads 8.411.868đ short while net profit is unchanged.
+
+### BR-CASH-007 — Opening and closing balances, for cash and bank apart and together
+
+**Status:** `APPROVED` — owner decision 2026-10-04; built 2026-10-04
+(`lib/finance/cash-flow.ts`).
+
+For the date range being viewed, the cash book shows an opening balance (the
+first day, before any of its movements) and a closing balance (after the last
+day): one for cash, one for the bank accounts, and their total. Owner: *"2a nhưng
+có số tổng không?"* — the answer is yes, three figures each.
+
+**Starting point.** Every balance counts from zero on 2026-03-26, the date of the
+first cash-book row (owner answer "1b", 2026-10-04). No opening amount is typed
+in; the owner was told before choosing that the cash figure then will not match
+what is physically in the drawer.
+
+**Data before 2026-10-04 stays as it is** (owner answer "2b", 2026-10-04): no
+back-filling of past deposits or withdrawals, no re-marking of old purchase
+orders paid by transfer. Measured 2026-10-04 on that basis, the cash figure is
+negative from June 2026 (end of September 2026: cash −7.351.887đ, bank
+27.972.578đ, total 20.620.691đ); the owner saw these figures before choosing.
+The total is right; only its split between cash and bank is off for those
+months.
+
+### BR-CASH-008 — Money moved between the drawer and a bank account is a transfer, not income or expense
+
+**Status:** `APPROVED` — owner decision 2026-10-04; built 2026-10-04 (table
+`cash_transfers`, migration `0107`; rules in `lib/finance/cash-transfer-rules.ts`).
+
+Depositing cash into a bank account, or withdrawing it into the drawer, is
+recorded as one "Chuyển tiền" row: from where, to where, how much, which day.
+It lowers one balance and raises the other by the same amount, leaves the total
+unchanged, and counts in neither Tổng thu nor Tổng chi, nor in profit and loss
+(owner answer "1a", 2026-10-04, *"Làm theo em khuyến nghị"*). Example given
+before choosing: 5.000.000đ deposited into ACB on 2026-09-10 shows cash −5.000.000đ,
+bank +5.000.000đ, total unchanged. Why: in accounting this is one internal
+transfer (cash account 111 to bank account 112), not money the shop earned or
+spent; recording it as an expense row plus an income row would inflate both
+totals. The owner had asked whether two rows matched accounting better; he was
+told this, and chose the single row.

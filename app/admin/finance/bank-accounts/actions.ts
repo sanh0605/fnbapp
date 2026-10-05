@@ -120,13 +120,23 @@ export async function deleteBankAccount(formData: FormData): Promise<ActionRespo
     // nothing. Checked here first, in Vietnamese, naming the account --
     // same shape as lib/catalog/unit-delete-restriction.ts. The FK stays as
     // the backstop for a race between two concurrent requests.
-    const linked = await findAllWhere("Cash_Entries", { eq: { bank_account_id: id }, limit: 1 });
-    if (linked.length > 0) {
-      const account = (await findById(SHEET, id)) as DBBankAccount | null;
-      const name = account?.name ?? id;
-      return fail(
-        `Tài khoản "${name}" đã có dòng sổ nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn tài khoản này.`,
-      );
+    // Everything that points at an account (migration 0107 added transfers
+    // and purchase orders beside the cash entries), each with its own words.
+    const references: Array<[string, string, string]> = [
+      ["Cash_Entries", "bank_account_id", "dòng sổ"],
+      ["Cash_Transfers", "from_account_id", "dòng chuyển tiền"],
+      ["Cash_Transfers", "to_account_id", "dòng chuyển tiền"],
+      ["Purchase_Orders", "bank_account_id", "phiếu nhập"],
+    ];
+    for (const [sheet, column, what] of references) {
+      const linked = await findAllWhere(sheet, { eq: { [column]: id }, limit: 1 });
+      if (linked.length > 0) {
+        const account = (await findById(SHEET, id)) as DBBankAccount | null;
+        const name = account?.name ?? id;
+        return fail(
+          `Tài khoản "${name}" đã có ${what} nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn tài khoản này.`,
+        );
+      }
     }
 
     await remove(SHEET, id);

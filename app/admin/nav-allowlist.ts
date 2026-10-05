@@ -25,6 +25,74 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the issue-slips list -- legitimately unlinked",
   },
   {
+    route: "/admin/inventory/items/new",
+    reason: "reached from the items list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/inventory/categories/new",
+    reason: "reached from the categories list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/inventory/units/new",
+    reason: "reached from the units list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/inventory/conversions/new",
+    reason: "reached from the conversions list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/inventory/asset-bands/new",
+    reason: "reached from the asset-bands list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/suppliers/new",
+    reason: "reached from the suppliers list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/finance/new",
+    reason: "reached from the finance list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/finance/transfers/new",
+    reason: "reached from the cash book -- legitimately unlinked",
+  },
+  {
+    route: "/admin/finance/categories/new",
+    reason: "reached from the categories list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/finance/bank-accounts/new",
+    reason: "reached from the bank-accounts list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/products/new",
+    reason: "reached from the products list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/products/categories/new",
+    reason: "reached from the categories list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/products/modifiers/new",
+    reason: "reached from the modifiers list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/promotions/new",
+    reason: "reached from the promotions list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/brands/new",
+    reason: "reached from the brands list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/outlets/new",
+    reason: "reached from the outlets list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/users/new",
+    reason: "reached from the users list -- legitimately unlinked",
+  },
+  {
     route: "/admin/pos-sync",
     reason:
       "reached from the Tổng quan page (app/admin/page.tsx links it)",

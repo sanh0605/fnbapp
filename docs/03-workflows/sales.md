@@ -1,12 +1,18 @@
 # Sales flow (POS, orders, promotions)
 
 ```flow-decl
-routes: /pos, /admin/orders, /admin/promotions
+routes: /pos, /admin/orders, /admin/orders/[id], /admin/orders/[id]/edit, /admin/promotions, /admin/promotions/new, /admin/promotions/[id], /admin/promotions/[id]/edit
 files: app/pos/actions.ts, lib/sales/void-order-transaction.ts, app/admin/promotions/actions.ts
 tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
+**Behaviour change — 2026-10-03 (list/detail template, wave 5):** `/admin/promotions` is a
+table on desktop (cards before) and cards on phone; each row opens
+`/admin/promotions/[id]`, which lists the dishes and sizes a dish discount applies to, and
+editing starts only from there. Times read in Asia/Saigon (the old cards used the browser's
+zone). "Áp dụng" counts dishes and sizes; the old card's "(N món)" counted sizes. The bin
+"Xoá" is ADMIN-only, as before.
 **Reviewed, no behaviour change — 2026-09-08:** `app/pos/actions.ts` changed
 (`getPOSBestSellerProductIds` now excludes standalone toppings from quick-add
 via the real `modifiers.product_id` join, BR-CATALOG-003). Nothing this doc
