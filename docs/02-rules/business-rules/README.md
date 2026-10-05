@@ -23,7 +23,8 @@ When a rule changes, preserve the old decision in Git/audit evidence and record 
 |---|---|---|
 | [`docs/02-rules/business-rules/sales.md`](sales.md) | Sales and order rules | `BR-SALE-*` |
 | [`docs/02-rules/business-rules/cogs.md`](cogs.md) | COGS and reporting rules | `BR-COGS-*` |
-| [`docs/02-rules/business-rules/inventory.md`](inventory.md) | Inventory, purchasing, and production rules | `BR-INV-*` |
+| [`docs/02-rules/business-rules/inventory.md`](inventory.md) | Inventory, issue slips, stocktake, production rules | `BR-INV-*` |
+| [`docs/02-rules/business-rules/purchasing.md`](purchasing.md) | Purchase orders: atomic writes, cancelling | `BR-INV-002`, `BR-INV-015` |
 | [`docs/02-rules/business-rules/catalog.md`](catalog.md) | Catalogue rules | `BR-CATALOG-*` |
 | [`docs/02-rules/business-rules/cash-book.md`](cash-book.md) | Cash book (sổ thu chi) rules | `BR-CASH-*` |
 | [`docs/02-rules/business-rules/profit-and-loss.md`](profit-and-loss.md) | Monthly profit and loss rules | `BR-PNL-*` |
