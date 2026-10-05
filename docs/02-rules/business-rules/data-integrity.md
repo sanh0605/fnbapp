@@ -108,6 +108,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 - **Text sorts the Vietnamese way, numbers by value, dates by date**; codes compare their number part by value.
 - **Phone:** there are no column headers, so the same choices sit in one "Sắp xếp" picker above the cards.
 - Applies to every list on the list/detail template (`docs/superpowers/specs/2026-10-02-khuon-danh-sach-chi-tiet-design.md`); lists not yet moved get it in their wave.
+- **Exception: the cash book (Sổ thu chi) opens by date, newest first**, code descending within a day. Owner 2026-10-05: *"Làm theo em khuyến nghị"*, after being told that the day rows for sales and purchases carry no code, and that a row dated back (`CE-033`, `CE-034`, dated 30/04/2026, entered 02/09/2026) would otherwise sit among September's rows. Clicking "Mã" still sorts by code.
 ## Backup and retention rules
 
 ### BR-BACKUP-001 — Scheduled backups are full snapshots

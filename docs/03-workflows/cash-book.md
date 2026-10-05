@@ -58,8 +58,8 @@ gains a status filter whose default hides the retired rows: the ledger's
 The list bin is "Huỷ" on the ledger and "Ngừng dùng" on the other two, shown
 only under Đang dùng. The ledger's totals still cover every row of the date
 range, whatever the status filter or page. The ledger still opens newest
-`entry_date` first; the owner was asked on 2026-10-03 whether it should follow
-`BR-DATA-008` (newest code first) instead.
+`entry_date` first; on 2026-10-05 the owner kept that order as the one
+exception to `BR-DATA-008` (newest code first).
 
 ## Five-question current-state description
 
