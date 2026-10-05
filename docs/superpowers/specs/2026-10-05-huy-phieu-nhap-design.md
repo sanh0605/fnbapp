@@ -1,6 +1,6 @@
 # Huỷ phiếu nhập
 
-**Status:** waiting for the owner's approval.
+**Status:** approved by the owner 2026-10-05 (*"a"*); below-zero check widened the same day (§3, answer *"a"*).
 **Rule this implements:** `BR-INV-015` in `docs/02-rules/business-rules/purchasing.md`.
 Related: `BR-INV-013` (stocktake lock on issue slips), `BR-COGS-008` (assets, retiring them),
 `BR-DATA-007` (an input box is its own page), `BR-CASH-001` (purchase money in the cash book).
@@ -87,9 +87,13 @@ for both the page and the cancel. Returns `{ blocked: [...], assets: [...] }`:
 - `COMPLETED`:
   - **Stocktake:** `issue_slip_stocktake_lock(coalesce(transaction_date, created_at))` is not
     null → `STOCKTAKE { stocktake_id, confirmed_at }`. Compared as moments, as `0106` does for slips.
-  - **Below zero:** per item on the order, on-hand (completed purchase lines minus every
-    `stock_issues` row, the formula of `purchased-item-onhand.ts`) minus the order's quantity for
-    that item < 0 → `NEGATIVE { item_id, item_name, on_hand, order_qty, base_unit }`, one per item.
+  - **Below zero, at any moment from the order's date to now** (owner 2026-10-05, *"a"*): per
+    item on the order, the lowest balance from the order's moment to now, by the formula of
+    `issue_stock_headroom` (`0106`: completed purchase lines minus `stock_issues`, a purchase at
+    the same instant first), minus the order's quantity for that item < 0 →
+    `NEGATIVE { item_id, item_name, low_balance, low_at, order_qty, base_unit }`, one per item.
+    `low_at` is the moment of that lowest balance. The function takes the same advisory lock as
+    the issue-slip writers (`stock_issues:id`), so a slip saved at the same instant waits.
   - **Disposed asset:** an asset made from one of its lines has an `asset_disposals` row →
     `DISPOSED { asset_id, name }`.
   - `assets`: every asset made from its lines that is not `INACTIVE` (id, name, quantity,
@@ -138,7 +142,7 @@ Tất cả — the template's rule that the default hides retired rows. Badge "�
 | Case | Message |
 |---|---|
 | Stocktake | "Phiếu ngày {dd/MM/yyyy} nằm trước lần kiểm kê {STK-001} ({dd/MM/yyyy}), nên không huỷ được: lần kiểm kê đã đếm lại hàng trên kệ." |
-| Below zero | "Huỷ phiếu này làm tồn kho âm: {item} còn {on_hand} {unit}, phiếu có {order_qty} {unit}. Hàng của phiếu đã được dùng, nên phiếu này là thật." (one line per item) |
+| Below zero | "Huỷ phiếu này làm tồn kho âm: {item} lúc thấp nhất ({dd/MM/yyyy HH:mm}) chỉ còn {low_balance} {unit}, phiếu có {order_qty} {unit}. Hàng của phiếu đã được dùng, nên phiếu này là thật." (one line per item) |
 | Disposed asset | "Tài sản {TS-xxx} {name} của phiếu đã thanh lý, nên không huỷ được phiếu." |
 | Already cancelled | "Phiếu đã huỷ rồi." |
 | Blank reason | "Lý do huỷ phiếu là bắt buộc" |
@@ -154,9 +158,6 @@ view. Issue-slip and stocktake rules. No row is ever deleted.
 
 ## 8. Known limits, told to the owner
 
-- The below-zero check uses stock **now**, not at each past date: an item that dipped below zero
-  between the order's date and today, then recovered, is not caught. A duplicated order is still
-  caught correctly, because it never leaves stock below zero today.
 - Cancelling moves P&L of every month from the order's date; there is no month lock.
 
 ## 9. Worked examples (measured 2026-10-05, read only)
@@ -169,18 +170,29 @@ view. Issue-slip and stocktake rules. No row is ever deleted.
   `PO-147` 20.200đ, `PO-148` 32.106đ) becomes "2 đơn nhập · 162.106đ"; the cash balance on every
   later day rises by 20.200đ.
 
-**Refused, below zero: `PO-066`, 20/08/2026.** Its line Sữa tươi Mlekovita 60 Hộp = 60.000 ml; on
-hand now 42.000 ml; cancelling would leave −18.000 ml. The other four refused for this reason:
-`PO-087` Sữa chua không đường Vinamilk, `PO-089` Bột cà phê truyền thống Phin Đậm, `PO-180` Sữa đặc
-Ngôi Sao Phương Nam, `PO-181` Giấy lót chống tràn.
+**Refused, below zero in the past only: `PO-064`, 12/08/2026, Trứng gà 60 trái.** Stock on
+2026-10-05 15:50 is 116, so a check of today alone would allow it; but on 03/10/2026 22:32, after
+a slip of 374 trái, it fell to 21; without the order it would have been −39. Message: "Huỷ phiếu
+này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32) chỉ còn 21 trái, phiếu có 60 trái…"
+
+**Refused, below zero today: `PO-066`, 20/08/2026.** Sữa tươi Mlekovita 60 Hộp = 60.000 ml against
+a lowest of 42.000 ml (also today's stock): −18.000 ml. Its second line, Đào ngâm Rich 24, is also
+refused: that item's lowest since 20/08 is 0.
+
+All 17 refused for this reason (2026-10-05 15:50): `PO-064`, `PO-065`, `PO-086`, `PO-154`,
+`PO-159`, `PO-168`, `PO-183`, `PO-188`, `PO-192`, `PO-199` (Trứng gà); `PO-087`, `PO-167`,
+`PO-190` (Sữa chua không đường Vinamilk); `PO-066`; `PO-089` (Bột cà phê truyền thống Phin Đậm);
+`PO-180` (Sữa đặc Ngôi Sao Phương Nam); `PO-181` (Giấy lót chống tràn).
 
 **Refused, stocktake: `PO-063`, 03/08/2026, 736.000đ** — the last order before `STK-001`
 (confirmed 09/08/2026 22:02): "Phiếu ngày 03/08/2026 nằm trước lần kiểm kê STK-001 (09/08/2026),
 nên không huỷ được…". On the edge: `PO-161`, dated 10/08/2026 00:00 Saigon (09/08 17:00 UTC), is
 **after** the count and may be cancelled; a day cut in UTC would wrongly refuse it.
 
-Count: 199 orders; 151 on or before `STK-001`; of 48 after, 5 below zero; **43 can be cancelled**,
-3 of them with assets (`PO-147`, `PO-148`, `PO-149`).
+Count (2026-10-05 15:50): 199 orders; 151 on or before `STK-001`; of 48 after, 17 below zero at
+some moment; **31 can be cancelled**, 3 of them with assets (`PO-147`, `PO-148`, `PO-149`). The
+count moves with every issue: that morning, before 25 eggs were issued and with a check of today
+only, it was 43.
 
 ## 10. Tests that must exist
 
@@ -193,7 +205,7 @@ Count: 199 orders; 151 on or before `STK-001`; of 48 after, 5 below zero; **43 c
 - List: default hides cancelled; "Đã huỷ" shows only cancelled; badge.
 - Detail: cancelled shows reason, no edit, no "Huỷ phiếu"; STAFF sees no "Huỷ phiếu".
 - Cancel page: blockers shown and no box; assets listed; button disabled while blank.
-- After the release: dry read with `purchase_order_cancel_check` on `PO-147` and `PO-066`
+- After the release: dry read with `purchase_order_cancel_check` on `PO-147`, `PO-064` and `PO-066`
   reproduces §9 before anyone cancels anything.
 
 ## 11. Split of the work
