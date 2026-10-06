@@ -97,6 +97,8 @@ describe("CancelPurchaseOrderPage", () => {
     const text = collectText(tree as ReactNode).join(" ").replace(/\s+/g, " ");
 
     expect(text).toContain("Huỷ phiếu nhập PO-147");
+    expect(text).toContain("Ngày nhập: 13/08/2026 · Nhà cung cấp: NCC");
+    expect(text).toContain("Phiếu nhập");
     expect(text).toContain("MOCK_CANCEL_FORM");
   });
 });

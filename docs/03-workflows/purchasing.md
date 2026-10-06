@@ -7,6 +7,8 @@ tables: purchase_orders, purchase_order_lines, purchase_order_edits, Purchase_So
 brCodes: BR-INV-002, BR-INV-015, BR-INV-016
 ```
 
+**Behaviour change — 2026-10-06 (cancel page shows the whole order):** `getPurchaseOrderCancelView` now also reads the order's lines, items, units and source, so `/admin/inventory/purchase-orders/[id]/cancel` lays out like the order's own page: lines and the assets that would stop on the left, the money box (goods, shipping, tax, voucher/discount, total, payment, invoice code, source, notes) and the reason box on the right; on a phone one column, money first. A refused cancel still shows the lines and money. What a cancel checks and writes is unchanged.
+
 **Behaviour change — 2026-10-06 (copy a purchase order, `BR-INV-016`):** an order's page shows "Nhân bản" to ADMIN and MANAGER on any status, cancelled included, while no edit form is open. It opens `/admin/inventory/purchase-orders/new?copyFrom=<code>`, a new, unsaved order filled by `getPurchaseOrderCopySeed` (`lib/purchasing/purchase-order-copy.ts`): supplier, source, notes, lines, extra costs and payment; the transaction time and invoice code only from a cancelled order, blank otherwise; a stopped bank account blank. Nothing is written until "Lưu Nháp" or "Tạo", through the unchanged `savePurchaseOrder`. A draft kept in the browser ("Thêm nhà cung cấp" round trip) wins over the copy.
 
 **Behaviour change — 2026-10-05 (cancel a purchase order, migration `0108`, `BR-INV-015`):**

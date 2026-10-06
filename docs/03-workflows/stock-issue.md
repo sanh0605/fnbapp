@@ -33,7 +33,7 @@ every correction is a compensating `stock_issues` row.
    - *Active*: at least one line not reversed.
    - *Cancelled*: every line reversed (by "Huỷ phiếu"); the reason is read from the reversal note.
    - *Locked*: dated on or before the latest confirmed stocktake; it can no longer be edited or cancelled.
-2. **Buttons per screen, and when to hide them.** The list page links to each slip and to "Tạo phiếu xuất" (`/new`). After a slip is created, the create page opens that slip's detail page. The old "recent slips" column with its per-line reverse button is gone; corrections happen on the detail page.
+2. **Buttons per screen, and when to hide them.** The list page links to each slip and to "Tạo phiếu xuất" (`/new`). After a slip is created, the create page opens that slip's detail page. The create page (2026-10-06) puts the time first, then on a computer one table row per line (Mặt hàng · Tồn hiện tại · Đơn vị · Số lượng · Quy ra), on a phone one card per line; "Quy ra" shows the quantity in the base unit before saving. "Quay lại" returns to the list without saving. The old "recent slips" column with its per-line reverse button is gone; corrections happen on the detail page.
    - The detail page has "Chỉnh sửa" and "Huỷ phiếu", both hidden when the slip is cancelled or locked.
    - The server refuses them anyway (`issue_slip_stocktake_lock`, cancelled-slip check).
 3. **What each list contains, and what is excluded.** One row per slip plus one row per confirmed stocktake with a shortfall (`BR-INV-012`). Cancelled slips are hidden unless the type filter is "Đã huỷ".

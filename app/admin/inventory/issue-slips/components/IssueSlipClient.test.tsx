@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import React from "react";
+import { within } from "@testing-library/react";
 import { IssueSlipClient } from "./IssueSlipClient";
 import type { IssueSlipItemView } from "../actions";
 import type { PackageLine } from "@/lib/stock/stocktake-package-lines";
@@ -27,6 +28,14 @@ vi.mock("@/lib/shared/dialog", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.routerPush }),
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("@/components/ui/SaigonDateTimeInput", () => ({
@@ -507,11 +516,21 @@ describe("IssueSlipClient -- shares one time field across the whole slip (D9)", 
     await clickButtonWithText(container, "+ Thêm mặt hàng");
     await clickButtonWithText(container, "+ Thêm mặt hàng");
 
-    expect(container.querySelectorAll('[data-testid="issued-at"]')).toHaveLength(1);
-    expect(container.textContent).toContain("áp dụng cho cả phiếu");
-    const allSelects = Array.from(container.querySelectorAll("select"));
-    const lineBlockSelects = getLineBlocks(container).flatMap(b => Array.from(b.querySelectorAll("select")));
-    expect(allSelects.length - lineBlockSelects.length).toBe(0);
+    const phoneBlock = container.querySelector<HTMLElement>(".md\\:hidden") ?? container;
+    expect(within(phoneBlock).getAllByTestId("issued-at")).toHaveLength(1);
+    expect(within(phoneBlock).getByText(/áp dụng cho cả phiếu/)).toBeTruthy();
+    const phoneSelects = Array.from(phoneBlock.querySelectorAll("select"));
+    const phoneLineSelects = getLineBlocks(phoneBlock).flatMap(b => Array.from(b.querySelectorAll("select")));
+    expect(phoneSelects.length - phoneLineSelects.length).toBe(0);
+
+    const desktopBlock = container.querySelector<HTMLElement>(".hidden.md\\:block");
+    if (desktopBlock) {
+      expect(within(desktopBlock).getAllByTestId("issued-at")).toHaveLength(1);
+      expect(within(desktopBlock).getByText(/áp dụng cho cả phiếu/)).toBeTruthy();
+      const desktopSelects = Array.from(desktopBlock.querySelectorAll("select"));
+      const desktopLineSelects = Array.from(desktopBlock.querySelectorAll("tbody select"));
+      expect(desktopSelects.length - desktopLineSelects.length).toBe(0);
+    }
   });
 });
 
@@ -616,6 +635,82 @@ describe("IssueSlipClient -- M4, the live ready-to-submit count matches handleSu
     await setInputValue(findQtyInput(getLineBlocks(container)[0]), "2");
 
     expect(container.textContent).toContain("Đã điền đủ: 1/2 dòng");
+  });
+});
+
+describe("IssueSlipClient -- Responsive redesign (desktop table & mobile cards)", () => {
+  it("desktop block contains a <table> whose header cells read Mặt hàng, Tồn hiện tại, Đơn vị, Số lượng, Quy ra", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const desktop = container.querySelector(".hidden.md\\:block");
+    expect(desktop).toBeTruthy();
+    const table = desktop!.querySelector("table");
+    expect(table).toBeTruthy();
+    const headerTexts = Array.from(table!.querySelectorAll("th")).map(th => th.textContent?.trim());
+    expect(headerTexts).toContain("Mặt hàng");
+    expect(headerTexts).toContain("Tồn hiện tại");
+    expect(headerTexts).toContain("Đơn vị");
+    expect(headerTexts).toContain("Số lượng");
+    expect(headerTexts).toContain("Quy ra");
+  });
+
+  it("after choosing an item with a package option (factor e.g. 12) and typing quantity '2', the desktop 'Quy ra' cell shows '24 <base unit>'; the phone card shows the same text", async () => {
+    const theItem = item({
+      unitName: "hộp",
+      packageLines: [
+        pkg({
+          conversionId: "QD-001",
+          sizeLabel: "Thùng 12 hộp",
+          conversionRate: 12,
+          purchasedUnitName: "Thùng",
+          baseUnitName: "hộp",
+        }),
+      ],
+    });
+    const container = await renderTracked(<IssueSlipClient items={[theItem]} />);
+    const desktop = container.querySelector<HTMLElement>(".hidden.md\\:block")!;
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden")!;
+
+    await selectItemInBlock(desktop, "Sữa tươi Vinamilk");
+    await selectPackage(desktop, "Thùng 12 hộp");
+    const desktopQtyInput = desktop.querySelector<HTMLInputElement>('input[inputmode="decimal"]')!;
+    await setInputValue(desktopQtyInput, "2");
+
+    // Desktop "Quy ra" cell shows "24 hộp"
+    const desktopTable = desktop.querySelector("table")!;
+    const quyRaHeaderIndex = Array.from(desktopTable.querySelectorAll("th")).findIndex(
+      th => th.textContent?.trim() === "Quy ra",
+    );
+    expect(quyRaHeaderIndex).toBeGreaterThanOrEqual(0);
+    const firstRowCells = desktopTable.querySelectorAll("tbody tr")[0].querySelectorAll("td");
+    expect(firstRowCells[quyRaHeaderIndex].textContent?.trim()).toBe("24 hộp");
+
+    // Phone card shows the same text "24 hộp"
+    const phoneCards = getLineBlocks(phone);
+    expect(phoneCards[0].textContent).toContain("24 hộp");
+  });
+
+  it("a 'Quay lại' link to /admin/inventory/issue-slips exists", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const backLinks = Array.from(
+      container.querySelectorAll<HTMLAnchorElement>('a[href="/admin/inventory/issue-slips"]'),
+    );
+    expect(backLinks.length).toBeGreaterThanOrEqual(1);
+    const hasQuayLai = backLinks.some(link => link.textContent?.trim() === "Quay lại");
+    expect(hasQuayLai).toBe(true);
+  });
+
+  it("'✕' is absent with one line, present after '+ Thêm mặt hàng'", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const desktop = container.querySelector<HTMLElement>(".hidden.md\\:block")!;
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden")!;
+
+    expect(desktop.querySelector('button[aria-label="Xoá dòng"]')).toBeNull();
+    expect(phone.querySelector('button[aria-label="Xoá dòng"]')).toBeNull();
+
+    await clickButtonWithText(container, "+ Thêm mặt hàng");
+
+    expect(desktop.querySelectorAll('button[aria-label="Xoá dòng"]').length).toBeGreaterThanOrEqual(1);
+    expect(phone.querySelectorAll('button[aria-label="Xoá dòng"]').length).toBeGreaterThanOrEqual(1);
   });
 });
 

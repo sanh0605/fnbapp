@@ -66,7 +66,8 @@ khuyến nghị của Opus; chủ quán đổi được bất cứ lúc nào.
 Theo khuôn trang mục 2–3, 8. Không thêm thùng rác hay chọn nhiều ở ba danh sách này: chủ
 quán chốt 2026-10-05, huỷ từng cái ở trang chi tiết (`BR-DATA-007`).
 
-- **8a — hai trang chủ quán chỉ ra:**
+- **8a — hai trang chủ quán chỉ ra** (code xong 2026-10-06, chờ chủ quán xem; kế hoạch con
+  `docs/superpowers/plans/2026-10-06-dot8a-huy-phieu-nhap-tao-phieu-xuat.md` xoá khi chủ quán nhận):
   - Huỷ phiếu nhập `/admin/inventory/purchase-orders/[id]/cancel`: máy tính lấp bề ngang
     (thông tin phiếu và các dòng hàng bên cạnh ô lý do), điện thoại xếp dọc.
   - Tạo phiếu xuất `/admin/inventory/issue-slips/new`: dựng theo khuôn, hai bố cục.
@@ -142,7 +143,7 @@ thuật thì tự sửa rồi báo.
 |---|---|---|
 | G1 | Sửa phiếu nhập mà đổi mặt hàng của một dòng: tài sản của dòng đó mất liên kết | Phần 1 (8b) |
 | G2 | Phiếu nhập nháp luôn mở form nên không thấy nút "Huỷ phiếu" (đo 2026-10-06: 0 phiếu nháp) | Phần 1 (8b) |
-| G3 | Tạo phiếu xuất: danh sách hàng lọc theo tồn hôm nay, nhưng phiếu lùi ngày bị kiểm theo ngày của phiếu | Phần 1 (8a) |
+| G3 | Tạo phiếu xuất: "Tồn hiện tại" là tồn hôm nay, và mặt hàng ngừng dùng đã hết hàng hôm nay không hiện để chọn; nhưng phiếu ghi lùi ngày được kiểm theo tồn ở ngày của phiếu | Phần 1 (8a) |
 | G4 | Xoá nhân viên (`deleteUserAction`, `app/admin/users/actions.ts`): không chặn việc chủ quán tự xoá chính mình hay xoá tài khoản `ADMIN` cuối cùng | Phần 2 (Nhân viên) |
 | G5 | 10 tài sản không còn dòng phiếu nhập — không cần làm gì, chỉ ghi nhận | — |
 

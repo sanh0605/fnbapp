@@ -1,9 +1,7 @@
 import { getIssueSlipFormData } from "../actions";
 import { IssueSlipClient } from "../components/IssueSlipClient";
-import Link from "next/link";
-import { PageHeader } from "@/components/ui/PageHeader";
-
-import { BackLink } from "@/components/ui/BackLink";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +9,14 @@ export default async function NewIssueSlipPage() {
   const items = await getIssueSlipFormData();
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/admin/inventory/issue-slips" label="Phiếu xuất" />
-      <PageHeader title="Tạo phiếu xuất" subtitle="Ghi nhận nguyên liệu lấy ra khỏi kho." />
+    <DetailFrame>
+      <DetailHeader
+        backHref="/admin/inventory/issue-slips"
+        backLabel="Phiếu xuất"
+        title="Tạo phiếu xuất"
+        subtitle="Ghi nhận nguyên liệu lấy ra khỏi kho."
+      />
       <IssueSlipClient items={items} />
-    </div>
+    </DetailFrame>
   );
 }
