@@ -171,7 +171,8 @@ Import cùng thư mục viết tương đối (`./TenFile`); import khác thư m
 | Một luồng chạy đầu cuối | `docs/03-workflows/` |
 | Giá vốn, tồn kho, báo cáo tính ra sao | `docs/02-rules/business-rules/` |
 | Thuật ngữ | `docs/02-rules/GLOSSARY.md` |
-| Việc chưa xong | `docs/04-operations/OPEN-ITEMS.md` |
+| Việc còn lại và thứ tự làm (file duy nhất; kế hoạch con xoá khi xong) | `docs/superpowers/plans/2026-10-06-ke-hoach-chung.md` |
+| Việc chưa xong có test chờ | `docs/04-operations/OPEN-ITEMS.md` |
 | Sự cố | `docs/04-operations/INCIDENT-RESPONSE.md` |
 | Thiết kế đã duyệt, đọc trước khi đề xuất | `docs/superpowers/specs/` |
 

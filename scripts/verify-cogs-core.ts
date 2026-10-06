@@ -3,7 +3,7 @@
  * testable without a live Supabase client (repo's existing -core.ts
  * convention, e.g. scripts/verify-revenue-core.ts).
  *
- * docs/superpowers/plans/2026-09-07-verify-cogs.md. Gate 2's challenger
+ * BR-COGS-007 (verify-cogs). Gate 2's challenger
  * (buildChallengerPurchases, buildChallengerIssues, computeWeightedAverage)
  * is an INDEPENDENT reimplementation of the same weighted-average-cost
  * arithmetic lib/costing/issue-costing.ts and

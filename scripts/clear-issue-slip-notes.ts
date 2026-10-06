@@ -14,8 +14,7 @@ import {
 /**
  * Owner decision 2026-10-01 (BR-INV-014): old issue slips were all made for
  * brewing, the stored reason ("Khác" / "Hao hụt / hư hỏng") is misleading, so
- * it is cleared. docs/superpowers/plans/2026-10-01-issue-slip-drop-reason.md
- * "Phần 2".
+ * it is cleared. BR-INV-014.
  *
  * Dry run by default. Only --apply writes:
  *   issue_slips.note  -> '' where note has text

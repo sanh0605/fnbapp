@@ -406,7 +406,7 @@ describe("updateMany", () => {
   });
 });
 
-// docs/superpowers/plans/2026-09-07-products-page-cache-overflow.md Task 1:
+// products-page cache overflow fix (2026-09-07):
 // app/admin/products/page.tsx only needs the distinct product_id and
 // variant_id values from Order_Lines_V2 (to compute which products were
 // ever sold), not the full 20-column row -- that pushed the unstable_cache
@@ -470,8 +470,7 @@ describe("findOrderLineProductAndVariantIds", () => {
     }
   });
 
-  // BR-CATALOG-003 / docs/superpowers/plans/2026-09-07-link-toppings-to-products.md
-  // Task 1 Step 3: the reader also returns which modifiers (toppings sold as
+  // BR-CATALOG-003: the reader also returns which modifiers (toppings sold as
   // an add-on) were ever sold, via the new find_sold_modifier_ids() RPC --
   // scanned in Postgres, ids only, so this page's cache entry does not
   // regrow into the JSON payload that broke it before (commit b954af2).

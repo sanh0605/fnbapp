@@ -37,8 +37,7 @@ deleting a unit that no conversion or purchased item uses failed with a
 missing-table error; it now deletes. Found by the review of the 0105 plan.
 **Reviewed, no behaviour change — 2026-09-28:** `app/admin/inventory/actions.ts`'s
 `deleteUnit` unit-in-use check stopped querying `Semi_Products` and
-`Production_Items` (Task 3, `docs/superpowers/plans/2026-09-28-go-10-bang-bo-hoang.md`
--- their tables are being dropped in migration 0105). Both were always
+`Production_Items` (their tables are being dropped in migration 0105). Both were always
 0 rows in production, so this changes nothing a real delete could hit; the
 `semi_products`/`production_items` refusal messages are also removed from
 `lib/catalog/unit-delete-restriction.ts` (not one of this flow's declared

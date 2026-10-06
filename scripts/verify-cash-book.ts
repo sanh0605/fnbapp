@@ -11,7 +11,7 @@ process.env.CLI_MODE = "true";
 // with an independent sum over the raw tables (orders_v2, order_payments,
 // purchase_orders, cash_entries, cash_transfers), which never touches the view.
 // Prints "N lệch trên M tháng × 3 số" and exits 1 on any difference.
-// Plan: docs/superpowers/plans/2026-10-04-so-thu-chi-dong-tien.md Task 4.
+// Plan: BR-CASH-007 / BR-CASH-008.
 
 const FIRST_MONTH = "2026-03";
 

@@ -1,6 +1,7 @@
 # Bước 2 và 3 — Menu 7 nhóm và khuôn trang chung: thiết kế
 
-Trạng thái: **chờ chủ quán duyệt** (viết 2026-09-29). Chưa code gì.
+Trạng thái: chủ quán duyệt 2026-09-29, đã dựng xong (menu 7 nhóm, bảng màu, phông chữ, khuôn danh sách).
+Việc còn lại nằm ở kế hoạch chung `docs/superpowers/plans/2026-10-06-ke-hoach-chung.md`.
 
 Nguồn: biên bản phỏng vấn `docs/superpowers/specs/2026-09-28-cai-to-he-thong.md`,
 mục 5.3–5.6, 5.12–5.15, và mục 6 (bước 2, 3). Luật ngày giờ: `BR-DATA-006`. Bản mẫu

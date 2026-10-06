@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 // Owner decision 2026-09-28 ("Ok gỡ"): drop the 10 abandoned tables mapped in
-// docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md, with every live
+// docs/01-system/TABLE-DICTIONARY.md, with every live
 // function that still touched them. Pins the migration text.
 const MIGRATION_FILE = "0105_drop_abandoned_tables.sql";
 

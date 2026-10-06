@@ -67,7 +67,7 @@ export function buildIssueCostingIssues(stockIssues: any[]): Issue[] {
   }));
 }
 
-// docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 2,
+// BR-COGS-007,
 // implementing BR-COGS-007. computeIssueCostingSplit never reads Issue.source
 // itself -- this is the one place isShrinkage is decided: a MANUAL row is
 // never shrinkage; a STOCKTAKE row is shrinkage unless its own session is
@@ -122,8 +122,7 @@ export function filterOutEquipmentIssues(
   return stockIssues.filter(row => !equipmentItemIds.has(row.purchased_item_id));
 }
 
-// BR-COGS-007, 2026-09-11 (docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md
-// Mục 1). The item's own flag is the one test since 2026-09-01 -- the
+// BR-COGS-007, 2026-09-11. The item's own flag is the one test since 2026-09-01 -- the
 // stocktake and issue-slip screens read nothing else. The legacy "TRUE"
 // string is still accepted, same as both of those screens.
 export function isNonInventoryItem(item: { is_non_inventory?: unknown }): boolean {

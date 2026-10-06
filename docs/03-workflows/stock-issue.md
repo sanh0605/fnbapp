@@ -9,8 +9,7 @@ brCodes: BR-COGS-005
 
 **Reviewed — 2026-09-28:** the stock adjustment screen, its three server actions,
 the adjustment transaction module and the `stock_adjustments` table are
-removed (`docs/superpowers/plans/2026-09-28-go-10-bang-bo-hoang.md`, migration
-`0105`). The table held 0 rows when measured on 2026-09-28; nothing that
+removed (migration `0105`). The table held 0 rows when measured on 2026-09-28; nothing that
 produced a number used it.
 **Reviewed, no behaviour change — 2026-09-07 (Task 9):** a declared source file's import path only -- sheets_db.ts/supabase.ts/shared-actions.ts/backup-restore.ts moved to `lib/db/` (spec D6), rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
@@ -24,7 +23,7 @@ called from `lib/stock/manual-issue-transaction.ts`.
 
 ## Five-question current-state description
 
-**Updated 2026-09-29 (Phiếu xuất step 4a, `docs/superpowers/plans/2026-09-29-phieu-xuat.md`):**
+**Updated 2026-09-29 (Phiếu xuất):**
 `lib/stock/manual-issue-transaction.ts` gains `editIssueSlipAtomic`, which calls
 `edit_issue_slip_atomic` (migration `0106`, not yet applied to the server when
 written). Rules: `BR-INV-009`, `BR-INV-012`, `BR-INV-013`. Nothing is deleted:

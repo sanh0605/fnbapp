@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 5 (extended
+// BR-CATALOG-003 (extended
 // to app/pos/actions.ts by the 2026-09-08 scope reversal) + BR-CATALOG-003
 // ("Toppings do not appear among the POS quick-add best-sellers"). Until
 // today, getPOSBestSellerProductIds built `standaloneToppingIds` from a
 // regex against products.migration_notes -- a column that has never
 // existed -- so the exclusion never fired and standalone toppings could
 // appear as quick-add best-sellers. This pins the fix: the same
-// buildStandaloneToppingProductLinks helper Task 5 gave the P&L/sales
+// buildStandaloneToppingProductLinks helper BR-CATALOG-003 gave the P&L/sales
 // reports, reading modifiers.product_id (migration 0097), so both sites can
 // only ever agree.
 const mocks = vi.hoisted(() => ({

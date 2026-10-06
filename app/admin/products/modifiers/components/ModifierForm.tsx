@@ -104,7 +104,7 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
           />
         </div>
 
-        {/* docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 3.
+        {/* BR-CATALOG-003.
             Its own labelled section, visually separated -- this switch
             fires its own independent action on click, never bundled into
             the Cập nhật submit above. StandaloneToppingSwitch itself renders

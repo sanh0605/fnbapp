@@ -9,8 +9,7 @@ brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-C
 
 **Behaviour change — 2026-10-04 (money flow, migration `0107`):** the ledger
 now shows every movement of money, not only the hand-typed rows
-(`BR-CASH-001` as changed 2026-10-04). Spec:
-`docs/superpowers/specs/2026-10-04-so-thu-chi-dong-tien-design.md`.
+(`BR-CASH-001` as changed 2026-10-04).
 
 - **Day rows, read, never typed.** The read-only view `cash_book_daily` gives
   one row per Saigon day and payment method for completed sales and for
@@ -42,10 +41,8 @@ holds no sale and no running balance, the 2026-10-04 change above supersedes
 them.
 
 This doc covers all three cash-book screens: the cash-category (nhóm thu chi)
-screen, task 4 of the plan at `docs/superpowers/plans/2026-09-08-so-thu-chi.md`;
-the bank-account (tài khoản ngân hàng) screen, task 5; and the cash-entry
-ledger itself (sổ thu chi, task 6, the main screen the other two feed) — spec
-at `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`. This is
+screen; the bank-account (tài khoản ngân hàng) screen; and the cash-entry
+ledger itself (sổ thu chi, the main screen the other two feed). This is
 deliberately not an accounting system: no ledger, no double-entry, no
 running balance.
 

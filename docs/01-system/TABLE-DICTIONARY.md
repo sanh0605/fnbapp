@@ -10,8 +10,7 @@ báo cáo kỹ thuật, và cần biết nó nói về cái gì trong thực t�
 `bank_accounts`, `cash_entries`; migration `0107` tạo `cash_transfers`), nhưng 16 bảng đã bị `DROP TABLE` thật sự.
 Migration `0107` còn tạo view chỉ đọc `cash_book_daily` (tiền bán hàng và nhập hàng gộp theo ngày và cách trả); view không phải bảng, không tính vào số trên.
 
-Migration `0105` gỡ 10 bảng bỏ hoang, chủ quán duyệt 2026-09-28
-(`docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md`):
+Migration `0105` gỡ 10 bảng bỏ hoang, chủ quán duyệt 2026-09-28:
 - công thức, bán thành phẩm, lệnh làm mẻ: `recipes`, `semi_products`,
   `production_orders`, `production_items`
 - phiếu cân bằng kho: `stock_adjustments`

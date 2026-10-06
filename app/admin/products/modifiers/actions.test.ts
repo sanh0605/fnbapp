@@ -48,7 +48,7 @@ describe("getModifiersData", () => {
   });
 });
 
-// docs/superpowers/plans/2026-09-07-one-price-per-topping.md Task 1 Step 3:
+// BR-CATALOG-003:
 // editing a modifier's price must go through the atomic sync RPC (one write,
 // not a plain update() for price plus a second call for name/group_name),
 // and must revalidate the product caches so a synced price does not sit
@@ -108,8 +108,8 @@ describe("saveModifierAction edit path", () => {
 
   // Opus code review, 2026-09-08 (finding 2): nothing in the repo ever
   // revalidated sheets-Modifiers, which was harmless staleness while
-  // nothing structural read Modifiers.product_id. Task 5 made both the
-  // report merge and POS quick-add exclusion read it, and Task 2's
+  // nothing structural read Modifiers.product_id. the 2026-09-08 standalone-topping change made both the
+  // report merge and POS quick-add exclusion read it, and the
   // create-and-link path is about to become a third writer -- so a stale
   // Modifiers cache now means a stale link, not just a stale name/price.
   it("revalidates the Modifiers cache tag after a synced edit", async () => {
@@ -168,7 +168,7 @@ describe("deleteModifierAction", () => {
   });
 });
 
-// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 2. Turning
+// BR-CATALOG-003. Turning
 // "Bán độc lập" on for a modifier with no linked product (state c). All the
 // actual guards (already-linked re-check, Thêm Topping group, price > 0)
 // live in the RPC (migration 0100) -- this action only forwards the id,

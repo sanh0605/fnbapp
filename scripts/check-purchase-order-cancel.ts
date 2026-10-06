@@ -9,7 +9,7 @@ process.env.CLI_MODE = "true";
 // page and the cancel use) and prints "huỷ được" with the assets it would
 // retire, or each refusal sentence. Uses the service-role client, the only role
 // allowed to execute the check.
-// Plan: docs/superpowers/plans/2026-10-05-huy-phieu-nhap.md Task 5.
+// Plan: BR-INV-015.
 
 async function main(): Promise<void> {
   const { parseCheckArgs, runChecks } = await import("./check-purchase-order-cancel-core");

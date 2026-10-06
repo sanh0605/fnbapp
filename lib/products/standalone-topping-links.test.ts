@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildStandaloneToppingProductLinks } from "./standalone-topping-links";
 
-// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 5 +
 // BR-CATALOG-003 (owner decision 2026-09-08, "The link is the join, not the
 // name"). One helper decides which product ids are linked standalone
 // toppings so app/admin/reports/actions.ts (buildStandaloneToppingMap) and

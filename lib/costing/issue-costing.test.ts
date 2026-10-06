@@ -419,7 +419,7 @@ describe("computeIssueCosting -- BR-INV-009, reversing a mistaken issue slip", (
   });
 });
 
-// docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 2.
+// BR-COGS-007.
 // New, additive functions -- computeIssueCosting and computePeriodIssuedValue
 // are deliberately untouched (lib/reports/issued-value-report.ts's second,
 // unified caller must not inherit this split). isShrinkage is decided by the

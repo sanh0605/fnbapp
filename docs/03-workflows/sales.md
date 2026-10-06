@@ -13,6 +13,8 @@ table on desktop (cards before) and cards on phone; each row opens
 editing starts only from there. Times read in Asia/Saigon (the old cards used the browser's
 zone). "Áp dụng" counts dishes and sizes; the old card's "(N món)" counted sizes. The bin
 "Xoá" is ADMIN-only, as before.
+**Reviewed, no behaviour change — 2026-10-06:** `app/pos/actions.ts` comment only -- a pointer to a deleted plan now names `BR-CATALOG-003`; no logic changed.
+
 **Reviewed, no behaviour change — 2026-09-08:** `app/pos/actions.ts` changed
 (`getPOSBestSellerProductIds` now excludes standalone toppings from quick-add
 via the real `modifiers.product_id` join, BR-CATALOG-003). Nothing this doc

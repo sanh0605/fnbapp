@@ -22,7 +22,7 @@ Superseded by `BR-INV-006` (owner decision 2026-08-05). Plan C Task 5 applied th
 
 **Status:** `APPROVED` — owner decision 2026-08-05
 
-Semi-products are things the shop makes rather than buys — syrups, brewed tea, boiled sweet potato. They are no longer tracked as stock, hold no value, and no screen records making a batch. Nothing about them is kept any more: the owner decided on 2026-08-27 to remove recipes, and the semi-product list itself, with its batch tables, is dropped by migration `0105` (owner-approved 2026-09-28, `docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md`).
+Semi-products are things the shop makes rather than buys — syrups, brewed tea, boiled sweet potato. They are no longer tracked as stock, hold no value, and no screen records making a batch. Nothing about them is kept any more: the owner decided on 2026-08-27 to remove recipes, and the semi-product list itself, with its batch tables, is dropped by migration `0105` (owner-approved 2026-09-28).
 
 **Why the cost does not vanish with the tracking.** The ingredients were already expensed the moment they left stock. A pot of brewed tea is not a new asset; it is goods already paid for, in a different shape. Recording it as stock with a value of its own would count the same money twice.
 
@@ -120,7 +120,7 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 
 **Cancelled slips in the list** (owner 2026-09-29, after seeing the mockup): hidden by default. Choosing Loại = "Đã huỷ" in the list's filter shows them. Owner's words: *"Bình thường thì ẩn, chọn Loại = \"Đã huỷ\" trong bộ lọc mới thấy."* He was told the trade-off beforehand: slip numbers then appear to skip in the default list.
 
-**Stock check on backdated lines** (owner 2026-09-29, *"theo khuyến nghị"*, both questions answered A; plan `docs/superpowers/plans/2026-09-29-phieu-xuat.md`).
+**Stock check on backdated lines** (owner 2026-09-29, *"theo khuyến nghị"*, both questions answered A).
 - **The check covers the slip's date through today, not the slip's date alone.** Any line written on an earlier date, whether by a new slip or by "Chỉnh sửa", must not push stock below zero at any later moment. Otherwise the costing engine stops with "issue exceeds quantity on hand" and the reports built on it stop opening. This part was a technical decision, reported to the owner.
 - **Raising a line's quantity can be refused even when the difference seems available** (question 1, answer A). Example from ISL-00076: from 28/09 to 2026-09-29 Bột sữa B One never had more than 1.000 g in stock. In the first version, changing its line from 1.000 g to 1.500 g returned the 1.000 g today but issued 1.500 g on 28/09, so stock would sit 500 g below zero in between, and the edit was refused. The refusal says how much is left and suggests adding a separate 500 g line, which passes. Option B was to split the difference into a second line automatically; the owner did not take it.
 - **Changing a quantity returns the old quantity on the slip's own date** (owner 2026-09-29, *"1"*). Found in review: with the return dated today, even *lowering* a line could be refused. Example put to him: 1.000 g of Bột sữa B One issued on the 10th, stock down to 200 g on the 15th, line lowered to 500 g today: between the 10th and today both 1.000 g and 500 g counted, so stock went to −300 g and the edit was refused. It also split one correction across two months. Now both halves land on the slip's date: lowering is not refused unless the book is already below zero somewhere after the slip's date, and raising is refused only when the extra part (500 g in the ISL-00076 example) is itself more than the stock left from the slip's date to today. He was told beforehand that the report of the slip's month changes after the edit. **Unchanged:** "Xoá" on a line and "Huỷ phiếu" still return goods today (`BR-INV-009`), as decided earlier the same day; the stocktake block still applies.
@@ -128,7 +128,7 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 
 ### BR-INV-014 — An issue slip carries no reason and no free-text note
 
-**Status:** `APPROVED` — owner decision 2026-10-01. Replaces the open item "Danh sách lý do xuất do chủ quán tự thêm, sửa, ngừng dùng" from spec `docs/superpowers/specs/2026-09-29-phieu-xuat-danh-sach-design.md` §0.
+**Status:** `APPROVED` — owner decision 2026-10-01. Replaces the earlier open item "Danh sách lý do xuất do chủ quán tự thêm, sửa, ngừng dùng".
 
 **What he was shown.** Measured on the live database on 2026-10-01: 83 slips, 77 noted "Khác" with no detail, 6 noted "Hao hụt / hư hỏng", none "Dùng nội bộ". The "Khác" slips are mostly daily bar stock (Sữa tươi Mlekovita on 33 lines, Sữa đặc La rosee 19, the two coffee powders 13 each, Trứng gà 11). He was also told that every manual issue lands on the P&L's Giá vốn line whatever its reason (`BR-COGS-007`), so a "Hao hụt / hư hỏng" slip never reached the Hao hụt line. Asked whether the reason should decide the P&L line, he answered: *"Anh không cần lý do xuất nữa."* Asked whether to keep the optional detail box as "Ghi chú", he chose to drop it too (*"B"*).
 

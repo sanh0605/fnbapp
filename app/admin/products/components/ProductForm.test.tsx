@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 //
-// docs/superpowers/plans/2026-09-07-one-price-per-topping.md Task 2: a
+// BR-CATALOG-003: a
 // product linked to an ACTIVE modifier (its standalone price now synced
 // from the Topping screen, migration 0098) must not let the product form
 // be a second editor for that price. Render-tested, since the defect is

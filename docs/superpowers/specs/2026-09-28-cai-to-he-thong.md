@@ -4,8 +4,8 @@ File sống. Mọi điều chủ quán chốt được ghi vào đây **trước
 với code và đề xuất. Không dựa vào trí nhớ của phiên nào. Mỗi lần đổi, sửa đúng
 mục, ghi ngày.
 
-Trạng thái: **đang phỏng vấn** (vòng 1, bắt đầu 2026-09-28). Chưa có thiết kế
-được duyệt, chưa code gì cho việc này.
+Trạng thái (đo 2026-10-06): bước F, A, B đã xong; C xong một phần; D, E, H chưa làm.
+Việc còn lại và thứ tự làm nằm ở kế hoạch chung `docs/superpowers/plans/2026-10-06-ke-hoach-chung.md`.
 
 ## 1. Chủ quán muốn gì — lời anh, 2026-09-28
 
@@ -480,7 +480,7 @@ Có, bằng hai đường:
   (`app/admin/inventory/stocktake/components/StocktakeClient.tsx` 602 dòng,
   `app/admin/inventory/issue-slips/components/IssueSlipClient.tsx` 573 dòng) được tách gọn.
   Chỗ logic rời rạc lớn nhất đã biết (hao hụt kiểm kê bị ghi lẫn thành phiếu xuất
-  "Khác", `docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md`) cũng được xử lý ở
+  "Khác") cũng được xử lý ở
   bước này theo `BR-INV-012`.
 - **Bước 7 (H):** dọn phần không bước nào đụng tới. Danh sách lập sẵn từ đầu, mỗi bước
   gạch dần, không để quên.

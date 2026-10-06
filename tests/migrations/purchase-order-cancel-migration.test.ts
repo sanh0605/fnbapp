@@ -72,10 +72,9 @@ describe("0108: cancel a purchase order", () => {
     }
   });
 
-  it("the header names spec, plan, triggers, writers and deploy order", () => {
+  it("the header names the rule, triggers, writers and deploy order", () => {
     const header = raw.slice(0, raw.indexOf("alter table"));
-    expect(header).toContain("docs/superpowers/specs/2026-10-05-huy-phieu-nhap-design.md");
-    expect(header).toContain("docs/superpowers/plans/2026-10-05-huy-phieu-nhap.md");
+    expect(header).toContain("BR-INV-015");
     expect(header).toContain("trg_purchase_orders_touch");
     expect(header).toContain("trg_assets_touch");
     expect(header).toContain("setPurchaseOrderPayment");

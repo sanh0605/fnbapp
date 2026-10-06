@@ -1,5 +1,7 @@
 # Báo cáo lãi lỗ theo tháng — đặc tả
 
+Trạng thái: đã dựng xong 2026-09-11/12 (trang Lãi lỗ). Báo cáo lưu chuyển tiền tệ còn chờ, xem kế hoạch chung `docs/superpowers/plans/2026-10-06-ke-hoach-chung.md`.
+
 Ngày: 2026-09-11. Chốt với chủ quán trong phiên cùng ngày, sau khi chủ quán bấm
 thử trang xem thử bằng số thật:
 https://claude.ai/code/artifact/bc2aced4-378c-43b5-8cee-93f80cfdf2d7

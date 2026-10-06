@@ -1,4 +1,3 @@
-// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 5 +
 // BR-CATALOG-003 (owner decision 2026-09-08, "The link is the join, not the
 // name"). The old code in both app/admin/reports/actions.ts
 // (buildStandaloneToppingMap) and app/pos/actions.ts

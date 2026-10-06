@@ -7,15 +7,14 @@ import { createStandaloneToppingAction } from "../actions";
 import { alert, confirm } from "@/lib/shared/dialog";
 import { formatNumber } from "@/lib/shared/format";
 
-// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 1 + Task 2 +
-// Task 3. One switch, three states (plan question 1): (a)/(b) an already
+// BR-CATALOG-003. One switch, three states: (a)/(b) an already
 // linked modifier toggles its product ACTIVE/INACTIVE directly, same as
 // ToppingsManager.tsx's existing pattern; (c) an unlinked modifier asks for
 // confirmation, then creates the product+variant+link in one transaction
 // (migration 0100). No switch renders at all outside the Thêm Topping group
 // (state d) -- Chọn Size/Đường/Đá are choices inside a drink, not toppings.
-// Shared between ModifiersClient.tsx's merged table (Task 1) and
-// ModifierForm.tsx's own labelled section (Task 3) so both write paths stay
+// Shared between ModifiersClient.tsx's merged table and
+// ModifierForm.tsx's own labelled section so both write paths stay
 // identical instead of drifting into two switches with different bugs.
 const STANDALONE_ELIGIBLE_GROUP = "Thêm Topping";
 

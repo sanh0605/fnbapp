@@ -7,11 +7,10 @@ tables: Products, products, Product_Variants, product_variants, product_price_hi
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003
 ```
 
-**Behaviour change — 2026-10-03 (list/detail template, wave 4, plan `docs/superpowers/plans/2026-10-03-khuon-trang-dot4-mon.md`):** on screen only; no server action, table or figure changes. A dish row opens `/admin/products/[id]`: its fields, its sizes and prices, and its price history as recorded, one row per change with the size named (the old timeline worked out "Đến" and "Đang áp dụng" across sizes, so a dish with three sizes showed one of them as current). "Chỉnh sửa", "Ngừng bán" or "Bán lại", and the ADMIN-only "Xoá vĩnh viễn" live on that page. The list keeps a "Ngừng bán" bin and multi-select, shown only while the filter is "Đang bán". `/admin/products/[id]/history` now redirects to the detail page. Nhóm món and Topping & tuỳ chọn rows open their own `[id]` pages, with "Chỉnh sửa" and "Xoá" there and a "Xoá" bin on the list. The "Bán độc lập" switch moved from the option list to the option detail page; the list shows "Có" or "Không".
+**Behaviour change — 2026-10-03 (list/detail template, wave 4):** on screen only; no server action, table or figure changes. A dish row opens `/admin/products/[id]`: its fields, its sizes and prices, and its price history as recorded, one row per change with the size named (the old timeline worked out "Đến" and "Đang áp dụng" across sizes, so a dish with three sizes showed one of them as current). "Chỉnh sửa", "Ngừng bán" or "Bán lại", and the ADMIN-only "Xoá vĩnh viễn" live on that page. The list keeps a "Ngừng bán" bin and multi-select, shown only while the filter is "Đang bán". `/admin/products/[id]/history` now redirects to the detail page. Nhóm món and Topping & tuỳ chọn rows open their own `[id]` pages, with "Chỉnh sửa" and "Xoá" there and a "Xoá" bin on the list. The "Bán độc lập" switch moved from the option list to the option detail page; the list shows "Có" or "Không".
 
 **A topping with no standalone món can grow one, 2026-09-08 (`BR-CATALOG-003`,
-plan `docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md`, migration
-`0100`, applied on the server — `supabase migration list`, 2026-09-11).** The Topping & Tuỳ chọn screen's
+migration `0100`, applied on the server — `supabase migration list`, 2026-09-11).** The Topping & Tuỳ chọn screen's
 "Bán độc lập" switch used to only toggle an *already-linked* product's
 active flag. On a modifier with no linked product yet (`MOD-009` today), the
 same switch now asks for confirmation and, if confirmed, creates the
@@ -59,8 +58,7 @@ moment is preserved. Toppings are themselves stored as products, which is why
 
 **Reviewed, no behaviour change to the save path's own inputs/outputs beyond
 this — 2026-09-28 (migration 0105):** `recipes` was dropped along with 9
-other abandoned tables (owner decision 2026-09-28,
-`docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md`). Every new size
+other abandoned tables (owner decision 2026-09-28). Every new size
 was still silently writing an empty recipe row (recipe *editing* had already
 been removed from the UI on 2026-08-27); `save_product_atomic` no longer
 touches `recipes` at all, and `recipe_count` is gone from its return.
@@ -91,8 +89,7 @@ product (`MOD-009` today) updates only itself.
    surfaced to the owner unchanged. Categories exist or are removed/hidden
    through their own screen; a variant has its own price and belongs to one
    product. Modifiers and their "Bán độc lập" state live on one screen since
-   2026-09-08 (plan `docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md`
-   Task 1) — a modifier is either **linked** to a standalone `CAT-007` product
+   2026-09-08 (`BR-CATALOG-003`) — a modifier is either **linked** to a standalone `CAT-007` product
    (itself live or hidden, toggled by the same switch) or **unlinked**
    (`MOD-009`'s shape, until the switch is used to create the link — see
    above). `/admin/products/toppings` no longer has its own list; it redirects

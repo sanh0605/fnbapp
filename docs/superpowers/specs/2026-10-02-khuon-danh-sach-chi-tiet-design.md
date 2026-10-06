@@ -1,5 +1,7 @@
 # Khuôn danh sách và trang chi tiết cho mọi trang quản trị: thiết kế
 
+Trạng thái (đo 2026-10-06): đợt 1–7 đã dựng xong; đợt 8 và các trang ngoài bảng mục 4 nằm ở kế hoạch chung `docs/superpowers/plans/2026-10-06-ke-hoach-chung.md`.
+
 Nguồn:
 - Chủ quán, 2026-10-02:
   - "Các trang chưa tối ưu responsive theo kích thước màn hình."
@@ -7,7 +9,7 @@ Nguồn:
   - "Đã làm mẫu trang rồi, làm luôn cả Phiếu xuất chuẩn chỉnh, nhưng các trang còn lại chưa theo mẫu đó."
 - Khuôn đã duyệt:
   - Danh sách: `docs/superpowers/specs/2026-09-29-menu-va-khuon-trang-design.md`, mục 3.5.
-  - Chi tiết và chế độ sửa: `docs/superpowers/specs/2026-09-29-phieu-xuat-danh-sach-design.md`, mục 3 và 4.
+  - Chi tiết và chế độ sửa: trang chi tiết phiếu xuất ISL-00083 (mục 3 dưới đây).
 - Luật: `BR-DATA-007` (không bật khung ô nhập), Luật dữ liệu trong `CLAUDE.md` (ngừng dùng thay vì xoá), `.claude/rules/ui-devices.md` (hai bố cục).
 
 ## 0. Chủ quán đã chốt (2026-10-02)
