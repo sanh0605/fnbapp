@@ -53,11 +53,17 @@ beforeEach(() => {
 });
 
 describe("UserForm", () => {
-  it("renders on the page and immediately shows the username input and Bỏ button", () => {
+  it("renders on the page and immediately shows the username input and Bỏ button, with Vietnamese-only role options", () => {
     render(<UserForm returnTo="/admin/users" />);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByLabelText("Tên đăng nhập")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Nhân viên" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Quản lý" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Quản trị viên" })).toBeInTheDocument();
+    expect(screen.queryByText(/STAFF/)).toBeNull();
+    expect(screen.queryByText(/MANAGER/)).toBeNull();
+    expect(screen.queryByText(/ADMIN/)).toBeNull();
   });
 
   it("after a successful add, goes to returnTo and refreshes", async () => {

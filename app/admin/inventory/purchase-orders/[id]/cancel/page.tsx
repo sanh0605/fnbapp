@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { BackLink } from "@/components/ui/BackLink";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { getPurchaseOrderCancelView } from "../../actions";
 import CancelPurchaseOrderForm from "./components/CancelPurchaseOrderForm";
 
@@ -32,8 +32,11 @@ export default async function CancelPurchaseOrderPage({
   if (view.state === "missing-migration") {
     return (
       <div className="space-y-6">
-        <BackLink href={detailHref} label="Phiếu nhập" />
-        <h1 className="text-2xl font-bold text-text-primary">Huỷ phiếu nhập {params.id}</h1>
+        <DetailHeader
+          backHref={detailHref}
+          backLabel="Phiếu nhập"
+          title={`Huỷ phiếu nhập ${params.id}`}
+        />
         <p className="text-text-secondary text-sm">Chưa cập nhật dữ liệu, chưa huỷ được phiếu.</p>
         <div>
           <Link
@@ -49,8 +52,12 @@ export default async function CancelPurchaseOrderPage({
 
   return (
     <div className="space-y-6">
-      <BackLink href={detailHref} label="Phiếu nhập" />
-      <h1 className="text-2xl font-bold text-text-primary">Huỷ phiếu nhập {params.id}</h1>
+      <DetailHeader
+        backHref={detailHref}
+        backLabel="Phiếu nhập"
+        title={`Huỷ phiếu nhập ${params.id}`}
+        subtitle={`Ngày nhập: ${view.order.dateText} · Nhà cung cấp: ${view.order.supplierName}`}
+      />
       <CancelPurchaseOrderForm view={view} />
     </div>
   );

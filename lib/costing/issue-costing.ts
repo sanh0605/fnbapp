@@ -156,7 +156,7 @@ export function computeIssueCosting(purchases: Purchase[], issues: Issue[]): Ite
 // dated after the last issue in a run cannot change any issue's value, it
 // only lands in that run's (discarded) closing_value.
 // ============================================================================
-// docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 2,
+// BR-COGS-007,
 // implementing BR-COGS-007. New, additive functions only -- computeIssueCosting
 // and computePeriodIssuedValue above are deliberately left unchanged.
 // Splitting inside them would mean bucketed accumulation plus teaching the

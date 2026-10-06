@@ -140,7 +140,7 @@ export default async function SalesReportPage({
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <div className="text-sm font-medium text-text-secondary mb-1">Tổng Doanh Thu (Net)</div>
+          <div className="text-sm font-medium text-text-secondary mb-1">Tổng doanh thu thuần</div>
           <div className="text-3xl font-bold text-text-primary">{formatNumber(totalRevenue)}</div>
           <div className="text-xs text-text-muted mt-2">
             Gross: {formatNumber(grossRevenue)}
@@ -240,7 +240,7 @@ export default async function SalesReportPage({
       {/* Hourly Heatmap Section */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6">
         <div className="mb-4">
-          <h3 className="font-bold text-text-primary text-lg">Ma trận Doanh thu theo Giờ (Heatmap)</h3>
+          <h3 className="font-bold text-text-primary text-lg">Ma trận Doanh thu theo Giờ</h3>
           <p className="text-sm text-text-secondary">Phân bổ doanh thu theo giờ trong ngày và thứ trong tuần.</p>
         </div>
         

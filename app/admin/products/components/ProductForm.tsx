@@ -20,7 +20,6 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
   const returnTo = safeReturnTo(rawReturnTo, "/admin/products");
   const router = useRouter();
   const isEdit = !!initialData;
-  // docs/superpowers/plans/2026-09-07-one-price-per-topping.md Task 2:
   // BR-CATALOG-003's price sync (migration 0098) makes the Topping & Tuỳ
   // chọn screen the one edit point for a topping linked to an ACTIVE
   // modifier -- this form must stop being a second editor for that price.

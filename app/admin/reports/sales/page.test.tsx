@@ -41,4 +41,13 @@ describe("sales report default range (A8)", () => {
     await SalesReportPage({ searchParams: {} });
     expect(getSalesDataV2.mock.calls[0][0]).toMatchObject({ startDate: "2026-09-01", endDate: "2026-09-15" });
   });
+
+  it("renders Vietnamese-only labels without '(Net)' or '(Heatmap)'", async () => {
+    const tree = await SalesReportPage({ searchParams: {} });
+    const json = JSON.stringify(tree);
+    expect(json).toContain("Tổng doanh thu thuần");
+    expect(json).not.toContain("(Net)");
+    expect(json).toContain("Ma trận Doanh thu theo Giờ");
+    expect(json).not.toContain("(Heatmap)");
+  });
 });

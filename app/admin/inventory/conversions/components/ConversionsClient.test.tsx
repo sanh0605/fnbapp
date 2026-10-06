@@ -113,7 +113,7 @@ describe("ConversionsClient", () => {
     ).toBe(true);
 
     // Add button links to new page
-    const addLink = screen.getByRole("link", { name: "+ Thêm Quy Đổi" });
+    const addLink = screen.getByRole("link", { name: "Tạo" });
     expect(addLink.getAttribute("href")).toContain("/admin/inventory/conversions/new?returnTo=");
   });
 

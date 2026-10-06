@@ -43,7 +43,7 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
 
   try {
     if (isEdit && modifier_id) {
-      // docs/superpowers/plans/2026-09-07-one-price-per-topping.md: price
+      // BR-CATALOG-003: price
       // goes through the atomic sync RPC, one write, not a plain update()
       // for price plus a second call for name/group_name -- it carries
       // those two along on the same call. A synced price also moves the
@@ -70,9 +70,9 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
 
     // Opus code review, 2026-09-08 (finding 2): Modifiers.product_id now
     // drives both the P&L/sales report merge and the POS quick-add
-    // exclusion (Task 5) -- a stale Modifiers cache is a stale link, not
+    // exclusion -- a stale Modifiers cache is a stale link, not
     // just a stale name/price. revalidatePath(PATH) below does not clear
-    // this tag-keyed cache (established fact, see the plan's Caches note).
+    // this tag-keyed cache (established fact, a known Next.js caching behaviour).
     revalidateTag(getCacheTag("Modifiers"));
     revalidatePath(PATH);
     return ok();
@@ -98,7 +98,7 @@ export async function deleteModifierAction(formData: FormData): Promise<ActionRe
   }
 }
 
-// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 2. Turning
+// BR-CATALOG-003. Turning
 // "Bán độc lập" on for a modifier with no linked product (state c) --
 // confirmed in the UI before this is called. All the real guards (already
 // linked, wrong group, non-positive price) live in the RPC (migration
@@ -108,7 +108,7 @@ export async function deleteModifierAction(formData: FormData): Promise<ActionRe
 // and Product_Variants (the new món must appear immediately, same as
 // syncToppingPriceAtomic's edit path above) and Modifiers (code review
 // finding on 8b96500 -- product_id now drives the report merge and POS
-// quick-add exclusion, Task 5).
+// quick-add exclusion).
 export async function createStandaloneToppingAction(modifierId: string): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);

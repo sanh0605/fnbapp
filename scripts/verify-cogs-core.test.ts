@@ -9,7 +9,7 @@ import {
   type PurchaseOrderLineRow,
 } from "./verify-cogs-core";
 
-// docs/superpowers/plans/2026-09-07-verify-cogs.md Task 1 Step 1.
+// BR-COGS-007 (verify-cogs).
 
 describe("checkPurchaseOrderReconciliation (Gate 1)", () => {
   it("an order that reconciles: 0 mismatches", () => {

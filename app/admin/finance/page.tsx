@@ -63,13 +63,13 @@ export default async function FinancePage({
               href={`/admin/finance/transfers/new?returnTo=${encodeURIComponent(currentListUrl)}`}
               className="bg-surface-card border border-border text-text-primary px-4 py-2 rounded-lg font-medium hover:bg-surface-secondary transition w-full sm:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
             >
-              + Chuyển tiền
+              Chuyển tiền
             </Link>
             <Link
               href={`/admin/finance/new?returnTo=${encodeURIComponent(currentListUrl)}`}
               className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full sm:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
             >
-              + Ghi khoản mới
+              Tạo
             </Link>
           </div>
         }

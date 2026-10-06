@@ -56,7 +56,7 @@ const sampleAccounts: DBBankAccount[] = [
 ];
 
 describe("PurchasePaymentBlock", () => {
-  it("PO-181 (COMPLETED, CASH) shows Trả bằng: Tiền mặt", () => {
+  it("PO-181 (COMPLETED, CASH) shows Hình thức thanh toán: Tiền mặt", () => {
     render(
       <PurchasePaymentBlock
         poId="PO-181"
@@ -67,12 +67,12 @@ describe("PurchasePaymentBlock", () => {
       />
     );
 
-    expect(screen.getByText("Trả bằng:")).toBeTruthy();
+    expect(screen.getByText("Hình thức thanh toán:")).toBeTruthy();
     expect(screen.getByText("Tiền mặt")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Lưu" })).toBeNull();
   });
 
-  it("shows Trả bằng: Chuyển khoản with account name", () => {
+  it("shows Hình thức thanh toán: Chuyển khoản with account name", () => {
     render(
       <PurchasePaymentBlock
         poId="PO-182"

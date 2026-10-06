@@ -6,7 +6,7 @@ process.env.CLI_MODE = "true";
 //   - POS revenue equals getPnLDataV2(month).totalRevenue;
 //   - Giá vốn + Hao hụt equals getPnLDataV2(month).totalCOGS;
 //   - every line's sources add up to the line.
-// docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md Mục 3.
+// BR-PNL-001.
 
 function fmt(n: number): string {
   return new Intl.NumberFormat("vi-VN").format(Math.round(n));

@@ -206,4 +206,20 @@ describe("PromotionForm", () => {
       vi.useRealTimers();
     }
   });
+
+  it("renders status options in Vietnamese only (no English)", () => {
+    render(
+      <PromotionForm
+        brands={mockBrands}
+        categories={mockCategories}
+        products={mockProducts}
+        variants={mockVariants}
+        returnTo="/admin/promotions"
+      />
+    );
+    expect(screen.getByRole("option", { name: "Hoạt động" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Không hoạt động" })).toBeInTheDocument();
+    expect(screen.queryByText(/ACTIVE/)).toBeNull();
+    expect(screen.queryByText(/INACTIVE/)).toBeNull();
+  });
 });

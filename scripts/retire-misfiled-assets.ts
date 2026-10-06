@@ -13,7 +13,7 @@ import {
 /**
  * Owner decision 2026-10-03 (BR-COGS-008): an asset whose item has left the
  * equipment category stops depreciating. Marks it INACTIVE, never deletes.
- * docs/superpowers/plans/2026-10-03-go-tai-san-khi-doi-loai.md "Task B".
+ * BR-COGS-008.
  *
  * Dry run by default. Only --apply writes:
  *   assets.status -> 'INACTIVE' for active assets of items whose category is

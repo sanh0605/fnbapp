@@ -191,7 +191,7 @@ export async function getPOSBestSellerProductIds(
   // never existed on products, so the regex never matched. Reads the real
   // join (modifiers.product_id, migration 0097) now, via the same helper
   // app/admin/reports/actions.ts uses, so the two sites can only ever agree.
-  // docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 5 (extended
+  // BR-CATALOG-003 (extended
   // here by the 2026-09-08 scope reversal).
   const standaloneToppingIds = new Set(buildStandaloneToppingProductLinks(modifiers as any[]).keys());
   const quantityByProduct = new Map<string, number>();

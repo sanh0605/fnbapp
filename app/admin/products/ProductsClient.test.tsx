@@ -232,4 +232,18 @@ describe("ProductsClient", () => {
       screen.getByRole("button", { name: /Xem “Ngừng bán”/ }),
     ).toBeInTheDocument();
   });
+
+  it("create link reads 'Tạo' and points to /admin/products/new", () => {
+    mockSearchParams = new URLSearchParams();
+    render(
+      <ProductsClient
+        enhancedProducts={sampleProducts}
+        activeCategories={sampleCategories}
+      />,
+    );
+
+    const createLink = screen.getByRole("link", { name: "Tạo" });
+    expect(createLink).toBeInTheDocument();
+    expect(createLink.getAttribute("href")).toContain("/admin/products/new?returnTo=");
+  });
 });

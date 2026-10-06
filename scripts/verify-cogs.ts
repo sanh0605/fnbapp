@@ -5,7 +5,7 @@ process.env.CLI_MODE = "true";
 import type { PurchaseOrderHeader, PurchaseOrderLineRow } from "./verify-cogs-core";
 
 /**
- * docs/superpowers/plans/2026-09-07-verify-cogs.md.
+ * BR-COGS-007 (verify-cogs).
  * Re-runnable cost-of-goods verification, closing the gap
  * lib/costing/CLAUDE.md records in its own words: "Chưa có script `verify-*`
  * cho giá vốn." Two hard gates; a third figure (the MANUAL/STOCKTAKE split)
@@ -27,7 +27,7 @@ import type { PurchaseOrderHeader, PurchaseOrderLineRow } from "./verify-cogs-co
  *   The MANUAL/STOCKTAKE split of Gate 2's total. This script found the
  *   BR-COGS-007 gap while being written (totalCOGS combining both with no
  *   separate shrinkage line) -- that gap is closed as of 2026-09-08
- *   (docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md):
+ *   (BR-COGS-007):
  *   getPnLDataV2 now also returns shrinkageValue and manualIssueSlipCount.
  *   totalCOGS itself still means Giá vốn + Hao hụt combined, on purpose --
  *   Gate 2 compares it against this script's own combined recomputation,
@@ -213,7 +213,7 @@ async function main(): Promise<void> {
       console.log(
         `\nNOTE (not a failure): totalCOGS above is Giá vốn + Hao hụt combined, by design -- ` +
         `${fmt(split.stocktakeValue)}d (${pct.toFixed(1)}% of it) is stocktake variance. BR-COGS-007's split shipped ` +
-        `2026-09-08 (docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md): getPnLDataV2 now also returns ` +
+        `2026-09-08 (BR-COGS-007): getPnLDataV2 now also returns ` +
         `shrinkageValue and manualIssueSlipCount, computed by a tagged single-replay split ` +
         `(computePeriodIssuedValueSplit in lib/costing/issue-costing.ts), not by re-reading Issue.source in the ` +
         `original engine, which still ignores it. This script does not gate them; ` +

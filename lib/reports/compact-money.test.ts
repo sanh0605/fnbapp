@@ -3,7 +3,7 @@ import { formatCompact, pickCompactUnit } from "./compact-money";
 
 // Owner decision 2026-09-12 (BR-DATA-005): chart money is shortened to "k"
 // or "tr", one unit per chart. See "Ví dụ bằng số thật" in
-// docs/superpowers/plans/2026-09-12-bao-cao-tai-chinh-giao-dien.md.
+// BR-DATA-005.
 describe("pickCompactUnit", () => {
   it("picks tr when at least half the non-zero months are a million or more", () => {
     expect(pickCompactUnit([-49_226, 8_980_678, 6_085_470, 17_179_798, 13_523_541, -32_352_964, 697_353])).toBe("tr");

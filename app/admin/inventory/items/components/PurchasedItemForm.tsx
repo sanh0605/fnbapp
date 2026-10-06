@@ -346,7 +346,7 @@ export function PurchasedItemForm({
           {isRaw && (
             <div className="pt-4 border-t border-border space-y-4">
               <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
-                Đây là nhóm <strong>Hàng Hóa Chế Biến (RAW)</strong>.
+                Đây là nhóm <strong>Hàng Hóa Chế Biến</strong>.
               </div>
 
  {/* 

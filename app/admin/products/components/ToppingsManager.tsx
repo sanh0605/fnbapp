@@ -33,7 +33,7 @@ export default function ToppingsManager({ products }: ToppingsManagerProps) {
             <thead>
               <tr className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
                 <th className="px-6 py-4 font-bold">Tên Modifier</th>
-                <th className="px-6 py-4 font-bold">Sản phẩm Topping (Standalone)</th>
+                <th className="px-6 py-4 font-bold">Sản phẩm Topping</th>
                 <th className="px-6 py-4 font-bold text-center">Bán độc lập</th>
               </tr>
             </thead>

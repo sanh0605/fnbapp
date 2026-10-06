@@ -48,7 +48,7 @@ export interface PnLReportResult {
   // Reconciliation indicator
   v2OrderCount: number;
   v1OrderCount?: number; // optional, set by reconciliation script
-  // docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 3a,
+  // BR-COGS-007,
   // BR-COGS-007. totalCOGS's own meaning is unchanged -- it still is Giá
   // vốn + Hao hụt combined (scripts/verify-cogs.ts Gate 2 compares it
   // against a combined recomputation). shrinkageValue is the new, additive
@@ -117,7 +117,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       findAllNoCache("Stock_Issues"),
       findAll("Purchased_Items"),
       findAll("Item_Categories"),
-      // BR-COGS-007 Task 3a: which stocktake sessions count as shrinkage.
+      // BR-COGS-007: which stocktake sessions count as shrinkage.
       // Real table name, not a Sheets alias -- matches every other reader
       // of this table (app/admin/inventory/stocktake/actions.ts, verify-cogs.ts).
       findAll("stocktake_sessions"),
@@ -126,7 +126,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // Standalone topping -> linked modifier map, via the real join
     // (modifiers.product_id, migration 0097), not the dead
     // products.migration_notes regex the old buildStandaloneToppingMap read.
-    // docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 5,
+    // BR-CATALOG-003,
     // BR-CATALOG-003 ("the link is the join, not the name").
     const standaloneToppingToModId = buildStandaloneToppingProductLinks(modifiers as any[]);
 
@@ -197,7 +197,7 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
       dateRange?.endUtc ?? null,
     );
 
-    // BR-COGS-007 Task 3a. One combined chronological replay, tagged --
+    // BR-COGS-007. One combined chronological replay, tagged --
     // never a subset replay of just the STOCKTAKE rows, which would shift
     // the weighted-average pool for every later event and answer a
     // different question (see lib/costing/issue-costing.ts). totalCOGS

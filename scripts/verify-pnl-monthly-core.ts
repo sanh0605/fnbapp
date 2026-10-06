@@ -2,7 +2,7 @@ import { displayMoney } from "@/lib/reports/display-rounding";
 import type { PnlMonthFigures, PnlSource } from "@/lib/reports/profit-and-loss";
 
 // Pure: no I/O. scripts/verify-pnl-monthly.ts fetches and prints.
-// docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md Mục 3.
+// BR-PNL-001.
 
 export interface PnlReference {
   totalRevenue: number;     // getPnLDataV2(month).totalRevenue

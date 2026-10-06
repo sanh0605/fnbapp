@@ -147,10 +147,10 @@ describe("UsersClient", () => {
     expect(replace).toHaveBeenCalledWith("/admin/users?q=tuyen", { scroll: false });
   });
 
-  it("+ Thêm nhân sự button links to new user page carrying returnTo", () => {
+  it("Tạo button links to new user page carrying returnTo", () => {
     render(<UsersClient users={mockUsers} canDelete={true} />);
 
-    const addBtn = screen.getByRole("link", { name: "+ Thêm nhân sự" });
+    const addBtn = screen.getByRole("link", { name: "Tạo" });
     expect(addBtn).toBeInTheDocument();
     expect(addBtn.getAttribute("href")).toBe(
       "/admin/users/new?returnTo=" + encodeURIComponent("/admin/users")

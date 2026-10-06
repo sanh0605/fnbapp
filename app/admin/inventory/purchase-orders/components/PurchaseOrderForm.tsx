@@ -385,79 +385,9 @@ export default function PurchaseOrderForm({
             name="transaction_date"
             selected={transactionDate}
             onChange={(date) => setTransactionDate(date)}
-            placeholderText="Chọn ngày nhập hàng (dd/mm/yyyy)"
+            placeholderText="Chọn ngày nhập hàng (ngày/tháng/năm)"
           />
           <p className="text-xs text-text-muted mt-1">Để trống hệ thống sẽ lấy thời điểm hiện tại.</p>
-        </div>
-        <div>
-          <span className="block text-sm font-semibold text-text-secondary mb-2">Trả bằng</span>
-          <div className="flex items-center gap-6 min-h-[44px]">
-            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
-              <input
-                type="radio"
-                name="payment_method_radio"
-                value="CASH"
-                checked={paymentMethod === "CASH"}
-                onChange={() => {
-                  setPaymentMethod("CASH");
-                  setBankAccountId("");
-                  setPaymentError(null);
-                }}
-                className="w-4 h-4 text-primary focus:ring-focus-ring"
-              />
-              <span>Tiền mặt</span>
-            </label>
-            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
-              <input
-                type="radio"
-                name="payment_method_radio"
-                value="BANK_TRANSFER"
-                checked={paymentMethod === "BANK_TRANSFER"}
-                onChange={() => {
-                  setPaymentMethod("BANK_TRANSFER");
-                  setPaymentError(null);
-                  if (!bankAccountId && bankAccounts.length === 1) {
-                    setBankAccountId(bankAccounts[0].id);
-                  }
-                }}
-                className="w-4 h-4 text-primary focus:ring-focus-ring"
-              />
-              <span>Chuyển khoản</span>
-            </label>
-          </div>
-
-          {paymentMethod === "BANK_TRANSFER" && (
-            <div className="mt-3">
-              <label htmlFor={`${formId}-bankAccountId`} className="block text-xs font-semibold text-text-secondary mb-1">
-                Tài khoản
-              </label>
-              <select
-                id={`${formId}-bankAccountId`}
-                value={bankAccountId}
-                onChange={(e) => {
-                  setBankAccountId(e.target.value);
-                  setPaymentError(null);
-                }}
-                className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-              >
-                <option value="">-- Chọn tài khoản --</option>
-                {bankAccounts.map((a: any) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name}
-                  </option>
-                ))}
-                {bankAccountId && !bankAccounts.some((a: any) => a.id === bankAccountId) && (
-                  <option value={bankAccountId}>{bankAccountId} (không còn dùng)</option>
-                )}
-              </select>
-            </div>
-          )}
-
-          {paymentError && (
-            <div role="alert" className="text-sm font-medium text-danger mt-2">
-              {paymentError}
-            </div>
-          )}
         </div>
         <div>
           <label htmlFor={`${formId}-sourceId`} className="block text-sm font-semibold text-text-secondary mb-2">Nguồn nhập hàng</label>
@@ -491,7 +421,7 @@ export default function PurchaseOrderForm({
           </div>
         </div>
         <div>
-          <label htmlFor={`${formId}-supplierInvoiceCode`} className="block text-sm font-semibold text-text-secondary mb-2">Mã hoá đơn (Supplier Invoice Code)</label>
+          <label htmlFor={`${formId}-supplierInvoiceCode`} className="block text-sm font-semibold text-text-secondary mb-2">Mã hoá đơn</label>
           <input
             id={`${formId}-supplierInvoiceCode`}
             type="text"
@@ -605,13 +535,13 @@ export default function PurchaseOrderForm({
                         min="0"
                         value={line.subtotal}
                         onChange={(e) => updateLine(index, "subtotal", e.target.value)}
-                        className="w-full border border-success/40 rounded-lg px-3 py-2 text-sm bg-success/10 focus:ring-2 focus:ring-success"
+                        className="w-full border border-border rounded-lg px-3 py-2 text-sm"
                       />
                     </div>
                     
                     <div className="md:col-span-2">
                       <label className="block text-xs font-medium text-text-muted mb-1">Đơn giá</label>
-                      <div className="px-3 py-2 text-sm font-semibold text-text-muted bg-surface-secondary rounded-lg border border-transparent">
+                      <div className="py-2 text-sm text-text-secondary">
                         {formatNumber(unitPrice)}
                       </div>
                     </div>
@@ -632,7 +562,7 @@ export default function PurchaseOrderForm({
       </div>
 
       <div className="flex flex-col items-end pt-6 border-t border-border">
-        <div className="w-full max-w-md mb-6 space-y-3 bg-surface-secondary p-5 rounded-xl border border-border">
+        <div className="w-full max-w-md mb-6 space-y-3 bg-surface-card rounded-xl shadow-sm border border-border p-5">
            <div className="flex justify-between items-center text-sm text-text-secondary">
               <span className="font-medium">Tổng tiền hàng:</span>
               <span className="font-semibold text-text-primary">{formatNumber(subtotalAmount)}</span>
@@ -691,13 +621,84 @@ export default function PurchaseOrderForm({
            </div>
         </div>
 
+        <div className="w-full max-w-md mb-6">
+          <span className="block text-sm font-semibold text-text-secondary mb-2">Hình thức thanh toán</span>
+          <div className="flex items-center gap-6 min-h-[44px]">
+            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
+              <input
+                type="radio"
+                name="payment_method_radio"
+                value="CASH"
+                checked={paymentMethod === "CASH"}
+                onChange={() => {
+                  setPaymentMethod("CASH");
+                  setBankAccountId("");
+                  setPaymentError(null);
+                }}
+                className="w-4 h-4 text-primary focus:ring-focus-ring"
+              />
+              <span>Tiền mặt</span>
+            </label>
+            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
+              <input
+                type="radio"
+                name="payment_method_radio"
+                value="BANK_TRANSFER"
+                checked={paymentMethod === "BANK_TRANSFER"}
+                onChange={() => {
+                  setPaymentMethod("BANK_TRANSFER");
+                  setPaymentError(null);
+                  if (!bankAccountId && bankAccounts.length === 1) {
+                    setBankAccountId(bankAccounts[0].id);
+                  }
+                }}
+                className="w-4 h-4 text-primary focus:ring-focus-ring"
+              />
+              <span>Chuyển khoản</span>
+            </label>
+          </div>
+
+          {paymentMethod === "BANK_TRANSFER" && (
+            <div className="mt-3">
+              <label htmlFor={`${formId}-bankAccountId`} className="block text-xs font-semibold text-text-secondary mb-1">
+                Tài khoản
+              </label>
+              <select
+                id={`${formId}-bankAccountId`}
+                value={bankAccountId}
+                onChange={(e) => {
+                  setBankAccountId(e.target.value);
+                  setPaymentError(null);
+                }}
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+              >
+                <option value="">-- Chọn tài khoản --</option>
+                {bankAccounts.map((a: any) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+                {bankAccountId && !bankAccounts.some((a: any) => a.id === bankAccountId) && (
+                  <option value={bankAccountId}>{bankAccountId} (không còn dùng)</option>
+                )}
+              </select>
+            </div>
+          )}
+
+          {paymentError && (
+            <div role="alert" className="text-sm font-medium text-danger mt-2">
+              {paymentError}
+            </div>
+          )}
+        </div>
+
         <div className="flex gap-4">
           <LoadingButton
             loading={loading}
             onClick={() => handleSubmit("DRAFT")}
             variant="secondary"
           >
-            {isEdit ? "Lưu Nháp" : "Lưu Nháp (Draft)"}
+            Lưu nháp
           </LoadingButton>
           <LoadingButton
             loading={loading}

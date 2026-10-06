@@ -129,7 +129,7 @@ describe("ItemsClient", () => {
     ).toBe(true);
   });
 
-  it("links '+ Thêm Hàng Mua Vào' with encoded returnTo", () => {
+  it("links 'Tạo' with encoded returnTo", () => {
     render(
       <ItemsClient
         categories={CATEGORIES}
@@ -142,7 +142,7 @@ describe("ItemsClient", () => {
       />,
     );
 
-    const addLink = screen.getByRole("link", { name: "+ Thêm Hàng Mua Vào" });
+    const addLink = screen.getByRole("link", { name: "Tạo" });
     expect(addLink.getAttribute("href")).toContain("/admin/inventory/items/new?returnTo=");
   });
 

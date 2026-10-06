@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// docs/superpowers/plans/2026-09-07-link-toppings-to-products.md Task 2,
+// BR-CATALOG-003,
 // BR-CATALOG-003: a topping sold as an add-on (modifiers_snapshot_json)
 // must mark its linked CAT-007 product as sold, the same way a variant sale
 // marks its product sold. ProductsPage is called directly as the plain
@@ -82,7 +82,7 @@ describe("ProductsPage marks a topping sold via its linked modifier", () => {
     expect(byId.get("PROD-C").neverSold).toBe(false);
   });
 
-  // docs/superpowers/plans/2026-09-07-one-price-per-topping.md Task 2: the
+  // BR-CATALOG-003: the
   // product form must know which product is a second price editor to shut
   // off. PROD-A has an ACTIVE modifier (MOD-A) -- linked. PROD-B and PROD-C
   // have no modifier pointing at them at all -- not linked, even though

@@ -18,7 +18,7 @@ import { normalizeNameForComparison } from "@/lib/shared/duplicate-name-guard";
  *
  * See scripts/fixtures/cash-entries-2026.json for the extracted rows and
  * their provenance (why 38 of 123, and the distribution across categories),
- * and docs/superpowers/specs/2026-09-08-so-thu-chi-design.md for the cash
+ * and docs/02-rules/business-rules/cash-book.md (BR-CASH-001..005) for the cash
  * book design.
  *
  * Dry run by default; --apply writes. See main() below for the exact steps.

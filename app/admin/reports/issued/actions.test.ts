@@ -142,8 +142,7 @@ describe("getIssuedValueReport", () => {
   });
 });
 
-// BR-COGS-007, 2026-09-11 (docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md
-// Mục 1). Independent of the 2026-08-13 live snapshot, whose data predates
+// BR-COGS-007, 2026-09-11. Independent of the 2026-08-13 live snapshot, whose data predates
 // both a non-inventory issue and an equipment issue in the same period.
 describe("getIssuedValueReport leaves out equipment and items bought for immediate use", () => {
   it("in the grand total, the item list and the by-event list alike", async () => {

@@ -49,4 +49,11 @@ describe("admin dashboard clock (A6)", () => {
     const text = collectText(tree as ReactNode).join("|");
     expect(text).toContain("15/09");
   });
+
+  it("shows 'TB đơn' without '(AOV)' in KPI card", async () => {
+    const tree = await AdminDashboard({ searchParams: {} });
+    const text = collectText(tree as ReactNode).join("|");
+    expect(text).toContain("TB đơn");
+    expect(text).not.toContain("(AOV)");
+  });
 });

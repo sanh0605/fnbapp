@@ -383,7 +383,12 @@ export type PurchaseOrderCancelView =
   | { state: "not-found" }
   | {
       state: "ready";
-      order: { id: string; dateText: string; supplierName: string; totalAmount: number; paymentLabel: string; status: string };
+      order: {
+        id: string; dateText: string; supplierName: string; totalAmount: number; paymentLabel: string; status: string;
+        subtotalAmount: number; shippingFee: number; taxAmount: number; discountTotal: number;
+        invoiceCode: string; sourceName: string; notes: string;
+      };
+      lines: Array<{ id: string; itemName: string; unitName: string; quantity: number; unitPrice: number; subtotal: number }>;
       blockedMessages: string[];
       assets: CancelAsset[];
     };
@@ -403,7 +408,30 @@ export async function getPurchaseOrderCancelView(id: string): Promise<PurchaseOr
     if (error instanceof CancelFunctionMissingError) return { state: "missing-migration" };
     throw error;
   }
-  const supplier = (await findById("Suppliers", order.supplier_id)) as DBSupplier | null;
+  const [supplier, allLines, allItems, allUnits, allSources] = await Promise.all([
+    findById("Suppliers", order.supplier_id) as Promise<DBSupplier | null>,
+    findAll("Purchase_Order_Lines") as Promise<any[]>,
+    findAll("Purchased_Items") as Promise<any[]>,
+    findAll("Units") as Promise<any[]>,
+    findAll("Purchase_Sources") as Promise<any[]>,
+  ]);
+  // types/db.ts has stale money column names; read the real ones.
+  const row = order as unknown as Record<string, unknown>;
+  const num = (v: unknown) => Number(v) || 0;
+  const lines = allLines
+    .filter(l => l.purchase_order_id === id)
+    .sort((a, b) => {
+      const byTime = (a.created_at ?? "").localeCompare(b.created_at ?? "");
+      return byTime !== 0 ? byTime : a.id.localeCompare(b.id);
+    })
+    .map(l => ({
+      id: l.id as string,
+      itemName: (allItems.find(i => i.id === l.purchased_item_id)?.name || l.purchased_item_id) as string,
+      unitName: (allUnits.find(u => u.id === l.unit)?.name || l.unit) as string,
+      quantity: num(l.quantity),
+      unitPrice: num(l.unit_price),
+      subtotal: num(l.subtotal),
+    }));
   return {
     state: "ready",
     order: {
@@ -413,7 +441,15 @@ export async function getPurchaseOrderCancelView(id: string): Promise<PurchaseOr
       totalAmount: Number(order.total_amount) || 0,
       paymentLabel: paymentLabelOf(order.payment_method),
       status: order.status,
+      subtotalAmount: num(row.subtotal_amount),
+      shippingFee: num(row.shipping_fee),
+      taxAmount: num(row.tax_amount),
+      discountTotal: num(row.voucher_amount) + num(row.discount_amount),
+      invoiceCode: order.supplier_invoice_code ?? "",
+      sourceName: allSources.find(s => s.id === order.source_id)?.name ?? "—",
+      notes: order.notes ?? "",
     },
+    lines,
     blockedMessages: check.blocked.map(describeCancelBlocker),
     assets: check.assets,
   };

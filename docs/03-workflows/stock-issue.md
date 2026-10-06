@@ -9,8 +9,7 @@ brCodes: BR-COGS-005
 
 **Reviewed — 2026-09-28:** the stock adjustment screen, its three server actions,
 the adjustment transaction module and the `stock_adjustments` table are
-removed (`docs/superpowers/plans/2026-09-28-go-10-bang-bo-hoang.md`, migration
-`0105`). The table held 0 rows when measured on 2026-09-28; nothing that
+removed (migration `0105`). The table held 0 rows when measured on 2026-09-28; nothing that
 produced a number used it.
 **Reviewed, no behaviour change — 2026-09-07 (Task 9):** a declared source file's import path only -- sheets_db.ts/supabase.ts/shared-actions.ts/backup-restore.ts moved to `lib/db/` (spec D6), rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-04:** Phase 6 dead-reference cleanup touched a declared source file's comments only (dead docs/... citations repointed or stripped); no logic changed.
@@ -24,7 +23,7 @@ called from `lib/stock/manual-issue-transaction.ts`.
 
 ## Five-question current-state description
 
-**Updated 2026-09-29 (Phiếu xuất step 4a, `docs/superpowers/plans/2026-09-29-phieu-xuat.md`):**
+**Updated 2026-09-29 (Phiếu xuất):**
 `lib/stock/manual-issue-transaction.ts` gains `editIssueSlipAtomic`, which calls
 `edit_issue_slip_atomic` (migration `0106`, not yet applied to the server when
 written). Rules: `BR-INV-009`, `BR-INV-012`, `BR-INV-013`. Nothing is deleted:
@@ -34,7 +33,7 @@ every correction is a compensating `stock_issues` row.
    - *Active*: at least one line not reversed.
    - *Cancelled*: every line reversed (by "Huỷ phiếu"); the reason is read from the reversal note.
    - *Locked*: dated on or before the latest confirmed stocktake; it can no longer be edited or cancelled.
-2. **Buttons per screen, and when to hide them.** The list page links to each slip and to "Tạo phiếu xuất" (`/new`). After a slip is created, the create page opens that slip's detail page. The old "recent slips" column with its per-line reverse button is gone; corrections happen on the detail page.
+2. **Buttons per screen, and when to hide them.** The list page links to each slip and to "Tạo phiếu xuất" (`/new`). After a slip is created, the create page opens that slip's detail page. The create page (2026-10-06) puts the time first, then on a computer one table row per line (Mặt hàng · Tồn hiện tại · Đơn vị · Số lượng · Quy ra), on a phone one card per line; "Quy ra" shows the quantity in the base unit before saving, and "Giá trị xuất" its value at the chosen time (`getIssueUnitCostsAt`, the same costing as the slip's own page; recomputed when the time changes; "—" for an item with no purchase before that time, counted in "chưa tính N dòng chưa có giá"), with "Tổng giá trị xuất" under the lines. The value is a preview: saving writes quantities only, as before. "Quay lại" returns to the list without saving. The old "recent slips" column with its per-line reverse button is gone; corrections happen on the detail page.
    - The detail page has "Chỉnh sửa" and "Huỷ phiếu", both hidden when the slip is cancelled or locked.
    - The server refuses them anyway (`issue_slip_stocktake_lock`, cancelled-slip check).
 3. **What each list contains, and what is excluded.** One row per slip plus one row per confirmed stocktake with a shortfall (`BR-INV-012`). Cancelled slips are hidden unless the type filter is "Đã huỷ".

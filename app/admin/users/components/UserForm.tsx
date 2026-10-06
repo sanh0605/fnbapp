@@ -78,9 +78,9 @@ export function UserForm({ returnTo: rawReturnTo }: UserFormProps = {}) {
             required
             className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
           >
-            <option value="STAFF">Nhân viên (STAFF)</option>
-            <option value="MANAGER">Quản lý (MANAGER)</option>
-            <option value="ADMIN">Quản trị viên (ADMIN)</option>
+            <option value="STAFF">Nhân viên</option>
+            <option value="MANAGER">Quản lý</option>
+            <option value="ADMIN">Quản trị viên</option>
           </select>
         </div>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">

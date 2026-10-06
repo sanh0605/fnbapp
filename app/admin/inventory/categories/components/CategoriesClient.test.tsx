@@ -74,7 +74,7 @@ describe("CategoriesClient", () => {
     ).toBe(true);
   });
 
-  it("links '+ Phân loại Hàng Hoá' to new page with returnTo", () => {
+  it("links 'Tạo' to new page with returnTo", () => {
     render(
       <CategoriesClient
         categories={CATEGORIES}
@@ -82,11 +82,11 @@ describe("CategoriesClient", () => {
       />,
     );
 
-    const addLink = screen.getByRole("link", { name: "+ Phân loại Hàng Hoá" });
+    const addLink = screen.getByRole("link", { name: "Tạo" });
     expect(addLink.getAttribute("href")).toContain("/admin/inventory/categories/new?returnTo=");
   });
 
-  it("renders system_type labels correctly", () => {
+  it("renders system_type labels correctly without English in parentheses", () => {
     render(
       <CategoriesClient
         categories={CATEGORIES}
@@ -97,6 +97,9 @@ describe("CategoriesClient", () => {
     expect(screen.getAllByText(/Nguyên Liệu|Nguyên liệu/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Vật Tư|Vật tư/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Dụng Cụ|Dụng cụ/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/RAW/)).toBeNull();
+    expect(screen.queryByText(/CONSUMABLE/)).toBeNull();
+    expect(screen.queryByText(/EQUIPMENT/)).toBeNull();
   });
 
   it("canDelete=false renders no checkboxes and no removal bin", () => {

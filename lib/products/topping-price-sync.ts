@@ -1,6 +1,6 @@
 import { getSupabaseClient } from "@/lib/db/supabase";
 
-// docs/superpowers/plans/2026-09-07-one-price-per-topping.md. One RPC call
+// BR-CATALOG-003. One RPC call
 // (migration 0098's sync_topping_price_atomic) updates the modifier and, if
 // it is linked to a CAT-007 product, that product's single ACTIVE variant
 // and a price-history row -- all in one transaction, so a topping's price

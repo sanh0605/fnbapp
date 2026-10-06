@@ -206,11 +206,11 @@ export default function ActivityLogClient({
             className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
           >
             <option value="ALL">Tất cả</option>
-            <option value="CREATED">Tạo mới (CREATED)</option>
-            <option value="EDITED">Chỉnh sửa (EDITED)</option>
-            <option value="VOIDED">Hủy đơn (VOIDED)</option>
-            <option value="REOPENED">Mở lại (REOPENED)</option>
-            <option value="MIGRATED">Di trú (MIGRATED)</option>
+            <option value="CREATED">Tạo mới</option>
+            <option value="EDITED">Chỉnh sửa</option>
+            <option value="VOIDED">Hủy đơn</option>
+            <option value="REOPENED">Mở lại</option>
+            <option value="MIGRATED">Di trú</option>
           </select>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">

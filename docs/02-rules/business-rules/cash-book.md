@@ -3,15 +3,13 @@
 The cash book (`/admin/finance`, tables `cash_categories`, `bank_accounts`,
 `cash_entries`, `cash_transfers`, view `cash_book_daily`) shows every movement
 of money: hand-typed rows, transfers, and the sale and purchase money read from
-the orders themselves. Design: `docs/superpowers/specs/2026-09-08-so-thu-chi-design.md`,
-changed by `docs/superpowers/specs/2026-10-04-so-thu-chi-dong-tien-design.md`.
+the orders themselves.
 Flow: `docs/03-workflows/cash-book.md`.
 
 ### BR-CASH-001 — Sale and purchase money shows in the cash book but is never typed into it, with one dated exception
 
 **Status:** `APPROVED` — owner decision 2026-09-08; exception 2026-09-11;
-changed 2026-10-04 and built the same day (migration `0107`; design
-`docs/superpowers/specs/2026-10-04-so-thu-chi-dong-tien-design.md`).
+changed 2026-10-04 and built the same day (migration `0107`).
 
 **Changed 2026-10-04.** Owner: *"lưu tất cả các lần ảnh hưởng đến dòng tiền
 vào, tức là bao gồm cả tiền thanh toán đơn nhập hàng và tiền bán hàng."* The
@@ -21,7 +19,7 @@ purchase order, next to the rows typed by hand. Those two kinds are read from
 the orders and purchase orders themselves, never copied or retyped, so nothing
 is counted twice and profit and loss does not change. A purchase order is
 taken as paid in full on its own date (owner answer "3a", 2026-10-04); it
-gains a "Trả bằng" choice, cash or transfer, and the 198 completed orders that
+gains a payment choice, cash or transfer (labelled "Trả bằng" until 2026-10-06, then "Hình thức thanh toán", shown under the order's total, owner 2026-10-06; paying one order by several methods is approved in principle and waits for its own design), and the 198 completed orders that
 exist on 2026-10-04 count as cash until the owner changes one. On a new purchase
 order nothing is chosen in advance: whoever enters it must pick "Tiền mặt" or
 "Chuyển khoản", so nobody forgets to switch it for a transfer (owner answer

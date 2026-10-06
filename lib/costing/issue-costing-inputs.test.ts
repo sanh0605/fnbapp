@@ -42,7 +42,7 @@ describe("filterOutEquipmentIssues", () => {
   });
 });
 
-// docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 2. Decides
+// BR-COGS-007. Decides
 // isShrinkage per row -- computeIssueCostingSplit never reads Issue.source
 // itself, so this is the one place that classification is made.
 describe("buildClassifiedIssues", () => {

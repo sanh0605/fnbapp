@@ -2,10 +2,11 @@
 
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect, useRef, useId } from "react";
+import { useState, useEffect, useRef, useId, Suspense } from "react";
 import { getOutlets } from "@/app/admin/outlets/actions";
 import { getSaigonNowHHMM } from "@/lib/catalog/outlet-hours";
 import { PosOutletPicker } from "@/app/admin/components/PosOutletPicker";
+import { AdminRouteMemory } from "@/components/ui/AdminRouteMemory";
 import { AdminSidebar } from "./components/AdminSidebar";
 import { PhoneNavBar } from "./components/PhoneNavBar";
 
@@ -105,6 +106,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="fixed inset-0 flex bg-page font-sans text-text-primary overflow-hidden">
+      <Suspense fallback={null}>
+        <AdminRouteMemory />
+      </Suspense>
       
       {/* Sidebar */}
       <AdminSidebar onOpenPos={handleOpenPosModal} />

@@ -136,7 +136,7 @@ export default function IssueSlipsClient({ pageData }: IssueSlipsClientProps) {
           href="/admin/inventory/issue-slips/new"
           className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm w-full md:w-auto text-center min-h-[44px] flex items-center justify-center"
         >
-          Tạo phiếu xuất
+          Tạo
         </Link>
       </div>
 

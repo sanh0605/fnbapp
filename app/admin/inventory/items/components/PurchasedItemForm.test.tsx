@@ -255,7 +255,9 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
     const categorySelect = document.querySelector("select") as HTMLSelectElement;
     await setSelectValue(categorySelect, "NHH-001");
 
-    expect(document.body.textContent).toContain("Hàng Hóa Chế Biến (RAW)");
+    // BR-UI-001 (owner 2026-10-06): Vietnamese only, no "(RAW)" twin.
+    expect(document.body.textContent).toContain("Hàng Hóa Chế Biến");
+    expect(document.body.textContent).not.toContain("(RAW)");
     expect(document.body.textContent).not.toContain("Liên kết Nhóm Nguyên Liệu");
     expect(document.body.textContent).toContain("Đơn vị gốc");
     // Conversion rows require a unit chosen first (same as CONSUMABLE/EQUIPMENT).

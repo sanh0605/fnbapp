@@ -1,6 +1,6 @@
 import { getSupabaseClient } from "@/lib/db/supabase";
 
-// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 2. Turning
+// BR-CATALOG-003. Turning
 // "Bán độc lập" on for a modifier with no linked product (state c, e.g.
 // MOD-009 "Hộp sữa chua") creates the CAT-007 product, its single ACTIVE
 // variant at the modifier's own price, and the link -- one transaction

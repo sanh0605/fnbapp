@@ -260,7 +260,7 @@ export const findAll = (sheetName: string) => {
   )(sheetName);
 };
 
-// docs/superpowers/plans/2026-09-07-products-page-cache-overflow.md: the only
+// products-page cache overflow fix (2026-09-07): the only
 // caller of findAll("Order_Lines_V2") (app/admin/products/page.tsx) reads
 // nothing but product_id and variant_id from every row, to know which
 // products were ever sold. The full 20-column table pushed the unstable_cache

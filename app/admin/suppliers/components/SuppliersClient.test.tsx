@@ -81,7 +81,7 @@ describe("SuppliersClient", () => {
 
   it("Thêm links to the new page carrying the current list URL", () => {
     render(<SuppliersClient suppliers={[]} canDelete={false} initialSearch="ABC" />);
-    const link = screen.getByRole("link", { name: "+ Thêm nhà cung cấp" });
+    const link = screen.getByRole("link", { name: "Tạo" });
     expect(link).toHaveAttribute(
       "href",
       "/admin/suppliers/new?returnTo=" + encodeURIComponent("/admin/suppliers?q=ABC")

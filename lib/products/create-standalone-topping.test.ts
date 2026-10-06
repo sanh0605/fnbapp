@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// docs/superpowers/plans/2026-09-08-gop-cot-ban-doc-lap.md Task 2. The actual
+// BR-CATALOG-003. The actual
 // create-product/create-variant/link/re-check-under-lock sequence lives in
 // the Postgres function (migration 0100); this wrapper only forwards the
 // param and shapes the response, matching how topping-price-sync.test.ts

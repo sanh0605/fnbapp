@@ -67,6 +67,16 @@ describe("EditUserForm", () => {
     expect(screen.getByRole("button", { name: "Cập nhật nhân sự" })).toBeInTheDocument();
   });
 
+  it("renders role options with Vietnamese-only labels (no English)", () => {
+    render(<EditUserForm user={userFixture()} returnTo="/admin/users" />);
+    expect(screen.getByRole("option", { name: "Nhân viên" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Quản lý" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Quản trị viên" })).toBeInTheDocument();
+    expect(screen.queryByText(/STAFF/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/MANAGER/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/ADMIN/i)).not.toBeInTheDocument();
+  });
+
   it("after a successful update, navigates to returnTo and refreshes", async () => {
     mocks.updateUser.mockResolvedValue({});
     render(<EditUserForm user={userFixture()} returnTo="/admin/users?role=STAFF" />);

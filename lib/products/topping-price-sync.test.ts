@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// docs/superpowers/plans/2026-09-07-one-price-per-topping.md Task 1 Step 4.
+// BR-CATALOG-003.
 // The actual sync/trap/PPH- sequence logic lives in the Postgres function
 // (migration 0098), matching how save_product_atomic's own tests only
 // exercise this wrapper's param-forwarding and response-shaping, not SQL

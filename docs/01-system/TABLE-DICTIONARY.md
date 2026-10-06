@@ -10,8 +10,7 @@ báo cáo kỹ thuật, và cần biết nó nói về cái gì trong thực t�
 `bank_accounts`, `cash_entries`; migration `0107` tạo `cash_transfers`), nhưng 16 bảng đã bị `DROP TABLE` thật sự.
 Migration `0107` còn tạo view chỉ đọc `cash_book_daily` (tiền bán hàng và nhập hàng gộp theo ngày và cách trả); view không phải bảng, không tính vào số trên.
 
-Migration `0105` gỡ 10 bảng bỏ hoang, chủ quán duyệt 2026-09-28
-(`docs/superpowers/specs/2026-09-28-ban-do-bang-du-lieu.md`):
+Migration `0105` gỡ 10 bảng bỏ hoang, chủ quán duyệt 2026-09-28:
 - công thức, bán thành phẩm, lệnh làm mẻ: `recipes`, `semi_products`,
   `production_orders`, `production_items`
 - phiếu cân bằng kho: `stock_adjustments`
@@ -58,7 +57,7 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `promotions` | Khuyến mãi | Chương trình giảm giá theo đơn hoặc theo món |
 | `purchase_order_edits` | Nhật ký sửa đơn mua hàng | Ghi mỗi lần một đơn mua hàng đã hoàn tất bị sửa |
 | `purchase_order_lines` | Dòng đơn mua hàng | Từng dòng vật tư trong một đơn mua hàng: số lượng, đơn giá |
-| `purchase_orders` | Đơn mua hàng | Một lần nhập hàng từ nhà cung cấp; từ migration `0107` ghi cả "Trả bằng" (tiền mặt hay chuyển khoản, tài khoản nào); từ `0108` có thể ở trạng thái `CANCELLED` ("Đã huỷ") kèm `cancelled_at`, `cancelled_by_id`, `cancelled_by_name`, `cancel_reason`, không bao giờ bị xoá (`BR-INV-015`) |
+| `purchase_orders` | Đơn mua hàng | Một lần nhập hàng từ nhà cung cấp; từ migration `0107` ghi cả "Hình thức thanh toán" (tiền mặt hay chuyển khoản, tài khoản nào); từ `0108` có thể ở trạng thái `CANCELLED` ("Đã huỷ") kèm `cancelled_at`, `cancelled_by_id`, `cancelled_by_name`, `cancel_reason`, không bao giờ bị xoá (`BR-INV-015`) |
 | `purchase_sources` | Nguồn nhập | Kênh/nơi mua hàng cho một đơn mua, khác với nhà cung cấp |
 | `purchased_items` | Vật tư mua vào | Một loại nguyên liệu/vật tư có thể mua; tồn kho tính theo từng dòng ở đây |
 | `stock_issues` | Hàng rời kho | Ghi nhận nguyên liệu đã ra khỏi kho; đây là chỗ tính giá vốn |

@@ -176,4 +176,17 @@ describe("OutletsClient", () => {
     expect(screen.getAllByText("07:00 - 22:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chưa đặt").length).toBeGreaterThan(0);
   });
+
+  it("create link reads 'Tạo' and points to /admin/outlets/new", () => {
+    render(
+      <OutletsClient
+        outlets={sampleOutlets}
+        brands={sampleBrands}
+      />,
+    );
+
+    const createLink = screen.getByRole("link", { name: "Tạo" });
+    expect(createLink).toBeInTheDocument();
+    expect(createLink.getAttribute("href")).toContain("/admin/outlets/new?returnTo=");
+  });
 });

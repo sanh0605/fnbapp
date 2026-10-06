@@ -125,14 +125,95 @@ describe("getPurchaseOrderCancelView", () => {
     expect(await getPurchaseOrderCancelView("PO-147")).toEqual({ state: "missing-migration" });
   });
 
+  const BASE_ORDER = {
+    id: "PO-147", supplier_id: "SUP-1", transaction_date: "2026-08-12T17:00:00+00:00", created_at: "2026-08-13T01:00:00+00:00",
+    total_amount: "20200", status: "COMPLETED", payment_method: "CASH",
+  };
+  const EXTRA_ZERO = {
+    subtotalAmount: 0, shippingFee: 0, taxAmount: 0, discountTotal: 0, invoiceCode: "", sourceName: "—", notes: "",
+  };
+
+  function mockTables(tables: Record<string, unknown[]>) {
+    mocks.findAll.mockImplementation(async (sheet: string) => tables[sheet] ?? []);
+  }
+
   it("ready: header, no blockers, the asset that will be retired", async () => {
     mocks.fetchCheck.mockResolvedValue({ blocked: [], assets: [{ id: "TS-080", name: "Vòi rót rượu", quantity: 2, totalCost: 20200 }] });
+    mockTables({});
     expect(await getPurchaseOrderCancelView("PO-147")).toEqual({
       state: "ready",
-      order: { id: "PO-147", dateText: "13/08/2026 00:00:00", supplierName: "Bếp Việt", totalAmount: 20200, paymentLabel: "Tiền mặt", status: "COMPLETED" },
+      order: { id: "PO-147", dateText: "13/08/2026 00:00:00", supplierName: "Bếp Việt", totalAmount: 20200, paymentLabel: "Tiền mặt", status: "COMPLETED", ...EXTRA_ZERO },
+      lines: [],
       blockedMessages: [],
       assets: [{ id: "TS-080", name: "Vòi rót rượu", quantity: 2, totalCost: 20200 }],
     });
+  });
+
+  it("real order PO-195: one line and the money breakdown", async () => {
+    mocks.fetchCheck.mockResolvedValue({ blocked: [], assets: [] });
+    mocks.findById.mockImplementation(async (sheet: string) => {
+      if (sheet === "Purchase_Orders") return {
+        ...BASE_ORDER, id: "PO-195", subtotal_amount: "3140000", shipping_fee: "59600", tax_amount: "0",
+        voucher_amount: "656200", discount_amount: "100000", total_amount: "2443400",
+        supplier_invoice_code: "HD-77", source_id: "SRC-1", notes: "Giao buổi sáng",
+      };
+      if (sheet === "Suppliers") return { id: "SUP-1", name: "Bếp Việt" };
+      return null;
+    });
+    mockTables({
+      Purchase_Order_Lines: [
+        { id: "POL-24a1a94b-e556-41ec-8786-52bfa0b77915", purchase_order_id: "PO-195", purchased_item_id: "PI-1", unit: "U-008",
+          quantity: "20.000000", unit_price: "157000", subtotal: "3140000", created_at: "2026-10-01T01:00:00Z" },
+        { id: "POL-other", purchase_order_id: "PO-999", purchased_item_id: "PI-1", unit: "U-008", quantity: "1", unit_price: "1", subtotal: "1", created_at: "2026-10-01T01:00:00Z" },
+      ],
+      Purchased_Items: [{ id: "PI-1", name: "Bột cà phê MR.PHIN Robusta Dak Mil" }],
+      Units: [{ id: "U-008", name: "Túi" }],
+      Purchase_Sources: [{ id: "SRC-1", name: "Chợ đầu mối" }],
+    });
+    const view = await getPurchaseOrderCancelView("PO-195");
+    expect(view).toMatchObject({
+      state: "ready",
+      order: {
+        subtotalAmount: 3140000, shippingFee: 59600, taxAmount: 0, discountTotal: 756200, totalAmount: 2443400,
+        invoiceCode: "HD-77", sourceName: "Chợ đầu mối", notes: "Giao buổi sáng",
+      },
+    });
+    expect((view as { lines: unknown }).lines).toEqual([
+      { id: "POL-24a1a94b-e556-41ec-8786-52bfa0b77915", itemName: "Bột cà phê MR.PHIN Robusta Dak Mil", unitName: "Túi", quantity: 20, unitPrice: 157000, subtotal: 3140000 },
+    ]);
+  });
+
+  it("sorts lines by created_at then id; unknown item and unit show the raw ids", async () => {
+    mocks.fetchCheck.mockResolvedValue({ blocked: [], assets: [] });
+    const line = (id: string, created_at: string) => ({
+      id, purchase_order_id: "PO-147", purchased_item_id: "PI-X", unit: "U-X", quantity: "1", unit_price: "10", subtotal: "10", created_at,
+    });
+    mockTables({
+      Purchase_Order_Lines: [
+        line("POL-c", "2026-10-02T00:00:00Z"), line("POL-b", "2026-10-01T00:00:00Z"), line("POL-a", "2026-10-01T00:00:00Z"),
+      ],
+    });
+    const view = (await getPurchaseOrderCancelView("PO-147")) as { lines: Array<{ id: string; itemName: string; unitName: string }> };
+    expect(view.lines.map(l => l.id)).toEqual(["POL-a", "POL-b", "POL-c"]);
+    expect(view.lines[0]).toMatchObject({ itemName: "PI-X", unitName: "U-X" });
+  });
+
+  it("null source, invoice code and notes give the dash and empty strings", async () => {
+    mocks.fetchCheck.mockResolvedValue({ blocked: [], assets: [] });
+    mocks.findById.mockImplementation(async (sheet: string) => {
+      if (sheet === "Purchase_Orders") return { ...BASE_ORDER, source_id: null, supplier_invoice_code: null, notes: null };
+      if (sheet === "Suppliers") return { id: "SUP-1", name: "Bếp Việt" };
+      return null;
+    });
+    mockTables({ Purchase_Sources: [{ id: "SRC-1", name: "Chợ đầu mối" }] });
+    expect(await getPurchaseOrderCancelView("PO-147")).toMatchObject({ order: { sourceName: "—", invoiceCode: "", notes: "" } });
+  });
+
+  it("not-found and missing-migration never read the lines or lookup tables", async () => {
+    await getPurchaseOrderCancelView("PO-999");
+    mocks.fetchCheck.mockRejectedValue(new CancelFunctionMissingError("missing"));
+    await getPurchaseOrderCancelView("PO-147");
+    expect(mocks.findAll).not.toHaveBeenCalled();
   });
 
   it("ready with the refusal sentences when blocked", async () => {

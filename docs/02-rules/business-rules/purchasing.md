@@ -11,7 +11,7 @@ Purchase orders, reviewed recoveries, and other critical flows that change multi
 
 ### BR-INV-015 — A completed purchase order can be cancelled; it is kept, marked "Đã huỷ"
 
-**Status:** `APPROVED` — owner decision 2026-10-05. Built 2026-10-05 (migration `0108`, page `/admin/inventory/purchase-orders/[id]/cancel`); `0108` ran on the server the same day, with the owner's approval (*"a"*). Design `docs/superpowers/specs/2026-10-05-huy-phieu-nhap-design.md`, approved by him the same day.
+**Status:** `APPROVED` — owner decision 2026-10-05. Built 2026-10-05 (migration `0108`, page `/admin/inventory/purchase-orders/[id]/cancel`); `0108` ran on the server the same day, with the owner's approval (*"a"*).
 
 Until 2026-10-05 a completed purchase order could only be edited, never removed, and it must keep at least one line, so an order entered twice stayed counted twice in stock, cost and the cash book with no way out (measured that day: 199 purchase orders, all completed). Offered "no cancel" or "cancel with a typed reason, kept and marked", the owner answered *"Làm theo em khuyến nghị"* (the second).
 
@@ -25,7 +25,7 @@ Until 2026-10-05 a completed purchase order could only be edited, never removed,
 
 ### BR-INV-016 — Any purchase order can be copied into a new one; a cancelled order's copy keeps its transaction time
 
-**Status:** `APPROVED` — owner decision 2026-10-05. Built 2026-10-06 after `BR-CATALOG-004` (owner, *"3a"*): `lib/purchasing/purchase-order-copy.ts`, `getPurchaseOrderCopySeed`, "Nhân bản" on the order's page, `/admin/inventory/purchase-orders/new?copyFrom=<code>`; plan `docs/superpowers/plans/2026-10-06-nhan-ban-phieu-nhap.md`.
+**Status:** `APPROVED` — owner decision 2026-10-05. Built 2026-10-06 after `BR-CATALOG-004` (owner, *"3a"*): `lib/purchasing/purchase-order-copy.ts`, `getPurchaseOrderCopySeed`, "Nhân bản" on the order's page, `/admin/inventory/purchase-orders/new?copyFrom=<code>`.
 
 Asked the same day, after `BR-INV-015`: *"anh có thể duplicate từ phiếu đã huỷ nếu có nhu cầu nhập lại không ? Lúc đó anh chỉ cần chỉnh sửa phiếu vừa được nhân bản đó để nhập lại hàng là xong nhỉ ?"* Until then no screen could copy an order; re-entering a cancelled one meant typing it again.
 

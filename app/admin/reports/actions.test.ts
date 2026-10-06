@@ -75,8 +75,7 @@ describe("getPnLDataV2", () => {
     await expect(getPnLDataV2({ startDate: "2026-06-19", endDate: "2026-06-19" })).rejects.toThrow("db down");
   });
 
-  // BR-COGS-007, 2026-09-11 (docs/superpowers/plans/2026-09-11-bao-cao-lai-lo.md
-  // Mục 1). Real shape: Khăn lau đa năng (SPM-057, is_non_inventory) issued
+  // BR-COGS-007, 2026-09-11. Real shape: Khăn lau đa năng (SPM-057, is_non_inventory) issued
   // +1 on 02/09/2026 (ISS-00120).
   it("leaves an issue of an item bought for immediate use out of totalCOGS (BR-COGS-007)", async () => {
     (findAllNoCache as any).mockImplementation(async (sheet: string) => {
@@ -746,7 +745,7 @@ describe("getPnLDataV2", () => {
     expect(dauSayRows[0]).not.toHaveProperty("cogs");
   });
 
-  // docs/superpowers/plans/2026-09-08-tach-gia-von-va-hao-hut.md Task 3a,
+  // BR-COGS-007,
   // BR-COGS-007. totalCOGS's own meaning does not change -- verify-cogs.ts's
   // Gate 2 compares it against a combined recomputation, so it must keep
   // reporting Giá vốn + Hao hụt together, both before and after this task.
@@ -802,7 +801,7 @@ describe("getPnLDataV2", () => {
   // session is not a slip of manual recording activity, so it does not
   // count here -- only MANUAL rows, grouped by issue_slip_id like
   // computeIssuedEventFigures already does for the issued-value report.
-  describe("manualIssueSlipCount (BR-COGS-007 Task 4)", () => {
+  describe("manualIssueSlipCount (BR-COGS-007)", () => {
     it("counts distinct MANUAL issue_slip_id groups in the period, not rows and not STOCKTAKE sessions", async () => {
       (findAllWhere as any).mockResolvedValue([]);
       (findAllWhereInBatches as any).mockResolvedValue([]);
@@ -951,7 +950,7 @@ describe("getSalesDataV2", () => {
   });
 
   it("routes a standalone topping product into bestToppings via its modifier's product_id link", async () => {
-    // Rewritten 2026-09-08 (Task 5, BR-CATALOG-003 -- "the link is the join,
+    // Rewritten 2026-09-08 (BR-CATALOG-003 -- "the link is the join,
     // not the name"). Until today this test pinned the 2026-07-27 bug fix's
     // fallback: buildStandaloneToppingMap tried to read
     // products.migration_notes, a column that has never existed, so the
@@ -1044,13 +1043,13 @@ describe("getSalesDataV2", () => {
   });
 
   it("an orphan CAT-007 product with no modifier link falls through as an ordinary product, not into bestToppings", async () => {
-    // Deliberate behaviour change, Task 5 / BR-CATALOG-003, 2026-09-08. The
+    // Deliberate behaviour change, BR-CATALOG-003, 2026-09-08. The
     // old self-mapping fallback (see the previous test's history note) used
     // to route every CAT-007 product into bestToppings whether or not a
     // modifier actually linked to it -- it could not tell the difference,
     // because migration_notes never worked. Now that the join is
     // structural, a CAT-007 product no modifier points to is not a linked
-    // standalone topping; it reads as an ordinary product. Task 2's
+    // standalone topping; it reads as an ordinary product. The
     // create-and-link RPC creates the product and the link in one
     // transaction, so this state should not arise from that flow -- but the
     // routing must still be correct if it ever does, rather than silently

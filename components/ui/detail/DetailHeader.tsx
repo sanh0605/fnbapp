@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+import { BackLink } from "@/components/ui/BackLink";
 
 export interface DetailHeaderProps {
   backHref: string;
@@ -21,12 +21,11 @@ export function DetailHeader({
   return (
     <div className="space-y-3">
       <div>
-        <Link
+        <BackLink
           href={backHref}
+          label={backLabel}
           className="text-sm font-medium text-primary hover:text-primary-hover no-underline inline-flex items-center gap-1 min-h-[44px]"
-        >
-          &larr; {backLabel}
-        </Link>
+        />
       </div>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
