@@ -177,7 +177,7 @@ thuật thì tự sửa rồi báo.
 |---|---|---|
 | G1 | Sửa phiếu nhập mà đổi mặt hàng của một dòng: tài sản của dòng đó mất liên kết | Phần 1 (8b) |
 | G2 | Phiếu nhập nháp luôn mở form nên không thấy nút "Huỷ phiếu" (đo 2026-10-06: 0 phiếu nháp) | Phần 1 (8b) |
-| G3 | Tạo phiếu xuất: "Tồn hiện tại" là tồn hôm nay, và mặt hàng ngừng dùng đã hết hàng hôm nay không hiện để chọn; nhưng phiếu ghi lùi ngày được kiểm theo tồn ở ngày của phiếu | Phần 1 (8a) |
+| G3 | ~~Tạo phiếu xuất: "Tồn hiện tại" là tồn hôm nay, kể cả khi ghi lùi ngày~~ — đóng 2026-10-06, giữ nguyên. Chủ quán: *"anh chỉ cần xem tồn hiện tại thôi, nên nếu anh có thêm 1 phiếu tồn trong quá khứ thì tồn hiện tại sẽ thay đổi. Chứ không cần tồn theo thời điểm lọc."* Mặt hàng hết hàng hôm nay không xuất lùi ngày được (tồn hôm nay sẽ âm, `issue_stock_headroom` từ chối), nên ẩn nó khỏi danh sách là đúng | — |
 | G4 | Xoá nhân viên (`deleteUserAction`, `app/admin/users/actions.ts`): không chặn việc chủ quán tự xoá chính mình hay xoá tài khoản `ADMIN` cuối cùng | Phần 2 (Nhân viên) |
 | G5 | 10 tài sản không còn dòng phiếu nhập — không cần làm gì, chỉ ghi nhận | — |
 
