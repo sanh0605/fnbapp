@@ -23,6 +23,7 @@ import {
   cancelPurchaseOrderAtomic,
   fetchPurchaseOrderCancelCheck,
 } from "@/lib/purchasing/purchase-order-cancel-transaction";
+import { buildPurchaseOrderCopySeed, type PurchaseOrderCopySeed } from "@/lib/purchasing/purchase-order-copy";
 import type { Band } from "@/lib/assets/asset-depreciation";
 
 const PATH = "/admin/inventory/purchase-orders";
@@ -448,6 +449,26 @@ export async function cancelPurchaseOrder(input: { id: string; reason: string })
     if (error instanceof CancelFunctionMissingError) return fail(CANCEL_MIGRATION_PENDING);
     return describeActionError(error);
   }
+}
+
+// The starting values for a new order copied from this one (BR-INV-016).
+// Read-only: nothing is written until the copy is saved through savePurchaseOrder.
+export async function getPurchaseOrderCopySeed(id: string): Promise<PurchaseOrderCopySeed | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const order = (await findById("Purchase_Orders", id)) as DBPurchaseOrder | null;
+  if (!order) return null;
+
+  const [allLines, accounts] = await Promise.all([
+    findAll("Purchase_Order_Lines") as Promise<any[]>,
+    findAll("Bank_Accounts") as Promise<DBBankAccount[]>,
+  ]);
+  return buildPurchaseOrderCopySeed({
+    order,
+    lines: allLines.filter(l => l.purchase_order_id === id),
+    activeBankAccountIds: new Set(accounts.filter(a => a.status === "ACTIVE").map(a => a.id)),
+  });
 }
 
 export async function addPurchaseSource(name: string): Promise<ActionResponse> {

@@ -25,10 +25,12 @@ Until 2026-10-05 a completed purchase order could only be edited, never removed,
 
 ### BR-INV-016 — Any purchase order can be copied into a new one; a cancelled order's copy keeps its transaction time
 
-**Status:** `APPROVED` — owner decision 2026-10-05. **Not built yet**; to be built after `BR-CATALOG-004` (owner, *"3a"*).
+**Status:** `APPROVED` — owner decision 2026-10-05. Built 2026-10-06 after `BR-CATALOG-004` (owner, *"3a"*): `lib/purchasing/purchase-order-copy.ts`, `getPurchaseOrderCopySeed`, "Nhân bản" on the order's page, `/admin/inventory/purchase-orders/new?copyFrom=<code>`; plan `docs/superpowers/plans/2026-10-06-nhan-ban-phieu-nhap.md`.
 
 Asked the same day, after `BR-INV-015`: *"anh có thể duplicate từ phiếu đã huỷ nếu có nhu cầu nhập lại không ? Lúc đó anh chỉ cần chỉnh sửa phiếu vừa được nhân bản đó để nhập lại hàng là xong nhỉ ?"* Until then no screen could copy an order; re-entering a cancelled one meant typing it again.
 
 - **"Nhân bản" opens a new, unsaved order** filled from the source: supplier, source, lines and prices. Nothing is written until "Lưu"; the copy gets its own new code. Assets are created from the copy when it is completed, dated by the copy (`BR-INV-015`, *"1b"*: depreciation from the real purchase date).
 - **Any order can be copied, not only a cancelled one** (owner, *"1b"*). He was told first that copying a live order makes a second, duplicate entry easier, the mistake `BR-INV-015` exists to undo, and was offered "cancelled orders only".
 - **Transaction time** (owner, *"2 các phiếu huỷ thì lấy đúng thời điểm giao dịch của phiếu đó. Còn lại thì để trống"*): copying a cancelled order keeps its exact transaction time; copying any other order leaves the time blank, to be chosen. He was offered "always blank", "always the source's" and "today".
+- **What else is copied** (owner 2026-10-06, *"1a 2a 3a"*): shipping fee, tax, voucher and discount are copied as they are (`PO-147`'s voucher 35.000 comes across with its Vòi rót rượu line); the payment method and bank account are copied as they are; the supplier's invoice code follows the date rule: kept from a cancelled order, blank from any other (a new purchase has a new invoice). He was offered "zero" for the extra costs, "always"/"never" for the invoice code, and "blank" for the payment.
+- **A copy of a live order saved with no date is dated the moment it is saved**, as any new order is (`savePurchaseOrder`). He was told this before choosing.

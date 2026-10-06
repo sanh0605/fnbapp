@@ -126,5 +126,6 @@ describe("SaigonDateTimeInput", () => {
       }
     }
     expect(offending, `Found type="datetime-local" in: ${offending.join(", ")}`).toEqual([]);
-  });
+    // Reads every app/ .tsx file: under a full parallel run it took 6,5 s (2026-10-06).
+  }, 30_000);
 });

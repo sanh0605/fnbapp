@@ -10,6 +10,7 @@ import { LoadingButton } from "@/components/ui/LoadingButton";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine, DBBankAccount } from "@/types/db";
+import type { PurchaseOrderCopySeed } from "@/lib/purchasing/purchase-order-copy";
 import { alert, confirm } from "@/lib/shared/dialog";
 
 // Batch 3 fix, 2026-08-22 (found while critiquing section 6's reconciliation, which needs equipment
@@ -58,45 +59,11 @@ export function validatePurchaseOrderHeader(input: {
   return null;
 }
 
-interface PurchaseOrderFormProps {
-  suppliers: DBSupplier[];
-  sources: DBPurchaseSource[];
-  items: DBPurchasedItem[];
-  conversions: DBUOMConversion[];
-  units: DBUnit[];
-  bankAccounts?: DBBankAccount[];
-  initialData?: {
-    po: DBPurchaseOrder;
-    lines: DBPurchaseOrderLine[];
-  };
-}
-
-export default function PurchaseOrderForm({ suppliers, sources = [], items, conversions, units = [], bankAccounts = [], initialData }: PurchaseOrderFormProps) {
-  const formId = useId();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const restoredRef = useRef(false);
-  const isEdit = !!initialData?.po;
-  const po = initialData?.po || ({} as Partial<DBPurchaseOrder>);
-  const initialLines = initialData?.lines || [];
-
-  const [loading, setLoading] = useState(false);
-  const [supplierId, setSupplierId] = useState(po.supplier_id || "");
-  const [sourceId, setSourceId] = useState(po.source_id || "");
-  const [supplierInvoiceCode, setSupplierInvoiceCode] = useState(po.supplier_invoice_code || "");
-  const [transactionDate, setTransactionDate] = useState<Date | null>(po.transaction_date ? new Date(po.transaction_date) : null);
-  const [notes, setNotes] = useState(po.notes || "");
-  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER" | "">(
-    (po.payment_method as "CASH" | "BANK_TRANSFER") || ""
-  );
-  const [bankAccountId, setBankAccountId] = useState<string>(
-    po.bank_account_id || ""
-  );
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  
-  // Format initial lines to match form state structure
-  const formattedInitialLines = initialLines.map((line: any) => {
+function formatLinesWithConversions(
+  rawLines: any[],
+  conversions: DBUOMConversion[],
+) {
+  return rawLines.map((line: any) => {
     // Bước 1: Tìm conversion record
     // Ưu tiên dùng conversion_id đã lưu trong DB (sau khi fix actions.ts)
     // Fallback: tìm theo purchased_item_id + purchased_unit (với dữ liệu cũ chưa có conversion_id)
@@ -123,16 +90,88 @@ export default function PurchaseOrderForm({ suppliers, sources = [], items, conv
       conversion_rate: matchedConv?.conversion_rate || "",
     };
   });
+}
 
+interface PurchaseOrderFormProps {
+  suppliers: DBSupplier[];
+  sources: DBPurchaseSource[];
+  items: DBPurchasedItem[];
+  conversions: DBUOMConversion[];
+  units: DBUnit[];
+  bankAccounts?: DBBankAccount[];
+  initialData?: {
+    po: DBPurchaseOrder;
+    lines: DBPurchaseOrderLine[];
+  };
+  copySeed?: PurchaseOrderCopySeed;
+}
 
-  const [lines, setLines] = useState<any[]>(formattedInitialLines.length > 0 ? formattedInitialLines : []);
-  
+export default function PurchaseOrderForm({
+  suppliers,
+  sources = [],
+  items,
+  conversions,
+  units = [],
+  bankAccounts = [],
+  initialData,
+  copySeed,
+}: PurchaseOrderFormProps) {
+  const formId = useId();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const restoredRef = useRef(false);
+  const isEdit = !!initialData?.po;
+  const po = initialData?.po || ({} as Partial<DBPurchaseOrder>);
+  const initialLines = initialData?.lines;
+
+  const [loading, setLoading] = useState(false);
+  const [supplierId, setSupplierId] = useState(
+    initialData ? (po.supplier_id || "") : (copySeed ? (copySeed.supplier_id || "") : "")
+  );
+  const [sourceId, setSourceId] = useState(
+    initialData ? (po.source_id || "") : (copySeed ? (copySeed.source_id || "") : "")
+  );
+  const [supplierInvoiceCode, setSupplierInvoiceCode] = useState(
+    initialData ? (po.supplier_invoice_code || "") : (copySeed ? (copySeed.supplier_invoice_code || "") : "")
+  );
+  const [transactionDate, setTransactionDate] = useState<Date | null>(
+    initialData
+      ? (po.transaction_date ? new Date(po.transaction_date) : null)
+      : (copySeed ? (copySeed.transaction_date ? new Date(copySeed.transaction_date) : null) : null)
+  );
+  const [notes, setNotes] = useState(
+    initialData ? (po.notes || "") : (copySeed ? (copySeed.notes || "") : "")
+  );
+  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER" | "">(
+    initialData
+      ? ((po.payment_method as "CASH" | "BANK_TRANSFER") || "")
+      : (copySeed ? ((copySeed.payment_method as "CASH" | "BANK_TRANSFER") || "") : "")
+  );
+  const [bankAccountId, setBankAccountId] = useState<string>(
+    initialData ? (po.bank_account_id || "") : (copySeed ? (copySeed.bank_account_id || "") : "")
+  );
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  const rawLines = initialLines ?? (copySeed ? copySeed.lines : []);
+  const formattedInitialLines = formatLinesWithConversions(rawLines, conversions);
+
+  const [lines, setLines] = useState<any[]>(formattedInitialLines);
+
   // Extra costs
-  const [shippingFee, setShippingFee] = useState(Number(po.shipping_fee || 0));
-  const [taxAmount, setTaxAmount] = useState(Number(po.tax_amount || 0));
-  const [voucherAmount, setVoucherAmount] = useState<number>(Number(po?.voucher_amount || 0));
-  const [discountAmount, setDiscountAmount] = useState<number>(Number(po?.discount_amount || 0));
-  
+  const [shippingFee, setShippingFee] = useState(
+    initialData ? Number(po.shipping_fee || 0) : (copySeed ? Number(copySeed.shipping_fee || 0) : 0)
+  );
+  const [taxAmount, setTaxAmount] = useState(
+    initialData ? Number(po.tax_amount || 0) : (copySeed ? Number(copySeed.tax_amount || 0) : 0)
+  );
+  const [voucherAmount, setVoucherAmount] = useState<number>(
+    initialData ? Number(po?.voucher_amount || 0) : (copySeed ? Number(copySeed.voucher_amount || 0) : 0)
+  );
+  const [discountAmount, setDiscountAmount] = useState<number>(
+    initialData ? Number(po?.discount_amount || 0) : (copySeed ? Number(copySeed.discount_amount || 0) : 0)
+  );
+
   const [restoreFailed, setRestoreFailed] = useState(false);
 
   useEffect(() => {

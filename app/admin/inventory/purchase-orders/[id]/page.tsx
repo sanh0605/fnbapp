@@ -87,6 +87,14 @@ export default async function PurchaseOrderDetail({
               Huỷ phiếu
             </Link>
           )}
+          {(role === "ADMIN" || role === "MANAGER") && !showForm && (
+            <Link
+              href={`/admin/inventory/purchase-orders/new?copyFrom=${encodeURIComponent(po.id)}`}
+              className="px-3 py-1 text-sm font-bold rounded-full border border-border text-text-primary hover:bg-surface-secondary transition"
+            >
+              Nhân bản
+            </Link>
+          )}
         </div>
       </div>
 

@@ -4,8 +4,10 @@
 routes: /admin/inventory/purchase-orders, /admin/inventory/purchase-orders/new, /admin/inventory/purchase-orders/[id], /admin/inventory/purchase-orders/[id]/cancel, /admin/suppliers, /admin/suppliers/new, /admin/suppliers/[id], /admin/suppliers/[id]/edit
 files: lib/purchasing/purchase-order-transaction.ts, app/admin/inventory/purchase-orders/actions.ts, app/admin/suppliers/actions.ts
 tables: purchase_orders, purchase_order_lines, purchase_order_edits, Purchase_Sources, assets, Suppliers
-brCodes: BR-INV-002, BR-INV-015
+brCodes: BR-INV-002, BR-INV-015, BR-INV-016
 ```
+
+**Behaviour change — 2026-10-06 (copy a purchase order, `BR-INV-016`):** an order's page shows "Nhân bản" to ADMIN and MANAGER on any status, cancelled included, while no edit form is open. It opens `/admin/inventory/purchase-orders/new?copyFrom=<code>`, a new, unsaved order filled by `getPurchaseOrderCopySeed` (`lib/purchasing/purchase-order-copy.ts`): supplier, source, notes, lines, extra costs and payment; the transaction time and invoice code only from a cancelled order, blank otherwise; a stopped bank account blank. Nothing is written until "Lưu Nháp" or "Tạo", through the unchanged `savePurchaseOrder`. A draft kept in the browser ("Thêm nhà cung cấp" round trip) wins over the copy.
 
 **Behaviour change — 2026-10-05 (cancel a purchase order, migration `0108`, `BR-INV-015`):**
 - **Cancelling.** A draft or completed order can be cancelled by ADMIN or MANAGER from its own page, "Huỷ phiếu", which opens `/admin/inventory/purchase-orders/[id]/cancel`. That page asks for a typed reason (required, 500 characters at most) and has no popup (`BR-DATA-007`).
@@ -77,7 +79,8 @@ affected.
 2. **Buttons per screen, and when to hide them.** The purchase-order list at
    `/admin/inventory/purchase-orders` offers a button to create a new order
    (leading to `/admin/inventory/purchase-orders/new`) and a way to open an
-   existing order at `/admin/inventory/purchase-orders/[id]`. The order form can
+   existing order at `/admin/inventory/purchase-orders/[id]`. An order's page offers "Nhân bản" (ADMIN, MANAGER; hidden while its form
+   is open), leading to `/admin/inventory/purchase-orders/new?copyFrom=<code>` (`BR-INV-016`). The order form can
    save as draft or save as completed; the "save as completed" path should not be
    offered until a supplier, a source, and at least one line are present, since
    the action rejects a completed order missing any of them. Adding a supplier
