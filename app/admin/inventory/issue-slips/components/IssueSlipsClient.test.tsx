@@ -89,4 +89,11 @@ describe("IssueSlipsClient", () => {
     expect(options.map(o => o.textContent)).toEqual(["Tất cả", "Phiếu xuất", "Kiểm kê", "Đã huỷ"]);
     expect(options.map(o => o.getAttribute("value"))).toEqual(["ALL", "SLIP", "STOCKTAKE", "CANCELLED"]);
   });
+
+  it("create link reads 'Tạo' and points to /admin/inventory/issue-slips/new", () => {
+    render(<IssueSlipsClient pageData={defaultPageData} />);
+    const link = screen.getByRole("link", { name: "Tạo" });
+    expect(link).toBeInTheDocument();
+    expect(link.getAttribute("href")).toBe("/admin/inventory/issue-slips/new");
+  });
 });

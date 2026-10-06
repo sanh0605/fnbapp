@@ -48,9 +48,10 @@ tối ưu được diện tích sử dụng"*.
 | # | Phần | Trạng thái |
 |---|---|---|
 | 1 | Giao diện đồng nhất — đợt 8: Phiếu nhập, Phiếu xuất, Đơn hàng | đang làm |
+| 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | chưa làm |
 | 2 | Giao diện đồng nhất — các trang ngoài khuôn | chưa làm |
 | 3 | Tổng quan mới (bước D của bản cải tổ) | chưa làm |
-| 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E) | chưa làm |
+| 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E), trả phiếu nhập bằng nhiều hình thức, bảng chữ viết tắt | chưa làm |
 | 5 | Ô tiền tự thêm dấu chấm ở các màn còn lại | chưa làm |
 | 6 | Dọn phần sót (bước H) | chưa làm |
 | 7 | Máy bán hàng và trang đăng nhập | chưa làm |
@@ -71,11 +72,37 @@ quán chốt 2026-10-05, huỷ từng cái ở trang chi tiết (`BR-DATA-007`).
   - Huỷ phiếu nhập `/admin/inventory/purchase-orders/[id]/cancel`: máy tính lấp bề ngang
     (thông tin phiếu và các dòng hàng bên cạnh ô lý do), điện thoại xếp dọc.
   - Tạo phiếu xuất `/admin/inventory/issue-slips/new`: dựng theo khuôn, hai bố cục.
+- **8a-2 — góp ý chủ quán 2026-10-06** (đang làm; kế hoạch con
+  `docs/superpowers/plans/2026-10-06-dot8a2-gop-y-chu-quan.md`): mũi tên quay về hết kẹt vòng,
+  cột "Giá trị xuất", ô "Thành tiền" và khung tổng tiền phiếu nhập, "Hình thức thanh toán"
+  dời xuống dưới tổng, bỏ chữ tiếng Anh trong ngoặc (`BR-UI-001`), nút "Tạo" (`BR-UI-002`).
 - **8b — phần còn lại của Phiếu nhập và Phiếu xuất:** danh sách, chi tiết, tạo, sửa chuyển
   sang mảnh chung, không đổi cách hiện. Tách `IssueSlipDetailClient.tsx` (718 dòng).
 - **8c — Đơn hàng:** danh sách đổi thẻ trên máy tính sang bảng; chi tiết; sửa.
 - Gộp vào đợt này vì cùng trang: lỗ hổng G1, G2 ở mục "Lỗ hổng" — báo chủ quán từng cái khi
   tới trang đó.
+
+## 1b. Khung mẫu cho từng thành phần (chủ quán 2026-10-06)
+
+Làm trước 8b, vì 8b chuyển trang sang mảnh chung: có khung mẫu rồi mới chuyển một lần.
+Luật: `docs/02-rules/business-rules/screens.md`.
+
+- **Soát và dựng khung mẫu** (`BR-UI-005`): nút, ô nhập, ô số, bảng, khung tiền, đầu trang,
+  mũi tên quay về. Đếm mọi kiểu đang có, cho chủ quán xem một trang mẫu gom đủ thành phần,
+  chốt rồi mới thay ở các trang.
+- **Ô nhập số:** soát mọi ô. Mẫu là ô "Số lượng" của trang tạo phiếu xuất (chủ quán khen):
+  bàn phím số trên điện thoại, dấu phẩy cho số lẻ, hiện "Quy ra" bên cạnh. Thêm: tự chấm
+  hàng nghìn khi gõ, không có mũi tên tăng giảm, cuộn chuột không làm đổi số (ô
+  `type="number"` hiện ở phiếu nhập bị cả hai), gõ chữ thì báo ngay dưới ô. Ô tiền dùng
+  chung khung này (phần 5 áp vào các màn còn lại).
+- **Dòng danh sách một kiểu** (`BR-UI-003`), **đọc lại toàn bộ chữ tiếng Anh còn sót**
+  (`BR-UI-001`).
+- **Bộ lọc thời gian kiểu Looker Studio** (`BR-UI-007`): vẽ mẫu cho chủ quán xem trước
+  (khoảng có sẵn: hôm nay, hôm qua, 7 ngày qua, tháng này, tháng trước…; tự chọn; có thể so
+  với kỳ trước), rồi thay ở mọi danh sách và báo cáo.
+- **Dòng tổng dưới tiêu đề cột** (`BR-UI-004`): thiết kế ngắn (cột nào cộng được, điện
+  thoại hiện ở đâu), máy chủ cộng theo bộ lọc chứ không cộng trang đang hiện.
+- **Công cụ Góp ý:** sửa được góp ý đã lưu (chủ quán hỏi 2026-10-06; khuyến nghị có).
 
 ## 2. Các trang ngoài khuôn
 
@@ -104,6 +131,13 @@ bước (đặc tả → thiết kế → kế hoạch → code).
 - **Báo cáo lưu chuyển tiền tệ.** Câu Q6 (theo mẫu nào) hỏi khi bắt đầu; đọc
   `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md` trước. Làm cho cả hai loại
   hình (hộ kinh doanh, công ty), từ sổ thu chi.
+- **Trả phiếu nhập bằng một hoặc nhiều hình thức** (chủ quán 2026-10-06). Hôm nay mỗi phiếu
+  chỉ có một cách trả (`purchase_orders.payment_method`, `BR-CASH-001`), sổ thu chi đọc cột
+  đó. Nhiều hình thức cần bảng mới → đủ bốn bước. Hỏi chủ quán khi bắt đầu: chia theo số
+  tiền từng hình thức hay theo phần trăm; có "chưa trả / ghi nợ nhà cung cấp" không; phiếu
+  cũ giữ nguyên một hình thức.
+- **Bảng chữ viết tắt** (`BR-UI-006`): bảng mới + màn hình chủ quán tự thêm, sửa, xoá; ví
+  dụ "Hình thức thanh toán" → "HTTT" ở tiêu đề cột hẹp. Đủ bốn bước.
 
 ## 5. Ô tiền tự thêm dấu chấm
 

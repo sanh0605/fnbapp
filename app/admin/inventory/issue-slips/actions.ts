@@ -262,6 +262,29 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
     .sort((a, b) => a.name.localeCompare(b.name, "vi"));
 }
 
+// Read-only price preview for the create form: cost per base unit of every item
+// the form offers, at the moment the operator picked. Same engine and context as
+// getIssueSlipDetail (no second cost definition); an item with no cost at that
+// moment is simply absent.
+export async function getIssueUnitCostsAt(
+  issuedAtIso: string,
+): Promise<{ unitCostByItem: Record<string, number> } | { error: string }> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return { error: auth.error };
+  const issuedAt = new Date(issuedAtIso);
+  if (Number.isNaN(issuedAt.getTime())) return { error: "Thời điểm xuất không hợp lệ" };
+
+  try {
+    const [offered, ctx] = await Promise.all([getIssueSlipFormData(), loadIssueSlipContext()]);
+    const unitCostByItem = Object.fromEntries(
+      computeUnitCostsAt(ctx.purchases, ctx.costedIssues, issuedAt.toISOString(), offered.map(o => o.id)),
+    );
+    return { unitCostByItem };
+  } catch (error: unknown) {
+    return { error: describeActionError(error).error ?? "Không tính được đơn giá" };
+  }
+}
+
 // Plan D D9: one slip, one time, many lines -- the owner's own review of
 // the D7a screen ("tại sao chỉ cho xuất đúng 1 sản phẩm"). Whole slip is
 // validated and written in one RPC call; I4/I10 are enforced there, not

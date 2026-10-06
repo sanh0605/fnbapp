@@ -142,4 +142,17 @@ describe("BrandsClient", () => {
     expect(screen.getAllByText("PHD").length).toBeGreaterThan(0);
     expect(screen.getAllByText("27/03/2026").length).toBeGreaterThan(0);
   });
+
+  it("create link reads 'Tạo' and points to /admin/brands/new", () => {
+    render(
+      <BrandsClient
+        brands={sampleBrands}
+        canDelete={true}
+      />,
+    );
+
+    const createLink = screen.getByRole("link", { name: "Tạo" });
+    expect(createLink).toBeInTheDocument();
+    expect(createLink.getAttribute("href")).toContain("/admin/brands/new?returnTo=");
+  });
 });

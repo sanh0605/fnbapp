@@ -140,7 +140,7 @@ export default async function AdminDashboard({
   const stats = [
     { title: "Tổng Doanh Thu", value: formatNumber(currRev), icon: <Banknote className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.rev },
     { title: "Đơn hàng hoàn tất", value: currOrdCount.toString(), icon: <Receipt className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: trends.ord },
-    { title: "TB Đơn (AOV)", value: formatNumber(Math.round(currAOV)), icon: <TrendingUp className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.aov },
+    { title: "TB đơn", value: formatNumber(Math.round(currAOV)), icon: <TrendingUp className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.aov },
     { title: "Tổng Ly Đã Bán", value: currCups.toString(), icon: <Coffee className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: trends.cups },
     { title: "TB Ly", value: formatNumber(Math.round(currAvgCup)), icon: <Tag className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.avgCup },
     { title: "Nhà cung cấp", value: activeSuppliers.toString(), icon: <Building2 className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: undefined },

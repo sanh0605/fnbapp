@@ -244,13 +244,14 @@ describe("CancelPurchaseOrderForm (BR-INV-015)", () => {
     expect(within(table).getByText("3.140.000")).toBeInTheDocument();
   });
 
-  it("the money card shows 59.600, 756.200 and 2.443.400", () => {
+  it("the money card shows 59.600, 756.200 and 2.443.400 and label Hình thức thanh toán", () => {
     render(<CancelPurchaseOrderForm view={po195View} />);
 
     const moneyCard = screen.getByTestId("money-card");
     expect(within(moneyCard).getByText("+59.600")).toBeInTheDocument();
     expect(within(moneyCard).getByText("-756.200")).toBeInTheDocument();
     expect(within(moneyCard).getByText("2.443.400")).toBeInTheDocument();
+    expect(within(moneyCard).getByText(/Hình thức thanh toán:/)).toBeInTheDocument();
   });
 
   it("when blocked: the line table and money card still render, Xác nhận huỷ and the textarea do not", () => {

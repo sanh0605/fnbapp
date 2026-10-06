@@ -13,6 +13,7 @@ import type { IssueSlipResult } from "@/lib/stock/manual-issue-transaction";
 
 const mocks = vi.hoisted(() => ({
   createIssueSlip: vi.fn(),
+  getIssueUnitCostsAt: vi.fn(),
   confirmDialog: vi.fn(),
   routerRefresh: vi.fn(),
   routerPush: vi.fn(),
@@ -20,6 +21,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("../actions", () => ({
   createIssueSlip: mocks.createIssueSlip,
+  getIssueUnitCostsAt: mocks.getIssueUnitCostsAt,
 }));
 
 vi.mock("@/lib/shared/dialog", () => ({
@@ -47,6 +49,7 @@ vi.mock("@/components/ui/SaigonDateTimeInput", () => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.confirmDialog.mockResolvedValue(true);
+  mocks.getIssueUnitCostsAt.mockResolvedValue({ unitCostByItem: {} });
 });
 
 if (typeof Element.prototype.scrollIntoView !== "function") {
@@ -713,4 +716,164 @@ describe("IssueSlipClient -- Responsive redesign (desktop table & mobile cards)"
     expect(phone.querySelectorAll('button[aria-label="Xoá dòng"]').length).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe("IssueSlipClient -- Row 3 Giá trị xuất", () => {
+  it("header 'Giá trị xuất' exists in desktop table", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const desktop = container.querySelector(".hidden.md\\:block");
+    expect(desktop).toBeTruthy();
+    const ths = Array.from(desktop!.querySelectorAll("th")).map(th => th.textContent?.trim());
+    expect(ths).toContain("Giá trị xuất");
+  });
+
+  it("with unit cost 1500 per base unit and a 12-factor package × quantity 2 shows 36.000đ on desktop and phone", async () => {
+    mocks.getIssueUnitCostsAt.mockResolvedValue({
+      unitCostByItem: { "SPM-001": 1500 },
+    });
+    const theItem = item({
+      id: "SPM-001",
+      unitName: "hộp",
+      packageLines: [
+        pkg({
+          conversionId: "QD-001",
+          sizeLabel: "Thùng 12 hộp",
+          conversionRate: 12,
+          purchasedUnitName: "Thùng",
+          baseUnitName: "hộp",
+        }),
+      ],
+    });
+    const container = await renderTracked(<IssueSlipClient items={[theItem]} />);
+    const desktop = container.querySelector<HTMLElement>(".hidden.md\\:block")!;
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden")!;
+
+    await selectItemInBlock(desktop, "Sữa tươi Vinamilk");
+    await selectPackage(desktop, "Thùng 12 hộp");
+    const desktopQtyInput = desktop.querySelector<HTMLInputElement>('input[inputmode="decimal"]')!;
+    await setInputValue(desktopQtyInput, "2");
+
+    // Desktop table row contains 36.000đ
+    const desktopTable = desktop.querySelector("table")!;
+    const giaTriHeaderIndex = Array.from(desktopTable.querySelectorAll("th")).findIndex(
+      th => th.textContent?.trim() === "Giá trị xuất",
+    );
+    expect(giaTriHeaderIndex).toBeGreaterThanOrEqual(0);
+    const firstRowCells = desktopTable.querySelectorAll("tbody tr")[0].querySelectorAll("td");
+    expect(firstRowCells[giaTriHeaderIndex].textContent?.trim()).toBe("36.000đ");
+
+    // Phone card contains 36.000đ
+    const phoneCards = getLineBlocks(phone);
+    expect(phoneCards[0].textContent).toContain("Giá trị xuất:");
+    expect(phoneCards[0].textContent).toContain("36.000đ");
+  });
+
+  it("total row shows the rounded exact sum of two lines (where sum of rounded cells would differ by 1)", async () => {
+    // line 1: unitCost = 100.4, qty 1, factor 1 -> value = 100.4 (rounded cell = 100)
+    // line 2: unitCost = 200.4, qty 1, factor 1 -> value = 200.4 (rounded cell = 200)
+    // sum of rounded cells = 300, exact sum = 300.8 -> rounded exact sum = 301
+    mocks.getIssueUnitCostsAt.mockResolvedValue({
+      unitCostByItem: {
+        "SPM-001": 100.4,
+        "SPM-002": 200.4,
+      },
+    });
+    const items2 = [
+      item({
+        id: "SPM-001",
+        name: "Mặt hàng 1",
+        unitName: "g",
+        packageLines: [pkg({ conversionId: "QD-001", sizeLabel: "Gói 1g", conversionRate: 1, baseUnitName: "g" })],
+      }),
+      item({
+        id: "SPM-002",
+        name: "Mặt hàng 2",
+        unitName: "g",
+        packageLines: [pkg({ conversionId: "QD-002", sizeLabel: "Gói 1g", conversionRate: 1, baseUnitName: "g" })],
+      }),
+    ];
+    const container = await renderTracked(<IssueSlipClient items={items2} />);
+    const desktop = container.querySelector<HTMLElement>(".hidden.md\\:block")!;
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden")!;
+
+    await selectItemInBlock(desktop, "Mặt hàng 1");
+    await selectPackage(desktop, "Gói 1g");
+    const qty1 = desktop.querySelectorAll<HTMLInputElement>('input[inputmode="decimal"]')[0];
+    await setInputValue(qty1, "1");
+
+    await clickButtonWithText(desktop, "+ Thêm mặt hàng");
+    const line2 = desktop.querySelectorAll("tbody tr")[1];
+    await selectItemInBlock(line2 as HTMLElement, "Mặt hàng 2");
+    await selectPackage(line2 as HTMLElement, "Gói 1g");
+    const qty2 = desktop.querySelectorAll<HTMLInputElement>('input[inputmode="decimal"]')[1];
+    await setInputValue(qty2, "1");
+
+    // Total on desktop table shows 301đ
+    expect(desktop.textContent).toContain("Tổng giá trị xuất");
+    expect(desktop.textContent).toContain("301đ");
+    // Total on phone shows 301đ
+    expect(phone.textContent).toContain("Tổng giá trị xuất:");
+    expect(phone.textContent).toContain("301đ");
+  });
+
+  it("an item absent from unitCostByItem shows '—' and the 'chưa tính 1 dòng chưa có giá' note", async () => {
+    // Only SPM-001 has cost; SPM-002 does not
+    mocks.getIssueUnitCostsAt.mockResolvedValue({
+      unitCostByItem: { "SPM-001": 1000 },
+    });
+    const items2 = [
+      item({
+        id: "SPM-001",
+        name: "Có giá",
+        unitName: "hộp",
+        packageLines: [pkg({ conversionId: "QD-001", sizeLabel: "Hộp 1", conversionRate: 1, baseUnitName: "hộp" })],
+      }),
+      item({
+        id: "SPM-002",
+        name: "Không có giá",
+        unitName: "hộp",
+        packageLines: [pkg({ conversionId: "QD-002", sizeLabel: "Hộp 1", conversionRate: 1, baseUnitName: "hộp" })],
+      }),
+    ];
+    const container = await renderTracked(<IssueSlipClient items={items2} />);
+    const desktop = container.querySelector<HTMLElement>(".hidden.md\\:block")!;
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden")!;
+
+    await selectItemInBlock(desktop, "Có giá");
+    await selectPackage(desktop, "Hộp 1");
+    const qty1 = desktop.querySelectorAll<HTMLInputElement>('input[inputmode="decimal"]')[0];
+    await setInputValue(qty1, "1");
+
+    await clickButtonWithText(desktop, "+ Thêm mặt hàng");
+    const line2 = desktop.querySelectorAll("tbody tr")[1];
+    await selectItemInBlock(line2 as HTMLElement, "Không có giá");
+    await selectPackage(line2 as HTMLElement, "Hộp 1");
+    const qty2 = desktop.querySelectorAll<HTMLInputElement>('input[inputmode="decimal"]')[1];
+    await setInputValue(qty2, "1");
+
+    // Line 2 desktop Giá trị xuất column shows "—"
+    const desktopTable = desktop.querySelector("table")!;
+    const giaTriHeaderIndex = Array.from(desktopTable.querySelectorAll("th")).findIndex(
+      th => th.textContent?.trim() === "Giá trị xuất",
+    );
+    const row2Cells = desktopTable.querySelectorAll("tbody tr")[1].querySelectorAll("td");
+    expect(row2Cells[giaTriHeaderIndex].textContent?.trim()).toBe("—");
+
+    // Note appears on both desktop and phone
+    expect(desktop.textContent).toContain("chưa tính 1 dòng chưa có giá");
+    expect(phone.textContent).toContain("chưa tính 1 dòng chưa có giá");
+  });
+
+  it("changing the time calls getIssueUnitCostsAt again with the new ISO date", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    expect(mocks.getIssueUnitCostsAt).toHaveBeenCalledTimes(1);
+
+    const datetimeInput = container.querySelector('[data-testid="issued-at"]') as HTMLInputElement;
+    await setInputValue(datetimeInput, "2026-08-17T15:00");
+
+    expect(mocks.getIssueUnitCostsAt).toHaveBeenCalledTimes(2);
+    const secondCallArg = mocks.getIssueUnitCostsAt.mock.calls[1][0];
+    expect(secondCallArg).toBe(new Date("2026-08-17T15:00:00+07:00").toISOString());
+  });
+});
+
 

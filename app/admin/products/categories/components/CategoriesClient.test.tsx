@@ -138,4 +138,17 @@ describe("CategoriesClient", () => {
     expect(screen.getAllByText("Cà phê").length).toBeGreaterThan(0);
     expect(screen.queryByText("Trà sữa")).toBeNull();
   });
+
+  it("create link reads 'Tạo' and points to /admin/products/categories/new", () => {
+    render(
+      <CategoriesClient
+        categories={sampleCategories}
+        counts={sampleCounts}
+      />,
+    );
+
+    const createLink = screen.getByRole("link", { name: "Tạo" });
+    expect(createLink).toBeInTheDocument();
+    expect(createLink.getAttribute("href")).toContain("/admin/products/categories/new?returnTo=");
+  });
 });

@@ -9,7 +9,10 @@ const getPurchaseOrderCancelView = vi.hoisted(() => vi.fn());
 vi.mock("next-auth/next", () => ({ getServerSession }));
 vi.mock("@/lib/auth/auth", () => ({ authOptions: {} }));
 vi.mock("next/navigation", () => ({ redirect, notFound }));
-vi.mock("@/components/ui/BackLink", () => ({ BackLink: () => null }));
+// DetailHeader draws its back arrow with BackLink; keep the label visible.
+vi.mock("@/components/ui/BackLink", () => ({
+  BackLink: ({ href, label }: any) => ({ type: "a", props: { href, children: label } }),
+}));
 vi.mock("next/link", () => ({
   default: ({ children, href }: any) => ({
     type: "a",

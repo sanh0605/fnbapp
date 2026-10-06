@@ -116,4 +116,11 @@ describe("BankAccountsClient", () => {
     expect(idx001).toBeGreaterThan(-1);
     expect(idx002).toBeLessThan(idx001);
   });
+
+  it("create link reads 'Tạo' and points to /admin/finance/bank-accounts/new", () => {
+    render(<BankAccountsClient accounts={sampleAccounts} />);
+    const createLink = screen.getByRole("link", { name: "Tạo" });
+    expect(createLink).toBeInTheDocument();
+    expect(createLink.getAttribute("href")).toContain("/admin/finance/bank-accounts/new?returnTo=");
+  });
 });

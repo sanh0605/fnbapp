@@ -163,4 +163,17 @@ describe("ModifiersClient", () => {
     expect(screen.getAllByText("Size L").length).toBeGreaterThan(0);
     expect(screen.queryByText("Trân châu đen")).toBeNull();
   });
+
+  it("create link reads 'Tạo' and points to /admin/products/modifiers/new", () => {
+    render(
+      <ModifiersClient
+        modifiers={sampleModifiers}
+        toppings={sampleToppings}
+      />,
+    );
+
+    const createLink = screen.getByRole("link", { name: "Tạo" });
+    expect(createLink).toBeInTheDocument();
+    expect(createLink.getAttribute("href")).toContain("/admin/products/modifiers/new?returnTo=");
+  });
 });

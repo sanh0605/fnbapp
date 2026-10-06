@@ -131,10 +131,10 @@ describe("BandsClient", () => {
     expect(screen.queryByText("Sửa")).toBeNull();
   });
 
-  it("links '+ Thêm khung' to new page with returnTo", () => {
+  it("links 'Tạo' to new page with returnTo", () => {
     render(<BandsClient bands={BANDS} canDelete={false} />);
 
-    const addLink = screen.getByRole("link", { name: "+ Thêm khung" });
+    const addLink = screen.getByRole("link", { name: "Tạo" });
     expect(addLink.getAttribute("href")).toContain("/admin/inventory/asset-bands/new?returnTo=");
   });
 

@@ -203,4 +203,21 @@ describe("PromotionsClient", () => {
     expect(codes[0].textContent).toBe("PRM-004");
     expect(codes[1].textContent).toBe("PRM-001");
   });
+
+  it("create link reads 'Tạo' and points to /admin/promotions/new", () => {
+    render(
+      <PromotionsClient
+        promotions={samplePromotions}
+        brands={sampleBrands}
+        products={[]}
+        variants={sampleVariants}
+        categories={[]}
+        canDelete={true}
+      />,
+    );
+
+    const createLink = screen.getByRole("link", { name: "Tạo" });
+    expect(createLink).toBeInTheDocument();
+    expect(createLink.getAttribute("href")).toContain("/admin/promotions/new?returnTo=");
+  });
 });

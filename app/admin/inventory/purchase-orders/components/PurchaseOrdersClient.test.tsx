@@ -118,7 +118,7 @@ describe("PurchaseOrdersClient", () => {
     expect(screen.getByRole("button", { name: "Xoá lọc" })).toBeTruthy();
   });
 
-  it("T6: Renders Trả bằng secondary column in table and card", () => {
+  it("T6: Renders Hình thức thanh toán secondary column in table and card", () => {
     const dataWithRow: typeof pageData = {
       ...pageData,
       total: 1,
@@ -138,15 +138,15 @@ describe("PurchaseOrdersClient", () => {
     };
 
     render(<PurchaseOrdersClient pageData={dataWithRow} />);
-    expect(screen.getByRole("columnheader", { name: "Trả bằng" })).toBeTruthy();
+    expect(screen.getByRole("columnheader", { name: "Hình thức thanh toán" })).toBeTruthy();
     // Tiền mặt appears in both desktop table and phone card
     const labels = screen.getAllByText("Tiền mặt");
     expect(labels.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("T7: Filter by Trả bằng", async () => {
+  it("T7: Filter by Hình thức thanh toán", async () => {
     render(<PurchaseOrdersClient pageData={pageData} />);
-    const paySelect = screen.getByLabelText("Trả bằng");
+    const paySelect = screen.getByLabelText("Hình thức thanh toán");
     fireEvent.change(paySelect, { target: { value: "BANK_TRANSFER" } });
 
     const filterBtn = screen.getByRole("button", { name: "Lọc" });
@@ -156,6 +156,13 @@ describe("PurchaseOrdersClient", () => {
       expect(replace).toHaveBeenCalledTimes(1);
     });
     expect(replace).toHaveBeenCalledWith(expect.stringContaining("pay=BANK_TRANSFER"), expect.anything());
+  });
+
+  it("Create button on list page reads exactly 'Tạo'", () => {
+    render(<PurchaseOrdersClient pageData={pageData} />);
+    const createLink = screen.getByRole("link", { name: "Tạo" });
+    expect(createLink).toBeTruthy();
+    expect(createLink.getAttribute("href")).toBe("/admin/inventory/purchase-orders/new");
   });
 
   it("T8: Status select default value is ACTIVE, has options Chưa huỷ and Đã huỷ", () => {

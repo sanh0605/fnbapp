@@ -66,7 +66,7 @@ export function PurchasePaymentBlock({
   return (
     <div className="pt-3 border-t border-border space-y-3">
       <div className="flex justify-between text-sm text-text-secondary">
-        <span>Trả bằng:</span>
+        <span>Hình thức thanh toán:</span>
         <span className="font-medium text-text-primary">
           {currentLabel}
           {paymentMethod === "BANK_TRANSFER" && currentAccount ? ` (${currentAccount.name})` : ""}

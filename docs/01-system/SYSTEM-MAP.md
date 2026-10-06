@@ -86,7 +86,7 @@ writes `orders_v2` and `order_events`. `app/admin/promotions/actions.ts` writes
 **Purchasing.** `lib/purchasing/purchase-order-transaction.ts` writes `purchase_orders` and
 `purchase_order_lines`. `app/admin/inventory/purchase-orders/actions.ts`
 writes `assets`, `purchase_order_edits`, and `Purchase_Sources`, and
-`Purchase_Orders` directly for one thing only: changing "Trả bằng" on a
+`Purchase_Orders` directly for one thing only: changing "Hình thức thanh toán" on a
 completed order (`setPurchaseOrderPayment`, the two payment columns).
 `app/admin/suppliers/actions.ts` writes `Suppliers`.
 

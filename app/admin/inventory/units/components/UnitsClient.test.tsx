@@ -77,7 +77,7 @@ describe("UnitsClient", () => {
     ).toBe(true);
   });
 
-  it("links '+ Thêm Đơn vị' to new page with returnTo", () => {
+  it("links 'Tạo' to new page with returnTo", () => {
     render(
       <UnitsClient
         units={UNITS}
@@ -85,7 +85,7 @@ describe("UnitsClient", () => {
       />,
     );
 
-    const addLink = screen.getByRole("link", { name: "+ Thêm Đơn vị" });
+    const addLink = screen.getByRole("link", { name: "Tạo" });
     expect(addLink.getAttribute("href")).toContain("/admin/inventory/units/new?returnTo=");
   });
 

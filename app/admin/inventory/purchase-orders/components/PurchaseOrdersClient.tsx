@@ -141,7 +141,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
           href="/admin/inventory/purchase-orders/new"
           className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm w-full md:w-auto text-center min-h-[44px] flex items-center justify-center"
         >
-          Tạo phiếu nhập
+          Tạo
         </Link>
       </div>
 
@@ -174,7 +174,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
             </select>
           </div>
           <div className="w-full md:w-40">
-            <label htmlFor="pay-select" className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Trả bằng</label>
+            <label htmlFor="pay-select" className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Hình thức thanh toán</label>
             <select
               id="pay-select"
               value={draft.pay}
@@ -267,7 +267,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
                     <th className="px-6 py-4 font-bold">Nhà cung cấp</th>
                     <th className="px-6 py-4 font-bold">Nguồn mua</th>
                     <th className="px-6 py-4 font-bold">Trạng thái</th>
-                    <th className="px-6 py-4 font-bold">Trả bằng</th>
+                    <th className="px-6 py-4 font-bold">Hình thức thanh toán</th>
                     <th className="px-6 py-4 font-bold text-right">Tổng tiền</th>
                   </tr>
                 </thead>

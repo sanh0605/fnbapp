@@ -561,3 +561,37 @@ describe("editIssueSlip", () => {
     expect(mocks.editIssueSlipAtomic).not.toHaveBeenCalled();
   });
 });
+
+describe("getIssueUnitCostsAt", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+  });
+
+  it("returns { error } for a caller without permission, never throws", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền" });
+    expect(await issueSlipActions.getIssueUnitCostsAt("2026-09-28T11:20:00+00:00")).toEqual({ error: "Không có quyền" });
+  });
+
+  it("refuses an unparseable moment", async () => {
+    mockSlipTables();
+    expect(await issueSlipActions.getIssueUnitCostsAt("not-a-date")).toEqual({ error: "Thời điểm xuất không hợp lệ" });
+  });
+
+  it("prices every offered item per base unit at the given moment (Oatside 1.472.123 / 40.000 ml)", async () => {
+    mockSlipTables();
+    const res = await issueSlipActions.getIssueUnitCostsAt("2026-09-28T11:20:00+00:00");
+    if ("error" in res) throw new Error(res.error);
+    expect(res.unitCostByItem["SPM-038"]).toBeCloseTo(1472123 / 40000, 6);
+    expect(res.unitCostByItem["SPM-050"]).toBeCloseTo(182023 / 5, 6);
+  });
+
+  it("leaves out an item with no purchase before the moment, and re-prices when the moment moves", async () => {
+    mockSlipTables(); // the only purchase order is dated 2026-09-01
+    const before = await issueSlipActions.getIssueUnitCostsAt("2026-08-15T00:00:00+00:00");
+    expect(before).toEqual({ unitCostByItem: {} });
+    const after = await issueSlipActions.getIssueUnitCostsAt("2026-09-02T00:00:00+00:00");
+    if ("error" in after) throw new Error(after.error);
+    expect(Object.keys(after.unitCostByItem).sort()).toEqual(["SPM-038", "SPM-050"]);
+  });
+});

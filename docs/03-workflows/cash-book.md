@@ -29,7 +29,7 @@ now shows every movement of money, not only the hand-typed rows
   hàng and Tổng (`BR-CASH-007`), computed by `summariseCashBook`
   (`lib/finance/cash-flow.ts`) from every row through the range's last day,
   counting from zero. Cuối kỳ tổng = Đầu kỳ tổng + Tổng thu − Tổng chi.
-- **"Trả bằng" on purchase orders.** Tiền mặt or Chuyển khoản (with an
+- **"Hình thức thanh toán" on purchase orders.** Tiền mặt or Chuyển khoản (with an
   account); required to complete an order, chosen by hand on every new order;
   editable afterwards on a completed order's page (`setPurchaseOrderPayment`).
   Orders that existed when `0107` ran count as cash.

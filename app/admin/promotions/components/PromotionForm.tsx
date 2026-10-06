@@ -282,8 +282,8 @@ export function PromotionForm({
               onChange={(e) => setStatus(e.target.value)}
               className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
             >
-              <option value="ACTIVE">Hoạt động (Active)</option>
-              <option value="INACTIVE">Không hoạt động (Inactive)</option>
+              <option value="ACTIVE">Hoạt động</option>
+              <option value="INACTIVE">Không hoạt động</option>
             </select>
           </div>
 

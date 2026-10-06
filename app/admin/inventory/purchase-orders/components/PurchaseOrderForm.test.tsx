@@ -483,4 +483,66 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
     expect(formData.get("supplier_id")).toBe("SUP-OTHER");
     expect(formData.get("voucher_amount")).toBe("10000");
   });
+
+  describe("PurchaseOrderForm Row 4 styling and wording", () => {
+    it("renders Hình thức thanh toán label and does not render Trả bằng", () => {
+      render(
+        <PurchaseOrderForm
+          suppliers={sampleSuppliers}
+          sources={sampleSources}
+          items={sampleItems}
+          conversions={sampleConversions}
+          units={sampleUnits}
+          bankAccounts={sampleAccounts}
+        />
+      );
+
+      expect(screen.getByText("Hình thức thanh toán")).toBeTruthy();
+      expect(screen.queryByText("Trả bằng")).toBeNull();
+    });
+
+    it("renders Thành tiền with plain input classes matching Số lượng, and Đơn giá without background box", () => {
+      render(
+        <PurchaseOrderForm
+          suppliers={sampleSuppliers}
+          sources={sampleSources}
+          items={sampleItems}
+          conversions={sampleConversions}
+          units={sampleUnits}
+          bankAccounts={sampleAccounts}
+        />
+      );
+      // A new order starts with no line; open one first.
+      fireEvent.click(screen.getByText("+ Thêm Mặt Hàng Đầu Tiên"));
+
+      const subtotalInput = screen.getByLabelText("Thành tiền (đ)");
+      const quantityInput = screen.getByLabelText("Số lượng");
+
+      expect(subtotalInput.className).toBe("w-full border border-border rounded-lg px-3 py-2 text-sm");
+      expect(quantityInput.className).toBe("w-full border border-border rounded-lg px-3 py-2 text-sm");
+      expect(subtotalInput.className).not.toContain("bg-success");
+
+      const unitPriceLabel = screen.getByText("Đơn giá");
+      const unitPriceContainer = unitPriceLabel.nextElementSibling;
+      expect(unitPriceContainer).toBeTruthy();
+      expect(unitPriceContainer?.className).not.toContain("bg-surface-secondary");
+      expect(unitPriceContainer?.className).toContain("text-text-secondary");
+    });
+
+    it("renders draft button with text 'Lưu nháp'", () => {
+      render(
+        <PurchaseOrderForm
+          suppliers={sampleSuppliers}
+          sources={sampleSources}
+          items={sampleItems}
+          conversions={sampleConversions}
+          units={sampleUnits}
+          bankAccounts={sampleAccounts}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: "Lưu nháp" })).toBeTruthy();
+      expect(screen.queryByText(/Draft/i)).toBeNull();
+    });
+  });
 });

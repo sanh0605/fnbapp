@@ -140,4 +140,11 @@ describe("CategoriesClient", () => {
     expect(idx001).toBeGreaterThan(-1);
     expect(idx006).toBeLessThan(idx001);
   });
+
+  it("create link reads 'Tạo' and points to /admin/finance/categories/new", () => {
+    render(<CategoriesClient categories={sampleCategories} />);
+    const createLink = screen.getByRole("link", { name: "Tạo" });
+    expect(createLink).toBeInTheDocument();
+    expect(createLink.getAttribute("href")).toContain("/admin/finance/categories/new?returnTo=");
+  });
 });

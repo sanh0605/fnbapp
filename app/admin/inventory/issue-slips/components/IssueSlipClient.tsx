@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
@@ -9,10 +9,11 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { confirm } from "@/lib/shared/dialog";
 import { computeAffectedMonths } from "@/lib/stock/issue-slip-warnings";
 import { formatConvertedOnHand } from "@/lib/stock/issue-slip-onhand-display";
-import { createIssueSlip, type IssueSlipItemView } from "../actions";
+import { createIssueSlip, getIssueUnitCostsAt, type IssueSlipItemView } from "../actions";
 import { buildIssueUnitOptions, toBaseQuantity, type IssueUnitOption } from "@/lib/stock/issue-unit-options";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
+import { displayMoney } from "@/lib/reports/display-rounding";
 import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
 
 type DraftLine = {
@@ -65,6 +66,29 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
   const [issuedAtLocal, setIssuedAtLocal] = useState(() => toSaigonIsoString(new Date()).slice(0, 16));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unitCosts, setUnitCosts] = useState<Record<string, number>>({});
+  const costRequestIdRef = useRef(0);
+
+  useEffect(() => {
+    if (!issuedAtLocal) return;
+    const d = new Date(issuedAtLocal + ":00+07:00");
+    if (Number.isNaN(d.getTime())) return;
+
+    const currentRequestId = ++costRequestIdRef.current;
+    getIssueUnitCostsAt(d.toISOString())
+      .then(res => {
+        if (currentRequestId !== costRequestIdRef.current) return;
+        if ("unitCostByItem" in res && res.unitCostByItem) {
+          setUnitCosts(res.unitCostByItem);
+        } else {
+          setUnitCosts({});
+        }
+      })
+      .catch(() => {
+        if (currentRequestId !== costRequestIdRef.current) return;
+        setUnitCosts({});
+      });
+  }, [issuedAtLocal]);
 
   const itemOptions = useMemo(() => items.map(i => ({ id: i.id, label: i.name })), [items]);
 
@@ -75,14 +99,39 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
     return computeAffectedMonths(d);
   }, [issuedAtLocal]);
 
-  const filledLineCount = lines.filter(line => {
-    const item = items.find(i => i.id === line.purchasedItemId);
-    if (!item) return false;
-    const options = buildIssueUnitOptions(item.unitName, item.packageLines);
-    const option = options.find(o => o.key === line.unitKey);
-    const parsedQty = Number(line.packageQty.replace(/[^0-9,]/g, "").replace(",", "."));
-    return option && Number.isFinite(parsedQty) && parsedQty > 0;
-  }).length;
+  const computedLines = useMemo(() => {
+    return lines.map(line => {
+      const item = items.find(i => i.id === line.purchasedItemId);
+      const options = item ? buildIssueUnitOptions(item.unitName, item.packageLines) : [];
+      const option = options.find(o => o.key === line.unitKey);
+      const parsedQty = Number(line.packageQty.replace(/[^0-9,]/g, "").replace(",", "."));
+      const isFilled = Boolean(item && option && Number.isFinite(parsedQty) && parsedQty > 0);
+      const baseQty = isFilled && option ? toBaseQuantity(parsedQty, option) : null;
+      const unitCost = item ? unitCosts[item.id] : undefined;
+      const lineValue = (baseQty !== null && typeof unitCost === "number") ? unitCost * baseQty : null;
+      const onHandDisplay = getOnHandDisplay(item, line.unitKey, options);
+      const convertedDisplay = getConvertedQuantityText(item, line.unitKey, line.packageQty, options);
+      const lineValueDisplay = lineValue !== null ? `${formatNumber(displayMoney(lineValue))}đ` : "—";
+
+      return {
+        item,
+        options,
+        option,
+        parsedQty,
+        isFilled,
+        baseQty,
+        unitCost,
+        lineValue,
+        onHandDisplay,
+        convertedDisplay,
+        lineValueDisplay,
+      };
+    });
+  }, [lines, items, unitCosts]);
+
+  const filledLineCount = computedLines.filter(l => l.isFilled).length;
+  const filledLinesWithoutCostCount = computedLines.filter(l => l.isFilled && l.lineValue === null).length;
+  const exactTotal = computedLines.reduce((sum, l) => sum + (l.lineValue ?? 0), 0);
 
   function addLine() {
     setLines(prev => [...prev, emptyLine()]);
@@ -199,20 +248,23 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
             <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="bg-surface-secondary text-text-secondary text-xs uppercase tracking-wider">
-                  <th className="p-3 font-bold min-w-[240px]">Mặt hàng</th>
-                  <th className="p-3 font-bold w-44">Tồn hiện tại</th>
-                  <th className="p-3 font-bold w-40">Đơn vị</th>
-                  <th className="p-3 font-bold text-right w-28">Số lượng</th>
-                  <th className="p-3 font-bold text-right w-36">Quy ra</th>
+                  <th className="p-3 font-bold min-w-[200px]">Mặt hàng</th>
+                  <th className="p-3 font-bold w-36">Tồn hiện tại</th>
+                  <th className="p-3 font-bold w-32">Đơn vị</th>
+                  <th className="p-3 font-bold text-right w-24">Số lượng</th>
+                  <th className="p-3 font-bold text-right w-28">Quy ra</th>
+                  <th className="p-3 font-bold text-right w-36">Giá trị xuất</th>
                   <th className="p-3 w-12 text-center" aria-label="Xoá dòng"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {lines.map((line, index) => {
-                  const item = items.find(i => i.id === line.purchasedItemId);
-                  const options = item ? buildIssueUnitOptions(item.unitName, item.packageLines) : [];
-                  const onHandDisplay = getOnHandDisplay(item, line.unitKey, options);
-                  const convertedDisplay = getConvertedQuantityText(item, line.unitKey, line.packageQty, options);
+                  const computed = computedLines[index];
+                  const item = computed?.item;
+                  const options = computed?.options ?? [];
+                  const onHandDisplay = computed?.onHandDisplay ?? "—";
+                  const convertedDisplay = computed?.convertedDisplay ?? "—";
+                  const lineValueDisplay = computed?.lineValueDisplay ?? "—";
 
                   return (
                     <tr key={index} className="hover:bg-surface-secondary/40 transition-colors">
@@ -258,6 +310,9 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                       <td className="p-3 text-right tabular-nums text-text-primary text-sm font-medium">
                         {convertedDisplay}
                       </td>
+                      <td className="p-3 text-right tabular-nums text-text-primary text-sm font-medium">
+                        {lineValueDisplay}
+                      </td>
                       <td className="p-3 text-center">
                         {lines.length > 1 && (
                           <button
@@ -273,8 +328,22 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                     </tr>
                   );
                 })}
+                <tr className="bg-surface-secondary/40 border-t border-border font-semibold">
+                  <td colSpan={5} className="p-3 text-right text-text-secondary">
+                    Tổng giá trị xuất
+                  </td>
+                  <td className="p-3 text-right tabular-nums text-text-primary text-sm font-bold">
+                    <div>{formatNumber(displayMoney(exactTotal))}đ</div>
+                    {filledLinesWithoutCostCount > 0 && (
+                      <div className="text-xs font-normal text-text-muted mt-0.5">
+                        chưa tính {filledLinesWithoutCostCount} dòng chưa có giá
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-3"></td>
+                </tr>
                 <tr className="border-t border-border">
-                  <td colSpan={6} className="p-3">
+                  <td colSpan={7} className="p-3">
                     <button
                       type="button"
                       onClick={addLine}
@@ -335,10 +404,12 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         {/* Stacked cards per line */}
         <div className="space-y-3">
           {lines.map((line, index) => {
-            const item = items.find(i => i.id === line.purchasedItemId);
-            const options = item ? buildIssueUnitOptions(item.unitName, item.packageLines) : [];
-            const onHandDisplay = getOnHandDisplay(item, line.unitKey, options);
-            const convertedDisplay = getConvertedQuantityText(item, line.unitKey, line.packageQty, options);
+            const computed = computedLines[index];
+            const item = computed?.item;
+            const options = computed?.options ?? [];
+            const onHandDisplay = computed?.onHandDisplay ?? "—";
+            const convertedDisplay = computed?.convertedDisplay ?? "—";
+            const lineValueDisplay = computed?.lineValueDisplay ?? "—";
 
             return (
               <div key={index} className="p-4 border border-border rounded-xl relative bg-surface-secondary/50">
@@ -402,9 +473,28 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                   <span>Quy ra:</span>
                   <span className="font-medium text-text-primary tabular-nums">{convertedDisplay}</span>
                 </div>
+                <div className="mt-1.5 text-sm text-text-secondary flex justify-between items-center">
+                  <span>Giá trị xuất:</span>
+                  <span className="font-medium text-text-primary tabular-nums">{lineValueDisplay}</span>
+                </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Summary card on phone */}
+        <div className="bg-surface-card rounded-xl border border-border p-3.5 flex justify-between items-center shadow-sm">
+          <span className="text-sm font-semibold text-text-secondary">Tổng giá trị xuất:</span>
+          <div className="text-right">
+            <span className="text-base font-bold text-text-primary tabular-nums">
+              {formatNumber(displayMoney(exactTotal))}đ
+            </span>
+            {filledLinesWithoutCostCount > 0 && (
+              <p className="text-xs text-text-muted mt-0.5">
+                chưa tính {filledLinesWithoutCostCount} dòng chưa có giá
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Add line button */}

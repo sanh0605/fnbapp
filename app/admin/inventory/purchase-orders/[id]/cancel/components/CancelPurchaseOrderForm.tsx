@@ -207,7 +207,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
 
           <div className="pt-4 border-t border-border text-sm text-text-secondary space-y-2">
             <p>
-              Trả bằng: <strong className="text-text-primary">{order.paymentLabel}</strong>
+              Hình thức thanh toán: <strong className="text-text-primary">{order.paymentLabel}</strong>
             </p>
             <div className="pt-2 border-t border-border/60 text-xs text-text-muted space-y-1">
               <p>
