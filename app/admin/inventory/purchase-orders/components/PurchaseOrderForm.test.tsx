@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PurchaseOrderForm from "./PurchaseOrderForm";
 import type { DBBankAccount, DBPurchaseOrder, DBPurchasedItem, DBSupplier, DBPurchaseSource, DBUOMConversion, DBUnit, DBPurchaseOrderLine } from "@/types/db";
+import type { PurchaseOrderCopySeed } from "@/lib/purchasing/purchase-order-copy";
 
 const { mockSavePurchaseOrder, router } = vi.hoisted(() => ({
   mockSavePurchaseOrder: vi.fn(),
@@ -14,10 +15,12 @@ vi.mock("../actions", () => ({
   addPurchaseSource: vi.fn(),
 }));
 
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
   usePathname: () => "/admin/inventory/purchase-orders/new",
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock("@/lib/shared/dialog", () => ({
@@ -45,6 +48,10 @@ afterEach(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockSearchParams = new URLSearchParams();
+  if (typeof window !== "undefined") {
+    localStorage.clear();
+  }
 });
 
 const sampleSuppliers: DBSupplier[] = [
@@ -313,5 +320,167 @@ describe("PurchaseOrderForm Trả bằng payment methods", () => {
     const cashRadio = screen.getByLabelText("Tiền mặt");
     fireEvent.click(cashRadio);
     expect(screen.queryByLabelText("Tài khoản")).toBeNull();
+  });
+});
+
+describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", () => {
+  const seedSuppliers: DBSupplier[] = [
+    {
+      id: "SUP-BB",
+      name: "Cửa Hàng B&B Supplier Ly - Bar",
+      phone: "0900000001",
+      tax_id: "0100000001",
+      address: "Hà Nội",
+      links: "",
+      status: "ACTIVE",
+      created_at: "2026-01-01",
+    },
+    {
+      id: "SUP-OTHER",
+      name: "Nhà cung cấp khác",
+      phone: "0900000002",
+      tax_id: "0100000002",
+      address: "TPHCM",
+      links: "",
+      status: "ACTIVE",
+      created_at: "2026-01-01",
+    },
+  ];
+
+  const seedItems: DBPurchasedItem[] = [
+    {
+      id: "ITEM-VOI",
+      name: "Vòi rót rượu",
+      item_category_id: "CAT-1",
+      default_unit_id: "U-CAI",
+      status: "ACTIVE",
+      created_at: "2026-01-01",
+      is_non_inventory: false,
+    },
+  ];
+
+  const seedConversions: DBUOMConversion[] = [
+    {
+      id: "CONV-VOI",
+      purchased_item_id: "ITEM-VOI",
+      from_unit_id: "U-CAI",
+      to_unit_id: "U-CAI",
+      factor: "1",
+      purchased_unit: "Cái",
+      base_unit: "Cái",
+      conversion_rate: "1",
+      status: "ACTIVE",
+      purchase_only: false,
+      created_at: "2026-01-01",
+    },
+  ];
+
+  const seedUnits: DBUnit[] = [
+    { id: "U-CAI", name: "Cái", abbreviation: "Cái", status: "ACTIVE", created_at: "2026-01-01" },
+  ];
+
+  const po147Seed: PurchaseOrderCopySeed = {
+    sourceOrderId: "PO-147",
+    sourceCancelled: false,
+    supplier_id: "SUP-BB",
+    source_id: "SRC-1",
+    supplier_invoice_code: "",
+    transaction_date: null,
+    notes: "Ghi chú PO-147",
+    shipping_fee: 0,
+    tax_amount: 0,
+    voucher_amount: 35000,
+    discount_amount: 0,
+    payment_method: "CASH",
+    bank_account_id: "",
+    lines: [
+      {
+        purchased_item_id: "ITEM-VOI",
+        unit: "Cái",
+        quantity: 2,
+        subtotal: 55200,
+        conversion_id: "CONV-VOI",
+      },
+    ],
+  };
+
+  it("with a seed for PO-147, saving as draft calls savePurchaseOrder with FormData that has NO 'id' and has voucher_amount '35000' and the seed's supplier_id", async () => {
+    mockSavePurchaseOrder.mockResolvedValueOnce({ success: true });
+
+    render(
+      <PurchaseOrderForm
+        suppliers={seedSuppliers}
+        sources={sampleSources}
+        items={seedItems}
+        conversions={seedConversions}
+        units={seedUnits}
+        bankAccounts={sampleAccounts}
+        copySeed={po147Seed}
+      />
+    );
+
+    const cashRadio = screen.getByLabelText("Tiền mặt") as HTMLInputElement;
+    expect(cashRadio.checked).toBe(true);
+
+    const draftBtn = screen.getByRole("button", { name: /Lưu Nháp/i });
+    fireEvent.click(draftBtn);
+
+    await waitFor(() => {
+      expect(mockSavePurchaseOrder).toHaveBeenCalledTimes(1);
+    });
+
+    const formData = mockSavePurchaseOrder.mock.calls[0][0] as FormData;
+    expect(formData.get("id")).toBeNull();
+    expect(formData.get("supplier_id")).toBe("SUP-BB");
+    expect(formData.get("voucher_amount")).toBe("35000");
+    expect(formData.get("payment_method")).toBe("CASH");
+    expect(formData.get("status")).toBe("DRAFT");
+  });
+
+  it("with ?draft=1 and a stored draft whose supplierId differs, the draft's supplier wins", async () => {
+    mockSearchParams = new URLSearchParams("draft=1");
+    mockSavePurchaseOrder.mockResolvedValueOnce({ success: true });
+
+    const storedDraft = {
+      savedAt: Date.now(),
+      state: {
+        supplierId: "SUP-OTHER",
+        sourceId: "SRC-1",
+        supplierInvoiceCode: "",
+        transactionDate: null,
+        notes: "Ghi chú từ draft",
+        lines: [],
+        shippingFee: 0,
+        taxAmount: 0,
+        voucherAmount: 10000,
+        discountAmount: 0,
+        paymentMethod: "CASH",
+        bankAccountId: "",
+      },
+    };
+    localStorage.setItem("fnb:po-draft:new", JSON.stringify(storedDraft));
+
+    render(
+      <PurchaseOrderForm
+        suppliers={seedSuppliers}
+        sources={sampleSources}
+        items={seedItems}
+        conversions={seedConversions}
+        units={seedUnits}
+        bankAccounts={sampleAccounts}
+        copySeed={po147Seed}
+      />
+    );
+
+    const draftBtn = screen.getByRole("button", { name: /Lưu Nháp/i });
+    fireEvent.click(draftBtn);
+
+    await waitFor(() => {
+      expect(mockSavePurchaseOrder).toHaveBeenCalledTimes(1);
+    });
+
+    const formData = mockSavePurchaseOrder.mock.calls[0][0] as FormData;
+    expect(formData.get("supplier_id")).toBe("SUP-OTHER");
+    expect(formData.get("voucher_amount")).toBe("10000");
   });
 });

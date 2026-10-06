@@ -25,7 +25,7 @@ Until 2026-10-05 a completed purchase order could only be edited, never removed,
 
 ### BR-INV-016 — Any purchase order can be copied into a new one; a cancelled order's copy keeps its transaction time
 
-**Status:** `APPROVED` — owner decision 2026-10-05. **Not built yet**; to be built after `BR-CATALOG-004` (owner, *"3a"*).
+**Status:** `APPROVED` — owner decision 2026-10-05. Built 2026-10-06 after `BR-CATALOG-004` (owner, *"3a"*): `lib/purchasing/purchase-order-copy.ts`, `getPurchaseOrderCopySeed`, "Nhân bản" on the order's page, `/admin/inventory/purchase-orders/new?copyFrom=<code>`; plan `docs/superpowers/plans/2026-10-06-nhan-ban-phieu-nhap.md`.
 
 Asked the same day, after `BR-INV-015`: *"anh có thể duplicate từ phiếu đã huỷ nếu có nhu cầu nhập lại không ? Lúc đó anh chỉ cần chỉnh sửa phiếu vừa được nhân bản đó để nhập lại hàng là xong nhỉ ?"* Until then no screen could copy an order; re-entering a cancelled one meant typing it again.
 

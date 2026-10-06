@@ -192,3 +192,80 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
     expect(link?.href).toBe("/admin/inventory/purchase-orders/PO-147/cancel");
   });
 });
+
+describe("purchase order clone link (BR-INV-016)", () => {
+  beforeEach(() => {
+    findById.mockReset();
+    getServerSession.mockResolvedValue({ user: { role: "ADMIN" } });
+  });
+
+  it("MANAGER on COMPLETED sees 'Nhân bản' linking to /admin/inventory/purchase-orders/new?copyFrom=PO-147", async () => {
+    getServerSession.mockResolvedValueOnce({ user: { role: "MANAGER" } });
+    findById.mockResolvedValue({
+      id: "PO-147",
+      status: "COMPLETED",
+      created_at: "2026-10-01T00:00:00Z",
+    });
+
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join(" ");
+
+    expect(text).toContain("Nhân bản");
+    const link = findLink(tree as ReactNode, "Nhân bản");
+    expect(link).toBeTruthy();
+    expect(link?.href).toBe("/admin/inventory/purchase-orders/new?copyFrom=PO-147");
+  });
+
+  it("ADMIN on CANCELLED sees 'Nhân bản' linking to /admin/inventory/purchase-orders/new?copyFrom=PO-147", async () => {
+    getServerSession.mockResolvedValueOnce({ user: { role: "ADMIN" } });
+    findById.mockResolvedValue({
+      id: "PO-147",
+      status: "CANCELLED",
+      cancel_reason: "Huỷ vì trùng",
+      cancelled_by_name: "Chủ quán",
+      cancelled_at: "2026-10-05T10:00:00Z",
+      created_at: "2026-10-01T00:00:00Z",
+    });
+
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join(" ");
+
+    expect(text).toContain("Nhân bản");
+    const link = findLink(tree as ReactNode, "Nhân bản");
+    expect(link).toBeTruthy();
+    expect(link?.href).toBe("/admin/inventory/purchase-orders/new?copyFrom=PO-147");
+  });
+
+  it("STAFF does not see 'Nhân bản'", async () => {
+    getServerSession.mockResolvedValueOnce({ user: { role: "STAFF" } });
+    findById.mockResolvedValue({
+      id: "PO-147",
+      status: "COMPLETED",
+      created_at: "2026-10-01T00:00:00Z",
+    });
+
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join(" ");
+
+    expect(text).not.toContain("Nhân bản");
+    const link = findLink(tree as ReactNode, "Nhân bản");
+    expect(link).toBeNull();
+  });
+
+  it("A DRAFT (form showing) does not see 'Nhân bản'", async () => {
+    getServerSession.mockResolvedValueOnce({ user: { role: "ADMIN" } });
+    findById.mockResolvedValue({
+      id: "PO-147",
+      status: "DRAFT",
+      created_at: "2026-10-01T00:00:00Z",
+    });
+
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join(" ");
+
+    expect(text).toContain("MOCK_PURCHASE_ORDER_FORM");
+    expect(text).not.toContain("Nhân bản");
+    const link = findLink(tree as ReactNode, "Nhân bản");
+    expect(link).toBeNull();
+  });
+});
