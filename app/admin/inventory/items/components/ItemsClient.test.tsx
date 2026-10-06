@@ -3,23 +3,29 @@ import { render, screen, cleanup } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import ItemsClient from "./ItemsClient";
 import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
+import type { ItemStockDisplay } from "@/lib/stock/item-stock-display";
 
-const { replace, refresh, push, router } = vi.hoisted(() => {
+const { replace, refresh, push, router, getSearchParams, setSearchParams } = vi.hoisted(() => {
   const replaceFn = vi.fn();
   const refreshFn = vi.fn();
   const pushFn = vi.fn();
+  let currentSearchParams = new URLSearchParams("category=CAT-1");
   return {
     replace: replaceFn,
     refresh: refreshFn,
     push: pushFn,
     router: { replace: replaceFn, refresh: refreshFn, push: pushFn },
+    getSearchParams: () => currentSearchParams,
+    setSearchParams: (params: string | URLSearchParams) => {
+      currentSearchParams = typeof params === "string" ? new URLSearchParams(params) : params;
+    },
   };
 });
 
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
   usePathname: () => "/admin/inventory/items",
-  useSearchParams: () => new URLSearchParams("category=CAT-1"),
+  useSearchParams: () => getSearchParams(),
 }));
 
 vi.mock("next/link", () => ({
@@ -90,6 +96,7 @@ beforeEach(() => {
   replace.mockClear();
   refresh.mockClear();
   push.mockClear();
+  setSearchParams("category=CAT-1");
 });
 
 describe("ItemsClient", () => {
@@ -101,6 +108,7 @@ describe("ItemsClient", () => {
         conversions={CONVERSIONS}
         units={UNITS}
         unitLockedItemIds={[]}
+        stockById={{}}
         canDelete={false}
       />,
     );
@@ -129,6 +137,7 @@ describe("ItemsClient", () => {
         conversions={CONVERSIONS}
         units={UNITS}
         unitLockedItemIds={[]}
+        stockById={{}}
         canDelete={false}
       />,
     );
@@ -145,6 +154,7 @@ describe("ItemsClient", () => {
         conversions={CONVERSIONS}
         units={UNITS}
         unitLockedItemIds={[]}
+        stockById={{}}
         canDelete={false}
       />,
     );
@@ -161,6 +171,7 @@ describe("ItemsClient", () => {
         conversions={CONVERSIONS}
         units={UNITS}
         unitLockedItemIds={[]}
+        stockById={{}}
         canDelete={false}
       />,
     );
@@ -177,6 +188,7 @@ describe("ItemsClient", () => {
         conversions={CONVERSIONS}
         units={UNITS}
         unitLockedItemIds={[]}
+        stockById={{}}
         canDelete={true}
       />,
     );
@@ -194,10 +206,143 @@ describe("ItemsClient", () => {
         conversions={CONVERSIONS}
         units={UNITS}
         unitLockedItemIds={[]}
+        stockById={{}}
         canDelete={false}
       />,
     );
 
     expect(screen.getAllByText("1 Hộp = 1000 ml").length).toBeGreaterThan(0);
+  });
+
+  it("renders stock column with figures and text kinds, and no link for 'Xem ở Tài sản'", () => {
+    const items: DBPurchasedItem[] = [
+      {
+        id: "SPM-002",
+        name: "Sữa tươi Mlekovita",
+        item_category_id: "CAT-1",
+        status: "ACTIVE",
+        is_non_inventory: false,
+        default_unit_id: "",
+        created_at: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "SPM-005",
+        name: "Đá viên",
+        item_category_id: "CAT-1",
+        status: "ACTIVE",
+        is_non_inventory: true,
+        default_unit_id: "",
+        created_at: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "SPM-078",
+        name: "Muỗng nhựa định lượng 10g",
+        item_category_id: "CAT-1",
+        status: "ACTIVE",
+        is_non_inventory: false,
+        default_unit_id: "",
+        created_at: "2026-01-01T00:00:00Z",
+      },
+    ];
+
+    const stockById: Record<string, ItemStockDisplay> = {
+      "SPM-002": { kind: "figure", text: "42.000 ml", onHand: 42000 },
+      "SPM-005": { kind: "untracked", text: "Không theo dõi tồn" },
+      "SPM-078": { kind: "equipment", text: "Xem ở Tài sản" },
+    };
+
+    render(
+      <ItemsClient
+        categories={CATEGORIES}
+        items={items}
+        conversions={[]}
+        units={UNITS}
+        unitLockedItemIds={[]}
+        stockById={stockById}
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.getByText("42.000 ml")).toBeInTheDocument();
+    expect(screen.getByText("Không theo dõi tồn")).toBeInTheDocument();
+    expect(screen.getByText("Xem ở Tài sản")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Xem ở Tài sản" })).toBeNull();
+  });
+
+  it("sorts by stock descending: figure rows by onHand desc, then text kinds last", () => {
+    setSearchParams("category=CAT-1&sort=stock&dir=desc");
+
+    const items: DBPurchasedItem[] = [
+      {
+        id: "SPM-005",
+        name: "Đá viên",
+        item_category_id: "CAT-1",
+        status: "ACTIVE",
+        is_non_inventory: true,
+        default_unit_id: "",
+        created_at: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "SPM-045",
+        name: "Trứng gà",
+        item_category_id: "CAT-1",
+        status: "ACTIVE",
+        is_non_inventory: false,
+        default_unit_id: "",
+        created_at: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "SPM-002",
+        name: "Sữa tươi Mlekovita",
+        item_category_id: "CAT-1",
+        status: "ACTIVE",
+        is_non_inventory: false,
+        default_unit_id: "",
+        created_at: "2026-01-01T00:00:00Z",
+      },
+      {
+        id: "SPM-078",
+        name: "Muỗng nhựa định lượng 10g",
+        item_category_id: "CAT-1",
+        status: "ACTIVE",
+        is_non_inventory: false,
+        default_unit_id: "",
+        created_at: "2026-01-01T00:00:00Z",
+      },
+    ];
+
+    const stockById: Record<string, ItemStockDisplay> = {
+      "SPM-002": { kind: "figure", text: "42.000 ml", onHand: 42000 },
+      "SPM-045": { kind: "figure", text: "116 trái", onHand: 116 },
+      "SPM-005": { kind: "untracked", text: "Không theo dõi tồn" },
+      "SPM-078": { kind: "equipment", text: "Xem ở Tài sản" },
+    };
+
+    render(
+      <ItemsClient
+        categories={CATEGORIES}
+        items={items}
+        conversions={[]}
+        units={UNITS}
+        unitLockedItemIds={[]}
+        stockById={stockById}
+        canDelete={false}
+      />,
+    );
+
+    const tableRows = screen.getAllByRole("row").slice(1);
+    expect(tableRows).toHaveLength(4);
+
+    expect(tableRows[0]).toHaveTextContent("SPM-002");
+    expect(tableRows[0]).toHaveTextContent("42.000 ml");
+
+    expect(tableRows[1]).toHaveTextContent("SPM-045");
+    expect(tableRows[1]).toHaveTextContent("116 trái");
+
+    expect(tableRows[2]).toHaveTextContent("SPM-005");
+    expect(tableRows[2]).toHaveTextContent("Không theo dõi tồn");
+
+    expect(tableRows[3]).toHaveTextContent("SPM-078");
+    expect(tableRows[3]).toHaveTextContent("Xem ở Tài sản");
   });
 });

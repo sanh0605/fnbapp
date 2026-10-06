@@ -26,6 +26,8 @@ import {
   assetRemovalRefusalMessage,
   type RemovableAsset,
 } from "@/lib/assets/asset-removal";
+import { computeOnHandByPurchasedItem } from "@/lib/stock/purchased-item-onhand";
+import { buildItemStockById, type ItemStockDisplay } from "@/lib/stock/item-stock-display";
 import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/catalog/unit-lock";
 
 const SHEET = "Purchased_Items";
@@ -67,6 +69,28 @@ export async function getItemsData(): Promise<{
     console.error("Loi getItemsData:", error);
     throw error;
   }
+}
+
+// BR-CATALOG-004: the stock text for every item, keyed by item id. The figure
+// comes from the shared on-hand formula, never a second sum here.
+export async function getItemStockById(): Promise<Record<string, ItemStockDisplay>> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const [items, categories, conversions, units, onHandById] = await Promise.all([
+    findAll(SHEET) as Promise<DBPurchasedItem[]>,
+    findAll("Item_Categories") as Promise<DBItemCategory[]>,
+    findAll("UOM_Conversions") as Promise<DBUOMConversion[]>,
+    findAll("Units") as Promise<DBUnit[]>,
+    computeOnHandByPurchasedItem(),
+  ]);
+
+  // base_unit is typed optional on DBUOMConversion; a row without one has no unit to show.
+  const conversionsWithUnit = conversions.flatMap(c =>
+    c.base_unit ? [{ purchased_item_id: c.purchased_item_id, base_unit: c.base_unit, status: c.status }] : [],
+  );
+
+  return buildItemStockById({ items, categories, conversions: conversionsWithUnit, units, onHandById });
 }
 
 export async function getItemPurchaseHistory(itemId: string): Promise<ItemPurchaseHistoryRow[]> {

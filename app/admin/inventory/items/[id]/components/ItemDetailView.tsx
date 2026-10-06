@@ -10,6 +10,7 @@ import { PurchaseHistoryView } from "./PurchaseHistoryView";
 import { deletePurchasedItemAction } from "../../actions";
 import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
 import type { ItemPurchaseHistoryRow } from "@/lib/purchasing/item-purchase-history";
+import type { ItemStockDisplay } from "@/lib/stock/item-stock-display";
 
 export interface ItemDetailViewProps {
   item: DBPurchasedItem;
@@ -17,6 +18,7 @@ export interface ItemDetailViewProps {
   conversions: DBUOMConversion[];
   units: DBUnit[];
   purchaseHistory: ItemPurchaseHistoryRow[];
+  stock?: ItemStockDisplay;
   returnTo: string;
   canDelete: boolean;
 }
@@ -33,17 +35,35 @@ export function ItemDetailView({
   conversions,
   units,
   purchaseHistory,
+  stock,
   returnTo,
   canDelete,
 }: ItemDetailViewProps): JSX.Element {
   const isNonInventory =
     item.is_non_inventory === true || (item.is_non_inventory as any) === "true";
 
+  let stockValue: React.ReactNode = "—";
+  if (stock) {
+    if (stock.kind === "equipment") {
+      stockValue = (
+        <Link
+          href={`/admin/inventory/assets?q=${encodeURIComponent(item.id)}`}
+          className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] inline-flex items-center"
+        >
+          Xem ở Tài sản
+        </Link>
+      );
+    } else {
+      stockValue = stock.text;
+    }
+  }
+
   const fields: Field[] = [
     { label: "Mã", value: item.id },
     { label: "Tên", value: item.name },
     { label: "Phân loại", value: category?.name || "—" },
     { label: "Tính tồn kho", value: isNonInventory ? "Không" : "Có" },
+    { label: "Tồn kho hiện tại", value: stockValue },
     {
       label: "Trạng thái",
       value: item.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng",

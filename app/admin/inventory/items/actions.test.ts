@@ -14,8 +14,12 @@ const mocks = vi.hoisted(() => ({
   generateNewId: vi.fn(),
   revalidatePath: vi.fn(),
   revalidateTag: vi.fn(),
+  computeOnHandByPurchasedItem: vi.fn(),
 }));
 
+vi.mock("@/lib/stock/purchased-item-onhand", () => ({
+  computeOnHandByPurchasedItem: mocks.computeOnHandByPurchasedItem,
+}));
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", async () => {
   // section 1.4: getCacheTag is the REAL, unmocked function here (via
@@ -647,5 +651,46 @@ describe("updatePurchasedItem -- retiring assets when the item leaves EQUIPMENT"
 
     expect(res.error).toBeTruthy();
     expect(mocks.update).not.toHaveBeenCalled();
+  });
+});
+
+// BR-CATALOG-004: the Hàng hoá screens show current stock. The figure must come
+// from the one shared on-hand formula, never a second sum in this file.
+describe("getItemStockById -- current stock text per item", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") {
+        return Promise.resolve([
+          { id: "SPM-002", item_category_id: "NHH-001", is_non_inventory: false },
+          { id: "SPM-005", item_category_id: "NHH-001", is_non_inventory: true },
+        ]);
+      }
+      if (sheet === "Item_Categories") return Promise.resolve([{ id: "NHH-001", system_type: "RAW" }]);
+      if (sheet === "UOM_Conversions") {
+        return Promise.resolve([{ purchased_item_id: "SPM-002", base_unit: "U-ML", status: "ACTIVE" }]);
+      }
+      if (sheet === "Units") return Promise.resolve([{ id: "U-ML", name: "ml" }]);
+      return Promise.resolve([]);
+    });
+    mocks.computeOnHandByPurchasedItem.mockResolvedValue(new Map([["SPM-002", 42000]]));
+  });
+
+  it("returns the figure for Sữa tươi Mlekovita and untracked for Đá viên, using the shared on-hand formula", async () => {
+    const result = await actions.getItemStockById();
+
+    expect(mocks.computeOnHandByPurchasedItem).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      "SPM-002": { kind: "figure", text: "42.000 ml", onHand: 42000 },
+      "SPM-005": { kind: "untracked", text: "Không theo dõi tồn" },
+    });
+  });
+
+  it("throws when the caller is not an admin", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền." });
+
+    await expect(actions.getItemStockById()).rejects.toThrow("Không có quyền.");
+    expect(mocks.computeOnHandByPurchasedItem).not.toHaveBeenCalled();
   });
 });

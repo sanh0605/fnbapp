@@ -12,6 +12,7 @@ import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { deletePurchasedItemAction } from "../actions";
 import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
+import type { ItemStockDisplay } from "@/lib/stock/item-stock-display";
 
 interface ItemsClientProps {
   categories: DBItemCategory[];
@@ -19,6 +20,7 @@ interface ItemsClientProps {
   conversions: DBUOMConversion[];
   units: DBUnit[];
   unitLockedItemIds: string[];
+  stockById: Record<string, ItemStockDisplay>;
   canDelete: boolean;
   initialSearch?: string;
   initialCategory?: string;
@@ -53,6 +55,7 @@ export default function ItemsClient({
   items,
   conversions,
   units,
+  stockById = {},
   canDelete,
   initialSearch,
   initialCategory,
@@ -132,6 +135,26 @@ export default function ItemsClient({
         ),
       },
       {
+        key: "stock",
+        header: "Tồn kho",
+        sortValue: (item) => {
+          const entry = stockById[item.id];
+          return entry?.kind === "figure" ? entry.onHand : null;
+        },
+        render: (item) => {
+          const entry = stockById[item.id];
+          if (!entry) return <span className="text-text-muted">—</span>;
+          if (entry.kind === "figure") {
+            return (
+              <span className="font-medium text-text-primary tabular-nums">
+                {entry.text}
+              </span>
+            );
+          }
+          return <span className="text-text-muted">{entry.text}</span>;
+        },
+      },
+      {
         key: "conversions",
         header: "Quy đổi",
         secondary: true,
@@ -161,7 +184,7 @@ export default function ItemsClient({
         },
       },
     ],
-    [categoryMap, conversions, units],
+    [categoryMap, conversions, units, stockById],
   );
 
   const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
@@ -221,6 +244,7 @@ export default function ItemsClient({
   const renderCard = (item: DBPurchasedItem) => {
     const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
     const catName = categoryMap[item.item_category_id] || "—";
+    const stockText = stockById[item.id]?.text ?? "—";
     return (
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
@@ -235,6 +259,9 @@ export default function ItemsClient({
           <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-secondary text-text-secondary border border-border shrink-0">
             {catName}
           </span>
+        </div>
+        <div className="text-xs text-text-secondary">
+          Tồn kho: {stockText}
         </div>
         {itemConversions.length > 0 && (
           <div className="text-xs text-text-secondary pt-1 border-t border-border/50">

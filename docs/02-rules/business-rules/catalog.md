@@ -141,7 +141,7 @@ choices inside a drink, and a món called "Size L" on the menu would be a defect
 
 ### BR-CATALOG-004 — The Hàng hoá page shows each item's current stock, in its base unit; equipment points to Tài sản
 
-**Status:** `APPROVED` — owner decision 2026-10-05. **Not built yet.**
+**Status:** `APPROVED` — owner decision 2026-10-05. Built 2026-10-05 (`lib/stock/item-stock-display.ts`, `getItemStockById`; plan `docs/superpowers/plans/2026-10-05-ton-kho-hang-hoa.md`).
 
 Asked for it the same day: *"trang hàng hoá anh muốn xem được tồn kho hiện tại trong trang đó. Tồn kho có thể xem từ danh sách và xem được cả trong trang chi tiết hàng hoá."* Until then the only screen showing a stock figure was the stocktake.
 
@@ -149,3 +149,4 @@ Asked for it the same day: *"trang hàng hoá anh muốn xem được tồn kho 
 - **What:** completed purchases minus every stock issue, stocktake corrections included — the one on-hand formula (`lib/stock/purchased-item-onhand.ts`), never a second copy.
 - **In the base unit only** (owner, *"1b"*): Sữa tươi Mlekovita shows "42.000 ml", not "42 Hộp (42.000 ml)". He was offered the package form first and chose the plain one.
 - **Dụng cụ shows no stock figure, only "Xem ở Tài sản"** (owner, *"2a"*): a broken or disposed tool is recorded on the Tài sản page (`asset_disposals`), not as a stock issue, so a stock figure would still count it. Measured 2026-10-05: 67 Dụng cụ items, 64 with purchases.
+- **An item marked "Tính tồn kho: Không" shows "Không theo dõi tồn"**, no figure (owner 2026-10-05, *"1a"*). Such items are written off when bought and almost never issued, so purchases minus issues only grows: measured that day, Đá viên showed 4.515.000 g bought and 0 issued. 15 items (6 Nguyên liệu such as Đá viên, Muối, Trái chanh; 9 Vật tư tiêu hao such as Túi xốp 1 ly, Muỗng nhựa đen), 1 issue among them. He was offered the raw figure and a blank, and chose this.
