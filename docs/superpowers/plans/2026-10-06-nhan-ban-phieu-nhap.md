@@ -28,7 +28,7 @@ Not seen:
 - `po-draft.ts`
 - how the "Thêm nhà cung cấp" round trip builds its return URL
 
-1. **States, and how each is set.** The source order can be `COMPLETED`, `DRAFT` or `CANCELLED`. The copy always starts as a new, unsaved form. It becomes a draft or a completed order only through the existing "Lưu nháp" / "Hoàn thành" buttons, with all their checks.
+1. **States, and how each is set.** The source order can be `COMPLETED`, `DRAFT` or `CANCELLED`. The copy always starts as a new, unsaved form. It becomes a draft or a completed order only through the existing "Lưu Nháp" / "Tạo" buttons, with all their checks.
 2. **Buttons, and when to hide them.**
    - "Nhân bản" shows on an order's page for ADMIN and MANAGER (the roles that may create orders), on any status, cancelled included.
    - It is hidden while the edit form is on screen: a draft always shows the form, and so does `?edit=1`. Leaving an unsaved edit for a copy would drop the edit.
@@ -49,7 +49,7 @@ Not seen:
 4. **Inputs, and values out of range.**
    - `copyFrom` with an unknown code: the page shows a notice above an empty form, "Không tìm thấy phiếu <code> để nhân bản."
    - `copyFrom` absent: the page is exactly as today.
-   - A copied line whose item or conversion is no longer in use shows its item with an empty "Quy cách", the same as an old edit. The existing check then refuses "Hoàn thành" until one is chosen.
+   - A copied line whose item or conversion is no longer in use shows its item with an empty "Quy cách", the same as an old edit. The existing check then refuses "Tạo" (completing) until one is chosen.
    - A blank transaction time is saved as the moment of "Lưu" (`savePurchaseOrder`, unchanged). The owner was told this.
 5. **Data served, and data deliberately not served.**
    - **Served:** one order at a time, read once when the page opens.
