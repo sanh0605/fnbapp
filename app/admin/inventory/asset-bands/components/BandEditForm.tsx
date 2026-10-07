@@ -2,7 +2,9 @@
 
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { NumberInput } from "@/components/ui/NumberInput";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
 import { updateAssetBand } from "../actions";
 import type { DBAssetDepreciationBand } from "@/types/db";
@@ -28,9 +30,6 @@ export function BandEditForm({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [minPrice, setMinPrice] = useState(String(band.min_unit_price));
-  const [maxPrice, setMaxPrice] = useState(band.max_unit_price === null ? "" : String(band.max_unit_price));
-  const [termMonths, setTermMonths] = useState(String(band.term_months));
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,72 +55,69 @@ export function BandEditForm({
             {error}
           </div>
         )}
-        <div>
-          <label htmlFor={`${formId}-min`} className="block text-sm font-medium text-text-secondary mb-1">
-            Giá thấp nhất (đ, tính theo đơn giá 1 cái)
-          </label>
-          <input
+        <Field
+          label="Giá thấp nhất (đ, tính theo đơn giá 1 cái)"
+          htmlFor={`${formId}-min`}
+        >
+          <NumberInput
             id={`${formId}-min`}
             name="min_unit_price"
-            type="number"
-            inputMode="numeric"
-            min="0"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+            decimals={0}
+            unit="đ"
+            min={0}
+            example="150,000"
+            defaultValue={band.min_unit_price}
           />
-        </div>
-        <div>
-          <label htmlFor={`${formId}-max`} className="block text-sm font-medium text-text-secondary mb-1">
-            Giá cao nhất (đ, không bao gồm giá trị này) -- để trống nếu không giới hạn trên
-          </label>
-          <input
+        </Field>
+        <Field
+          label="Giá cao nhất (đ, không bao gồm giá trị này) -- để trống nếu không giới hạn trên"
+          htmlFor={`${formId}-max`}
+        >
+          <NumberInput
             id={`${formId}-max`}
             name="max_unit_price"
-            type="number"
-            inputMode="numeric"
-            min="0"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-            placeholder="Không giới hạn"
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+            decimals={0}
+            unit="đ"
+            min={0}
+            example="2,000,000"
+            hint="Để trống nếu không giới hạn trên"
+            defaultValue={band.max_unit_price ?? undefined}
           />
-        </div>
-        <div>
-          <label htmlFor={`${formId}-term`} className="block text-sm font-medium text-text-secondary mb-1">
-            Số tháng khấu hao
-          </label>
-          <input
+        </Field>
+        <Field
+          label="Số tháng khấu hao"
+          htmlFor={`${formId}-term`}
+        >
+          <NumberInput
             id={`${formId}-term`}
             name="term_months"
-            type="number"
-            inputMode="numeric"
-            min="1"
-            value={termMonths}
-            onChange={(e) => setTermMonths(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+            decimals={0}
+            min={1}
+            example="12"
+            defaultValue={band.term_months}
           />
-        </div>
+        </Field>
         <p className="text-xs text-text-muted">
           Sửa khung chỉ áp dụng cho tài sản mua sau khi lưu -- tài sản đã có giữ nguyên số tháng đã tính lúc mua.
         </p>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu..."
-            className="w-full sm:w-auto min-h-[44px]"
+            className="w-full sm:w-auto"
           >
-            Lưu
-          </LoadingButton>
+            {loading ? "Đang lưu..." : "Lưu"}
+          </Button>
         </div>
       </form>
     </div>

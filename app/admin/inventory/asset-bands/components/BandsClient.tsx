@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { ListPagination } from "@/components/ui/list/ListPagination";
@@ -54,7 +54,7 @@ export default function BandsClient({
         header: "Mã",
         sortValue: (band) => band.id,
         render: (band) => (
-          <span className="font-mono font-bold text-text-primary">{band.id}</span>
+          <span className="font-mono text-text-primary">{band.id}</span>
         ),
       },
       {
@@ -133,19 +133,20 @@ export default function BandsClient({
           group="Kho"
           title="Thời hạn khấu hao"
           action={
-            <div className="flex flex-wrap items-center gap-2">
-              <Link
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+              <Button
                 href="/admin/inventory/assets"
-                className="border border-border bg-surface-card text-text-primary px-4 py-2 rounded-lg font-medium hover:bg-surface-secondary transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm text-sm"
+                variant="secondary"
+                className="w-full md:w-auto"
               >
                 Tài sản
-              </Link>
-              <Link
+              </Button>
+              <Button
                 href={`/admin/inventory/asset-bands/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-                className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm text-sm"
+                className="w-full md:w-auto"
               >
                 Tạo
-              </Link>
+              </Button>
             </div>
           }
         />

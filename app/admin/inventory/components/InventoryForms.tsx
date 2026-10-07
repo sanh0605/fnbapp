@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ModalPortal } from "@/components/ui/ModalPortal";
 import { alert, confirm } from "@/lib/shared/dialog";
+import { Button } from "@/components/ui/Button";
 
 // Re-export forms from sub-components
 export { ItemCategoryForm, CategoryForm } from "./CategoryForm";
@@ -37,18 +38,18 @@ export function ActionGroup({
     <>
       <div className="flex items-center justify-end gap-3">
         {onEdit && (
-          <button onClick={onEdit} className="text-primary hover:text-primary text-sm font-medium">
+          <Button type="button" variant="secondary" onClick={onEdit}>
             Sửa
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="button"
+          variant="delete"
           onClick={() => setIsDeleteOpen(true)}
           disabled={loading}
-          className="text-danger hover:text-danger text-sm font-medium"
         >
           {loading ? "..." : "Xoá"}
-        </button>
+        </Button>
       </div>
 
       {isDeleteOpen && (
@@ -76,21 +77,21 @@ export function ActionGroup({
                 </p>
               </div>
               <div className="p-4 border-t border-border bg-page flex justify-end gap-3">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => setIsDeleteOpen(false)}
-                  className="px-4 py-2 text-text-secondary font-medium hover:bg-border rounded-lg transition"
                 >
                   Huỷ
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="danger"
                   onClick={performDelete}
-                  disabled={loading}
-                  className="px-4 py-2 bg-danger text-white font-bold rounded-lg hover:bg-danger disabled:opacity-50 transition shadow-sm"
+                  loading={loading}
                 >
                   {loading ? "Đang xử lý..." : "Xác nhận xoá"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

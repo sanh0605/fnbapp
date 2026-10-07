@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { addUnit, updateUnit } from "@/app/admin/inventory/actions";
 import { alert } from "@/lib/shared/dialog";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Button } from "@/components/ui/Button";
 
 interface UnitFormProps {
   initialData?: any;
@@ -41,47 +44,49 @@ export function UnitForm({ initialData, returnTo: rawReturnTo }: UnitFormProps) 
   return (
     <div className="bg-surface-card rounded-2xl border border-border p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên đơn vị (VD: gram, hộp)
-          </label>
-          <input
+        <Field
+          label="Tên đơn vị"
+          htmlFor={`${formId}-name`}
+          hint="Ví dụ: gram, hộp"
+          required
+        >
+          <TextInput
             id={`${formId}-name`}
             type="text"
             name="name"
             defaultValue={initialData?.name}
             required
-            className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-focus-ring outline-none text-text-primary"
           />
-        </div>
-        <div>
-          <label htmlFor={`${formId}-description`} className="block text-sm font-medium text-text-secondary mb-1">
-            Ghi chú thêm
-          </label>
-          <input
+        </Field>
+        <Field
+          label="Ghi chú thêm"
+          htmlFor={`${formId}-description`}
+        >
+          <TextInput
             id={`${formId}-description`}
             type="text"
             name="description"
             defaultValue={initialData?.description}
-            className="w-full border border-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-focus-ring outline-none text-text-primary"
             placeholder="Không bắt buộc"
           />
-        </div>
+        </Field>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full sm:w-auto px-4 py-2 bg-primary text-on-primary rounded-button font-medium hover:bg-primary-hover transition disabled:opacity-50"
+            variant="primary"
+            loading={loading}
+            className="w-full sm:w-auto"
           >
             {loading ? "Đang lưu..." : isEdit ? "Cập nhật" : "Lưu"}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

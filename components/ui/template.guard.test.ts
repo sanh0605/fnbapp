@@ -77,8 +77,6 @@ function tagOffenders(tagNames: string[], pattern: RegExp): string[] {
 // Waves (spec section 4): K3 Kho, K4 Bán hàng, K5 Tài chính và báo cáo, K6 còn lại.
 
 const NUMBER_TYPE_DEBT = [
-  "app/admin/inventory/asset-bands/components/AddBandForm.tsx", // K3
-  "app/admin/inventory/asset-bands/components/BandEditForm.tsx", // K3
   "app/admin/inventory/assets/components/DisposeAssetForm.tsx", // K3
   "app/admin/inventory/conversions/components/ConversionForm.tsx", // K3
   "app/admin/inventory/items/components/PurchasedItemForm.tsx", // K3
@@ -103,13 +101,7 @@ const SOLID_BUTTON_DEBT = [
   "app/admin/finance/categories/components/CategoriesClient.tsx", // K5
   "app/admin/finance/page.tsx", // K5
   "app/admin/finance/transfers/[id]/components/CashTransferDetailView.tsx", // K5
-  "app/admin/inventory/asset-bands/[id]/components/BandDetailView.tsx", // K3
-  "app/admin/inventory/asset-bands/components/BandsClient.tsx", // K3
   "app/admin/inventory/assets/[id]/components/AssetItemDetailView.tsx", // K3
-  "app/admin/inventory/categories/[id]/components/CategoryDetailView.tsx", // K3
-  "app/admin/inventory/categories/components/CategoriesClient.tsx", // K3
-  "app/admin/inventory/components/CategoryForm.tsx", // K3
-  "app/admin/inventory/components/InventoryForms.tsx", // K3
   "app/admin/inventory/conversions/[id]/components/ConversionDetailView.tsx", // K3
   "app/admin/inventory/conversions/components/ConversionsClient.tsx", // K3
   "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
@@ -117,9 +109,6 @@ const SOLID_BUTTON_DEBT = [
   "app/admin/inventory/items/components/ItemsClient.tsx", // K3
   "app/admin/inventory/purchase-orders/[id]/cancel/components/CancelPurchaseOrderForm.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
-  "app/admin/inventory/units/UnitForm.tsx", // K3
-  "app/admin/inventory/units/[id]/components/UnitDetailView.tsx", // K3
-  "app/admin/inventory/units/components/UnitsClient.tsx", // K3
   "app/admin/layout.tsx", // K6
   "app/admin/orders/OrderTable.tsx", // K4
   "app/admin/orders/[id]/components/OrderDetailView.tsx", // K4
@@ -195,7 +184,6 @@ const BOLD_CELL_DEBT = [
 const ENGLISH_BRACKET_DEBT = [
   "app/admin/clear-cache/loading.tsx", // K6
   "app/admin/clear-cache/page.tsx", // K6
-  "app/admin/inventory/components/CategoryForm.tsx", // K3
 ];
 
 const RAW_INPUT_DEBT = [
@@ -208,11 +196,8 @@ const RAW_INPUT_DEBT = [
   "app/admin/finance/categories/components/CategoryForm.tsx", // K5
   "app/admin/finance/components/CashEntryForm.tsx", // K5
   "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
-  "app/admin/inventory/asset-bands/components/AddBandForm.tsx", // K3
-  "app/admin/inventory/asset-bands/components/BandEditForm.tsx", // K3
   "app/admin/inventory/assets/components/AssetsClient.tsx", // K3
   "app/admin/inventory/assets/components/DisposeAssetForm.tsx", // K3
-  "app/admin/inventory/components/CategoryForm.tsx", // K3
   "app/admin/inventory/conversions/components/ConversionForm.tsx", // K3
   "app/admin/inventory/conversions/components/ConversionsClient.tsx", // K3
   "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
@@ -223,7 +208,6 @@ const RAW_INPUT_DEBT = [
   "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
   "app/admin/inventory/stocktake/components/StocktakeClient.tsx", // K3
-  "app/admin/inventory/units/UnitForm.tsx", // K3
   "app/admin/orders/OrderTable.tsx", // K4
   "app/admin/orders/[id]/edit/components/OrderEditForm.tsx", // K4
   "app/admin/orders/components/DiscountEditor.tsx", // K4
@@ -254,7 +238,6 @@ const RAW_SELECT_DEBT = [
   "app/admin/finance/components/CashBookClient.tsx", // K5
   "app/admin/finance/components/CashEntryForm.tsx", // K5
   "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
-  "app/admin/inventory/components/CategoryForm.tsx", // K3
   "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
   "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
   "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
@@ -281,8 +264,6 @@ const RAW_SELECT_DEBT = [
 
 const NUMERIC_INPUTMODE_DEBT = [
   "app/admin/finance/bank-accounts/components/BankAccountForm.tsx", // K5
-  "app/admin/inventory/asset-bands/components/AddBandForm.tsx", // K3
-  "app/admin/inventory/asset-bands/components/BandEditForm.tsx", // K3
   "app/admin/inventory/assets/components/DisposeAssetForm.tsx", // K3
   "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
   "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
