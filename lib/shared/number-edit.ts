@@ -36,9 +36,21 @@ function countCommas(s: string): number {
 }
 
 export function applyNumberEdit(input: NumberEditInput): NumberEditResult {
-  const { prevText, raw, caret, inputType, decimals, zeroIsEmpty } = input;
+  const { prevText, inputType, decimals, zeroIsEmpty } = input;
+  let { raw, caret } = input;
+  // A dot typed while the box already holds one: the dot already there stays,
+  // the one just typed (the char left of the caret) is dropped.
+  if (
+    decimals > 0 &&
+    prevText.includes(".") &&
+    raw[caret - 1] === "." &&
+    keepChars(raw, decimals).split(".").length > 2
+  ) {
+    raw = raw.slice(0, caret - 1) + raw.slice(caret);
+    caret -= 1;
+  }
   const prevDisplay = groupNumberText(prevText);
-  const keptLeft = keepChars(raw.slice(0, caret), decimals).length;
+  let keptLeft = keepChars(raw.slice(0, caret), decimals).length;
 
   const normalized = normalizeNumberText(raw, decimals);
   if (normalized === null) {
@@ -48,6 +60,10 @@ export function applyNumberEdit(input: NumberEditInput): NumberEditResult {
     const caretBefore = Math.max(0, keptLeft - added);
     return { accepted: false, display: prevDisplay, caret: caretAfterFormat(caretBefore, prevDisplay) };
   }
+
+  // Normalisation puts a 0 in front of a lone leading dot; when the caret is
+  // after that dot the 0 is a character left of the caret too.
+  if (keepChars(raw, decimals).startsWith(".") && keptLeft >= 1) keptLeft += 1;
 
   const clean = (t: string): string => (zeroIsEmpty && t === "0" ? "" : t);
   const next = clean(normalized);

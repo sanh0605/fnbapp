@@ -22,6 +22,26 @@ describe("applyNumberEdit (BR-UI-008, spec 2.2)", () => {
     expect(edit("", "0.5")).toMatchObject({ text: "0.5", display: "0.5" });
     expect(edit("", ".5")).toMatchObject({ text: "0.5", display: "0.5" });
   });
+  // K2 review (Critical): the 0 put in front of a lone dot must move the caret too,
+  // or the next digit lands before the dot (".", then "5" gave 5, not 0.5).
+  it("a dot typed into an empty box shows 0. with the caret after the dot", () => {
+    expect(edit("", ".", 1)).toMatchObject({ text: "0.", display: "0.", caret: 2 });
+    expect(edit("0.", "0.5", 3)).toMatchObject({ text: "0.5", caret: 3 });
+  });
+  it("a dot typed in front of 5 gives 0.5 with the caret after the dot", () => {
+    expect(edit("5", ".5", 1)).toMatchObject({ text: "0.5", display: "0.5", caret: 2 });
+  });
+  // K2 review (Important): spec 2.2 "dấu chấm thứ hai bị bỏ" -- the dot already in
+  // the box stays; the one just typed is dropped (12.5 never becomes 1.25).
+  it("a second dot typed mid-number is dropped and the number stays", () => {
+    const r = edit("12.5", "1.2.5", 2);
+    expect(r.display).toBe("12.5");
+    expect(r.caret).toBe(1);
+    if (r.accepted) expect(r.text).toBe("12.5");
+  });
+  it("a pasted number with two dots keeps the first", () => {
+    expect(edit("", "1.2.3")).toMatchObject({ text: "1.23", display: "1.23" });
+  });
   it("drops letters and a second dot from a paste", () => {
     expect(edit("", "1,250.5abc")).toMatchObject({ text: "1250.5", display: "1,250.5" });
     expect(edit("1.5", "1.5.", 4)).toMatchObject({ text: "1.5", display: "1.5" });
