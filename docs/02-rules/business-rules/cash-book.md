@@ -94,12 +94,13 @@ create a new category. Owner, 2026-09-11: "Khoá, tạo nhóm mới." Why: rows 
 no side of their own, so switching a used category would silently move every
 past row, and every past month's totals, to the other side.
 
-### BR-CASH-005 — Amounts are whole đồng, and a dot separates thousands
+### BR-CASH-005 — Amounts are whole đồng, and the box puts in the thousands marks itself
 
 **Status:** `APPROVED` — whole đồng: owner decision 2026-09-08. How the box
 behaves: owner decision 2026-09-11. **Marks swapped 2026-10-07 (`BR-UI-008`):**
-the box now inserts commas (`150,000`), and refuses both a dot and a comma typed
-in. Everything else below stands.
+the box now inserts commas (`150,000`) and still drops every mark typed in; the
+server accepts plain digits or comma-grouped digits and refuses `150.000`. The
+text below records the 2026-09-11 decision with its old marks; read them swapped.
 
 An amount is a positive whole number of đồng. The amount box takes digits only
 and puts the dots in itself as the owner types: he types `150000`, the box

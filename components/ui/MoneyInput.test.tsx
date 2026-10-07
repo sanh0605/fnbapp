@@ -256,6 +256,6 @@ describe("BR-CASH-005 rollout to other screens", () => {
   // - app/admin/inventory/assets/components/DisposeAssetForm.tsx
   // POS (app/pos/) is out of scope.
   it.todo(
-    "Gắn ô tiền tự thêm dấu chấm vào các màn khác: giá món, giá tuỳ chọn món, đơn nhập hàng, khuyến mãi, thanh lý tài sản — làm sau báo cáo tài chính (chủ quán chốt 11/09/2026)",
+    "Gắn ô tiền tự thêm dấu phẩy hàng nghìn vào các màn khác: giá món, giá tuỳ chọn món, đơn nhập hàng, khuyến mãi, thanh lý tài sản — làm trong đợt khuôn mẫu, không đợi báo cáo tài chính (chủ quán chốt 07/10/2026)",
   );
 });
