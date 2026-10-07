@@ -198,6 +198,115 @@ const ENGLISH_BRACKET_DEBT = [
   "app/admin/inventory/components/CategoryForm.tsx", // K3
 ];
 
+const RAW_INPUT_DEBT = [
+  "app/admin/activity-log/components/ActivityLogClient.tsx", // K6
+  "app/admin/brands/components/BrandForm.tsx", // K6
+  "app/admin/brands/components/BrandsClient.tsx", // K6
+  "app/admin/finance/bank-accounts/components/BankAccountForm.tsx", // K5
+  "app/admin/finance/bank-accounts/components/BankAccountsClient.tsx", // K5
+  "app/admin/finance/categories/components/CategoriesClient.tsx", // K5
+  "app/admin/finance/categories/components/CategoryForm.tsx", // K5
+  "app/admin/finance/components/CashEntryForm.tsx", // K5
+  "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
+  "app/admin/inventory/asset-bands/components/AddBandForm.tsx", // K3
+  "app/admin/inventory/asset-bands/components/BandEditForm.tsx", // K3
+  "app/admin/inventory/assets/components/AssetsClient.tsx", // K3
+  "app/admin/inventory/assets/components/DisposeAssetForm.tsx", // K3
+  "app/admin/inventory/components/CategoryForm.tsx", // K3
+  "app/admin/inventory/conversions/components/ConversionForm.tsx", // K3
+  "app/admin/inventory/conversions/components/ConversionsClient.tsx", // K3
+  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
+  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
+  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
+  "app/admin/inventory/items/components/ItemsClient.tsx", // K3
+  "app/admin/inventory/items/components/PurchasedItemForm.tsx", // K3
+  "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx", // K3
+  "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
+  "app/admin/inventory/stocktake/components/StocktakeClient.tsx", // K3
+  "app/admin/inventory/units/UnitForm.tsx", // K3
+  "app/admin/orders/OrderTable.tsx", // K4
+  "app/admin/orders/[id]/edit/components/OrderEditForm.tsx", // K4
+  "app/admin/orders/components/DiscountEditor.tsx", // K4
+  "app/admin/orders/components/LineItemEditor.tsx", // K4
+  "app/admin/outlets/components/OutletForm.tsx", // K6
+  "app/admin/outlets/components/OutletsClient.tsx", // K6
+  "app/admin/products/ProductsClient.tsx", // K4
+  "app/admin/products/categories/components/CategoriesClient.tsx", // K4
+  "app/admin/products/categories/components/ProductCategoryForm.tsx", // K4
+  "app/admin/products/components/ProductForm.tsx", // K4
+  "app/admin/products/modifiers/components/ModifierForm.tsx", // K4
+  "app/admin/products/modifiers/components/ModifiersClient.tsx", // K4
+  "app/admin/promotions/components/PromotionForm.tsx", // K4
+  "app/admin/promotions/components/PromotionsClient.tsx", // K4
+  "app/admin/suppliers/components/SupplierForm.tsx", // K3
+  "app/admin/suppliers/components/SuppliersClient.tsx", // K3
+  "app/admin/users/components/EditUserForm.tsx", // K6
+  "app/admin/users/components/UserForm.tsx", // K6
+  "app/admin/users/components/UsersClient.tsx", // K6
+  "app/settings/password/page.tsx", // K6
+];
+
+const RAW_SELECT_DEBT = [
+  "app/admin/activity-log/components/ActivityLogClient.tsx", // K6
+  "app/admin/finance/bank-accounts/components/BankAccountsClient.tsx", // K5
+  "app/admin/finance/categories/components/CategoriesClient.tsx", // K5
+  "app/admin/finance/categories/components/CategoryForm.tsx", // K5
+  "app/admin/finance/components/CashBookClient.tsx", // K5
+  "app/admin/finance/components/CashEntryForm.tsx", // K5
+  "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
+  "app/admin/inventory/components/CategoryForm.tsx", // K3
+  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
+  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
+  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
+  "app/admin/inventory/items/components/ItemsClient.tsx", // K3
+  "app/admin/inventory/items/components/PurchasedItemForm.tsx", // K3
+  "app/admin/inventory/purchase-orders/[id]/components/PurchasePaymentBlock.tsx", // K3
+  "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx", // K3
+  "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
+  "app/admin/orders/OrderTable.tsx", // K4
+  "app/admin/orders/[id]/edit/components/OrderEditForm.tsx", // K4
+  "app/admin/outlets/components/OutletForm.tsx", // K6
+  "app/admin/outlets/components/OutletsClient.tsx", // K6
+  "app/admin/products/ProductsClient.tsx", // K4
+  "app/admin/products/components/ProductForm.tsx", // K4
+  "app/admin/products/modifiers/components/ModifierForm.tsx", // K4
+  "app/admin/promotions/components/PromotionForm.tsx", // K4
+  "app/admin/promotions/components/PromotionsClient.tsx", // K4
+  "app/admin/reports/components/SalesFilter.tsx", // K5
+  "app/admin/reports/pnl/components/YearSelect.tsx", // K5
+  "app/admin/users/components/EditUserForm.tsx", // K6
+  "app/admin/users/components/UserForm.tsx", // K6
+  "app/admin/users/components/UsersClient.tsx", // K6
+];
+
+const NUMERIC_INPUTMODE_DEBT = [
+  "app/admin/finance/bank-accounts/components/BankAccountForm.tsx", // K5
+  "app/admin/inventory/asset-bands/components/AddBandForm.tsx", // K3
+  "app/admin/inventory/asset-bands/components/BandEditForm.tsx", // K3
+  "app/admin/inventory/assets/components/DisposeAssetForm.tsx", // K3
+  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
+  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
+  "app/admin/inventory/stocktake/components/StocktakeClient.tsx", // K3
+  "app/admin/products/components/ProductForm.tsx", // K4
+  "app/admin/products/modifiers/components/ModifierForm.tsx", // K4
+  "app/admin/promotions/components/PromotionForm.tsx", // K4
+];
+
+const RAW_H1_DEBT = [
+  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
+  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
+  "app/admin/inventory/purchase-orders/[id]/page.tsx", // K3
+  "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
+  "app/admin/inventory/purchase-orders/new/page.tsx", // K3
+  "app/admin/orders/[id]/components/OrderDetailView.tsx", // K4
+  "app/admin/orders/[id]/edit/components/OrderEditForm.tsx", // K4
+  "app/admin/page.tsx", // K5
+  "app/admin/pos-sync/page.tsx", // K6
+  "app/admin/reports/issued/page.tsx", // K5
+  "app/admin/reports/pnl/page.tsx", // K5
+  "app/settings/password/page.tsx", // K6
+];
+
 // Names and units that are fine in brackets: brand names and abbreviations
 // the owner keeps (spec 2.6), and units of measure.
 const BRACKET_ALLOWED = new Set(["Topping", "MR.PHIN", "PO", "ml", "g", "kg"]);
@@ -219,6 +328,27 @@ describe("BR-UI-005 screens use the shared templates (lists may only shrink)", (
 
   it("no table cell is bold: every row cell has the same weight (BR-UI-003)", () => {
     expect(tagOffenders(["td"], /\bfont-(bold|semibold|medium)\b/)).toEqual([...BOLD_CELL_DEBT].sort());
+  });
+
+  // spec 2.3: text boxes, selects and date boxes come from components/ui.
+  it("no screen styles its own text box: use TextInput, NumberInput, DayInput or SaigonDateTimeInput", () => {
+    expect(
+      tagOffenders(["input"], /^(?![\s\S]*\btype=["{]?["'`]?(hidden|checkbox|radio|file)\b)/),
+    ).toEqual([...RAW_INPUT_DEBT].sort());
+  });
+
+  it("no screen styles its own select: use Select or SearchableSelect", () => {
+    expect(offenders(/<select\b/)).toEqual([...RAW_SELECT_DEBT].sort());
+  });
+
+  // spec 2.2: one number box. A hand-filtered inputMode box is a number box built by hand.
+  it("no screen builds its own number box with inputMode: use NumberInput or MoneyInput", () => {
+    expect(offenders(/\binputMode=["{]?["'`]?(numeric|decimal)/)).toEqual([...NUMERIC_INPUTMODE_DEBT].sort());
+  });
+
+  // spec 2.6: page titles come from ListPageHeader, DetailHeader or PageHeader.
+  it("no screen writes its own <h1>: use ListPageHeader, DetailHeader or PageHeader", () => {
+    expect(offenders(/<h1\b/)).toEqual([...RAW_H1_DEBT].sort());
   });
 
   it("no label puts English in brackets after Vietnamese (BR-UI-001)", () => {
