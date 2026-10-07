@@ -1,12 +1,12 @@
 // BR-CATALOG-004: the text the Hàng hoá screens show as current stock.
 // Pure: the on-hand figures come from computeOnHandByPurchasedItem, this only
 // decides what to say about them.
+import { formatDecimal } from "@/lib/shared/format";
+
 export type ItemStockDisplay =
   | { kind: "equipment"; text: string } // "Xem ở Tài sản"
   | { kind: "untracked"; text: string } // "Không theo dõi tồn"
-  | { kind: "figure"; text: string; onHand: number }; // "42.000 ml"
-
-const figureFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 });
+  | { kind: "figure"; text: string; onHand: number }; // "42,000 ml"
 
 export function buildItemStockById(input: {
   items: Array<{ id: string; item_category_id: string; is_non_inventory: unknown }>;
@@ -41,7 +41,7 @@ export function buildItemStockById(input: {
     }
     const onHand = input.onHandById.get(item.id) ?? 0;
     const unit = unitNameById.get(baseUnitIdByItem.get(item.id) ?? "") ?? "";
-    result[item.id] = { kind: "figure", text: `${figureFormat.format(onHand)} ${unit}`.trim(), onHand };
+    result[item.id] = { kind: "figure", text: `${formatDecimal(onHand, { maxDigits: 2 })} ${unit}`.trim(), onHand };
   }
   return result;
 }

@@ -17,7 +17,7 @@ describe("buildPackageLines", () => {
   it("Dâu sấy: three same-named conversions become three distinct, correctly labelled lines", () => {
     const lines = buildPackageLines(DAU_SAY);
     expect(lines).toHaveLength(3);
-    expect(lines.map(l => l.sizeLabel)).toEqual(["Túi 100 g", "Túi 500 g", "Túi 1.000 g"]);
+    expect(lines.map(l => l.sizeLabel)).toEqual(["Túi 100 g", "Túi 500 g", "Túi 1,000 g"]);
     // Ascending by size, not by conversion id or insertion order.
     expect(lines.map(l => l.conversionRate)).toEqual([100, 500, 1000]);
     expect(new Set(lines.map(l => l.conversionId)).size).toBe(3);
@@ -26,7 +26,7 @@ describe("buildPackageLines", () => {
   it("Kem whipping Anchor: two same-named conversions, ten times apart, stay distinct", () => {
     const lines = buildPackageLines(KEM_WHIPPING);
     expect(lines).toHaveLength(2);
-    expect(lines.map(l => l.sizeLabel)).toEqual(["Hộp 250 ml", "Hộp 1.000 ml"]);
+    expect(lines.map(l => l.sizeLabel)).toEqual(["Hộp 250 ml", "Hộp 1,000 ml"]);
   });
 
   it("a single-conversion item (the 48-item common case) produces exactly one line", () => {

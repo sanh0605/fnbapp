@@ -36,7 +36,7 @@ describe("percentOfTotal", () => {
 
 describe("formatPercent", () => {
   it("renders one decimal with a comma, vi-VN style", () => {
-    expect(formatPercent(45.3)).toBe("45,3%");
+    expect(formatPercent(45.3)).toBe("45.3%");
   });
 
   it("renders an em dash for null", () => {
@@ -44,6 +44,6 @@ describe("formatPercent", () => {
   });
 
   it("rounds to one decimal", () => {
-    expect(formatPercent(33.333333)).toBe("33,3%");
+    expect(formatPercent(33.333333)).toBe("33.3%");
   });
 });

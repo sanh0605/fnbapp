@@ -1,4 +1,4 @@
-import { formatNumber } from "@/lib/shared/format";
+import { formatDecimal, formatNumber } from "@/lib/shared/format";
 import { displayMoney } from "./display-rounding";
 import type { PnlFigures, PnlSource, PnlSourceKind } from "./profit-and-loss";
 
@@ -88,13 +88,8 @@ const ROUNDING_NOTE =
 const STOCKTAKE_TAIL =
   "Các tháng trước đó vì vậy có giá vốn thấp hơn thực tế; nhìn dòng Luỹ kế mới thấy đúng bức tranh.";
 
-const PERCENT_FORMATTER = new Intl.NumberFormat("vi-VN", {
-  minimumFractionDigits: PERCENT_DECIMALS,
-  maximumFractionDigits: PERCENT_DECIMALS,
-});
-
 export function formatPercent(value: number | null): string {
-  return value === null ? "---" : `${PERCENT_FORMATTER.format(value)}%`;
+  return value === null ? "---" : `${formatDecimal(value, { minDigits: PERCENT_DECIMALS, maxDigits: PERCENT_DECIMALS })}%`;
 }
 
 // Same snapping as display-rounding.ts, at PERCENT_DECIMALS places.

@@ -285,9 +285,9 @@ describe("findBandForUnitPrice -- half-open bounds (section 1)", () => {
 
 describe("formatBandRange", () => {
   it("renders the owner's three exact phrases", () => {
-    expect(formatBandRange(SEEDED_BANDS[0])).toBe("Dưới 200.000đ");
-    expect(formatBandRange(SEEDED_BANDS[1])).toBe("Từ 200.000đ đến dưới 500.000đ");
-    expect(formatBandRange(SEEDED_BANDS[2])).toBe("Từ 500.000đ trở lên");
+    expect(formatBandRange(SEEDED_BANDS[0])).toBe("Dưới 200,000đ");
+    expect(formatBandRange(SEEDED_BANDS[1])).toBe("Từ 200,000đ đến dưới 500,000đ");
+    expect(formatBandRange(SEEDED_BANDS[2])).toBe("Từ 500,000đ trở lên");
   });
 });
 
@@ -304,8 +304,8 @@ describe("validateBands", () => {
     const result = validateBands(gap);
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected refusal");
-    expect(result.error).toContain("200.000");
-    expect(result.error).toContain("200.001");
+    expect(result.error).toContain("200,000");
+    expect(result.error).toContain("200,001");
   });
 
   it("refuses an overlap between bands", () => {

@@ -8,6 +8,8 @@
 // lib/shared/report-time.ts exists to guard against for timestamp columns. There
 // is no time-of-day here to misinterpret, so there is nothing to convert.
 
+import { formatNumber } from "@/lib/shared/format";
+
 export type Band = {
   min_unit_price: number;
   max_unit_price: number | null;
@@ -83,12 +85,12 @@ export function findBandForUnitPrice(bands: Band[], unitPrice: number): Band | n
 // the bound differently from each other or from what the code enforces.
 export function formatBandRange(band: Band): string {
   if (band.max_unit_price === null) {
-    return `Từ ${band.min_unit_price.toLocaleString("vi-VN")}đ trở lên`;
+    return `Từ ${formatNumber(band.min_unit_price)}đ trở lên`;
   }
   if (band.min_unit_price === 0) {
-    return `Dưới ${band.max_unit_price.toLocaleString("vi-VN")}đ`;
+    return `Dưới ${formatNumber(band.max_unit_price)}đ`;
   }
-  return `Từ ${band.min_unit_price.toLocaleString("vi-VN")}đ đến dưới ${band.max_unit_price.toLocaleString("vi-VN")}đ`;
+  return `Từ ${formatNumber(band.min_unit_price)}đ đến dưới ${formatNumber(band.max_unit_price)}đ`;
 }
 
 // Section 1: "Bands must not overlap or leave gaps; validate on save and
@@ -147,14 +149,14 @@ export function validateBands(bands: Band[]): { ok: true } | { ok: false; error:
   if (lowest.min_unit_price !== 0) {
     return {
       ok: false,
-      error: `Khung thấp nhất phải bắt đầu từ 0đ, hiện đang bắt đầu từ ${lowest.min_unit_price.toLocaleString("vi-VN")}đ -- nếu không, giá thấp hơn mức đó sẽ không có khung nào áp dụng`,
+      error: `Khung thấp nhất phải bắt đầu từ 0đ, hiện đang bắt đầu từ ${formatNumber(lowest.min_unit_price)}đ -- nếu không, giá thấp hơn mức đó sẽ không có khung nào áp dụng`,
     };
   }
   const highest = sorted[sorted.length - 1];
   if (highest.max_unit_price !== null) {
     return {
       ok: false,
-      error: `Phải có một khung không giới hạn trên để bao phủ mọi mức giá -- hiện khung cao nhất dừng ở ${highest.max_unit_price.toLocaleString("vi-VN")}đ`,
+      error: `Phải có một khung không giới hạn trên để bao phủ mọi mức giá -- hiện khung cao nhất dừng ở ${formatNumber(highest.max_unit_price)}đ`,
     };
   }
 

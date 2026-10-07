@@ -35,7 +35,7 @@ describe("buildItemStockById", () => {
   it("Sữa tươi Mlekovita (SPM-002): 42000 ml shows as 42.000 ml", () => {
     expect(build({ item: { id: "SPM-002" }, onHand: 42000, baseUnit: "U-ML" })).toEqual({
       kind: "figure",
-      text: "42.000 ml",
+      text: "42,000 ml",
       onHand: 42000,
     });
   });
@@ -87,16 +87,16 @@ describe("buildItemStockById", () => {
   });
 
   it("a fraction shows with a decimal comma", () => {
-    expect(build({ item: { id: "SPM-X" }, onHand: 0.5, baseUnit: "U-KG" })?.text).toBe("0,5 kg");
+    expect(build({ item: { id: "SPM-X" }, onHand: 0.5, baseUnit: "U-KG" })?.text).toBe("0.5 kg");
   });
 
   it("rounds to two decimals: 1234.567 kg", () => {
-    expect(build({ item: { id: "SPM-X" }, onHand: 1234.567, baseUnit: "U-KG" })?.text).toBe("1.234,57 kg");
+    expect(build({ item: { id: "SPM-X" }, onHand: 1234.567, baseUnit: "U-KG" })?.text).toBe("1,234.57 kg");
   });
 
   it("only an INACTIVE conversion: the figure alone, no trailing space", () => {
     expect(
       build({ item: { id: "SPM-002" }, onHand: 42000, baseUnit: "U-ML", status: "INACTIVE" })?.text,
-    ).toBe("42.000");
+    ).toBe("42,000");
   });
 });
