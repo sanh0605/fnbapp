@@ -36,6 +36,14 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 
 - Buttons, inputs, number inputs, tables, money boxes, page headers and back links each have one shared component in `components/ui/`; a page does not style its own button.
 - **Number inputs** (owner 2026-10-06, in chat): audit every one; the quantity box on the issue-slip create page is the model he likes (numeric keypad on a phone, comma for decimals, typed text kept, the converted amount shown beside it).
+- **The six templates are approved** — owner 2026-10-07, *"Đồng ý"*, after seeing a sample page with each template next to the styles in use today. Design: `docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md`. In short:
+  - Buttons: one brown main button per screen. Delete buttons have a red outline; the final confirm step is solid red.
+  - Number boxes: the box adds the thousands dots itself, a comma marks decimals, no up/down arrows, the mouse wheel never changes the number, and a mistake shows in red under the box.
+  - Table headers are plain grey text, not capitals. Every row cell has the same weight.
+  - Totals boxes are white with a thin border.
+- **A dot key in a box that takes decimals becomes a comma** (Opus 2026-10-07, so `1.5` typed on an English phone keypad reads one and a half, not 15). Pasted text treats dots as thousands marks. Money boxes still drop both marks (`BR-CASH-005`).
+- **Money boxes everywhere now, not after the financial reports** — owner 2026-10-07, *"Đúng"*, replacing the 2026-09-11 order that put the remaining money boxes after the financial reports.
+- **The POS keeps its own look:** it is used by touch.
 
 ### BR-UI-006 — Words that are too long get a short form the owner keeps
 

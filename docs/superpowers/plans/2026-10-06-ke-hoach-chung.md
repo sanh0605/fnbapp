@@ -89,7 +89,8 @@ Luật: `docs/02-rules/business-rules/screens.md`.
 
 - **Soát và dựng khung mẫu** (`BR-UI-005`): nút, ô nhập, ô số, bảng, khung tiền, đầu trang,
   mũi tên quay về. Đếm mọi kiểu đang có, cho chủ quán xem một trang mẫu gom đủ thành phần,
-  chốt rồi mới thay ở các trang.
+  chốt rồi mới thay ở các trang. Chủ quán duyệt trang mẫu 2026-10-07; thiết kế:
+  `docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md` (đợt K1–K6).
 - **Ô nhập số:** soát mọi ô. Mẫu là ô "Số lượng" của trang tạo phiếu xuất (chủ quán khen):
   bàn phím số trên điện thoại, dấu phẩy cho số lẻ, hiện "Quy ra" bên cạnh. Thêm: tự chấm
   hàng nghìn khi gõ, không có mũi tên tăng giảm, cuộn chuột không làm đổi số (ô
