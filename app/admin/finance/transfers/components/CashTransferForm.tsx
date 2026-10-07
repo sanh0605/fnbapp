@@ -117,8 +117,7 @@ export function CashTransferForm({
             name="amount"
             required
             defaultValue={transfer?.amount}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: 500,000"
+            example="500,000"
           />
         </div>
 
