@@ -119,7 +119,7 @@ export function CashEntryForm({
             required
             defaultValue={entry?.amount}
             className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: 150.000"
+            placeholder="VD: 150,000"
           />
         </div>
 
