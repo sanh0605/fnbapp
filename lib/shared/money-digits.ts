@@ -21,7 +21,7 @@ export function toMoneyDigits(raw: string): string {
   return toMoneyDigitsUncapped(raw).slice(0, 15);
 }
 
-// Dot every 3 digits from the right. String work only (no Intl, no Number)
+// Comma every 3 digits from the right (BR-UI-008). String work only (no Intl, no Number)
 // so it stays exact at any length, including past MAX_SAFE_INTEGER.
 export function groupThousands(digits: string): string {
   if (!digits) return "";
@@ -32,19 +32,21 @@ export function groupThousands(digits: string): string {
     end -= 3;
   }
   groups.unshift(digits.slice(0, end));
-  return groups.join(".");
+  return groups.join(",");
 }
 
 // Where to put the caret in `formatted` so it sits right after the same
-// count of digits that were to its left before formatting -- inserting or
-// removing a dot must not throw the caret to the end of the field.
-export function caretAfterFormat(digitsLeftOfCaret: number, formatted: string): number {
-  if (digitsLeftOfCaret <= 0) return 0;
+// count of digits and dots that were to its left before formatting --
+// inserting or removing a comma must not throw the caret to the end of the
+// field. Money text has no dot, so for money this counts digits only.
+export function caretAfterFormat(charsLeftOfCaret: number, formatted: string): number {
+  if (charsLeftOfCaret <= 0) return 0;
   let seen = 0;
   for (let i = 0; i < formatted.length; i++) {
-    if (formatted[i] >= "0" && formatted[i] <= "9") {
+    const ch = formatted[i];
+    if ((ch >= "0" && ch <= "9") || ch === ".") {
       seen++;
-      if (seen === digitsLeftOfCaret) return i + 1;
+      if (seen === charsLeftOfCaret) return i + 1;
     }
   }
   return formatted.length;
@@ -57,13 +59,13 @@ export interface DotDeleteResult {
   digitsLeftOfCaret: number;
 }
 
-// Backspace with the caret right after a dot, or Delete with it right
-// before one, would otherwise delete only the dot -- the digits are
-// unchanged and the key looks dead. The dot carries no value of its own, so
+// Backspace with the caret right after a thousands mark, or Delete with it
+// right before one, would otherwise delete only the mark -- the digits are
+// unchanged and the key looks dead. The mark carries no value of its own, so
 // remove the neighbouring digit instead: the one to the left for Backspace,
 // the one to the right for Delete. `digitsLeftOfCaret` is counted the same
 // way as everywhere else in this module (digits before the caret, ignoring
-// dots); the returned `digitsLeftOfCaret` is where the caret should sit in
+// thousands marks); the returned `digitsLeftOfCaret` is where the caret should sit in
 // the new digit string, ready for caretAfterFormat once it is reformatted.
 export function removeDigitAcrossDot(
   digits: string,
@@ -87,7 +89,7 @@ export function removeDigitAcrossDot(
   }
 
   // Removing the digit next to the dot can leave a leading zero, or all
-  // zeros -- e.g. "1.000.000" minus the leading "1" is "000000", not "0".
+  // zeros -- e.g. "1,000,000" minus the leading "1" is "000000", not "0".
   // Strip it the same way toMoneyDigits does (fix round 2), and pull the
   // caret back by however many zeros were stripped, never past the start.
   const stripped = newDigits.replace(/^0+/, "");
@@ -96,4 +98,39 @@ export function removeDigitAcrossDot(
     digits: stripped,
     digitsLeftOfCaret: Math.max(0, newDigitsLeftOfCaret - zerosStripped),
   };
+}
+
+const MAX_INTEGER_DIGITS = 15;
+
+// Typed or pasted text -> canonical number text: digits, at most one dot,
+// no commas (BR-UI-008: the comma is the thousands mark and is never typed).
+// null = reject the keystroke whole (too many decimals, or a 16th integer
+// digit) -- never cut it down, which would silently keep another number.
+export function normalizeNumberText(raw: string, decimals: number): string | null {
+  const kept = raw.replace(decimals > 0 ? /[^0-9.]/g : /[^0-9]/g, "");
+  const dot = kept.indexOf(".");
+  const intRaw = dot < 0 ? kept : kept.slice(0, dot);
+  const fraction = dot < 0 ? null : kept.slice(dot + 1).replace(/\./g, "");
+  if (fraction !== null && fraction.length > decimals) return null;
+
+  let intPart = intRaw.replace(/^0+(?=\d)/, "");
+  if (intPart === "" && fraction !== null) intPart = "0";
+  if (intPart.length > MAX_INTEGER_DIGITS) return null;
+  return fraction === null ? intPart : `${intPart}.${fraction}`;
+}
+
+// Canonical text -> shown text: commas in the whole part, decimals as typed
+// (a trailing dot stays while the user is still typing).
+export function groupNumberText(text: string): string {
+  if (!text) return "";
+  const dot = text.indexOf(".");
+  if (dot < 0) return groupThousands(text);
+  return `${groupThousands(text.slice(0, dot))}.${text.slice(dot + 1)}`;
+}
+
+// Canonical text -> number; empty means nothing typed yet.
+export function numberTextToValue(text: string): number | null {
+  if (text === "") return null;
+  const value = Number(text.endsWith(".") ? text.slice(0, -1) : text);
+  return Number.isFinite(value) ? value : null;
 }
