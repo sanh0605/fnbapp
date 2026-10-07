@@ -77,6 +77,25 @@ describe("addSupplier -- duplicate-name guard (Batch 1 follow-up, level 1)", () 
   });
 });
 
+describe("addSupplier -- links length limit (BR-UI-008)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.generateNewId.mockResolvedValue("NCC-999");
+    mocks.findAll.mockResolvedValue([]);
+  });
+
+  it("refuses links over 2,000 characters with a comma in the number", async () => {
+    const formData = baseFormData("Công ty ABC");
+    formData.set("links", "x".repeat(2001));
+
+    const res = await addSupplier(formData);
+
+    expect(res.error).toBe("Ghi chú / liên kết không được vượt quá 2,000 ký tự");
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+});
+
 // Batch 1 follow-up, level 2 (section A3b, BR-CATALOG-001), wired into
 // Suppliers the same way as Base_Ingredients.
 describe("addSupplier -- level 2, diacritic-stripped warning (Batch 1 follow-up)", () => {

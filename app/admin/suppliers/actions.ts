@@ -41,7 +41,7 @@ function validateSupplierFields(fields: {
   if (fields.phone.length > SUPPLIER_LIMITS.phone) return "Số điện thoại không được vượt quá 32 ký tự";
   if (fields.taxId.length > SUPPLIER_LIMITS.taxId) return "Mã số thuế không được vượt quá 64 ký tự";
   if (fields.address.length > SUPPLIER_LIMITS.address) return "Địa chỉ không được vượt quá 500 ký tự";
-  if (fields.links.length > SUPPLIER_LIMITS.links) return "Ghi chú / liên kết không được vượt quá 2.000 ký tự";
+  if (fields.links.length > SUPPLIER_LIMITS.links) return "Ghi chú / liên kết không được vượt quá 2,000 ký tự";
   return null;
 }
 
