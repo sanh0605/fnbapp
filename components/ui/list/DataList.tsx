@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { confirm } from "@/lib/shared/dialog";
+import { Button } from "@/components/ui/Button";
+import { TotalCard } from "@/components/ui/Table";
 import type { SortDir } from "./sort";
 
 export interface DataColumn<T> {
@@ -39,6 +41,10 @@ export interface DataListProps<T> {
     confirmMessage: (count: number) => string;
     remove: (id: string) => Promise<RemoveResult>;
     canRemove?: (row: T) => boolean; // omitted → every row is removable
+  };
+  totals?: {
+    label: string;
+    values: Record<string, React.ReactNode>;
   };
   empty: React.ReactNode;
 }
@@ -116,6 +122,7 @@ export function DataList<T>({
   renderCard,
   sort,
   removal,
+  totals,
   empty,
 }: DataListProps<T>): JSX.Element {
   const router = useRouter();
@@ -308,22 +315,22 @@ export function DataList<T>({
               : `Đã chọn ${selectedCount}`}
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="delete"
               disabled={!!deletingProgress}
               onClick={handleRemoveSelected}
-              className="bg-danger text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-danger/90 disabled:opacity-50 transition min-h-[44px] flex items-center justify-center shadow-sm"
             >
               {removal.verb} {selectedCount} dòng đã chọn
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               disabled={!!deletingProgress}
               onClick={() => setSelectedIds(new Set())}
-              className="text-text-secondary hover:text-text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-surface-secondary transition min-h-[44px] flex items-center justify-center border border-border"
             >
               Bỏ chọn
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -378,9 +385,9 @@ export function DataList<T>({
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
+              <tr className="bg-page border-b border-border">
                 {removal && (
-                  <th className="px-4 py-4 w-12 text-center">
+                  <th className="px-4 py-4 w-12 text-center text-[13px] font-medium text-text-secondary">
                     {hasRemovableRows && (
                       <input
                         type="checkbox"
@@ -406,7 +413,7 @@ export function DataList<T>({
                     <th
                       key={col.key}
                       aria-sort={ariaSort}
-                      className={`px-6 py-4 font-bold text-[11px] ${
+                      className={`px-6 py-4 text-[13px] font-medium text-text-secondary ${
                         col.align === "right" ? "text-right" : ""
                       } ${col.secondary ? "hidden xl:table-cell" : ""}`}
                     >
@@ -431,13 +438,47 @@ export function DataList<T>({
                   );
                 })}
                 {removal && (
-                  <th className="px-4 py-4 w-16 text-center">
+                  <th className="px-4 py-4 w-16 text-center text-[13px] font-medium text-text-secondary">
                     <span className="sr-only">{removal.verb}</span>
                   </th>
                 )}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
+              {totals && (
+                <tr className="bg-primary-soft">
+                  {removal && <td className="px-4 py-4" />}
+                  {columns.map((col) => {
+                    const hasVal =
+                      totals.values[col.key] !== undefined &&
+                      totals.values[col.key] !== null;
+                    const isFirstEmpty =
+                      !hasVal &&
+                      columns.find(
+                        (c) =>
+                          totals.values[c.key] === undefined ||
+                          totals.values[c.key] === null
+                      )?.key === col.key;
+                    const content = hasVal
+                      ? totals.values[col.key]
+                      : isFirstEmpty
+                      ? totals.label
+                      : null;
+
+                    return (
+                      <td
+                        key={col.key}
+                        className={`px-6 py-4 text-sm font-normal text-text-primary ${
+                          col.align === "right" ? "text-right tabular-nums" : ""
+                        } ${col.secondary ? "hidden xl:table-cell" : ""}`}
+                      >
+                        {content}
+                      </td>
+                    );
+                  })}
+                  {removal && <td className="px-4 py-4" />}
+                </tr>
+              )}
               {rows.map((row) => {
                 const id = getId(row);
                 const name = getName(row);
@@ -469,8 +510,8 @@ export function DataList<T>({
                     {columns.map((col, idx) => (
                       <td
                         key={col.key}
-                        className={`px-6 py-4 text-sm text-text-primary ${
-                          col.align === "right" ? "text-right" : ""
+                        className={`px-6 py-4 text-sm font-normal text-text-primary ${
+                          col.align === "right" ? "text-right tabular-nums" : ""
                         } ${col.secondary ? "hidden xl:table-cell" : ""}`}
                       >
                         {idx === 0 && (
@@ -512,6 +553,21 @@ export function DataList<T>({
 
         {/* Phone Cards */}
         <div className="md:hidden flex flex-col divide-y divide-border">
+          {totals && (
+            <TotalCard
+              title={totals.label}
+              items={columns
+                .filter(
+                  (col) =>
+                    totals.values[col.key] !== undefined &&
+                    totals.values[col.key] !== null
+                )
+                .map((col) => ({
+                  label: col.header,
+                  value: totals.values[col.key],
+                }))}
+            />
+          )}
           {rows.map((row) => {
             const id = getId(row);
             const name = getName(row);
