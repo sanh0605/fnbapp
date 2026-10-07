@@ -222,7 +222,7 @@ export default function OrderTable({
     <>
       {hasActiveFilters && (
         <Button
-          variant="ghost" size="sm" className="!text-danger hover:!bg-danger/10"
+          variant="delete"
           onClick={clearFilters}
         >
           Xóa bộ lọc
@@ -469,7 +469,6 @@ export default function OrderTable({
           <div className="flex gap-2">
             <Button
               variant="secondary"
-              size="sm"
               onClick={() => handleFilterChange({ page: Math.max(1, currentPage - 1) })}
               disabled={currentPage === 1}
             >
@@ -480,7 +479,6 @@ export default function OrderTable({
             </div>
             <Button
               variant="secondary"
-              size="sm"
               onClick={() => handleFilterChange({ page: Math.min(totalPages, currentPage + 1) })}
               disabled={currentPage === totalPages}
             >

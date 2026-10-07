@@ -161,7 +161,7 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
               <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
               Các Size
             </h3>
-            <Button variant="secondary" size="sm" type="button" onClick={addVariant} className="min-h-[44px]">
+            <Button variant="secondary" type="button" onClick={addVariant} className="min-h-[44px]">
               <Plus className="w-4 h-4 mr-1"/> Thêm Size
             </Button>
           </div>
@@ -202,8 +202,7 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
                   </div>
                   {variants.length > 1 && (
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      variant="secondary"
                       type="button"
                       className="!text-danger hover:!bg-danger/10 min-h-[44px] self-end sm:self-auto"
                       onClick={() => removeVariant(vIdx)}

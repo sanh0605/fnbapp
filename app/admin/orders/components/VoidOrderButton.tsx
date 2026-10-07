@@ -10,7 +10,7 @@ interface VoidOrderButtonProps {
   orderNo: string;
   disabled?: boolean;
   onVoided?: () => void;
-  variant?: "ghost" | "secondary" | "primary";
+  variant?: "secondary" | "primary" | "delete" | "danger";
   className?: string;
 }
 
@@ -19,7 +19,7 @@ export function VoidOrderButton({
   orderNo,
   disabled,
   onVoided,
-  variant = "ghost",
+  variant = "secondary",
   className = "",
 }: VoidOrderButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +58,6 @@ export function VoidOrderButton({
       <Button
         type="button"
         variant={variant}
-        size="sm"
         className={`!text-danger hover:!bg-danger/10 min-h-[44px] ${className}`}
         onClick={handleOpen}
         disabled={disabled}

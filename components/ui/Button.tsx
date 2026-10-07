@@ -1,42 +1,66 @@
-import React from 'react';
-import { Loader2 } from 'lucide-react';
+import React from "react";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'warning';
-  size?: 'sm' | 'md' | 'lg';
+type Variant = "primary" | "secondary" | "delete" | "danger";
+
+type CommonProps = {
+  variant?: Variant;
   loading?: boolean;
-}
+  className?: string;
+  children?: React.ReactNode;
+};
 
-export function Button({
-  className = '',
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  disabled,
-  children,
-  ...props
-}: ButtonProps) {
-  const baseStyles = "inline-flex items-center justify-center font-medium rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100";
-  
-  const variants = {
-    primary: "bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active shadow-sm",
-    secondary: "bg-surface-secondary text-text-primary hover:bg-border active:bg-border",
-    ghost: "bg-transparent text-primary hover:bg-primary-soft active:bg-primary-soft",
-    danger: "bg-danger text-white hover:bg-danger/90 active:bg-danger/80 shadow-sm",
-    warning: "bg-warning text-white hover:bg-warning/90 active:bg-warning/80 shadow-sm",
-  };
-  
-  const sizes = {
-    sm: "text-xs px-3 py-1.5 min-h-[32px]",
-    md: "text-sm px-4 py-2 min-h-[44px]",
-    lg: "text-base px-6 py-3 min-h-[48px]",
-  };
+export type ButtonProps =
+  | (CommonProps & { href?: undefined } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "className" | "children">)
+  | (CommonProps & { href: string } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "className" | "children" | "href">);
 
-  const classes = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`;
+const variantStyles: Record<Variant, string> = {
+  primary: "bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active",
+  secondary: "bg-surface-card text-text-primary border border-border hover:bg-page",
+  delete: "bg-surface-card text-danger border border-danger hover:bg-danger/5",
+  danger: "bg-danger text-white hover:bg-danger/90",
+};
+
+const baseStyle =
+  "inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-button text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-50 disabled:pointer-events-none";
+
+export function Button(props: ButtonProps): JSX.Element {
+  const { variant = "primary", loading = false, className = "", children } = props;
+  const classes = `${baseStyle} ${variantStyles[variant]} ${className}`.trim();
+
+  if (props.href !== undefined) {
+    const {
+      href,
+      variant: _variant,
+      loading: _loading,
+      className: _className,
+      children: _children,
+      ...anchorProps
+    } = props;
+    return (
+      <Link href={href} className={classes} {...anchorProps}>
+        {children}
+      </Link>
+    );
+  }
+
+  const {
+    variant: _variant,
+    loading: _loading,
+    className: _className,
+    children: _children,
+    disabled,
+    ...buttonProps
+  } = props;
 
   return (
-    <button className={classes} disabled={disabled || loading} {...props}>
-      {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+    <button
+      className={classes}
+      disabled={disabled || loading}
+      {...buttonProps}
+    >
+      {loading && <Loader2 className="w-4 h-4 animate-spin" />}
       {children}
     </button>
   );

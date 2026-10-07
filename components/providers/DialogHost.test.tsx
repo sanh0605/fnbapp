@@ -80,10 +80,11 @@ describe("components/DialogHost", () => {
     const icon = iconContainer?.querySelector(".text-warning");
     expect(icon).not.toBeNull();
 
-    // Check button variant warning
+    // The OK button is the final confirm step: solid red. BR-UI-005 (spec 2.1)
+    // folded the button's "warning" kind, always the same red, into "danger".
     const okBtn = dialog?.querySelector("button:not([aria-label])");
     expect(okBtn).not.toBeNull();
-    expect(okBtn?.className).toContain("bg-warning");
+    expect(okBtn?.className.split(/\s+/)).toContain("bg-danger");
   });
 
   it("renders danger variant correctly", async () => {

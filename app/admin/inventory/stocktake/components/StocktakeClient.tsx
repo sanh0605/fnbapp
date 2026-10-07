@@ -338,7 +338,7 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
             <Button variant="secondary" onClick={() => setPreview(null)} disabled={applying}>
               Quay lại chỉnh sửa
             </Button>
-            <Button variant="warning" onClick={handleApply} loading={applying}>
+            <Button variant="primary" onClick={handleApply} loading={applying}>
               Xác nhận áp dụng
             </Button>
           </div>
