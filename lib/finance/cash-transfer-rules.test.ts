@@ -36,9 +36,14 @@ describe("parseCashTransfer", () => {
     expect(parseCashTransfer({ ...good, from: "BA-001", to: "BA-002" }, ACTIVE).ok).toBe(true);
   });
 
-  it("accepts 150.000 as 150000", () => {
-    const r = parseCashTransfer({ ...good, amount: "150.000" }, ACTIVE);
+  it("accepts 150,000 as 150000", () => {
+    const r = parseCashTransfer({ ...good, amount: "150,000" }, ACTIVE);
     expect(r.ok && r.value.amount).toBe(150000);
+  });
+
+  it("refuses 150.000 (a dot marks decimals, BR-UI-008)", () => {
+    const r = parseCashTransfer({ ...good, amount: "150.000" }, ACTIVE);
+    expect(r.ok).toBe(false);
   });
 
   it("refuses a missing or unreal date with 'Chọn ngày chuyển'", () => {

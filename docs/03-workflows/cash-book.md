@@ -7,6 +7,8 @@ tables: Cash_Categories, Bank_Accounts, Cash_Entries, Cash_Transfers
 brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006, BR-CASH-007, BR-CASH-008
 ```
 
+**Reviewed — 2026-10-07 (`BR-UI-008`):** `parseAmountVn` in `lib/finance/cash-entry-rules.ts` now reads `150,000` (comma thousands) and refuses `150.000`, because a dot marks decimals and money is whole đồng. The amount box posts plain digits, so nothing a user types changes; only the server backstop's accepted shape and its message do.
+
 **Behaviour change — 2026-10-04 (money flow, migration `0107`):** the ledger
 now shows every movement of money, not only the hand-typed rows
 (`BR-CASH-001` as changed 2026-10-04).
