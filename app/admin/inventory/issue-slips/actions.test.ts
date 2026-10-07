@@ -472,7 +472,7 @@ describe("getIssueSlipDetail", () => {
     mockSlipTables();
     const detail = await issueSlipActions.getIssueSlipDetail("ISL-00076");
     expect(detail?.lines.map(l => [l.issueId, l.name, l.quantityText])).toEqual([
-      ["ISS-00192", "Sữa yến mạch Oatside", "2 Hộp (2.000 ml)"],
+      ["ISS-00192", "Sữa yến mạch Oatside", "2 Hộp (2,000 ml)"],
       ["ISS-00196", "Giấy lót chống tràn", "1 Xấp"],
     ]);
     expect(detail?.canEdit).toBe(true);

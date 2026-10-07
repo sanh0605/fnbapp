@@ -65,6 +65,6 @@ describe("ItemCard unit label (OPEN-ITEMS 41)", () => {
       s => s.textContent?.trim() === "Đã xuất",
     );
     const value = label?.nextElementSibling;
-    expect(value?.textContent?.trim()).toBe("100,00 g");
+    expect(value?.textContent?.trim()).toBe("100.00 g");
   });
 });

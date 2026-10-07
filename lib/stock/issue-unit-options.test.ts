@@ -15,7 +15,7 @@ describe("issue unit options", () => {
       { key: "BASE", label: "ml (lẻ)", factor: 1, unitName: "ml" },
     ]);
     expect(initialUnitQuantity(2000, o)).toEqual({ key: "QD-044", quantity: 2 });
-    expect(describeQuantity(2000, "ml", o)).toBe("2 Hộp (2.000 ml)");
+    expect(describeQuantity(2000, "ml", o)).toBe("2 Hộp (2,000 ml)");
   });
 
   it("Giấy lót chống tràn: Xấp = 1 Xấp is a single option", () => {

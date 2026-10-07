@@ -201,7 +201,7 @@ describe("ProductsClient", () => {
     expect(uniqueCodes[1]).toBe("PROD-001");
   });
 
-  it("shows size and price text such as '360ml 20.000'", () => {
+  it("shows size and price text such as '360ml 20,000'", () => {
     mockSearchParams = new URLSearchParams();
     render(
       <ProductsClient
@@ -210,7 +210,7 @@ describe("ProductsClient", () => {
       />,
     );
 
-    expect(screen.getAllByText(/360ml 20\.000/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/360ml 20,000/).length).toBeGreaterThan(0);
   });
 
   it("shows other-status empty state when search finds match in another status", () => {

@@ -35,15 +35,12 @@ describe("parseCashEntry", () => {
       .toEqual({ ok: false, error: "Số tiền phải lớn hơn 0" });
   });
 
-  // I1 (final-review.md): "150.000" typed the Vietnamese way for one hundred
-  // fifty thousand was silently read as 150 by Number("150.000") -- a 1000x
-  // understatement with no warning. Only digits, or dot-separated groups of
-  // exactly three digits, are accepted now; the dot means "thousands
-  // separator" and nothing else -- no decimal point, no comma, no
-  // scientific or hex notation, no malformed grouping.
+  // BR-UI-008 (owner 2026-10-07): the dot now marks decimals, and money is
+  // whole đồng, so "150.000" is refused instead of read as 150000. Only
+  // digits, or comma-separated groups of exactly three digits, are accepted.
   const AMOUNT_FORMAT_ERROR =
-    "Số tiền chỉ gồm chữ số; dấu chấm chỉ dùng để chia hàng nghìn (ví dụ 150.000)";
-  it.each(["1500.5", "150,000", "1e6", "0x10", "-5", "abc", "1.50.000", "-5000"])(
+    "Số tiền chỉ gồm chữ số; dấu phẩy chỉ dùng để chia hàng nghìn (ví dụ 150,000)";
+  it.each(["1500.5", "150.000", "1e6", "0x10", "-5", "abc", "1,50,000", "-5000"])(
     "rejects amount %s as the wrong format, not as non-positive",
     (amount) => {
       expect(parseCashEntry({ ...valid, amount }))
@@ -53,9 +50,10 @@ describe("parseCashEntry", () => {
 
   it.each([
     ["250000", 250000],
-    ["150.000", 150000],
-    [" 150.000 ", 150000],
-    ["1.371.000", 1371000],
+    ["150,000", 150000],
+    [" 150,000 ", 150000],
+    ["1,371,000", 1371000],
+    ["1,250,000", 1250000],
   ])("accepts %s as %i dong", (amount, expected) => {
     const r = parseCashEntry({ ...valid, amount });
     expect(r.ok).toBe(true);

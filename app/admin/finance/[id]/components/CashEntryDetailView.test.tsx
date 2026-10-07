@@ -47,7 +47,7 @@ const sampleEntry = {
 } as unknown as DBCashEntry;
 
 describe("CashEntryDetailView", () => {
-  it("renders fields properly including formatted amount '2.443.400đ'", () => {
+  it("renders fields properly including formatted amount '2,443,400đ'", () => {
     render(
       <CashEntryDetailView
         entry={sampleEntry}
@@ -62,7 +62,7 @@ describe("CashEntryDetailView", () => {
     expect(screen.getAllByText("30/09/2026").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Vốn góp").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Thu").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("2.443.400đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("2,443,400đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Tiền mặt").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Góp vốn tháng 9").length).toBeGreaterThan(0);
     expect(screen.getAllByText("admin").length).toBeGreaterThan(0);

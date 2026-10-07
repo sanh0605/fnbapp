@@ -48,7 +48,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 
 ### BR-DATA-005 — Compute exactly, round only on screen, store inputs rather than results
 
-**Status:** `APPROVED` — owner decision 2026-09-11. Withdraws the directional display rounding of 2026-07-30 (cost rounded up, stock rounded down, "never flatter the business"). **Implemented 2026-09-11 for display and depreciation** (`lib/reports/display-rounding.ts`, `lib/assets/asset-depreciation.ts`). The items under "Where the code does not follow this yet" below are still open.
+**Status:** `APPROVED` — owner decision 2026-09-11. Withdraws the directional display rounding of 2026-07-30 (cost rounded up, stock rounded down, "never flatter the business"). **Implemented 2026-09-11 for display and depreciation** (`lib/reports/display-rounding.ts`, `lib/assets/asset-depreciation.ts`). The items under "Where the code does not follow this yet" below are still open. Since 2026-10-07 a comma separates thousands and a dot marks decimals (`BR-UI-008`); the examples below keep the old marks.
 
 *"Tất cả mọi thứ đều phải được tính chính xác. Đối với hiển thị trên hệ thống thì làm tròn đến chữ số hàng đơn vị và không có số thập phân. Đối với dữ liệu lưu trữ thì nên lưu số để backend tính toán chứ không nên lưu kết quả."*
 
@@ -58,13 +58,13 @@ If a post-apply invariant fails, stop further writes and compare against the app
 - **Store the numbers a figure comes from, not the figure.** Reports read source rows and recompute on every read.
 - **Money that really changed hands stays whole đồng:** an order's total, a discount on a bill, what was paid to a supplier. Those record what happened; nobody pays half a đồng.
 - **Percentages and larger-unit quantities keep decimals** (owner decision 2026-09-11, the same day: *"% thì nên hiện 2 số thập phân"*): a percentage shows exactly two decimals ("18,13%"); a quantity shown in a larger unit keeps up to two ("1,5 hộp", "20,62 cây", the 2026-08-30 rule in `lib/stock/issue-slip-onhand-display.ts`). Only money and quantities in the base unit are whole.
-- **On a chart, money is shortened** (owner decision 2026-09-12: *"hiển thị có đơn vị là k, triệu thì đơn vị là tr"*): "k" for thousands, "tr" for millions, up to two decimals with a comma ("100k", "100,12k", "100tr", "100,12tr"), no space before the unit. One chart uses one unit for every figure it draws: "tr" when at least half of the months with a non-zero profit are a million or more in size, otherwise "k". The owner typed the decimals with a dot; the app writes a comma, because a dot is its thousands mark. Code: `lib/reports/compact-money.ts`.
+- **On a chart, money is shortened** (owner decision 2026-09-12: *"hiển thị có đơn vị là k, triệu thì đơn vị là tr"*): "k" for thousands, "tr" for millions, up to two decimals ("100k", "100.12k", "100tr", "100.12tr"), no space before the unit. One chart uses one unit for every figure it draws: "tr" when at least half of the months with a non-zero profit are a million or more in size, otherwise "k". The owner typed the decimals with a dot; until 2026-10-08 the app wrote a comma, and since then it writes the dot (`BR-UI-008`). Code: `lib/reports/compact-money.ts`.
 
 **Where the code does not follow this yet** (measured 2026-09-11; the money items each under 1đ per line). These follow the P&L as their own plan, because the first two need a migration on `assets`:
 - `lib/costing/purchase-order-cost-allocation.ts` rounds each purchase line's share of shipping and discounts to a whole đồng (`BR-COGS-006`).
 - `assets.total_cost` and `assets.unit_cost` (bigint), and `purchase_order_lines.unit_price` (bigint, `round(subtotal ÷ quantity)`), store results. The depreciation band is looked up from the rounded `unit_cost`.
 - `lib/sales/order-math.ts` rounds each item's and topping's share of an order discount for the sales report.
-- Three percentages show one decimal instead of two: the outlet share in the sales report (`lib/reports/outlet-breakdown-table.ts`), and the change against the previous period on the dashboard (`app/admin/page.tsx`) and the daily report (`app/admin/reports/daily/page.tsx`). The last two also print a dot, not the Vietnamese comma ("12.5%").
+- Three percentages show one decimal instead of two: the outlet share in the sales report (`lib/reports/outlet-breakdown-table.ts`), and the change against the previous period on the dashboard (`app/admin/page.tsx`) and the daily report (`app/admin/reports/daily/page.tsx`). Since 2026-10-08 all three write the dot as decimal mark, as `BR-UI-008` requires ("12.5%").
 
 
 ### BR-DATA-006 — Dates show as dd/mm/yyyy; date filters pick a day, never a time

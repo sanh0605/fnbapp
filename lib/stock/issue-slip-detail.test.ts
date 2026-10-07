@@ -28,7 +28,7 @@ describe("buildIssueSlipDetail", () => {
   it("ISL-00076: lines, values, editable", () => {
     const d = buildIssueSlipDetail(input);
     expect(d.lines.map(l => [l.name, l.quantityText, l.value])).toEqual([
-      ["Sữa yến mạch Oatside", "2 Hộp (2.000 ml)", 73606], ["Giấy lót chống tràn", "1 Xấp", 36405]]);
+      ["Sữa yến mạch Oatside", "2 Hộp (2,000 ml)", 73606], ["Giấy lót chống tràn", "1 Xấp", 36405]]);
     expect(d).toMatchObject({ totalValue: 110011, canEdit: true, cancellation: null, lock: null, createdByName: "tuyen2612" });
   });
 

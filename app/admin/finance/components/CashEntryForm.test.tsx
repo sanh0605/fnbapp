@@ -35,12 +35,12 @@ describe("CashEntryForm amount field (BR-CASH-005)", () => {
   // digits for the server.
   it("gives a numeric keypad and submits plain digits, not the dotted display value", () => {
     render(<CashEntryForm categories={CATEGORIES} accounts={[]} />);
-    const visible = screen.getByPlaceholderText("VD: 150.000") as HTMLInputElement;
+    const visible = screen.getByPlaceholderText("VD: 150,000") as HTMLInputElement;
     expect(visible.getAttribute("name")).toBeNull();
     expect(visible.getAttribute("inputMode")).toBe("numeric");
 
     fireEvent.change(visible, { target: { value: "150000" } });
-    expect(visible.value).toBe("150.000");
+    expect(visible.value).toBe("150,000");
 
     const hidden = document.querySelector('input[type="hidden"][name="amount"]') as HTMLInputElement;
     expect(hidden.value).toBe("150000");

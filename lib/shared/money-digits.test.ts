@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { toMoneyDigits, groupThousands, caretAfterFormat, removeDigitAcrossDot } from "./money-digits";
+import {
+  toMoneyDigits,
+  groupThousands,
+  caretAfterFormat,
+  removeDigitAcrossDot,
+  groupNumberText,
+  normalizeNumberText,
+  numberTextToValue,
+} from "./money-digits";
 
 describe("BR-CASH-005 toMoneyDigits", () => {
   it("keeps only digits, dropping letters, dots, commas, dashes and spaces", () => {
@@ -30,19 +38,19 @@ describe("BR-CASH-005 toMoneyDigits", () => {
 });
 
 describe("BR-CASH-005 groupThousands", () => {
-  it("dots every 3 digits from the right, pure string work", () => {
+  it("commas every 3 digits from the right, pure string work", () => {
     expect(groupThousands("1")).toBe("1");
-    expect(groupThousands("1000")).toBe("1.000");
-    expect(groupThousands("100000000000000")).toBe("100.000.000.000.000");
+    expect(groupThousands("1000")).toBe("1,000");
+    expect(groupThousands("100000000000000")).toBe("100,000,000,000,000");
   });
 
   it("matches the typing sequence 1,5,0,0,0,0", () => {
     expect(groupThousands("1")).toBe("1");
     expect(groupThousands("15")).toBe("15");
     expect(groupThousands("150")).toBe("150");
-    expect(groupThousands("1500")).toBe("1.500");
-    expect(groupThousands("15000")).toBe("15.000");
-    expect(groupThousands("150000")).toBe("150.000");
+    expect(groupThousands("1500")).toBe("1,500");
+    expect(groupThousands("15000")).toBe("15,000");
+    expect(groupThousands("150000")).toBe("150,000");
   });
 
   it("returns an empty string for an empty digit string", () => {
@@ -54,15 +62,15 @@ describe("BR-CASH-005 caretAfterFormat", () => {
   it("places the caret right after the same count of digits in the formatted string", () => {
     // "1.950.000" with 2 digits to the left of the caret ("1", "9") -> caret
     // lands right after the "9", i.e. index 3.
-    expect(caretAfterFormat(2, "1.950.000")).toBe(3);
+    expect(caretAfterFormat(2, "1,950,000")).toBe(3);
   });
 
   it("clamps to the end when the count exceeds the digits available", () => {
-    expect(caretAfterFormat(99, "150.000")).toBe("150.000".length);
+    expect(caretAfterFormat(99, "150,000")).toBe("150,000".length);
   });
 
   it("returns 0 when no digits are left of the caret", () => {
-    expect(caretAfterFormat(0, "150.000")).toBe(0);
+    expect(caretAfterFormat(0, "150,000")).toBe(0);
   });
 });
 
@@ -74,7 +82,7 @@ describe("BR-CASH-005 fix round 1 (item 3) removeDigitAcrossDot", () => {
     const result = removeDigitAcrossDot("1500000", 1, "backward");
     expect(result.digits).toBe("500000");
     expect(result.digitsLeftOfCaret).toBe(0);
-    expect(groupThousands(result.digits)).toBe("500.000");
+    expect(groupThousands(result.digits)).toBe("500,000");
     expect(caretAfterFormat(result.digitsLeftOfCaret, groupThousands(result.digits))).toBe(0);
   });
 
@@ -86,7 +94,7 @@ describe("BR-CASH-005 fix round 1 (item 3) removeDigitAcrossDot", () => {
     const result = removeDigitAcrossDot("1500000", 4, "forward");
     expect(result.digits).toBe("150000");
     expect(result.digitsLeftOfCaret).toBe(4);
-    expect(groupThousands(result.digits)).toBe("150.000");
+    expect(groupThousands(result.digits)).toBe("150,000");
     // Reported to the coordinator: the digit removed was to the right of
     // the caret, so the digit count left of the caret is unchanged (still
     // 4) -- caretAfterFormat then lands at 5, not 3. Regrouping the
@@ -118,6 +126,73 @@ describe("BR-CASH-005 fix round 2: removeDigitAcrossDot strips leading zeros", (
     const result = removeDigitAcrossDot("1050000", 1, "backward");
     expect(result.digits).toBe("50000");
     expect(result.digitsLeftOfCaret).toBe(0);
-    expect(groupThousands(result.digits)).toBe("50.000");
+    expect(groupThousands(result.digits)).toBe("50,000");
+  });
+});
+
+// BR-UI-008 (owner 2026-10-07): the dot is the only mark typed, for
+// decimals; a comma is the thousands mark and is never accepted as typed.
+describe("normalizeNumberText", () => {
+  it("keeps digits and one dot", () => {
+    expect(normalizeNumberText("1250.5", 3)).toBe("1250.5");
+  });
+  it("drops commas, so a pasted grouped number reads right", () => {
+    expect(normalizeNumberText("1,250.5", 3)).toBe("1250.5");
+    expect(normalizeNumberText("1,250.5abc", 3)).toBe("1250.5");
+  });
+  it("drops a second dot", () => {
+    expect(normalizeNumberText("1.2.5", 3)).toBe("1.25");
+  });
+  it("reads a leading dot as 0.", () => {
+    expect(normalizeNumberText(".5", 3)).toBe("0.5");
+    expect(normalizeNumberText(".", 3)).toBe("0.");
+  });
+  it("keeps a lone zero and 0. while typing, strips other leading zeros", () => {
+    expect(normalizeNumberText("0", 3)).toBe("0");
+    expect(normalizeNumberText("0.", 3)).toBe("0.");
+    expect(normalizeNumberText("007", 3)).toBe("7");
+    expect(normalizeNumberText("00.5", 3)).toBe("0.5");
+  });
+  it("rejects a fourth decimal when three are allowed", () => {
+    expect(normalizeNumberText("1.2345", 3)).toBeNull();
+  });
+  it("drops every dot when no decimals are allowed", () => {
+    expect(normalizeNumberText("150.5", 0)).toBe("1505");
+  });
+  it("rejects a 16th integer digit", () => {
+    expect(normalizeNumberText("1234567890123456", 3)).toBeNull();
+    expect(normalizeNumberText("123456789012345", 3)).toBe("123456789012345");
+  });
+  it("returns empty for empty or mark-only input", () => {
+    expect(normalizeNumberText("", 3)).toBe("");
+    expect(normalizeNumberText(",", 3)).toBe("");
+  });
+});
+
+describe("groupNumberText", () => {
+  it("puts commas in the whole part and keeps the decimals as typed", () => {
+    expect(groupNumberText("1250.5")).toBe("1,250.5");
+    expect(groupNumberText("1250.")).toBe("1,250.");
+    expect(groupNumberText("1250000")).toBe("1,250,000");
+    expect(groupNumberText("0.500")).toBe("0.500");
+    expect(groupNumberText("")).toBe("");
+  });
+});
+
+describe("numberTextToValue", () => {
+  it("reads canonical text", () => {
+    expect(numberTextToValue("1250.5")).toBe(1250.5);
+    expect(numberTextToValue("5.")).toBe(5);
+    expect(numberTextToValue("0.")).toBe(0);
+  });
+  it("is null when empty", () => {
+    expect(numberTextToValue("")).toBeNull();
+  });
+});
+
+describe("caretAfterFormat with decimals", () => {
+  it("counts the dot as a character the caret can sit after", () => {
+    // "1250.5" with the caret after "1250." (5 chars) -> after "1,250." (6)
+    expect(caretAfterFormat(5, "1,250.5")).toBe(6);
   });
 });

@@ -34,10 +34,10 @@ describe("shownMoney", () => {
 
 describe("cellText", () => {
   it("shows a cost row's value with a minus", () => {
-    expect(cellText(costRow, 46_418_990)).toBe("-46.418.990");
+    expect(cellText(costRow, 46_418_990)).toBe("-46,418,990");
   });
   it("shows a net row's negative value with a minus", () => {
-    expect(cellText(netRow, -32_372_964)).toBe("-32.372.964");
+    expect(cellText(netRow, -32_372_964)).toBe("-32,372,964");
   });
   it("shows a money cell that is exactly 0 as an en dash", () => {
     expect(cellText(costRow, 0)).toBe("–");
@@ -47,7 +47,7 @@ describe("cellText", () => {
     expect(cellText(marginRow, null)).toBe("---");
   });
   it("shows a percent row's value via formatPercent, unnegated by isCostRow", () => {
-    expect(cellText(marginRow, -183.1)).toBe("-183,10%");
+    expect(cellText(marginRow, -183.1)).toBe("-183.10%");
   });
 });
 

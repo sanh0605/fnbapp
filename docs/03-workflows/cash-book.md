@@ -7,6 +7,8 @@ tables: Cash_Categories, Bank_Accounts, Cash_Entries, Cash_Transfers
 brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006, BR-CASH-007, BR-CASH-008
 ```
 
+**Reviewed — 2026-10-07 (`BR-UI-008`):** `parseAmountVn` in `lib/finance/cash-entry-rules.ts` now reads `150,000` (comma thousands) and refuses `150.000`, because a dot marks decimals and money is whole đồng. The amount box posts plain digits, so nothing a user types changes; only the server backstop's accepted shape and its message do.
+
 **Behaviour change — 2026-10-04 (money flow, migration `0107`):** the ledger
 now shows every movement of money, not only the hand-typed rows
 (`BR-CASH-001` as changed 2026-10-04).
@@ -109,12 +111,12 @@ the two settings screens where they still apply.
    (`lib/finance/cash-entry-rules.ts`): `entry_date` and `category_id`
    required (the add form defaults the date to today in Asia/Saigon);
    `amount` must be a positive whole number of đồng, typed as plain digits
-   (`150000`) or dot-grouped thousands (`150.000`) — anything else ("1500.5",
-   "150,000", "1e6", a minus sign) is refused, never rounded, and so is a value
+   (`150000`) or comma-grouped thousands (`150,000`, since 2026-10-08, `BR-UI-008`) — anything else ("1500.5",
+   "150.000", "1e6", a minus sign) is refused, never rounded, and so is a value
    beyond `Number.MAX_SAFE_INTEGER` (`BR-CASH-005`). That server check is the
    backstop: the amount box itself (`components/ui/MoneyInput.tsx`) takes
-   digits only, drops anything else typed or pasted, shows the dots as the
-   owner types (`150000` → `150.000`), and submits plain digits. `payment_method` is `CASH` or
+   digits only, drops anything else typed or pasted, shows the commas as the
+   owner types (`150000` → `150,000`), and submits plain digits. `payment_method` is `CASH` or
    `BANK_TRANSFER`; `bank_account_id` is required when `BANK_TRANSFER` and
    forced to `null` for `CASH` even if a stale value arrives from the form;
    `note` is optional. On the category screen, the Thu/Chi side cannot change

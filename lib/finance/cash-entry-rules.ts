@@ -21,7 +21,7 @@ export interface CashEntryFields {
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; error: string };
 
 const AMOUNT_FORMAT_ERROR =
-  "Số tiền chỉ gồm chữ số; dấu chấm chỉ dùng để chia hàng nghìn (ví dụ 150.000)";
+  "Số tiền chỉ gồm chữ số; dấu phẩy chỉ dùng để chia hàng nghìn (ví dụ 150,000)";
 const AMOUNT_NOT_POSITIVE_ERROR = "Số tiền phải lớn hơn 0";
 const AMOUNT_TOO_LARGE_ERROR = "Số tiền quá lớn";
 
@@ -30,15 +30,12 @@ const AMOUNT_TOO_LARGE_ERROR = "Số tiền quá lớn";
 // lib/shared/duplicate-name-guard.ts avoids the same way.
 const NBSP = String.fromCharCode(160);
 
-// I1 (final-review.md): Vietnamese users write thousands with a dot --
-// "150.000" means one hundred fifty thousand, not one hundred fifty point
-// zero. Plain Number(raw) read "150.000" as 150, a 1000x understatement
-// with no warning, and also silently accepted "1e6" and "0x10" as valid
-// amounts. Only two shapes are legal now: digits only, or dot-separated
-// groups of exactly three digits (the dots are then stripped before
-// parsing). Anything else -- a decimal point, a comma, scientific or hex
-// notation, a malformed grouping like "1.50.000" -- is a format error, not
-// a "too small" one.
+// Two shapes are legal: digits only, or comma-separated groups of exactly
+// three digits (BR-UI-008, owner 2026-10-07: a comma separates thousands, a
+// dot marks decimals). Money is whole đồng (BR-CASH-005), so a dot is a
+// format error -- "150.000" is refused, never read as 150 or 150000. The
+// money box posts plain digits; this is the server backstop. Scientific
+// or hex notation and malformed groupings like "1,50,000" are refused too.
 export function parseAmountVn(raw: string): ParseResult<number> {
   if (!raw) return { ok: false, error: AMOUNT_NOT_POSITIVE_ERROR };
 
@@ -46,8 +43,8 @@ export function parseAmountVn(raw: string): ParseResult<number> {
   let digits: string;
   if (/^\d+$/.test(noSpaces)) {
     digits = noSpaces;
-  } else if (/^\d{1,3}(\.\d{3})+$/.test(noSpaces)) {
-    digits = noSpaces.replace(/\./g, "");
+  } else if (/^\d{1,3}(,\d{3})+$/.test(noSpaces)) {
+    digits = noSpaces.replace(/,/g, "");
   } else {
     return { ok: false, error: AMOUNT_FORMAT_ERROR };
   }

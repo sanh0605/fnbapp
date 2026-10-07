@@ -71,7 +71,7 @@ describe("BandDetailView", () => {
     expect(backLink).toHaveAttribute("href", returnTo);
 
     // Title = formatBandRange(band)
-    expect(screen.getAllByText("Dưới 200.000đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Dưới 200,000đ").length).toBeGreaterThan(0);
 
     // Fields: Mã, Đơn giá, Số tháng khấu hao, and note
     expect(screen.getAllByText("KH-001").length).toBeGreaterThan(0);

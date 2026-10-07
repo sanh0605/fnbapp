@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatNumber } from "@/lib/shared/format";
+import { formatDecimal, formatNumber } from "@/lib/shared/format";
 import { cancelPurchaseOrder, type PurchaseOrderCancelView } from "@/app/admin/inventory/purchase-orders/actions";
 
 export type ReadyCancelView = Extract<PurchaseOrderCancelView, { state: "ready" }>;
@@ -81,7 +81,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                         <td className="px-4 py-3 font-medium text-text-primary">{line.itemName}</td>
                         <td className="px-4 py-3 text-text-secondary">{line.unitName}</td>
                         <td className="px-4 py-3 text-right text-text-primary font-medium">
-                          {Number(line.quantity).toLocaleString("vi-VN")}
+                          {formatDecimal(Number(line.quantity), { maxDigits: 3 })}
                         </td>
                         <td className="px-4 py-3 text-right text-text-muted">
                           {formatNumber(line.unitPrice)}
@@ -105,7 +105,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                     <div className="min-w-0 flex-1">
                       <p className="font-bold text-text-primary truncate">{line.itemName}</p>
                       <p className="text-xs text-text-muted">
-                        {Number(line.quantity).toLocaleString("vi-VN")} · {line.unitName} · {formatNumber(line.unitPrice)}
+                        {formatDecimal(Number(line.quantity), { maxDigits: 3 })} · {line.unitName} · {formatNumber(line.unitPrice)}
                       </p>
                     </div>
                     <div className="text-right font-bold text-text-primary whitespace-nowrap">

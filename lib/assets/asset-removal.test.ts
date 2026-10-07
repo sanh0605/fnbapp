@@ -64,7 +64,7 @@ describe("messages", () => {
     const decision = decideAssetRemoval({ systemType: "CONSUMABLE", assets: [tsHop], disposals: [] });
     if (decision.kind !== "ask") throw new Error("expected ask");
     expect(assetRemovalAskMessage(decision)).toBe(
-      "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?",
+      "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80,352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?",
     );
   });
 
@@ -74,8 +74,8 @@ describe("messages", () => {
     if (decision.kind !== "ask") throw new Error("expected ask");
     const msg = assetRemovalAskMessage(decision);
     expect(msg).toContain("gỡ 2 tài sản");
-    expect(msg).toContain("TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ");
-    expect(msg).toContain("TS-068 Kẹp, 3 cái, 1.500đ");
+    expect(msg).toContain("TS-067 Hộp đựng topping liền nắp, 200 cái, 80,352đ");
+    expect(msg).toContain("TS-068 Kẹp, 3 cái, 1,500đ");
   });
 
   it("refusal message names the asset ids", () => {

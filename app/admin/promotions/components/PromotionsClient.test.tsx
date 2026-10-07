@@ -180,7 +180,7 @@ describe("PromotionsClient", () => {
       />,
     );
 
-    expect(screen.getAllByText("Giảm 10.000đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Giảm 10,000đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Uchako").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đã hết hạn").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/15\/07\/2026 12:59/).length).toBeGreaterThan(0);

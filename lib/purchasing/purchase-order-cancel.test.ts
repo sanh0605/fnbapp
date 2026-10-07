@@ -19,13 +19,13 @@ describe("describeCancelBlocker", () => {
       .toBe("Huỷ phiếu này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32) chỉ còn 21 trái, phiếu có 60 trái. Hàng của phiếu đã được dùng, nên phiếu này là thật.");
     expect(describeCancelBlocker({ code: "NEGATIVE", itemId: "y", itemName: "Sữa tươi Mlekovita", lowBalance: 42000,
       lowAt: "2026-10-05T08:42:00Z", orderQty: 60000, baseUnit: "ml" }))
-      .toContain("chỉ còn 42.000 ml, phiếu có 60.000 ml");
+      .toContain("chỉ còn 42,000 ml, phiếu có 60,000 ml");
   });
 
   it("NEGATIVE keeps a half unit with a decimal comma", () => {
     expect(describeCancelBlocker({ code: "NEGATIVE", itemId: "z", itemName: "Bột", lowBalance: 0.5,
       lowAt: "2026-10-05T08:42:00Z", orderQty: 2, baseUnit: "kg" }))
-      .toContain("chỉ còn 0,5 kg, phiếu có 2 kg");
+      .toContain("chỉ còn 0.5 kg, phiếu có 2 kg");
   });
 
   it("STOCKTAKE gives the order day and the count day (Saigon, not UTC)", () => {

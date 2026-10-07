@@ -5,11 +5,11 @@
  *
  * Every figure is computed exactly. Rounding happens only where a number
  * is shown: to the nearest whole unit, halves away from zero -- the same
- * direction Intl.NumberFormat uses in lib/shared/format.ts.
+ * direction formatNumber uses in lib/shared/format.ts.
  *
  * Round from the exact value, then show -- never sum rounded parts. Shown
  * parts can therefore differ from a shown total by a unit or two (three
- * months of 100,4 show 100 each, their total shows 301). Accepted, not a
+ * months of 100.4 show 100 each, their total shows 301). Accepted, not a
  * bug: any screen that shows parts beside their total says so where it
  * happens.
  */

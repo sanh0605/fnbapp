@@ -1,4 +1,5 @@
 import { formatDate, formatDateTime } from "@/lib/shared/datetime";
+import { formatDecimal } from "@/lib/shared/format";
 
 // BR-INV-015: turns the JSON of purchase_order_cancel_check and
 // cancel_purchase_order_atomic (migration 0108) into typed values and the
@@ -17,8 +18,6 @@ export type CancelCheck = { blocked: CancelBlocker[]; assets: CancelAsset[] };
 export type CancelOutcome =
   | { cancelled: true; retiredAssetIds: string[] }
   | { cancelled: false; blocked: CancelBlocker[] };
-
-const quantityFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 });
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -102,7 +101,7 @@ export function describeCancelBlocker(b: CancelBlocker): string {
     case "STOCKTAKE":
       return `Phiếu ngày ${formatDate(b.orderAt)} nằm trước lần kiểm kê ${b.stocktakeId} (${formatDate(b.confirmedAt)}), nên không huỷ được: lần kiểm kê đã đếm lại hàng trên kệ.`;
     case "NEGATIVE":
-      return `Huỷ phiếu này làm tồn kho âm: ${b.itemName} lúc thấp nhất (${formatDateTime(b.lowAt)}) chỉ còn ${quantityFormat.format(b.lowBalance)} ${b.baseUnit}, phiếu có ${quantityFormat.format(b.orderQty)} ${b.baseUnit}. Hàng của phiếu đã được dùng, nên phiếu này là thật.`;
+      return `Huỷ phiếu này làm tồn kho âm: ${b.itemName} lúc thấp nhất (${formatDateTime(b.lowAt)}) chỉ còn ${formatDecimal(b.lowBalance, { maxDigits: 2 })} ${b.baseUnit}, phiếu có ${formatDecimal(b.orderQty, { maxDigits: 2 })} ${b.baseUnit}. Hàng của phiếu đã được dùng, nên phiếu này là thật.`;
     case "DISPOSED":
       return `Tài sản ${b.assetId} ${b.name} của phiếu đã thanh lý, nên không huỷ được phiếu.`;
   }

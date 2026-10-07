@@ -4,12 +4,12 @@
 // One chart uses one unit for every figure it draws. First (and only)
 // caller: app/admin/reports/pnl/components/PnlChart.tsx.
 
+import { formatDecimal } from "@/lib/shared/format";
+
 export type CompactUnit = "k" | "tr";
 
 const MILLION = 1_000_000;
 const THOUSAND = 1_000;
-
-const COMPACT_FORMATTER = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 });
 
 // tr when at least half of the months with a non-zero net profit are a
 // million or more in size; otherwise k.
@@ -22,7 +22,7 @@ export function pickCompactUnit(values: number[]): CompactUnit {
 
 export function formatCompact(value: number, unit: CompactUnit): string {
   const divisor = unit === "tr" ? MILLION : THOUSAND;
-  const formatted = COMPACT_FORMATTER.format(value / divisor);
+  const formatted = formatDecimal(value / divisor, { maxDigits: 2 });
   if (formatted === "0" || formatted === "-0") return "0";
   return `${formatted}${unit}`;
 }

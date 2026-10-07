@@ -87,14 +87,14 @@ describe("August 2026, real figures", () => {
   it("says how each profit cell was reached, in the numbers on screen", () => {
     const t = augustTable();
     expect(row(t, "grossProfit").cells[0].formula).toBe(
-      "Doanh thu 17.682.000 − giá vốn 46.418.990 − nguyên liệu mua dùng ngay 1.760.000 = -30.496.990",
+      "Doanh thu 17,682,000 − giá vốn 46,418,990 − nguyên liệu mua dùng ngay 1,760,000 = -30,496,990",
     );
     expect(row(t, "netProfit").cells[0].formula).toBe(
-      "Lợi nhuận gộp -30.496.990 − chi phí 1.085.000 − khấu hao 790.974 = -32.372.964",
+      "Lợi nhuận gộp -30,496,990 − chi phí 1,085,000 − khấu hao 790,974 = -32,372,964",
     );
-    expect(row(t, "margin").cells[0].formula).toBe("Lợi nhuận ròng -32.372.964 ÷ doanh thu 17.682.000");
+    expect(row(t, "margin").cells[0].formula).toBe("Lợi nhuận ròng -32,372,964 ÷ doanh thu 17,682,000");
     expect(row(t, "cumulative").cells[0].formula).toBe(
-      "Tháng đầu tiên có số của năm: bằng lợi nhuận ròng tháng này -32.372.964",
+      "Tháng đầu tiên có số của năm: bằng lợi nhuận ròng tháng này -32,372,964",
     );
     expect(row(t, "cumulative").label).toBe("Luỹ kế");
     expect(row(t, "netProfit").cells[0].sources).toEqual([]);
@@ -131,8 +131,8 @@ describe("August 2026, real figures", () => {
         key: "stocktake-STK-001-2026-08",
         number: 1,
         months: ["2026-08"],
-        text: "Giá vốn tháng 08/2026 có 34.864.627đ từ lần kiểm kho ngày 09/08/2026: hàng đã dùng mà chưa ghi phiếu xuất, không tính là hao hụt.",
-        strong: ["34.864.627đ"],
+        text: "Giá vốn tháng 08/2026 có 34,864,627đ từ lần kiểm kho ngày 09/08/2026: hàng đã dùng mà chưa ghi phiếu xuất, không tính là hao hụt.",
+        strong: ["34,864,627đ"],
       },
     ]);
   });
@@ -147,7 +147,7 @@ describe("August 2026, real figures", () => {
     );
     const stocktakeNote = second.footnotes.find(f => f.key === "stocktake-STK-001-2026-08")!;
     expect(stocktakeNote.text).toBe(
-      "Giá vốn tháng 08/2026 có 34.864.627đ từ lần kiểm kho ngày 09/08/2026: hàng đã dùng mà chưa ghi phiếu xuất, không tính là hao hụt. Các tháng trước đó vì vậy có giá vốn thấp hơn thực tế; nhìn dòng Luỹ kế mới thấy đúng bức tranh.",
+      "Giá vốn tháng 08/2026 có 34,864,627đ từ lần kiểm kho ngày 09/08/2026: hàng đã dùng mà chưa ghi phiếu xuất, không tính là hao hụt. Các tháng trước đó vì vậy có giá vốn thấp hơn thực tế; nhìn dòng Luỹ kế mới thấy đúng bức tranh.",
     );
   });
 });
@@ -171,9 +171,9 @@ describe("rounding (BR-DATA-005)", () => {
 
   it("shows a percentage with two decimals (owner, 11/09/2026)", () => {
     expect(PERCENT_DECIMALS).toBe(2);
-    expect(formatPercent(-183.08)).toBe("-183,08%");
-    expect(formatPercent(13.8)).toBe("13,80%");
-    expect(formatPercent(100)).toBe("100,00%");
+    expect(formatPercent(-183.08)).toBe("-183.08%");
+    expect(formatPercent(13.8)).toBe("13.80%");
+    expect(formatPercent(100)).toBe("100.00%");
     expect(formatPercent(null)).toBe("---");
   });
 });
@@ -207,17 +207,17 @@ describe("which rows show", () => {
       "53 đơn máy bán hàng", "Không có ghi chú", "Không có ghi chú",
     ]);
     expect(row(t, "grossProfit").cells[0].formula).toBe(
-      "Doanh thu 10.601.868 − giá vốn 0 − nguyên liệu mua dùng ngay 0 − hao hụt 1.000 = 10.600.868",
+      "Doanh thu 10,601,868 − giá vốn 0 − nguyên liệu mua dùng ngay 0 − hao hụt 1,000 = 10,600,868",
     );
     expect(row(t, "netProfit").cells[0].formula).toBe(
-      "Lợi nhuận gộp 10.600.868 − chi phí 0 − khấu hao 0 + thu khác 200.000 = 10.800.868",
+      "Lợi nhuận gộp 10,600,868 − chi phí 0 − khấu hao 0 + thu khác 200,000 = 10,800,868",
     );
     expect(t.footnotes).toContainEqual({
       key: "manual-2026-04",
       number: 1,
       months: ["2026-04"],
-      text: "Doanh thu tháng 04/2026 có 8.411.868đ ghi tay trong sổ thu chi, không qua máy bán hàng.",
-      strong: ["8.411.868đ"],
+      text: "Doanh thu tháng 04/2026 có 8,411,868đ ghi tay trong sổ thu chi, không qua máy bán hàng.",
+      strong: ["8,411,868đ"],
     });
   });
 });

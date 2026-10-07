@@ -89,9 +89,11 @@ Luật: `docs/02-rules/business-rules/screens.md`.
 
 - **Soát và dựng khung mẫu** (`BR-UI-005`): nút, ô nhập, ô số, bảng, khung tiền, đầu trang,
   mũi tên quay về. Đếm mọi kiểu đang có, cho chủ quán xem một trang mẫu gom đủ thành phần,
-  chốt rồi mới thay ở các trang.
+  chốt rồi mới thay ở các trang. Chủ quán duyệt trang mẫu 2026-10-07; thiết kế:
+  `docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md` (đợt K1–K6). Đợt K1 (cách viết số
+  mới, `BR-UI-008`) xong trên nhánh 2026-10-08, chờ đẩy và chủ quán nhận.
 - **Ô nhập số:** soát mọi ô. Mẫu là ô "Số lượng" của trang tạo phiếu xuất (chủ quán khen):
-  bàn phím số trên điện thoại, dấu phẩy cho số lẻ, hiện "Quy ra" bên cạnh. Thêm: tự chấm
+  bàn phím số trên điện thoại, số lẻ gõ bằng dấu chấm (`BR-UI-008`; trước 2026-10-07 là dấu phẩy), hiện "Quy ra" bên cạnh. Thêm: tự chèn dấu phẩy
   hàng nghìn khi gõ, không có mũi tên tăng giảm, cuộn chuột không làm đổi số (ô
   `type="number"` hiện ở phiếu nhập bị cả hai), gõ chữ thì báo ngay dưới ô. Ô tiền dùng
   chung khung này (phần 5 áp vào các màn còn lại).
@@ -177,7 +179,7 @@ thuật thì tự sửa rồi báo.
 |---|---|---|
 | G1 | Sửa phiếu nhập mà đổi mặt hàng của một dòng: tài sản của dòng đó mất liên kết | Phần 1 (8b) |
 | G2 | Phiếu nhập nháp luôn mở form nên không thấy nút "Huỷ phiếu" (đo 2026-10-06: 0 phiếu nháp) | Phần 1 (8b) |
-| G3 | Tạo phiếu xuất: "Tồn hiện tại" là tồn hôm nay, và mặt hàng ngừng dùng đã hết hàng hôm nay không hiện để chọn; nhưng phiếu ghi lùi ngày được kiểm theo tồn ở ngày của phiếu | Phần 1 (8a) |
+| G3 | ~~Tạo phiếu xuất: "Tồn hiện tại" là tồn hôm nay, kể cả khi ghi lùi ngày~~ — đóng 2026-10-06, giữ nguyên. Chủ quán: *"anh chỉ cần xem tồn hiện tại thôi, nên nếu anh có thêm 1 phiếu tồn trong quá khứ thì tồn hiện tại sẽ thay đổi. Chứ không cần tồn theo thời điểm lọc."* Mặt hàng hết hàng hôm nay không xuất lùi ngày được (tồn hôm nay sẽ âm, `issue_stock_headroom` từ chối), nên ẩn nó khỏi danh sách là đúng | — |
 | G4 | Xoá nhân viên (`deleteUserAction`, `app/admin/users/actions.ts`): không chặn việc chủ quán tự xoá chính mình hay xoá tài khoản `ADMIN` cuối cùng | Phần 2 (Nhân viên) |
 | G5 | 10 tài sản không còn dòng phiếu nhập — không cần làm gì, chỉ ghi nhận | — |
 

@@ -114,9 +114,9 @@ describe("AssetItemDetailView", () => {
     expect(screen.getAllByText("Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("1 / 2 cái").length).toBeGreaterThan(0);
     expect(screen.getAllByText("1 cái").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("411.840đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("265.980đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("145.860đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("411,840đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("265,980đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("145,860đ").length).toBeGreaterThan(0);
   });
 
   it("renders three section tables: 'Các lần mua', 'Thanh lý', and 'Khấu hao theo tháng'", () => {
@@ -132,7 +132,7 @@ describe("AssetItemDetailView", () => {
 
     expect(screen.getAllByText("TS-004").length).toBeGreaterThan(0);
     expect(screen.getAllByText("04/04/2026").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("205.920đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("205,920đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("24 tháng").length).toBeGreaterThan(0);
 
     const poLinks = screen.getAllByRole("link", { name: "PO-009" });
@@ -140,20 +140,20 @@ describe("AssetItemDetailView", () => {
     for (const l of poLinks) expect(l).toHaveAttribute("href", "/admin/inventory/purchase-orders/PO-009");
   });
 
-  it("renders 'Thanh lý' table showing 171.600đ disposal charge and dash '—' for empty reason", () => {
+  it("renders 'Thanh lý' table showing 171,600đ disposal charge and dash '—' for empty reason", () => {
     render(<AssetItemDetailView detail={BINH_BOM_DETAIL} returnTo={returnTo} />);
 
     expect(screen.getAllByText("02/07/2026").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("171.600đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("171,600đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 
-  it("renders 'Khấu hao theo tháng' table with 'gồm 171.600đ thanh lý' for 07/2026", () => {
+  it("renders 'Khấu hao theo tháng' table with 'gồm 171,600đ thanh lý' for 07/2026", () => {
     render(<AssetItemDetailView detail={BINH_BOM_DETAIL} returnTo={returnTo} />);
 
     expect(screen.getAllByText("07/2026").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("188.760đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("gồm 171.600đ thanh lý").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("188,760đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("gồm 171,600đ thanh lý").length).toBeGreaterThan(0);
   });
 
   it("renders 'Thanh lý' action button linking to dispose page when remainingQuantity > 0", () => {

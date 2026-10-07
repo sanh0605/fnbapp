@@ -46,7 +46,7 @@ function formData(fields: Record<string, string>): FormData {
 
 const goodFields = {
   transfer_date: "2026-09-10",
-  amount: "5.000.000",
+  amount: "5,000,000",
   from: "CASH",
   to: "BA-001",
   note: "Gửi két",
@@ -83,9 +83,15 @@ describe("addCashTransfer", () => {
     });
   });
 
-  it("accepts 150.000 as 150000", async () => {
-    await addCashTransfer(formData({ ...goodFields, amount: "150.000" }));
+  it("accepts 150,000 as 150000", async () => {
+    await addCashTransfer(formData({ ...goodFields, amount: "150,000" }));
     expect(mocks.insert.mock.calls[0][1].amount).toBe(150000);
+  });
+
+  it("refuses 150.000 (a dot marks decimals, BR-UI-008)", async () => {
+    const result = await addCashTransfer(formData({ ...goodFields, amount: "150.000" }));
+    expect(result.error).toBe("Số tiền chỉ gồm chữ số; dấu phẩy chỉ dùng để chia hàng nghìn (ví dụ 150,000)");
+    expect(mocks.insert).not.toHaveBeenCalled();
   });
 
   it.each([

@@ -1,4 +1,5 @@
-import { formatNumber } from "@/lib/shared/format";
+import { formatDecimal, formatNumber } from "@/lib/shared/format";
+import { formatCompact } from "@/lib/reports/compact-money";
 
 export default function CategoryPieChart({ data }: { data: { label: string, amount: number }[] }) {
   const total = data.reduce((sum, d) => sum + d.amount, 0);
@@ -34,13 +35,13 @@ export default function CategoryPieChart({ data }: { data: { label: string, amou
           >
             {/* Lỗ ở giữa để tạo hiệu ứng Donut Chart (Tuỳ chọn) */}
             <div className="absolute inset-0 m-auto w-24 h-24 bg-surface-card rounded-full flex items-center justify-center shadow-inner">
-              <span className="font-bold text-text-muted text-xs text-center leading-tight">Tổng<br/>{(total / 1000000).toFixed(1)}M</span>
+              <span className="font-bold text-text-muted text-xs text-center leading-tight">Tổng<br/>{formatCompact(total, "tr")}</span>
             </div>
           </div>
           
           <div className="w-full space-y-3 max-h-40 overflow-y-auto pr-2">
             {sortedData.map((d, i) => {
-              const percent = ((d.amount / total) * 100).toFixed(1);
+              const percent = formatDecimal((d.amount / total) * 100, { minDigits: 1, maxDigits: 1 });
               return (
                 <div key={i} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">

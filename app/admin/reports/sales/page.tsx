@@ -4,6 +4,7 @@ import SalesFilter from "@/app/admin/reports/components/SalesFilter";
 import SalesCharts from "@/app/admin/reports/components/SalesCharts";
 import CategoryPieChart from "@/app/admin/reports/components/CategoryPieChart";
 import { formatNumber } from "@/lib/shared/format";
+import { formatCompact } from "@/lib/reports/compact-money";
 import { saigonToday } from "@/lib/shared/datetime";
 import { resolvePreset } from "@/lib/shared/date-range-presets";
 
@@ -341,7 +342,7 @@ export default async function SalesReportPage({
                           {cell.revenue > 0 && (
                             <span className="text-[10px] font-black leading-none truncate max-w-full px-0.5">
                               {cell.revenue >= 1000000 
-                                ? `${(cell.revenue / 1000000).toFixed(1)}M` 
+                                ? formatCompact(cell.revenue, "tr") 
                                 : cell.revenue >= 1000 
                                   ? `${Math.round(cell.revenue / 1000)}k` 
                                   : cell.revenue}
@@ -419,7 +420,7 @@ export default async function SalesReportPage({
                 <tfoot className="bg-page border-t-2 border-border sticky bottom-0 z-10 font-bold text-text-primary shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
                   <tr className="bg-page">
                     <td className="px-6 py-4 font-bold">Tổng cộng</td>
-                    <td className="px-6 py-4 text-right font-bold">{totalToppingQty.toLocaleString("vi-VN")}</td>
+                    <td className="px-6 py-4 text-right font-bold">{formatNumber(totalToppingQty)}</td>
                     <td className="px-6 py-4 text-right text-success font-bold">{formatNumber(Math.round(totalToppingRevenue))}</td>
                   </tr>
                 </tfoot>
@@ -448,7 +449,7 @@ export default async function SalesReportPage({
               <div className="mt-2 pt-3 border-t border-border flex justify-between items-center font-bold text-text-primary">
                 <div className="flex items-center gap-2">
                   <span>Tổng:</span>
-                  <span>{totalToppingQty.toLocaleString("vi-VN")}</span>
+                  <span>{formatNumber(totalToppingQty)}</span>
                 </div>
                 <div className="text-success">{formatNumber(Math.round(totalToppingRevenue))}</div>
               </div>

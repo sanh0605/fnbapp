@@ -1,3 +1,5 @@
+import { formatDecimal } from "@/lib/shared/format";
+
 // Pure derived-column logic for the outlet breakdown table.
 // section 2.
 // Presentation only -- orders and revenue themselves are untouched, both
@@ -20,11 +22,6 @@ export function percentOfTotal(revenue: number, totalRevenue: number): number | 
   return (revenue / totalRevenue) * 100;
 }
 
-const PERCENT_FORMATTER = new Intl.NumberFormat("vi-VN", {
-  minimumFractionDigits: 1,
-  maximumFractionDigits: 1,
-});
-
 export function formatPercent(value: number | null): string {
-  return value === null ? "—" : `${PERCENT_FORMATTER.format(value)}%`;
+  return value === null ? "—" : `${formatDecimal(value, { minDigits: 1, maxDigits: 1 })}%`;
 }

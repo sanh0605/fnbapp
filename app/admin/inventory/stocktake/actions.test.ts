@@ -403,7 +403,7 @@ describe("getStocktakeSessionData package lines", () => {
 
     expect(result?.lines).toHaveLength(1);
     const line = result!.lines[0];
-    expect(line.packageLines.map(p => p.sizeLabel)).toEqual(["Túi 100 g", "Túi 500 g", "Túi 1.000 g"]);
+    expect(line.packageLines.map(p => p.sizeLabel)).toEqual(["Túi 100 g", "Túi 500 g", "Túi 1,000 g"]);
     // Inactive conversion (C8) never shows up as a line to count.
     expect(line.packageLines.some(p => p.conversionId === "QD-999")).toBe(false);
   });

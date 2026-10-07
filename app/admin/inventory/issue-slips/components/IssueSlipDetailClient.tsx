@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { formatNumber } from "@/lib/shared/format";
+import { normalizeNumberText, numberTextToValue } from "@/lib/shared/money-digits";
 import type { IssueSlipDetail } from "@/lib/stock/issue-slip-detail";
 import type { IssueSlipItemView } from "../actions";
 import { editIssueSlip, cancelIssueSlip } from "../actions";
@@ -33,12 +34,11 @@ interface DraftLine {
 }
 
 function parseInputQuantity(val: string): number {
-  const raw = val.replace(/[^0-9,]/g, "");
-  return Number(raw.replace(",", ".")) || 0;
+  return numberTextToValue(val) ?? 0;
 }
 
 function formatInputQuantity(val: number): string {
-  return String(Math.round(val * 1000) / 1000).replace(".", ",");
+  return String(Math.round(val * 1000) / 1000);
 }
 
 export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetailClientProps) {
@@ -175,7 +175,8 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
   }
 
   function handleQtyChange(id: string, val: string) {
-    const raw = val.replace(/[^0-9,]/g, "");
+    const next = normalizeNumberText(val, 3);
+    if (next === null) return; // a 4th decimal or a 16th digit: keep what was there
     setDraft((prev) => {
       const line = prev.find((l) => l.id === id);
       if (!line) return prev;
@@ -188,13 +189,13 @@ export default function IssueSlipDetailClient({ detail, items }: IssueSlipDetail
       }
       const option = unitOptions?.find((o) => o.key === line.unitKey);
       const factor = option ? option.factor : 1;
-      const parsedQty = Number(raw.replace(",", ".")) || 0;
+      const parsedQty = numberTextToValue(next) ?? 0;
       
       return prev.map((l) =>
         l.id === id
           ? {
               ...l,
-              quantityInput: raw,
+              quantityInput: next,
               baseQuantity: toBaseQuantity(parsedQty, option || { key: "", label: "", factor: 1, unitName: "" }),
             }
           : l

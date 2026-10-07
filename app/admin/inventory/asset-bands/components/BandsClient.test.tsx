@@ -93,9 +93,9 @@ describe("BandsClient", () => {
     expect(screen.getAllByText("KH-003").length).toBeGreaterThan(0);
 
     // Renders price ranges
-    expect(screen.getAllByText("Dưới 200.000đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Từ 200.000đ đến dưới 500.000đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Từ 500.000đ trở lên").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Dưới 200,000đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Từ 200,000đ đến dưới 500,000đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Từ 500,000đ trở lên").length).toBeGreaterThan(0);
 
     // Renders terms
     expect(screen.getAllByText("12 tháng").length).toBeGreaterThan(0);
