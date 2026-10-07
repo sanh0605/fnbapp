@@ -91,7 +91,8 @@ Luật: `docs/02-rules/business-rules/screens.md`.
   mũi tên quay về. Đếm mọi kiểu đang có, cho chủ quán xem một trang mẫu gom đủ thành phần,
   chốt rồi mới thay ở các trang. Chủ quán duyệt trang mẫu 2026-10-07; thiết kế:
   `docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md` (đợt K1–K6). Đợt K1 (cách viết số
-  mới, `BR-UI-008`) xong trên nhánh 2026-10-08, chờ đẩy và chủ quán nhận.
+  mới, `BR-UI-008`) đã đẩy 2026-10-08, chờ chủ quán nhận. Đợt K2 (dựng khuôn trong `components/ui/`,
+  phép kiểm canh `components/ui/template.guard.test.ts`) xong trên nhánh 2026-10-08, chờ đẩy.
 - **Ô nhập số:** soát mọi ô. Mẫu là ô "Số lượng" của trang tạo phiếu xuất (chủ quán khen):
   bàn phím số trên điện thoại, số lẻ gõ bằng dấu chấm (`BR-UI-008`; trước 2026-10-07 là dấu phẩy), hiện "Quy ra" bên cạnh. Thêm: tự chèn dấu phẩy
   hàng nghìn khi gõ, không có mũi tên tăng giảm, cuộn chuột không làm đổi số (ô
