@@ -13,6 +13,7 @@ import { createIssueSlip, getIssueUnitCostsAt, type IssueSlipItemView } from "..
 import { buildIssueUnitOptions, toBaseQuantity, type IssueUnitOption } from "@/lib/stock/issue-unit-options";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
+import { normalizeNumberText, numberTextToValue } from "@/lib/shared/money-digits";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
 
@@ -53,7 +54,7 @@ function getConvertedQuantityText(
   if (!item) return "—";
   const option = options.find(o => o.key === unitKey);
   if (!option) return "—";
-  const parsedQty = Number(rawQty.replace(/[^0-9,]/g, "").replace(",", "."));
+  const parsedQty = numberTextToValue(rawQty) ?? 0;
   if (!Number.isFinite(parsedQty) || parsedQty <= 0) return "—";
   const baseQty = toBaseQuantity(parsedQty, option);
   const qtyFormatted = formatNumber(baseQty, { withDecimals: !Number.isInteger(baseQty) });
@@ -104,7 +105,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
       const item = items.find(i => i.id === line.purchasedItemId);
       const options = item ? buildIssueUnitOptions(item.unitName, item.packageLines) : [];
       const option = options.find(o => o.key === line.unitKey);
-      const parsedQty = Number(line.packageQty.replace(/[^0-9,]/g, "").replace(",", "."));
+      const parsedQty = numberTextToValue(line.packageQty) ?? 0;
       const isFilled = Boolean(item && option && Number.isFinite(parsedQty) && parsedQty > 0);
       const baseQty = isFilled && option ? toBaseQuantity(parsedQty, option) : null;
       const unitCost = item ? unitCosts[item.id] : undefined;
@@ -177,7 +178,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         setError(`Dòng ${i + 1}: chưa chọn quy cách`);
         return;
       }
-      const parsedQty = Number(line.packageQty.replace(/[^0-9,]/g, "").replace(",", "."));
+      const parsedQty = numberTextToValue(line.packageQty) ?? 0;
       if (!Number.isFinite(parsedQty) || parsedQty <= 0) {
         setError(`Dòng ${i + 1}: số lượng phải lớn hơn 0`);
         return;
@@ -300,8 +301,9 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                           aria-label="Số lượng"
                           value={line.packageQty}
                           onChange={e => {
-                            const raw = e.target.value.replace(/[^0-9,]/g, "");
-                            updateLine(index, { packageQty: raw });
+                            const next = normalizeNumberText(e.target.value, 3);
+                            if (next === null) return; // a 4th decimal or a 16th digit: keep what was there
+                            updateLine(index, { packageQty: next });
                           }}
                           placeholder="0"
                           className="w-full border border-border rounded-lg px-2.5 py-1.5 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card disabled:opacity-50"
@@ -461,8 +463,9 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                       aria-label="Số lượng"
                       value={line.packageQty}
                       onChange={e => {
-                        const raw = e.target.value.replace(/[^0-9,]/g, "");
-                        updateLine(index, { packageQty: raw });
+                        const next = normalizeNumberText(e.target.value, 3);
+                        if (next === null) return; // a 4th decimal or a 16th digit: keep what was there
+                        updateLine(index, { packageQty: next });
                       }}
                       placeholder="0"
                       className="w-full border border-border rounded-lg px-3 py-2 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px]"

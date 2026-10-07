@@ -1,7 +1,7 @@
 import { getDailyDigest } from "./actions";
 import { DailyDigestFilter } from "./DailyDigestFilter";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { formatNumber } from "@/lib/shared/format";
+import { formatDecimal, formatNumber } from "@/lib/shared/format";
 import { formatVnDayWithWeekday } from "@/lib/shared/datetime";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 function formatDeltaPct(pct: number | null): string {
   if (pct === null) return "--";
   const sign = pct > 0 ? "+" : "";
-  return `${sign}${pct.toFixed(1)}%`;
+  return `${sign}${formatDecimal(pct, { minDigits: 1, maxDigits: 1 })}%`;
 }
 
 function deltaColorClass(value: number | null): string {

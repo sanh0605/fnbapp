@@ -2,7 +2,7 @@ import { findAll, findAllNoCache, findAllWhere } from "@/lib/db/tables";
 import Link from "next/link";
 import { ORDER_STATUS } from "@/lib/sales/order-types";
 import { breakdownRevenueByProduct } from "@/lib/reports/report-v2-allocators";
-import { formatNumber } from "@/lib/shared/format";
+import { formatDecimal, formatNumber } from "@/lib/shared/format";
 import { formatTime } from "@/lib/shared/datetime";
 import { buildSevenDayChart, resolveDashboardPeriods } from "@/lib/reports/dashboard-periods";
 import { Badge } from "@/components/ui/Badge";
@@ -20,7 +20,7 @@ const TrendBadge = ({ value }: { value: number | null }) => {
   const arrow = isUp ? "↑" : isDown ? "↓" : "−";
   return (
     <Badge variant={variant} className="gap-0.5 !text-[10px] !px-1.5 !py-0.5">
-      <span>{arrow}</span> {Math.abs(value).toFixed(1)}%
+      <span>{arrow}</span> {formatDecimal(Math.abs(value), { minDigits: 1, maxDigits: 1 })}%
     </Badge>
   );
 };
@@ -221,7 +221,7 @@ export default async function AdminDashboard({
               return (
                 <div key={i} className="flex flex-col items-center flex-1 group">
                   <div className="text-xs text-text-secondary mb-2 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                    {Math.round(d.amount / 1000).toLocaleString("vi-VN")}k
+                    {formatNumber(Math.round(d.amount / 1000))}k
                   </div>
                   <div className="w-full bg-primary-soft rounded-t-lg relative flex items-end h-[200px]">
                     <div 

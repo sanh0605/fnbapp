@@ -6,7 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import PurchasePaymentBlock from "./components/PurchasePaymentBlock";
-import { formatNumber } from "@/lib/shared/format";
+import { formatDecimal, formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { resolvePurchaseOrderEditGate } from "@/lib/purchasing/purchase-order-edit-gate";
 
@@ -154,7 +154,7 @@ export default async function PurchaseOrderDetail({
                       <tr key={idx} className="hover:bg-surface-secondary/50">
                         <td className="px-4 py-3 font-medium text-text-primary">{item?.name || line.purchased_item_id}</td>
                         <td className="px-4 py-3 text-text-secondary">{unitName}</td>
-                        <td className="px-4 py-3 text-right text-text-primary font-medium">{Number(line.quantity).toLocaleString("vi-VN")}</td>
+                        <td className="px-4 py-3 text-right text-text-primary font-medium">{formatDecimal(Number(line.quantity), { maxDigits: 3 })}</td>
                         <td className="px-4 py-3 text-right text-text-muted">{formatNumber(line.unit_price)}</td>
                         <td className="px-4 py-3 text-right text-text-primary font-bold">{formatNumber(line.subtotal)}</td>
                       </tr>

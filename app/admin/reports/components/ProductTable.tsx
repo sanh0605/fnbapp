@@ -41,7 +41,7 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
       <div className="p-5 border-b border-border bg-page/50 flex justify-between items-center">
         <h3 className="font-bold text-text-primary">{title}</h3>
         <span className="text-xs font-medium bg-primary-soft text-primary px-2 py-1 rounded">
-          Tổng: {totalQtyAll.toLocaleString("vi-VN")}
+          Tổng: {formatNumber(totalQtyAll)}
         </span>
       </div>
       <div className="hidden md:block overflow-x-auto max-h-[528px] overflow-y-auto">
@@ -80,10 +80,10 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
                 <td className="px-4 py-3">Tổng cộng</td>
                 {tableUniqueSizes.map(size => (
                   <td key={size} className="px-4 py-3 text-right">
-                    {totalQtyBySize[size] > 0 ? totalQtyBySize[size].toLocaleString("vi-VN") : "-"}
+                    {totalQtyBySize[size] > 0 ? formatNumber(totalQtyBySize[size]) : "-"}
                   </td>
                 ))}
-                <td className="px-4 py-3 text-right">{totalQtyAll.toLocaleString("vi-VN")}</td>
+                <td className="px-4 py-3 text-right">{formatNumber(totalQtyAll)}</td>
                 <td className="px-4 py-3 text-right text-success">{formatNumber(Math.round(totalRevenueAll))}</td>
               </tr>
             </tfoot>
@@ -125,12 +125,12 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-text-secondary">
               <div className="flex items-center gap-1">
                  <span className="text-text-secondary">Tổng SL:</span>
-                 <span className="font-bold text-text-primary">{totalQtyAll.toLocaleString("vi-VN")}</span>
+                 <span className="font-bold text-text-primary">{formatNumber(totalQtyAll)}</span>
               </div>
               {tableUniqueSizes.filter(size => totalQtyBySize[size] > 0).map(size => (
                 <div key={size} className="flex items-center gap-1 text-xs">
                   <span className="text-text-muted">Size {size}:</span>
-                  <span className="font-medium text-text-primary">{totalQtyBySize[size].toLocaleString("vi-VN")}</span>
+                  <span className="font-medium text-text-primary">{formatNumber(totalQtyBySize[size])}</span>
                 </div>
               ))}
             </div>
