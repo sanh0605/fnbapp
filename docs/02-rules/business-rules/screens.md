@@ -35,13 +35,12 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 **Status:** `APPROVED` — owner 2026-10-06, on an issue slip's page: *"Đồng nhất tất cả các nút về cùng một kiểu… audit lại tất cả các điểm có thể đồng nhất… nên có một khung mẫu cho từng thành phần."* Not built yet.
 
 - Buttons, inputs, number inputs, tables, money boxes, page headers and back links each have one shared component in `components/ui/`; a page does not style its own button.
-- **Number inputs** (owner 2026-10-06, in chat): audit every one; the quantity box on the issue-slip create page is the model he likes (numeric keypad on a phone, comma for decimals, typed text kept, the converted amount shown beside it).
+- **Number inputs** (owner 2026-10-06, in chat): audit every one; the quantity box on the issue-slip create page is the model he likes (numeric keypad on a phone, decimals allowed, typed text kept, the converted amount shown beside it). It used a comma for decimals then; `BR-UI-008` makes that a dot.
 - **The six templates are approved** — owner 2026-10-07, *"Đồng ý"*, after seeing a sample page with each template next to the styles in use today. Design: `docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md`. In short:
   - Buttons: one brown main button per screen. Delete buttons have a red outline; the final confirm step is solid red.
-  - Number boxes: the box adds the thousands dots itself, a comma marks decimals, no up/down arrows, the mouse wheel never changes the number, and a mistake shows in red under the box.
+  - Number boxes: the box adds the thousands marks itself, no up/down arrows, the mouse wheel never changes the number, and a mistake shows in red under the box. Which mark is which: `BR-UI-008`.
   - Table headers are plain grey text, not capitals. Every row cell has the same weight.
   - Totals boxes are white with a thin border.
-- **A dot key in a box that takes decimals becomes a comma** (Opus 2026-10-07, so `1.5` typed on an English phone keypad reads one and a half, not 15). Pasted text treats dots as thousands marks. Money boxes still drop both marks (`BR-CASH-005`).
 - **Money boxes everywhere now, not after the financial reports** — owner 2026-10-07, *"Đúng"*, replacing the 2026-09-11 order that put the remaining money boxes after the financial reports.
 - **The POS keeps its own look:** it is used by touch.
 
@@ -52,3 +51,20 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 ### BR-UI-007 — Date filters work like Looker Studio's
 
 **Status:** `APPROVED` direction — owner 2026-10-06: *"Các bộ lọc thời gian hiện tại chưa đồng nhất. Anh muốn bộ lọc phải có cách lọc như của Looker hoặc Data Studio."* Not built yet; needs a design shown to the owner first. Whole days only, as `BR-DATA-006` already says.
+
+### BR-UI-008 — A comma separates thousands, a dot marks decimals, everywhere
+
+**Status:** `APPROVED` — owner 2026-10-07, in chat:
+- *"dấu phẩy sẽ là dấu phân cách hàng nghìn, dấu này sẽ không cho phép nhập để không nhầm lẫn với dấu phân cách số thập phân. Dấu chấm là dấu duy nhất được nhập để phân biệt số thập phân."*
+- Asked where to apply it, he chose every place: *"Đổi cách viết số ở mọi chỗ"*.
+- He asked that it be one shared function and a rule every new feature showing a number must follow.
+
+Not built yet; part of the template work (`docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md`).
+
+- **Every number on every screen** is written this way: admin screens, reports, charts and the POS. Examples: 1,250.5 ml; 1,250,000đ; 18.13%; 100.12k.
+- It replaces the Vietnamese style used until 2026-10-07 (1.250.000, 1.250,5, "18,13%"). The examples in `BR-DATA-005` and `BR-CASH-005` keep their old marks as written history; read them with the marks swapped.
+- **In a number box** the user types digits and a dot only.
+  - The box adds the commas itself as he types. A comma typed or pasted is refused.
+  - A box for whole numbers, money included, refuses the dot as well.
+- **Every number box shows a worked example as its grey hint** before anything is typed, in the box's own unit and decimals: "Ví dụ: 1,250.5" for a quantity, "Ví dụ: 150,000" for money.
+- **One shared formatter** writes every number on screen, and one shared box takes every number typed. A screen does not format a number itself. A guard test fails when new code formats a number another way, so the rule binds every future feature.
