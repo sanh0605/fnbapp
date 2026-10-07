@@ -42,6 +42,38 @@ function offenders(pattern: RegExp, skip: (match: string) => boolean = () => fal
     .sort();
 }
 
+// The text of every opening tag named `tag`, read to its real end: a ">" inside
+// {...} (an arrow function "=>", a comparison) or inside a quoted attribute does
+// not end the tag. A plain [^>]* stopped at the "=>" of onClick={() => ...} and
+// missed the className after it (K2 review).
+function openingTags(src: string, tag: string): string[] {
+  const tags: string[] = [];
+  const start = new RegExp(`<${tag}\\b`, "g");
+  for (const m of src.matchAll(start)) {
+    let depth = 0;
+    let quote = "";
+    let i = m.index! + m[0].length;
+    for (; i < src.length; i++) {
+      const c = src[i];
+      if (quote) {
+        if (c === quote) quote = "";
+      } else if (c === "{") depth++;
+      else if (c === "}") depth--;
+      else if (depth === 0 && (c === '"' || c === "'")) quote = c;
+      else if (depth === 0 && c === ">") break;
+    }
+    tags.push(src.slice(m.index!, i + 1));
+  }
+  return tags;
+}
+
+function tagOffenders(tagNames: string[], pattern: RegExp): string[] {
+  return files
+    .filter(f => tagNames.some(t => openingTags(f.src, t).some(text => pattern.test(text))))
+    .map(f => f.path)
+    .sort();
+}
+
 // Waves (spec section 4): K3 Kho, K4 Bán hàng, K5 Tài chính và báo cáo, K6 còn lại.
 
 const NUMBER_TYPE_DEBT = [
@@ -60,8 +92,10 @@ const NUMBER_TYPE_DEBT = [
 ];
 
 const SOLID_BUTTON_DEBT = [
+  "app/admin/activity-log/components/ActivityLogClient.tsx", // K6
   "app/admin/brands/[id]/components/BrandDetailView.tsx", // K6
   "app/admin/brands/components/BrandsClient.tsx", // K6
+  "app/admin/components/PosOutletPicker.tsx", // K6
   "app/admin/finance/[id]/components/CashEntryDetailView.tsx", // K5
   "app/admin/finance/bank-accounts/[id]/components/BankAccountDetailView.tsx", // K5
   "app/admin/finance/bank-accounts/components/BankAccountsClient.tsx", // K5
@@ -86,7 +120,10 @@ const SOLID_BUTTON_DEBT = [
   "app/admin/inventory/units/UnitForm.tsx", // K3
   "app/admin/inventory/units/[id]/components/UnitDetailView.tsx", // K3
   "app/admin/inventory/units/components/UnitsClient.tsx", // K3
+  "app/admin/layout.tsx", // K6
+  "app/admin/orders/OrderTable.tsx", // K4
   "app/admin/orders/[id]/components/OrderDetailView.tsx", // K4
+  "app/admin/orders/[id]/edit/components/OrderEditForm.tsx", // K4
   "app/admin/outlets/[id]/components/OutletDetailView.tsx", // K6
   "app/admin/outlets/components/OutletsClient.tsx", // K6
   "app/admin/products/ProductsClient.tsx", // K4
@@ -97,6 +134,7 @@ const SOLID_BUTTON_DEBT = [
   "app/admin/products/modifiers/components/ModifiersClient.tsx", // K4
   "app/admin/promotions/[id]/components/PromotionDetailView.tsx", // K4
   "app/admin/promotions/components/PromotionsClient.tsx", // K4
+  "app/admin/reports/components/SalesFilter.tsx", // K5
   "app/admin/reports/issued/page.tsx", // K5
   "app/admin/suppliers/[id]/components/SupplierDetailView.tsx", // K3
   "app/admin/suppliers/components/SuppliersClient.tsx", // K3
@@ -170,7 +208,7 @@ describe("BR-UI-005 screens use the shared templates (lists may only shrink)", (
   });
 
   it("no screen paints its own solid brown or red button or link: use Button", () => {
-    expect(offenders(/<(button|Link|a)\b[^>]*?\bbg-(primary|danger)(?![-\w/])/)).toEqual(
+    expect(tagOffenders(["button", "Link", "a"], /\bbg-(primary|danger)(?![-\w/])/)).toEqual(
       [...SOLID_BUTTON_DEBT].sort(),
     );
   });
@@ -180,7 +218,7 @@ describe("BR-UI-005 screens use the shared templates (lists may only shrink)", (
   });
 
   it("no table cell is bold: every row cell has the same weight (BR-UI-003)", () => {
-    expect(offenders(/<td\b[^>]*?\bfont-(bold|semibold|medium)\b/)).toEqual([...BOLD_CELL_DEBT].sort());
+    expect(tagOffenders(["td"], /\bfont-(bold|semibold|medium)\b/)).toEqual([...BOLD_CELL_DEBT].sort());
   });
 
   it("no label puts English in brackets after Vietnamese (BR-UI-001)", () => {
