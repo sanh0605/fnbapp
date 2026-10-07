@@ -59,7 +59,7 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 - Asked where to apply it, he chose every place: *"Đổi cách viết số ở mọi chỗ"*.
 - He asked that it be one shared function and a rule every new feature showing a number must follow.
 
-Not built yet; part of the template work (`docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md`).
+Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS included, goes through `lib/shared/format.ts`, and the issue-slip quantity box takes a dot for decimals. The boxes still lack the commas inserted while typing and the worked example; both come with the shared number box in wave K2 (`docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md`).
 
 - **Every number on every screen** is written this way: admin screens, reports, charts and the POS. Examples: 1,250.5 ml; 1,250,000đ; 18.13%; 100.12k.
 - It replaces the Vietnamese style used until 2026-10-07 (1.250.000, 1.250,5, "18,13%"). The examples in `BR-DATA-005` and `BR-CASH-005` keep their old marks as written history; read them with the marks swapped.
