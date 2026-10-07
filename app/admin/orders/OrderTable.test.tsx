@@ -95,6 +95,27 @@ function makeOrder(id: string, orderNo: string): OrderListItem {
   };
 }
 
+describe("OrderTable buttons (BR-UI-005, spec 2.1)", () => {
+  it('"Xóa bộ lọc" only clears the filters, so it wears the Phụ look, not the red delete outline', () => {
+    mockSearchParams.set("payment", "Chuyen khoan");
+    render(
+      <OrderTable
+        initialOrders={[makeOrder("ORD-1", "000001")]}
+        totalCount={1}
+        itemsPerPage={20}
+        brands={[]}
+        products={[]}
+        variants={[]}
+        modifiers={[]}
+        categories={[]}
+      />
+    );
+    const classes = screen.getByRole("button", { name: "Xóa bộ lọc" }).className.split(/\s+/);
+    expect(classes).toContain("border-border");
+    expect(classes).not.toContain("text-danger");
+  });
+});
+
 describe("OrderTable navigation", () => {
   it("clicking an order row navigates to order view with returnTo carrying active filters", () => {
     mockSearchParams.set("payment", "Chuyen khoan");

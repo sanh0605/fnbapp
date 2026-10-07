@@ -194,8 +194,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
               <VoidOrderButton
                 orderId={currentOrder.id}
                 orderNo={orderNo}
-                variant="secondary"
-                className="flex-1 min-h-[44px]"
+                className="flex-1"
                 onVoided={() => {
                   router.push(returnTo);
                   router.refresh();

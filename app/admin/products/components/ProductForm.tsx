@@ -202,9 +202,9 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
                   </div>
                   {variants.length > 1 && (
                     <Button
-                      variant="secondary"
+                      variant="delete"
                       type="button"
-                      className="!text-danger hover:!bg-danger/10 min-h-[44px] self-end sm:self-auto"
+                      className="self-end sm:self-auto"
                       onClick={() => removeVariant(vIdx)}
                     >
                       Xoá Size

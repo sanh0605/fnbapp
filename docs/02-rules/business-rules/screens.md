@@ -38,6 +38,7 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 - **Number inputs** (owner 2026-10-06, in chat): audit every one; the quantity box on the issue-slip create page is the model he likes (numeric keypad on a phone, decimals allowed, typed text kept, the converted amount shown beside it). It used a comma for decimals then; `BR-UI-008` makes that a dot.
 - **The six templates are approved** — owner 2026-10-07, *"Đồng ý"*, after seeing a sample page with each template next to the styles in use today. Design: `docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md`. In short:
   - Buttons: one brown main button per screen. Delete buttons have a red outline; the final confirm step is solid red.
+    - Opus ruling, wave K2 (2026-10-08): the stocktake "Áp dụng" button, red until then, became the brown main button, because applying the count is that screen's main action, not a delete. "Xóa bộ lọc" on the order list only clears filters, so it is a Phụ button.
   - Number boxes: the box adds the thousands marks itself, no up/down arrows, the mouse wheel never changes the number, and a mistake shows in red under the box. Which mark is which: `BR-UI-008`.
   - Table headers are plain grey text, not capitals. Every row cell has the same weight.
   - Totals boxes are white with a thin border.

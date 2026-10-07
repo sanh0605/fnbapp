@@ -19,7 +19,7 @@ export function VoidOrderButton({
   orderNo,
   disabled,
   onVoided,
-  variant = "secondary",
+  variant = "delete",
   className = "",
 }: VoidOrderButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +58,7 @@ export function VoidOrderButton({
       <Button
         type="button"
         variant={variant}
-        className={`!text-danger hover:!bg-danger/10 min-h-[44px] ${className}`}
+        className={`${className}`.trim()}
         onClick={handleOpen}
         disabled={disabled}
       >

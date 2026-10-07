@@ -18,6 +18,14 @@ beforeEach(() => {
 });
 
 describe("VoidOrderButton", () => {
+  it('"Hủy đơn" opens a void step, so it wears the Xoá look: red outline, no class overrides (spec 2.1)', () => {
+    render(<VoidOrderButton orderId="ORD-1" orderNo="ORD000001" />);
+    const classes = screen.getByRole("button", { name: "Hủy đơn" }).className.split(/\s+/);
+    expect(classes).toContain("border-danger");
+    expect(classes).toContain("text-danger");
+    expect(classes.filter(c => c.startsWith("!"))).toEqual([]);
+  });
+
   it("renders Hủy đơn button and opens confirmation box on click", () => {
     render(<VoidOrderButton orderId="ORD-1" orderNo="ORD000001" />);
     const button = screen.getByRole("button", { name: "Hủy đơn" });

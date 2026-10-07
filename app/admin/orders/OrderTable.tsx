@@ -222,7 +222,7 @@ export default function OrderTable({
     <>
       {hasActiveFilters && (
         <Button
-          variant="delete"
+          variant="secondary"
           onClick={clearFilters}
         >
           Xóa bộ lọc
