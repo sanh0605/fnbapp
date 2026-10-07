@@ -170,6 +170,6 @@ Mỗi đợt xong thì chạy năm lệnh kiểm, rồi chủ quán bấm thử 
 - Số đã lưu không đổi. Chỉ cách hiện và cách gõ đổi.
 - Các con số ghi trong tài liệu luật cũ giữ dấu cũ làm lịch sử (`BR-UI-008`).
 
-## 7. Còn chờ chủ quán
+## 7. Chủ quán đã trả lời
 
-- Chủ quán có muốn tự đổi cách viết số trong Cài đặt không, hay một chỗ chung trong code là đủ.
+- ~~Chủ quán có muốn tự đổi cách viết số trong Cài đặt không?~~ Chủ quán chốt 2026-10-07 (*"a"*): không. Cách viết số nằm ở một chỗ chung trong code; cần đổi thì nhờ Opus sửa chỗ đó. Lý do: đổi giữa ca thì cùng một lần gõ của nhân viên ra số khác.
