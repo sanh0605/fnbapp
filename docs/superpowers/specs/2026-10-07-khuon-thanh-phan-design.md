@@ -57,6 +57,7 @@ Một thành phần `NumberInput` mới, đặt trong `components/ui/`. Lõi tá
 - **Đơn vị** (`ml`, `g`, `đ`, `%`) đứng cố định ở mép phải trong ô. Số canh phải, chữ số thẳng hàng.
 - **Sai thì báo ngay dưới ô, chữ đỏ, viền đỏ.** Không bật cửa sổ (`BR-DATA-007`).
   - Ô bắt buộc để trống: "Cần nhập số."
+  - Ô có phần lẻ mà người dùng gõ hoặc dán dấu phẩy: dấu phẩy vẫn bị bỏ, và dưới ô hiện "Số lẻ dùng dấu chấm, ví dụ 1.5" cho tới lần gõ kế tiếp không có dấu phẩy. Chủ quán đồng ý 2026-10-08, sau khi nghe rằng nhân viên quen tay gõ `1,5` sẽ ra `15`. Ô tiền không báo: ô tiền vốn bỏ mọi dấu (`BR-CASH-005`).
   - Nhỏ hơn mức thấp nhất trang khai, ví dụ 0 khi phải lớn hơn 0: "Nhập số lớn hơn 0." hoặc "Nhập số từ {min} trở lên."
   - Lớn hơn mức cao nhất trang khai: câu do trang đưa, ví dụ "Vượt tồn hiện tại 3,200 ml." Không có câu thì "Nhập số không quá {max}."
 - **Gửi đi:** ô gửi kèm một ô ẩn mang số dạng máy đọc (`1250.5`), như `MoneyInput` đang gửi chữ số trơn. Nhờ vậy máy chủ đọc như cũ, không sửa server action nào. Máy chủ vẫn kiểm lại; ô trên màn chỉ giúp nhập đúng.

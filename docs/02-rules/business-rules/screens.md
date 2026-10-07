@@ -66,6 +66,7 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 - **In a number box** the user types digits and a dot only.
   - The box adds the commas itself as he types. A comma typed or pasted is refused.
   - A box for whole numbers, money included, refuses the dot as well.
+  - **A box that takes decimals says so when a comma is typed** — owner 2026-10-08, *"Đồng ý"*, after being told that staff used to typing `1,5` would get 15: the comma is still dropped, and a red line under the box reads "Số lẻ dùng dấu chấm, ví dụ 1.5". Comes with the shared number box in wave K2. Money boxes stay silent (`BR-CASH-005`).
 - **Every number box shows a worked example as its grey hint** before anything is typed, in the box's own unit and decimals: "Ví dụ: 1,250.5" for a quantity, "Ví dụ: 150,000" for money.
 - **One shared formatter** writes every number on screen, and one shared box takes every number typed. A screen does not format a number itself. A guard test fails when new code formats a number another way, so the rule binds every future feature.
 - **No setting to change the marks** — owner 2026-10-07, *"a"*: the style lives in that one shared place and changes only through Opus. Why: if the marks could flip from a settings screen mid-shift, the same keystrokes would mean a different number to staff typing at that moment.
