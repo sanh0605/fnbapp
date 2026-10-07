@@ -69,7 +69,7 @@ describe("CashTransferForm", () => {
     fireEvent.change(toSelect, { target: { value: "CASH" } });
 
     // Fill amount
-    const visibleAmount = screen.getByPlaceholderText("VD: 500.000");
+    const visibleAmount = screen.getByPlaceholderText("VD: 500,000");
     fireEvent.change(visibleAmount, { target: { value: "500000" } });
 
     // Submit form
@@ -96,7 +96,7 @@ describe("CashTransferForm", () => {
     fireEvent.change(fromSelect, { target: { value: "CASH" } });
     fireEvent.change(toSelect, { target: { value: "BA-001" } });
 
-    const visibleAmount = screen.getByPlaceholderText("VD: 500.000");
+    const visibleAmount = screen.getByPlaceholderText("VD: 500,000");
     fireEvent.change(visibleAmount, { target: { value: "500000" } });
 
     const submitBtn = screen.getByRole("button", { name: "Lưu" });

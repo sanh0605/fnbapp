@@ -79,7 +79,7 @@ describe("OutletBreakdownSection", () => {
     const text = cardWrapper.textContent || "";
     expect(text).toContain("Điểm bán 1");
     expect(text).toContain("40 đơn");
-    expect(text).toContain("852.000");
+    expect(text).toContain("852,000");
     // The two new derived columns must not have leaked into the cards.
     expect(cardWrapper.querySelectorAll("table").length).toBe(0);
   });
@@ -92,8 +92,8 @@ describe("OutletBreakdownSection", () => {
     const firstRowText = rows[0].textContent || "";
     expect(firstRowText).toContain("Điểm bán 1");
     expect(firstRowText).toContain("40"); // Số đơn
-    expect(firstRowText).toContain("852.000"); // Doanh thu
-    expect(firstRowText).toContain("21.300"); // TB/đơn = 852000 / 40
+    expect(firstRowText).toContain("852,000"); // Doanh thu
+    expect(firstRowText).toContain("21,300"); // TB/đơn = 852000 / 40
   });
 
   it("rendered layout: TB/đơn renders an em dash, not NaN or 0đ, for an outlet with zero orders", async () => {
@@ -139,7 +139,7 @@ describe("OutletBreakdownSection", () => {
 
     expect(footRow.textContent).toContain("Tổng");
     expect(cells[1].textContent).toBe("58"); // 40 + 18 orders
-    expect(cells[2].textContent).toBe("1.604.400"); // 852.000 + 752.400 revenue
+    expect(cells[2].textContent).toBe("1,604,400"); // 852.000 + 752.400 revenue
     expect(cells[3].textContent?.trim()).toBe("");
     expect(cells[4].textContent?.trim()).toBe("");
   });

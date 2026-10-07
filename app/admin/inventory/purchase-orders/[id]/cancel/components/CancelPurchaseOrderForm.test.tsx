@@ -240,17 +240,17 @@ describe("CancelPurchaseOrderForm (BR-INV-015)", () => {
     expect(within(table).getByText("Bột cà phê MR.PHIN Robusta Dak Mil")).toBeInTheDocument();
     expect(within(table).getByText("Túi")).toBeInTheDocument();
     expect(within(table).getByText("20")).toBeInTheDocument();
-    expect(within(table).getByText("157.000")).toBeInTheDocument();
-    expect(within(table).getByText("3.140.000")).toBeInTheDocument();
+    expect(within(table).getByText("157,000")).toBeInTheDocument();
+    expect(within(table).getByText("3,140,000")).toBeInTheDocument();
   });
 
-  it("the money card shows 59.600, 756.200 and 2.443.400 and label Hình thức thanh toán", () => {
+  it("the money card shows 59,600, 756,200 and 2,443,400 and label Hình thức thanh toán", () => {
     render(<CancelPurchaseOrderForm view={po195View} />);
 
     const moneyCard = screen.getByTestId("money-card");
-    expect(within(moneyCard).getByText("+59.600")).toBeInTheDocument();
-    expect(within(moneyCard).getByText("-756.200")).toBeInTheDocument();
-    expect(within(moneyCard).getByText("2.443.400")).toBeInTheDocument();
+    expect(within(moneyCard).getByText("+59,600")).toBeInTheDocument();
+    expect(within(moneyCard).getByText("-756,200")).toBeInTheDocument();
+    expect(within(moneyCard).getByText("2,443,400")).toBeInTheDocument();
     expect(within(moneyCard).getByText(/Hình thức thanh toán:/)).toBeInTheDocument();
   });
 
@@ -268,7 +268,7 @@ describe("CancelPurchaseOrderForm (BR-INV-015)", () => {
     expect(within(table).getByText("Bột cà phê MR.PHIN Robusta Dak Mil")).toBeInTheDocument();
 
     const moneyCard = screen.getByTestId("money-card");
-    expect(within(moneyCard).getByText("2.443.400")).toBeInTheDocument();
+    expect(within(moneyCard).getByText("2,443,400")).toBeInTheDocument();
 
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(screen.queryByRole("button", { name: "Xác nhận huỷ" })).toBeNull();

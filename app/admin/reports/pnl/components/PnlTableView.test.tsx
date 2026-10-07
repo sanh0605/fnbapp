@@ -17,7 +17,7 @@ describe("PnlTableView", () => {
     expect(items).toHaveLength(4);
     expect(items[0].textContent).toContain("Dán lại xe Phin Đi");
     expect(items[0].textContent).toContain("02/08/2026");
-    expect(items[0].textContent).toContain("-300.000");
+    expect(items[0].textContent).toContain("-300,000");
     items.forEach(item => expect(item.textContent).toMatch(/-/));
     fireEvent.click(screen.getByRole("button", { name: "Vận hành 08/2026" }));
     expect(screen.queryByRole("region", { name: "Chi tiết: Vận hành 08/2026" })).toBeNull();
@@ -27,20 +27,20 @@ describe("PnlTableView", () => {
     render(<PnlTableView table={table()} />);
     fireEvent.click(screen.getByRole("button", { name: "Lợi nhuận ròng 08/2026" }));
     const detail = screen.getByRole("region", { name: "Chi tiết: Lợi nhuận ròng 08/2026" });
-    expect(detail.textContent).toContain("Lợi nhuận gộp -30.496.990 − chi phí 1.085.000 − khấu hao 790.974 = -32.372.964");
+    expect(detail.textContent).toContain("Lợi nhuận gộp -30,496,990 − chi phí 1,085,000 − khấu hao 790,974 = -32,372,964");
   });
 
   it("shows a loss in red, with a minus sign", () => {
     render(<PnlTableView table={table()} />);
     const cell = screen.getByRole("button", { name: "Lợi nhuận ròng 08/2026" });
-    expect(cell.textContent).toBe("-32.372.964");
+    expect(cell.textContent).toBe("-32,372,964");
     expect(cell.closest("td")!.className).toContain("text-danger");
   });
 
   it("a cost row's cell shows its minus without red", () => {
     render(<PnlTableView table={table()} />);
     const cell = screen.getByRole("button", { name: "Giá vốn 08/2026" });
-    expect(cell.textContent).toBe("-46.418.990");
+    expect(cell.textContent).toBe("-46,418,990");
     expect(cell.closest("td")!.className).not.toContain("text-danger");
   });
 

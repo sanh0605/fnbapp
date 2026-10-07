@@ -235,7 +235,7 @@ describe("IssueSlipClient onHand unit label (OPEN-ITEMS 41)", () => {
     const line = Array.from(container.querySelectorAll("p")).find(p =>
       p.textContent?.includes("Tồn hiện tại"),
     );
-    expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 0,48 Hop (48 g)");
+    expect(line?.textContent?.trim()).toBe("Tồn hiện tại: 0.48 Hop (48 g)");
   });
 });
 
@@ -257,13 +257,13 @@ describe("IssueSlipClient -- converted on-hand is a mistake guard (section 3)", 
       ?.textContent?.trim();
   }
 
-  it("Cây 50 Cái selected against 1.000 Cái on hand shows 20 Cây (1.000 Cái), not 1.000 Cái", async () => {
+  it("Cây 50 Cái selected against 1,000 Cái on hand shows 20 Cây (1,000 Cái), not 1,000 Cái", async () => {
     const container = await renderTracked(<IssueSlipClient items={[lyMap]} />);
     const block = getLineBlocks(container)[0];
     await selectItemInBlock(block, "Ly mập Uchako");
     await selectPackage(block, "Cây 50 Cái");
 
-    expect(onHandText(container)).toBe("Tồn hiện tại: 20 Cây (1.000 Cái)");
+    expect(onHandText(container)).toBe("Tồn hiện tại: 20 Cây (1,000 Cái)");
   });
 
   it("Cái 1 Cái selected (rate 1) shows the base figure alone, not doubled", async () => {
@@ -272,7 +272,7 @@ describe("IssueSlipClient -- converted on-hand is a mistake guard (section 3)", 
     await selectItemInBlock(block, "Ly mập Uchako");
     await selectPackage(block, "Cái 1 Cái");
 
-    expect(onHandText(container)).toBe("Tồn hiện tại: 1.000 Cái");
+    expect(onHandText(container)).toBe("Tồn hiện tại: 1,000 Cái");
   });
 });
 
@@ -296,6 +296,45 @@ describe("IssueSlipClient -- package-size counting produces the base quantity se
     expect(mocks.createIssueSlip).toHaveBeenCalledTimes(1);
     const call = mocks.createIssueSlip.mock.calls[0][0];
     expect(call.lines).toEqual([{ purchasedItemId: "SPM-001", baseQuantity: 36 }]);
+  });
+
+  // BR-UI-008 (owner 2026-10-07): the dot is the decimal mark typed into the
+  // box. Before, the box dropped the dot, so "1.5" Thùng became 15 Thùng.
+  it("typing 1.5 Thùng 12 hộp sends 18 hộp, not 180", async () => {
+    mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
+    const theItem = item({
+      packageLines: [
+        pkg({ conversionId: "QD-001", sizeLabel: "Thùng 12 hộp", conversionRate: 12, purchasedUnitName: "Thùng" }),
+      ],
+    });
+    const container = await renderTracked(<IssueSlipClient items={[theItem]} />);
+    const block = getLineBlocks(container)[0];
+
+    await selectItemInBlock(block, "Sữa tươi Vinamilk");
+    await selectPackage(block, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(block), "1.5");
+    expect(findQtyInput(block).value).toBe("1.5");
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+
+    const call = mocks.createIssueSlip.mock.calls[0][0];
+    expect(call.lines).toEqual([{ purchasedItemId: "SPM-001", baseQuantity: 18 }]);
+  });
+
+  it("refuses a 4th decimal and drops a typed comma", async () => {
+    const theItem = item({
+      packageLines: [pkg({ conversionId: "QD-001", sizeLabel: "Thùng 12 hộp", conversionRate: 12, purchasedUnitName: "Thùng" })],
+    });
+    const container = await renderTracked(<IssueSlipClient items={[theItem]} />);
+    const block = getLineBlocks(container)[0];
+    await selectItemInBlock(block, "Sữa tươi Vinamilk");
+    await selectPackage(block, "Thùng 12 hộp");
+
+    await setInputValue(findQtyInput(block), "1.234");
+    await setInputValue(findQtyInput(block), "1.2345");
+    expect(findQtyInput(block).value).toBe("1.234");
+
+    await setInputValue(findQtyInput(block), "1,250");
+    expect(findQtyInput(block).value).toBe("1250");
   });
 });
 
@@ -726,7 +765,7 @@ describe("IssueSlipClient -- Row 3 Giá trị xuất", () => {
     expect(ths).toContain("Giá trị xuất");
   });
 
-  it("with unit cost 1500 per base unit and a 12-factor package × quantity 2 shows 36.000đ on desktop and phone", async () => {
+  it("with unit cost 1500 per base unit and a 12-factor package × quantity 2 shows 36,000đ on desktop and phone", async () => {
     mocks.getIssueUnitCostsAt.mockResolvedValue({
       unitCostByItem: { "SPM-001": 1500 },
     });
@@ -759,12 +798,12 @@ describe("IssueSlipClient -- Row 3 Giá trị xuất", () => {
     );
     expect(giaTriHeaderIndex).toBeGreaterThanOrEqual(0);
     const firstRowCells = desktopTable.querySelectorAll("tbody tr")[0].querySelectorAll("td");
-    expect(firstRowCells[giaTriHeaderIndex].textContent?.trim()).toBe("36.000đ");
+    expect(firstRowCells[giaTriHeaderIndex].textContent?.trim()).toBe("36,000đ");
 
     // Phone card contains 36.000đ
     const phoneCards = getLineBlocks(phone);
     expect(phoneCards[0].textContent).toContain("Giá trị xuất:");
-    expect(phoneCards[0].textContent).toContain("36.000đ");
+    expect(phoneCards[0].textContent).toContain("36,000đ");
   });
 
   it("total row shows the rounded exact sum of two lines (where sum of rounded cells would differ by 1)", async () => {

@@ -29,9 +29,9 @@ describe("BR-CASH-005 MoneyInput", () => {
       ["1", "1"],
       ["15", "15"],
       ["150", "150"],
-      ["1500", "1.500"],
-      ["15000", "15.000"],
-      ["150000", "150.000"],
+      ["1500", "1,500"],
+      ["15000", "15,000"],
+      ["150000", "150,000"],
     ] as const;
     for (const [typed, shown] of steps) {
       fireEvent.change(visible, { target: { value: typed } });
@@ -53,38 +53,59 @@ describe("BR-CASH-005 MoneyInput", () => {
     expect(getHidden("amount").value).toBe("150");
   });
 
+  // BR-UI-008 (owner 2026-10-07): the box shows commas, and drops every mark
+  // pasted in, so an old-style "150.000đ" and a new-style "150,000đ" both
+  // land as 150000.
   it("accepts a paste of 150.000đ into an empty box", () => {
     render(<MoneyInput id="amount" name="amount" />);
     const visible = getVisible();
     fireEvent.change(visible, { target: { value: "150.000đ" } });
-    expect(visible.value).toBe("150.000");
+    expect(visible.value).toBe("150,000");
     expect(getHidden("amount").value).toBe("150000");
+  });
+
+  it("accepts a paste of 150,000đ into an empty box", () => {
+    render(<MoneyInput id="amount" name="amount" />);
+    const visible = getVisible();
+    fireEvent.change(visible, { target: { value: "150,000đ" } });
+    expect(visible.value).toBe("150,000");
+    expect(getHidden("amount").value).toBe("150000");
+  });
+
+  // Money is whole đồng (BR-CASH-005): a dot is never a decimal here, so
+  // "150.5" pasted in reads 1505 -- shown grouped before anything is saved.
+  it("never lets a dot through as a decimal: 150.5 shows 1,505", () => {
+    render(<MoneyInput id="amount" name="amount" />);
+    const visible = getVisible();
+    fireEvent.change(visible, { target: { value: "150.5" } });
+    expect(visible.value).toBe("1,505");
+    expect(getHidden("amount").value).toBe("1505");
   });
 
   it("removes one group on backspace from the end", () => {
     render(<MoneyInput id="amount" name="amount" />);
     const visible = getVisible();
     fireEvent.change(visible, { target: { value: "150000" } });
-    expect(visible.value).toBe("150.000");
+    expect(visible.value).toBe("150,000");
     // Backspace from the end removes the last digit -- simulate the
     // browser's own edit of the field content before onChange fires.
     fireEvent.change(visible, { target: { value: "150.00" } });
-    expect(visible.value).toBe("15.000");
+    expect(visible.value).toBe("15,000");
     expect(getHidden("amount").value).toBe("15000");
   });
 
   it("shows an existing entry's amount grouped, with hidden plain digits", () => {
     render(<MoneyInput id="amount" name="amount" defaultValue={1728578} />);
-    expect(getVisible().value).toBe("1.728.578");
+    expect(getVisible().value).toBe("1,728,578");
     expect(getHidden("amount").value).toBe("1728578");
   });
 
   it("caps a 16th digit -- stays unchanged", () => {
     render(<MoneyInput id="amount" name="amount" defaultValue={"123456789012345"} />);
     const visible = getVisible();
-    expect(visible.value).toBe("123.456.789.012.345");
+    expect(visible.value).toBe("123,456,789,012,345");
     fireEvent.change(visible, { target: { value: "123.456.789.012.3456" } });
-    expect(visible.value).toBe("123.456.789.012.345");
+    expect(visible.value).toBe("123,456,789,012,345");
     expect(getHidden("amount").value).toBe("123456789012345");
   });
 
@@ -103,7 +124,7 @@ describe("BR-CASH-005 MoneyInput", () => {
       </form>,
     );
     const visible = getVisible();
-    expect(visible.value).toBe("150.000");
+    expect(visible.value).toBe("150,000");
     const form = document.querySelector("form") as HTMLFormElement;
     fireEvent.reset(form);
     expect(visible.value).toBe("");
@@ -112,7 +133,7 @@ describe("BR-CASH-005 MoneyInput", () => {
 
   it("shows a string defaultValue grouped, with hidden plain digits", () => {
     render(<MoneyInput id="amount" name="amount" defaultValue="1728578" />);
-    expect(getVisible().value).toBe("1.728.578");
+    expect(getVisible().value).toBe("1,728,578");
     expect(getHidden("amount").value).toBe("1728578");
   });
 });
@@ -125,7 +146,7 @@ describe("BR-CASH-005 fix round 1", () => {
     const full = "123456789012345"; // already at the 15-digit cap
     render(<MoneyInput id="amount" name="amount" defaultValue={full} />);
     const visible = getVisible();
-    expect(visible.value).toBe("123.456.789.012.345");
+    expect(visible.value).toBe("123,456,789,012,345");
 
     const setSelectionRangeSpy = vi.spyOn(HTMLInputElement.prototype, "setSelectionRange");
     // Caret right after the first dot (3 digits in), typing "9" there --
@@ -134,7 +155,7 @@ describe("BR-CASH-005 fix round 1", () => {
     Object.defineProperty(visible, "selectionStart", { value: 5, configurable: true });
     fireEvent.change(visible, { target: { value: "123.9456.789.012.345" } });
 
-    expect(visible.value).toBe("123.456.789.012.345");
+    expect(visible.value).toBe("123,456,789,012,345");
     expect(getHidden("amount").value).toBe(full);
     // Caret goes back to where it was before the rejected keystroke: 3
     // digits in.
@@ -151,71 +172,71 @@ describe("BR-CASH-005 fix round 1", () => {
   });
 
   // Item 2: caret wiring at integration level, the brief's own example --
-  // "150.000", caret between "1" and "5", type "9" -> "1.950.000", caret 3.
-  it("restores the caret after a mid-string insert (150.000 + 9 between 1 and 5)", () => {
+  // "150,000", caret between "1" and "5", type "9" -> "1,950,000", caret 3.
+  it("restores the caret after a mid-string insert (150,000 + 9 between 1 and 5)", () => {
     render(<MoneyInput id="amount" name="amount" defaultValue={150000} />);
     const visible = getVisible();
-    expect(visible.value).toBe("150.000");
+    expect(visible.value).toBe("150,000");
 
     const setSelectionRangeSpy = vi.spyOn(HTMLInputElement.prototype, "setSelectionRange");
     // The browser has already inserted "9" and moved the caret to just
     // after it (index 2) before firing change.
     Object.defineProperty(visible, "selectionStart", { value: 2, configurable: true });
-    fireEvent.change(visible, { target: { value: "1950.000" } });
+    fireEvent.change(visible, { target: { value: "1950,000" } });
 
-    expect(visible.value).toBe("1.950.000");
+    expect(visible.value).toBe("1,950,000");
     expect(setSelectionRangeSpy).toHaveBeenCalledWith(3, 3);
     setSelectionRangeSpy.mockRestore();
   });
 
   // Item 3: Backspace/Delete landing on a dot must remove the neighbouring
   // digit, not silently do nothing.
-  it("Backspace right after a dot removes the digit to its left", () => {
+  it("Backspace right after a comma removes the digit to its left", () => {
     render(<MoneyInput id="amount" name="amount" defaultValue={1500000} />);
     const visible = getVisible();
-    expect(visible.value).toBe("1.500.000");
+    expect(visible.value).toBe("1,500,000");
 
     // Caret right after the first dot; native Backspace deletes the dot
     // itself, landing the caret where the dot used to be (index 1).
     Object.defineProperty(visible, "selectionStart", { value: 1, configurable: true });
     fireEvent.input(visible, {
-      target: { value: "1500.000" },
+      target: { value: "1500,000" },
       inputType: "deleteContentBackward",
     });
 
-    expect(visible.value).toBe("500.000");
+    expect(visible.value).toBe("500,000");
     expect(getHidden("amount").value).toBe("500000");
   });
 
-  it("Delete right before a dot removes the digit to its right", () => {
+  it("Delete right before a comma removes the digit to its right", () => {
     render(<MoneyInput id="amount" name="amount" defaultValue={1500000} />);
     const visible = getVisible();
-    expect(visible.value).toBe("1.500.000");
+    expect(visible.value).toBe("1,500,000");
 
     // Caret right before the second dot; native Delete deletes the dot
     // itself, and Delete never moves the caret (stays at index 5).
     Object.defineProperty(visible, "selectionStart", { value: 5, configurable: true });
     fireEvent.input(visible, {
-      target: { value: "1.500000" },
+      target: { value: "1,500000" },
       inputType: "deleteContentForward",
     });
 
-    expect(visible.value).toBe("150.000");
+    expect(visible.value).toBe("150,000");
     expect(getHidden("amount").value).toBe("150000");
   });
 });
 
 describe("BR-CASH-005 fix round 2", () => {
-  // "1.000.000", caret right after the first dot: Backspace removes the
-  // "1", leaving "000000" -- must empty the box, not show "000.000".
-  it("Backspace across a dot down to all zeros empties the box", () => {
+  // "1,000,000", caret right after the first dot: Backspace removes the
+  // "1", leaving "000000" -- must empty the box, not show "000,000".
+  it("Backspace across a comma down to all zeros empties the box", () => {
     render(<MoneyInput id="amount" name="amount" defaultValue={1000000} />);
     const visible = getVisible();
-    expect(visible.value).toBe("1.000.000");
+    expect(visible.value).toBe("1,000,000");
 
     Object.defineProperty(visible, "selectionStart", { value: 1, configurable: true });
     fireEvent.input(visible, {
-      target: { value: "1000.000" },
+      target: { value: "1000,000" },
       inputType: "deleteContentBackward",
     });
 

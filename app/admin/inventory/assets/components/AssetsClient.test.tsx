@@ -124,7 +124,7 @@ describe("AssetsClient", () => {
     expect(screen.getAllByText("Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("1 / 2 cái").length).toBeGreaterThan(0);
     expect(screen.getAllByText("1 cái").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("145.860đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("145,860đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("04/04/2026").length).toBeGreaterThan(0);
 
     // Ca đong: 0 thanh lý renders as '—'

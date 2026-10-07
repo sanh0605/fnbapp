@@ -84,7 +84,7 @@ describe("CashTransferDetailView", () => {
 
     expect(screen.getAllByText("CT-001").length).toBeGreaterThan(0);
     expect(screen.getAllByText("10/09/2026").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("5.000.000đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("5,000,000đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Tiền mặt (két)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("ACB - Phin Di").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chuyển tiền két vào ACB").length).toBeGreaterThan(0);

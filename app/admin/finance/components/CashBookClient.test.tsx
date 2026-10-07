@@ -350,7 +350,7 @@ describe("CashBookClient", () => {
 
     // Sale Cash: 23 đơn, 522.000đ, Tiền mặt
     expect(screen.getAllByText("23 đơn").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("522.000đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("522,000đ").length).toBeGreaterThan(0);
     const saleCashLink = screen
       .getAllByRole("link")
       .find((l) =>
@@ -364,7 +364,7 @@ describe("CashBookClient", () => {
 
     // Sale Transfer: 11 đơn, 482.000đ, Chuyển khoản
     expect(screen.getAllByText("11 đơn").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("482.000đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("482,000đ").length).toBeGreaterThan(0);
     const saleTransferLink = screen
       .getAllByRole("link")
       .find((l) =>
@@ -378,7 +378,7 @@ describe("CashBookClient", () => {
 
     // Purchase Cash: 2 đơn nhập, 536.023đ, Tiền mặt
     expect(screen.getAllByText("2 đơn nhập").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("536.023đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("536,023đ").length).toBeGreaterThan(0);
     const purchaseCashLink = screen
       .getAllByRole("link")
       .find((l) =>
@@ -484,10 +484,10 @@ describe("CashBookClient", () => {
 
     // Balance cards still show their figures from summary
     expect(screen.getByTestId("opening-cash")).toHaveTextContent(
-      "-10.341.000đ",
+      "-10,341,000đ",
     );
     expect(screen.getByTestId("closing-cash")).toHaveTextContent(
-      "-7.351.887đ",
+      "-7,351,887đ",
     );
   });
 
@@ -502,31 +502,31 @@ describe("CashBookClient", () => {
     const opCash = screen.getByTestId("opening-cash");
     const opBank = screen.getByTestId("opening-bank");
     const opTotal = screen.getByTestId("opening-total");
-    expect(opCash).toHaveTextContent("-10.341.000đ");
+    expect(opCash).toHaveTextContent("-10,341,000đ");
     expect(opCash).toHaveClass("text-danger");
-    expect(opBank).toHaveTextContent("23.756.578đ");
+    expect(opBank).toHaveTextContent("23,756,578đ");
     expect(opBank).not.toHaveClass("text-danger");
-    expect(opTotal).toHaveTextContent("13.415.578đ");
+    expect(opTotal).toHaveTextContent("13,415,578đ");
     expect(opTotal).not.toHaveClass("text-danger");
 
     // Closing
     const clCash = screen.getByTestId("closing-cash");
     const clBank = screen.getByTestId("closing-bank");
     const clTotal = screen.getByTestId("closing-total");
-    expect(clCash).toHaveTextContent("-7.351.887đ");
+    expect(clCash).toHaveTextContent("-7,351,887đ");
     expect(clCash).toHaveClass("text-danger");
-    expect(clBank).toHaveTextContent("27.972.578đ");
+    expect(clBank).toHaveTextContent("27,972,578đ");
     expect(clBank).not.toHaveClass("text-danger");
-    expect(clTotal).toHaveTextContent("20.620.691đ");
+    expect(clTotal).toHaveTextContent("20,620,691đ");
     expect(clTotal).not.toHaveClass("text-danger");
 
     // Totals
     expect(screen.getByTestId("total-expense")).toHaveTextContent(
-      "10.680.287đ",
+      "10,680,287đ",
     );
-    expect(screen.getByTestId("total-income")).toHaveTextContent("17.885.400đ");
+    expect(screen.getByTestId("total-income")).toHaveTextContent("17,885,400đ");
     expect(screen.getByTestId("income-outside-pnl")).toHaveTextContent(
-      "2.443.400đ",
+      "2,443,400đ",
     );
   });
 

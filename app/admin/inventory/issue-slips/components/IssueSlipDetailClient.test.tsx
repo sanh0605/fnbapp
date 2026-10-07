@@ -77,7 +77,7 @@ const mockItems: IssueSlipItemView[] = [
         purchasedUnitName: "Hộp",
         baseUnitName: "ml",
         conversionRate: 1000,
-        sizeLabel: "Hộp (1.000 ml)",
+        sizeLabel: "Hộp (1,000 ml)",
       },
     ],
   },
@@ -96,10 +96,10 @@ const defaultDetail: IssueSlipDetail = {
       name: "Sữa yến mạch Oatside",
       baseQuantity: 2000,
       baseUnitName: "ml",
-      quantityText: "2 Hộp (2.000 ml)",
+      quantityText: "2 Hộp (2,000 ml)",
       value: 120000,
       unitOptions: [
-        { key: "conv-hop", label: "Hộp (1.000 ml)", factor: 1000, unitName: "Hộp" },
+        { key: "conv-hop", label: "Hộp (1,000 ml)", factor: 1000, unitName: "Hộp" },
         { key: "BASE", label: "ml (lẻ)", factor: 1, unitName: "ml" },
       ],
     },
@@ -141,7 +141,7 @@ describe("IssueSlipDetailClient", () => {
     expect(saveBtn).toBeDisabled();
   });
 
-  it("đổi Oatside sang 1 Hộp thì Quy ra hiện 1.000 ml", async () => {
+  it("đổi Oatside sang 1 Hộp thì Quy ra hiện 1,000 ml", async () => {
     render(<IssueSlipDetailClient detail={defaultDetail} items={mockItems} />);
     fireEvent.click(screen.getByRole("button", { name: "Chỉnh sửa" }));
     
@@ -151,7 +151,7 @@ describe("IssueSlipDetailClient", () => {
     
     fireEvent.change(qtyInput, { target: { value: "1" } });
 
-    expect(within(table).getByText("1.000 ml")).toBeInTheDocument();
+    expect(within(table).getByText("1,000 ml")).toBeInTheDocument();
   });
 
   it("bỏ hết dòng thì hiện câu hỏi huỷ", async () => {
@@ -207,6 +207,33 @@ describe("IssueSlipDetailClient", () => {
     expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeDisabled();
   });
 
+  // BR-UI-008 (owner 2026-10-07): a dot marks decimals. A saved 2.5 ml must
+  // open as "2.5" -- "2,5" would now read as 25 once the box drops the comma.
+  it("opens a saved 2.5 ml line with 2.5 in the box, dot not comma", async () => {
+    const detail: IssueSlipDetail = {
+      ...defaultDetail,
+      lines: [{ ...defaultDetail.lines[0], baseQuantity: 2.5, quantityText: "2.5 ml" }],
+    };
+    render(<IssueSlipDetailClient detail={detail} items={mockItems} />);
+    fireEvent.click(screen.getByRole("button", { name: "Chỉnh sửa" }));
+
+    const table = screen.getByRole("table");
+    const qtyInput = within(table).getAllByRole("textbox", { name: "Số lượng" })[0] as HTMLInputElement;
+    expect(qtyInput.value).toBe("2.5");
+  });
+
+  it("typing 1.5 Hộp reads one and a half boxes: Quy ra 1,500 ml", async () => {
+    render(<IssueSlipDetailClient detail={defaultDetail} items={mockItems} />);
+    fireEvent.click(screen.getByRole("button", { name: "Chỉnh sửa" }));
+
+    const table = screen.getByRole("table");
+    const qtyInput = within(table).getAllByRole("textbox", { name: "Số lượng" })[0] as HTMLInputElement;
+    fireEvent.change(qtyInput, { target: { value: "1.5" } });
+
+    expect(qtyInput.value).toBe("1.5");
+    expect(within(table).getByText("1,500 ml")).toBeInTheDocument();
+  });
+
   it("shows live computed value when quantity changes", async () => {
     render(<IssueSlipDetailClient detail={defaultDetail} items={mockItems} />);
     fireEvent.click(screen.getByRole("button", { name: "Chỉnh sửa" }));
@@ -219,7 +246,7 @@ describe("IssueSlipDetailClient", () => {
 
     // Hiển thị giá trị mới 36.803đ trên dòng đó
     // The slip has one line, so the line cell and the live total both read 36.803đ.
-    expect(within(table).getAllByText("36.803đ")).toHaveLength(2);
+    expect(within(table).getAllByText("36,803đ")).toHaveLength(2);
   });
 
   describe("Reason (note) display rules (BR-INV-014)", () => {

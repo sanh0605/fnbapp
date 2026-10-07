@@ -46,8 +46,8 @@ const samplePromo: DBPromotion = {
 };
 
 const sampleItems: ApplicableProductItem[] = [
-  { variantId: "VAR-020", dishName: "Trà đào", sizeName: "Size M", appliedValue: "10.000đ" },
-  { variantId: "VAR-021", dishName: "Trà đào", sizeName: "Size L", appliedValue: "10.000đ" },
+  { variantId: "VAR-020", dishName: "Trà đào", sizeName: "Size M", appliedValue: "10,000đ" },
+  { variantId: "VAR-021", dishName: "Trà đào", sizeName: "Size L", appliedValue: "10,000đ" },
 ];
 
 describe("PromotionDetailView", () => {
@@ -66,9 +66,9 @@ describe("PromotionDetailView", () => {
     expect(screen.getAllByText("202607 - GIẢM 10K").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Uchako").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Giảm theo món").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Giảm 10.000đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Giảm 10,000đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("GIAM10K").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("50.000đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("50,000đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/15\/07\/2026 12:59/).length).toBeGreaterThan(0);
   });
 
