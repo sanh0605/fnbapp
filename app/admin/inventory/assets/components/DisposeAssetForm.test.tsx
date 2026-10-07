@@ -6,6 +6,20 @@ import React from "react";
 import { DisposeAssetForm } from "./DisposeAssetForm";
 import type { AssetLotView } from "@/lib/assets/asset-items";
 
+// Wave K3: the day box is DayInput, whose calendar asks matchMedia; jsdom has none.
+if (typeof window.matchMedia !== "function") {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+}
+
 const mocks = vi.hoisted(() => ({
   disposeAsset: vi.fn(),
   previewDisposalCharge: vi.fn(),
@@ -134,8 +148,34 @@ describe("DisposeAssetForm -- default disposal date", () => {
     );
     await flush();
 
-    const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement;
+    // Wave K3: the day box is the shared DayInput; the posted field carries the day.
+    const dateInput = document.querySelector('input[name="disposed_date"]') as HTMLInputElement;
     expect(dateInput.value).toBe("2026-06-01");
+  });
+});
+
+// BR-UI-005 / BR-UI-008 (wave K3): the quantity box is the shared number box;
+// more than what is left says so under the box.
+describe("DisposeAssetForm -- quantity box", () => {
+  it("is a whole-number text box and refuses more than what is left", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    const container = await renderTracked(
+      <DisposeAssetForm lots={[TS030_LOT, TS057_LOT]} initialLotId="TS-030" returnTo="/admin/inventory/assets/SPM-COC" />,
+    );
+    await flush();
+    const label = Array.from(container.querySelectorAll("label")).find(l => l.textContent?.trim() === "Số lượng thanh lý")!;
+    const qty = document.getElementById(label.htmlFor) as HTMLInputElement;
+    expect(qty.type).toBe("text");
+    expect(qty.getAttribute("inputMode")).toBe("numeric");
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
+    await act(async () => {
+      setter.call(qty, "3");
+      qty.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => {
+      qty.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    });
+    expect(container.textContent).toContain("Nhập số không quá 2.");
   });
 });
 

@@ -6,6 +6,16 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { NumberInput } from "@/components/ui/NumberInput";
+import { TextInput } from "@/components/ui/TextInput";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTime, formatDateTimeFull } from "@/lib/shared/datetime";
 import { alert, confirm } from "@/lib/shared/dialog";
@@ -85,14 +95,12 @@ function LastConfirmedSessionPanel({ session }: { session: RecentConfirmedStockt
         <p className="text-xs text-warning">Đang có một phiên kiểm kê mới mở -- xử lý xong phiên đó trước khi huỷ phiên này.</p>
       ) : (
         <>
-          <input
-            type="text"
+          <TextInput
             placeholder="Lý do huỷ (bắt buộc)"
             value={reason}
             onChange={e => setReason(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
           />
-          <Button variant="danger" onClick={handleReverse} loading={cancelling}>
+          <Button variant="delete" onClick={handleReverse} loading={cancelling}>
             Huỷ phiên kiểm kê này
           </Button>
         </>
@@ -227,10 +235,18 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
         subtitle="Đếm thực tế toàn bộ nguyên liệu và bán thành phẩm, so sánh với sổ sách hệ thống."
         actions={
           <div className="flex gap-2">
-            <Button variant="primary" onClick={handlePreview} loading={previewLoading}>
+            <Button
+              variant={preview ? "secondary" : "primary"}
+              onClick={handlePreview}
+              loading={previewLoading}
+            >
               Xác nhận và áp dụng
             </Button>
-            <Button variant="danger" onClick={handleCancel} loading={cancelling}>
+            <Button
+              variant="delete"
+              onClick={handleCancel}
+              loading={cancelling}
+            >
               Hủy phiên
             </Button>
           </div>
@@ -278,17 +294,15 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
                   overflow-x-auto -- that is not readable one-handed at a
                   shelf. Desktop keeps the table; a phone gets one card per
                   row instead, same data, no horizontal scroll. */}
-              <div className="overflow-x-auto hidden md:block">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border text-left text-text-secondary text-xs">
-                      <th className="px-3 py-2">Mặt hàng</th>
-                      <th className="px-3 py-2 text-right">Tồn hiện tại</th>
-                      <th className="px-3 py-2 text-right">Điều chỉnh</th>
-                      <th className="px-3 py-2 text-right">Dự kiến sau áp dụng</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
+              <div className="hidden md:block">
+                <Table aria-label="Dự kiến áp dụng kiểm kê">
+                  <TableHead>
+                    <TableHeaderCell>Mặt hàng</TableHeaderCell>
+                    <TableHeaderCell align="right">Tồn hiện tại</TableHeaderCell>
+                    <TableHeaderCell align="right">Điều chỉnh</TableHeaderCell>
+                    <TableHeaderCell align="right">Dự kiến sau áp dụng</TableHeaderCell>
+                  </TableHead>
+                  <TableBody>
                     {preview.rows.map(row => {
                       const line = session.lines.find(candidate => candidate.id === row.lineId);
                       const unitName = line?.unitName || "";
@@ -297,18 +311,20 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
                       // carry no lineId -- fall back to the ingredient reference.
                       const displayName = line?.itemName || row.itemReference;
                       return (
-                        <tr key={row.lineId || row.itemReference}>
-                          <td className="px-3 py-2 font-medium text-text-primary">{displayName}</td>
-                          <td className="px-3 py-2 text-right">{formatNumber(row.currentTheoreticalQty)} {unitName}</td>
-                          <td className={`px-3 py-2 text-right font-bold ${row.countVariance > 0 ? "text-success" : "text-danger"}`}>
-                            {row.countVariance > 0 ? "+" : ""}{formatNumber(row.countVariance)} {unitName}
-                          </td>
-                          <td className="px-3 py-2 text-right font-semibold">{formatNumber(row.projectedQty)} {unitName}</td>
-                        </tr>
+                        <TableRow key={row.lineId || row.itemReference}>
+                          <TableCell>{displayName}</TableCell>
+                          <TableCell align="right">{formatNumber(row.currentTheoreticalQty)} {unitName}</TableCell>
+                          <TableCell align="right">
+                            <span className={row.countVariance > 0 ? "text-success" : "text-danger"}>
+                              {row.countVariance > 0 ? "+" : ""}{formatNumber(row.countVariance)} {unitName}
+                            </span>
+                          </TableCell>
+                          <TableCell align="right">{formatNumber(row.projectedQty)} {unitName}</TableCell>
+                        </TableRow>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
 
               <div className="md:hidden space-y-2">
@@ -321,12 +337,12 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
                       <div className="font-medium text-text-primary mb-1.5">{displayName}</div>
                       <div className="flex justify-between text-xs text-text-secondary">
                         <span>Tồn hiện tại: {formatNumber(row.currentTheoreticalQty)} {unitName}</span>
-                        <span className={`font-bold ${row.countVariance > 0 ? "text-success" : "text-danger"}`}>
+                        <span className={row.countVariance > 0 ? "text-success" : "text-danger"}>
                           {row.countVariance > 0 ? "+" : ""}{formatNumber(row.countVariance)} {unitName}
                         </span>
                       </div>
                       <div className="text-xs text-text-secondary mt-0.5">
-                        Dự kiến sau áp dụng: <span className="font-semibold text-text-primary">{formatNumber(row.projectedQty)} {unitName}</span>
+                        Dự kiến sau áp dụng: <span className="text-text-primary">{formatNumber(row.projectedQty)} {unitName}</span>
                       </div>
                     </div>
                   );
@@ -480,16 +496,15 @@ function PackageLineCard({
         {line.packageLines.map(pkg => (
           <label key={pkg.conversionId} className="flex flex-col gap-1">
             <span className="text-xs text-text-secondary">{pkg.sizeLabel}</span>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              inputMode="numeric"
-              placeholder="0"
-              value={values[pkg.conversionId] ?? ""}
-              onChange={e => handleInputChange(pkg.conversionId, e.target.value)}
+            <NumberInput
+              id={`pkg-${pkg.conversionId}`}
+              decimals={0}
+              min={0}
+              example="12"
+              aria-label={pkg.sizeLabel}
               disabled={disabled}
-              className="border border-border rounded-lg px-2 py-1.5 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring"
+              value={(values[pkg.conversionId] ?? "") === "" ? null : Number(values[pkg.conversionId])}
+              onValueChange={v => handleInputChange(pkg.conversionId, v === null ? "" : String(v))}
             />
           </label>
         ))}
@@ -513,7 +528,7 @@ function PackageLineCard({
         {/* M3: this is the button tapped most often in the whole screen --
             one per purchased item, standing at the shelf -- so it gets a
             full 44px thumb target (Button's default md size), not sm's 32px. */}
-        <Button variant={confirmed ? "secondary" : "primary"} onClick={handleConfirm} loading={saving} disabled={disabled}>
+        <Button variant={confirmed || disabled ? "secondary" : "primary"} onClick={handleConfirm} loading={saving} disabled={disabled}>
           Xác nhận
         </Button>
       </div>
@@ -562,23 +577,20 @@ function LegacyLineCard({
             {line.itemType === "SEMI_PRODUCT" ? "Bán thành phẩm" : "Nguyên liệu"}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {error && <span className="text-danger text-xs">{error}</span>}
-          <input
-            type="number"
-            min="0"
-            step="any"
-            // M2: decimal, not numeric -- this field allows fractional
-            // quantities (step="any", unlike PackageLineCard's whole-
-            // package-only inputs), and inputMode="numeric" hides the
-            // decimal point on most phone keypads. "decimal" opens a
-            // number pad that still has one.
-            inputMode="decimal"
-            value={inputValue}
-            onChange={e => setInputValue(e.target.value)}
-            disabled={disabled}
-            className="w-24 border border-border rounded-lg px-2 py-1.5 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring"
-          />
+          <div className="w-32">
+            <NumberInput
+              id={`legacy-qty-${line.id}`}
+              decimals={3}
+              min={0}
+              example="1,250.5"
+              aria-label={`Số đếm ${line.itemName}`}
+              disabled={disabled}
+              value={inputValue === "" ? null : Number(inputValue)}
+              onValueChange={v => setInputValue(v === null ? "" : String(v))}
+            />
+          </div>
           <span className="text-text-muted text-xs">{line.unitName}</span>
           <Button variant="secondary" onClick={handleSave} loading={saving} disabled={disabled}>
             Lưu

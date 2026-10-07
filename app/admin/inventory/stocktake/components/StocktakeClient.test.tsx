@@ -135,7 +135,9 @@ function findPackageInput(card: HTMLElement, sizeLabel: string): HTMLInputElemen
 }
 
 function findLegacyInput(card: HTMLElement): HTMLInputElement {
-  const input = card.querySelector('input[type="number"]');
+  // Wave K3: the loose box is the shared NumberInput (a text box with the
+  // decimal keypad), so it is found by its keypad, not by type="number".
+  const input = card.querySelector('input[inputmode="decimal"]');
   if (!input) throw new Error("legacy input not found");
   return input as HTMLInputElement;
 }
@@ -279,16 +281,22 @@ describe("StocktakeClient -- per-line save (must survive a phone locking mid-cou
 });
 
 describe("StocktakeClient -- BR-INV-007, whole packages only", () => {
-  it("rejects a decimal package count with the BR-INV-007 reason and does not save", async () => {
+  // Wave K3: the package box is the shared whole-number box, so a dot never
+  // gets into it -- the BR-INV-007 sentence can no longer be reached by
+  // typing. What the rule protects still holds: no half package is saved.
+  it("the package box holds no decimal point, so no half package is saved", async () => {
+    mocks.saveStocktakeLine.mockResolvedValue({});
     const line = packageLineItem({ packageLines: [pkg({ sizeLabel: "Túi 1kg", conversionRate: 1000 })] });
     const container = await renderTracked(<StocktakeClient session={session([line])} lastConfirmed={null} />);
     const card = findCard(container, "Sữa tươi Vinamilk");
+    const box = findPackageInput(card, "Túi 1kg");
 
-    await setInputValue(findPackageInput(card, "Túi 1kg"), "1.5");
+    expect(box.type).toBe("text");
+    await setInputValue(box, "1.5");
+    expect(box.value).not.toContain(".");
     await clickButtonWithText(card, "Xác nhận");
 
-    expect(card.textContent).toContain("BR-INV-007");
-    expect(mocks.saveStocktakeLine).not.toHaveBeenCalled();
+    expect(mocks.saveStocktakeLine).not.toHaveBeenCalledWith("LINE-1", 1500);
   });
 });
 
@@ -406,5 +414,48 @@ describe("StocktakeClient -- Saigon timezone display", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+// BR-UI-005 / BR-UI-008 (wave K3): the loose box is the shared number box
+// with 3 decimals; one brown button while the preview is open; Hủy phiên
+// opens a cancel step, so it is the red outline.
+describe("StocktakeClient -- shared templates (wave K3)", () => {
+  it("the loose box is a text box that takes 1.5 and saves 1.5", async () => {
+    mocks.saveStocktakeLine.mockResolvedValue({});
+    const container = await renderTracked(
+      <StocktakeClient session={session([legacyLineItem()])} lastConfirmed={null} />,
+    );
+    const card = findCard(container, "Đường cát");
+    const box = findLegacyInput(card);
+    expect(box.type).toBe("text");
+    await setInputValue(box, "1.5");
+    expect(box.value).toBe("1.5");
+    await clickButtonWithText(card, "Lưu");
+    expect(mocks.saveStocktakeLine).toHaveBeenCalledWith("LINE-2", 1.5);
+  });
+
+  it("with the preview open exactly one button is brown", async () => {
+    mocks.getStocktakeConfirmPreview.mockResolvedValue({ preview: previewResult() });
+    const uncounted = packageLineItem({ id: "LINE-1", itemName: "Sữa tươi Vinamilk" });
+    const legacy = legacyLineItem({ id: "LINE-2", itemName: "Đường cát" });
+    const container = await renderTracked(
+      <StocktakeClient session={session([uncounted, legacy])} lastConfirmed={null} />,
+    );
+    await clickButtonWithText(container, "Xác nhận và áp dụng");
+
+    const brown = Array.from(container.querySelectorAll("button")).filter(b =>
+      b.className.split(/\s+/).includes("bg-primary"),
+    );
+    expect(brown.map(b => b.textContent?.trim())).toEqual(["Xác nhận áp dụng"]);
+  });
+
+  it("Hủy phiên is the red outline, not solid red", async () => {
+    const container = await renderTracked(
+      <StocktakeClient session={session([legacyLineItem()])} lastConfirmed={null} />,
+    );
+    const btn = findButtonWithText(container, "Hủy phiên")!;
+    expect(btn.className).toContain("border-danger");
+    expect(btn.className.split(/\s+/)).not.toContain("bg-danger");
   });
 });
