@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
@@ -60,7 +63,7 @@ export default function SuppliersClient({
         header: "Mã",
         sortValue: (s) => s.id,
         render: (s) => (
-          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-primary transition-colors">
             {s.id}
           </span>
         ),
@@ -71,11 +74,11 @@ export default function SuppliersClient({
         sortValue: (s) => s.name,
         render: (s) => (
           <div>
-            <div className="font-bold text-text-primary">{s.name}</div>
+            <div className="text-text-primary">{s.name}</div>
             {s.status === "INACTIVE" && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary mt-1 border border-border">
+              <Badge variant="neutral" className="mt-1">
                 Ngừng hợp tác
-              </span>
+              </Badge>
             )}
           </div>
         ),
@@ -85,7 +88,7 @@ export default function SuppliersClient({
         header: "Điện thoại",
         sortValue: (s) => s.phone || null,
         render: (s) => (
-          <span className="text-text-primary font-medium">{s.phone || "—"}</span>
+          <span className="text-text-primary">{s.phone || "—"}</span>
         ),
       },
       {
@@ -163,17 +166,17 @@ export default function SuppliersClient({
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-start gap-2">
         <div>
-          <div className="font-bold text-text-primary text-base leading-tight">
+          <div className="text-text-primary text-base leading-tight">
             {s.name}
           </div>
-          <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+          <div className="font-mono text-xs text-primary mt-0.5">
             {s.id}
           </div>
         </div>
         {s.status === "INACTIVE" && (
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary border border-border shrink-0">
+          <Badge variant="neutral">
             Ngừng hợp tác
-          </span>
+          </Badge>
         )}
       </div>
 
@@ -181,7 +184,7 @@ export default function SuppliersClient({
         {s.phone && (
           <div className="flex gap-2">
             <span className="text-text-muted shrink-0">LH:</span>
-            <span className="text-text-primary font-medium">{s.phone}</span>
+            <span className="text-text-primary">{s.phone}</span>
           </div>
         )}
         {s.tax_id && (
@@ -223,12 +226,13 @@ export default function SuppliersClient({
         group="Nhập hàng"
         title="Nhà cung cấp"
         action={
-          <Link
+          <Button
             href={`/admin/suppliers/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            variant="primary"
+            className="w-full md:w-auto"
           >
             Tạo
-          </Link>
+          </Button>
         }
       />
 
@@ -238,20 +242,14 @@ export default function SuppliersClient({
         showClear={Boolean(search)}
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="suppliers-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm kiếm
-          </label>
-          <input
-            id="suppliers-search"
-            type="text"
-            placeholder="Tên, SĐT, địa chỉ..."
-            value={search}
-            onChange={handleSearchChange}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+          <Field label="Tìm kiếm" htmlFor="suppliers-search">
+            <TextInput
+              id="suppliers-search"
+              placeholder="Tên, SĐT, địa chỉ..."
+              value={search}
+              onChange={handleSearchChange}
+            />
+          </Field>
         </div>
       </FilterCard>
 

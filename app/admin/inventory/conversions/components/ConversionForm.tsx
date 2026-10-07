@@ -3,9 +3,12 @@
 import { useState, useMemo, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addConversion, updateConversion } from "../actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { NumberInput } from "@/components/ui/NumberInput";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { formatDecimal } from "@/lib/shared/format";
 import type { DBPurchasedItem, DBUnit, DBUOMConversion } from "@/types/db";
 
 interface ConversionFormProps {
@@ -123,10 +126,7 @@ export function ConversionForm({
           </div>
         )}
 
-        <div>
-          <label htmlFor={`${formId}-selectedItemId`} className="block text-sm font-medium text-text-secondary mb-1">
-            Hàng Hóa
-          </label>
+        <Field label="Hàng hóa" htmlFor={`${formId}-selectedItemId`}>
           <SearchableSelect
             id={`${formId}-selectedItemId`}
             options={itemOptions}
@@ -134,13 +134,10 @@ export function ConversionForm({
             onChange={setSelectedItemId}
             placeholder="Chọn hàng hóa..."
           />
-        </div>
+        </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor={`${formId}-selectedUnitName`} className="block text-sm font-medium text-text-secondary mb-1">
-              Đơn vị mua
-            </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Đơn vị mua" htmlFor={`${formId}-selectedUnitName`}>
             <SearchableSelect
               id={`${formId}-selectedUnitName`}
               options={unitOptions}
@@ -148,22 +145,19 @@ export function ConversionForm({
               onChange={setSelectedUnitName}
               placeholder="VD: Thùng 24 lon"
             />
-          </div>
-          <div>
-            <label htmlFor={`${formId}-conversionRate`} className="block text-sm font-medium text-text-secondary mb-1">
-              Tỷ lệ quy đổi
-            </label>
-            <input
+          </Field>
+          <Field label="Tỷ lệ quy đổi" htmlFor={`${formId}-conversionRate`}>
+            <NumberInput
               id={`${formId}-conversionRate`}
-              type="number"
-              step="any"
+              decimals={6}
+              min={0}
+              minExclusive
+              example="1,000"
               required
-              value={conversionRate}
-              onChange={(e) => setConversionRate(e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-              placeholder="Số lượng trong 1 đơn vị mua"
+              value={conversionRate === "" ? null : Number(conversionRate)}
+              onValueChange={(v) => setConversionRate(v === null ? "" : String(v))}
             />
-          </div>
+          </Field>
         </div>
 
         {baseUnit && (
@@ -172,7 +166,7 @@ export function ConversionForm({
               Quy đổi sang đơn vị cơ bản
             </div>
             <div className="text-sm font-medium text-primary-active">
-              1 {selectedUnitName || "..."} = <span className="font-bold text-primary">{conversionRate || "0"}</span> {baseUnit.name}
+              1 {selectedUnitName || "..."} = <span className="font-bold text-primary">{formatDecimal(Number(conversionRate || 0), { maxDigits: 6 })}</span> {baseUnit.name}
             </div>
             <div className="text-[10px] text-primary mt-1 italic">
               (Đơn vị gốc đã thiết lập cho {selectedItem?.name})
@@ -213,21 +207,22 @@ export function ConversionForm({
         )}
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu..."
             className="w-full sm:w-auto"
           >
             {isEdit ? "Cập nhật" : "Lưu Quy Đổi"}
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

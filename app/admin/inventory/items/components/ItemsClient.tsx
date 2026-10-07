@@ -1,8 +1,12 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
@@ -104,7 +108,7 @@ export default function ItemsClient({
         header: "Mã",
         sortValue: (item) => item.id,
         render: (item) => (
-          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-primary transition-colors">
             {item.id}
           </span>
         ),
@@ -115,11 +119,11 @@ export default function ItemsClient({
         sortValue: (item) => item.name,
         render: (item) => (
           <div>
-            <div className="font-bold text-text-primary">{item.name}</div>
+            <div className="text-text-primary">{item.name}</div>
             {item.status === "INACTIVE" && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary mt-1 border border-border">
+              <Badge variant="neutral" className="mt-1">
                 Ngừng dùng
-              </span>
+              </Badge>
             )}
           </div>
         ),
@@ -129,7 +133,7 @@ export default function ItemsClient({
         header: "Phân loại",
         sortValue: (item) => categoryMap[item.item_category_id] || "",
         render: (item) => (
-          <span className="text-text-secondary font-medium">
+          <span className="text-text-secondary">
             {categoryMap[item.item_category_id] || "—"}
           </span>
         ),
@@ -146,7 +150,7 @@ export default function ItemsClient({
           if (!entry) return <span className="text-text-muted">—</span>;
           if (entry.kind === "figure") {
             return (
-              <span className="font-medium text-text-primary tabular-nums">
+              <span className="text-text-primary tabular-nums">
                 {entry.text}
               </span>
             );
@@ -249,16 +253,23 @@ export default function ItemsClient({
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
           <div>
-            <div className="font-bold text-text-primary text-base leading-tight">
+            <div className="text-text-primary text-base leading-tight">
               {item.name}
             </div>
-            <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+            <div className="font-mono text-xs text-primary mt-0.5">
               {item.id}
             </div>
           </div>
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-secondary text-text-secondary border border-border shrink-0">
-            {catName}
-          </span>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-surface-secondary text-text-secondary border border-border">
+              {catName}
+            </span>
+            {item.status === "INACTIVE" && (
+              <Badge variant="neutral">
+                Ngừng dùng
+              </Badge>
+            )}
+          </div>
         </div>
         <div className="text-xs text-text-secondary">
           Tồn kho: {stockText}
@@ -300,18 +311,20 @@ export default function ItemsClient({
         title="Hàng hoá"
         action={
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <Link
+            <Button
               href="/admin/inventory/conversions"
-              className="border border-border bg-surface-card text-text-primary flex items-center justify-center font-bold text-sm transition-colors hover:bg-page rounded-lg h-11 px-4 min-h-[44px]"
+              variant="secondary"
+              className="w-full md:w-auto"
             >
               Bảng quy đổi
-            </Link>
-            <Link
+            </Button>
+            <Button
               href={`/admin/inventory/items/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-              className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+              variant="primary"
+              className="w-full md:w-auto"
             >
               Tạo
-            </Link>
+            </Button>
           </div>
         }
       />
@@ -322,41 +335,30 @@ export default function ItemsClient({
         showClear={Boolean(search || (category && category !== "ALL"))}
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="items-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm kiếm
-          </label>
-          <input
-            id="items-search"
-            type="text"
-            placeholder="Tên hàng hóa..."
-            value={search}
-            onChange={handleSearchChange}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+          <Field label="Tìm kiếm" htmlFor="items-search">
+            <TextInput
+              id="items-search"
+              placeholder="Tên hàng hóa..."
+              value={search}
+              onChange={handleSearchChange}
+            />
+          </Field>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
-          <label
-            htmlFor="items-category"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Phân loại
-          </label>
-          <select
-            id="items-category"
-            value={category}
-            onChange={handleCategoryChange}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ALL">Tất cả</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <Field label="Phân loại" htmlFor="items-category">
+            <Select
+              id="items-category"
+              value={category}
+              onChange={handleCategoryChange}
+            >
+              <option value="ALL">Tất cả</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </div>
       </FilterCard>
 

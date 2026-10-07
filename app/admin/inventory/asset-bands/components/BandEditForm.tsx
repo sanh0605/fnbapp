@@ -70,7 +70,7 @@ export function BandEditForm({
           />
         </Field>
         <Field
-          label="Giá cao nhất (đ, không bao gồm giá trị này) -- để trống nếu không giới hạn trên"
+          label="Giá cao nhất (đ, không bao gồm giá trị này)"
           htmlFor={`${formId}-max`}
         >
           <NumberInput

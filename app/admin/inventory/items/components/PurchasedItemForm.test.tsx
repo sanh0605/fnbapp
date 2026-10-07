@@ -233,7 +233,9 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
       .find(w => w !== baseUnitWrapper)!;
     await chooseInCombobox(purchasedUnitWrapper, "Bao");
 
-    const rateInput = document.querySelector('input[type="number"]') as HTMLInputElement;
+    // Wave K3: the rate box is the shared number box (type="text"), found by its label.
+    const rateLabel = Array.from(document.querySelectorAll("label")).find(l => l.textContent === "Hệ số")!;
+    const rateInput = document.getElementById(rateLabel.htmlFor) as HTMLInputElement;
     await setInputValue(rateInput, "500");
 
     // "Bao" chosen in the SearchableSelect renders as its own trigger text,
@@ -243,6 +245,22 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
     expect(purchasedUnitWrapper.textContent).toContain("Bao");
     expect(rateInput.value).toBe("500");
     expect(document.body.textContent).toContain("g");
+  });
+
+  // BR-UI-005 / BR-UI-008 (wave K3): the shared number box, 6 decimals, commas while typing.
+  it("the conversion rate box is the shared number box: text type, decimal keypad, commas", async () => {
+    await openForm();
+    const categorySelect = document.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-002");
+    const baseUnitWrapper = document.querySelector('[role="combobox"]')!.closest(".relative") as HTMLElement;
+    await chooseInCombobox(baseUnitWrapper, "g");
+
+    const rateLabel = Array.from(document.querySelectorAll("label")).find(l => l.textContent === "Hệ số")!;
+    const rateInput = document.getElementById(rateLabel.htmlFor) as HTMLInputElement;
+    expect(rateInput.type).toBe("text");
+    expect(rateInput.getAttribute("inputMode")).toBe("decimal");
+    await setInputValue(rateInput, "1500");
+    expect(rateInput.value).toBe("1,500");
   });
 
   // section 2.2: the group-link field and its requirement are gone along
@@ -327,7 +345,9 @@ describe("PurchasedItemForm -- consumable base unit renders correctly, not as an
     // "g" regardless of this defect (its options are keyed by name, so the
     // chosen value always matches something), so a document.body.textContent
     // check would pass whether or not the bug this task fixes exists.
-    const rateInput = document.querySelector('input[type="number"]') as HTMLInputElement;
+    // Wave K3: the rate box is the shared NumberInput (type text), found by its label.
+    const rateLabel = Array.from(document.querySelectorAll("label")).find(l => l.textContent?.trim() === "Hệ số")!;
+    const rateInput = document.getElementById(rateLabel.htmlFor) as HTMLInputElement;
     const row = rateInput.closest(".flex.gap-2.items-end") as HTMLElement;
     const baseUnitLabel = row.querySelector(".text-sm.text-text-secondary.font-medium") as HTMLElement;
 
