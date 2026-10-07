@@ -73,7 +73,7 @@ describe("deleteBrand", () => {
 
     const res = await deleteBrand(form("BR-001"));
 
-    expect(res).toEqual({ error: 'Không xoá được thương hiệu "Phin Đi": còn 1 điểm bán, 2.357 đơn hàng.' });
+    expect(res).toEqual({ error: 'Không xoá được thương hiệu "Phin Đi": còn 1 điểm bán, 2,357 đơn hàng.' });
     expect(mocks.remove).not.toHaveBeenCalled();
   });
 

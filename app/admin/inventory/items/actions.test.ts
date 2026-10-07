@@ -582,7 +582,7 @@ describe("updatePurchasedItem -- retiring assets when the item leaves EQUIPMENT"
 
     expect(res.error).toBeUndefined();
     expect(res.needsAssetRemoval).toEqual({
-      message: "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80.352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?",
+      message: "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80,352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?",
     });
     expect(mocks.update).not.toHaveBeenCalled();
   });
@@ -682,7 +682,7 @@ describe("getItemStockById -- current stock text per item", () => {
 
     expect(mocks.computeOnHandByPurchasedItem).toHaveBeenCalledTimes(1);
     expect(result).toEqual({
-      "SPM-002": { kind: "figure", text: "42.000 ml", onHand: 42000 },
+      "SPM-002": { kind: "figure", text: "42,000 ml", onHand: 42000 },
       "SPM-005": { kind: "untracked", text: "Không theo dõi tồn" },
     });
   });
