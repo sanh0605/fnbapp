@@ -98,7 +98,9 @@ Luật: `docs/02-rules/business-rules/screens.md`.
   (các trang Kho, gồm Phiếu nhập và Phiếu xuất; ô trống chỉ hiện "Ví dụ" `BR-UI-009`; tên dài trong
   danh sách chọn hiện đủ `BR-UI-010`) xong trên nhánh 2026-10-08, chờ đẩy. Đợt K4 (Đơn hàng, Món,
   Nhóm món, Topping & tuỳ chọn, Khuyến mãi; kế hoạch con `docs/superpowers/plans/2026-10-08-dot-k4-ban-hang.md`)
-  xong trên nhánh 2026-10-08, chờ đẩy.
+  xong trên nhánh 2026-10-08, chờ đẩy. Đợt K5 (Sổ thu chi, Chuyển tiền, Danh mục, Tài khoản, các báo cáo,
+  Tổng quan; kế hoạch con `docs/superpowers/plans/2026-10-08-dot-k5-tai-chinh-bao-cao.md`) xong trên nhánh
+  2026-10-08, chờ đẩy: dòng tổng của bảng báo cáo nằm ngay dưới tiêu đề, bảng lãi lỗ giữ hình đã duyệt.
 - **Ô nhập số:** soát mọi ô. Mẫu là ô "Số lượng" của trang tạo phiếu xuất (chủ quán khen):
   bàn phím số trên điện thoại, số lẻ gõ bằng dấu chấm (`BR-UI-008`; trước 2026-10-07 là dấu phẩy), hiện "Quy ra" bên cạnh. Thêm: tự chèn dấu phẩy
   hàng nghìn khi gõ, không có mũi tên tăng giảm, cuộn chuột không làm đổi số (ô
