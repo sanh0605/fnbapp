@@ -71,3 +71,15 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 - **Every number box shows a worked example as its grey hint** before anything is typed, in the box's own unit and decimals: "Ví dụ: 1,250.5" for a quantity, "Ví dụ: 150,000" for money.
 - **One shared formatter** writes every number on screen, and one shared box takes every number typed. A screen does not format a number itself. A guard test fails when new code formats a number another way, so the rule binds every future feature.
 - **No setting to change the marks** — owner 2026-10-07, *"a"*: the style lives in that one shared place and changes only through Opus. Why: if the marks could flip from a settings screen mid-shift, the same keystrokes would mean a different number to staff typing at that moment.
+
+### BR-UI-009 — An empty box shows only a worked example
+
+**Status:** `APPROVED` — owner 2026-10-08, in chat: *"các ô nhập liệu nói chung khi chưa nhập gì thì sẽ chỉ hiển thị ví dụ dưới dạng placeholder"*. Shown the Phiếu nhập line (Số lượng prefilled with 1, Ghi chú reading "Ghi chú thêm…"), he chose *"a"*: every box starts empty with a grey "Ví dụ: …", gone as he types. He was told first that an item bought once then needs its 1 typed, and that an empty required box says "Cần nhập số." under it on save. Not built yet; wave K3.
+
+- **Every box he types into** (numbers, money, text, notes, search boxes) starts empty on a new entry and shows "Ví dụ: …" in grey. No prefilled 1 or 0; no grey wording that is not an example ("Ghi chú thêm…", "Tên hoặc mã…", "Không bắt buộc", "VD: …" become "Ví dụ: …"). Measured that day: 2 typed boxes prefilled with 1 (the Phiếu nhập line's Số lượng and the asset disposal's quantity), about 50 grey texts not in that form. The sales-order edit's quantity is a −/+ counter, not a typed box, and keeps starting at 1.
+- **Not covered:** lists to pick from ("-- Chọn --": picking, not typing), password boxes, and a saved record opened again (its boxes show what was saved).
+- **Date and time boxes keep filling in now / today** (owner 2026-10-08, *"a"*): a date is a real value, not an example, and most entries are made at that moment; a typed time is easy to get wrong, as `ISL-00053`, `ISL-00054` and `ISL-00088` were once stored 12 hours off. On Phiếu xuất that time also drives the "Tồn hiện tại" column. He was offered "empty, chosen each time".
+
+### BR-UI-010 — A long name in a pick list is shown whole
+
+**Status:** `APPROVED` — owner 2026-10-08, in chat: *"trong các dropdown, khi anh muốn tìm sản phẩm nào đó, nhưng anh không thể đọc được hết tên của sản phẩm đó, anh cần cách tối ưu hơn"*. How, decided by Opus and reported to him the same day: in the searchable pick list (`components/ui/SearchableSelect.tsx`, used by 6 screens) a long name wraps onto more lines instead of being cut with "…"; on a computer the open list may be wider than the box; the chosen name in the closed box shows up to two lines. Not built yet; wave K3.
