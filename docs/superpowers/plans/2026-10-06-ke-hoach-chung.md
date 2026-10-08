@@ -51,7 +51,7 @@ tối ưu được diện tích sử dụng"*.
 | 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | chưa làm |
 | 2 | Giao diện đồng nhất — các trang ngoài khuôn | chưa làm |
 | 3 | Tổng quan mới (bước D của bản cải tổ) | chưa làm |
-| 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E), trả phiếu nhập bằng nhiều hình thức, bảng chữ viết tắt | chưa làm |
+| 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E), trả phiếu nhập bằng nhiều hình thức, bảng chữ viết tắt, số tiền thu khi thanh lý | chưa làm |
 | 5 | Ô tiền tự thêm dấu chấm ở các màn còn lại | chưa làm |
 | 6 | Dọn phần sót (bước H) | chưa làm |
 | 7 | Máy bán hàng và trang đăng nhập | chưa làm |
@@ -144,10 +144,18 @@ bước (đặc tả → thiết kế → kế hoạch → code).
   cũ giữ nguyên một hình thức.
 - **Bảng chữ viết tắt** (`BR-UI-006`): bảng mới + màn hình chủ quán tự thêm, sửa, xoá; ví
   dụ "Hình thức thanh toán" → "HTTT" ở tiêu đề cột hẹp. Đủ bốn bước.
+- **Số tiền thu khi thanh lý tài sản** (chủ quán 2026-10-08, *"Làm theo em khuyến nghị"*,
+  luật ở `BR-COGS-008`). Trang thanh lý thêm ô số tiền (bỏ đi thì nhập 0đ, để trống không
+  lưu được) và ô tiền về két hay tài khoản nào; máy tự ghi một dòng thu vào sổ thu chi, nhóm
+  mới "Thu thanh lý tài sản"; lãi lỗ hiện dòng riêng "Thu thanh lý tài sản" trong thu khác.
+  Thêm cột vào `asset_disposals` → migration, duyệt riêng. Chủ quán dặn: *"chỉ thêm vào danh
+  sách các việc cần làm"*, chưa làm ngay. Mục chờ: `it.todo` trong
+  `app/admin/inventory/assets/components/DisposeAssetForm.test.tsx`.
 
 ## 5. Ô tiền tự thêm dấu chấm
 
-Giá món, giá tuỳ chọn món, phiếu nhập, khuyến mãi, thanh lý tài sản. Chủ quán chốt
+Giá món, giá tuỳ chọn món, khuyến mãi (phiếu nhập xong ở đợt K3; ô tiền của trang thanh lý
+đi cùng việc "số tiền thu khi thanh lý" ở phần 4). Chủ quán chốt
 11/09/2026: làm sau báo cáo tài chính. Mục này sinh từ `it.todo` trong
 `components/ui/MoneyInput.test.tsx`; xong thì đổi `it.todo` thành test xanh.
 
