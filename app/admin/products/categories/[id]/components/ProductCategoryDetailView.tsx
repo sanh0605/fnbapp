@@ -2,11 +2,13 @@
 
 import React from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
+import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { deleteCategory } from "@/app/admin/products/categories/actions";
 import type { DBProductCategory } from "@/types/db";
 
@@ -41,12 +43,9 @@ export function ProductCategoryDetailView({
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
-        href={editHref}
-        className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
-      >
+      <Button href={editHref} variant="secondary">
         Chỉnh sửa
-      </Link>
+      </Button>
       <RemoveRecordButton
         verb="Xoá"
         name={category.name}
@@ -88,63 +87,58 @@ export function ProductCategoryDetailView({
             Chưa có món nào trong nhóm này.
           </div>
         ) : (
-          <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col">
+          <div>
             {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-                    <th className="px-6 py-4 font-bold">Mã</th>
-                    <th className="px-6 py-4 font-bold">Tên</th>
-                    <th className="px-6 py-4 font-bold">Trạng thái</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
+            <div className="hidden md:block">
+              <Table>
+                <TableHead>
+                  <TableHeaderCell>Mã</TableHeaderCell>
+                  <TableHeaderCell>Tên</TableHeaderCell>
+                  <TableHeaderCell>Trạng thái</TableHeaderCell>
+                </TableHead>
+                <TableBody>
                   {dishes.map((dish) => (
-                    <tr
-                      key={dish.id}
-                      className="hover:bg-surface-secondary/50 transition-colors"
-                    >
-                      <td className="px-6 py-4 font-mono text-[11px] text-text-muted font-bold">
+                    <TableRow key={dish.id}>
+                      <TableCell>
                         <Link
                           href={`/admin/products/${encodeURIComponent(dish.id)}`}
-                          className="hover:text-primary transition-colors block"
+                          className="font-mono text-xs text-primary hover:underline"
                         >
                           {dish.id}
                         </Link>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-text-primary">
+                      </TableCell>
+                      <TableCell>
                         <Link
                           href={`/admin/products/${encodeURIComponent(dish.id)}`}
-                          className="hover:text-primary transition-colors block"
+                          className="hover:text-primary transition-colors"
                         >
                           {dish.name}
                         </Link>
-                      </td>
-                      <td className="px-6 py-4">
+                      </TableCell>
+                      <TableCell>
                         <Badge variant={dish.status === "ACTIVE" ? "success" : "warning"}>
                           {dish.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
                         </Badge>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-border">
+            <div className="md:hidden bg-surface-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
               {dishes.map((dish) => (
                 <Link
                   key={dish.id}
                   href={`/admin/products/${encodeURIComponent(dish.id)}`}
-                  className="p-4 flex items-center justify-between hover:bg-surface-secondary/50 transition-colors"
+                  className="p-4 flex items-center justify-between hover:bg-surface-secondary/50 transition-colors min-h-[44px]"
                 >
                   <div>
-                    <div className="font-bold text-text-primary text-sm">
+                    <div className="text-text-primary text-sm">
                       {dish.name}
                     </div>
-                    <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+                    <div className="font-mono text-xs text-primary mt-0.5">
                       {dish.id}
                     </div>
                   </div>

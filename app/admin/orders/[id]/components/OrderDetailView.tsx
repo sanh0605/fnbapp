@@ -1,11 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { Badge } from "@/components/ui/Badge";
-import { BackLink } from "@/components/ui/BackLink";
+import { Button } from "@/components/ui/Button";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { VoidOrderButton } from "@/app/admin/orders/components/VoidOrderButton";
 import type { OrderDetailV2Result } from "@/app/admin/orders/actions";
 
@@ -28,26 +28,26 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <BackLink href={returnTo} label="Đơn hàng" />
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Đơn hàng"
+        title={orderNo}
+        badge={
+          currentOrder.version > 1 ? (
+            <span className="text-xs font-bold text-primary bg-primary-soft px-2 py-0.5 rounded">
+              v{currentOrder.version}
+            </span>
+          ) : undefined
+        }
+        subtitle={
+          <>
+            {formatDate(currentOrder.created_at)}
+            {brand && <span className="ml-2 text-primary font-medium">{brand.name}</span>}
+          </>
+        }
+      />
 
       <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
-        {/* Header */}
-        <div className="p-5 border-b border-border bg-page flex justify-between items-center shrink-0">
-          <div>
-            <h1 className="text-xl font-bold text-text-primary">
-              {orderNo}
-              {currentOrder.version > 1 && (
-                <span className="ml-2 text-xs font-bold text-primary bg-primary-soft px-2 py-0.5 rounded">
-                  v{currentOrder.version}
-                </span>
-              )}
-            </h1>
-            <p className="text-sm text-text-secondary mt-0.5">
-              {formatDate(currentOrder.created_at)}
-              {brand && <span className="ml-2 text-primary font-medium">{brand.name}</span>}
-            </p>
-          </div>
-        </div>
 
         {/* Content */}
         <div className="p-5 space-y-4">
@@ -185,12 +185,13 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
         {currentOrder.status === "COMPLETED" && (
           <div className="border-t border-border shrink-0">
             <div className="px-5 py-4 flex gap-3 bg-surface-card">
-              <Link
+              <Button
                 href={`/admin/orders/${encodeURIComponent(currentOrder.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`}
-                className="inline-flex items-center justify-center font-medium rounded-button transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring active:scale-[0.98] bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active shadow-sm text-sm px-4 py-2 min-h-[44px] flex-1 text-center"
+                variant="secondary"
+                className="flex-1"
               >
                 Sửa đơn
-              </Link>
+              </Button>
               <VoidOrderButton
                 orderId={currentOrder.id}
                 orderNo={orderNo}

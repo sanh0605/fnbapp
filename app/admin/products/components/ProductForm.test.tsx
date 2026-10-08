@@ -82,7 +82,14 @@ async function openEditForm(product: any, canDelete?: boolean) {
   const container = await renderTracked(
     <ProductForm categories={CATEGORIES} initialData={product} canDelete={canDelete} />,
   );
-  return container.querySelector('input[type="number"]') as HTMLInputElement;
+  return priceBoxOf(container);
+}
+
+// Wave K4: the price box is found by its label "Giá bán", not by type="number".
+function priceBoxOf(container: HTMLElement, index = 0) {
+  const label = Array.from(container.querySelectorAll("label")).filter(l => l.textContent?.trim() === "Giá bán")[index];
+  if (!label) throw new Error("label Giá bán not found");
+  return document.getElementById(label.htmlFor) as HTMLInputElement;
 }
 
 describe("ProductForm -- price field for a topping linked to an ACTIVE modifier", () => {
@@ -93,7 +100,8 @@ describe("ProductForm -- price field for a topping linked to an ACTIVE modifier"
       isLinkedTopping: true,
     });
 
-    expect(priceInput.readOnly).toBe(true);
+    expect(priceInput.readOnly || priceInput.disabled).toBe(true);
+    expect(priceInput.value).toBe("4,000");
     expect(document.body.textContent).toContain("Topping & Tuỳ chọn");
   });
 
@@ -104,7 +112,7 @@ describe("ProductForm -- price field for a topping linked to an ACTIVE modifier"
       isLinkedTopping: false,
     });
 
-    expect(priceInput.readOnly).toBe(false);
+    expect(priceInput.readOnly || priceInput.disabled).toBe(false);
   });
 });
 
@@ -132,5 +140,65 @@ describe("ProductForm -- page form navigation and fields", () => {
     const cancelButton = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Bỏ")!;
     await fireClick(cancelButton);
     expect(mocks.push).toHaveBeenCalledWith("/admin/products?status=INACTIVE");
+  });
+});
+
+async function typeInto(input: HTMLInputElement, value: string) {
+  const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
+  await act(async () => {
+    nativeSetter.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+
+// Wave K4 (BR-UI-008, BR-CASH-005, BR-UI-009): each size's price is the shared
+// whole-đồng number box. The server reads Number(price), so the saved number
+// is what counts, not whether it travels as "30000" or 30000.
+describe("ProductForm -- price box (wave K4)", () => {
+  const PROD_001 = {
+    id: "PROD-001", name: "Cà phê đá", category_id: "CAT-001", status: "ACTIVE",
+    neverSold: false, variants: [{ id: "VAR-001", size_name: "Mặc định", price: 25000 }],
+    isLinkedTopping: false,
+  };
+
+  it("a new dish's price box is empty, takes whole đồng and groups thousands", async () => {
+    const container = await renderTracked(<ProductForm categories={CATEGORIES} />);
+    const box = priceBoxOf(container);
+    expect(box.type).toBe("text");
+    expect(box.getAttribute("inputmode")).toBe("numeric");
+    expect(box.getAttribute("placeholder")).toBe("Ví dụ: 25,000");
+    expect(box.value).toBe("");
+    await typeInto(box, "25000");
+    expect(box.value).toBe("25,000");
+    expect(box.parentElement?.textContent).toContain("đ");
+  });
+
+  it("an existing price shows grouped and a change saves the new number", async () => {
+    mocks.saveProduct.mockResolvedValue({ success: true });
+    const container = await renderTracked(
+      <ProductForm categories={[{ id: "CAT-001", name: "Cà phê" }]} initialData={PROD_001} />,
+    );
+    const box = priceBoxOf(container);
+    expect(box.value).toBe("25,000");
+    await typeInto(box, "30000");
+    const save = Array.from(container.querySelectorAll("button")).find(b => /^Lưu/.test(b.textContent?.trim() ?? ""))!;
+    await fireClick(save);
+    expect(mocks.saveProduct).toHaveBeenCalledTimes(1);
+    const fd = mocks.saveProduct.mock.calls[0][0] as FormData;
+    const variants = JSON.parse(String(fd.get("variants_json")));
+    expect(Number(variants[0].price)).toBe(30000);
+    expect(variants[0].id).toBe("VAR-001");
+  });
+
+  it("a price left empty is not saved as 0đ: the box says Cần nhập số.", async () => {
+    const container = await renderTracked(
+      <ProductForm categories={[{ id: "CAT-001", name: "Cà phê" }]} initialData={PROD_001} />,
+    );
+    const box = priceBoxOf(container);
+    await typeInto(box, "");
+    const save = Array.from(container.querySelectorAll("button")).find(b => /^Lưu/.test(b.textContent?.trim() ?? ""))!;
+    await fireClick(save);
+    expect(mocks.saveProduct).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Cần nhập số.");
   });
 });

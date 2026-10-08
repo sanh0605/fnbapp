@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
 import { ListPagination } from "@/components/ui/list/ListPagination";
@@ -191,7 +194,7 @@ export default function PromotionsClient({
         header: "Mã",
         sortValue: (p) => p.id,
         render: (p) => (
-          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-primary">
             {p.id}
           </span>
         ),
@@ -201,7 +204,7 @@ export default function PromotionsClient({
         header: "Tên",
         sortValue: (p) => p.name,
         render: (p) => (
-          <div className="font-bold text-text-primary">{p.name}</div>
+          <div className="text-text-primary">{p.name}</div>
         ),
       },
       {
@@ -209,7 +212,7 @@ export default function PromotionsClient({
         header: "Thương hiệu",
         sortValue: (p) => (p.brand_id ? brandMap[p.brand_id] || "Toàn hệ thống" : "Toàn hệ thống"),
         render: (p) => (
-          <span className="text-text-secondary font-medium">
+          <span className="text-text-secondary">
             {p.brand_id ? brandMap[p.brand_id] || "Toàn hệ thống" : "Toàn hệ thống"}
           </span>
         ),
@@ -219,7 +222,7 @@ export default function PromotionsClient({
         header: "Mức giảm",
         sortValue: (p) => Number(p.discount_value) || 0,
         render: (p) => (
-          <span className="text-text-primary font-medium">
+          <span className="text-text-primary">
             {formatDiscountText(p)}
           </span>
         ),
@@ -229,7 +232,7 @@ export default function PromotionsClient({
         header: "Áp dụng",
         sortValue: (p) => getScopeText(p, variantMap),
         render: (p) => (
-          <span className="text-text-secondary font-medium">
+          <span className="text-text-secondary">
             {getScopeText(p, variantMap)}
           </span>
         ),
@@ -348,10 +351,10 @@ export default function PromotionsClient({
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
           <div>
-            <div className="font-bold text-text-primary text-base leading-tight">
+            <div className="text-text-primary text-base leading-tight">
               {promo.name}
             </div>
-            <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+            <div className="font-mono text-[11px] text-text-muted mt-0.5">
               {promo.id}
             </div>
           </div>
@@ -370,7 +373,7 @@ export default function PromotionsClient({
         </div>
         <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
           <div className="flex justify-between items-center">
-            <span className="font-semibold text-text-primary">{discountText}</span>
+            <span className="text-text-primary">{discountText}</span>
             <span>{scopeText}</span>
           </div>
           {(promo.start_date || promo.end_date) && (
@@ -405,12 +408,13 @@ export default function PromotionsClient({
         group="Bán hàng"
         title="Khuyến mãi"
         action={
-          <Link
+          <Button
             href={`/admin/promotions/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            variant="primary"
+            className="w-full md:w-auto"
           >
             Tạo
-          </Link>
+          </Button>
         }
       />
 
@@ -420,57 +424,41 @@ export default function PromotionsClient({
         showClear={Boolean(search || status !== "ALL" || type !== "ALL")}
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="promotions-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm khuyến mãi
-          </label>
-          <input
-            id="promotions-search"
-            type="text"
-            placeholder="Ví dụ: Giảm 10%"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+          <Field label="Tìm khuyến mãi" htmlFor="promotions-search">
+            <TextInput
+              id="promotions-search"
+              placeholder="Ví dụ: Giảm 10%"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
-          <label
-            htmlFor="promotions-status"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Trạng thái
-          </label>
-          <select
-            id="promotions-status"
-            value={status}
-            onChange={(e) => setStatus(parseStatus(e.target.value))}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ALL">Tất cả</option>
-            <option value="ACTIVE">Đang chạy</option>
-            <option value="INACTIVE">Tạm ngưng hoặc hết hạn</option>
-            <option value="EXPIRED">Chỉ đã hết hạn</option>
-          </select>
+          <Field label="Trạng thái" htmlFor="promotions-status">
+            <Select
+              id="promotions-status"
+              value={status}
+              onChange={(e) => setStatus(parseStatus(e.target.value))}
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="ACTIVE">Đang chạy</option>
+              <option value="INACTIVE">Tạm ngưng hoặc hết hạn</option>
+              <option value="EXPIRED">Chỉ đã hết hạn</option>
+            </Select>
+          </Field>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
-          <label
-            htmlFor="promotions-type"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Loại
-          </label>
-          <select
-            id="promotions-type"
-            value={type}
-            onChange={(e) => setType(parseType(e.target.value))}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ALL">Tất cả</option>
-            <option value="ORDER_DISCOUNT">Giảm đơn hàng</option>
-            <option value="PRODUCT_DISCOUNT">Giảm theo món</option>
-          </select>
+          <Field label="Loại" htmlFor="promotions-type">
+            <Select
+              id="promotions-type"
+              value={type}
+              onChange={(e) => setType(parseType(e.target.value))}
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="ORDER_DISCOUNT">Giảm đơn hàng</option>
+              <option value="PRODUCT_DISCOUNT">Giảm theo món</option>
+            </Select>
+          </Field>
         </div>
       </FilterCard>
 

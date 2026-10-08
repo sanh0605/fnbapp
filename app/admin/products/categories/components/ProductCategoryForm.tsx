@@ -3,7 +3,9 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { saveCategory, updateCategory } from "@/app/admin/products/categories/actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import type { DBProductCategory } from "@/types/db";
 
@@ -45,36 +47,32 @@ export function ProductCategoryForm({ initialData, returnTo: rawReturnTo }: Prod
             {error}
           </div>
         )}
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên Danh Mục
-          </label>
-          <input
+        <Field label="Tên Danh Mục" htmlFor={`${formId}-name`}>
+          <TextInput
             id={`${formId}-name`}
-            type="text"
             name="name"
             required
             defaultValue={initialData?.name}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
-            placeholder="Ví dụ: Cà phê"
+            example="Cà phê"
           />
-        </div>
+        </Field>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu..."
-            className="w-full sm:w-auto min-h-[44px]"
+            className="w-full sm:w-auto"
           >
-            {isEdit ? "Cập nhật" : "Lưu Danh Mục"}
-          </LoadingButton>
+            {isEdit ? "Cập nhật" : "Lưu danh mục"}
+          </Button>
         </div>
       </form>
     </div>

@@ -1,12 +1,20 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/Table";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { deletePromotionAction } from "@/app/admin/promotions/actions";
@@ -91,12 +99,9 @@ export function PromotionDetailView({
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
-        href={editHref}
-        className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
-      >
+      <Button href={editHref} variant="secondary">
         Chỉnh sửa
-      </Link>
+      </Button>
       {canDelete && (
         <RemoveRecordButton
           verb="Xoá"
@@ -142,33 +147,30 @@ export function PromotionDetailView({
             <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col">
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead>
-                    <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-                      <th className="px-6 py-4 font-bold">Món</th>
-                      <th className="px-6 py-4 font-bold">Size</th>
-                      <th className="px-6 py-4 font-bold">Giá áp dụng</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableHeaderCell>Món</TableHeaderCell>
+                      <TableHeaderCell>Size</TableHeaderCell>
+                      <TableHeaderCell align="right">Giá áp dụng</TableHeaderCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
                     {applicableItems.map((item, idx) => (
-                      <tr
-                        key={item.variantId || idx}
-                        className="hover:bg-surface-secondary/50 transition-colors"
-                      >
-                        <td className="px-6 py-4 font-bold text-text-primary">
+                      <TableRow key={item.variantId || idx}>
+                        <TableCell>
                           {item.dishName}
-                        </td>
-                        <td className="px-6 py-4 text-text-secondary">
+                        </TableCell>
+                        <TableCell>
                           {item.sizeName}
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-text-primary">
+                        </TableCell>
+                        <TableCell align="right">
                           {item.appliedValue}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
 
               {/* Mobile Cards */}
@@ -179,14 +181,14 @@ export function PromotionDetailView({
                     className="p-4 flex items-center justify-between"
                   >
                     <div>
-                      <div className="font-bold text-text-primary text-sm">
+                      <div className="text-text-primary text-sm">
                         {item.dishName}
                       </div>
                       <div className="text-xs text-text-muted mt-0.5">
                         {item.sizeName}
                       </div>
                     </div>
-                    <div className="font-semibold text-text-primary text-sm">
+                    <div className="text-text-primary text-sm">
                       {item.appliedValue}
                     </div>
                   </div>

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { formatNumber } from "@/lib/shared/format";
 import { Button } from "@/components/ui/Button";
+import { NumberInput } from "@/components/ui/NumberInput";
 
 export interface EditItem {
   product_id: string;
@@ -256,14 +257,19 @@ export function LineItemEditor({
                 %
               </button>
             </div>
-            <input
-              aria-label="Số tiền giảm giá món hàng"
-              type="number"
-              min="0"
-              value={editDiscount || ""}
-              onChange={(e) => setEditDiscount(Number(e.target.value))}
-              className="flex-1 px-2 py-1 border border-border rounded-lg text-sm text-right bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring"
-            />
+            <div className="flex-1">
+              <NumberInput
+                id={`line-discount-${idx}`}
+                aria-label="Số tiền giảm giá món hàng"
+                decimals={editDiscountType === "PERCENT" ? 2 : 0}
+                unit={editDiscountType === "PERCENT" ? "%" : "đ"}
+                max={editDiscountType === "PERCENT" ? 100 : undefined}
+                example={editDiscountType === "PERCENT" ? "10" : "10,000"}
+                min={0}
+                value={editDiscount ? editDiscount : null}
+                onValueChange={(v) => setEditDiscount(v ?? 0)}
+              />
+            </div>
           </div>
         </div>
 

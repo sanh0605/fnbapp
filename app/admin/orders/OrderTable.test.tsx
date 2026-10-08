@@ -133,14 +133,12 @@ describe("OrderTable navigation", () => {
       />
     );
 
-    const orderRow = screen.getAllByText("ORD000001")[0].closest("tr");
-    expect(orderRow).not.toBeNull();
-    fireEvent.click(orderRow!);
-
+    // Wave K4: the row opens through the shared list's link (DataList), on
+    // desktop and phone alike, instead of a click handler on the <tr>.
     const expectedCurrentUrl = "/admin/orders?payment=Chuyen+khoan";
-    expect(push).toHaveBeenCalledWith(
-      `/admin/orders/ORD-1?returnTo=${encodeURIComponent(expectedCurrentUrl)}`
-    );
+    const expected = `/admin/orders/ORD-1?returnTo=${encodeURIComponent(expectedCurrentUrl)}`;
+    const links = screen.getAllByRole("link").filter((a) => a.getAttribute("href") === expected);
+    expect(links.length).toBeGreaterThan(0);
   });
 
   it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z", () => {
@@ -167,5 +165,37 @@ describe("OrderTable navigation", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+// Wave K4 (BR-UI-003, BR-UI-005, BR-DATA-007): the list wears the Table set;
+// an order is cancelled from its own page (owner 2026-10-05), so no row
+// carries a cancel button; the phone shows one card per order.
+describe("OrderTable -- shared table (wave K4)", () => {
+  const renderList = () =>
+    render(
+      <OrderTable
+        initialOrders={[makeOrder("ORD-1", "000001"), makeOrder("ORD-2", "000002")]}
+        totalCount={2}
+        itemsPerPage={20}
+        brands={[]}
+        products={[]}
+        variants={[]}
+        modifiers={[]}
+        categories={[]}
+      />
+    );
+
+  it("no row carries a cancel button", () => {
+    renderList();
+    expect(screen.queryByRole("button", { name: "Hủy đơn" })).toBeNull();
+  });
+
+  it("the phone list shows one card per order", () => {
+    const { container } = renderList();
+    const phone = container.querySelector(".md\\:hidden");
+    expect(phone).not.toBeNull();
+    expect(phone!.textContent).toContain("ORD000001");
+    expect(phone!.textContent).toContain("ORD000002");
   });
 });

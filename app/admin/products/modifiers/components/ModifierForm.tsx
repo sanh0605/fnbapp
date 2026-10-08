@@ -3,7 +3,11 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { saveModifierAction } from "@/app/admin/products/modifiers/actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { NumberInput } from "@/components/ui/NumberInput";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import type { DBModifier } from "@/types/db";
 import { StandaloneToppingSwitch } from "./StandaloneToppingSwitch";
@@ -26,7 +30,7 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
 
   const [name, setName] = useState(initialData?.name || "");
   const [groupName, setGroupName] = useState(initialData?.group_name || "Thêm Topping");
-  const [price, setPrice] = useState(initialData?.price !== undefined ? String(initialData.price) : "0");
+  const [price, setPrice] = useState(initialData?.price !== undefined ? String(initialData.price) : "");
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -64,45 +68,41 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor={`${formId}-groupName`} className="block text-sm font-medium text-text-secondary mb-1">Nhóm Tùy Chọn</label>
-            <select
+          <Field label="Nhóm tuỳ chọn" htmlFor={`${formId}-groupName`}>
+            <Select
               id={`${formId}-groupName`}
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
             >
               <option value="Thêm Topping">Thêm Topping</option>
               <option value="Chọn Size">Chọn Size</option>
               <option value="Chọn Đường">Chọn Đường</option>
               <option value="Chọn Đá">Chọn Đá</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor={`${formId}-price`} className="block text-sm font-medium text-text-secondary mb-1">Giá thêm (đ)</label>
-            <input
+            </Select>
+          </Field>
+          <Field label="Giá thêm" htmlFor={`${formId}-price`}>
+            <NumberInput
               id={`${formId}-price`}
-              type="number"
-              inputMode="numeric"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
+              decimals={0}
+              unit="đ"
+              min={0}
+              required
+              example="5,000"
+              value={price === "" ? null : Number(price)}
+              onValueChange={(v) => setPrice(v === null ? "" : String(v))}
             />
-          </div>
+          </Field>
         </div>
 
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">Tên Tùy Chọn</label>
-          <input
+        <Field label="Tên tuỳ chọn" htmlFor={`${formId}-name`} required>
+          <TextInput
             id={`${formId}-name`}
-            type="text"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
-            placeholder="Ví dụ: Trân châu trắng"
+            example="Trân châu trắng"
           />
-        </div>
+        </Field>
 
         {/* BR-CATALOG-003.
             Its own labelled section, visually separated -- this switch
@@ -130,21 +130,22 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
         )}
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu..."
-            className="w-full sm:w-auto min-h-[44px]"
+            className="w-full sm:w-auto"
           >
-            {isEdit ? "Cập nhật" : "Lưu Tùy Chọn"}
-          </LoadingButton>
+            {isEdit ? "Cập nhật" : "Lưu tuỳ chọn"}
+          </Button>
         </div>
       </form>
     </div>

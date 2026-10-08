@@ -3,7 +3,11 @@
 import { useState, useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
 import { savePromotion } from "@/app/admin/promotions/actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { NumberInput } from "@/components/ui/NumberInput";
 import { formatNumber } from "@/lib/shared/format";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
@@ -104,7 +108,7 @@ export function PromotionForm({
       setType("ORDER_DISCOUNT");
       setDiscountType("PERCENT");
       setDiscountValue("");
-      setMinOrderValue("0");
+      setMinOrderValue("");
       
       const now = new Date();
       setStartDate(toSaigonIsoString(now).slice(0, 16));
@@ -224,128 +228,139 @@ export function PromotionForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="col-span-1 md:col-span-2">
-            <label htmlFor={`${formId}-name`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Tên chương trình *</label>
-            <input
-              id={`${formId}-name`}
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ví dụ: Happy Hour Giảm 10%"
-              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            />
+            <Field label="Tên chương trình *" htmlFor={`${formId}-name`}>
+              <TextInput
+                id={`${formId}-name`}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ví dụ: Happy Hour Giảm 10%"
+                required
+              />
+            </Field>
           </div>
 
           <div>
-            <label htmlFor={`${formId}-code`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Mã Code (Để nhập thủ công)</label>
-            <input
-              id={`${formId}-code`}
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Ví dụ: HAPPY10 (để trống nếu tự động)"
-              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm uppercase focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            />
+            <Field label="Mã Code (Để nhập thủ công)" htmlFor={`${formId}-code`}>
+              <TextInput
+                id={`${formId}-code`}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Ví dụ: HAPPY10 (để trống nếu tự động)"
+              />
+            </Field>
           </div>
 
           <div>
-            <label htmlFor={`${formId}-brandId`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Áp dụng thương hiệu</label>
-            <SearchableSelect
-              id={`${formId}-brandId`}
-              value={brandId}
-              onChange={setBrandId}
-              options={[
-                { id: "", label: "Tất cả thương hiệu (Toàn hệ thống)" },
-                ...brands.map((b) => ({ id: b.id, label: b.name })),
-              ]}
-              placeholder="Tất cả thương hiệu (Toàn hệ thống)"
-            />
+            <Field label="Áp dụng thương hiệu" htmlFor={`${formId}-brandId`}>
+              <SearchableSelect
+                id={`${formId}-brandId`}
+                value={brandId}
+                onChange={setBrandId}
+                options={[
+                  { id: "", label: "Tất cả thương hiệu (Toàn hệ thống)" },
+                  ...brands.map((b) => ({ id: b.id, label: b.name })),
+                ]}
+                placeholder="Tất cả thương hiệu (Toàn hệ thống)"
+              />
+            </Field>
           </div>
 
           <div>
-            <label htmlFor={`${formId}-type`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Đối tượng giảm giá</label>
-            <select
-              id={`${formId}-type`}
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            >
-              <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
-              <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
-            </select>
+            <Field label="Đối tượng giảm giá" htmlFor={`${formId}-type`}>
+              <Select
+                id={`${formId}-type`}
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+              >
+                <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
+                <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
+              </Select>
+            </Field>
           </div>
 
           <div>
-            <label htmlFor={`${formId}-status`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Trạng thái</label>
-            <select
-              id={`${formId}-status`}
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            >
-              <option value="ACTIVE">Hoạt động</option>
-              <option value="INACTIVE">Không hoạt động</option>
-            </select>
+            <Field label="Trạng thái" htmlFor={`${formId}-status`}>
+              <Select
+                id={`${formId}-status`}
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+              >
+                <option value="ACTIVE">Hoạt động</option>
+                <option value="INACTIVE">Không hoạt động</option>
+              </Select>
+            </Field>
           </div>
 
           <div>
-            <label htmlFor={`${formId}-discountType`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Hình thức giảm giá</label>
-            <select
-              id={`${formId}-discountType`}
-              value={discountType}
-              onChange={(e) => setDiscountType(e.target.value)}
-              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            >
-              <option value="PERCENT">Phần trăm (%)</option>
-              <option value="FLAT_VND">Số tiền giảm cố định (đ)</option>
-              <option value="FLAT_PRICE">Đồng giá (đ)</option>
-            </select>
+            <Field label="Hình thức giảm giá" htmlFor={`${formId}-discountType`}>
+              <Select
+                id={`${formId}-discountType`}
+                value={discountType}
+                onChange={(e) => setDiscountType(e.target.value)}
+              >
+                <option value="PERCENT">Phần trăm (%)</option>
+                <option value="FLAT_VND">Số tiền giảm cố định (đ)</option>
+                <option value="FLAT_PRICE">Đồng giá (đ)</option>
+              </Select>
+            </Field>
           </div>
 
           <div>
-            <label htmlFor={`${formId}-discountValue`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Giá trị giảm giá *</label>
-            <input
-              id={`${formId}-discountValue`}
-              type="number"
-              inputMode="numeric"
-              value={discountValue}
-              onChange={(e) => setDiscountValue(e.target.value)}
-              placeholder={discountType === "PERCENT" ? "Ví dụ: 10" : discountType === "FLAT_PRICE" ? "Ví dụ: 15000" : "Ví dụ: 20000"}
-              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            />
+            <Field label="Giá trị giảm giá *" htmlFor={`${formId}-discountValue`}>
+              <NumberInput
+                id={`${formId}-discountValue`}
+                decimals={0}
+                required
+                min={0}
+                minExclusive
+                unit={discountType === "PERCENT" ? "%" : "đ"}
+                max={discountType === "PERCENT" ? 100 : undefined}
+                example={
+                  discountType === "PERCENT"
+                    ? "10"
+                    : discountType === "FLAT_PRICE"
+                    ? "15,000"
+                    : "20,000"
+                }
+                value={discountValue === "" ? null : Number(discountValue)}
+                onValueChange={(v) => setDiscountValue(v === null ? "" : String(v))}
+              />
+            </Field>
           </div>
 
           <div>
-            <label htmlFor={`${formId}-minOrderValue`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Đơn tối thiểu để áp dụng (đ)</label>
-            <input
-              id={`${formId}-minOrderValue`}
-              type="number"
-              inputMode="numeric"
-              value={minOrderValue}
-              onChange={(e) => setMinOrderValue(e.target.value)}
-              placeholder="Ví dụ: 50000"
-              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            />
+            <Field label="Đơn tối thiểu để áp dụng" htmlFor={`${formId}-minOrderValue`}>
+              <NumberInput
+                id={`${formId}-minOrderValue`}
+                decimals={0}
+                unit="đ"
+                min={0}
+                example="50,000"
+                value={minOrderValue === "" ? null : Number(minOrderValue)}
+                onValueChange={(v) => setMinOrderValue(v === null ? "" : String(v))}
+              />
+            </Field>
           </div>
 
           <div>
-            <label htmlFor={`${formId}-startDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ bắt đầu *</label>
-            <SaigonDateTimeInput
-              id={`${formId}-startDate`}
-              value={startDate}
-              onChange={setStartDate}
-              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            />
+            <Field label="Ngày/Giờ bắt đầu *" htmlFor={`${formId}-startDate`}>
+              <SaigonDateTimeInput
+                id={`${formId}-startDate`}
+                value={startDate}
+                onChange={setStartDate}
+              />
+            </Field>
           </div>
 
           <div>
-            <label htmlFor={`${formId}-endDate`} className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">Ngày/Giờ kết thúc (Tuỳ chọn)</label>
-            <SaigonDateTimeInput
-              id={`${formId}-endDate`}
-              value={endDate}
-              onChange={setEndDate}
-              clearable
-              className="w-full border border-border rounded-xl px-4 py-2.5 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-focus-ring"
-            />
+            <Field label="Ngày/Giờ kết thúc (Tuỳ chọn)" htmlFor={`${formId}-endDate`}>
+              <SaigonDateTimeInput
+                id={`${formId}-endDate`}
+                value={endDate}
+                onChange={setEndDate}
+                clearable
+              />
+            </Field>
           </div>
         </div>
 
@@ -424,21 +439,35 @@ export function PromotionForm({
 
                                     {isChecked && (
                                       <div className="flex items-center gap-1.5 pt-1.5 border-t border-border/40">
-                                        <span className="text-[10px] text-text-muted">Giảm:</span>
-                                        <input
-                                          type="number"
-                                          inputMode="numeric"
-                                          placeholder={discountValue ? `Ví dụ: ${discountValue}` : (discountType === "PERCENT" ? "Ví dụ: 10" : "Ví dụ: 10000")}
-                                          value={variantValues[v.id] ?? ""}
-                                          onChange={(e) => {
-                                            const val = e.target.value;
-                                            setVariantValues(prev => ({
-                                              ...prev,
-                                              [v.id]: val
-                                            }));
-                                          }}
-                                          className="w-20 px-2 py-1 min-h-[36px] border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-focus-ring text-right font-bold text-primary-active bg-surface-card"
-                                        />
+                                        <span className="text-[10px] text-text-muted shrink-0">Giảm:</span>
+                                        <div className="w-28">
+                                          <NumberInput
+                                            id={`${formId}-variant-${v.id}`}
+                                            decimals={0}
+                                            unit={discountType === "PERCENT" ? "%" : "đ"}
+                                            max={discountType === "PERCENT" ? 100 : undefined}
+                                            min={0}
+                                            example={
+                                              discountValue
+                                                ? formatNumber(Number(discountValue))
+                                                : discountType === "PERCENT"
+                                                ? "10"
+                                                : "10,000"
+                                            }
+                                            aria-label={`Giảm riêng: ${item.product.name} ${v.size_name || "Mặc định"}`}
+                                            value={
+                                              variantValues[v.id] === undefined || variantValues[v.id] === ""
+                                                ? null
+                                                : Number(variantValues[v.id])
+                                            }
+                                            onValueChange={(val) => {
+                                              setVariantValues((prev) => ({
+                                                ...prev,
+                                                [v.id]: val === null ? "" : String(val),
+                                              }));
+                                            }}
+                                          />
+                                        </div>
                                       </div>
                                     )}
                                   </div>
@@ -457,22 +486,23 @@ export function PromotionForm({
         )}
 
         <div className="border-t border-border pt-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
             disabled={loading}
-            className="w-full sm:w-auto px-5 py-2.5 text-sm font-medium border border-border rounded-xl hover:bg-surface-secondary active:scale-[0.98] transition min-h-[44px] text-center"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu..."
-            className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-on-primary bg-primary rounded-xl hover:bg-primary-hover active:scale-[0.98] transition shadow-md min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Lưu thông tin
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

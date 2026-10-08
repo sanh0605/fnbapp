@@ -223,3 +223,71 @@ describe("PromotionForm", () => {
     expect(screen.queryByText(/INACTIVE/)).toBeNull();
   });
 });
+
+// Wave K4 (BR-UI-008, BR-CASH-005, BR-UI-009): the value boxes are the shared
+// number box; a percentage stops at 100 on the page, as the server already does.
+describe("PromotionForm -- value boxes (wave K4)", () => {
+  const renderPromo = (overrides: Partial<DBPromotion> = {}) =>
+    render(
+      <PromotionForm
+        initialData={promoFixture(overrides)}
+        brands={mockBrands}
+        categories={mockCategories}
+        products={mockProducts}
+        variants={mockVariants}
+        returnTo="/admin/promotions"
+      />,
+    );
+  const valueBox = () => screen.getByLabelText("Giá trị giảm giá *") as HTMLInputElement;
+  const minBox = () => screen.getByLabelText("Đơn tối thiểu để áp dụng") as HTMLInputElement;
+
+  it("a percentage has % inside and refuses 150 under the box", () => {
+    renderPromo();
+    const box = valueBox();
+    expect(box.type).toBe("text");
+    expect(box.getAttribute("inputmode")).toBe("numeric");
+    expect(box.value).toBe("10");
+    expect(box.parentElement?.textContent).toContain("%");
+    fireEvent.change(box, { target: { value: "150" } });
+    fireEvent.blur(box);
+    expect(screen.getByText("Nhập số không quá 100.")).toBeInTheDocument();
+  });
+
+  it("a fixed amount has đ inside, groups thousands, and saves the number", async () => {
+    mocks.savePromotion.mockResolvedValue({ success: true, data: { id: "PRM-001" } });
+    renderPromo({ discount_type: "FLAT_VND", discount_value: "10000" });
+    const box = valueBox();
+    expect(box.value).toBe("10,000");
+    expect(box.parentElement?.textContent).toContain("đ");
+    fireEvent.change(box, { target: { value: "20000" } });
+    expect(box.value).toBe("20,000");
+    expect(minBox().value).toBe("50,000");
+    fireEvent.change(minBox(), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
+    const payload = mocks.savePromotion.mock.calls[0][0];
+    expect(payload.discount_value).toBe(20000);
+    expect(payload.min_order_value).toBe(0);
+  });
+
+  it("a size's own value groups thousands; left empty it takes the shared value", async () => {
+    mocks.savePromotion.mockResolvedValue({ success: true, data: { id: "PRM-001" } });
+    renderPromo({
+      type: "PRODUCT_DISCOUNT", discount_type: "FLAT_VND", discount_value: "10000",
+      applicable_products_json: JSON.stringify({ "VAR-001": 10000 }),
+    } as Partial<DBPromotion>);
+    const own = screen.getByLabelText("Giảm riêng: Cà phê đen M") as HTMLInputElement;
+    expect(own.type).toBe("text");
+    fireEvent.change(own, { target: { value: "12000" } });
+    expect(own.value).toBe("12,000");
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(mocks.savePromotion.mock.calls[0][0].applicable_products_json)).toEqual({ "VAR-001": 12000 });
+
+    mocks.savePromotion.mockClear();
+    fireEvent.change(own, { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(mocks.savePromotion.mock.calls[0][0].applicable_products_json)).toEqual({ "VAR-001": 10000 });
+  });
+});

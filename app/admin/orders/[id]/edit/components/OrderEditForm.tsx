@@ -9,7 +9,10 @@ import { LineItemEditor, type EditItem } from "@/app/admin/orders/components/Lin
 import { DiscountEditor } from "@/app/admin/orders/components/DiscountEditor";
 import { Button } from "@/components/ui/Button";
 import { BackLink } from "@/components/ui/BackLink";
-import { X, Search } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { X } from "lucide-react";
 
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
@@ -226,14 +229,12 @@ export function OrderEditForm({
     <div className="max-w-4xl mx-auto space-y-6">
       <BackLink href={viewUrl} label={order.display_order_no || order.order_no} />
 
+      <PageHeader
+        title="Sửa đơn hàng"
+        subtitle={order.display_order_no || order.order_no}
+      />
+
       <form onSubmit={handleSave} className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
-        {/* Header */}
-        <div className="p-4 border-b border-border bg-page flex justify-between items-center shrink-0">
-          <div>
-            <h1 className="text-lg font-bold text-text-primary">Sửa đơn hàng</h1>
-            <p className="text-sm text-text-secondary">{order.display_order_no || order.order_no}</p>
-          </div>
-        </div>
 
         {inlineError && (
           <div role="alert" aria-live="polite" className="mx-4 mt-4 p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/30 flex justify-between">
@@ -305,27 +306,22 @@ export function OrderEditForm({
               {!selectedNewProduct ? (
                 <>
                   {/* Search */}
-                  <div className="relative">
-                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-text-muted" />
-                    <input
-                      type="text"
-                      aria-label="Tìm sản phẩm"
-                      placeholder="Ví dụ: Cà phê sữa đá"
-                      value={addSearch}
-                      onChange={(e) => setAddSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring"
-                    />
-                  </div>
+                  <TextInput
+                    aria-label="Tìm sản phẩm"
+                    placeholder="Ví dụ: Cà phê sữa đá"
+                    value={addSearch}
+                    onChange={(e) => setAddSearch(e.target.value)}
+                  />
 
                   {/* Category filter */}
                   <div className="flex flex-wrap gap-1.5">
                     <button
                       type="button"
                       onClick={() => setAddCategory("ALL")}
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
                         addCategory === "ALL"
-                          ? "bg-primary text-on-primary"
-                          : "bg-surface-card text-text-secondary border border-border"
+                          ? "bg-primary-soft text-primary border-primary font-bold"
+                          : "bg-surface-card text-text-secondary border-border"
                       }`}
                     >
                       Tất cả
@@ -335,10 +331,10 @@ export function OrderEditForm({
                         key={c.id}
                         type="button"
                         onClick={() => setAddCategory(c.id)}
-                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
                           addCategory === c.id
-                            ? "bg-primary text-on-primary"
-                            : "bg-surface-card text-text-secondary border border-border"
+                            ? "bg-primary-soft text-primary border-primary font-bold"
+                            : "bg-surface-card text-text-secondary border-border"
                         }`}
                       >
                         {c.name}
@@ -494,7 +490,7 @@ export function OrderEditForm({
                     </Button>
                     <Button
                       type="button"
-                      variant="primary"
+                      variant="secondary"
                       onClick={confirmAddProduct}
                       disabled={!selectedNewVariant}
                       className="flex-1 min-h-[44px]"
@@ -528,15 +524,16 @@ export function OrderEditForm({
             />
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-text-secondary w-28">Thanh toán:</span>
-              <select
-                aria-label="Phương thức thanh toán"
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring min-h-[44px]"
-              >
-                <option value="Tien mat">Tiền mặt</option>
-                <option value="Chuyen khoan">Chuyển khoản</option>
-              </select>
+              <div className="flex-1">
+                <Select
+                  aria-label="Phương thức thanh toán"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  <option value="Tien mat">Tiền mặt</option>
+                  <option value="Chuyen khoan">Chuyển khoản</option>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -560,13 +557,13 @@ export function OrderEditForm({
             />
           </div>
 
-          <div className="px-4 py-3 flex gap-3 bg-surface-card border-t border-border">
+          <div className="px-4 py-3 flex flex-col sm:flex-row gap-3 bg-surface-card border-t border-border">
             <Button
               type="button"
               variant="secondary"
               onClick={() => router.push(viewUrl)}
               disabled={isSaving}
-              className="flex-1 min-h-[44px]"
+              className="w-full sm:w-auto sm:flex-1 min-h-[44px]"
             >
               Bỏ
             </Button>
@@ -574,7 +571,7 @@ export function OrderEditForm({
               type="submit"
               variant="primary"
               disabled={isSaving || items.length === 0 || !editReason.trim()}
-              className="flex-1 min-h-[44px]"
+              className="w-full sm:w-auto sm:flex-1 min-h-[44px]"
             >
               {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
             </Button>
