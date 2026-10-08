@@ -11,7 +11,8 @@ import { savePurchaseOrderAtomic } from "@/lib/purchasing/purchase-order-transac
 import { requireAdmin } from "@/lib/auth/auth";
 import { listPurchaseOrdersPage, paymentLabelOf, type PurchaseOrderListFilters, type PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
 import type { RawPurchaseOrderLine } from "@/lib/purchasing/item-purchase-history";
-import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine } from "@/lib/assets/asset-purchase-allocation";
+import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine, type NewAssetPlan } from "@/lib/assets/asset-purchase-allocation";
+import { assetReconcileRefusalMessage, planAssetReconcile, type AssetReconcilePlan } from "@/lib/assets/asset-purchase-reconcile";
 import { toSaigonIsoString, formatDateTimeFull } from "@/lib/shared/datetime";
 import {
   describeCancelBlocker,
@@ -152,6 +153,11 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       // BR-INV-015: a cancelled order is never edited. Refused before any
       // write, asset or trail row (works before migration 0108 runs too).
       if (previousPo?.status === "CANCELLED") return fail("Phiếu đã huỷ, không sửa được");
+      // BR-INV-015: a draft is not counted, so saving a completed order back as
+      // a draft would be a cancel without the cancel's checks.
+      if (previousPo?.status === "COMPLETED" && status === "DRAFT") {
+        return fail("Phiếu đã hoàn thành không lưu nháp được. Muốn rút phiếu ra, dùng Huỷ phiếu.");
+      }
       const ownLines = existingLines.filter(
         (l: any) => l.po_id === id || l.purchase_order_id === id,
       );
@@ -204,6 +210,78 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       createdAt,
       existingLines: storedLines,
     });
+    const equipmentCategoryIds = new Set(
+      (itemCategories as DBItemCategory[]).filter(c => c.system_type === "EQUIPMENT").map(c => c.id),
+    );
+    const purchasedItemById = new Map((purchasedItems as any[]).map(p => [p.id, p]));
+    // 2026-08-26: base_quantity, not quantity -- quantity is in PURCHASE units
+    // (e.g. "1 Combo 10"); base_quantity is already quantity * conversion_rate
+    // (OPEN-ITEMS 56), or quantity itself when the item has no conversion.
+    const buildEquipmentLines = (): EquipmentPurchaseLine[] =>
+      writePlan.lines
+        .filter((line: any) => {
+          const item = purchasedItemById.get(line.purchased_item_id);
+          return item && equipmentCategoryIds.has(item.item_category_id);
+        })
+        .map((line: any) => ({
+          lineId: line.id as string,
+          purchasedItemId: line.purchased_item_id as string,
+          itemName: purchasedItemById.get(line.purchased_item_id)?.name || line.purchased_item_id,
+          subtotal: Number(line.subtotal),
+          baseQuantity: Number(line.base_quantity),
+        }));
+    // 2026-08-27 fix (OPEN-ITEMS 64): effectiveDate is a UTC string; slicing it
+    // directly reads the UTC calendar day, one day early for a purchase
+    // recorded at Saigon midnight. toSaigonIsoString converts first.
+    const acquiredDate = toSaigonIsoString(new Date(effectiveDate)).slice(0, 10);
+    const insertAssetFromPlan = async (plan: NewAssetPlan) => {
+      const assetId = await generateNewId("assets", "TS");
+      await insert("assets", {
+        id: assetId,
+        purchased_item_id: plan.purchased_item_id,
+        purchase_order_line_id: plan.purchase_order_line_id,
+        name_snapshot: plan.name_snapshot,
+        acquired_date: acquiredDate,
+        unit_cost: plan.unit_cost,
+        total_cost: plan.total_cost,
+        quantity: plan.quantity,
+        term_months: plan.term_months,
+      });
+    };
+
+    // BR-COGS-008: an edit of a completed order is planned before anything is
+    // written. A disposal on an asset the edit would change refuses it.
+    let reconcilePlan: Extract<AssetReconcilePlan, { kind: "apply" }> | null = null;
+    if (id && previousPo?.status === "COMPLETED" && status === "COMPLETED") {
+      const [allAssets, disposals, reconcileBands] = await Promise.all([
+        findAll("assets") as Promise<any[]>,
+        findAll("asset_disposals") as Promise<any[]>,
+        findAll("asset_depreciation_bands") as unknown as Promise<Band[]>,
+      ]);
+      const storedIds = new Set(storedLines.map(l => l.id));
+      const result = planAssetReconcile({
+        lines: writePlan.lines.map((line: any) => ({
+          id: String(line.id),
+          purchased_item_id: String(line.purchased_item_id),
+          subtotal: Number(line.subtotal),
+          base_quantity: Number(line.base_quantity),
+        })),
+        storedLineIds: storedLines.map(l => l.id),
+        equipmentItemIds: new Set(
+          (purchasedItems as any[]).filter(p => equipmentCategoryIds.has(p.item_category_id)).map(p => String(p.id)),
+        ),
+        itemNameById: new Map((purchasedItems as any[]).map(p => [String(p.id), String(p.name)])),
+        assets: allAssets.filter(a => a.purchase_order_line_id && storedIds.has(String(a.purchase_order_line_id))),
+        disposals,
+        additions: shipping_fee + tax_amount,
+        subtractions: voucher_amount + discount_amount,
+        bands: reconcileBands,
+        acquiredDate,
+      });
+      if (result.kind === "refuse") return fail(assetReconcileRefusalMessage(result.assets));
+      reconcilePlan = result;
+    }
+
     const saved = await savePurchaseOrderAtomic({
       order: writePlan.order,
       lines: writePlan.lines,
@@ -211,58 +289,21 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     });
     const po_id = saved.purchaseOrderId;
 
-    // Batch 3, section 3.2:
-    // completing a NEW purchase order with an EQUIPMENT line creates the
-    // corresponding assets row. purchase_order_line_id (nullable) plus the
-    // complete absence of any "add asset" screen anywhere in the plan's
-    // own section 5 are the only two things that say how an asset is ever
-    // created -- this is the mechanism, inferred rather than stated
-    // outright; flagged as such in the handoff.
-    //
-    // Assets are created the first time an order becomes COMPLETED: either
-    // brand new (!id) or an existing order whose stored status, read above
-    // before the atomic save replaced it, was not COMPLETED (DRAFT ->
-    // COMPLETED). Still open and deliberately NOT handled: editing an
-    // order that was ALREADY completed. What should happen to an
-    // already-created asset then is an undecided owner question, and
-    // silently re-deriving or overwriting a depreciation record on every
-    // PO edit risks corrupting term_months' freeze (section 9.1) or a
-    // disposal history that already exists on that asset. Left as a known
-    // limitation rather than guessed at. An id with no stored order found
-    // is also skipped (status unknown, avoid duplicate assets).
+    // Batch 3, section 3.2 + BR-COGS-008: assets follow the purchase.
+    // - First completion (new order, or DRAFT -> COMPLETED): one asset per
+    //   EQUIPMENT line.
+    // - Edit of an already COMPLETED order (owner 2026-10-08, "1b"): the
+    //   assets it created are retired / patched / added by planAssetReconcile,
+    //   planned BEFORE the atomic save (a disposal refuses the edit with
+    //   nothing written) and applied after it, like the create path.
+    // An id with no stored order found is skipped (status unknown, avoid
+    // duplicate assets).
     const becomesCompletedNow =
       status === "COMPLETED" && (!id || (previousPo !== null && previousPo.status !== "COMPLETED"));
     let assetWarning: string | undefined;
     if (becomesCompletedNow) {
       try {
-        const equipmentCategoryIds = new Set(
-          (itemCategories as DBItemCategory[])
-            .filter(c => c.system_type === "EQUIPMENT")
-            .map(c => c.id),
-        );
-        const purchasedItemById = new Map((purchasedItems as any[]).map(p => [p.id, p]));
-        const equipmentLines: EquipmentPurchaseLine[] = writePlan.lines
-          .filter((line: any) => {
-            const item = purchasedItemById.get(line.purchased_item_id);
-            return item && equipmentCategoryIds.has(item.item_category_id);
-          })
-          .map((line: any) => {
-            const item = purchasedItemById.get(line.purchased_item_id);
-            return {
-              lineId: line.id as string,
-              purchasedItemId: line.purchased_item_id as string,
-              itemName: item?.name || line.purchased_item_id,
-              subtotal: Number(line.subtotal),
-              // 2026-08-26:
-              // base_quantity, not quantity -- quantity is in PURCHASE units
-              // (e.g. "1 Combo 10"), base_quantity is already correctly
-              // computed by buildPurchaseOrderWritePlan/buildPurchaseReceipt
-              // (OPEN-ITEMS 56) as quantity * conversion_rate, or quantity
-              // itself when the item has no conversion at all.
-              baseQuantity: Number(line.base_quantity),
-            };
-          });
-
+        const equipmentLines = buildEquipmentLines();
         if (equipmentLines.length > 0) {
           const bands = (await findAll("asset_depreciation_bands")) as unknown as Band[];
           const assetPlans = planAssetsFromCompletedOrder({
@@ -272,24 +313,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
             subtractions: voucher_amount + discount_amount,
             bands,
           });
-          for (const plan of assetPlans) {
-            const assetId = await generateNewId("assets", "TS");
-            await insert("assets", {
-              id: assetId,
-              purchased_item_id: plan.purchased_item_id,
-              purchase_order_line_id: plan.purchase_order_line_id,
-              name_snapshot: plan.name_snapshot,
-              // 2026-08-27 fix (OPEN-ITEMS 64): effectiveDate is a UTC
-              // string; slicing it directly reads the UTC calendar day,
-              // one day early for a purchase recorded at Saigon midnight.
-              // toSaigonIsoString converts to Saigon wall-clock first.
-              acquired_date: toSaigonIsoString(new Date(effectiveDate)).slice(0, 10),
-              unit_cost: plan.unit_cost,
-              total_cost: plan.total_cost,
-              quantity: plan.quantity,
-              term_months: plan.term_months,
-            });
-          }
+          for (const plan of assetPlans) await insertAssetFromPlan(plan);
           revalidatePath("/admin/inventory/assets");
         }
       } catch (assetError: unknown) {
@@ -301,6 +325,21 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         assetWarning = assetError instanceof Error
           ? assetError.message
           : "Không tạo được tài sản cho dụng cụ trong đơn này";
+      }
+    }
+    if (reconcilePlan) {
+      try {
+        for (const assetId of reconcilePlan.retire) await update("assets", assetId, { status: "INACTIVE" });
+        for (const change of reconcilePlan.update) await update("assets", change.id, change.patch);
+        for (const plan of reconcilePlan.create) await insertAssetFromPlan(plan);
+        if (reconcilePlan.retire.length + reconcilePlan.update.length + reconcilePlan.create.length > 0) {
+          revalidatePath("/admin/inventory/assets");
+        }
+      } catch (assetError: unknown) {
+        console.error("Asset update failed (purchase order already saved):", assetError);
+        assetWarning = assetError instanceof Error
+          ? assetError.message
+          : "Không cập nhật được tài sản sinh từ phiếu này";
       }
     }
 
