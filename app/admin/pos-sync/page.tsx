@@ -1,5 +1,6 @@
 import { getPosSyncAttentionItems } from "./actions";
 import { PosSyncClient } from "./PosSyncClient";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,7 @@ export default async function PosSyncPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-text-primary">Đơn cần chú ý</h1>
+      <PageHeader title="Đơn cần chú ý" />
       <PosSyncClient lateOrders={lateOrders} failures={failures} />
     </div>
   );

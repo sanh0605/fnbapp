@@ -79,60 +79,30 @@ function tagOffenders(tagNames: string[], pattern: RegExp): string[] {
 const NUMBER_TYPE_DEBT: string[] = [
 ];
 
-const SOLID_BUTTON_DEBT = [
-  "app/admin/activity-log/components/ActivityLogClient.tsx", // K6
-  "app/admin/brands/[id]/components/BrandDetailView.tsx", // K6
-  "app/admin/brands/components/BrandsClient.tsx", // K6
-  "app/admin/components/PosOutletPicker.tsx", // K6
-  "app/admin/layout.tsx", // K6
-  "app/admin/outlets/[id]/components/OutletDetailView.tsx", // K6
-  "app/admin/outlets/components/OutletsClient.tsx", // K6
-  "app/admin/users/[id]/components/UserDetailView.tsx", // K6
-  "app/admin/users/components/UsersClient.tsx", // K6
-  "app/settings/password/page.tsx", // K6
+const SOLID_BUTTON_DEBT: string[] = [
 ];
 
-const TABLE_DEBT = [
-  "app/admin/pos-sync/PosSyncClient.tsx", // K6
+const TABLE_DEBT: string[] = [
   "app/admin/products/components/ToppingsManager.tsx", // dead code: nothing imports it (master plan part 6); not moved
 ];
 
-const BOLD_CELL_DEBT = [
+const BOLD_CELL_DEBT: string[] = [
   "app/admin/products/components/ToppingsManager.tsx", // dead code: nothing imports it (master plan part 6); not moved
 ];
 
-const ENGLISH_BRACKET_DEBT = [
-  "app/admin/clear-cache/loading.tsx", // K6
-  "app/admin/clear-cache/page.tsx", // K6
+const ENGLISH_BRACKET_DEBT: string[] = [
 ];
 
-const RAW_INPUT_DEBT = [
-  "app/admin/activity-log/components/ActivityLogClient.tsx", // K6
-  "app/admin/brands/components/BrandForm.tsx", // K6
-  "app/admin/brands/components/BrandsClient.tsx", // K6
-  "app/admin/outlets/components/OutletForm.tsx", // K6
-  "app/admin/outlets/components/OutletsClient.tsx", // K6
-  "app/admin/users/components/EditUserForm.tsx", // K6
-  "app/admin/users/components/UserForm.tsx", // K6
-  "app/admin/users/components/UsersClient.tsx", // K6
-  "app/settings/password/page.tsx", // K6
+const RAW_INPUT_DEBT: string[] = [
 ];
 
-const RAW_SELECT_DEBT = [
-  "app/admin/activity-log/components/ActivityLogClient.tsx", // K6
-  "app/admin/outlets/components/OutletForm.tsx", // K6
-  "app/admin/outlets/components/OutletsClient.tsx", // K6
-  "app/admin/users/components/EditUserForm.tsx", // K6
-  "app/admin/users/components/UserForm.tsx", // K6
-  "app/admin/users/components/UsersClient.tsx", // K6
+const RAW_SELECT_DEBT: string[] = [
 ];
 
 const NUMERIC_INPUTMODE_DEBT: string[] = [
 ];
 
-const RAW_H1_DEBT = [
-  "app/admin/pos-sync/page.tsx", // K6
-  "app/settings/password/page.tsx", // K6
+const RAW_H1_DEBT: string[] = [
 ];
 
 // Names and units that are fine in brackets: brand names and abbreviations

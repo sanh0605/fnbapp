@@ -4,6 +4,10 @@ import { useState, useId } from "react";
 import { changePasswordAction } from "@/app/actions/auth";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Button } from "@/components/ui/Button";
 
 export default function ChangePasswordPage() {
   const formId = useId();
@@ -59,12 +63,14 @@ export default function ChangePasswordPage() {
   return (
     <div className="min-h-screen bg-page p-8">
       <div className="max-w-md mx-auto bg-surface-card rounded-xl shadow-lg p-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-text-primary">Đổi mật khẩu</h1>
-          <Link href="/pos" className="text-primary hover:underline text-sm">
-            Về trang POS
-          </Link>
-        </div>
+        <PageHeader
+          title="Đổi mật khẩu"
+          actions={
+            <Link href="/pos" className="text-primary hover:underline text-sm">
+              Về trang POS
+            </Link>
+          }
+        />
 
         {error && (
           <div className="bg-danger/10 text-danger p-3 rounded-lg text-sm text-center mb-6 border border-danger/20">
@@ -79,59 +85,44 @@ export default function ChangePasswordPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor={`${formId}-oldPassword`} className="block text-sm font-medium text-text-primary mb-1">
-              Mật khẩu cũ
-            </label>
-            <input
+          <Field label="Mật khẩu cũ" htmlFor={`${formId}-oldPassword`} required>
+            <TextInput
               id={`${formId}-oldPassword`}
               type="password"
               required
-              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-primary outline-none"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
             />
-          </div>
+          </Field>
 
-          <div>
-            <label htmlFor={`${formId}-newPassword`} className="block text-sm font-medium text-text-primary mb-1">
-              Mật khẩu mới
-            </label>
-            <input
+          <Field label="Mật khẩu mới" htmlFor={`${formId}-newPassword`} required>
+            <TextInput
               id={`${formId}-newPassword`}
               type="password"
               required
-              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-primary outline-none"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
-          </div>
+          </Field>
           
-          <div>
-            <label htmlFor={`${formId}-confirmPassword`} className="block text-sm font-medium text-text-primary mb-1">
-              Xác nhận mật khẩu mới
-            </label>
-            <input
+          <Field label="Xác nhận mật khẩu mới" htmlFor={`${formId}-confirmPassword`} required>
+            <TextInput
               id={`${formId}-confirmPassword`}
               type="password"
               required
-              className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-primary outline-none"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
-          </div>
+          </Field>
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-on-primary font-semibold py-2.5 rounded-lg hover:bg-primary-hover transition-colors flex justify-center items-center disabled:opacity-50 mt-2"
+            variant="primary"
+            loading={loading}
+            className="w-full mt-2"
           >
-            {loading ? (
-              <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-            ) : (
-              "Cập nhật mật khẩu"
-            )}
-          </button>
+            Cập nhật mật khẩu
+          </Button>
         </form>
       </div>
     </div>

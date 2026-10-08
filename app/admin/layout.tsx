@@ -9,6 +9,7 @@ import { PosOutletPicker } from "@/app/admin/components/PosOutletPicker";
 import { AdminRouteMemory } from "@/components/ui/AdminRouteMemory";
 import { AdminSidebar } from "./components/AdminSidebar";
 import { PhoneNavBar } from "./components/PhoneNavBar";
+import { Button } from "@/components/ui/Button";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -170,12 +171,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {outletsError ? (
                 <div className="text-center py-4 space-y-3">
                   <p className="text-sm text-danger">{outletsError}</p>
-                  <button
+                  <Button
+                    variant="primary"
                     onClick={() => void loadOutletsForPosModal()}
-                    className="px-4 py-2 text-sm font-medium text-on-primary bg-primary rounded-button hover:bg-primary-hover transition-colors"
                   >
                     Thử lại
-                  </button>
+                  </Button>
                 </div>
               ) : outletsLoading || outlets.length === 0 ? (
                 <div className="text-center text-text-muted py-4 animate-pulse">Đang tải danh sách…</div>

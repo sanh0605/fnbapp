@@ -1,6 +1,11 @@
 "use client";
 
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { DayInput } from "@/components/ui/DayInput";
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatDateTime } from "@/lib/shared/datetime";
@@ -30,6 +35,8 @@ export default function ActivityLogClient({
   const [actorFilter, setActorFilter] = useState(() => searchParams.get("actor") || "ALL");
   const [startDate, setStartDate] = useState(() => searchParams.get("from") || "");
   const [endDate, setEndDate] = useState(() => searchParams.get("to") || "");
+  const [fromError, setFromError] = useState("");
+  const [toError, setToError] = useState("");
   const [currentPage, setCurrentPage] = useState(() => {
     const page = Number(searchParams.get("page"));
     return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
@@ -41,6 +48,8 @@ export default function ActivityLogClient({
     setActorFilter(searchParams.get("actor") || "ALL");
     setStartDate(searchParams.get("from") || "");
     setEndDate(searchParams.get("to") || "");
+    setFromError("");
+    setToError("");
     const page = Number(searchParams.get("page"));
     setCurrentPage(Number.isFinite(page) && page > 0 ? Math.floor(page) : 1);
   }, [searchParams]);
@@ -169,99 +178,98 @@ export default function ActivityLogClient({
         subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">
-
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Tìm kiếm
-          </label>
-          <input
-            type="text"
-            placeholder="Ví dụ: PHD000001"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") updateUrl({ q: search });
-            }}
-            className="w-full md:w-56 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
-          />
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-56">
+          <Field label="Tìm kiếm" htmlFor="filter-search">
+            <TextInput
+              id="filter-search"
+              placeholder="Ví dụ: PHD000001"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") updateUrl({ q: search });
+              }}
+            />
+          </Field>
         </div>
-        <button
+        <Button
           type="button"
+          variant="primary"
           onClick={() => updateUrl({ q: search })}
-          disabled={isPending}
-          className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary disabled:opacity-60"
+          loading={isPending}
+          className="w-full md:w-auto"
         >
           Lọc
-        </button>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Loại Sự Kiện
-          </label>
-          <select
-            value={eventType}
-            onChange={(e) => {
-              setEventType(e.target.value);
-              updateUrl({ type: e.target.value });
-            }}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-          >
-            <option value="ALL">Tất cả</option>
-            <option value="CREATED">Tạo mới</option>
-            <option value="EDITED">Chỉnh sửa</option>
-            <option value="VOIDED">Hủy đơn</option>
-            <option value="REOPENED">Mở lại</option>
-            <option value="MIGRATED">Di trú</option>
-          </select>
+        </Button>
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-40">
+          <Field label="Loại sự kiện" htmlFor="filter-event-type">
+            <Select
+              id="filter-event-type"
+              value={eventType}
+              onChange={(e) => {
+                setEventType(e.target.value);
+                updateUrl({ type: e.target.value });
+              }}
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="CREATED">Tạo mới</option>
+              <option value="EDITED">Chỉnh sửa</option>
+              <option value="VOIDED">Hủy đơn</option>
+              <option value="REOPENED">Mở lại</option>
+              <option value="MIGRATED">Di trú</option>
+            </Select>
+          </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Tài Khoản
-          </label>
-          <select
-            value={actorFilter}
-            onChange={(e) => {
-              setActorFilter(e.target.value);
-              updateUrl({ actor: e.target.value });
-            }}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-          >
-            <option value="ALL">Tất cả tài khoản</option>
-            {actors.map((actor) => (
-              <option key={actor} value={actor}>
-                {actor}
-              </option>
-            ))}
-          </select>
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-40">
+          <Field label="Tài khoản" htmlFor="filter-actor">
+            <Select
+              id="filter-actor"
+              value={actorFilter}
+              onChange={(e) => {
+                setActorFilter(e.target.value);
+                updateUrl({ actor: e.target.value });
+              }}
+            >
+              <option value="ALL">Tất cả tài khoản</option>
+              {actors.map((actor) => (
+                <option key={actor} value={actor}>
+                  {actor}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Từ ngày
-          </label>
-          <input
-            type="date"
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
+          <DayInput
+            label="Từ ngày"
             value={startDate}
-            onChange={(e) => {
-              setStartDate(e.target.value);
-              updateUrl({ from: e.target.value });
+            onChange={(v) => {
+              if (v === "invalid") {
+                setFromError("Ngày không hợp lệ");
+                return;
+              }
+              setFromError("");
+              setStartDate(v);
+              updateUrl({ from: v });
             }}
-            className="w-full md:w-auto border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
+            error={fromError}
           />
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Đến ngày
-          </label>
-          <input
-            type="date"
+        <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
+          <DayInput
+            label="Đến ngày"
             value={endDate}
-            onChange={(e) => {
-              setEndDate(e.target.value);
-              updateUrl({ to: e.target.value });
+            onChange={(v) => {
+              if (v === "invalid") {
+                setToError("Ngày không hợp lệ");
+                return;
+              }
+              setToError("");
+              setEndDate(v);
+              updateUrl({ to: v });
             }}
-            className="w-full md:w-auto border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
+            error={toError}
           />
         </div>
-      
       </div>
 
       <div className={`relative pl-6 md:pl-10 ${isPending ? "opacity-60" : ""}`}>
@@ -354,25 +362,25 @@ export default function ActivityLogClient({
           {initialEvents.length} / {totalCount} sự kiện
         </span>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             disabled={currentPage <= 1 || isPending}
             onClick={() => updateUrl({ page: currentPage - 1 })}
-            className="min-h-[40px] rounded-lg border border-border bg-surface-card px-4 text-sm font-bold text-text-secondary disabled:opacity-40"
           >
             Trước
-          </button>
+          </Button>
           <span className="min-w-20 text-center text-xs font-bold text-text-secondary">
             {currentPage} / {totalPages}
           </span>
-          <button
+          <Button
             type="button"
+            variant="secondary"
             disabled={currentPage >= totalPages || isPending}
             onClick={() => updateUrl({ page: currentPage + 1 })}
-            className="min-h-[40px] rounded-lg border border-border bg-surface-card px-4 text-sm font-bold text-text-secondary disabled:opacity-40"
           >
             Sau
-          </button>
+          </Button>
         </div>
       </div>
     </div>
