@@ -249,6 +249,54 @@ describe("IssueSlipDetailClient", () => {
     expect(within(table).getAllByText("36,803đ")).toHaveLength(2);
   });
 
+  // BR-UI-005 / BR-UI-008 (wave K3): the edit box is the shared number box.
+  describe("shared number box (wave K3)", () => {
+    function editBox(): HTMLInputElement {
+      fireEvent.click(screen.getByRole("button", { name: "Chỉnh sửa" }));
+      const table = screen.getByRole("table");
+      return within(table).getAllByRole("textbox", { name: "Số lượng" })[0] as HTMLInputElement;
+    }
+
+    it("an emptied box shows the example 'Ví dụ: 1,250.5'", () => {
+      render(<IssueSlipDetailClient detail={defaultDetail} items={mockItems} />);
+      const box = editBox();
+      fireEvent.change(box, { target: { value: "" } });
+      expect(box.placeholder).toBe("Ví dụ: 1,250.5");
+    });
+
+    it("typing 1,5 shows 15 and says the decimal mark is a dot", () => {
+      render(<IssueSlipDetailClient detail={defaultDetail} items={mockItems} />);
+      const box = editBox();
+      fireEvent.change(box, { target: { value: "" } });
+      fireEvent.change(box, { target: { value: "1,5" } });
+      expect(box.value).toBe("15");
+      expect(screen.getByRole("table").textContent).toContain("Số lẻ dùng dấu chấm, ví dụ 1.5");
+    });
+
+    it("a saved 1,250.5 ml line opens as 1,250.5", () => {
+      const detail: IssueSlipDetail = {
+        ...defaultDetail,
+        lines: [{ ...defaultDetail.lines[0], baseQuantity: 1250.5, quantityText: "1,250.5 ml" }],
+      };
+      render(<IssueSlipDetailClient detail={detail} items={mockItems} />);
+      expect(editBox().value).toBe("1,250.5");
+    });
+  });
+
+  // Review Focus 4 (wave K3): the back link returns to the list the slip was
+  // opened from, filter included.
+  it("the back link goes to the list it came from", () => {
+    render(
+      <IssueSlipDetailClient
+        detail={defaultDetail}
+        items={mockItems}
+        returnTo="/admin/inventory/issue-slips?kind=SLIP&page=2"
+      />,
+    );
+    const back = screen.getAllByRole("link").find(a => a.textContent?.includes("Phiếu xuất"));
+    expect(back?.getAttribute("href")).toBe("/admin/inventory/issue-slips?kind=SLIP&page=2");
+  });
+
   describe("Reason (note) display rules (BR-INV-014)", () => {
     it("renders 'Lý do: Khác' when note is 'Khác'", () => {
       const detailWithNote = { ...defaultDetail, note: "Khác" };

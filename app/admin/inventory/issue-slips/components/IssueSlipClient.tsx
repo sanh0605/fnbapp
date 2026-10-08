@@ -2,10 +2,20 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { Select } from "@/components/ui/Select";
+import { NumberInput } from "@/components/ui/NumberInput";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableTotalRow,
+} from "@/components/ui/Table";
 import { confirm } from "@/lib/shared/dialog";
 import { computeAffectedMonths } from "@/lib/stock/issue-slip-warnings";
 import { formatConvertedOnHand } from "@/lib/stock/issue-slip-onhand-display";
@@ -13,7 +23,7 @@ import { createIssueSlip, getIssueUnitCostsAt, type IssueSlipItemView } from "..
 import { buildIssueUnitOptions, toBaseQuantity, type IssueUnitOption } from "@/lib/stock/issue-unit-options";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
-import { normalizeNumberText, numberTextToValue } from "@/lib/shared/money-digits";
+import { numberTextToValue } from "@/lib/shared/money-digits";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
 
@@ -61,7 +71,7 @@ function getConvertedQuantityText(
   return `${qtyFormatted} ${item.unitName}`;
 }
 
-export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
+export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.Element {
   const router = useRouter();
   const [lines, setLines] = useState<DraftLine[]>([emptyLine()]);
   const [issuedAtLocal, setIssuedAtLocal] = useState(() => toSaigonIsoString(new Date()).slice(0, 16));
@@ -224,7 +234,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         {/* Top card: Thời điểm xuất (left) & Đã điền đủ (right) */}
         <div className="bg-surface-card rounded-card border border-border p-4 flex flex-row items-center justify-between gap-4 shadow-sm">
           <div>
-            <label className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">
+            <label className="block text-sm font-medium text-text-primary mb-1.5">
               Thời điểm xuất (áp dụng cho cả phiếu)
             </label>
             <SaigonDateTimeInput
@@ -244,130 +254,117 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         </div>
 
         {/* Real Table */}
-        <div className="bg-surface-card border border-border rounded-card overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="bg-surface-secondary text-text-secondary text-xs uppercase tracking-wider">
-                  <th className="p-3 font-bold min-w-[200px]">Mặt hàng</th>
-                  <th className="p-3 font-bold w-36">Tồn hiện tại</th>
-                  <th className="p-3 font-bold w-32">Đơn vị</th>
-                  <th className="p-3 font-bold text-right w-24">Số lượng</th>
-                  <th className="p-3 font-bold text-right w-28">Quy ra</th>
-                  <th className="p-3 font-bold text-right w-36">Giá trị xuất</th>
-                  <th className="p-3 w-12 text-center" aria-label="Xoá dòng"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {lines.map((line, index) => {
-                  const computed = computedLines[index];
-                  const item = computed?.item;
-                  const options = computed?.options ?? [];
-                  const onHandDisplay = computed?.onHandDisplay ?? "—";
-                  const convertedDisplay = computed?.convertedDisplay ?? "—";
-                  const lineValueDisplay = computed?.lineValueDisplay ?? "—";
+        <Table>
+          <TableHead>
+            <TableHeaderCell>Mặt hàng</TableHeaderCell>
+            <TableHeaderCell>Tồn hiện tại</TableHeaderCell>
+            <TableHeaderCell>Đơn vị</TableHeaderCell>
+            <TableHeaderCell align="right">Số lượng</TableHeaderCell>
+            <TableHeaderCell align="right">Quy ra</TableHeaderCell>
+            <TableHeaderCell align="right">Giá trị xuất</TableHeaderCell>
+            <TableHeaderCell>
+              <span className="sr-only" aria-label="Xoá dòng">Xoá dòng</span>
+            </TableHeaderCell>
+          </TableHead>
+          <TableBody>
+            {lines.map((line, index) => {
+              const computed = computedLines[index];
+              const item = computed?.item;
+              const options = computed?.options ?? [];
+              const onHandDisplay = computed?.onHandDisplay ?? "—";
+              const convertedDisplay = computed?.convertedDisplay ?? "—";
+              const lineValueDisplay = computed?.lineValueDisplay ?? "—";
 
-                  return (
-                    <tr key={index} className="hover:bg-surface-secondary/40 transition-colors">
-                      <td className="p-3 font-medium">
-                        <SearchableSelect
-                          value={line.purchasedItemId}
-                          onChange={val => handleItemChange(index, val)}
-                          options={itemOptions}
-                          placeholder="-- Chọn hàng --"
-                        />
-                      </td>
-                      <td className="p-3 text-sm text-text-secondary tabular-nums">
-                        {onHandDisplay}
-                      </td>
-                      <td className="p-3">
-                        <select
-                          aria-label="Đơn vị"
-                          value={line.unitKey}
-                          onChange={e => updateLine(index, { unitKey: e.target.value })}
-                          disabled={!item}
-                          className="w-full border border-border rounded-lg px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card disabled:opacity-50"
-                        >
-                          <option value="">-- Chọn --</option>
-                          {options.map(o => (
-                            <option key={o.key} value={o.key}>{o.label}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="p-3 text-right">
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          aria-label="Số lượng"
-                          value={line.packageQty}
-                          onChange={e => {
-                            const next = normalizeNumberText(e.target.value, 3);
-                            if (next === null) return; // a 4th decimal or a 16th digit: keep what was there
-                            updateLine(index, { packageQty: next });
-                          }}
-                          placeholder="0"
-                          className="w-full border border-border rounded-lg px-2.5 py-1.5 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card disabled:opacity-50"
-                        />
-                      </td>
-                      <td className="p-3 text-right tabular-nums text-text-primary text-sm font-medium">
-                        {convertedDisplay}
-                      </td>
-                      <td className="p-3 text-right tabular-nums text-text-primary text-sm font-medium">
-                        {lineValueDisplay}
-                      </td>
-                      <td className="p-3 text-center">
-                        {lines.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeLine(index)}
-                            className="text-text-muted hover:text-danger p-2 transition-colors inline-flex items-center justify-center rounded-lg min-h-[44px] min-w-[44px]"
-                            aria-label="Xoá dòng"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-                <tr className="bg-surface-secondary/40 border-t border-border font-semibold">
-                  <td colSpan={5} className="p-3 text-right text-text-secondary">
-                    Tổng giá trị xuất
-                  </td>
-                  <td className="p-3 text-right tabular-nums text-text-primary text-sm font-bold">
-                    <div>{formatNumber(displayMoney(exactTotal))}đ</div>
-                    {filledLinesWithoutCostCount > 0 && (
-                      <div className="text-xs font-normal text-text-muted mt-0.5">
-                        chưa tính {filledLinesWithoutCostCount} dòng chưa có giá
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-3"></td>
-                </tr>
-                <tr className="border-t border-border">
-                  <td colSpan={7} className="p-3">
-                    <button
-                      type="button"
-                      onClick={addLine}
-                      className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px]"
+              return (
+                <TableRow key={index}>
+                  <TableCell>
+                    <SearchableSelect
+                      value={line.purchasedItemId}
+                      onChange={val => handleItemChange(index, val)}
+                      options={itemOptions}
+                      placeholder="-- Chọn hàng --"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <span className="tabular-nums text-text-secondary">{onHandDisplay}</span>
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      aria-label="Đơn vị"
+                      value={line.unitKey}
+                      onChange={e => updateLine(index, { unitKey: e.target.value })}
+                      disabled={!item}
                     >
-                      + Thêm mặt hàng
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      <option value="">-- Chọn --</option>
+                      {options.map(o => (
+                        <option key={o.key} value={o.key}>{o.label}</option>
+                      ))}
+                    </Select>
+                  </TableCell>
+                  <TableCell align="right">
+                    <NumberInput
+                      id={`issue-qty-${index}`}
+                      decimals={3}
+                      min={0}
+                      aria-label="Số lượng"
+                      value={line.packageQty === "" ? null : Number(line.packageQty)}
+                      onValueChange={v => updateLine(index, { packageQty: v === null ? "" : String(v) })}
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    {convertedDisplay}
+                  </TableCell>
+                  <TableCell align="right">
+                    {lineValueDisplay}
+                  </TableCell>
+                  <TableCell>
+                    {lines.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLine(index)}
+                        className="text-text-muted hover:text-danger p-2 transition-colors inline-flex items-center justify-center rounded-lg min-h-[44px] min-w-[44px]"
+                        aria-label="Xoá dòng"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            <TableRow>
+              <TableCell colSpan={7}>
+                <button
+                  type="button"
+                  onClick={addLine}
+                  className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px]"
+                >
+                  + Thêm mặt hàng
+                </button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+          <TableTotalRow>
+            <TableCell colSpan={5} align="right">
+              <span className="text-text-secondary">Tổng giá trị xuất</span>
+            </TableCell>
+            <TableCell align="right">
+              <div>{formatNumber(displayMoney(exactTotal))}đ</div>
+              {filledLinesWithoutCostCount > 0 && (
+                <div className="text-xs font-normal text-text-muted mt-0.5">
+                  chưa tính {filledLinesWithoutCostCount} dòng chưa có giá
+                </div>
+              )}
+            </TableCell>
+            <TableCell />
+          </TableTotalRow>
+        </Table>
 
         {/* Bottom action row, right-aligned */}
         <div className="flex items-center justify-end gap-3 pt-2">
-          <Link
-            href="/admin/inventory/issue-slips"
-            className="inline-flex items-center justify-center font-medium rounded-button transition-colors bg-surface-secondary text-text-primary hover:bg-border active:bg-border text-sm px-4 py-2 min-h-[44px]"
-          >
+          <Button href="/admin/inventory/issue-slips" variant="secondary">
             Quay lại
-          </Link>
+          </Button>
           <Button
             variant="primary"
             onClick={handleSubmit}
@@ -384,7 +381,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         {/* Time card first */}
         <div className="bg-surface-card rounded-card shadow-sm border border-border p-4 space-y-3">
           <div>
-            <label className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">
+            <label className="block text-sm font-medium text-text-primary mb-1.5">
               Thời điểm xuất (áp dụng cho cả phiếu)
             </label>
             <SaigonDateTimeInput
@@ -442,33 +439,27 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                 <div className="flex gap-3 mt-3">
                   <div className="flex-1 min-w-0">
                     <label className="block text-xs font-medium text-text-muted mb-1">Quy cách</label>
-                    <select
+                    <Select
                       aria-label="Đơn vị"
                       value={line.unitKey}
                       onChange={e => updateLine(index, { unitKey: e.target.value })}
                       disabled={!item}
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px]"
                     >
                       <option value="">-- Chọn --</option>
                       {options.map(o => (
                         <option key={o.key} value={o.key}>{o.label}</option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
                   <div className="w-24 shrink-0">
                     <label className="block text-xs font-medium text-text-muted mb-1">Số lượng</label>
-                    <input
-                      type="text"
-                      inputMode="decimal"
+                    <NumberInput
+                      id={`issue-qty-m-${index}`}
+                      decimals={3}
+                      min={0}
                       aria-label="Số lượng"
-                      value={line.packageQty}
-                      onChange={e => {
-                        const next = normalizeNumberText(e.target.value, 3);
-                        if (next === null) return; // a 4th decimal or a 16th digit: keep what was there
-                        updateLine(index, { packageQty: next });
-                      }}
-                      placeholder="0"
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px]"
+                      value={line.packageQty === "" ? null : Number(line.packageQty)}
+                      onValueChange={v => updateLine(index, { packageQty: v === null ? "" : String(v) })}
                     />
                   </div>
                 </div>
@@ -519,12 +510,13 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
           >
             Ghi phiếu xuất ({lines.length} dòng)
           </Button>
-          <Link
+          <Button
             href="/admin/inventory/issue-slips"
-            className="w-full inline-flex items-center justify-center font-medium rounded-button transition-colors bg-surface-secondary text-text-primary hover:bg-border active:bg-border text-sm px-4 py-2 min-h-[44px]"
+            variant="secondary"
+            className="w-full"
           >
             Quay lại
-          </Link>
+          </Button>
         </div>
       </div>
     </div>

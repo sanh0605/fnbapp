@@ -97,7 +97,6 @@ const SOLID_BUTTON_DEBT = [
   "app/admin/finance/categories/components/CategoriesClient.tsx", // K5
   "app/admin/finance/page.tsx", // K5
   "app/admin/finance/transfers/[id]/components/CashTransferDetailView.tsx", // K5
-  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
   "app/admin/inventory/purchase-orders/[id]/cancel/components/CancelPurchaseOrderForm.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
   "app/admin/layout.tsx", // K6
@@ -122,9 +121,6 @@ const SOLID_BUTTON_DEBT = [
 ];
 
 const TABLE_DEBT = [
-  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
   "app/admin/inventory/purchase-orders/[id]/cancel/components/CancelPurchaseOrderForm.tsx", // K3
   "app/admin/inventory/purchase-orders/[id]/page.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
@@ -142,9 +138,6 @@ const TABLE_DEBT = [
 ];
 
 const BOLD_CELL_DEBT = [
-  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
   "app/admin/inventory/purchase-orders/[id]/cancel/components/CancelPurchaseOrderForm.tsx", // K3
   "app/admin/inventory/purchase-orders/[id]/page.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
@@ -175,9 +168,6 @@ const RAW_INPUT_DEBT = [
   "app/admin/finance/categories/components/CategoryForm.tsx", // K5
   "app/admin/finance/components/CashEntryForm.tsx", // K5
   "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
-  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
   "app/admin/orders/OrderTable.tsx", // K4
@@ -208,9 +198,6 @@ const RAW_SELECT_DEBT = [
   "app/admin/finance/components/CashBookClient.tsx", // K5
   "app/admin/finance/components/CashEntryForm.tsx", // K5
   "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
-  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
   "app/admin/inventory/purchase-orders/[id]/components/PurchasePaymentBlock.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
@@ -232,16 +219,12 @@ const RAW_SELECT_DEBT = [
 
 const NUMERIC_INPUTMODE_DEBT = [
   "app/admin/finance/bank-accounts/components/BankAccountForm.tsx", // K5
-  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
   "app/admin/products/components/ProductForm.tsx", // K4
   "app/admin/products/modifiers/components/ModifierForm.tsx", // K4
   "app/admin/promotions/components/PromotionForm.tsx", // K4
 ];
 
 const RAW_H1_DEBT = [
-  "app/admin/inventory/issue-slips/components/IssueSlipDetailClient.tsx", // K3
-  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx", // K3
   "app/admin/inventory/purchase-orders/[id]/page.tsx", // K3
   "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
   "app/admin/inventory/purchase-orders/new/page.tsx", // K3

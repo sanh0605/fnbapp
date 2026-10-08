@@ -90,6 +90,53 @@ describe("IssueSlipsClient", () => {
     expect(options.map(o => o.getAttribute("value"))).toEqual(["ALL", "SLIP", "STOCKTAKE", "CANCELLED"]);
   });
 
+  // BR-UI-003 / BR-UI-005 and Review Focus 4 (wave K3).
+  describe("shared list (wave K3)", () => {
+    const rows: IssueSlipListPage = {
+      ...defaultPageData,
+      rows: [
+        { id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", reason: "Hư hỏng", dateText: "29/09", createdByName: "admin", value: 100 },
+        { id: "STK-01", href: "/admin/inventory/stocktake", kind: "STOCKTAKE", reason: "", dateText: "28/09", createdByName: "admin", value: 50 },
+      ],
+      total: 2,
+      firstIndex: 1,
+      lastIndex: 2,
+    };
+
+    afterEach(() => {
+      for (const k of Array.from(searchParams.keys())) searchParams.delete(k);
+    });
+
+    it("header cells are plain text, not capitals", () => {
+      render(<IssueSlipsClient pageData={rows} />);
+      for (const th of within(screen.getByRole("table")).getAllByRole("columnheader")) {
+        // The capitals can come from the cell or from its header row.
+        expect(th.closest(".uppercase")).toBeNull();
+      }
+    });
+
+    it("a slip row opens with returnTo carrying the active filter; the stocktake row is unchanged", () => {
+      searchParams.set("kind", "SLIP");
+      searchParams.set("page", "2");
+      render(<IssueSlipsClient pageData={rows} />);
+      const table = within(screen.getByRole("table"));
+      const slip = table.getByRole("link", { name: "Xem chi tiết ISL-01" }).getAttribute("href")!;
+      const url = new URL(slip, "http://x");
+      expect(url.pathname).toBe("/admin/inventory/issue-slips/ISL-01");
+      expect(url.searchParams.get("returnTo")).toBe("/admin/inventory/issue-slips?kind=SLIP&page=2");
+      expect(table.getByRole("link", { name: "Xem chi tiết STK-01" }).getAttribute("href")).toBe("/admin/inventory/stocktake");
+    });
+
+    it("the phone list is cards, one per row, with no table", () => {
+      const { container } = render(<IssueSlipsClient pageData={rows} />);
+      const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+      expect(phone).toBeTruthy();
+      expect(phone.querySelector("table")).toBeNull();
+      expect(phone.textContent).toContain("ISL-01");
+      expect(phone.textContent).toContain("STK-01");
+    });
+  });
+
   it("create link reads 'Tạo' and points to /admin/inventory/issue-slips/new", () => {
     render(<IssueSlipsClient pageData={defaultPageData} />);
     const link = screen.getByRole("link", { name: "Tạo" });

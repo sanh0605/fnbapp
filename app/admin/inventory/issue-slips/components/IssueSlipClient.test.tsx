@@ -333,8 +333,40 @@ describe("IssueSlipClient -- package-size counting produces the base quantity se
     await setInputValue(findQtyInput(block), "1.2345");
     expect(findQtyInput(block).value).toBe("1.234");
 
+    // Wave K3: the shared number box shows thousands with a comma, so a typed
+    // "1,250" reads back as "1,250" (one thousand two hundred fifty).
     await setInputValue(findQtyInput(block), "1,250");
-    expect(findQtyInput(block).value).toBe("1250");
+    expect(findQtyInput(block).value).toBe("1,250");
+  });
+});
+
+// BR-UI-005 / BR-UI-008 (wave K3): the quantity box is the shared number box.
+describe("IssueSlipClient -- shared number box (wave K3)", () => {
+  it("shows the example 'Ví dụ: 1,250.5' in the empty quantity box", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    expect(findQtyInput(getLineBlocks(container)[0]).placeholder).toBe("Ví dụ: 1,250.5");
+  });
+
+  it("typing 1,5 shows 15 and says the decimal mark is a dot", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const block = getLineBlocks(container)[0];
+    await setInputValue(findQtyInput(block), "1,5");
+    expect(findQtyInput(block).value).toBe("15");
+    expect(block.textContent).toContain("Số lẻ dùng dấu chấm, ví dụ 1.5");
+  });
+
+  it("typing 1250.5 shows 1,250.5 and sends 1250.5 × 12", async () => {
+    mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const block = getLineBlocks(container)[0];
+    await selectItemInBlock(block, "Sữa tươi Vinamilk");
+    await selectPackage(block, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(block), "1250.5");
+    expect(findQtyInput(block).value).toBe("1,250.5");
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+    expect(mocks.createIssueSlip.mock.calls[0][0].lines).toEqual([
+      { purchasedItemId: "SPM-001", baseQuantity: 15006 },
+    ]);
   });
 });
 
