@@ -241,6 +241,13 @@ describe("PromotionForm -- value boxes (wave K4)", () => {
   const valueBox = () => screen.getByLabelText("Giá trị giảm giá *") as HTMLInputElement;
   const minBox = () => screen.getByLabelText("Đơn tối thiểu để áp dụng") as HTMLInputElement;
 
+  it("switching a 15,000đ value to Phần trăm says the limit at once (Review Focus 3)", () => {
+    renderPromo({ discount_type: "FLAT_VND", discount_value: "15000" });
+    expect(screen.queryByText("Nhập số không quá 100.")).toBeNull();
+    fireEvent.change(screen.getByLabelText("Hình thức giảm giá"), { target: { value: "PERCENT" } });
+    expect(screen.getByText("Nhập số không quá 100.")).toBeInTheDocument();
+  });
+
   it("a percentage has % inside and refuses 150 under the box", () => {
     renderPromo();
     const box = valueBox();

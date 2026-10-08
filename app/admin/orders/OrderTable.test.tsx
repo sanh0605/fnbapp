@@ -1,32 +1,37 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import OrderTable from "./OrderTable";
 import type { OrderListItem } from "./actions";
 
-const { push, replace, router, mockSearchParams } = vi.hoisted(() => {
+const { push, replace, router, mockSearchParams, searchParamsObject } = vi.hoisted(() => {
   const pushFn = vi.fn();
   const replaceFn = vi.fn();
   const searchMap = new Map<string, string>();
+  // One object for the whole render, as Next.js returns the same instance
+  // until the URL changes; a fresh object per render would re-run every
+  // effect keyed on it.
+  const paramsObject = {
+    get: (key: string) => searchMap.get(key) || null,
+    toString: () => {
+      const params = new URLSearchParams();
+      searchMap.forEach((v, k) => params.set(k, v));
+      return params.toString();
+    },
+  };
   return {
     push: pushFn,
     replace: replaceFn,
     router: { push: pushFn, replace: replaceFn },
     mockSearchParams: searchMap,
+    searchParamsObject: paramsObject,
   };
 });
 
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
   usePathname: () => "/admin/orders",
-  useSearchParams: () => ({
-    get: (key: string) => mockSearchParams.get(key) || null,
-    toString: () => {
-      const params = new URLSearchParams();
-      mockSearchParams.forEach((v, k) => params.set(k, v));
-      return params.toString();
-    },
-  }),
+  useSearchParams: () => searchParamsObject,
 }));
 
 vi.mock("./components/VoidOrderButton", () => ({
@@ -197,5 +202,49 @@ describe("OrderTable -- shared table (wave K4)", () => {
     expect(phone).not.toBeNull();
     expect(phone!.textContent).toContain("ORD000001");
     expect(phone!.textContent).toContain("ORD000002");
+  });
+});
+
+// Review of wave K4: the date boxes sit in the shared filter card, where Enter
+// applies the filter. Enter must apply the day just typed, and a day that is
+// not a date says so under its box instead of silently dropping the filter.
+describe("OrderTable -- date filter (wave K4 review)", () => {
+  const renderList = () =>
+    render(
+      <OrderTable
+        initialOrders={[makeOrder("ORD-1", "000001")]}
+        totalCount={1}
+        itemsPerPage={20}
+        brands={[]}
+        products={[]}
+        variants={[]}
+        modifiers={[]}
+        categories={[]}
+      />
+    );
+  const lastUrl = () => {
+    const calls = [...push.mock.calls, ...replace.mock.calls];
+    return calls.length ? String(calls[calls.length - 1][0]) : "";
+  };
+
+  it("Enter in Từ ngày applies the typed day", async () => {
+    mockSearchParams.set("from", "2026-09-01");
+    renderList();
+    const box = screen.getByLabelText("Từ ngày");
+    fireEvent.change(box, { target: { value: "15/09/2026" } });
+    fireEvent.keyDown(box, { key: "Enter" });
+    await waitFor(() => expect(lastUrl()).toContain("from=2026-09-15"));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(lastUrl()).toContain("from=2026-09-15");
+  });
+
+  it("a day that is not a date is said under the box and keeps the filter", async () => {
+    mockSearchParams.set("from", "2026-09-01");
+    renderList();
+    const box = screen.getByLabelText("Từ ngày");
+    fireEvent.change(box, { target: { value: "32/13/2026" } });
+    fireEvent.keyDown(box, { key: "Enter" });
+    await waitFor(() => expect(screen.getByText("Ngày không hợp lệ")).toBeInTheDocument());
+    expect(lastUrl()).not.toMatch(/from=(?!2026-09-01)/);
   });
 });

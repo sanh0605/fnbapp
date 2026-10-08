@@ -112,17 +112,33 @@ export function NumberInput({
   const [prevValue, setPrevValue] = useState<number | null | undefined>(value);
   const [boxError, setBoxError] = useState<string>("");
   const [commaHint, setCommaHint] = useState<boolean>(false);
+  const [prevLimits, setPrevLimits] = useState({ min, minExclusive, max, maxMessage });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const pendingCaretRef = useRef<number | null>(null);
 
+  let currentText = text;
   // Page-held mode: sync when value changes externally
   if (value !== undefined && value !== prevValue) {
     setPrevValue(value);
     if (numberTextToValue(text) !== value) {
-      setText(numberToText(value, decimals));
+      currentText = numberToText(value, decimals);
+      setText(currentText);
       setBoxError("");
       setCommaHint(false);
+    }
+  }
+
+  if (
+    prevLimits.min !== min ||
+    prevLimits.minExclusive !== minExclusive ||
+    prevLimits.max !== max ||
+    prevLimits.maxMessage !== maxMessage
+  ) {
+    setPrevLimits({ min, minExclusive, max, maxMessage });
+    if (currentText !== "" && numberTextToValue(currentText) !== null) {
+      const msg = getValidationMessage(currentText, min, minExclusive, max, maxMessage);
+      setBoxError(msg);
     }
   }
 

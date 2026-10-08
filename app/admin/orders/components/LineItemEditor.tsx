@@ -313,6 +313,7 @@ export function LineItemEditor({
 
         <div className="flex gap-2 pt-1">
           <Button
+            type="button"
             variant="secondary"
             onClick={onCancelEdit}
             className="flex-1"
@@ -320,6 +321,7 @@ export function LineItemEditor({
             Hủy
           </Button>
           <Button
+            type="button"
             variant="primary"
             onClick={handleSave}
             className="flex-1"

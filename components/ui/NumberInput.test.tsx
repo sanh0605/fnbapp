@@ -235,3 +235,21 @@ describe("BR-UI-005 NumberInput: the page holds the number", () => {
     expect(box().value).toBe("");
   });
 });
+
+// Review of wave K4 (plan Hiện trạng 9): a promotion switched from đ to % with
+// 15000 typed says so at once, not only after the box is left or saved.
+describe("BR-UI-005 NumberInput: a limit that changes under the number", () => {
+  it("says the new limit at once when max drops below the typed number", () => {
+    const { rerender } = render(<NumberInput id="v" decimals={0} value={15000} onValueChange={() => {}} />);
+    expect(screen.queryByText("Nhập số không quá 100.")).toBeNull();
+    rerender(<NumberInput id="v" decimals={0} value={15000} onValueChange={() => {}} max={100} />);
+    expect(screen.getByText("Nhập số không quá 100.")).toBeInTheDocument();
+  });
+
+  it("drops the message when the limit is lifted again", () => {
+    const { rerender } = render(<NumberInput id="v" decimals={0} value={15000} onValueChange={() => {}} />);
+    rerender(<NumberInput id="v" decimals={0} value={15000} onValueChange={() => {}} max={100} />);
+    rerender(<NumberInput id="v" decimals={0} value={15000} onValueChange={() => {}} />);
+    expect(screen.queryByText("Nhập số không quá 100.")).toBeNull();
+  });
+});

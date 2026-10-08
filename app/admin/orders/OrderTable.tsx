@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useTransition } from "react";
+import { useMemo, useState, useEffect, useRef, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -94,6 +94,11 @@ export default function OrderTable({
     return searchParams.get("brand") || "";
   });
 
+  const fromRef = useRef<string>(searchParams.get("from") || "");
+  const toRef = useRef<string>(searchParams.get("to") || "");
+  const [fromError, setFromError] = useState<string>("");
+  const [toError, setToError] = useState<string>("");
+
   const currentUrl = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
   const returnTo = encodeURIComponent(currentUrl);
 
@@ -113,6 +118,10 @@ export default function OrderTable({
     if (page !== currentPage) setCurrentPage(page);
     if (from !== startDate) setStartDate(from);
     if (to !== endDate) setEndDate(to);
+    fromRef.current = from;
+    toRef.current = to;
+    setFromError("");
+    setToError("");
   }, [searchParams]);
 
   const handleFilterChange = (updates: {
@@ -144,11 +153,13 @@ export default function OrderTable({
       if (updates.from && updates.from !== "invalid") params.set("from", updates.from);
       else params.delete("from");
       setStartDate(updates.from || "");
+      fromRef.current = updates.from || "";
     }
     if (updates.to !== undefined) {
       if (updates.to && updates.to !== "invalid") params.set("to", updates.to);
       else params.delete("to");
       setEndDate(updates.to || "");
+      toRef.current = updates.to || "";
     }
 
     let targetPage = 1;
@@ -184,10 +195,44 @@ export default function OrderTable({
     });
   };
 
+  const handleApply = () => {
+    const from = fromRef.current;
+    const to = toRef.current;
+    let hasError = false;
+
+    if (from === "invalid") {
+      setFromError("Ngày không hợp lệ");
+      hasError = true;
+    } else {
+      setFromError("");
+    }
+
+    if (to === "invalid") {
+      setToError("Ngày không hợp lệ");
+      hasError = true;
+    } else {
+      setToError("");
+    }
+
+    if (hasError) return;
+
+    handleFilterChange({
+      q: searchQuery,
+      from,
+      to,
+    });
+  };
+
   const ITEMS_PER_PAGE = itemsPerPage;
   const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
 
   const clearFilters = () => {
+    setFromError("");
+    setToError("");
+    fromRef.current = "";
+    toRef.current = "";
+    setStartDate("");
+    setEndDate("");
     handleFilterChange({
       q: "",
       from: "",
@@ -343,15 +388,7 @@ export default function OrderTable({
       />
 
       <FilterCard
-        onApply={() =>
-          handleFilterChange({
-            q: searchQuery,
-            from: startDate,
-            to: endDate,
-            payment: paymentFilter,
-            brand: brandFilter,
-          })
-        }
+        onApply={handleApply}
         onClear={clearFilters}
         showClear={false}
       >
@@ -362,9 +399,6 @@ export default function OrderTable({
               placeholder="Ví dụ: PHD000001"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === "Enter" && handleFilterChange({ q: searchQuery })
-              }
             />
           </Field>
         </div>
@@ -373,10 +407,11 @@ export default function OrderTable({
             label="Từ ngày"
             value={startDate}
             onChange={(val) => {
-              const cleaned = val === "invalid" ? "" : val;
-              setStartDate(cleaned);
-              handleFilterChange({ from: cleaned });
+              fromRef.current = val;
+              setStartDate(val);
+              setFromError("");
             }}
+            error={fromError}
           />
         </div>
         <div className="w-full md:w-40">
@@ -384,10 +419,11 @@ export default function OrderTable({
             label="Đến ngày"
             value={endDate}
             onChange={(val) => {
-              const cleaned = val === "invalid" ? "" : val;
-              setEndDate(cleaned);
-              handleFilterChange({ to: cleaned });
+              toRef.current = val;
+              setEndDate(val);
+              setToError("");
             }}
+            error={toError}
           />
         </div>
         <div className="w-full md:w-44">
