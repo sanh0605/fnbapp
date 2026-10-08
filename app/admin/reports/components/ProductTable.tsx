@@ -53,8 +53,8 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
           Tổng: {formatNumber(totalQtyAll)}
         </span>
       </div>
-      <div className="hidden md:block max-h-[528px] overflow-y-auto">
-        <Table>
+      <div className="hidden md:block">
+        <Table pinHead>
           <TableHead>
             <TableHeaderCell>Món</TableHeaderCell>
             {tableUniqueSizes.map(size => (

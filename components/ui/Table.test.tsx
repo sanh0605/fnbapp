@@ -167,3 +167,100 @@ describe("BR-UI-005 Table set: a statement (wave K5)", () => {
     expect(cells[3].className).not.toContain("text-danger");
   });
 });
+
+// K5 review: a statement sits inside its own framed panel and must keep the
+// 2026-09-11 sample's rhythm -- every row the same height, month cells tight
+// around their buttons, the Tổng column semibold, the share column grey.
+describe("BR-UI-005 Table set: statement density (K5 review)", () => {
+  function Statement() {
+    return (
+      <Table aria-label="Lãi lỗ" statement>
+        <TableHead>
+          <TableHeaderCell stick="left">Khoản</TableHeaderCell>
+          <TableHeaderCell align="right">T1</TableHeaderCell>
+          <TableHeaderCell align="right" stick="right-2">Tổng</TableHeaderCell>
+          <TableHeaderCell align="right" stick="right">% doanh thu</TableHeaderCell>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableRowHeader stick="left">Giá vốn</TableRowHeader>
+            <TableCell align="right" tight>-40,000</TableCell>
+            <TableCell align="right" stick="right-2" strong>-40,000</TableCell>
+            <TableCell align="right" stick="right" tone="muted">40%</TableCell>
+          </TableRow>
+          <TableRow look="subtotal">
+            <TableRowHeader stick="left">Lợi nhuận gộp</TableRowHeader>
+            <TableCell align="right" tight>60,000</TableCell>
+            <TableCell align="right" stick="right-2" strong>60,000</TableCell>
+            <TableCell align="right" stick="right" tone="muted">60%</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    );
+  }
+  const row = (label: string) => screen.getByRole("rowheader", { name: label }).closest("tr") as HTMLElement;
+  const classes = (el: Element) => el.className.split(/\s+/);
+
+  it("draws no frame of its own; its header band is the sample's grey, sticky corners too", () => {
+    render(<Statement />);
+    const table = screen.getByRole("table", { name: "Lãi lỗ" });
+    expect(classes(table.parentElement!)).not.toContain("border");
+    expect(classes(table.parentElement!)).not.toContain("rounded-card");
+    expect(classes(table.querySelector("thead tr")!)).toContain("bg-surface-secondary");
+    const khoan = screen.getByRole("columnheader", { name: "Khoản" });
+    expect(classes(khoan)).toEqual(
+      expect.arrayContaining(["bg-surface-secondary", "px-3", "py-2", "whitespace-nowrap"]),
+    );
+    expect(classes(screen.getByRole("columnheader", { name: "% doanh thu" }))).toContain("whitespace-nowrap");
+  });
+
+  it("a plain row pads like a styled one, with no hover band", () => {
+    render(<Statement />);
+    expect(row("Giá vốn").className).not.toMatch(/hover:/);
+    const [month, total, share] = Array.from(row("Giá vốn").querySelectorAll("td"));
+    expect(classes(month)).toEqual(expect.arrayContaining(["px-1", "py-1"]));
+    for (const td of [total, share]) {
+      expect(classes(td)).toEqual(expect.arrayContaining(["px-3", "py-2"]));
+      expect(classes(td)).not.toContain("px-4");
+      expect(classes(td)).not.toContain("text-sm");
+    }
+    expect(classes(row("Lợi nhuận gộp").querySelector("td")!)).toEqual(
+      expect.arrayContaining(["px-1", "py-1"]),
+    );
+  });
+
+  it("the Tổng column is semibold and the share column grey", () => {
+    render(<Statement />);
+    const [, total, share] = Array.from(row("Giá vốn").querySelectorAll("td"));
+    expect(classes(total)).toContain("font-semibold");
+    expect(classes(share)).toContain("text-text-secondary");
+  });
+});
+
+// K5 review: a long report list scrolls inside its card; the column names stay
+// in view while it does.
+describe("BR-UI-005 Table set: a pinned head (K5 review)", () => {
+  it("the list scrolls inside 528px and every header cell sticks to the top", () => {
+    render(
+      <Table aria-label="Bán chạy" pinHead>
+        <TableHead>
+          <TableHeaderCell>Món</TableHeaderCell>
+          <TableHeaderCell align="right">Tổng SL</TableHeaderCell>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableCell>Trà đào</TableCell>
+            <TableCell align="right">3</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>,
+    );
+    const table = screen.getByRole("table", { name: "Bán chạy" });
+    expect(table.parentElement!.className.split(/\s+/)).toEqual(
+      expect.arrayContaining(["max-h-[528px]", "overflow-y-auto"]),
+    );
+    for (const th of screen.getAllByRole("columnheader")) {
+      expect(th.className.split(/\s+/)).toEqual(expect.arrayContaining(["sticky", "top-0", "bg-page"]));
+    }
+  });
+});

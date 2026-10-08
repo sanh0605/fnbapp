@@ -110,4 +110,21 @@ describe("PnlTableView -- the approved look on the Table set (wave K5)", () => {
     expect(cells[cells.length - 2].className).toContain("bg-surface-secondary");
     expect(cells[cells.length - 1].className).toContain("bg-surface-secondary");
   });
+
+  // K5 review: the sample's rhythm -- every row the same height, so plain
+  // rows (Giá vốn) pad like profit rows; month cells hug their buttons.
+  it("Giá vốn and Lợi nhuận gộp pad alike; Tổng is semibold, % grey; the panel draws the only frame", () => {
+    const { container } = render(<PnlTableView table={table()} />);
+    const cls = (el: Element) => el.className.split(/\s+/);
+    const plain = screen.getByRole("rowheader", { name: /^Giá vốn/ }).closest("tr")!;
+    const shaded = screen.getByRole("rowheader", { name: /^Lợi nhuận gộp/ }).closest("tr")!;
+    for (const row of [plain, shaded]) {
+      const tds = Array.from(row.querySelectorAll("td"));
+      expect(cls(tds[0])).toEqual(expect.arrayContaining(["px-1", "py-1"]));
+      expect(cls(tds[tds.length - 2])).toEqual(expect.arrayContaining(["px-3", "py-2", "font-semibold"]));
+      expect(cls(tds[tds.length - 1])).toEqual(expect.arrayContaining(["px-3", "py-2", "text-text-secondary"]));
+    }
+    expect(plain.className).not.toMatch(/hover:/);
+    expect(cls(container.querySelector("table")!.parentElement!)).not.toContain("border");
+  });
 });

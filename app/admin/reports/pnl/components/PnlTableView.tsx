@@ -45,7 +45,7 @@ export function PnlTableView({ table }: { table: PnlTable }) {
           Bấm vào một ô để xem số đó từ đâu ra. Đọc từ trên xuống: doanh thu → trừ giá vốn → lợi nhuận gộp → trừ chi phí → lợi nhuận ròng.
         </p>
       </div>
-      <Table>
+      <Table statement>
         <TableHead>
           <TableHeaderCell stick="left">Khoản</TableHeaderCell>
           {table.months.map(m => (
@@ -72,7 +72,7 @@ export function PnlTableView({ table }: { table: PnlTable }) {
                   const text = cellText(row, cell.value);
                   const tone = cellTone(row, cell.value) === "text-danger" ? "negative" : undefined;
                   return (
-                    <TableCell key={cell.month} align="right" tone={tone}>
+                    <TableCell key={cell.month} align="right" tone={tone} tight>
                       {clickable ? (
                         <button
                           type="button"
@@ -92,11 +92,12 @@ export function PnlTableView({ table }: { table: PnlTable }) {
                 <TableCell
                   align="right"
                   stick="right-2"
+                  strong
                   tone={cellTone(row, row.total) === "text-danger" ? "negative" : undefined}
                 >
                   {row.total === null ? "" : cellText(row, row.total)}
                 </TableCell>
-                <TableCell align="right" stick="right">
+                <TableCell align="right" stick="right" tone="muted">
                   {row.shareOfRevenue === null ? "" : formatPercent(row.shareOfRevenue)}
                 </TableCell>
               </TableRow>

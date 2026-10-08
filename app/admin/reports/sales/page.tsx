@@ -405,8 +405,8 @@ export default async function SalesReportPage({
           <div className="p-5 border-b border-border bg-page flex justify-between items-center">
             <h3 className="font-bold text-text-primary">Top topping bán chạy</h3>
           </div>
-          <div className="hidden md:block max-h-[528px] overflow-y-auto">
-            <Table>
+          <div className="hidden md:block">
+            <Table pinHead>
               <TableHead>
                 <TableHeaderCell>Topping</TableHeaderCell>
                 <TableHeaderCell align="right">Số lượng</TableHeaderCell>

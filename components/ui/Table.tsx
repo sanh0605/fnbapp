@@ -6,8 +6,13 @@ import React from "react";
 
 export type TableRowLook = "subtotal" | "strong" | "detail";
 export type TableStick = "left" | "right" | "right-2";
-export type TableCellTone = "negative";
+export type TableCellTone = "negative" | "muted";
 
+// statement: a P&L-style table inside its own framed panel (owner-approved
+// sample 2026-09-11): no frame of its own, a grey header band, every row the
+// same compact height. pinHead: a long list scrolls inside 528px with its
+// column names in view.
+const TableContext = React.createContext<{ statement?: boolean; pinHead?: boolean }>({});
 const TableRowContext = React.createContext<{ look?: TableRowLook }>({});
 
 function getRowStickBg(look?: TableRowLook): string {
@@ -25,23 +30,35 @@ function getStickClasses(stick: TableStick | undefined, bg: string): string {
 export function Table({
   children,
   "aria-label": ariaLabel,
+  statement,
+  pinHead,
 }: {
   children: React.ReactNode;
   "aria-label"?: string;
+  statement?: boolean;
+  pinHead?: boolean;
 }): JSX.Element {
+  const frame = statement ? "overflow-x-auto" : "overflow-x-auto bg-surface-card border border-border rounded-card";
+  const scroll = pinHead ? "max-h-[528px] overflow-y-auto" : "";
   return (
-    <div className="overflow-x-auto bg-surface-card border border-border rounded-card">
-      <table className="w-full text-left text-sm border-collapse" aria-label={ariaLabel}>
-        {children}
-      </table>
-    </div>
+    <TableContext.Provider value={{ statement, pinHead }}>
+      <div className={[frame, scroll].filter(Boolean).join(" ")}>
+        <table className="w-full text-left text-sm border-collapse" aria-label={ariaLabel}>
+          {children}
+        </table>
+      </div>
+    </TableContext.Provider>
   );
 }
 
 export function TableHead({ children }: { children: React.ReactNode }): JSX.Element {
+  const { statement } = React.useContext(TableContext);
+  const band = statement
+    ? "bg-surface-secondary text-xs text-text-secondary"
+    : "bg-page border-b border-border";
   return (
     <thead>
-      <tr className="bg-page border-b border-border">{children}</tr>
+      <tr className={band}>{children}</tr>
     </thead>
   );
 }
@@ -59,12 +76,22 @@ export function TableHeaderCell({
   "aria-label"?: string;
   colSpan?: number;
 }): JSX.Element {
-  const stickClasses = getStickClasses(stick, "bg-page");
-  const baseClasses = `px-4 py-3 text-[13px] font-medium text-text-secondary ${
-    align === "right" ? "text-right" : ""
-  }`.trim();
+  const { statement, pinHead } = React.useContext(TableContext);
+  const headBg = statement ? "bg-surface-secondary" : "bg-page";
+  const stickClasses = getStickClasses(stick, headBg);
+  const baseClasses = [
+    statement
+      ? "px-3 py-2 whitespace-nowrap font-medium text-text-secondary"
+      : "px-4 py-3 text-[13px] font-medium text-text-secondary",
+    align === "right" ? "text-right" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  // A pinned head sits above the rows it covers; a cell that also sticks
+  // sideways already carries its own background and z-index.
+  const pinClasses = pinHead ? `sticky top-0 ${stick ? "" : `z-10 ${headBg}`}`.trim() : "";
 
-  const finalClasses = [baseClasses, stickClasses].filter(Boolean).join(" ");
+  const finalClasses = [baseClasses, stickClasses, pinClasses].filter(Boolean).join(" ");
 
   return (
     <th
@@ -88,7 +115,8 @@ export function TableRow({
   children: React.ReactNode;
   look?: TableRowLook;
 }): JSX.Element {
-  let rowClass = "hover:bg-page/60";
+  const { statement } = React.useContext(TableContext);
+  let rowClass = statement ? "" : "hover:bg-page/60";
   if (look === "subtotal") {
     rowClass = "font-bold bg-surface-secondary";
   } else if (look === "strong") {
@@ -147,22 +175,35 @@ export function TableCell({
   colSpan,
   stick,
   tone,
+  tight,
+  strong,
 }: {
   children?: React.ReactNode;
   align?: "right";
   colSpan?: number;
   stick?: TableStick;
   tone?: TableCellTone;
+  /** Statement only: a cell holding its own padded button (a P&L month). */
+  tight?: boolean;
+  /** Statement only: the Tổng column. List rows stay normal weight (BR-UI-003). */
+  strong?: boolean;
 }): JSX.Element {
+  const { statement } = React.useContext(TableContext);
   const { look } = React.useContext(TableRowContext);
   const stickBg = getRowStickBg(look);
   const stickClasses = getStickClasses(stick, stickBg);
 
-  // A plain row sets its cells' size, weight and colour; a styled row (look)
-  // sets them on the <tr>, so its cells inherit them and only pad.
+  // A plain list row sets its cells' size, weight and colour; a styled row
+  // (look) or any statement row sets them on the <tr>, so its cells inherit
+  // them and only pad.
+  const inherit = Boolean(look) || Boolean(statement);
+  const pad = statement && tight ? "px-1 py-1" : inherit ? "px-3 py-2" : "px-4 py-3 text-sm font-normal";
+  const colour =
+    tone === "negative" ? "text-danger" : tone === "muted" ? "text-text-secondary" : inherit ? "" : "text-text-primary";
   const baseClasses = [
-    look ? "px-3 py-2" : "px-4 py-3 text-sm font-normal",
-    tone === "negative" ? "text-danger" : look ? "" : "text-text-primary",
+    pad,
+    colour,
+    statement && strong ? "font-semibold" : "",
     align === "right" ? "text-right tabular-nums" : "",
   ]
     .filter(Boolean)
