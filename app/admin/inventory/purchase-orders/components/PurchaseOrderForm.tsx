@@ -254,7 +254,13 @@ export default function PurchaseOrderForm({
     setLoading(false);
 
     if (res.success) {
-      router.push("/admin/inventory/purchase-orders");
+      const assetWarning = (res as { assetWarning?: string }).assetWarning;
+      const poId = (res as { po_id?: string }).po_id;
+      if (assetWarning) {
+        router.push(`/admin/inventory/purchase-orders/${poId}?assetWarning=1`);
+      } else {
+        router.push("/admin/inventory/purchase-orders");
+      }
       router.refresh();
     } else {
       if (

@@ -101,7 +101,9 @@ export function buildPurchaseOrderWritePlan(input: {
       ? receipt.quantity_change
       : quantity * (Number(draftConversion?.conversion_rate) || 0);
 
-    if (!receipt && baseQuantity <= 0 && subtotal > 0) {
+    // A draft line with no quantity yet (the box starts empty, BR-UI-009) is saved
+    // as is with base quantity 0; only a line that has a quantity must resolve.
+    if (!receipt && quantity > 0 && baseQuantity <= 0 && subtotal > 0) {
       throw new Error(
         line.conversion_id
           ? `Không giải được quy đổi ${line.conversion_id} cho hàng mua vào ${line.purchased_item_id}`

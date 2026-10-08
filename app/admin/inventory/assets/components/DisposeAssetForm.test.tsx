@@ -360,3 +360,17 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
     expect(mocks.routerPush).toHaveBeenCalledWith("/admin/inventory/assets/SPM-COC");
   });
 });
+
+// K3 review finding 7, BR-UI-009: the example sits inside the empty box.
+describe("DisposeAssetForm -- Lý do example", () => {
+  it("the Lý do box shows \"Ví dụ: Vỡ, hỏng, mất\" inside it", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    const container = await renderTracked(
+      <DisposeAssetForm lots={[TS030_LOT, TS057_LOT]} initialLotId="TS-030" returnTo="/admin/inventory/assets/SPM-COC" />,
+    );
+    await flush();
+    const label = Array.from(container.querySelectorAll("label")).find(l => l.textContent?.trim().startsWith("Lý do"))!;
+    const box = document.getElementById(label.htmlFor) as HTMLInputElement;
+    expect(box.getAttribute("placeholder")).toBe("Ví dụ: Vỡ, hỏng, mất");
+  });
+});

@@ -500,7 +500,7 @@ function PackageLineCard({
             <span className="text-xs text-text-secondary">{pkg.sizeLabel}</span>
             <NumberInput
               id={`pkg-${pkg.conversionId}`}
-              decimals={0}
+              decimals={3}
               min={0}
               example="12"
               aria-label={pkg.sizeLabel}

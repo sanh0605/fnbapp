@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useId } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useId } from "react";
 import { ModalPortal } from "./ModalPortal";
 
 interface Option {
@@ -26,10 +26,16 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
   const [activeIndex, setActiveIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
-  const portalRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement | null>(null);
+  const [panelElement, setPanelElement] = useState<HTMLDivElement | null>(null);
   const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
   const listboxId = useId();
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+
+  const setPanelRef = useCallback((el: HTMLDivElement | null) => {
+    portalRef.current = el;
+    setPanelElement(el);
+  }, []);
 
   const updatePosition = () => {
     if (triggerRef.current && isOpen) {
@@ -39,29 +45,35 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
       
       const panelWidth = portalRef.current?.getBoundingClientRect().width || 0;
       let left = rect.left;
-      if (panelWidth > 0 && left + panelWidth > window.innerWidth - 16) {
+      if (panelWidth > 0 && rect.left + panelWidth > window.innerWidth - 16) {
         left = Math.max(16, window.innerWidth - 16 - panelWidth);
-      } else if (panelWidth === 0 && rect.left + 448 > window.innerWidth) {
-        left = Math.max(16, window.innerWidth - 16 - Math.min(448, window.innerWidth - 32));
       }
+
+      const minWidth = Math.min(rect.width, window.innerWidth - 32);
 
       if (spaceBelow < 288 && spaceAbove > spaceBelow) {
         setDropdownStyle({
           position: "fixed",
           bottom: window.innerHeight - rect.top + 4,
           left,
-          minWidth: rect.width,
+          minWidth,
         });
       } else {
         setDropdownStyle({
           position: "fixed",
           top: rect.bottom + 4,
           left,
-          minWidth: rect.width,
+          minWidth,
         });
       }
     }
   };
+
+  useLayoutEffect(() => {
+    if (isOpen) {
+      updatePosition();
+    }
+  }, [isOpen, panelElement]);
 
   useEffect(() => {
     updatePosition();
@@ -197,7 +209,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
       {isOpen && (
         <ModalPortal>
           <div
-            ref={portalRef}
+            ref={setPanelRef}
             style={dropdownStyle}
             className="z-[110] bg-surface-card border border-border rounded-lg shadow-xl max-h-72 overflow-hidden flex flex-col max-w-[calc(100vw-2rem)] md:max-w-[28rem]"
           >

@@ -281,10 +281,10 @@ describe("StocktakeClient -- per-line save (must survive a phone locking mid-cou
 });
 
 describe("StocktakeClient -- BR-INV-007, whole packages only", () => {
-  // Wave K3: the package box is the shared whole-number box, so a dot never
-  // gets into it -- the BR-INV-007 sentence can no longer be reached by
-  // typing. What the rule protects still holds: no half package is saved.
-  it("the package box holds no decimal point, so no half package is saved", async () => {
+  // K3 review finding 2: a whole-number box dropped the dot, so "1.5" became
+  // 15 packages and was saved. The package box takes the dot again so the
+  // BR-INV-007 sentence refuses a half package, as before wave K3.
+  it("refuses 1.5 packages with the BR-INV-007 sentence and saves nothing", async () => {
     mocks.saveStocktakeLine.mockResolvedValue({});
     const line = packageLineItem({ packageLines: [pkg({ sizeLabel: "Túi 1kg", conversionRate: 1000 })] });
     const container = await renderTracked(<StocktakeClient session={session([line])} lastConfirmed={null} />);
@@ -293,10 +293,11 @@ describe("StocktakeClient -- BR-INV-007, whole packages only", () => {
 
     expect(box.type).toBe("text");
     await setInputValue(box, "1.5");
-    expect(box.value).not.toContain(".");
+    expect(box.value).toBe("1.5");
     await clickButtonWithText(card, "Xác nhận");
 
-    expect(mocks.saveStocktakeLine).not.toHaveBeenCalledWith("LINE-1", 1500);
+    expect(card.textContent).toContain("BR-INV-007");
+    expect(mocks.saveStocktakeLine).not.toHaveBeenCalled();
   });
 });
 
@@ -326,7 +327,9 @@ describe("StocktakeClient -- legacy vs package-picker card selection", () => {
     const packageCard = findCard(container, "Sữa tươi Vinamilk");
     expect(findButtonWithText(packageCard, "Xác nhận")).toBeTruthy();
     expect(findButtonWithText(packageCard, "Lưu")).toBeFalsy();
-    expect(findPackageInput(packageCard, "Thùng 24 hộp").getAttribute("inputmode")).toBe("numeric");
+    // K3 review: the package box takes a dot so a half package reaches the
+    // BR-INV-007 refusal; the phone keypad therefore has the dot key.
+    expect(findPackageInput(packageCard, "Thùng 24 hộp").getAttribute("inputmode")).toBe("decimal");
 
     const legacyCard = findCard(container, "Đường cát");
     expect(findButtonWithText(legacyCard, "Lưu")).toBeTruthy();

@@ -212,3 +212,20 @@ describe("PurchaseOrderForm empty quantity (BR-UI-009)", () => {
     expect(JSON.parse(fd.get("lines_json") as string)[0].quantity).toBe("");
   });
 });
+
+// K3 review finding 3: an asset warning from the server is not swallowed.
+describe("PurchaseOrderForm asset warning (BR-COGS-008)", () => {
+  it("a save that returns an asset warning opens the order's page with ?assetWarning=1", async () => {
+    mockSavePurchaseOrder.mockResolvedValueOnce({ success: true, po_id: "PO-100", assetWarning: "insert failed" });
+    renderForm({ initialData: order("COMPLETED") });
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật & Hoàn thành" }));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/admin/inventory/purchase-orders/PO-100?assetWarning=1"));
+  });
+
+  it("a plain save still goes back to the list", async () => {
+    mockSavePurchaseOrder.mockResolvedValueOnce({ success: true, po_id: "PO-100" });
+    renderForm({ initialData: order("COMPLETED") });
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật & Hoàn thành" }));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/admin/inventory/purchase-orders"));
+  });
+});

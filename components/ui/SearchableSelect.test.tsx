@@ -124,3 +124,30 @@ describe("SearchableSelect long names (BR-UI-010)", () => {
     expect(screen.getByRole("textbox", { name: "Tìm trong danh sách" }).getAttribute("placeholder")).toBe("Gõ để tìm");
   });
 });
+
+// K3 review finding 8: on first open the panel was measured before it was
+// placed, so a box near the right edge had its list pushed away from it.
+describe("SearchableSelect panel placement (BR-UI-010)", () => {
+  it("a 300px list under a box at x=900 on a 1280px screen opens at x=900", () => {
+    const original = Element.prototype.getBoundingClientRect;
+    const width = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 1280 });
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const box = (x: number, y: number, w: number, h: number) =>
+        ({ x, y, left: x, top: y, width: w, height: h, right: x + w, bottom: y + h, toJSON: () => ({}) }) as DOMRect;
+      if (this.getAttribute("role") === "combobox") return box(900, 100, 200, 40);
+      if (this.className?.toString().includes("z-[110]")) return box(0, 0, 300, 200);
+      return box(0, 0, 0, 0);
+    };
+    try {
+      render(<SearchableSelect options={[{ id: "1", label: "Trứng gà" }]} value="" onChange={() => {}} />);
+      fireEvent.click(screen.getByRole("combobox"));
+      let panel = screen.getByRole("listbox").parentElement as HTMLElement;
+      while (panel && !panel.className.includes("z-[110]")) panel = panel.parentElement as HTMLElement;
+      expect(panel.style.left).toBe("900px");
+    } finally {
+      Element.prototype.getBoundingClientRect = original;
+      Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
+    }
+  });
+});

@@ -334,3 +334,26 @@ describe("purchase order back link (returnTo)", () => {
     expect(findLink(tree as ReactNode, "Phiếu nhập")?.href).toBe("/admin/inventory/purchase-orders");
   });
 });
+
+// K3 review finding 3: when the order saved but its assets did not, the form
+// lands on the order's page with ?assetWarning=1 and the page says so.
+describe("purchase order asset warning (BR-COGS-008)", () => {
+  beforeEach(() => {
+    findById.mockReset();
+    getServerSession.mockResolvedValue({ user: { role: "ADMIN" } });
+  });
+
+  const warning = "Phiếu đã lưu, nhưng tài sản sinh từ phiếu này chưa ghi được.";
+
+  it("?assetWarning=1 shows that the assets were not written", async () => {
+    findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED", created_at: "2026-09-20T00:00:00Z" });
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-100" }, searchParams: { assetWarning: "1" } as any });
+    expect(collectText(tree as ReactNode).join("")).toContain(warning);
+  });
+
+  it("without it the page says nothing about assets", async () => {
+    findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED", created_at: "2026-09-20T00:00:00Z" });
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-100" }, searchParams: {} });
+    expect(collectText(tree as ReactNode).join("")).not.toContain(warning);
+  });
+});

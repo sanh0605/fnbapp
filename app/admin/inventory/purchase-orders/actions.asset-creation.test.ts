@@ -66,7 +66,7 @@ function buildFormData(status = "COMPLETED", id = ""): FormData {
   formData.set("status", status);
   // Migration 0107: a completed order must say how it was paid.
   formData.set("payment_method", "CASH");
-  formData.set("lines_json", JSON.stringify([{ subtotal: 761_200 }]));
+  formData.set("lines_json", JSON.stringify([{ subtotal: 761_200, quantity: 8 }]));
   formData.set("subtotal_amount", "761200");
   if (id) formData.set("id", id);
   return formData;
@@ -109,6 +109,23 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-001" });
     mocks.generateNewId.mockResolvedValue("TS-001");
   });
+
+  it.each([[""], ["0"]])(
+    "refuses to complete an order whose line has quantity %j, before any write",
+    async quantity => {
+      const formData = buildFormData();
+      formData.set("lines_json", JSON.stringify([
+        { purchased_item_id: "SPM-100", quantity: "2", subtotal: 100_000 },
+        { purchased_item_id: "SPM-200", quantity, subtotal: 661_200 },
+      ]));
+
+      const res = await savePurchaseOrder(formData);
+
+      expect(res.error).toBe("Dòng 2: Vui lòng nhập số lượng");
+      expect(mocks.buildPurchaseOrderWritePlan).not.toHaveBeenCalled();
+      expect(mocks.savePurchaseOrderAtomic).not.toHaveBeenCalled();
+    },
+  );
 
   it("creates an assets row for an EQUIPMENT line, banded by its own unit price", async () => {
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
@@ -346,7 +363,7 @@ describe("savePurchaseOrder -- editing a completed order updates its assets", ()
 
   function formData() {
     const fd = buildFormData("COMPLETED", "PO-100");
-    fd.set("lines_json", JSON.stringify([{ subtotal: 255_000 }]));
+    fd.set("lines_json", JSON.stringify([{ subtotal: 255_000, quantity: 3 }]));
     fd.set("subtotal_amount", "255000");
     return fd;
   }

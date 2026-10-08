@@ -205,12 +205,12 @@ export function DisposeAssetForm({
         <Field
           label="Lý do"
           htmlFor={`${formId}-reason`}
-          hint="Ví dụ: Vỡ, hỏng, mất"
         >
           <TextInput
             id={`${formId}-reason`}
             name="reason"
             type="text"
+            example="Vỡ, hỏng, mất"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />

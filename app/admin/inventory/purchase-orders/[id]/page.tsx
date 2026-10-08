@@ -28,7 +28,7 @@ export default async function PurchaseOrderDetail({
   searchParams,
 }: {
   params: { id: string };
-  searchParams?: { edit?: string; returnTo?: string };
+  searchParams?: { edit?: string; returnTo?: string; assetWarning?: string };
 }) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -137,6 +137,14 @@ export default async function PurchaseOrderDetail({
 
   return (
     <div className="space-y-6">
+      {searchParams?.assetWarning === "1" && (
+        <div
+          role="status"
+          className="p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium"
+        >
+          Phiếu đã lưu, nhưng tài sản sinh từ phiếu này chưa ghi được. Mở trang Tài sản để kiểm lại; sửa phiếu lần sau không tự ghi bù.
+        </div>
+      )}
       <DetailHeader
         backHref={returnTo}
         backLabel="Phiếu nhập"

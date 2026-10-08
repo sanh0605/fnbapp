@@ -114,6 +114,15 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
   try {
     const lines = JSON.parse(linesJson);
 
+    // BR-UI-009: the page stops an empty quantity, but a request can still
+    // arrive without it. Refused before any write, in Vietnamese.
+    if (status === "COMPLETED") {
+      const emptyIndex = lines.findIndex(
+        (line: { quantity?: string | number }) => !(Number(line.quantity) > 0),
+      );
+      if (emptyIndex >= 0) return fail(`Dòng ${emptyIndex + 1}: Vui lòng nhập số lượng`);
+    }
+
     // PO-037 guard: the client computes subtotal_amount by summing the same line
     // rows it submits, so any disagreement means the payload is inconsistent and
     // must not be persisted. A header total with no lines behind it is exactly how
