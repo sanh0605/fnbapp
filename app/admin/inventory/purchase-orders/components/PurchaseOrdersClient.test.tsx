@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PurchaseOrdersClient from "./PurchaseOrdersClient";
 import type { PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
@@ -199,5 +199,66 @@ describe("PurchaseOrdersClient", () => {
     render(<PurchaseOrdersClient pageData={cancelledData} />);
     const badges = screen.getAllByText("Đã huỷ");
     expect(badges.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // BR-UI-003 / BR-UI-005 and Review Focus 4 (wave K3).
+  describe("shared list (wave K3)", () => {
+    const rows: typeof pageData = {
+      ...pageData,
+      total: 2,
+      firstIndex: 1,
+      lastIndex: 2,
+      rows: [
+        { id: "PO-181", dateText: "15/09/2026 10:00:00", supplierName: "Thế Kỷ Xanh", sourceName: "Shopee", status: "COMPLETED", totalAmount: 506023, paymentLabel: "Tiền mặt" },
+        { id: "PO-065", dateText: "12/08/2026 10:00:00", supplierName: "Trứng Ba Huân", sourceName: "Shopee", status: "CANCELLED", totalAmount: 180000, paymentLabel: "Tiền mặt" },
+      ],
+    };
+
+    afterEach(() => {
+      for (const k of Array.from(searchParams.keys())) searchParams.delete(k);
+    });
+
+    it("header cells are plain text, not capitals", () => {
+      render(<PurchaseOrdersClient pageData={rows} />);
+      for (const th of within(screen.getByRole("table")).getAllByRole("columnheader")) {
+        // The capitals can come from the cell or from its header row.
+        expect(th.closest(".uppercase")).toBeNull();
+      }
+    });
+
+    it("filter labels are plain text, not capitals", () => {
+      render(<PurchaseOrdersClient pageData={rows} />);
+      for (const label of ["Tìm kiếm", "Trạng thái", "Hình thức thanh toán", "Nhà cung cấp"]) {
+        const el = screen.getByLabelText(label);
+        const tag = document.querySelector(`label[for="${el.id}"]`)!;
+        expect(tag.closest(".uppercase")).toBeNull();
+      }
+    });
+
+    it("a row opens with returnTo carrying the active filter", () => {
+      searchParams.set("status", "CANCELLED");
+      searchParams.set("page", "2");
+      render(<PurchaseOrdersClient pageData={rows} />);
+      const href = within(screen.getByRole("table")).getByRole("link", { name: "Xem chi tiết PO-065" }).getAttribute("href")!;
+      const url = new URL(href, "http://x");
+      expect(url.pathname).toBe("/admin/inventory/purchase-orders/PO-065");
+      expect(url.searchParams.get("returnTo")).toBe("/admin/inventory/purchase-orders?status=CANCELLED&page=2");
+    });
+
+    it("with no filter the row still carries returnTo to the bare list", () => {
+      render(<PurchaseOrdersClient pageData={rows} />);
+      const href = within(screen.getByRole("table")).getByRole("link", { name: "Xem chi tiết PO-181" }).getAttribute("href")!;
+      expect(new URL(href, "http://x").searchParams.get("returnTo")).toBe("/admin/inventory/purchase-orders");
+    });
+
+    it("the phone list is cards, one per row, with no table", () => {
+      const { container } = render(<PurchaseOrdersClient pageData={rows} />);
+      const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+      expect(phone).toBeTruthy();
+      expect(phone.querySelector("table")).toBeNull();
+      expect(phone.textContent).toContain("PO-181");
+      expect(phone.textContent).toContain("Trứng Ba Huân");
+      expect(phone.textContent).toContain("506,023");
+    });
   });
 });

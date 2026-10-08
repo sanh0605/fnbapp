@@ -501,7 +501,9 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
       expect(screen.queryByText("Trả bằng")).toBeNull();
     });
 
-    it("renders Thành tiền with plain input classes matching Số lượng, and Đơn giá without background box", () => {
+    // Wave K3: both boxes are now the shared NumberInput (BR-UI-005), so the
+    // test checks they are the same kind of box rather than a pinned class string.
+    it("renders Thành tiền and Số lượng as the same shared number box, and Đơn giá without background box", () => {
       render(
         <PurchaseOrderForm
           suppliers={sampleSuppliers}
@@ -518,8 +520,9 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
       const subtotalInput = screen.getByLabelText("Thành tiền (đ)");
       const quantityInput = screen.getByLabelText("Số lượng");
 
-      expect(subtotalInput.className).toBe("w-full border border-border rounded-lg px-3 py-2 text-sm");
-      expect(quantityInput.className).toBe("w-full border border-border rounded-lg px-3 py-2 text-sm");
+      expect((subtotalInput as HTMLInputElement).type).toBe("text");
+      expect((quantityInput as HTMLInputElement).type).toBe("text");
+      expect(subtotalInput.className).toBe(quantityInput.className);
       expect(subtotalInput.className).not.toContain("bg-success");
 
       const unitPriceLabel = screen.getByText("Đơn giá");

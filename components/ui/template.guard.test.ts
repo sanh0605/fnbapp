@@ -77,7 +77,6 @@ function tagOffenders(tagNames: string[], pattern: RegExp): string[] {
 // Waves (spec section 4): K3 Kho, K4 Bán hàng, K5 Tài chính và báo cáo, K6 còn lại.
 
 const NUMBER_TYPE_DEBT = [
-  "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx", // K3
   "app/admin/orders/components/DiscountEditor.tsx", // K4
   "app/admin/orders/components/LineItemEditor.tsx", // K4
   "app/admin/products/components/ProductForm.tsx", // K4
@@ -97,8 +96,6 @@ const SOLID_BUTTON_DEBT = [
   "app/admin/finance/categories/components/CategoriesClient.tsx", // K5
   "app/admin/finance/page.tsx", // K5
   "app/admin/finance/transfers/[id]/components/CashTransferDetailView.tsx", // K5
-  "app/admin/inventory/purchase-orders/[id]/cancel/components/CancelPurchaseOrderForm.tsx", // K3
-  "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
   "app/admin/layout.tsx", // K6
   "app/admin/orders/OrderTable.tsx", // K4
   "app/admin/orders/[id]/components/OrderDetailView.tsx", // K4
@@ -121,9 +118,6 @@ const SOLID_BUTTON_DEBT = [
 ];
 
 const TABLE_DEBT = [
-  "app/admin/inventory/purchase-orders/[id]/cancel/components/CancelPurchaseOrderForm.tsx", // K3
-  "app/admin/inventory/purchase-orders/[id]/page.tsx", // K3
-  "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
   "app/admin/orders/OrderTable.tsx", // K4
   "app/admin/pos-sync/PosSyncClient.tsx", // K6
   "app/admin/products/[id]/components/ProductDetailView.tsx", // K4
@@ -138,9 +132,6 @@ const TABLE_DEBT = [
 ];
 
 const BOLD_CELL_DEBT = [
-  "app/admin/inventory/purchase-orders/[id]/cancel/components/CancelPurchaseOrderForm.tsx", // K3
-  "app/admin/inventory/purchase-orders/[id]/page.tsx", // K3
-  "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
   "app/admin/orders/OrderTable.tsx", // K4
   "app/admin/products/[id]/components/ProductDetailView.tsx", // K4
   "app/admin/products/categories/[id]/components/ProductCategoryDetailView.tsx", // K4
@@ -168,8 +159,6 @@ const RAW_INPUT_DEBT = [
   "app/admin/finance/categories/components/CategoryForm.tsx", // K5
   "app/admin/finance/components/CashEntryForm.tsx", // K5
   "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
-  "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx", // K3
-  "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
   "app/admin/orders/OrderTable.tsx", // K4
   "app/admin/orders/[id]/edit/components/OrderEditForm.tsx", // K4
   "app/admin/orders/components/DiscountEditor.tsx", // K4
@@ -198,9 +187,6 @@ const RAW_SELECT_DEBT = [
   "app/admin/finance/components/CashBookClient.tsx", // K5
   "app/admin/finance/components/CashEntryForm.tsx", // K5
   "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
-  "app/admin/inventory/purchase-orders/[id]/components/PurchasePaymentBlock.tsx", // K3
-  "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx", // K3
-  "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
   "app/admin/orders/OrderTable.tsx", // K4
   "app/admin/orders/[id]/edit/components/OrderEditForm.tsx", // K4
   "app/admin/outlets/components/OutletForm.tsx", // K6
@@ -225,9 +211,6 @@ const NUMERIC_INPUTMODE_DEBT = [
 ];
 
 const RAW_H1_DEBT = [
-  "app/admin/inventory/purchase-orders/[id]/page.tsx", // K3
-  "app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx", // K3
-  "app/admin/inventory/purchase-orders/new/page.tsx", // K3
   "app/admin/orders/[id]/components/OrderDetailView.tsx", // K4
   "app/admin/orders/[id]/edit/components/OrderEditForm.tsx", // K4
   "app/admin/page.tsx", // K5

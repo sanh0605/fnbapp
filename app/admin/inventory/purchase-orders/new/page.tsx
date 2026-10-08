@@ -2,8 +2,8 @@ import { findAll } from "@/lib/db/tables";
 import { getPurchaseOrderCopySeed } from "../actions";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import Link from "next/link";
-
 import { BackLink } from "@/components/ui/BackLink";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -30,12 +30,10 @@ export default async function NewPurchaseOrderPage({
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       <BackLink href="/admin/inventory/purchase-orders" label="Phiếu nhập" />
-      <div className="flex items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Tạo Phiếu Nhập Kho</h1>
-          <p className="text-sm text-text-muted mt-1">Nhập hàng hoá từ nhà cung cấp vào kho.</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Tạo phiếu nhập"
+        subtitle="Nhập hàng hoá từ nhà cung cấp vào kho."
+      />
 
       {copyFrom && copySeed && (
         <div
