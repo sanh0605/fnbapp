@@ -48,7 +48,7 @@ tối ưu được diện tích sử dụng"*.
 | # | Phần | Trạng thái |
 |---|---|---|
 | 1 | Giao diện đồng nhất — đợt 8: Phiếu nhập, Phiếu xuất, Đơn hàng | đang làm |
-| 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | chưa làm |
+| 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | đang làm: khuôn K1–K6 xong (K2–K6 chờ đẩy); bộ lọc thời gian chưa làm |
 | 2 | Giao diện đồng nhất — các trang ngoài khuôn | chưa làm |
 | 3 | Tổng quan mới (bước D của bản cải tổ) | chưa làm |
 | 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E), trả phiếu nhập bằng nhiều hình thức, bảng chữ viết tắt, số tiền thu khi thanh lý | chưa làm |
@@ -101,6 +101,9 @@ Luật: `docs/02-rules/business-rules/screens.md`.
   xong trên nhánh 2026-10-08, chờ đẩy. Đợt K5 (Sổ thu chi, Chuyển tiền, Danh mục, Tài khoản, các báo cáo,
   Tổng quan; kế hoạch con `docs/superpowers/plans/2026-10-08-dot-k5-tai-chinh-bao-cao.md`) xong trên nhánh
   2026-10-08, chờ đẩy: dòng tổng của bảng báo cáo nằm ngay dưới tiêu đề, bảng lãi lỗ giữ hình đã duyệt.
+  Đợt K6 (Nhân sự, Thương hiệu, Điểm bán, Nhật ký, Đơn cần chú ý, Xóa bộ nhớ đệm, Đổi mật khẩu, nút chọn
+  điểm bán; kế hoạch con `docs/superpowers/plans/2026-10-08-dot-k6-con-lai.md`) xong trên nhánh 2026-10-08,
+  chờ đẩy: danh sách nợ của phép kiểm canh chỉ còn `ToppingsManager.tsx`, file không ai dùng (mục 6).
 - **Ô nhập số:** soát mọi ô. Mẫu là ô "Số lượng" của trang tạo phiếu xuất (chủ quán khen):
   bàn phím số trên điện thoại, số lẻ gõ bằng dấu chấm (`BR-UI-008`; trước 2026-10-07 là dấu phẩy), hiện "Quy ra" bên cạnh. Thêm: tự chèn dấu phẩy
   hàng nghìn khi gõ, không có mũi tên tăng giảm, cuộn chuột không làm đổi số (ô
