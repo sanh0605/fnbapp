@@ -285,3 +285,11 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     expect(res.assetWarning).toBeTruthy();
   });
 });
+
+// BR-COGS-008 (owner 2026-10-08, "1b"): editing a completed order updates its
+// assets; the details are confirmed with the owner before this is built.
+describe("savePurchaseOrder -- editing a completed order updates its assets", () => {
+  it.todo(
+    "Sửa phiếu nhập đã hoàn thành thì tài sản sinh từ phiếu đó đổi theo; dòng có tài sản đã thanh lý thì không cho sửa (chủ quán chốt 08/10/2026)",
+  );
+});
