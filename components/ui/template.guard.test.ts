@@ -84,18 +84,9 @@ const SOLID_BUTTON_DEBT = [
   "app/admin/brands/[id]/components/BrandDetailView.tsx", // K6
   "app/admin/brands/components/BrandsClient.tsx", // K6
   "app/admin/components/PosOutletPicker.tsx", // K6
-  "app/admin/finance/[id]/components/CashEntryDetailView.tsx", // K5
-  "app/admin/finance/bank-accounts/[id]/components/BankAccountDetailView.tsx", // K5
-  "app/admin/finance/bank-accounts/components/BankAccountsClient.tsx", // K5
-  "app/admin/finance/categories/[id]/components/CategoryDetailView.tsx", // K5
-  "app/admin/finance/categories/components/CategoriesClient.tsx", // K5
-  "app/admin/finance/page.tsx", // K5
-  "app/admin/finance/transfers/[id]/components/CashTransferDetailView.tsx", // K5
   "app/admin/layout.tsx", // K6
   "app/admin/outlets/[id]/components/OutletDetailView.tsx", // K6
   "app/admin/outlets/components/OutletsClient.tsx", // K6
-  "app/admin/reports/components/SalesFilter.tsx", // K5
-  "app/admin/reports/issued/page.tsx", // K5
   "app/admin/users/[id]/components/UserDetailView.tsx", // K6
   "app/admin/users/components/UsersClient.tsx", // K6
   "app/settings/password/page.tsx", // K6
@@ -104,20 +95,10 @@ const SOLID_BUTTON_DEBT = [
 const TABLE_DEBT = [
   "app/admin/pos-sync/PosSyncClient.tsx", // K6
   "app/admin/products/components/ToppingsManager.tsx", // dead code: nothing imports it (master plan part 6); not moved
-  "app/admin/reports/components/ProductTable.tsx", // K5
-  "app/admin/reports/daily/page.tsx", // K5
-  "app/admin/reports/pnl/components/PnlTableView.tsx", // K5
-  "app/admin/reports/sales/OutletBreakdownSection.tsx", // K5
-  "app/admin/reports/sales/page.tsx", // K5
 ];
 
 const BOLD_CELL_DEBT = [
   "app/admin/products/components/ToppingsManager.tsx", // dead code: nothing imports it (master plan part 6); not moved
-  "app/admin/reports/components/ProductTable.tsx", // K5
-  "app/admin/reports/daily/page.tsx", // K5
-  "app/admin/reports/pnl/components/PnlTableView.tsx", // K5
-  "app/admin/reports/sales/OutletBreakdownSection.tsx", // K5
-  "app/admin/reports/sales/page.tsx", // K5
 ];
 
 const ENGLISH_BRACKET_DEBT = [
@@ -129,12 +110,6 @@ const RAW_INPUT_DEBT = [
   "app/admin/activity-log/components/ActivityLogClient.tsx", // K6
   "app/admin/brands/components/BrandForm.tsx", // K6
   "app/admin/brands/components/BrandsClient.tsx", // K6
-  "app/admin/finance/bank-accounts/components/BankAccountForm.tsx", // K5
-  "app/admin/finance/bank-accounts/components/BankAccountsClient.tsx", // K5
-  "app/admin/finance/categories/components/CategoriesClient.tsx", // K5
-  "app/admin/finance/categories/components/CategoryForm.tsx", // K5
-  "app/admin/finance/components/CashEntryForm.tsx", // K5
-  "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
   "app/admin/outlets/components/OutletForm.tsx", // K6
   "app/admin/outlets/components/OutletsClient.tsx", // K6
   "app/admin/users/components/EditUserForm.tsx", // K6
@@ -145,30 +120,18 @@ const RAW_INPUT_DEBT = [
 
 const RAW_SELECT_DEBT = [
   "app/admin/activity-log/components/ActivityLogClient.tsx", // K6
-  "app/admin/finance/bank-accounts/components/BankAccountsClient.tsx", // K5
-  "app/admin/finance/categories/components/CategoriesClient.tsx", // K5
-  "app/admin/finance/categories/components/CategoryForm.tsx", // K5
-  "app/admin/finance/components/CashBookClient.tsx", // K5
-  "app/admin/finance/components/CashEntryForm.tsx", // K5
-  "app/admin/finance/transfers/components/CashTransferForm.tsx", // K5
   "app/admin/outlets/components/OutletForm.tsx", // K6
   "app/admin/outlets/components/OutletsClient.tsx", // K6
-  "app/admin/reports/components/SalesFilter.tsx", // K5
-  "app/admin/reports/pnl/components/YearSelect.tsx", // K5
   "app/admin/users/components/EditUserForm.tsx", // K6
   "app/admin/users/components/UserForm.tsx", // K6
   "app/admin/users/components/UsersClient.tsx", // K6
 ];
 
-const NUMERIC_INPUTMODE_DEBT = [
-  "app/admin/finance/bank-accounts/components/BankAccountForm.tsx", // K5
+const NUMERIC_INPUTMODE_DEBT: string[] = [
 ];
 
 const RAW_H1_DEBT = [
-  "app/admin/page.tsx", // K5
   "app/admin/pos-sync/page.tsx", // K6
-  "app/admin/reports/issued/page.tsx", // K5
-  "app/admin/reports/pnl/page.tsx", // K5
   "app/settings/password/page.tsx", // K6
 ];
 

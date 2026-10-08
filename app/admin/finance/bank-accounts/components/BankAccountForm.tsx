@@ -3,7 +3,9 @@
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addBankAccount, updateBankAccount } from "../actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { safeReturnTo } from "../../components/return-to";
 import type { DBBankAccount } from "@/types/db";
 
@@ -48,66 +50,52 @@ export function BankAccountForm({ account, returnTo: rawReturnTo }: BankAccountF
           </div>
         )}
 
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên gợi nhớ
-          </label>
-          <input
+        <Field label="Tên gợi nhớ" htmlFor={`${formId}-name`} required>
+          <TextInput
             id={`${formId}-name`}
-            type="text"
             name="name"
             required
             defaultValue={account?.name}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="Ví dụ: Vietcombank Sanh"
           />
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor={`${formId}-bank_name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Ngân hàng
-          </label>
-          <input
+        <Field label="Ngân hàng" htmlFor={`${formId}-bank_name`}>
+          <TextInput
             id={`${formId}-bank_name`}
-            type="text"
             name="bank_name"
             defaultValue={account?.bank_name ?? ""}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="Ví dụ: Vietcombank"
           />
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor={`${formId}-account_number`} className="block text-sm font-medium text-text-secondary mb-1">
-            Số tài khoản
-          </label>
-          <input
+        <Field label="Số tài khoản" htmlFor={`${formId}-account_number`}>
+          <TextInput
             id={`${formId}-account_number`}
-            type="text"
-            inputMode="numeric"
             name="account_number"
+            keypad="digits"
             defaultValue={account?.account_number ?? ""}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="Ví dụ: 0071001234567"
           />
-        </div>
+        </Field>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu…"
             className="w-full sm:w-auto"
           >
             {isEdit ? "Cập nhật" : "Lưu tài khoản"}
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

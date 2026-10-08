@@ -8,6 +8,9 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
+import { Field } from "@/components/ui/Field";
 import { DateRangeFilter, type DateRangeValue } from "@/components/ui/DateRangeFilter";
 import { formatDate, formatVnDay } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
@@ -207,7 +210,7 @@ export default function CashBookClient({
         sortValue: (r) => r.id ?? "",
         render: (r) =>
           r.id ? (
-            <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+            <span className="font-mono text-xs text-primary transition-colors">
               {r.id}
             </span>
           ) : (
@@ -227,7 +230,7 @@ export default function CashBookClient({
         header: "Nhóm",
         sortValue: (r) => r.groupLabel,
         render: (r) => (
-          <span className="font-medium text-text-primary">
+          <span className="text-text-primary">
             {r.groupLabel}
           </span>
         ),
@@ -248,7 +251,7 @@ export default function CashBookClient({
         align: "right",
         sortValue: (r) => r.amount,
         render: (r) => (
-          <span className="font-semibold text-text-primary">
+          <span className="tabular-nums text-text-primary">
             {money(r.amount)}
           </span>
         ),
@@ -489,7 +492,7 @@ export default function CashBookClient({
         showClear={status !== "ACTIVE" || kind !== "ALL"}
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
+          <label className="block text-[13px] font-medium text-text-primary mb-1">
             Thời gian
           </label>
           <DateRangeFilter
@@ -499,50 +502,40 @@ export default function CashBookClient({
           />
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
-          <label
-            htmlFor="cashbook-kind"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Loại
-          </label>
-          <select
-            id="cashbook-kind"
-            value={kind}
-            onChange={(e) => {
-              const nextKind = parseKind(e.target.value);
-              setKind(nextKind);
-              setPage(1);
-            }}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ALL">Tất cả</option>
-            <option value="SALE">Bán hàng</option>
-            <option value="PURCHASE">Nhập hàng</option>
-            <option value="HAND">Ghi tay</option>
-            <option value="TRANSFER">Chuyển tiền</option>
-          </select>
+          <Field label="Loại" htmlFor="cashbook-kind">
+            <Select
+              id="cashbook-kind"
+              value={kind}
+              onChange={(e) => {
+                const nextKind = parseKind(e.target.value);
+                setKind(nextKind);
+                setPage(1);
+              }}
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="SALE">Bán hàng</option>
+              <option value="PURCHASE">Nhập hàng</option>
+              <option value="HAND">Ghi tay</option>
+              <option value="TRANSFER">Chuyển tiền</option>
+            </Select>
+          </Field>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
-          <label
-            htmlFor="cashbook-status"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Trạng thái
-          </label>
-          <select
-            id="cashbook-status"
-            value={status}
-            onChange={(e) => {
-              const nextStatus = parseStatus(e.target.value);
-              setStatus(nextStatus);
-              setPage(1);
-            }}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ACTIVE">Đang dùng</option>
-            <option value="CANCELLED">Đã huỷ</option>
-            <option value="ALL">Tất cả</option>
-          </select>
+          <Field label="Trạng thái" htmlFor="cashbook-status">
+            <Select
+              id="cashbook-status"
+              value={status}
+              onChange={(e) => {
+                const nextStatus = parseStatus(e.target.value);
+                setStatus(nextStatus);
+                setPage(1);
+              }}
+            >
+              <option value="ACTIVE">Đang dùng</option>
+              <option value="CANCELLED">Đã huỷ</option>
+              <option value="ALL">Tất cả</option>
+            </Select>
+          </Field>
         </div>
       </FilterCard>
 
@@ -641,13 +634,13 @@ export default function CashBookClient({
             </div>
             {(status !== "ACTIVE" || kind !== "ALL") && (
               <div>
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={handleClearFilter}
-                  className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
                 >
                   Xoá lọc
-                </button>
+                </Button>
               </div>
             )}
           </div>

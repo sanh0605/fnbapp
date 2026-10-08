@@ -3,8 +3,12 @@
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addCashEntry, updateCashEntry } from "../actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { DayInput } from "@/components/ui/DayInput";
+import { Field } from "@/components/ui/Field";
 import { MoneyInput } from "@/components/ui/MoneyInput";
+import { Select } from "@/components/ui/Select";
+import { TextInput } from "@/components/ui/TextInput";
 import { safeReturnTo } from "./return-to";
 import type { DBBankAccount, DBCashCategory, DBCashEntry } from "@/types/db";
 
@@ -34,6 +38,8 @@ export function CashEntryForm({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [day, setDay] = useState(entry?.entry_date ?? today ?? "");
+  const [dayError, setDayError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER">(
     entry?.payment_method ?? "CASH",
   );
@@ -50,6 +56,10 @@ export function CashEntryForm({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!day || day === "invalid") {
+      setDayError("Ngày không hợp lệ");
+      return;
+    }
     const formData = new FormData(e.currentTarget);
     setLoading(true);
     setError(null);
@@ -76,41 +86,33 @@ export function CashEntryForm({
         )}
 
         <div>
-          <label htmlFor={`${formId}-entry_date`} className="block text-sm font-medium text-text-secondary mb-1">
-            Ngày
-          </label>
-          <input
-            id={`${formId}-entry_date`}
-            type="date"
-            name="entry_date"
-            required
-            defaultValue={entry?.entry_date ?? today}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+          <DayInput
+            label="Ngày"
+            value={day}
+            onChange={(v) => {
+              setDay(v);
+              setDayError("");
+            }}
+            error={dayError}
           />
+          <input type="hidden" name="entry_date" value={day} />
         </div>
 
-        <div>
-          <label htmlFor={`${formId}-category_id`} className="block text-sm font-medium text-text-secondary mb-1">
-            Nhóm thu chi
-          </label>
-          <select
+        <Field label="Nhóm thu chi" htmlFor={`${formId}-category_id`} required>
+          <Select
             id={`${formId}-category_id`}
             name="category_id"
             required
             defaultValue={entry?.category_id ?? ""}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
           >
             <option value="" disabled>Chọn nhóm</option>
             {categoryOptions.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </Field>
 
-        <div>
-          <label htmlFor={`${formId}-amount`} className="block text-sm font-medium text-text-secondary mb-1">
-            Số tiền (đồng)
-          </label>
+        <Field label="Số tiền (đồng)" htmlFor={`${formId}-amount`} required>
           <MoneyInput
             id={`${formId}-amount`}
             // BR-CASH-005: digits-only box that groups thousands itself
@@ -119,76 +121,65 @@ export function CashEntryForm({
             required
             defaultValue={entry?.amount}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor={`${formId}-payment_method`} className="block text-sm font-medium text-text-secondary mb-1">
-            Cách trả
-          </label>
-          <select
+        <Field label="Cách trả" htmlFor={`${formId}-payment_method`}>
+          <Select
             id={`${formId}-payment_method`}
             name="payment_method"
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value === "BANK_TRANSFER" ? "BANK_TRANSFER" : "CASH")}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
           >
             <option value="CASH">Tiền mặt</option>
             <option value="BANK_TRANSFER">Chuyển khoản</option>
-          </select>
-        </div>
+          </Select>
+        </Field>
 
         {/* Cash never needs an account -- the field is not rendered at
             all when it does not apply, not rendered-and-disabled. */}
         {paymentMethod === "BANK_TRANSFER" && (
-          <div>
-            <label htmlFor={`${formId}-bank_account_id`} className="block text-sm font-medium text-text-secondary mb-1">
-              Tài khoản
-            </label>
-            <select
+          <Field label="Tài khoản" htmlFor={`${formId}-bank_account_id`} required>
+            <Select
               id={`${formId}-bank_account_id`}
               name="bank_account_id"
               required
               defaultValue={entry?.bank_account_id ?? ""}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
             >
               <option value="" disabled>Chọn tài khoản</option>
               {accountOptions.map((a) => (
                 <option key={a.id} value={a.id}>{a.name}</option>
               ))}
-            </select>
-          </div>
+            </Select>
+          </Field>
         )}
 
-        <div>
-          <label htmlFor={`${formId}-note`} className="block text-sm font-medium text-text-secondary mb-1">
-            Ghi chú (không bắt buộc)
-          </label>
-          <input
+        <Field label="Ghi chú (không bắt buộc)" htmlFor={`${formId}-note`}>
+          <TextInput
             id={`${formId}-note`}
-            type="text"
             name="note"
+            type="text"
             defaultValue={entry?.note ?? ""}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="Ví dụ: Tiền điện tháng 9"
           />
-        </div>
+        </Field>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu…"
             className="w-full sm:w-auto"
           >
             {isEdit ? "Cập nhật" : "Lưu"}
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

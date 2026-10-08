@@ -2,7 +2,23 @@
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import { CashEntryForm } from "./CashEntryForm";
+import { addCashEntry } from "../actions";
 import type { DBCashEntry } from "@/types/db";
+
+// Wave K5: the day box is the shared DayInput, whose calendar calls
+// window.matchMedia on mount; jsdom has none. Same stub as CashTransferForm.test.tsx.
+if (typeof window.matchMedia !== "function") {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+}
 
 const { push, refresh } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -77,5 +93,33 @@ describe("CashEntryForm on-page behaviour", () => {
     expect(dateInput.value).toBe("2026-09-11");
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
     expect(push).toHaveBeenCalledWith("/admin/finance?preset=LAST_MONTH");
+  });
+});
+
+// Wave K5: the day box moves to the shared DayInput (typed dd/mm/yyyy or picked
+// from the calendar). The server still receives entry_date as yyyy-mm-dd, and
+// a day that is not a date is said under the box instead of being sent.
+describe("CashEntryForm day box (wave K5)", () => {
+  const dayBox = () => screen.getByLabelText(/^Ngày( \*)?$/) as HTMLInputElement;
+
+  it("posts a typed 15/09/2026 as entry_date=2026-09-15", async () => {
+    vi.mocked(addCashEntry).mockResolvedValue({ error: null } as never);
+    const { container } = render(<CashEntryForm categories={CATEGORIES} accounts={[]} today="2026-10-08" />);
+    fireEvent.change(dayBox(), { target: { value: "15/09/2026" } });
+    fireEvent.blur(dayBox());
+    fireEvent.submit(container.querySelector("form")!);
+    await vi.waitFor(() => expect(addCashEntry).toHaveBeenCalled());
+    const sent = vi.mocked(addCashEntry).mock.calls[0][0] as FormData;
+    expect(sent.get("entry_date")).toBe("2026-09-15");
+  });
+
+  it("says a day that is not a date and sends nothing", async () => {
+    vi.mocked(addCashEntry).mockClear();
+    const { container } = render(<CashEntryForm categories={CATEGORIES} accounts={[]} today="2026-10-08" />);
+    fireEvent.change(dayBox(), { target: { value: "32/13/2026" } });
+    fireEvent.blur(dayBox());
+    fireEvent.submit(container.querySelector("form")!);
+    expect(await screen.findByText("Ngày không hợp lệ")).toBeInTheDocument();
+    expect(addCashEntry).not.toHaveBeenCalled();
   });
 });

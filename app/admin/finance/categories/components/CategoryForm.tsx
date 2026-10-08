@@ -3,7 +3,10 @@
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addCashCategory, updateCashCategory } from "../actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { Select } from "@/components/ui/Select";
+import { TextInput } from "@/components/ui/TextInput";
 import { confirm } from "@/lib/shared/dialog";
 import { safeReturnTo } from "../../components/return-to";
 import type { DBCashCategory } from "@/types/db";
@@ -90,26 +93,22 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
           </div>
         )}
 
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên nhóm
-          </label>
-          <input
+        <Field label="Tên nhóm" htmlFor={`${formId}-name`} required>
+          <TextInput
             id={`${formId}-name`}
-            type="text"
             name="name"
             required
             defaultValue={category?.name}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="Ví dụ: Vận hành"
           />
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor={`${formId}-kind`} className="block text-sm font-medium text-text-secondary mb-1">
-            Bên
-          </label>
-          <select
+        <Field
+          label="Bên"
+          htmlFor={`${formId}-kind`}
+          hint={isKindLocked ? "Đã có dòng sổ — không đổi được bên" : undefined}
+        >
+          <Select
             id={`${formId}-kind`}
             name={isKindLocked ? undefined : "kind"}
             disabled={isKindLocked}
@@ -119,18 +118,14 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
               setKind(next);
               if (next !== "INCOME") setIsSalesRevenue(false);
             }}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary disabled:opacity-60"
           >
             <option value="EXPENSE">Chi</option>
             <option value="INCOME">Thu</option>
-          </select>
+          </Select>
           {isKindLocked && (
-            <>
-              <input type="hidden" name="kind" value={category!.kind} />
-              <p className="mt-1 text-xs text-text-muted">Đã có dòng sổ — không đổi được bên</p>
-            </>
+            <input type="hidden" name="kind" value={category!.kind} />
           )}
-        </div>
+        </Field>
 
         <label className="flex items-center gap-2 text-sm text-text-primary">
           <input
@@ -165,21 +160,22 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
         )}
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu…"
             className="w-full sm:w-auto"
           >
             {isEdit ? "Cập nhật" : "Lưu nhóm"}
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

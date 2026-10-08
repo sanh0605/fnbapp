@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
@@ -10,6 +9,10 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { Field } from "@/components/ui/Field";
 import { setBankAccountStatus } from "@/app/admin/finance/bank-accounts/actions";
 import type { DBBankAccount } from "@/types/db";
 
@@ -97,7 +100,7 @@ export default function BankAccountsClient({
         header: "Mã",
         sortValue: (a) => a.id,
         render: (a) => (
-          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-primary transition-colors">
             {a.id}
           </span>
         ),
@@ -107,7 +110,7 @@ export default function BankAccountsClient({
         header: "Tên",
         sortValue: (a) => a.name,
         render: (a) => (
-          <div className="font-bold text-text-primary">{a.name}</div>
+          <div className="text-text-primary">{a.name}</div>
         ),
       },
       {
@@ -254,12 +257,13 @@ export default function BankAccountsClient({
         group="Thu chi"
         title="Tài khoản ngân hàng"
         action={
-          <Link
+          <Button
             href={`/admin/finance/bank-accounts/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            variant="primary"
+            className="w-full md:w-auto"
           >
             Tạo
-          </Link>
+          </Button>
         }
       />
 
@@ -269,38 +273,27 @@ export default function BankAccountsClient({
         showClear={Boolean(search || status !== "ACTIVE")}
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="bank-accounts-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm tài khoản
-          </label>
-          <input
-            id="bank-accounts-search"
-            type="text"
-            placeholder="Ví dụ: Vietcombank"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+          <Field label="Tìm tài khoản" htmlFor="bank-accounts-search">
+            <TextInput
+              id="bank-accounts-search"
+              placeholder="Ví dụ: Vietcombank"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
-          <label
-            htmlFor="bank-accounts-status"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Trạng thái
-          </label>
-          <select
-            id="bank-accounts-status"
-            value={status}
-            onChange={(e) => setStatus(parseStatus(e.target.value))}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ACTIVE">Đang dùng</option>
-            <option value="INACTIVE">Ngừng dùng</option>
-            <option value="ALL">Tất cả</option>
-          </select>
+          <Field label="Trạng thái" htmlFor="bank-accounts-status">
+            <Select
+              id="bank-accounts-status"
+              value={status}
+              onChange={(e) => setStatus(parseStatus(e.target.value))}
+            >
+              <option value="ACTIVE">Đang dùng</option>
+              <option value="INACTIVE">Ngừng dùng</option>
+              <option value="ALL">Tất cả</option>
+            </Select>
+          </Field>
         </div>
       </FilterCard>
 
@@ -326,13 +319,13 @@ export default function BankAccountsClient({
             </div>
             {Boolean(search || status !== "ACTIVE") && (
               <div>
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={handleClearFilter}
-                  className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
                 >
                   Xoá lọc
-                </button>
+                </Button>
               </div>
             )}
           </div>

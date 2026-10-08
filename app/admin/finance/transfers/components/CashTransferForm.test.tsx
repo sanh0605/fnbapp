@@ -63,8 +63,8 @@ describe("CashTransferForm", () => {
     render(<CashTransferForm accounts={ACCOUNTS} today="2026-10-04" />);
 
     // Select CASH for both
-    const fromSelect = screen.getByLabelText("Từ") as HTMLSelectElement;
-    const toSelect = screen.getByLabelText("Đến") as HTMLSelectElement;
+    const fromSelect = screen.getByLabelText(/^Từ( \*)?$/) as HTMLSelectElement;
+    const toSelect = screen.getByLabelText(/^Đến( \*)?$/) as HTMLSelectElement;
     fireEvent.change(fromSelect, { target: { value: "CASH" } });
     fireEvent.change(toSelect, { target: { value: "CASH" } });
 
@@ -91,8 +91,8 @@ describe("CashTransferForm", () => {
       />,
     );
 
-    const fromSelect = screen.getByLabelText("Từ");
-    const toSelect = screen.getByLabelText("Đến");
+    const fromSelect = screen.getByLabelText(/^Từ( \*)?$/);
+    const toSelect = screen.getByLabelText(/^Đến( \*)?$/);
     fireEvent.change(fromSelect, { target: { value: "CASH" } });
     fireEvent.change(toSelect, { target: { value: "BA-001" } });
 
@@ -151,6 +151,22 @@ describe("CashTransferForm", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
     expect(push).toHaveBeenCalledWith("/admin/finance");
+    expect(addCashTransferMock).not.toHaveBeenCalled();
+  });
+});
+
+// Wave K5: the day box moves to the shared DayInput. transfer_date still
+// reaches the server as yyyy-mm-dd; a day that is not a date is said under the
+// box and nothing is sent.
+describe("CashTransferForm day box (wave K5)", () => {
+  const dayBox = () => screen.getByLabelText(/^Ngày( \*)?$/) as HTMLInputElement;
+
+  it("says a day that is not a date and sends nothing", async () => {
+    const { container } = render(<CashTransferForm accounts={ACCOUNTS} today="2026-10-08" />);
+    fireEvent.change(dayBox(), { target: { value: "32/13/2026" } });
+    fireEvent.blur(dayBox());
+    fireEvent.submit(container.querySelector("form")!);
+    expect(await screen.findByText("Ngày không hợp lệ")).toBeInTheDocument();
     expect(addCashTransferMock).not.toHaveBeenCalled();
   });
 });

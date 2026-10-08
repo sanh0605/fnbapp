@@ -44,7 +44,7 @@ const CATEGORY: DBCashCategory = {
 describe("CategoryForm on-page behaviour", () => {
   it("renders the fields on the page without opening a dialog", () => {
     render(<CategoryForm returnTo="/admin/finance/categories" />);
-    expect(screen.getByLabelText("Tên nhóm")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Tên nhóm/)).toBeInTheDocument();
   });
 
   it("Bỏ navigates to returnTo without saving", () => {
