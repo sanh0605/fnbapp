@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
@@ -10,6 +9,10 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { formatDate } from "@/lib/shared/datetime";
+import { Button } from "@/components/ui/Button";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { Field } from "@/components/ui/Field";
 import { deleteUserAction } from "@/app/admin/users/actions";
 import { RoleBadge } from "./RoleBadge";
 import type { DBUser } from "@/types/db";
@@ -95,7 +98,7 @@ export default function UsersClient({
         header: "Mã NV",
         sortValue: (u) => u.id,
         render: (u) => (
-          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-primary transition-colors">
             {u.id}
           </span>
         ),
@@ -105,7 +108,7 @@ export default function UsersClient({
         header: "Tên đăng nhập",
         sortValue: (u) => u.username,
         render: (u) => (
-          <div className="font-bold text-text-primary">{u.username}</div>
+          <div className="text-text-primary">{u.username}</div>
         ),
       },
       {
@@ -224,12 +227,13 @@ export default function UsersClient({
         group="Cài đặt"
         title="Nhân viên & quyền"
         action={
-          <Link
+          <Button
             href={`/admin/users/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            variant="primary"
+            className="w-full md:w-auto"
           >
             Tạo
-          </Link>
+          </Button>
         }
       />
 
@@ -239,39 +243,28 @@ export default function UsersClient({
         showClear={Boolean(search || role !== "ALL")}
       >
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="users-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm nhân sự
-          </label>
-          <input
-            id="users-search"
-            type="text"
-            placeholder="Ví dụ: nhanvien01"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+          <Field label="Tìm nhân sự" htmlFor="users-search">
+            <TextInput
+              id="users-search"
+              placeholder="Ví dụ: nhanvien01"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
         </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
-          <label
-            htmlFor="users-role"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Quyền hạn
-          </label>
-          <select
-            id="users-role"
-            value={role}
-            onChange={(e) => setRole(parseRole(e.target.value))}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ALL">Tất cả quyền</option>
-            <option value="ADMIN">ADMIN</option>
-            <option value="MANAGER">MANAGER</option>
-            <option value="STAFF">STAFF</option>
-          </select>
+          <Field label="Quyền hạn" htmlFor="users-role">
+            <Select
+              id="users-role"
+              value={role}
+              onChange={(e) => setRole(parseRole(e.target.value))}
+            >
+              <option value="ALL">Tất cả quyền</option>
+              <option value="ADMIN">ADMIN</option>
+              <option value="MANAGER">MANAGER</option>
+              <option value="STAFF">STAFF</option>
+            </Select>
+          </Field>
         </div>
       </FilterCard>
 
@@ -297,13 +290,13 @@ export default function UsersClient({
             </div>
             {Boolean(search || role !== "ALL") && (
               <div>
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={handleClearFilter}
-                  className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
                 >
                   Xoá lọc
-                </button>
+                </Button>
               </div>
             )}
           </div>

@@ -3,7 +3,10 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addUser } from "@/app/admin/users/actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
 import { safeReturnTo } from "./return-to";
 
 interface UserFormProps {
@@ -42,64 +45,52 @@ export function UserForm({ returnTo: rawReturnTo }: UserFormProps = {}) {
             {error}
           </div>
         )}
-        <div>
-          <label htmlFor={`${formId}-username`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên đăng nhập
-          </label>
-          <input
+        <Field label="Tên đăng nhập" htmlFor={`${formId}-username`} required>
+          <TextInput
             id={`${formId}-username`}
-            type="text"
             name="username"
             required
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="Ví dụ: nhanvien01"
           />
-        </div>
-        <div>
-          <label htmlFor={`${formId}-password`} className="block text-sm font-medium text-text-secondary mb-1">
-            Mật khẩu
-          </label>
-          <input
+        </Field>
+        <Field label="Mật khẩu" htmlFor={`${formId}-password`} required>
+          <TextInput
             id={`${formId}-password`}
             type="password"
             name="password"
             required
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="******"
           />
-        </div>
-        <div>
-          <label htmlFor={`${formId}-role`} className="block text-sm font-medium text-text-secondary mb-1">
-            Quyền hạn
-          </label>
-          <select
+        </Field>
+        <Field label="Quyền hạn" htmlFor={`${formId}-role`} required>
+          <Select
             id={`${formId}-role`}
             name="role"
             required
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
+            defaultValue="STAFF"
           >
             <option value="STAFF">Nhân viên</option>
             <option value="MANAGER">Quản lý</option>
             <option value="ADMIN">Quản trị viên</option>
-          </select>
-        </div>
+          </Select>
+        </Field>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
-            form="user-form"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu..."
-            className="w-full sm:w-auto min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Lưu Nhân Sự
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

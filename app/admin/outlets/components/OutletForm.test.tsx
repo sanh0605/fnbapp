@@ -122,6 +122,49 @@ describe("OutletForm edit mode", () => {
   });
 });
 
+// Wave K6 (plan Review Focus 1): the two hour boxes move to the shared
+// TextInput; Postgres "HH:MM:SS" still shows as HH:MM and is posted as HH:MM.
+describe("OutletForm hour boxes (wave K6)", () => {
+  it("07:00:00 and 22:30:00 show as 07:00 and 22:30 and are sent as open_time=07:00, close_time=22:30", async () => {
+    mocks.editOutlet.mockResolvedValue({});
+    render(
+      <OutletForm
+        initialData={{ ...OUTLET, open_time: "07:00:00", close_time: "22:30:00" }}
+        brands={BRANDS}
+        outlets={[OUTLET]}
+        returnTo="/admin/outlets"
+      />,
+    );
+    const open = screen.getByLabelText(/^Giờ mở cửa/) as HTMLInputElement;
+    const close = screen.getByLabelText(/^Giờ đóng cửa/) as HTMLInputElement;
+    expect(open.type).toBe("time");
+    expect(open.value).toBe("07:00");
+    expect(close.value).toBe("22:30");
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
+    const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
+    expect(formData.get("open_time")).toBe("07:00");
+    expect(formData.get("close_time")).toBe("22:30");
+  });
+
+  it("blank hours are sent blank", async () => {
+    mocks.editOutlet.mockResolvedValue({});
+    render(
+      <OutletForm
+        initialData={{ ...OUTLET, open_time: null, close_time: null } as unknown as DBOutlet}
+        brands={BRANDS}
+        outlets={[OUTLET]}
+        returnTo="/admin/outlets"
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
+    const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
+    expect(formData.get("open_time")).toBe("");
+    expect(formData.get("close_time")).toBe("");
+  });
+});
+
 describe("OutletForm add mode", () => {
   it("also shows brand, address, start date and both hour fields", () => {
     render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);

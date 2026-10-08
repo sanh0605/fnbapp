@@ -2,7 +2,10 @@
 
 import { useState, useId } from "react";
 import { updateUser } from "@/app/admin/users/actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
 import { useRouter } from "next/navigation";
 import { safeReturnTo } from "./return-to";
 import type { DBUser } from "@/types/db";
@@ -43,67 +46,61 @@ export default function EditUserForm({ user, returnTo: rawReturnTo }: EditUserFo
             {error}
           </div>
         )}
-        
-        <div>
-          <label htmlFor={`${formId}-username`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên đăng nhập
-          </label>
-          <input
+
+        <Field
+          label="Tên đăng nhập"
+          htmlFor={`${formId}-username`}
+          hint="Tên đăng nhập không thể thay đổi."
+        >
+          <TextInput
             id={`${formId}-username`}
-            type="text"
             disabled
             value={user.username}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] bg-surface-secondary text-text-muted outline-none"
           />
-          <p className="text-[10px] text-text-muted mt-1">Tên đăng nhập không thể thay đổi.</p>
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor={`${formId}-password`} className="block text-sm font-medium text-text-secondary mb-1">
-            Mật khẩu mới (Để trống nếu không muốn đổi)
-          </label>
-          <input
+        <Field
+          label="Mật khẩu mới (Để trống nếu không muốn đổi)"
+          htmlFor={`${formId}-password`}
+        >
+          <TextInput
             id={`${formId}-password`}
             type="password"
             name="password"
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             placeholder="******"
           />
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor={`${formId}-role`} className="block text-sm font-medium text-text-secondary mb-1">
-            Quyền hạn
-          </label>
-          <select
+        <Field label="Quyền hạn" htmlFor={`${formId}-role`} required>
+          <Select
             id={`${formId}-role`}
             name="role"
             required
             defaultValue={user.role}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
           >
             <option value="STAFF">Nhân viên</option>
             <option value="MANAGER">Quản lý</option>
             <option value="ADMIN">Quản trị viên</option>
-          </select>
-        </div>
+          </Select>
+        </Field>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <button
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang cập nhật..."
-            className="min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Cập nhật nhân sự
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>
