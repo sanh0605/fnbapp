@@ -4,6 +4,9 @@ import React, { useState, useMemo, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { Select } from "@/components/ui/Select";
 import { saigonToday } from "@/lib/shared/datetime";
 import { addDays } from "@/lib/shared/date-range-presets";
 import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
@@ -122,9 +125,9 @@ function SalesFilterInner({
 
   const rightContent = (
     <div className="flex gap-2">
-      <button onClick={() => setPreset(0)} className="px-3 py-2 text-xs font-medium text-text-secondary bg-surface-secondary rounded-lg hover:bg-border min-h-[44px]">Hôm nay</button>
-      <button onClick={() => setPreset(7)} className="px-3 py-2 text-xs font-medium text-text-secondary bg-surface-secondary rounded-lg hover:bg-border min-h-[44px]">7 ngày</button>
-      <button onClick={() => setPreset(30)} className="px-3 py-2 text-xs font-medium text-text-secondary bg-surface-secondary rounded-lg hover:bg-border min-h-[44px]">30 ngày</button>
+      <Button variant="secondary" onClick={() => setPreset(0)}>Hôm nay</Button>
+      <Button variant="secondary" onClick={() => setPreset(7)}>7 ngày</Button>
+      <Button variant="secondary" onClick={() => setPreset(30)}>30 ngày</Button>
     </div>
   );
 
@@ -137,62 +140,70 @@ function SalesFilterInner({
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">
         <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Từ ngày</label>
-          <CustomDatePicker
-            selected={startDate}
-            onChange={(date: Date | null) => setStartDate(date)}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-          />
+          <Field label="Từ ngày" htmlFor="sales-start">
+            <CustomDatePicker
+              id="sales-start"
+              selected={startDate}
+              onChange={(date: Date | null) => setStartDate(date)}
+              className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+            />
+          </Field>
         </div>
         <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Đến ngày</label>
-          <CustomDatePicker
-            selected={endDate}
-            onChange={(date: Date | null) => setEndDate(date)}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-          />
+          <Field label="Đến ngày" htmlFor="sales-end">
+            <CustomDatePicker
+              id="sales-end"
+              selected={endDate}
+              onChange={(date: Date | null) => setEndDate(date)}
+              className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+            />
+          </Field>
+        </div>
+        <div className="w-full md:w-40">
+          <Field label="Thương hiệu" htmlFor="sales-brand">
+            <Select 
+              id="sales-brand"
+              value={brandId} 
+              onChange={(e) => setBrandId(e.target.value)}
+            >
+              <option value="">Tất cả</option>
+              {activeBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </Select>
+          </Field>
+        </div>
+        <div className="w-full md:w-40">
+          <Field label="Nhân viên" htmlFor="sales-staff">
+            <Select 
+              id="sales-staff"
+              value={staffName} 
+              onChange={(e) => setStaffName(e.target.value)}
+            >
+              <option value="">Tất cả</option>
+              {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
+            </Select>
+          </Field>
+        </div>
+        <div className="w-full md:w-40">
+          <Field label="Nhóm SP" htmlFor="sales-category">
+            <Select 
+              id="sales-category"
+              value={categoryId} 
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              <option value="">Tất cả</option>
+              {activeCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </Select>
+          </Field>
         </div>
         <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Thương hiệu</label>
-          <select 
-            value={brandId} 
-            onChange={(e) => setBrandId(e.target.value)}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-          >
-            <option value="">Tất cả</option>
-            {activeBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
-        </div>
-        <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Nhân viên</label>
-          <select 
-            value={staffName} 
-            onChange={(e) => setStaffName(e.target.value)}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-          >
-            <option value="">Tất cả</option>
-            {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
-          </select>
-        </div>
-        <div className="w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-secondary uppercase tracking-wider mb-1">Nhóm SP</label>
-          <select 
-            value={categoryId} 
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-          >
-            <option value="">Tất cả</option>
-            {activeCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-        <div className="w-full md:w-auto">
-          <button
+          <Button
+            variant="primary"
             onClick={() => applyFilters()}
-            disabled={isPending}
-            className="w-full md:w-auto px-4 py-2 min-h-[44px] bg-primary text-on-primary rounded-lg text-sm font-bold disabled:opacity-60 whitespace-nowrap"
+            loading={isPending}
+            className="w-full md:w-auto whitespace-nowrap"
           >
-            {isPending ? "Đang lọc..." : "Lọc"}
-          </button>
+            Lọc
+          </Button>
         </div>
       </div>
     </>

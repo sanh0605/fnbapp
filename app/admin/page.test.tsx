@@ -25,8 +25,15 @@ function collectText(node: ReactNode, out: string[] = []): string[] {
     node.forEach(n => collectText(n, out));
     return out;
   }
-  const el = node as { props?: { children?: ReactNode } };
-  if (el.props) collectText(el.props.children, out);
+  // Wave K5: the header moved into PageHeader, whose title, subtitle and
+  // actions are props rather than children; walk those too.
+  const el = node as { props?: { children?: ReactNode; title?: ReactNode; subtitle?: ReactNode; actions?: ReactNode } };
+  if (el.props) {
+    collectText(el.props.title, out);
+    collectText(el.props.subtitle, out);
+    collectText(el.props.actions, out);
+    collectText(el.props.children, out);
+  }
   return out;
 }
 

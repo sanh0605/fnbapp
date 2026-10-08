@@ -8,6 +8,7 @@ import { buildSevenDayChart, resolveDashboardPeriods } from "@/lib/reports/dashb
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
 import { getSupabaseClient } from "@/lib/db/supabase";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Banknote, Receipt, TrendingUp, Coffee, Tag, Building2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -138,11 +139,11 @@ export default async function AdminDashboard({
   };
   
   const stats = [
-    { title: "Tổng Doanh Thu", value: formatNumber(currRev), icon: <Banknote className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.rev },
+    { title: "Tổng doanh thu", value: formatNumber(currRev), icon: <Banknote className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.rev },
     { title: "Đơn hàng hoàn tất", value: currOrdCount.toString(), icon: <Receipt className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: trends.ord },
     { title: "TB đơn", value: formatNumber(Math.round(currAOV)), icon: <TrendingUp className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.aov },
-    { title: "Tổng Ly Đã Bán", value: currCups.toString(), icon: <Coffee className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: trends.cups },
-    { title: "TB Ly", value: formatNumber(Math.round(currAvgCup)), icon: <Tag className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.avgCup },
+    { title: "Tổng ly đã bán", value: currCups.toString(), icon: <Coffee className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: trends.cups },
+    { title: "TB ly", value: formatNumber(Math.round(currAvgCup)), icon: <Tag className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.avgCup },
     { title: "Nhà cung cấp", value: activeSuppliers.toString(), icon: <Building2 className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: undefined },
   ];
 
@@ -172,28 +173,27 @@ export default async function AdminDashboard({
           </Alert>
         </Link>
       )}
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-text-primary tracking-tight">Tổng quan</h1>
-          <p className="text-text-secondary mt-1">Xin chào, đây là tình hình kinh doanh hiện tại của bạn.</p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full xl:w-auto">
-          <div className="bg-surface-card p-1 rounded-lg border border-border flex flex-wrap text-sm shadow-sm gap-1 max-w-full">
-            <Link href="?filter=today" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'today' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Hôm nay</Link>
-            <Link href="?filter=7days" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === '7days' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>7 ngày</Link>
-            <Link href="?filter=30days" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === '30days' || filterParam === '30' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>30 ngày</Link>
-            <Link href="?filter=this_month" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'this_month' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tháng này</Link>
-            <Link href="?filter=last_month" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'last_month' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tháng trước</Link>
-            <Link href="?filter=this_year" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'this_year' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Năm nay</Link>
-            <Link href="?filter=last_year" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'last_year' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Năm trước</Link>
-            <Link href="?filter=all" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'all' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tất cả</Link>
+      <PageHeader
+        title="Tổng quan"
+        subtitle="Xin chào, đây là tình hình kinh doanh hiện tại của bạn."
+        actions={
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full xl:w-auto">
+            <div className="bg-surface-card p-1 rounded-lg border border-border flex flex-wrap text-sm shadow-sm gap-1 max-w-full">
+              <Link href="?filter=today" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'today' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Hôm nay</Link>
+              <Link href="?filter=7days" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === '7days' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>7 ngày</Link>
+              <Link href="?filter=30days" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === '30days' || filterParam === '30' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>30 ngày</Link>
+              <Link href="?filter=this_month" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'this_month' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tháng này</Link>
+              <Link href="?filter=last_month" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'last_month' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tháng trước</Link>
+              <Link href="?filter=this_year" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'this_year' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Năm nay</Link>
+              <Link href="?filter=last_year" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'last_year' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Năm trước</Link>
+              <Link href="?filter=all" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'all' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tất cả</Link>
+            </div>
+            <div className="text-sm font-medium text-text-muted bg-surface-card px-4 py-2.5 rounded-lg border border-border shadow-sm hidden 2xl:block whitespace-nowrap">
+              Cập nhật lúc: {formatTime(now, true)}
+            </div>
           </div>
-          <div className="text-sm font-medium text-text-muted bg-surface-card px-4 py-2.5 rounded-lg border border-border shadow-sm hidden 2xl:block whitespace-nowrap">
-            Cập nhật lúc: {formatTime(now, true)}
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {stats.map((stat, index) => (

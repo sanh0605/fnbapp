@@ -1,4 +1,5 @@
 import { getProfitAndLossReport } from "./actions";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { YearSelect } from "./components/YearSelect";
 import { PnlSummary } from "./components/PnlSummary";
@@ -28,13 +29,11 @@ export default async function ProfitAndLossPage({ searchParams }: { searchParams
 
   return (
     <div className="mx-auto max-w-7xl space-y-4 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:p-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary md:text-[28px]">Lãi lỗ</h1>
-          <p className="mt-1 text-[13px] text-text-secondary">{subtitle}</p>
-        </div>
-        <YearSelect years={availableYears} selected={table.year} />
-      </div>
+      <PageHeader
+        title="Lãi lỗ"
+        subtitle={subtitle}
+        actions={<YearSelect years={availableYears} selected={table.year} />}
+      />
       {table.months.length === 0 ? (
         <EmptyState title={`Năm ${table.year} chưa có số liệu nào.`} />
       ) : (

@@ -54,10 +54,12 @@ describe("OutletBreakdownSection", () => {
     const container = await renderTracked(<OutletBreakdownSection outletBreakdown={TWO_OUTLETS} />);
     const table = container.querySelector("table");
     expect(table).not.toBeNull();
-    const tableWrapper = table!.parentElement!;
-    expect(tableWrapper.className).toContain("hidden");
-    expect(tableWrapper.className).toContain("md:block");
-    expect(tableWrapper.className).toContain("overflow-x-auto");
+    // Wave K5: the shared Table draws its own scrolling frame, so the
+    // desktop-only box is an ancestor rather than the direct parent.
+    const desktopBox = table!.closest(".md\\:block")!;
+    expect(desktopBox).not.toBeNull();
+    expect(desktopBox.className).toContain("hidden");
+    expect(table!.closest(".overflow-x-auto")).not.toBeNull();
   });
 
   it("class presence only: the card list is marked hidden from md up", async () => {
@@ -86,7 +88,11 @@ describe("OutletBreakdownSection", () => {
 
   it("rendered layout: the table has one row per outlet with all five columns", async () => {
     const container = await renderTracked(<OutletBreakdownSection outletBreakdown={TWO_OUTLETS} />);
-    const rows = container.querySelectorAll("tbody tr");
+    // Wave K5: the total row now sits in its own body above the outlets, so
+    // the outlet rows are the body rows that are not the total.
+    const rows = Array.from(container.querySelectorAll("table tbody tr")).filter(
+      (r) => !(r.textContent || "").startsWith("Tổng"),
+    );
     expect(rows).toHaveLength(2);
 
     const firstRowText = rows[0].textContent || "";
@@ -134,8 +140,11 @@ describe("OutletBreakdownSection", () => {
 
   it("rendered layout: the total row sums orders and revenue and leaves TB/đơn and % tổng blank", async () => {
     const container = await renderTracked(<OutletBreakdownSection outletBreakdown={TWO_OUTLETS} />);
-    const footRow = container.querySelector("tfoot tr")!;
-    const cells = footRow.querySelectorAll("td");
+    // Wave K5: the total row moved from the table foot to right under the header.
+    const footRow = Array.from(container.querySelectorAll("table tr")).find((r) =>
+      (r.textContent || "").startsWith("Tổng"),
+    )!;
+    const cells = footRow.querySelectorAll("td, th");
 
     expect(footRow.textContent).toContain("Tổng");
     expect(cells[1].textContent).toBe("58"); // 40 + 18 orders
@@ -148,12 +157,37 @@ describe("OutletBreakdownSection", () => {
     const outlets = [{ outlet_id: "", name: "Chưa gắn điểm bán", orderCount: 3, revenue: 90_000 }, ...TWO_OUTLETS];
     const container = await renderTracked(<OutletBreakdownSection outletBreakdown={outlets} />);
     expect(container.textContent).toContain("Chưa gắn điểm bán");
-    expect(container.querySelectorAll("tbody tr")).toHaveLength(3);
+    // Wave K5: the total row has its own body above the outlets.
+    const outletRows = Array.from(container.querySelectorAll("tbody tr")).filter(
+      (r) => !(r.textContent || "").startsWith("Tổng"),
+    );
+    expect(outletRows).toHaveLength(3);
   });
 
   it("rendered layout: shows the empty state and no table when there is no data", async () => {
     const container = await renderTracked(<OutletBreakdownSection outletBreakdown={[]} />);
     expect(container.textContent).toContain("Không có dữ liệu");
     expect(container.querySelector("table")).toBeNull();
+  });
+});
+
+// Wave K5 (spec 2.4, plan Review Focus 3): the total row sits right under the
+// header, before the first outlet; revenue is plain text, not green.
+describe("OutletBreakdownSection -- total under the header (wave K5)", () => {
+  it("the row after the header is Tổng 58 / 1,604,400, then Điểm bán 1", async () => {
+    const container = await renderTracked(<OutletBreakdownSection outletBreakdown={TWO_OUTLETS} />);
+    const rows = Array.from(container.querySelectorAll("table tr"));
+    expect(rows[0].closest("thead")).not.toBeNull();
+    expect(rows[1].textContent).toContain("Tổng");
+    expect(rows[1].textContent).toContain("58");
+    expect(rows[1].textContent).toContain("1,604,400");
+    expect(rows[2].textContent).toContain("Điểm bán 1");
+  });
+
+  it("no cell in the table is green or bold", async () => {
+    const container = await renderTracked(<OutletBreakdownSection outletBreakdown={TWO_OUTLETS} />);
+    const table = container.querySelector("table")!;
+    expect(table.querySelector(".text-success")).toBeNull();
+    expect(table.querySelector("tbody .font-bold, tbody .font-semibold")).toBeNull();
   });
 });

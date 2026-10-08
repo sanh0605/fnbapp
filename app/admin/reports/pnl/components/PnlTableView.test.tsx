@@ -82,3 +82,32 @@ describe("PnlTableView", () => {
     });
   });
 });
+
+// Wave K5 (plan Review Focus 1): the table moves onto the shared Table set and
+// keeps the look the owner approved 2026-09-11 -- Khoản, Tổng and % doanh thu
+// stay put while the months scroll; profit rows are shaded and bold.
+describe("PnlTableView -- the approved look on the Table set (wave K5)", () => {
+  it("Khoản sticks left, Tổng and % doanh thu stick right", () => {
+    render(<PnlTableView table={table()} />);
+    const khoan = screen.getByRole("columnheader", { name: "Khoản" }).className.split(/\s+/);
+    expect(khoan).toEqual(expect.arrayContaining(["sticky", "left-0"]));
+    expect(screen.getByRole("columnheader", { name: "Tổng" }).className.split(/\s+/)).toEqual(
+      expect.arrayContaining(["sticky", "right-24"]),
+    );
+    expect(screen.getByRole("columnheader", { name: "% doanh thu" }).className.split(/\s+/)).toEqual(
+      expect.arrayContaining(["sticky", "right-0"]),
+    );
+  });
+
+  it("the Lợi nhuận gộp row is bold and shaded, its sticky cells shaded too", () => {
+    render(<PnlTableView table={table()} />);
+    const head = screen.getByRole("rowheader", { name: /^Lợi nhuận gộp/ });
+    const row = head.closest("tr")!;
+    expect(row.className).toContain("font-bold");
+    expect(row.className).toContain("bg-surface-secondary");
+    expect(head.className).toContain("bg-surface-secondary");
+    const cells = row.querySelectorAll("td");
+    expect(cells[cells.length - 2].className).toContain("bg-surface-secondary");
+    expect(cells[cells.length - 1].className).toContain("bg-surface-secondary");
+  });
+});

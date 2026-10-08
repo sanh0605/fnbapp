@@ -68,3 +68,22 @@ describe("SalesFilter", () => {
     expect(push).toHaveBeenCalledWith("?start=2026-09-08&end=2026-09-15");
   });
 });
+
+// Wave K5 (plan Review Focus 5): the brand box moves to the shared Select
+// inside Field. Choosing a brand then "Lọc" must push the same URL as today.
+describe("SalesFilter brand box (wave K5)", () => {
+  it("choosing MR.PHIN then Lọc pushes brandId with the same dates", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-14T23:30:00Z")); // Saigon: 2026-09-15 06:30
+    render(
+      <SalesFilter
+        brands={[{ id: "BRD-1", name: "MR.PHIN", status: "ACTIVE" }]}
+        users={[]}
+        categories={[]}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText(/^Thương hiệu/), { target: { value: "BRD-1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Lọc" }));
+    expect(push).toHaveBeenCalledWith("?start=2026-09-01&end=2026-09-15&brandId=BRD-1");
+  });
+});

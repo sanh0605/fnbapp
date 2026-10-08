@@ -10,6 +10,15 @@ import { resolvePreset } from "@/lib/shared/date-range-presets";
 
 import ProductTable from "@/app/admin/reports/components/ProductTable";
 import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableTotalRow,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/Table";
 import { OutletBreakdownSection } from "./OutletBreakdownSection";
 import { ChevronDown, AlertCircle } from "lucide-react";
 
@@ -150,14 +159,14 @@ export default async function SalesReportPage({
           </div>
         </div>
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <div className="text-sm font-medium text-text-secondary mb-1">Tổng Số Đơn</div>
+          <div className="text-sm font-medium text-text-secondary mb-1">Tổng số đơn</div>
           <div className="text-3xl font-bold text-text-primary">{totalOrders} <span className="text-sm font-normal text-text-secondary">đơn</span></div>
           <div className="text-xs text-text-muted mt-2">
             {paymentBreakdown.map(p => `${p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}: ${p.orderCount}`).join(" • ")}
           </div>
         </div>
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <div className="text-sm font-medium text-text-secondary mb-1">Doanh Thu Trung Bình / Đơn</div>
+          <div className="text-sm font-medium text-text-secondary mb-1">Doanh thu trung bình / đơn</div>
           <div className="text-3xl font-bold text-text-primary">{formatNumber(Math.round(avgOrderValue))}</div>
           <div className="text-xs text-text-muted mt-2">
             Khuyến mãi hệ thống: {formatNumber(systemPromotionDiscount)}
@@ -168,7 +177,7 @@ export default async function SalesReportPage({
       {/* Discount + Payment breakdown (Claude code — Phase 5.2) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <h3 className="font-bold text-text-primary text-base mb-3">Chi tiết Giảm giá</h3>
+          <h3 className="font-bold text-text-primary text-base mb-3">Chi tiết giảm giá</h3>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between">
               <dt className="text-text-secondary">Khuyến mãi hệ thống</dt>
@@ -183,7 +192,7 @@ export default async function SalesReportPage({
               <dd className="font-medium text-text-primary">{formatNumber(manualOrderDiscount)}</dd>
             </div>
             <div className="flex justify-between border-t border-border pt-2">
-              <dt className="font-semibold text-text-primary">Tổng Giảm giá</dt>
+              <dt className="font-semibold text-text-primary">Tổng giảm giá</dt>
               <dd className="font-bold text-danger">{formatNumber(totalDiscount)}</dd>
             </div>
             <div className="flex justify-between">
@@ -197,31 +206,33 @@ export default async function SalesReportPage({
           </dl>
         </div>
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <h3 className="font-bold text-text-primary text-base mb-3">Doanh thu theo PT Thanh toán</h3>
-          <table className="w-full text-sm">
-            <thead className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-              <tr>
-                <th scope="col" className="px-6 py-4 font-bold text-left">Phương thức</th>
-                <th scope="col" className="px-6 py-4 font-bold text-right">Số đơn</th>
-                <th scope="col" className="px-6 py-4 font-bold text-right">Doanh thu</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
+          <h3 className="font-bold text-text-primary text-base mb-3">Doanh thu theo phương thức thanh toán</h3>
+          <Table>
+            <TableHead>
+              <TableHeaderCell>Phương thức</TableHeaderCell>
+              <TableHeaderCell align="right">Số đơn</TableHeaderCell>
+              <TableHeaderCell align="right">Doanh thu</TableHeaderCell>
+            </TableHead>
+            <TableBody>
               {paymentBreakdown.length === 0 ? (
-                <tr><td colSpan={3} className="text-center py-4 text-text-muted">Không có dữ liệu</td></tr>
+                <TableRow>
+                  <TableCell colSpan={3}>
+                    <div className="text-center py-4 text-text-muted">Không có dữ liệu</div>
+                  </TableCell>
+                </TableRow>
               ) : (
                 paymentBreakdown.map(p => (
-                  <tr key={p.method} className="hover:bg-page transition-colors">
-                    <td className="px-6 py-4 font-medium text-text-primary">
+                  <TableRow key={p.method}>
+                    <TableCell>
                       {p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}
-                    </td>
-                    <td className="px-6 py-4 text-right text-text-secondary">{p.orderCount}</td>
-                    <td className="px-6 py-4 text-right text-success font-medium">{formatNumber(p.revenue)}</td>
-                  </tr>
+                    </TableCell>
+                    <TableCell align="right">{p.orderCount}</TableCell>
+                    <TableCell align="right">{formatNumber(p.revenue)}</TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
@@ -392,43 +403,52 @@ export default async function SalesReportPage({
         {/* Toppings Table */}
         <div className="xl:col-span-1 bg-surface-card rounded-card shadow-sm border border-border overflow-hidden flex flex-col">
           <div className="p-5 border-b border-border bg-page flex justify-between items-center">
-            <h3 className="font-bold text-text-primary">Top Topping Bán Chạy</h3>
+            <h3 className="font-bold text-text-primary">Top topping bán chạy</h3>
           </div>
-          <div className="hidden md:block overflow-x-auto max-h-[528px] overflow-y-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border sticky top-0 z-10">
-                <tr>
-                  <th scope="col" className="px-6 py-4 font-bold">Topping</th>
-                  <th scope="col" className="px-6 py-4 font-bold text-right">Số lượng</th>
-                  <th scope="col" className="px-6 py-4 font-bold text-right">Doanh thu</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
+          <div className="hidden md:block max-h-[528px] overflow-y-auto">
+            <Table>
+              <TableHead>
+                <TableHeaderCell>Topping</TableHeaderCell>
+                <TableHeaderCell align="right">Số lượng</TableHeaderCell>
+                <TableHeaderCell align="right">Doanh thu</TableHeaderCell>
+              </TableHead>
+              {bestToppings.length > 0 && (
+                <TableTotalRow>
+                  <TableCell>Tổng cộng</TableCell>
+                  <TableCell align="right">{formatNumber(totalToppingQty)}</TableCell>
+                  <TableCell align="right">{formatNumber(Math.round(totalToppingRevenue))}</TableCell>
+                </TableTotalRow>
+              )}
+              <TableBody>
                 {bestToppings.length === 0 ? (
-                  <tr><td colSpan={3} className="text-center py-8 text-text-muted">Không có topping nào</td></tr>
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      <div className="text-center py-8 text-text-muted">Không có topping nào</div>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   bestToppings.map((item, i) => (
-                    <tr key={i} className="hover:bg-page transition-colors">
-                      <td className="px-6 py-4 font-medium text-text-primary">{item.name}</td>
-                      <td className="px-6 py-4 text-right font-bold text-text-secondary">{item.qty}</td>
-                      <td className="px-6 py-4 text-right text-success font-medium">{formatNumber(Math.round(item.revenue))}</td>
-                    </tr>
+                    <TableRow key={i}>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell align="right">{item.qty}</TableCell>
+                      <TableCell align="right">{formatNumber(Math.round(item.revenue))}</TableCell>
+                    </TableRow>
                   ))
                 )}
-              </tbody>
-              {bestToppings.length > 0 && (
-                <tfoot className="bg-page border-t-2 border-border sticky bottom-0 z-10 font-bold text-text-primary shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
-                  <tr className="bg-page">
-                    <td className="px-6 py-4 font-bold">Tổng cộng</td>
-                    <td className="px-6 py-4 text-right font-bold">{formatNumber(totalToppingQty)}</td>
-                    <td className="px-6 py-4 text-right text-success font-bold">{formatNumber(Math.round(totalToppingRevenue))}</td>
-                  </tr>
-                </tfoot>
-              )}
-            </table>
+              </TableBody>
+            </Table>
           </div>
           {/* Mobile Card Layout (< 768px) */}
           <div className="md:hidden flex flex-col gap-3 p-4 overflow-y-auto max-h-[528px] bg-page/50">
+            {bestToppings.length > 0 && (
+              <div className="pb-3 border-b border-border flex justify-between items-center font-bold text-text-primary">
+                <div className="flex items-center gap-2">
+                  <span>Tổng:</span>
+                  <span>{formatNumber(totalToppingQty)}</span>
+                </div>
+                <div className="text-text-primary">{formatNumber(Math.round(totalToppingRevenue))}</div>
+              </div>
+            )}
             {bestToppings.length === 0 ? (
               <div className="text-center py-8 text-text-muted">Không có topping nào</div>
             ) : (
@@ -436,7 +456,7 @@ export default async function SalesReportPage({
                 <div key={i} className="bg-surface-card rounded-xl p-4 shadow-sm border border-border flex flex-col gap-2">
                   <div className="flex justify-between items-start gap-2">
                     <div className="font-bold text-text-primary">{item.name}</div>
-                    <div className="font-bold text-success shrink-0">{formatNumber(Math.round(item.revenue))}</div>
+                    <div className="font-bold text-text-primary shrink-0">{formatNumber(Math.round(item.revenue))}</div>
                   </div>
                   <div className="text-sm text-text-secondary flex items-center gap-2">
                     <span className="text-text-muted">Số lượng:</span>
@@ -444,15 +464,6 @@ export default async function SalesReportPage({
                   </div>
                 </div>
               ))
-            )}
-            {bestToppings.length > 0 && (
-              <div className="mt-2 pt-3 border-t border-border flex justify-between items-center font-bold text-text-primary">
-                <div className="flex items-center gap-2">
-                  <span>Tổng:</span>
-                  <span>{formatNumber(totalToppingQty)}</span>
-                </div>
-                <div className="text-success">{formatNumber(Math.round(totalToppingRevenue))}</div>
-              </div>
             )}
           </div>
         </div>

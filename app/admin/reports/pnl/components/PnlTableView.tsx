@@ -5,6 +5,16 @@ import { formatPercent, type PnlRow, type PnlTable } from "@/lib/reports/profit-
 import { cellText, cellTone, isCostRow, NoteMarks } from "./pnl-display";
 import { PnlSourceList } from "./PnlSourceList";
 import { PnlNotes } from "./PnlNotes";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableRowHeader,
+  TableCell,
+  type TableRowLook,
+} from "@/components/ui/Table";
 
 // Computer layout (.claude/rules/ui-devices.md): a real table, months as
 // columns (BR-PNL-002). Clicking a month cell opens what makes it up, under
@@ -14,17 +24,12 @@ import { PnlNotes } from "./PnlNotes";
 // Panel look, sticky Tổng/% columns and cost-row minus signs follow the
 // sample the owner approved 2026-09-11 (plan Mục 3).
 
-const ROW_STYLE: Record<PnlRow["kind"], string> = {
-  revenue: "font-semibold",
-  detail: "text-[12.5px] text-text-secondary",
-  cost: "",
-  subtotal: "font-bold bg-surface-secondary",
-  expense: "",
-  income: "",
-  net: "font-bold bg-surface-secondary",
-  margin: "text-[12.5px] text-text-secondary",
-  cumulative: "",
-};
+function getRowLook(kind: PnlRow["kind"]): TableRowLook | undefined {
+  if (kind === "revenue") return "strong";
+  if (kind === "subtotal" || kind === "net") return "subtotal";
+  if (kind === "detail" || kind === "margin") return "detail";
+  return undefined;
+}
 
 export function PnlTableView({ table }: { table: PnlTable }) {
   const [selected, setSelected] = useState<{ rowKey: string; month: string } | null>(null);
@@ -40,68 +45,65 @@ export function PnlTableView({ table }: { table: PnlTable }) {
           Bấm vào một ô để xem số đó từ đâu ra. Đọc từ trên xuống: doanh thu → trừ giá vốn → lợi nhuận gộp → trừ chi phí → lợi nhuận ròng.
         </p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm tabular-nums">
-          <thead className="bg-surface-secondary text-xs text-text-secondary">
-            <tr>
-              <th scope="col" className="sticky left-0 z-10 bg-surface-secondary px-3 py-2 text-left font-medium">Khoản</th>
-              {table.months.map(m => (
-                <th key={m.month} scope="col" aria-label={m.label} className="whitespace-nowrap px-3 py-2 text-right font-medium">
-                  {m.head}
-                  <NoteMarks numbers={m.notes} />
-                  {m.until && <span className="block text-[11.5px] font-normal text-text-secondary">đến {m.until}</span>}
-                </th>
-              ))}
-              <th scope="col" className="sticky right-24 z-10 border-l-2 border-border bg-surface-secondary px-3 py-2 text-right font-medium">Tổng</th>
-              <th scope="col" className="sticky right-0 z-10 w-24 min-w-[6rem] whitespace-nowrap bg-surface-secondary px-3 py-2 text-right font-medium">% doanh thu</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {table.rows.map(row => {
-              const shaded = row.kind === "subtotal" || row.kind === "net";
-              const rowBg = shaded ? "bg-surface-secondary" : "bg-surface-card";
-              return (
-                <tr key={row.key} className={ROW_STYLE[row.kind]}>
-                  <th
-                    scope="row"
-                    className={`sticky left-0 z-10 whitespace-nowrap px-3 py-2 text-left [font-weight:inherit] ${rowBg} ${row.kind === "detail" ? "pl-6" : ""}`}
-                  >
-                    {row.label}
-                  </th>
-                  {row.cells.map((cell, i) => {
-                    const clickable = cell.sources.length > 0 || cell.formula !== null;
-                    const isSelected = selected?.rowKey === row.key && selected.month === cell.month;
-                    const text = cellText(row, cell.value);
-                    return (
-                      <td key={cell.month} className={`px-1 py-1 text-right ${cellTone(row, cell.value)}`}>
-                        {clickable ? (
-                          <button
-                            type="button"
-                            aria-label={`${row.label} ${table.months[i].label}`}
-                            aria-expanded={isSelected}
-                            onClick={() => setSelected(isSelected ? null : { rowKey: row.key, month: cell.month })}
-                            className={`w-full rounded px-2 py-1 text-right tabular-nums hover:bg-primary-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${isSelected ? "outline outline-2 -outline-offset-2 outline-primary bg-primary-soft" : ""}`}
-                          >
-                            {text}
-                          </button>
-                        ) : (
-                          <span className="block px-2 py-1">{text}</span>
-                        )}
-                      </td>
-                    );
-                  })}
-                  <td className={`sticky right-24 z-10 border-l-2 border-border px-3 py-2 text-right font-semibold ${rowBg} ${cellTone(row, row.total)}`}>
-                    {row.total === null ? "" : cellText(row, row.total)}
-                  </td>
-                  <td className={`sticky right-0 z-10 w-24 min-w-[6rem] px-3 py-2 text-right text-text-secondary ${rowBg}`}>
-                    {row.shareOfRevenue === null ? "" : formatPercent(row.shareOfRevenue)}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <Table>
+        <TableHead>
+          <TableHeaderCell stick="left">Khoản</TableHeaderCell>
+          {table.months.map(m => (
+            <TableHeaderCell key={m.month} align="right" aria-label={m.label}>
+              {m.head}
+              <NoteMarks numbers={m.notes} />
+              {m.until && <span className="block text-[11.5px] font-normal text-text-secondary">đến {m.until}</span>}
+            </TableHeaderCell>
+          ))}
+          <TableHeaderCell align="right" stick="right-2">Tổng</TableHeaderCell>
+          <TableHeaderCell align="right" stick="right">% doanh thu</TableHeaderCell>
+        </TableHead>
+        <TableBody>
+          {table.rows.map(row => {
+            const look = getRowLook(row.kind);
+            return (
+              <TableRow key={row.key} look={look}>
+                <TableRowHeader stick="left" indent={row.kind === "detail"}>
+                  {row.label}
+                </TableRowHeader>
+                {row.cells.map((cell, i) => {
+                  const clickable = cell.sources.length > 0 || cell.formula !== null;
+                  const isSelected = selected?.rowKey === row.key && selected.month === cell.month;
+                  const text = cellText(row, cell.value);
+                  const tone = cellTone(row, cell.value) === "text-danger" ? "negative" : undefined;
+                  return (
+                    <TableCell key={cell.month} align="right" tone={tone}>
+                      {clickable ? (
+                        <button
+                          type="button"
+                          aria-label={`${row.label} ${table.months[i].label}`}
+                          aria-expanded={isSelected}
+                          onClick={() => setSelected(isSelected ? null : { rowKey: row.key, month: cell.month })}
+                          className={`w-full rounded px-2 py-1 text-right tabular-nums hover:bg-primary-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${isSelected ? "outline outline-2 -outline-offset-2 outline-primary bg-primary-soft" : ""}`}
+                        >
+                          {text}
+                        </button>
+                      ) : (
+                        <span className="block px-2 py-1">{text}</span>
+                      )}
+                    </TableCell>
+                  );
+                })}
+                <TableCell
+                  align="right"
+                  stick="right-2"
+                  tone={cellTone(row, row.total) === "text-danger" ? "negative" : undefined}
+                >
+                  {row.total === null ? "" : cellText(row, row.total)}
+                </TableCell>
+                <TableCell align="right" stick="right">
+                  {row.shareOfRevenue === null ? "" : formatPercent(row.shareOfRevenue)}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
       {selectedRow && selectedCell && selectedColumn && (
         <section
           aria-label={`Chi tiết: ${selectedRow.label} ${selectedColumn.label}`}

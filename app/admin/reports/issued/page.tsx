@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { getIssuedValueReport } from "./actions";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/shared/format";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ItemCard } from "./ItemCard";
@@ -79,24 +80,23 @@ export default async function IssuedValueReportPage({
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
       <div>
-        <h1 className="text-xl font-bold text-text-primary">Hàng đã xuất</h1>
-        <p className="text-3xl font-black text-danger mt-1">{formatNumber(report.grandTotal)}đ</p>
+        <PageHeader title="Hàng đã xuất" />
+        <p className="text-3xl font-black text-danger -mt-4 mb-1">{formatNumber(report.grandTotal)}đ</p>
         <div className="mt-1">
           <LifetimeNotice />
         </div>
       </div>
 
-      <div className="flex rounded-xl border border-border overflow-hidden">
+      <div className="flex gap-2">
         {tabs.map(({ tab, label }) => (
-          <Link
+          <Button
             key={tab}
             href={tabHref(tab)}
-            className={`flex-1 text-center px-1 py-2.5 text-sm font-bold leading-tight transition-colors min-h-[44px] flex items-center justify-center ${
-              activeTab === tab ? "bg-primary text-on-primary" : "bg-surface-card text-text-secondary"
-            }`}
+            variant={activeTab === tab ? "primary" : "secondary"}
+            className="flex-1"
           >
             {label}
-          </Link>
+          </Button>
         ))}
       </div>
 

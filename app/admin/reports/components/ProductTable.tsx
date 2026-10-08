@@ -1,5 +1,14 @@
 import React from "react";
 import { formatNumber } from "@/lib/shared/format";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableTotalRow,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/Table";
 
 interface ProductTableProps {
   title: string;
@@ -44,54 +53,74 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
           Tổng: {formatNumber(totalQtyAll)}
         </span>
       </div>
-      <div className="hidden md:block overflow-x-auto max-h-[528px] overflow-y-auto">
-        <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-surface-card text-text-muted font-medium sticky top-0 border-b border-border shadow-sm z-10">
-            <tr>
-              <th className="px-4 py-3">Món</th>
+      <div className="hidden md:block max-h-[528px] overflow-y-auto">
+        <Table>
+          <TableHead>
+            <TableHeaderCell>Món</TableHeaderCell>
+            {tableUniqueSizes.map(size => (
+              <TableHeaderCell key={size} align="right">Size {size}</TableHeaderCell>
+            ))}
+            <TableHeaderCell align="right">Tổng SL</TableHeaderCell>
+            <TableHeaderCell align="right">Tổng thu</TableHeaderCell>
+          </TableHead>
+          {items.length > 0 && (
+            <TableTotalRow>
+              <TableCell>Tổng cộng</TableCell>
               {tableUniqueSizes.map(size => (
-                <th key={size} className="px-4 py-3 text-right">Size {size}</th>
+                <TableCell key={size} align="right">
+                  {totalQtyBySize[size] > 0 ? formatNumber(totalQtyBySize[size]) : "-"}
+                </TableCell>
               ))}
-              <th className="px-4 py-3 text-right text-text-primary">Tổng SL</th>
-              <th className="px-4 py-3 text-right text-text-primary">Tổng Thu</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
+              <TableCell align="right">{formatNumber(totalQtyAll)}</TableCell>
+              <TableCell align="right">{formatNumber(Math.round(totalRevenueAll))}</TableCell>
+            </TableTotalRow>
+          )}
+          <TableBody>
             {items.length === 0 ? (
-              <tr><td colSpan={tableUniqueSizes.length + 3} className="text-center py-8 text-text-muted">Không có giao dịch</td></tr>
+              <TableRow>
+                <TableCell colSpan={tableUniqueSizes.length + 3}>
+                  <div className="text-center py-8 text-text-muted">Không có giao dịch</div>
+                </TableCell>
+              </TableRow>
             ) : (
               items.map((item, i) => (
-                <tr key={i} className="hover:bg-page transition">
-                  <td className="px-4 py-3 font-medium text-text-primary">{item.name}</td>
+                <TableRow key={i}>
+                  <TableCell>{item.name}</TableCell>
                   {tableUniqueSizes.map(size => (
-                    <td key={size} className="px-4 py-3 text-right font-medium text-text-secondary">
-                      {item.sizes[size] ? item.sizes[size] : '-'}
-                    </td>
+                    <TableCell key={size} align="right">
+                      {item.sizes[size] ? item.sizes[size] : "-"}
+                    </TableCell>
                   ))}
-                  <td className="px-4 py-3 text-right font-bold text-text-primary">{item.totalQty}</td>
-                  <td className="px-4 py-3 text-right text-success font-medium">{formatNumber(Math.round(item.totalRevenue))}</td>
-                </tr>
+                  <TableCell align="right">{item.totalQty}</TableCell>
+                  <TableCell align="right">{formatNumber(Math.round(item.totalRevenue))}</TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-          {items.length > 0 && (
-            <tfoot className="bg-page border-t-2 border-border sticky bottom-0 z-10 font-bold text-text-primary shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
-              <tr>
-                <td className="px-4 py-3">Tổng cộng</td>
-                {tableUniqueSizes.map(size => (
-                  <td key={size} className="px-4 py-3 text-right">
-                    {totalQtyBySize[size] > 0 ? formatNumber(totalQtyBySize[size]) : "-"}
-                  </td>
-                ))}
-                <td className="px-4 py-3 text-right">{formatNumber(totalQtyAll)}</td>
-                <td className="px-4 py-3 text-right text-success">{formatNumber(Math.round(totalRevenueAll))}</td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
+          </TableBody>
+        </Table>
       </div>
       {/* Mobile Card Layout (< 768px) */}
       <div className="md:hidden flex flex-col gap-3 p-4 overflow-y-auto max-h-[528px] bg-page/30 flex-1">
+        {items.length > 0 && (
+          <div className="pb-3 border-b border-border flex flex-col gap-2">
+            <div className="flex justify-between items-center font-bold text-text-primary">
+              <span>Tổng cộng</span>
+              <span className="text-text-primary">{formatNumber(Math.round(totalRevenueAll))}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-text-secondary">
+              <div className="flex items-center gap-1">
+                 <span className="text-text-secondary">Tổng SL:</span>
+                 <span className="font-bold text-text-primary">{formatNumber(totalQtyAll)}</span>
+              </div>
+              {tableUniqueSizes.filter(size => totalQtyBySize[size] > 0).map(size => (
+                <div key={size} className="flex items-center gap-1 text-xs">
+                  <span className="text-text-muted">Size {size}:</span>
+                  <span className="font-medium text-text-primary">{formatNumber(totalQtyBySize[size])}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {items.length === 0 ? (
           <div className="text-center py-8 text-text-muted">Không có giao dịch</div>
         ) : (
@@ -99,7 +128,7 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
             <div key={i} className="bg-surface-card rounded-xl p-4 shadow-sm border border-border flex flex-col gap-3">
               <div className="flex justify-between items-start gap-2">
                 <div className="font-bold text-text-primary">{item.name}</div>
-                <div className="font-bold text-success shrink-0">{formatNumber(Math.round(item.totalRevenue))}</div>
+                <div className="font-bold text-text-primary shrink-0">{formatNumber(Math.round(item.totalRevenue))}</div>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-text-secondary">
                 <div className="flex items-center gap-1">
@@ -115,26 +144,6 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
               </div>
             </div>
           ))
-        )}
-        {items.length > 0 && (
-          <div className="mt-2 pt-3 border-t border-border flex flex-col gap-2">
-            <div className="flex justify-between items-center font-bold text-text-primary">
-              <span>Tổng cộng</span>
-              <span className="text-success">{formatNumber(Math.round(totalRevenueAll))}</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-text-secondary">
-              <div className="flex items-center gap-1">
-                 <span className="text-text-secondary">Tổng SL:</span>
-                 <span className="font-bold text-text-primary">{formatNumber(totalQtyAll)}</span>
-              </div>
-              {tableUniqueSizes.filter(size => totalQtyBySize[size] > 0).map(size => (
-                <div key={size} className="flex items-center gap-1 text-xs">
-                  <span className="text-text-muted">Size {size}:</span>
-                  <span className="font-medium text-text-primary">{formatNumber(totalQtyBySize[size])}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
       </div>
     </div>
