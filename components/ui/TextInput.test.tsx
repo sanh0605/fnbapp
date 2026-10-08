@@ -17,3 +17,16 @@ describe("TextInput example", () => {
     expect((screen.getByLabelText("Tìm kiếm") as HTMLInputElement).value).toBe("");
   });
 });
+
+// Wave K5: a code made of digits (a bank account number) gets the phone's
+// digit keypad but stays text — no commas, leading zeros kept.
+describe("TextInput keypad (wave K5)", () => {
+  it('keypad="digits" opens the digit keypad and keeps 0071001234567 as typed', () => {
+    render(<TextInput aria-label="Số tài khoản" keypad="digits" defaultValue="0071001234567" />);
+    const box = screen.getByLabelText("Số tài khoản") as HTMLInputElement;
+    expect(box.type).toBe("text");
+    expect(box.getAttribute("inputmode")).toBe("numeric");
+    expect(box.value).toBe("0071001234567");
+    expect(box.hasAttribute("keypad")).toBe(false);
+  });
+});
