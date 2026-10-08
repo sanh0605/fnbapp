@@ -100,7 +100,7 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
-            placeholder="VD: Trân châu trắng, Size L..."
+            placeholder="Ví dụ: Trân châu trắng"
           />
         </div>
 

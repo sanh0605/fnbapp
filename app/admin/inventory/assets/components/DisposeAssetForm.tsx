@@ -41,7 +41,8 @@ export function DisposeAssetForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateError, setDateError] = useState("");
-  const [quantity, setQuantity] = useState("1");
+  const [quantityError, setQuantityError] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [disposedDate, setDisposedDate] = useState(() =>
     toSaigonIsoString(new Date()).slice(0, 10),
   );
@@ -83,6 +84,10 @@ export function DisposeAssetForm({
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!selectedLot) return;
+    if (quantity === "") {
+      setQuantityError("Cần nhập số.");
+      return;
+    }
     if (!disposedDate || disposedDate === "invalid") {
       setDateError("Ngày không hợp lệ");
       return;
@@ -143,7 +148,7 @@ export function DisposeAssetForm({
                       checked={isSelected}
                       onChange={() => {
                         setSelectedLotId(lot.id);
-                        if (Number(quantity) > lot.remainingQuantity) {
+                        if (quantity !== "" && Number(quantity) > lot.remainingQuantity) {
                           setQuantity(String(lot.remainingQuantity));
                         }
                       }}
@@ -175,8 +180,12 @@ export function DisposeAssetForm({
             min={1}
             max={selectedLot.remainingQuantity}
             example="1"
+            error={quantityError}
             value={quantity === "" ? null : Number(quantity)}
-            onValueChange={(v) => setQuantity(v === null ? "" : String(v))}
+            onValueChange={(v) => {
+              setQuantity(v === null ? "" : String(v));
+              setQuantityError("");
+            }}
           />
         </Field>
 

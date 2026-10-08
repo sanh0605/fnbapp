@@ -212,7 +212,7 @@ export default function IssueSlipsClient({ pageData }: IssueSlipsClientProps): J
           <Field label="Tìm kiếm" htmlFor="search-input">
             <TextInput
               id="search-input"
-              placeholder="Mã phiếu, tên mặt hàng"
+              placeholder="Ví dụ: ISL-00088"
               value={draft.q}
               onChange={(e) => setField("q", e.target.value)}
             />

@@ -178,7 +178,7 @@ export function CashTransferForm({
             htmlFor={`${formId}-note`}
             className="block text-sm font-medium text-text-secondary mb-1"
           >
-            Ghi chú
+            Ghi chú (không bắt buộc)
           </label>
           <input
             id={`${formId}-note`}
@@ -186,7 +186,7 @@ export function CashTransferForm({
             name="note"
             defaultValue={transfer?.note ?? ""}
             className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="Không bắt buộc"
+            placeholder="Ví dụ: nộp tiền vào tài khoản"
           />
         </div>
 

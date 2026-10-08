@@ -310,7 +310,7 @@ export function OrderEditForm({
                     <input
                       type="text"
                       aria-label="Tìm sản phẩm"
-                      placeholder="Tìm sản phẩm..."
+                      placeholder="Ví dụ: Cà phê sữa đá"
                       value={addSearch}
                       onChange={(e) => setAddSearch(e.target.value)}
                       className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring"
@@ -552,7 +552,7 @@ export function OrderEditForm({
             <textarea
               id="edit-order-reason"
               aria-label="Lý do chỉnh sửa"
-              placeholder="VD: Khách đổi từ 1 ly thành 2 ly"
+              placeholder="Ví dụ: Khách đổi từ 1 ly thành 2 ly"
               value={editReason}
               onChange={(e) => setEditReason(e.target.value)}
               rows={2}

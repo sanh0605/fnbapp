@@ -208,7 +208,7 @@ export default function CategoriesClient({
           <input
             id="categories-search"
             type="text"
-            placeholder="Tên hoặc mã nhóm..."
+            placeholder="Ví dụ: Cà phê"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"

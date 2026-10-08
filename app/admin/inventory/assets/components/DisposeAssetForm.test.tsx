@@ -86,6 +86,23 @@ async function flush() {
   });
 }
 
+// BR-UI-009 (owner 2026-10-08 "a"): the quantity box starts empty, so a test
+// that needs a quantity types it, as the owner does.
+function quantityBox(container: HTMLElement): HTMLInputElement {
+  const label = Array.from(container.querySelectorAll("label")).find(l => l.textContent?.trim() === "Số lượng thanh lý")!;
+  return document.getElementById(label.htmlFor) as HTMLInputElement;
+}
+
+async function typeQuantity(container: HTMLElement, text: string) {
+  const qty = quantityBox(container);
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
+  await act(async () => {
+    setter.call(qty, text);
+    qty.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await flush();
+}
+
 // Real figures from the plan: Cốc đong 100ml remaining lots TS-030 and TS-057
 const TS030_LOT: AssetLotView = {
   id: "TS-030",
@@ -179,6 +196,37 @@ describe("DisposeAssetForm -- quantity box", () => {
   });
 });
 
+// BR-UI-009 (owner 2026-10-08 "a"): the quantity box starts empty with only an
+// example; saving it empty is stopped on the page with a line under the box.
+describe("DisposeAssetForm -- empty quantity box", () => {
+  it("starts empty with the example \"Ví dụ: 1\" and asks for no preview yet", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    const container = await renderTracked(
+      <DisposeAssetForm lots={[TS030_LOT, TS057_LOT]} initialLotId="TS-030" returnTo="/admin/inventory/assets/SPM-COC" />,
+    );
+    await flush();
+    const qty = quantityBox(container);
+    expect(qty.value).toBe("");
+    expect(qty.placeholder).toBe("Ví dụ: 1");
+    expect(mocks.previewDisposalCharge).not.toHaveBeenCalled();
+  });
+
+  it("saving with the quantity left empty sends nothing and says \"Cần nhập số.\"", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    const container = await renderTracked(
+      <DisposeAssetForm lots={[TS030_LOT, TS057_LOT]} initialLotId="TS-030" returnTo="/admin/inventory/assets/SPM-COC" />,
+    );
+    await flush();
+    const form = container.querySelector("form")!;
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    await flush();
+    expect(mocks.disposeAsset).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Cần nhập số.");
+  });
+});
+
 describe("DisposeAssetForm -- lot picker and disposal", () => {
   it("renders radio list of lots with stock and preselects initialLotId", async () => {
     mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
@@ -223,9 +271,9 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
     expect(container.textContent).toContain("còn 1");
   });
 
-  it("calls previewDisposalCharge on mount with initialLotId", async () => {
+  it("calls previewDisposalCharge for initialLotId once a quantity is typed", async () => {
     mocks.previewDisposalCharge.mockResolvedValue({ charge: 171600 });
-    await renderTracked(
+    const container = await renderTracked(
       <DisposeAssetForm
         lots={[TS030_LOT, TS057_LOT]}
         initialLotId="TS-030"
@@ -233,6 +281,7 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
       />,
     );
     await flush();
+    await typeQuantity(container, "1");
 
     expect(mocks.previewDisposalCharge).toHaveBeenCalledTimes(1);
     expect(mocks.previewDisposalCharge).toHaveBeenCalledWith("TS-030", 1, expect.any(String));
@@ -248,6 +297,7 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
       />,
     );
     await flush();
+    await typeQuantity(container, "1");
 
     const radio057 = Array.from(
       container.querySelectorAll('input[type="radio"]'),
@@ -270,6 +320,7 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
       />,
     );
     await flush();
+    await typeQuantity(container, "1");
 
     // Select TS-057 before submitting
     const radio057 = Array.from(

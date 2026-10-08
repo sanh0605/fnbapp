@@ -74,7 +74,7 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
             required
             defaultValue={initialData?.name}
             className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Phin Di"
+            placeholder="Ví dụ: Phin Di"
           />
         </div>
         <div>
@@ -89,7 +89,7 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
             required
             defaultValue={initialData?.code}
             className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring uppercase text-text-primary"
-            placeholder="VD: PHD"
+            placeholder="Ví dụ: PHD"
           />
         </div>
         <div>

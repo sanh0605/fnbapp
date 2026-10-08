@@ -176,7 +176,7 @@ export default function ActivityLogClient({
           </label>
           <input
             type="text"
-            placeholder="Tìm mã đơn, người tạo, lý do..."
+            placeholder="Ví dụ: PHD000001"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => {

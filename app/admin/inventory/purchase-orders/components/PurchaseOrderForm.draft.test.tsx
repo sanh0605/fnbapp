@@ -194,7 +194,7 @@ describe("PurchaseOrderForm draft restoration and navigation", () => {
     fireEvent.click(supplierCombobox);
 
     // Type "Đại Phát" in SearchableSelect input
-    const searchInput = screen.getByPlaceholderText("Gõ để tìm kiếm…");
+    const searchInput = screen.getByRole("textbox", { name: "Tìm trong danh sách" });
     fireEvent.change(searchInput, { target: { value: "Đại Phát" } });
 
     // The add new button should appear with + Thêm "Đại Phát"
@@ -253,7 +253,7 @@ describe("PurchaseOrderForm draft restoration and navigation", () => {
     );
 
     // Notes field has "giao sáng"
-    expect(screen.getByPlaceholderText("Ghi chú thêm...")).toHaveValue("giao sáng");
+    expect(screen.getByPlaceholderText("Ví dụ: giao buổi sáng")).toHaveValue("giao sáng");
 
     // Supplier is SUP-2 ("Nhà cung cấp 2")
     expect(screen.getByText("Nhà cung cấp 2")).toBeInTheDocument();

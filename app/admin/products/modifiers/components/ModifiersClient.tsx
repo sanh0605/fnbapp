@@ -247,7 +247,7 @@ export default function ModifiersClient({
           <input
             id="modifiers-search"
             type="text"
-            placeholder="Tên, nhóm hoặc mã..."
+            placeholder="Ví dụ: Trân châu trắng"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"

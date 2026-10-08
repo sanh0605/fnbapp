@@ -157,7 +157,7 @@ describe("ModifiersClient", () => {
       />,
     );
 
-    const searchInput = screen.getByPlaceholderText(/Tên, nhóm hoặc mã/i);
+    const searchInput = screen.getByPlaceholderText("Ví dụ: Trân châu trắng");
     fireEvent.change(searchInput, { target: { value: "Chọn Size" } });
 
     expect(screen.getAllByText("Size L").length).toBeGreaterThan(0);

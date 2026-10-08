@@ -312,7 +312,7 @@ export default function OutletsClient({
           <input
             id="outlets-search"
             type="text"
-            placeholder="Tên, mã đơn hoặc mã..."
+            placeholder="Ví dụ: Điểm bán 3"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"

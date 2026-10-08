@@ -73,7 +73,7 @@ export function ProductGrid({
           <input
             aria-label="Tìm kiếm sản phẩm"
             type="text"
-            placeholder="Tìm kiếm món (vd: đào, cà phê)..."
+            placeholder="Ví dụ: Trà đào"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-surface-secondary border border-border rounded-2xl pl-12 pr-12 py-3 text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent min-h-[48px]"

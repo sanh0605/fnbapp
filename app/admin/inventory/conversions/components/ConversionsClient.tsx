@@ -298,7 +298,7 @@ export default function ConversionsClient({
           <Field label="Tìm hàng hóa" htmlFor="conversions-search">
             <TextInput
               id="conversions-search"
-              placeholder="Tên hàng hóa..."
+              placeholder="Ví dụ: Trứng gà"
               value={search}
               onChange={handleSearchChange}
             />

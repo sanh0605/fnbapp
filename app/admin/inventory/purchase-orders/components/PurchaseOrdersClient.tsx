@@ -228,7 +228,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
           <Field label="Tìm kiếm" htmlFor="search-input">
             <TextInput
               id="search-input"
-              placeholder="Tìm mã phiếu, nhà cung cấp, mặt hàng…"
+              placeholder="Ví dụ: PO-181"
               value={draft.q}
               onChange={(e) => setField("q", e.target.value)}
             />

@@ -161,7 +161,7 @@ export function CashEntryForm({
 
         <div>
           <label htmlFor={`${formId}-note`} className="block text-sm font-medium text-text-secondary mb-1">
-            Ghi chú
+            Ghi chú (không bắt buộc)
           </label>
           <input
             id={`${formId}-note`}
@@ -169,7 +169,7 @@ export function CashEntryForm({
             name="note"
             defaultValue={entry?.note ?? ""}
             className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="Không bắt buộc"
+            placeholder="Ví dụ: Tiền điện tháng 9"
           />
         </div>
 

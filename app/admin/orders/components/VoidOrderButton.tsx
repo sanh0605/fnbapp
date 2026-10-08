@@ -99,7 +99,7 @@ export function VoidOrderButton({
               )}
               <textarea
                 aria-label="Lý do hủy đơn"
-                placeholder="Lý do hủy đơn (bắt buộc)"
+                placeholder="Ví dụ: nhập trùng phiếu"
                 value={voidReason}
                 onChange={(e) => setVoidReason(e.target.value)}
                 rows={3}

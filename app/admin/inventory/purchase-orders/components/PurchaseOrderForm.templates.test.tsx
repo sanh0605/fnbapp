@@ -2,7 +2,7 @@
 import type React from "react";
 import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import PurchaseOrderForm from "./PurchaseOrderForm";
+import PurchaseOrderForm, { validatePurchaseOrderLine } from "./PurchaseOrderForm";
 import type { DBBankAccount, DBPurchaseOrder, DBPurchasedItem, DBSupplier, DBPurchaseSource, DBUOMConversion, DBUnit, DBPurchaseOrderLine } from "@/types/db";
 
 // Wave K3 Task 5: Phiếu nhập on the shared number boxes (BR-UI-005, BR-UI-008),
@@ -177,5 +177,38 @@ describe("PurchaseOrderForm save buttons (owner 2026-10-08, BR-INV-015)", () => 
     cleanup();
     renderForm();
     expect(screen.getByRole("button", { name: "Lưu nháp" })).toBeTruthy();
+  });
+});
+
+// BR-UI-009 (owner 2026-10-08 "a"): a new line's Số lượng starts empty with
+// only an example; completing with it empty or 0 is stopped on the page.
+describe("PurchaseOrderForm empty quantity (BR-UI-009)", () => {
+  it("a new line's Số lượng starts empty with \"Ví dụ: 2\"", () => {
+    renderForm();
+    fireEvent.click(screen.getByText("+ Thêm Mặt Hàng Đầu Tiên"));
+    const qty = screen.getByLabelText("Số lượng") as HTMLInputElement;
+    expect(qty.value).toBe("");
+    expect(qty.placeholder).toBe("Ví dụ: 2");
+  });
+
+  it("a line with no quantity, or 0, is refused with \"Vui lòng nhập số lượng\"", () => {
+    const line = { purchased_item_id: "ITEM-1", unit: "kg", conversion_id: "CONV-1" };
+    expect(validatePurchaseOrderLine({ ...line, quantity: "" }, conversions)).toBe("Vui lòng nhập số lượng");
+    expect(validatePurchaseOrderLine({ ...line, quantity: "0" }, conversions)).toBe("Vui lòng nhập số lượng");
+    expect(validatePurchaseOrderLine({ ...line, quantity: "12" }, conversions)).toBeNull();
+  });
+
+  it("a draft saved with Số lượng left empty reopens empty, not as 1", () => {
+    const draft = order("DRAFT");
+    draft.lines[0] = { ...draft.lines[0], quantity: "0" } as any;
+    renderForm({ initialData: draft });
+    expect((screen.getByLabelText("Số lượng") as HTMLInputElement).value).toBe("");
+  });
+
+  it("a draft may still be saved with Số lượng empty", async () => {
+    renderForm();
+    fireEvent.click(screen.getByText("+ Thêm Mặt Hàng Đầu Tiên"));
+    const fd = await saveDraftAndRead();
+    expect(JSON.parse(fd.get("lines_json") as string)[0].quantity).toBe("");
   });
 });

@@ -226,7 +226,7 @@ export default function BrandsClient({
           <input
             id="brands-search"
             type="text"
-            placeholder="Tên, mã đơn hàng hoặc mã..."
+            placeholder="Ví dụ: Phin Di"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"

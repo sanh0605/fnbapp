@@ -132,6 +132,7 @@ export function PurchaseOrderLines({
                       decimals={3}
                       min={0}
                       minExclusive
+                      example="2"
                       value={
                         line.quantity === "" || line.quantity == null
                           ? null

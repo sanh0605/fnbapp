@@ -278,7 +278,7 @@ export default function BankAccountsClient({
           <input
             id="bank-accounts-search"
             type="text"
-            placeholder="Tên, ngân hàng, số hoặc mã..."
+            placeholder="Ví dụ: Vietcombank"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"

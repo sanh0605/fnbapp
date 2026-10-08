@@ -68,9 +68,59 @@ describe("SearchableSelect", () => {
     const trigger = screen.getByRole("combobox");
     fireEvent.click(trigger);
 
-    const input = screen.getByPlaceholderText("Gõ để tìm kiếm…");
+    const input = screen.getByRole("textbox", { name: "Tìm trong danh sách" });
     fireEvent.mouseDown(input);
     
     expect(screen.getByRole("listbox")).toBeInTheDocument();
+  });
+});
+
+// BR-UI-010 (2026-10-08): a long name in a pick list is shown whole. The owner
+// could not read the end of long item names, which were cut with "…".
+describe("SearchableSelect long names (BR-UI-010)", () => {
+  const longName = "Cà phê hạt Robusta rang mộc Cầu Đất túi 500g loại đặc biệt";
+  const options = [
+    { id: "SPM-1", label: longName },
+    { id: "SPM-2", label: "Trứng gà" },
+  ];
+
+  it("option rows wrap instead of cutting the name", () => {
+    render(<SearchableSelect options={options} value="" onChange={() => {}} />);
+    fireEvent.click(screen.getByRole("combobox"));
+    for (const row of screen.getAllByRole("option")) {
+      expect(row.className).not.toMatch(/\btruncate\b/);
+      expect(row.className).toMatch(/\bwhitespace-normal\b/);
+      expect(row.className).toMatch(/\bbreak-words\b/);
+    }
+  });
+
+  it("the chosen name in the closed box shows up to two lines, not one cut line", () => {
+    render(<SearchableSelect options={options} value="SPM-1" onChange={() => {}} />);
+    const label = screen.getByText(longName);
+    expect(label.className).not.toMatch(/\btruncate\b/);
+    expect(label.className).toMatch(/\bline-clamp-2\b/);
+  });
+
+  it("the open list may be wider than the box on a computer", () => {
+    render(<SearchableSelect options={options} value="" onChange={() => {}} />);
+    fireEvent.click(screen.getByRole("combobox"));
+    let panel = screen.getByRole("listbox").parentElement as HTMLElement;
+    while (panel && !panel.className.includes("z-[110]")) panel = panel.parentElement as HTMLElement;
+    expect(panel).toBeTruthy();
+    expect(panel.className).toMatch(/\bmd:max-w-\[28rem\]/);
+    // A fixed width would pin it to the box; the panel sets a minimum instead.
+    expect(panel.style.width).toBe("");
+  });
+
+  it("the search box shows a real name from the list as its example", () => {
+    render(<SearchableSelect options={options} value="" onChange={() => {}} />);
+    fireEvent.click(screen.getByRole("combobox"));
+    expect(screen.getByRole("textbox", { name: "Tìm trong danh sách" }).getAttribute("placeholder")).toBe(`Ví dụ: ${longName}`);
+  });
+
+  it("with nothing to pick the search box says \"Gõ để tìm\"", () => {
+    render(<SearchableSelect options={[]} value="" onChange={() => {}} />);
+    fireEvent.click(screen.getByRole("combobox"));
+    expect(screen.getByRole("textbox", { name: "Tìm trong danh sách" }).getAttribute("placeholder")).toBe("Gõ để tìm");
   });
 });

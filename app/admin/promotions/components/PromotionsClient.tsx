@@ -429,7 +429,7 @@ export default function PromotionsClient({
           <input
             id="promotions-search"
             type="text"
-            placeholder="Tên, mã giảm giá hoặc mã..."
+            placeholder="Ví dụ: Giảm 10%"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"

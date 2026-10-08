@@ -17,11 +17,12 @@ import { PurchaseOrderLines } from "./PurchaseOrderLines";
 import { PurchaseOrderTotals } from "./PurchaseOrderTotals";
 
 export function validatePurchaseOrderLine(
-  line: { purchased_item_id?: string; unit?: string; conversion_id?: string },
+  line: { purchased_item_id?: string; unit?: string; conversion_id?: string; quantity?: string | number },
   conversions: Array<{ purchased_item_id?: string; status?: string }>,
 ): string | null {
   if (!line.purchased_item_id) return "Vui lòng chọn hàng hoá";
   if (!line.unit) return "Vui lòng nhập hoặc chọn đơn vị";
+  if (!(Number(line.quantity) > 0)) return "Vui lòng nhập số lượng";
   const available = conversions.filter(
     c => c.purchased_item_id === line.purchased_item_id && c.status !== "INACTIVE",
   );
@@ -57,7 +58,7 @@ function formatLinesWithConversions(rawLines: any[], conversions: DBUOMConversio
     return {
       purchased_item_id: line.purchased_item_id || "",
       unit: line.unit || "",
-      quantity: line.quantity || 1,
+      quantity: Number(line.quantity) > 0 ? String(line.quantity) : "",
       subtotal: line.subtotal || 0,
       is_new_unit: false,
       conversion_id: matchedConv?.id || "",
@@ -184,7 +185,7 @@ export default function PurchaseOrderForm({
     setLines([...lines, {
       purchased_item_id: "",
       unit: "",
-      quantity: 1,
+      quantity: "",
       subtotal: 0,
       is_new_unit: false,
       conversion_rate: "",
@@ -379,7 +380,7 @@ export default function PurchaseOrderForm({
               id={`${formId}-notes`}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ghi chú thêm..."
+              placeholder="Ví dụ: giao buổi sáng"
             />
           </Field>
         </div>

@@ -94,7 +94,7 @@ export function SupplierForm({
             required
             maxLength={120}
             defaultValue={initialData?.name ?? initialName}
-            placeholder="VD: Cửa hàng ABC"
+            example="Cửa hàng ABC"
           />
         </Field>
 
@@ -104,7 +104,7 @@ export function SupplierForm({
             type="tel"
             name="phone"
             defaultValue={initialData?.phone}
-            placeholder="VD: 0901234567"
+            example="0901234567"
           />
         </Field>
 
@@ -114,7 +114,7 @@ export function SupplierForm({
             type="text"
             name="tax_id"
             defaultValue={initialData?.tax_id}
-            placeholder="VD: 0123456789"
+            example="0123456789"
           />
         </Field>
 
@@ -124,7 +124,7 @@ export function SupplierForm({
             type="text"
             name="address"
             defaultValue={initialData?.address}
-            placeholder="VD: 123 Đường ABC, Quận XYZ"
+            example="123 Đường ABC, Quận XYZ"
           />
         </Field>
 
@@ -135,7 +135,7 @@ export function SupplierForm({
             rows={3}
             defaultValue={initialData?.links}
             className="w-full rounded-button bg-surface-card border border-border px-3 py-2 text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50"
-            placeholder="Các liên kết hoặc ghi chú thêm..."
+            placeholder="Ví dụ: https://facebook.com/nhacungcap"
           />
         </Field>
 

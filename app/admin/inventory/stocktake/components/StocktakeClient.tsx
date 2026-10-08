@@ -96,7 +96,8 @@ function LastConfirmedSessionPanel({ session }: { session: RecentConfirmedStockt
       ) : (
         <>
           <TextInput
-            placeholder="Lý do huỷ (bắt buộc)"
+            aria-label="Lý do huỷ (bắt buộc)"
+            placeholder="Ví dụ: nhập trùng phiếu"
             value={reason}
             onChange={e => setReason(e.target.value)}
           />
@@ -141,9 +142,10 @@ function StartSessionView() {
           Kết quả đếm được lưu ngay khi nhập, có thể tạm dừng và quay lại sau.
         </p>
         <textarea
+          aria-label="Ghi chú (không bắt buộc)"
           value={notes}
           onChange={e => setNotes(e.target.value)}
-          placeholder="Ghi chú (không bắt buộc)..."
+          placeholder="Ví dụ: kiểm cuối tháng"
           rows={2}
           className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
         />

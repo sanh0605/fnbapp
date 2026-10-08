@@ -37,19 +37,27 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
       
+      const panelWidth = portalRef.current?.getBoundingClientRect().width || 0;
+      let left = rect.left;
+      if (panelWidth > 0 && left + panelWidth > window.innerWidth - 16) {
+        left = Math.max(16, window.innerWidth - 16 - panelWidth);
+      } else if (panelWidth === 0 && rect.left + 448 > window.innerWidth) {
+        left = Math.max(16, window.innerWidth - 16 - Math.min(448, window.innerWidth - 32));
+      }
+
       if (spaceBelow < 288 && spaceAbove > spaceBelow) {
         setDropdownStyle({
           position: "fixed",
           bottom: window.innerHeight - rect.top + 4,
-          left: rect.left,
-          width: rect.width,
+          left,
+          minWidth: rect.width,
         });
       } else {
         setDropdownStyle({
           position: "fixed",
           top: rect.bottom + 4,
-          left: rect.left,
-          width: rect.width,
+          left,
+          minWidth: rect.width,
         });
       }
     }
@@ -178,7 +186,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
           if (!isOpen) setSearchTerm("");
         }}
       >
-        <span className={`${selectedOption ? "text-text-primary" : "text-text-secondary"} min-w-0 truncate`}>
+        <span className={`${selectedOption ? "text-text-primary" : "text-text-secondary"} min-w-0 line-clamp-2 break-words`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -191,13 +199,14 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
           <div
             ref={portalRef}
             style={dropdownStyle}
-            className="z-[110] bg-surface-card border border-border rounded-lg shadow-xl max-h-72 overflow-hidden flex flex-col"
+            className="z-[110] bg-surface-card border border-border rounded-lg shadow-xl max-h-72 overflow-hidden flex flex-col max-w-[calc(100vw-2rem)] md:max-w-[28rem]"
           >
             <div className="p-2 border-b border-border">
               <input
                 type="text"
+                aria-label="Tìm trong danh sách"
                 className="w-full border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-focus-ring"
-                placeholder="Gõ để tìm kiếm…"
+                placeholder={options.length > 0 ? `Ví dụ: ${options[0].label}` : "Gõ để tìm"}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleInputKey}
@@ -236,7 +245,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
                         ref={(el) => { optionRefs.current[idx] = el; }}
                         role="option"
                         aria-selected={isSelected}
-                        className={`px-4 py-2 text-sm cursor-pointer truncate ${
+                        className={`px-4 py-2 text-sm cursor-pointer min-h-[44px] flex items-center whitespace-normal break-words ${
                           isSelected ? 'bg-primary-soft text-primary font-medium' : 'text-text-primary'
                         } ${idx === activeIndex ? 'ring-2 ring-inset ring-focus-ring bg-primary-soft' : 'hover:bg-primary-soft'}`}
                         onClick={() => {

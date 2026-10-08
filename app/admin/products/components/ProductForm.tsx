@@ -120,7 +120,7 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
                 value={name}
                 onChange={e => setName(e.target.value)}
                 className="w-full border border-border rounded-lg px-4 py-2.5 min-h-[44px] focus:ring-focus-ring bg-surface-card text-text-primary"
-                placeholder="VD: Cà phê sữa đá..."
+                placeholder="Ví dụ: Cà phê sữa đá"
               />
             </div>
             <div>
@@ -180,7 +180,7 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
                       value={variant.size_name}
                       onChange={e => updateVariant(vIdx, "size_name", e.target.value)}
                       className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm font-bold focus:ring-focus-ring bg-surface-card text-text-primary"
-                      placeholder="VD: Mặc định, Size M..."
+                      placeholder="Ví dụ: Size M"
                     />
                   </div>
                   <div className="flex-1">

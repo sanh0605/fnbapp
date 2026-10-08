@@ -428,7 +428,7 @@ export function PromotionForm({
                                         <input
                                           type="number"
                                           inputMode="numeric"
-                                          placeholder={discountValue || (discountType === "PERCENT" ? "%" : "đ")}
+                                          placeholder={discountValue ? `Ví dụ: ${discountValue}` : (discountType === "PERCENT" ? "Ví dụ: 10" : "Ví dụ: 10000")}
                                           value={variantValues[v.id] ?? ""}
                                           onChange={(e) => {
                                             const val = e.target.value;

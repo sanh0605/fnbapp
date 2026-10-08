@@ -324,7 +324,7 @@ export function PurchasedItemForm({
                 name="name"
                 required
                 defaultValue={initialData?.name}
-                placeholder="VD: Cà phê hạt Robusta 500g"
+                placeholder="Ví dụ: Cà phê hạt Robusta 500g"
               />
             </Field>
             <Field label="Phân loại" htmlFor={`${formId}-categoryId`} required>

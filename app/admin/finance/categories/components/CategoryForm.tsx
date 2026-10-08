@@ -101,7 +101,7 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
             required
             defaultValue={category?.name}
             className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Vận hành"
+            placeholder="Ví dụ: Vận hành"
           />
         </div>
 

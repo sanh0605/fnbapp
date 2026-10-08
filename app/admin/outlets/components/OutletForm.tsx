@@ -107,7 +107,7 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
             required
             defaultValue={initialData?.name}
             className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Điểm bán 3"
+            placeholder="Ví dụ: Điểm bán 3"
           />
         </div>
 
@@ -140,7 +140,7 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
             name="address"
             defaultValue={initialData?.address}
             className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: 123 Đường ABC, Quận 1"
+            placeholder="Ví dụ: 123 Đường ABC, Quận 1"
           />
         </div>
 

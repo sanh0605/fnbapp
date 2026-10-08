@@ -245,7 +245,7 @@ export default function SuppliersClient({
           <Field label="Tìm kiếm" htmlFor="suppliers-search">
             <TextInput
               id="suppliers-search"
-              placeholder="Tên, SĐT, địa chỉ..."
+              placeholder="Ví dụ: Thế Kỷ Xanh"
               value={search}
               onChange={handleSearchChange}
             />

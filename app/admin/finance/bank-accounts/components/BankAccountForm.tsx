@@ -59,7 +59,7 @@ export function BankAccountForm({ account, returnTo: rawReturnTo }: BankAccountF
             required
             defaultValue={account?.name}
             className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Vietcombank Sanh"
+            placeholder="Ví dụ: Vietcombank Sanh"
           />
         </div>
 
@@ -73,7 +73,7 @@ export function BankAccountForm({ account, returnTo: rawReturnTo }: BankAccountF
             name="bank_name"
             defaultValue={account?.bank_name ?? ""}
             className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Vietcombank"
+            placeholder="Ví dụ: Vietcombank"
           />
         </div>
 
@@ -88,7 +88,7 @@ export function BankAccountForm({ account, returnTo: rawReturnTo }: BankAccountF
             name="account_number"
             defaultValue={account?.account_number ?? ""}
             className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: 0071001234567"
+            placeholder="Ví dụ: 0071001234567"
           />
         </div>
 

@@ -248,7 +248,7 @@ export default function OrderTable({
           <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Tìm mã đơn</label>
           <input
             type="text"
-            placeholder="VD: PHD000001"
+            placeholder="Ví dụ: PHD000001"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleFilterChange({ q: searchQuery })}

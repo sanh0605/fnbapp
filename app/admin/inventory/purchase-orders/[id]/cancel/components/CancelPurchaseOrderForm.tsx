@@ -266,7 +266,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                   maxLength={500}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Nhập lý do huỷ phiếu…"
+                  placeholder="Ví dụ: nhập trùng phiếu"
                   className="w-full border border-border rounded-lg p-3 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card text-text-primary resize-y"
                 />
               </Field>

@@ -338,7 +338,7 @@ export default function ItemsClient({
           <Field label="Tìm kiếm" htmlFor="items-search">
             <TextInput
               id="items-search"
-              placeholder="Tên hàng hóa..."
+              placeholder="Ví dụ: Trứng gà"
               value={search}
               onChange={handleSearchChange}
             />

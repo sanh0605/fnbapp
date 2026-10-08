@@ -396,7 +396,7 @@ export default function ProductsClient({
           <input
             id="products-search"
             type="text"
-            placeholder="Tên hoặc mã món..."
+            placeholder="Ví dụ: Cà phê sữa đá"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"

@@ -132,7 +132,7 @@ describe("CategoriesClient", () => {
       />,
     );
 
-    const searchInput = screen.getByPlaceholderText(/Tên hoặc mã nhóm/i);
+    const searchInput = screen.getByPlaceholderText("Ví dụ: Cà phê");
     fireEvent.change(searchInput, { target: { value: "CAT-001" } });
 
     expect(screen.getAllByText("Cà phê").length).toBeGreaterThan(0);

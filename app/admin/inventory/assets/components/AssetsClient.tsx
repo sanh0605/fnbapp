@@ -202,7 +202,7 @@ export default function AssetsClient({
             <TextInput
               id="assets-search"
               type="text"
-              placeholder="Tên tài sản..."
+              placeholder="Ví dụ: Tạp dề"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

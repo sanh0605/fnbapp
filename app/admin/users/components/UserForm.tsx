@@ -52,7 +52,7 @@ export function UserForm({ returnTo: rawReturnTo }: UserFormProps = {}) {
             name="username"
             required
             className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: nhanvien01"
+            placeholder="Ví dụ: nhanvien01"
           />
         </div>
         <div>

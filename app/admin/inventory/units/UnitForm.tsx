@@ -61,13 +61,14 @@ export function UnitForm({ initialData, returnTo: rawReturnTo }: UnitFormProps) 
         <Field
           label="Ghi chú thêm"
           htmlFor={`${formId}-description`}
+          hint="Không bắt buộc"
         >
           <TextInput
             id={`${formId}-description`}
             type="text"
             name="description"
             defaultValue={initialData?.description}
-            placeholder="Không bắt buộc"
+            placeholder="Ví dụ: dùng cho sữa đặc"
           />
         </Field>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">

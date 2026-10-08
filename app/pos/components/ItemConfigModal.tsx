@@ -210,7 +210,7 @@ export function ItemConfigModal({
                 aria-label="Giảm giá sản phẩm"
                 type="number"
                 min="0"
-                placeholder="Nhập số..."
+                placeholder="Ví dụ: 2"
                 value={itemDiscount || ""}
                 onChange={(e) => setItemDiscount(Number(e.target.value))}
                 className="flex-1 w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring outline-none h-10 text-right"
