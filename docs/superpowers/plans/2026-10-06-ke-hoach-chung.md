@@ -79,7 +79,8 @@ quán chốt 2026-10-05, huỷ từng cái ở trang chi tiết (`BR-DATA-007`).
 - **8b — phần còn lại của Phiếu nhập và Phiếu xuất:** danh sách, chi tiết, tạo, sửa chuyển
   sang mảnh chung, không đổi cách hiện. Tách `IssueSlipDetailClient.tsx` (718 dòng). Xong trên
   nhánh 2026-10-08 trong đợt K3, chờ đẩy.
-- **8c — Đơn hàng:** danh sách đổi thẻ trên máy tính sang bảng; chi tiết; sửa.
+- **8c — Đơn hàng:** danh sách đổi thẻ trên máy tính sang bảng; chi tiết; sửa. Xong trên nhánh
+  2026-10-08 trong đợt K4, chờ đẩy; nút "Hủy đơn" ở từng dòng bỏ, huỷ ở trang chi tiết.
 - Gộp vào đợt này vì cùng trang: lỗ hổng G1, G2 ở mục "Lỗ hổng" — báo chủ quán từng cái khi
   tới trang đó.
 
@@ -95,12 +96,14 @@ Luật: `docs/02-rules/business-rules/screens.md`.
   mới, `BR-UI-008`) đã đẩy 2026-10-08, chờ chủ quán nhận. Đợt K2 (dựng khuôn trong `components/ui/`,
   phép kiểm canh `components/ui/template.guard.test.ts`) xong trên nhánh 2026-10-08, chờ đẩy. Đợt K3
   (các trang Kho, gồm Phiếu nhập và Phiếu xuất; ô trống chỉ hiện "Ví dụ" `BR-UI-009`; tên dài trong
-  danh sách chọn hiện đủ `BR-UI-010`) xong trên nhánh 2026-10-08, chờ đẩy.
+  danh sách chọn hiện đủ `BR-UI-010`) xong trên nhánh 2026-10-08, chờ đẩy. Đợt K4 (Đơn hàng, Món,
+  Nhóm món, Topping & tuỳ chọn, Khuyến mãi; kế hoạch con `docs/superpowers/plans/2026-10-08-dot-k4-ban-hang.md`)
+  xong trên nhánh 2026-10-08, chờ đẩy.
 - **Ô nhập số:** soát mọi ô. Mẫu là ô "Số lượng" của trang tạo phiếu xuất (chủ quán khen):
   bàn phím số trên điện thoại, số lẻ gõ bằng dấu chấm (`BR-UI-008`; trước 2026-10-07 là dấu phẩy), hiện "Quy ra" bên cạnh. Thêm: tự chèn dấu phẩy
   hàng nghìn khi gõ, không có mũi tên tăng giảm, cuộn chuột không làm đổi số (ô
   `type="number"` hiện ở phiếu nhập bị cả hai), gõ chữ thì báo ngay dưới ô. Ô tiền dùng
-  chung khung này (phần 5 áp vào các màn còn lại).
+  chung khung này (giá món, giá tuỳ chọn, khuyến mãi xong ở đợt K4).
 - **Dòng danh sách một kiểu** (`BR-UI-003`), **đọc lại toàn bộ chữ tiếng Anh còn sót**
   (`BR-UI-001`).
 - **Bộ lọc thời gian kiểu Looker Studio** (`BR-UI-007`): vẽ mẫu cho chủ quán xem trước
@@ -152,12 +155,11 @@ bước (đặc tả → thiết kế → kế hoạch → code).
   sách các việc cần làm"*, chưa làm ngay. Mục chờ: `it.todo` trong
   `app/admin/inventory/assets/components/DisposeAssetForm.test.tsx`.
 
-## 5. Ô tiền tự thêm dấu chấm
+## 5. Ô tiền tự thêm dấu phẩy
 
-Giá món, giá tuỳ chọn món, khuyến mãi (phiếu nhập xong ở đợt K3; ô tiền của trang thanh lý
-đi cùng việc "số tiền thu khi thanh lý" ở phần 4). Chủ quán chốt
-11/09/2026: làm sau báo cáo tài chính. Mục này sinh từ `it.todo` trong
-`components/ui/MoneyInput.test.tsx`; xong thì đổi `it.todo` thành test xanh.
+Xong trên nhánh 2026-10-08: phiếu nhập ở đợt K3; giá món, giá tuỳ chọn món, khuyến mãi ở đợt K4
+(chủ quán chốt 07/10/2026 làm trong đợt khuôn mẫu). `components/ui/MoneyInput.test.tsx` canh ba
+màn này. Ô tiền của trang thanh lý đi cùng việc "số tiền thu khi thanh lý" ở phần 4.
 
 ## 6. Dọn phần sót
 
