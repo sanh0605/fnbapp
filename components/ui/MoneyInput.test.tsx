@@ -251,11 +251,11 @@ describe("BR-CASH-005 rollout to other screens", () => {
   // click-through:
   // - app/admin/products/components/ProductForm.tsx (variant price)
   // - app/admin/products/modifiers/components/ModifierForm.tsx
-  // - app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx (money fields only, not quantities)
   // - app/admin/promotions/components/PromotionForm.tsx (fixed-amount fields only, not percentages)
-  // - app/admin/inventory/assets/components/DisposeAssetForm.tsx
-  // POS (app/pos/) is out of scope.
+  // POS (app/pos/) is out of scope. Done in wave K3 (2026-10-08): Phiếu nhập
+  // (NumberInput with commas). Thanh lý tài sản has no money box, only a
+  // quantity, so it left the list.
   it.todo(
-    "Gắn ô tiền tự thêm dấu phẩy hàng nghìn vào các màn khác: giá món, giá tuỳ chọn món, đơn nhập hàng, khuyến mãi, thanh lý tài sản — làm trong đợt khuôn mẫu, không đợi báo cáo tài chính (chủ quán chốt 07/10/2026)",
+    "Gắn ô tiền tự thêm dấu phẩy hàng nghìn vào các màn khác: giá món, giá tuỳ chọn món, khuyến mãi — làm trong đợt khuôn mẫu, không đợi báo cáo tài chính (chủ quán chốt 07/10/2026)",
   );
 });

@@ -1,6 +1,6 @@
 # Khuôn dùng chung cho từng thành phần màn hình: thiết kế
 
-Trạng thái: chủ quán duyệt trang mẫu 2026-10-07 (*"Đồng ý"*). Đợt K1 đã đẩy 2026-10-08; đợt K2 (dựng khuôn) xong trên nhánh 2026-10-08; K3–K6 chưa làm.
+Trạng thái: chủ quán duyệt trang mẫu 2026-10-07 (*"Đồng ý"*). Đợt K1 đã đẩy 2026-10-08; đợt K2 (dựng khuôn) và K3 (các trang Kho) xong trên nhánh 2026-10-08; K4–K6 chưa làm.
 
 Nguồn:
 - Luật: `BR-UI-005` (một khuôn cho mỗi thành phần), `BR-UI-003` (dòng danh sách một kiểu), `BR-UI-001` (toàn bộ chữ tiếng Việt), trong `docs/02-rules/business-rules/screens.md`. Ô tiền: `BR-CASH-005` trong `docs/02-rules/business-rules/cash-book.md`.

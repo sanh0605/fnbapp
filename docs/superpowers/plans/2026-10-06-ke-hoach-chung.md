@@ -77,7 +77,8 @@ quán chốt 2026-10-05, huỷ từng cái ở trang chi tiết (`BR-DATA-007`).
   cột "Giá trị xuất", ô "Thành tiền" và khung tổng tiền phiếu nhập, "Hình thức thanh toán"
   dời xuống dưới tổng, bỏ chữ tiếng Anh trong ngoặc (`BR-UI-001`), nút "Tạo" (`BR-UI-002`).
 - **8b — phần còn lại của Phiếu nhập và Phiếu xuất:** danh sách, chi tiết, tạo, sửa chuyển
-  sang mảnh chung, không đổi cách hiện. Tách `IssueSlipDetailClient.tsx` (718 dòng).
+  sang mảnh chung, không đổi cách hiện. Tách `IssueSlipDetailClient.tsx` (718 dòng). Xong trên
+  nhánh 2026-10-08 trong đợt K3, chờ đẩy.
 - **8c — Đơn hàng:** danh sách đổi thẻ trên máy tính sang bảng; chi tiết; sửa.
 - Gộp vào đợt này vì cùng trang: lỗ hổng G1, G2 ở mục "Lỗ hổng" — báo chủ quán từng cái khi
   tới trang đó.
@@ -92,7 +93,9 @@ Luật: `docs/02-rules/business-rules/screens.md`.
   chốt rồi mới thay ở các trang. Chủ quán duyệt trang mẫu 2026-10-07; thiết kế:
   `docs/superpowers/specs/2026-10-07-khuon-thanh-phan-design.md` (đợt K1–K6). Đợt K1 (cách viết số
   mới, `BR-UI-008`) đã đẩy 2026-10-08, chờ chủ quán nhận. Đợt K2 (dựng khuôn trong `components/ui/`,
-  phép kiểm canh `components/ui/template.guard.test.ts`) xong trên nhánh 2026-10-08, chờ đẩy.
+  phép kiểm canh `components/ui/template.guard.test.ts`) xong trên nhánh 2026-10-08, chờ đẩy. Đợt K3
+  (các trang Kho, gồm Phiếu nhập và Phiếu xuất; ô trống chỉ hiện "Ví dụ" `BR-UI-009`; tên dài trong
+  danh sách chọn hiện đủ `BR-UI-010`) xong trên nhánh 2026-10-08, chờ đẩy.
 - **Ô nhập số:** soát mọi ô. Mẫu là ô "Số lượng" của trang tạo phiếu xuất (chủ quán khen):
   bàn phím số trên điện thoại, số lẻ gõ bằng dấu chấm (`BR-UI-008`; trước 2026-10-07 là dấu phẩy), hiện "Quy ra" bên cạnh. Thêm: tự chèn dấu phẩy
   hàng nghìn khi gõ, không có mũi tên tăng giảm, cuộn chuột không làm đổi số (ô
@@ -178,11 +181,11 @@ thuật thì tự sửa rồi báo.
 
 | # | Lỗ hổng | Gắn với |
 |---|---|---|
-| G1 | Sửa phiếu nhập mà đổi mặt hàng của một dòng: tài sản của dòng đó mất liên kết | Phần 1 (8b) |
-| G2 | Phiếu nhập nháp luôn mở form nên không thấy nút "Huỷ phiếu" (đo 2026-10-06: 0 phiếu nháp) | Phần 1 (8b) |
+| G1 | ~~Sửa phiếu nhập mà đổi mặt hàng của một dòng: tài sản của dòng đó mất liên kết~~ — đóng 2026-10-08 (đợt K3): sửa phiếu đã hoàn thành thì tài sản sinh từ phiếu đổi theo; dòng đổi mặt hàng thì tài sản cũ ngừng, tài sản mới sinh (`BR-COGS-008`) | — |
+| G2 | ~~Phiếu nhập nháp luôn mở form nên không thấy nút "Huỷ phiếu"~~ — đóng 2026-10-08 (đợt K3): phiếu nháp có "Huỷ phiếu" ngay trên form, chủ quán chốt "A" (`BR-INV-015`) | — |
 | G3 | ~~Tạo phiếu xuất: "Tồn hiện tại" là tồn hôm nay, kể cả khi ghi lùi ngày~~ — đóng 2026-10-06, giữ nguyên. Chủ quán: *"anh chỉ cần xem tồn hiện tại thôi, nên nếu anh có thêm 1 phiếu tồn trong quá khứ thì tồn hiện tại sẽ thay đổi. Chứ không cần tồn theo thời điểm lọc."* Mặt hàng hết hàng hôm nay không xuất lùi ngày được (tồn hôm nay sẽ âm, `issue_stock_headroom` từ chối), nên ẩn nó khỏi danh sách là đúng | — |
 | G4 | Xoá nhân viên (`deleteUserAction`, `app/admin/users/actions.ts`): không chặn việc chủ quán tự xoá chính mình hay xoá tài khoản `ADMIN` cuối cùng | Phần 2 (Nhân viên) |
-| G5 | 10 tài sản không còn dòng phiếu nhập — không cần làm gì, chỉ ghi nhận | — |
+| G5 | ~~10 tài sản không còn dòng phiếu nhập~~ — đóng 2026-10-08: chủ quán đồng ý gắn lại, đã gắn 10 tài sản của PO-098 và PO-100 vào dòng còn sống (`BR-COGS-008`) | — |
 
 ## File đã xoá ngày 2026-10-06
 
