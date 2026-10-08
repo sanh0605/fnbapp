@@ -1,3 +1,7 @@
+"use client";
+
+// Client component: a row hands its look to its cells through React context,
+// which server components cannot create. Server pages still render it.
 import React from "react";
 
 export type TableRowLook = "subtotal" | "strong" | "detail";
