@@ -113,7 +113,8 @@ Luật: `docs/02-rules/business-rules/screens.md`.
   (`BR-UI-001`).
 - **Bộ lọc thời gian kiểu Looker Studio** (`BR-UI-007`): vẽ mẫu cho chủ quán xem trước
   (khoảng có sẵn: hôm nay, hôm qua, 7 ngày qua, tháng này, tháng trước…; tự chọn; có thể so
-  với kỳ trước), rồi thay ở mọi danh sách và báo cáo.
+  với kỳ trước), rồi thay ở mọi danh sách và báo cáo. Chủ quán chọn xong 2026-10-09; thiết
+  kế `docs/superpowers/specs/2026-10-09-bo-loc-thoi-gian-design.md` chờ chủ quán duyệt.
 - **Dòng tổng dưới tiêu đề cột** (`BR-UI-004`): thiết kế ngắn (cột nào cộng được, điện
   thoại hiện ở đâu), máy chủ cộng theo bộ lọc chứ không cộng trang đang hiện.
 - **Công cụ Góp ý:** sửa được góp ý đã lưu (chủ quán hỏi 2026-10-06; khuyến nghị có).
