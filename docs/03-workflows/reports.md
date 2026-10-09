@@ -1,21 +1,21 @@
-# Reports flow (dashboard and four reports)
+# Reports flow (dashboard and three reports)
 
 ```flow-decl
-routes: /admin, /admin/reports/daily, /admin/reports/sales, /admin/reports/issued, /admin/reports/pnl
+routes: /admin, /admin/reports/sales, /admin/reports/issued, /admin/reports/pnl
 files:
 tables:
 brCodes: BR-COGS-005, BR-COGS-007, BR-PNL-001, BR-PNL-002, BR-PNL-003, BR-PNL-004
 ```
 
-This flow is **read-only**: the dashboard and the four reports display figures
+This flow is **read-only**: the dashboard and the three reports display figures
 derived from data other flows already wrote. Nothing here writes to the database,
 so the `flow-decl` block declares no `files` and no `tables` — the empty value
 lists are intentional, not an omission. Because no file is declared, this flow
-contributes nothing to the map-drift check; it is verified only by its five routes
+contributes nothing to the map-drift check; it is verified only by its four routes
 existing.
 
 The screens are the dashboard at `/admin` (a revenue and orders summary), the
-daily report at `/admin/reports/daily`, the sales report at `/admin/reports/sales`,
+sales report at `/admin/reports/sales`,
 the issued-goods (cost) report at `/admin/reports/issued`, and the monthly
 profit and loss at `/admin/reports/pnl`.
 
@@ -46,9 +46,7 @@ profit and loss at `/admin/reports/pnl`.
    which is the single path cost is measured on (`BR-COGS-005`): cost is booked when
    goods physically leave stock, not at the moment of sale. Its rows are split by
    the `source` column — `MANUAL` (goods left stock via an issue slip) versus
-   `STOCKTAKE` (a shortfall booked when a count period was closed). The **daily
-   report** (`/admin/reports/daily`) contains the per-day roll-up of the same
-   completed-order revenue.
+   `STOCKTAKE` (a shortfall booked when a count period was closed).
 
 4. **Valid inputs, and what happens outside the range.** The only inputs are the
    date range and period selectors. A range with no matching data shows an empty or

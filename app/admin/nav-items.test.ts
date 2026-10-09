@@ -18,7 +18,8 @@ const EXPECTED: [string, [string, string][]][] = [
   ]],
   ["Thu chi", [["Sổ thu chi", "/admin/finance"], ["Nhóm thu chi", "/admin/finance/categories"], ["Tài khoản ngân hàng", "/admin/finance/bank-accounts"]]],
   ["Báo cáo", [
-    ["Tổng kết ngày", "/admin/reports/daily"], ["Doanh số", "/admin/reports/sales"],
+    // BR-UI-007 (owner 2026-10-09): Tổng kết ngày goes; Doanh số on Hôm nay replaces it.
+    ["Doanh số", "/admin/reports/sales"],
     ["Hàng đã xuất", "/admin/reports/issued"], ["Lãi lỗ", "/admin/reports/pnl"],
   ]],
   ["Cài đặt", [["Nhân viên & quyền", "/admin/users"], ["Nhật ký hoạt động", "/admin/activity-log"]]],

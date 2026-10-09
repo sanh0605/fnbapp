@@ -64,7 +64,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 - `lib/costing/purchase-order-cost-allocation.ts` rounds each purchase line's share of shipping and discounts to a whole đồng (`BR-COGS-006`).
 - `assets.total_cost` and `assets.unit_cost` (bigint), and `purchase_order_lines.unit_price` (bigint, `round(subtotal ÷ quantity)`), store results. The depreciation band is looked up from the rounded `unit_cost`.
 - `lib/sales/order-math.ts` rounds each item's and topping's share of an order discount for the sales report.
-- Three percentages show one decimal instead of two: the outlet share in the sales report (`lib/reports/outlet-breakdown-table.ts`), and the change against the previous period on the dashboard (`app/admin/page.tsx`) and the daily report (`app/admin/reports/daily/page.tsx`). Since 2026-10-08 all three write the dot as decimal mark, as `BR-UI-008` requires ("12.5%").
+- These percentages show one decimal instead of two: the outlet share in the sales report (`lib/reports/outlet-breakdown-table.ts`), and the change against the compare period on the dashboard and the sales report (`app/admin/reports/components/CompareLine.tsx`). Since 2026-10-08 they write the dot as decimal mark, as `BR-UI-008` requires ("12.5%"). The daily report that also showed one went on 2026-10-09 (`BR-UI-007`).
 
 
 ### BR-DATA-006 — Dates show as dd/mm/yyyy; date filters pick a day, never a time

@@ -1,12 +1,14 @@
 import { findAll } from "@/lib/db/tables";
-import { getSalesDataV2, getHourlyHeatmapV2 } from "../actions";
+import { getSalesDataV2, getHourlyHeatmapV2, getSalesTotalsV2 } from "../actions";
 import SalesFilter from "@/app/admin/reports/components/SalesFilter";
 import SalesCharts from "@/app/admin/reports/components/SalesCharts";
 import CategoryPieChart from "@/app/admin/reports/components/CategoryPieChart";
 import { formatNumber } from "@/lib/shared/format";
 import { formatCompact } from "@/lib/reports/compact-money";
 import { saigonToday } from "@/lib/shared/datetime";
-import { resolvePreset } from "@/lib/shared/date-range-presets";
+import { readRangeParams } from "@/lib/shared/date-range-params";
+import { comparePeriods, compareLabel, percentChange } from "@/lib/reports/compare-periods";
+import { CompareLine } from "@/app/admin/reports/components/CompareLine";
 
 import ProductTable from "@/app/admin/reports/components/ProductTable";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -27,7 +29,7 @@ export const dynamic = 'force-dynamic';
 export default async function SalesReportPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const [brands, users, categories] = await Promise.all([
     findAll("Brands"),
@@ -35,36 +37,40 @@ export default async function SalesReportPage({
     findAll("Product_Categories")
   ]);
 
-  const startParam = Array.isArray(searchParams?.start) ? searchParams.start[0] : searchParams?.start;
-  const endParam = Array.isArray(searchParams?.end) ? searchParams.end[0] : searchParams?.end;
+  const today = saigonToday();
+  const range = readRangeParams(searchParams ?? {}, today, "THIS_MONTH");
+  const { current, previous } = comparePeriods(range, today);
+
   const brandId = Array.isArray(searchParams?.brandId) ? searchParams.brandId[0] : searchParams?.brandId;
   const staffName = Array.isArray(searchParams?.staffName) ? searchParams.staffName[0] : searchParams?.staffName;
   const categoryId = Array.isArray(searchParams?.categoryId) ? searchParams.categoryId[0] : searchParams?.categoryId;
 
   // Build filters for V2
-  const filters: any = {};
+  const filters: any = {
+    startDate: range.start,
+    endDate: range.end,
+  };
   if (brandId) filters.brandId = brandId;
   if (staffName) filters.staffName = staffName;
   if (categoryId) filters.categoryId = categoryId;
 
-  // Claude code — fix 2026-06-26: pass date-only strings through to
-  // toSaigonUtcRange. Previously pre-converted via new Date("YYYY-MM-DD")
-  // which JS interprets as UTC midnight, causing Sales report to miss the
-  // first 7 hours of the Saigon day (00:00-06:59). P&L page already does
-  // this correctly by passing date-only directly.
-  if (startParam && endParam) {
-    filters.startDate = startParam;
-    filters.endDate = endParam;
-  } else {
-    // Default range: first of the Saigon month to the Saigon today.
-    const range = resolvePreset("MONTH_TO_DATE", saigonToday());
-    filters.startDate = range.start;
-    filters.endDate = range.end;
-  }
-
-  const [data, heatmapData] = await Promise.all([
+  const [data, heatmapData, previousTotals] = await Promise.all([
     getSalesDataV2(filters),
-    getHourlyHeatmapV2(filters)
+    getHourlyHeatmapV2(filters),
+    current
+      ? Promise.all(
+          previous.map((p) => {
+            const prevFilters: any = {
+              startDate: p.start,
+              endDate: p.end,
+            };
+            if (brandId) prevFilters.brandId = brandId;
+            if (staffName) prevFilters.staffName = staffName;
+            if (categoryId) prevFilters.categoryId = categoryId;
+            return getSalesTotalsV2(prevFilters);
+          })
+        )
+      : Promise.resolve([]),
   ]);
 
   // Re-build category chart data
@@ -132,6 +138,8 @@ export default async function SalesReportPage({
         brands={brands}
         users={users}
         categories={categories}
+        range={range}
+        today={today}
         title="Doanh số"
         subtitle="Phân tích hiệu quả kinh doanh theo thời gian (V2)."
       />
@@ -152,6 +160,14 @@ export default async function SalesReportPage({
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
           <div className="text-sm font-medium text-text-secondary mb-1">Tổng doanh thu thuần</div>
           <div className="text-3xl font-bold text-text-primary">{formatNumber(totalRevenue)}</div>
+          {current && previous.map((p, i) => (
+            <div key={i} className="mt-1">
+              <CompareLine
+                change={percentChange(totalRevenue, previousTotals[i].totalRevenue)}
+                label={compareLabel(p, current, today)}
+              />
+            </div>
+          ))}
           <div className="text-xs text-text-muted mt-2">
             Gross: {formatNumber(grossRevenue)}
             {" • "}
@@ -161,6 +177,14 @@ export default async function SalesReportPage({
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
           <div className="text-sm font-medium text-text-secondary mb-1">Tổng số đơn</div>
           <div className="text-3xl font-bold text-text-primary">{totalOrders} <span className="text-sm font-normal text-text-secondary">đơn</span></div>
+          {current && previous.map((p, i) => (
+            <div key={i} className="mt-1">
+              <CompareLine
+                change={percentChange(totalOrders, previousTotals[i].totalOrders)}
+                label={compareLabel(p, current, today)}
+              />
+            </div>
+          ))}
           <div className="text-xs text-text-muted mt-2">
             {paymentBreakdown.map(p => `${p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}: ${p.orderCount}`).join(" • ")}
           </div>
@@ -168,6 +192,14 @@ export default async function SalesReportPage({
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
           <div className="text-sm font-medium text-text-secondary mb-1">Doanh thu trung bình / đơn</div>
           <div className="text-3xl font-bold text-text-primary">{formatNumber(Math.round(avgOrderValue))}</div>
+          {current && previous.map((p, i) => (
+            <div key={i} className="mt-1">
+              <CompareLine
+                change={percentChange(avgOrderValue, previousTotals[i].avgOrderValue)}
+                label={compareLabel(p, current, today)}
+              />
+            </div>
+          ))}
           <div className="text-xs text-text-muted mt-2">
             Khuyến mãi hệ thống: {formatNumber(systemPromotionDiscount)}
           </div>

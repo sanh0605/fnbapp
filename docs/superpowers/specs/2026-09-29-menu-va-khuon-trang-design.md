@@ -86,8 +86,7 @@ thấy trang tên "Phiếu nhập", không phải "Quản lý Nhập Hàng".
 | Thu chi | Sổ thu chi | `/admin/finance` |
 | | Nhóm thu chi | `/admin/finance/categories` |
 | | Tài khoản ngân hàng | `/admin/finance/bank-accounts` |
-| Báo cáo | Tổng kết ngày | `/admin/reports/daily` |
-| | Doanh số ← Báo cáo Bán hàng | `/admin/reports/sales` |
+| Báo cáo | Doanh số ← Báo cáo Bán hàng | `/admin/reports/sales` |
 | | Hàng đã xuất ← Giá trị hàng đã xuất | `/admin/reports/issued` |
 | | Lãi lỗ ← Báo cáo tài chính | `/admin/reports/pnl` |
 | Cài đặt | Nhân viên & quyền ← Nhân sự & Phân quyền | `/admin/users` |

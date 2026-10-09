@@ -1,4 +1,3 @@
-// orphan-allow: first caller lands in Task 6 of docs/superpowers/plans/2026-10-09-bo-loc-thoi-gian.md (Tổng quan); remove this line then
 import { addDays, addMonths, endOfMonth, startOfWeek, type DateRange } from "@/lib/shared/date-range-presets";
 import type { RangeValue } from "@/lib/shared/date-range-params";
 

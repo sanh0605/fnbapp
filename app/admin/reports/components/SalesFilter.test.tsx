@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import SalesFilter from "./SalesFilter";
 
 // that component calls window.matchMedia in a mount effect, which jsdom
@@ -48,42 +48,68 @@ afterEach(() => {
 beforeEach(() => {
   push.mockClear();
   mockSearchParams.clear();
+  Element.prototype.scrollIntoView = vi.fn();
 });
 
-describe("SalesFilter", () => {
-  it("default start shows/pushes 2026-09-01 and end 2026-09-15; preset 7 days → 2026-09-08..2026-09-15", () => {
-    vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date("2026-09-14T23:30:00Z")); // Saigon: 2026-09-15 06:30:00
+const TODAY = "2026-10-09";
+const THIS_MONTH = { preset: "THIS_MONTH", start: "2026-10-01", end: "2026-10-31" } as const;
 
-    render(<SalesFilter brands={[]} users={[]} categories={[]} />);
+function pushed(): URLSearchParams {
+  return new URLSearchParams(String(push.mock.calls[0][0]).replace(/^\?/, ""));
+}
 
-    // Click "Lọc" with default dates
-    fireEvent.click(screen.getByRole("button", { name: "Lọc" }));
-    expect(push).toHaveBeenCalledWith("?start=2026-09-01&end=2026-09-15");
+// BR-UI-007: the day boxes and the three day buttons give way to the shared
+// time filter; a range applies at once and keeps brand, staff and category.
+describe("SalesFilter time filter (BR-UI-007)", () => {
+  it("shows the shared button and no loose day boxes or day buttons", () => {
+    render(<SalesFilter brands={[]} users={[]} categories={[]} range={THIS_MONTH} today={TODAY} />);
+    expect(screen.getByTestId("range-button")).toHaveTextContent("Tháng này · 01/10/2026 – 31/10/2026");
+    expect(screen.queryByLabelText(/^Từ ngày/)).toBeNull();
+    expect(screen.queryByLabelText(/^Đến ngày/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "7 ngày" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "30 ngày" })).toBeNull();
+  });
 
-    push.mockClear();
-
-    // Click "7 ngày" preset button
-    fireEvent.click(screen.getByRole("button", { name: "7 ngày" }));
-    expect(push).toHaveBeenCalledWith("?start=2026-09-08&end=2026-09-15");
+  it("choosing Tháng trước applies at once and keeps brand, staff and category", () => {
+    mockSearchParams.set("brandId", "B1");
+    mockSearchParams.set("staffName", "An");
+    mockSearchParams.set("categoryId", "CAT-DRINKS");
+    render(<SalesFilter brands={[]} users={[]} categories={[]} range={THIS_MONTH} today={TODAY} />);
+    fireEvent.click(screen.getByTestId("range-button"));
+    fireEvent.click(within(screen.getByTestId("range-panel-desktop")).getByRole("button", { name: "Tháng trước" }));
+    expect(push).toHaveBeenCalledTimes(1);
+    const q = pushed();
+    expect(q.get("range")).toBe("LAST_MONTH");
+    expect(q.get("from")).toBeNull();
+    expect(q.get("start")).toBeNull();
+    expect(q.get("brandId")).toBe("B1");
+    expect(q.get("staffName")).toBe("An");
+    expect(q.get("categoryId")).toBe("CAT-DRINKS");
   });
 });
 
-// Wave K5 (plan Review Focus 5): the brand box moves to the shared Select
-// inside Field. Choosing a brand then "Lọc" must push the same URL as today.
+// Wave K5 (plan Review Focus 5): the brand box is the shared Select inside
+// Field. Choosing a brand then "Lọc" keeps the range on the address.
 describe("SalesFilter brand box (wave K5)", () => {
-  it("choosing MR.PHIN then Lọc pushes brandId with the same dates", () => {
-    vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date("2026-09-14T23:30:00Z")); // Saigon: 2026-09-15 06:30
+  it("choosing MR.PHIN then Lọc pushes brandId with the same range", () => {
+    mockSearchParams.set("range", "CUSTOM");
+    mockSearchParams.set("from", "2026-09-01");
+    mockSearchParams.set("to", "2026-09-15");
     render(
       <SalesFilter
         brands={[{ id: "BRD-1", name: "MR.PHIN", status: "ACTIVE" }]}
         users={[]}
         categories={[]}
+        range={{ preset: "CUSTOM", start: "2026-09-01", end: "2026-09-15" }}
+        today={TODAY}
       />,
     );
     fireEvent.change(screen.getByLabelText(/^Thương hiệu/), { target: { value: "BRD-1" } });
     fireEvent.click(screen.getByRole("button", { name: "Lọc" }));
-    expect(push).toHaveBeenCalledWith("?start=2026-09-01&end=2026-09-15&brandId=BRD-1");
+    const q = pushed();
+    expect(q.get("range")).toBe("CUSTOM");
+    expect(q.get("from")).toBe("2026-09-01");
+    expect(q.get("to")).toBe("2026-09-15");
+    expect(q.get("brandId")).toBe("BRD-1");
   });
 });

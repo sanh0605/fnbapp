@@ -1,57 +1,48 @@
-import { findAll, findAllNoCache, findAllWhere } from "@/lib/db/tables";
+import { findAll, findAllWhere } from "@/lib/db/tables";
 import Link from "next/link";
 import { ORDER_STATUS } from "@/lib/sales/order-types";
 import { breakdownRevenueByProduct } from "@/lib/reports/report-v2-allocators";
-import { formatDecimal, formatNumber } from "@/lib/shared/format";
-import { formatTime } from "@/lib/shared/datetime";
-import { buildSevenDayChart, resolveDashboardPeriods } from "@/lib/reports/dashboard-periods";
-import { Badge } from "@/components/ui/Badge";
+import { formatNumber } from "@/lib/shared/format";
+import { formatTime, saigonToday } from "@/lib/shared/datetime";
+import { readRangeParams } from "@/lib/shared/date-range-params";
+import { comparePeriods, compareLabel, percentChange } from "@/lib/reports/compare-periods";
+import { buildSevenDayChart, dashboardQueryStart, inSaigonDayRange } from "@/lib/reports/dashboard-periods";
 import { Alert } from "@/components/ui/Alert";
 import { getSupabaseClient } from "@/lib/db/supabase";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { DateRangeUrlButton } from "@/components/ui/DateRangeUrlButton";
+import { CompareLine } from "@/app/admin/reports/components/CompareLine";
 import { Banknote, Receipt, TrendingUp, Coffee, Tag, Building2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-const TrendBadge = ({ value }: { value: number | null }) => {
-  if (value === null) return null;
-  const isUp = value > 0;
-  const isDown = value < 0;
-  const variant = isUp ? "success" : isDown ? "danger" : "neutral";
-  const arrow = isUp ? "↑" : isDown ? "↓" : "−";
-  return (
-    <Badge variant={variant} className="gap-0.5 !text-[10px] !px-1.5 !py-0.5">
-      <span>{arrow}</span> {formatDecimal(Math.abs(value), { minDigits: 1, maxDigits: 1 })}%
-    </Badge>
-  );
-};
-
 export default async function AdminDashboard({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const supabase = getSupabaseClient();
   const [{ count: posSyncFailureCount }] = await Promise.all([
     supabase.from("pos_sync_failures").select("*", { count: "exact", head: true }).eq("resolved", false),
   ]);
 
-  const filterParam = searchParams.filter as string || 'this_month';
-
   const now = new Date();
-  const { isCurrent, isPrev, queryStartDate } = resolveDashboardPeriods(filterParam, now);
+  const today = saigonToday(now);
+  const range = readRangeParams(searchParams ?? {}, today, "THIS_MONTH");
+  const { current, previous } = comparePeriods(range, today);
 
-  const dateFilter = queryStartDate ? { gte: { created_at: queryStartDate.toISOString() } } : {};
+  const queryStartDate = dashboardQueryStart([range, ...previous], now);
+  const dateFilter = { gte: { created_at: queryStartDate.toISOString() } };
 
   const [brands, users, suppliers, v2Orders, v2Lines, products, variants, categories] = await Promise.all([
     findAll("Brands"),
     findAll("Users"),
     findAll("Suppliers"),
-    queryStartDate ? findAllWhere("Orders_V2", dateFilter) : findAllNoCache("Orders_V2"),
-    queryStartDate ? findAllWhere("Order_Lines_V2", dateFilter) : findAllNoCache("Order_Lines_V2"),
+    findAllWhere("Orders_V2", dateFilter),
+    findAllWhere("Order_Lines_V2", dateFilter),
     findAll("Products"),
     findAll("Product_Variants"),
-    findAll("Product_Categories")
+    findAll("Product_Categories"),
   ]);
 
   // Coerce raw V2 row strings to typed shape with numeric fields
@@ -93,58 +84,91 @@ export default async function AdminDashboard({
     )
     .map(normalizeV2Order);
 
-  const currOrders = validOrders.filter((o:any) => isCurrent(o.created_at));
-  const prevOrders = validOrders.filter((o:any) => isPrev(o.created_at));
+  const currOrders = validOrders.filter((o: any) => current && inSaigonDayRange(o.created_at, current));
 
-  const currRev = currOrders.reduce((sum:number, o:any) => sum + (parseFloat(o.total_amount) || 0), 0);
-  const prevRev = prevOrders.reduce((sum:number, o:any) => sum + (parseFloat(o.total_amount) || 0), 0);
-  
+  const currRev = currOrders.reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0);
   const currOrdCount = currOrders.length;
-  const prevOrdCount = prevOrders.length;
-  
   const currAOV = currOrdCount > 0 ? currRev / currOrdCount : 0;
-  const prevAOV = prevOrdCount > 0 ? prevRev / prevOrdCount : 0;
-  
+
   // Logic đếm ly: Bỏ qua danh mục có chữ "topping"
-  const toppingCats = categories.filter((c:any) => c.name?.toLowerCase().includes('topping')).map((c:any) => c.id);
-  const getCups = (ords:any[]) => {
+  const toppingCats = categories.filter((c: any) => c.name?.toLowerCase().includes("topping")).map((c: any) => c.id);
+  const getCups = (ords: any[]) => {
     const ids = ords.map(o => o.id);
-    const lines = v2LinesForOrders.filter((l:any) => ids.includes(l.order_id));
-    return lines.reduce((sum:number, line:any) => {
-      const p = products.find((p:any) => p.id === line.product_id);
+    const lines = v2LinesForOrders.filter((l: any) => ids.includes(l.order_id));
+    return lines.reduce((sum: number, line: any) => {
+      const p = products.find((p: any) => p.id === line.product_id);
       if (p && toppingCats.includes(p.category_id)) return sum;
       return sum + Number(line.qty || 0);
     }, 0);
   };
-  
+
   const currCups = getCups(currOrders);
-  const prevCups = getCups(prevOrders);
-  
   const currAvgCup = currCups > 0 ? currRev / currCups : 0;
-  const prevAvgCup = prevCups > 0 ? prevRev / prevCups : 0;
-  
-  const activeSuppliers = suppliers.filter((s:any) => s.status !== 'INACTIVE').length;
 
-  const calcTrend = (curr: number, prev: number) => {
-    if (filterParam === 'all' || prev === 0) return null;
-    return ((curr - prev) / prev) * 100;
-  };
+  const activeSuppliers = suppliers.filter((s: any) => s.status !== "INACTIVE").length;
 
-  const trends = {
-    rev: calcTrend(currRev, prevRev),
-    ord: calcTrend(currOrdCount, prevOrdCount),
-    aov: calcTrend(currAOV, prevAOV),
-    cups: calcTrend(currCups, prevCups),
-    avgCup: calcTrend(currAvgCup, prevAvgCup)
-  };
-  
+  const previousMetrics = previous.map((p) => {
+    const prevOrders = validOrders.filter((o: any) => inSaigonDayRange(o.created_at, p));
+    const prevRev = prevOrders.reduce((sum: number, o: any) => sum + (parseFloat(o.total_amount) || 0), 0);
+    const prevOrdCount = prevOrders.length;
+    const prevAOV = prevOrdCount > 0 ? prevRev / prevOrdCount : 0;
+    const prevCups = getCups(prevOrders);
+    const prevAvgCup = prevCups > 0 ? prevRev / prevCups : 0;
+    const label = current ? compareLabel(p, current, today) : "";
+    return {
+      p,
+      label,
+      revChange: percentChange(currRev, prevRev),
+      ordChange: percentChange(currOrdCount, prevOrdCount),
+      aovChange: percentChange(currAOV, prevAOV),
+      cupsChange: percentChange(currCups, prevCups),
+      avgCupChange: percentChange(currAvgCup, prevAvgCup),
+    };
+  });
+
   const stats = [
-    { title: "Tổng doanh thu", value: formatNumber(currRev), icon: <Banknote className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.rev },
-    { title: "Đơn hàng hoàn tất", value: currOrdCount.toString(), icon: <Receipt className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: trends.ord },
-    { title: "TB đơn", value: formatNumber(Math.round(currAOV)), icon: <TrendingUp className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.aov },
-    { title: "Tổng ly đã bán", value: currCups.toString(), icon: <Coffee className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: trends.cups },
-    { title: "TB ly", value: formatNumber(Math.round(currAvgCup)), icon: <Tag className="w-5 h-5" />, color: "bg-primary-soft text-primary", trend: trends.avgCup },
-    { title: "Nhà cung cấp", value: activeSuppliers.toString(), icon: <Building2 className="w-5 h-5" />, color: "bg-surface-secondary text-text-secondary", trend: undefined },
+    {
+      title: "Tổng doanh thu",
+      value: formatNumber(currRev),
+      icon: <Banknote className="w-5 h-5" />,
+      color: "bg-primary-soft text-primary",
+      compares: current ? previousMetrics.map(m => ({ change: m.revChange, label: m.label })) : [],
+    },
+    {
+      title: "Đơn hàng hoàn tất",
+      value: currOrdCount.toString(),
+      icon: <Receipt className="w-5 h-5" />,
+      color: "bg-surface-secondary text-text-secondary",
+      compares: current ? previousMetrics.map(m => ({ change: m.ordChange, label: m.label })) : [],
+    },
+    {
+      title: "TB đơn",
+      value: formatNumber(Math.round(currAOV)),
+      icon: <TrendingUp className="w-5 h-5" />,
+      color: "bg-primary-soft text-primary",
+      compares: current ? previousMetrics.map(m => ({ change: m.aovChange, label: m.label })) : [],
+    },
+    {
+      title: "Tổng ly đã bán",
+      value: currCups.toString(),
+      icon: <Coffee className="w-5 h-5" />,
+      color: "bg-surface-secondary text-text-secondary",
+      compares: current ? previousMetrics.map(m => ({ change: m.cupsChange, label: m.label })) : [],
+    },
+    {
+      title: "TB ly",
+      value: formatNumber(Math.round(currAvgCup)),
+      icon: <Tag className="w-5 h-5" />,
+      color: "bg-primary-soft text-primary",
+      compares: current ? previousMetrics.map(m => ({ change: m.avgCupChange, label: m.label })) : [],
+    },
+    {
+      title: "Nhà cung cấp",
+      value: activeSuppliers.toString(),
+      icon: <Building2 className="w-5 h-5" />,
+      color: "bg-surface-secondary text-text-secondary",
+      compares: [],
+    },
   ];
 
   const currOrderIds = new Set(currOrders.map((o: any) => o.id));
@@ -157,7 +181,7 @@ export default async function AdminDashboard({
     .map(p => ({
       name: p.product_name,
       qty: p.qty,
-      revenue: p.revenue
+      revenue: p.revenue,
     }));
 
   const chartData = buildSevenDayChart(validOrders, now);
@@ -178,15 +202,8 @@ export default async function AdminDashboard({
         subtitle="Xin chào, đây là tình hình kinh doanh hiện tại của bạn."
         actions={
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full xl:w-auto">
-            <div className="bg-surface-card p-1 rounded-lg border border-border flex flex-wrap text-sm shadow-sm gap-1 max-w-full">
-              <Link href="?filter=today" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'today' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Hôm nay</Link>
-              <Link href="?filter=7days" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === '7days' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>7 ngày</Link>
-              <Link href="?filter=30days" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === '30days' || filterParam === '30' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>30 ngày</Link>
-              <Link href="?filter=this_month" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'this_month' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tháng này</Link>
-              <Link href="?filter=last_month" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'last_month' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tháng trước</Link>
-              <Link href="?filter=this_year" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'this_year' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Năm nay</Link>
-              <Link href="?filter=last_year" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'last_year' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Năm trước</Link>
-              <Link href="?filter=all" className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap ${filterParam === 'all' ? 'bg-primary-soft text-primary' : 'text-text-secondary hover:bg-page'}`}>Tất cả</Link>
+            <div className="w-full sm:w-auto">
+              <DateRangeUrlButton value={range} today={today} />
             </div>
             <div className="text-sm font-medium text-text-muted bg-surface-card px-4 py-2.5 rounded-lg border border-border shadow-sm hidden 2xl:block whitespace-nowrap">
               Cập nhật lúc: {formatTime(now, true)}
@@ -202,11 +219,15 @@ export default async function AdminDashboard({
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${stat.color}`}>
                 {stat.icon}
               </div>
-              {stat.trend !== undefined && <TrendBadge value={stat.trend} />}
             </div>
             <div>
               <h3 className="text-text-secondary text-xs font-medium mb-1 line-clamp-1">{stat.title}</h3>
               <p className="text-lg md:text-xl font-bold text-text-primary truncate" title={stat.value}>{stat.value}</p>
+              {stat.compares.map((c, i) => (
+                <div key={i} className="mt-1">
+                  <CompareLine change={c.change} label={c.label} />
+                </div>
+              ))}
             </div>
           </div>
         ))}

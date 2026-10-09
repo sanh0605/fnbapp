@@ -50,7 +50,6 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     name: "Báo cáo", icon: TrendingUp, children: [
-      { name: "Tổng kết ngày", href: "/admin/reports/daily" },
       { name: "Doanh số", href: "/admin/reports/sales" },
       { name: "Hàng đã xuất", href: "/admin/reports/issued" },
       { name: "Lãi lỗ", href: "/admin/reports/pnl" },
