@@ -65,7 +65,7 @@ Owner choices on 2026-10-09, after trying a clickable sample (two styles, comput
 - **Reports** (owner 2026-10-09, *"1a 2a, tuy nhiên, anh nghĩ báo cáo ngày có lẽ nên xoá luôn vì không còn phù hợp, anh có thể xem được báo cáo ngày bằng báo cáo doanh số. Còn báo cáo lãi lỗ vẫn dùng bộ lọc đồng nhất của hệ thống nhưng mặc định là năm nay"*):
   - Tổng quan and Doanh số take the shared filter and open on Tháng này. Tổng quan's own eight buttons and Doanh số's three buttons and two day boxes go.
   - **Báo cáo ngày is removed.** Doanh số filtered to Hôm nay gives the same day's figures. What only the daily report had: "so hôm qua" and "so cùng thứ tuần trước", which belong to the compare question still open; and the "Cần đặt hàng sớm" box, which is switched off until the first stocktake.
-  - Lãi lỗ takes the shared filter and opens on Năm nay.
+  - Lãi lỗ takes the shared filter and opens on Năm nay. **Only whole months** (owner 2026-10-09, *"1a"*). He was told that a range cutting a month would load a month's rent into a week and split depreciation by days. So on Lãi lỗ the filter offers only Tháng này, Tháng trước, Quý này, Quý trước, Năm nay, Năm trước and Từ đầu năm đến nay, and its Tuỳ chọn picks a first and last month, not days. One column per month, as now.
   - Giá trị xuất kho keeps its own tabs.
 
 ### BR-UI-008 — A comma separates thousands, a dot marks decimals, everywhere
