@@ -53,6 +53,7 @@ const ordersWithTwelve: PurchaseOrderListPage = {
   firstIndex: 1,
   lastIndex: 1,
   rangeError: false,
+  daySpan: { first: "2026-03-14", last: "2026-10-01" },
 };
 
 afterEach(() => {
@@ -97,6 +98,21 @@ describe("SupplierDetailView", () => {
     expect(screen.getByText("—")).toBeInTheDocument();
   });
 
+  // Final review (BR-UI-007): Phiếu nhập opens on Tháng này, so the link
+  // carries the days of the supplier's slips and every status — the list then
+  // shows the same slips the heading counts.
+  it("Xem trong Phiếu nhập opens the list on the days this supplier's slips span", () => {
+    render(
+      <SupplierDetailView supplier={vinamilkSupplier} orders={ordersWithTwelve} returnTo="/admin/suppliers" canDelete={false} />
+    );
+    const href = screen.getByRole("link", { name: /Xem trong Phiếu nhập/ }).getAttribute("href")!;
+    const url = new URL(href, "http://x");
+    expect(url.pathname).toBe("/admin/inventory/purchase-orders");
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      supplier: "NCC-029", status: "ALL", range: "CUSTOM", from: "2026-03-14", to: "2026-10-01",
+    });
+  });
+
   it("renders delete button when canDelete is true", () => {
     render(
       <SupplierDetailView
@@ -119,6 +135,7 @@ describe("SupplierDetailView", () => {
       firstIndex: 0,
       lastIndex: 0,
       rangeError: false,
+      daySpan: null,
     };
 
     render(
@@ -153,6 +170,7 @@ describe("SupplierDetailView", () => {
       firstIndex: 1,
       lastIndex: 1,
       rangeError: false,
+      daySpan: { first: "2026-08-12", last: "2026-08-12" },
     };
 
     render(

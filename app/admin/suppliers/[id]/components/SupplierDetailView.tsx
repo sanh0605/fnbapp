@@ -60,6 +60,16 @@ export function SupplierDetailView({
 
   const editHref = `/admin/suppliers/${encodeURIComponent(supplier.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`;
 
+  const purchaseOrdersParams = new URLSearchParams();
+  purchaseOrdersParams.set("supplier", supplier.id);
+  purchaseOrdersParams.set("status", "ALL");
+  if (orders.daySpan) {
+    purchaseOrdersParams.set("range", "CUSTOM");
+    purchaseOrdersParams.set("from", orders.daySpan.first);
+    purchaseOrdersParams.set("to", orders.daySpan.last);
+  }
+  const purchaseOrdersHref = `/admin/inventory/purchase-orders?${purchaseOrdersParams.toString()}`;
+
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
       <Button
@@ -113,7 +123,7 @@ export function SupplierDetailView({
             Phiếu nhập ({orders.total})
           </h2>
           <Link
-            href={`/admin/inventory/purchase-orders?supplier=${encodeURIComponent(supplier.id)}`}
+            href={purchaseOrdersHref}
             className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] inline-flex items-center"
           >
             Xem trong Phiếu nhập &rarr;

@@ -129,8 +129,9 @@ export function DateRangeButton(props: {
   mode?: "day" | "month"; // default "day"
   disabled?: boolean;
   disabledHint?: string; // shown under the button when disabled
+  align?: "left" | "right";
 }): JSX.Element {
-  const { value, onChange, today, mode = "day", disabled = false, disabledHint } = props;
+  const { value, onChange, today, mode = "day", disabled = false, disabledHint, align = "left" } = props;
 
   const [isOpen, setIsOpen] = useState(false);
   const [draftPreset, setDraftPreset] = useState<DateRangePresetKey>(value.preset);
@@ -325,7 +326,9 @@ export function DateRangeButton(props: {
           {/* Computer panel */}
           <div
             data-testid="range-panel-desktop"
-            className="hidden md:block absolute left-0 top-full z-20 mt-2 bg-surface-card border border-border rounded-2xl shadow-xl p-4 min-w-[640px]"
+            className={`hidden md:block absolute ${
+              align === "right" ? "right-0" : "left-0"
+            } top-full z-20 mt-2 bg-surface-card border border-border rounded-2xl shadow-xl p-4 min-w-[640px]`}
           >
             <div className="flex divide-x divide-border">
               {/* Presets list */}

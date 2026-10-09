@@ -132,6 +132,28 @@ describe("listPurchaseOrdersPage", () => {
     expect(r).toMatchObject({ rows: [], total: 0, page: 1, pageCount: 1, firstIndex: 0, lastIndex: 0 });
   });
 
+  // Final review (BR-UI-007): a supplier's page counts every slip and links to
+  // Phiếu nhập, which opens on Tháng này; the link carries the days its slips span.
+  describe("daySpan", () => {
+    it("is the Saigon day of the oldest and newest matched slip, across every page", () => {
+      const many = Array.from({ length: 25 }, (_, i) =>
+        po(`PO-${String(i).padStart(3, "0")}`, `2026-08-${String(i + 1).padStart(2, "0")}T03:00:00+00:00`));
+      const r = listPurchaseOrdersPage({ ...base, orders: [...many, ...real], filters: {} });
+      expect(r.rows).toHaveLength(20);
+      expect(r.daySpan).toEqual({ first: "2026-08-01", last: "2026-09-28" });
+    });
+
+    it("a slip at Saigon midnight counts on its Saigon day (PO-188 → 23/09)", () => {
+      const r = listPurchaseOrdersPage({ ...base, orders: real, filters: { supplier: "SUP-1" } });
+      expect(r.daySpan).toEqual({ first: "2026-09-23", last: "2026-09-28" });
+    });
+
+    it("is null when nothing matches", () => {
+      const r = listPurchaseOrdersPage({ ...base, orders: real, filters: { q: "không có" } });
+      expect(r.daySpan).toBeNull();
+    });
+  });
+
   describe("payment method (migration 0107)", () => {
     const paid = [
       po("PO-1", "2026-09-10T03:00:00+00:00", { payment_method: "CASH" }),

@@ -1,5 +1,5 @@
 import type { DBPurchaseOrder } from "@/types/db";
-import { formatDateTimeFull } from "@/lib/shared/datetime";
+import { formatDateTimeFull, saigonToday } from "@/lib/shared/datetime";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
 
 // Spec 2026-09-29-menu-va-khuon-trang-design.md section 3.5: the shared
@@ -25,6 +25,9 @@ export interface PurchaseOrderListRow {
 export interface PurchaseOrderListPage {
   rows: PurchaseOrderListRow[]; total: number; page: number; pageCount: number;
   firstIndex: number; lastIndex: number; rangeError: boolean;
+  // Saigon days (yyyy-mm-dd) of the oldest and newest matched slip over every
+  // page; null when nothing matches.
+  daySpan: { first: string; last: string } | null;
 }
 
 export function paymentLabelOf(method: DBPurchaseOrder["payment_method"]): string {
@@ -114,5 +117,9 @@ export function listPurchaseOrdersPage(input: {
     firstIndex: total === 0 ? 0 : start + 1,
     lastIndex: start + slice.length,
     rangeError,
+    daySpan: total === 0 ? null : {
+      first: saigonToday(new Date(slipTime(matched[total - 1]))),
+      last: saigonToday(new Date(slipTime(matched[0]))),
+    },
   };
 }

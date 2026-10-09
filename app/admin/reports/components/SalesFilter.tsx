@@ -68,6 +68,21 @@ function SalesFilterInner({
     writeRangeParams(params, next);
     params.delete("start");
     params.delete("end");
+    if (brandId) {
+      params.set("brandId", brandId);
+    } else {
+      params.delete("brandId");
+    }
+    if (staffName) {
+      params.set("staffName", staffName);
+    } else {
+      params.delete("staffName");
+    }
+    if (categoryId) {
+      params.set("categoryId", categoryId);
+    } else {
+      params.delete("categoryId");
+    }
     startTransition(() => {
       router.push(`?${params.toString()}`);
     });

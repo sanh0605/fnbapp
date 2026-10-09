@@ -24,7 +24,7 @@ describe("purchase orders page time filter (BR-UI-007)", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-10-09T09:00:00Z"));
     getPurchaseOrdersPage.mockReset();
-    getPurchaseOrdersPage.mockResolvedValue({ rows: [], total: 0, page: 1, pageCount: 1, firstIndex: 0, lastIndex: 0, rangeError: false, suppliers: [] });
+    getPurchaseOrdersPage.mockResolvedValue({ rows: [], total: 0, page: 1, pageCount: 1, firstIndex: 0, lastIndex: 0, rangeError: false, daySpan: null, suppliers: [] });
   });
   afterEach(() => vi.useRealTimers());
 

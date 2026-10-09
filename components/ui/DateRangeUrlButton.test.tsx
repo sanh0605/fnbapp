@@ -51,6 +51,17 @@ describe("DateRangeUrlButton", () => {
     expect(url.searchParams.get("brandId")).toBe("B1");
   });
 
+  // Final review: on Tổng quan and Lãi lỗ the button sits at the right end of
+  // the page header; a panel anchored at its left edge ran ~450px off screen.
+  it("the computer panel is anchored to the button's right edge", () => {
+    current.search = "";
+    render(<DateRangeUrlButton value={{ preset: "THIS_MONTH", start: "2026-10-01", end: "2026-10-31" }} today="2026-10-09" />);
+    fireEvent.click(screen.getByTestId("range-button"));
+    const panel = screen.getByTestId("range-panel-desktop");
+    expect(panel).toHaveClass("right-0");
+    expect(panel).not.toHaveClass("left-0");
+  });
+
   it("month mode: Năm trước writes range=LAST_YEAR and drops an old year=", () => {
     current.search = "year=2025";
     render(<DateRangeUrlButton mode="month" value={{ preset: "CUSTOM", start: "2025-01", end: "2025-12" }} today="2026-10-09" />);

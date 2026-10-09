@@ -31,6 +31,8 @@ export function DateRangeUrlButton({
       today={today}
       mode={mode}
       onChange={handleChange}
+      // DateRangeUrlButton is only used in page-header actions, so anchor panel to the right edge.
+      align="right"
     />
   );
 }

@@ -88,6 +88,40 @@ describe("SalesFilter time filter (BR-UI-007)", () => {
   });
 });
 
+// Final review: a range chosen after changing a box without "Lọc" used the
+// address's brand, so the page showed another brand under a box reading MR.PHIN.
+describe("SalesFilter range keeps the boxes on screen", () => {
+  it("MR.PHIN chosen, no Lọc, then Hôm nay: the page opens on Hôm nay for MR.PHIN", () => {
+    mockSearchParams.set("brandId", "BRD-2");
+    render(
+      <SalesFilter
+        brands={[{ id: "BRD-1", name: "MR.PHIN", status: "ACTIVE" }, { id: "BRD-2", name: "Uchako", status: "ACTIVE" }]}
+        users={[]}
+        categories={[]}
+        range={THIS_MONTH}
+        today={TODAY}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText(/^Thương hiệu/), { target: { value: "BRD-1" } });
+    fireEvent.click(screen.getByTestId("range-button"));
+    fireEvent.click(within(screen.getByTestId("range-panel-desktop")).getByRole("button", { name: "Hôm nay" }));
+    const q = pushed();
+    expect(q.get("range")).toBe("TODAY");
+    expect(q.get("brandId")).toBe("BRD-1");
+  });
+
+  it("a box set back to Tất cả is dropped from the address", () => {
+    mockSearchParams.set("brandId", "BRD-2");
+    render(
+      <SalesFilter brands={[{ id: "BRD-2", name: "Uchako", status: "ACTIVE" }]} users={[]} categories={[]} range={THIS_MONTH} today={TODAY} />,
+    );
+    fireEvent.change(screen.getByLabelText(/^Thương hiệu/), { target: { value: "" } });
+    fireEvent.click(screen.getByTestId("range-button"));
+    fireEvent.click(within(screen.getByTestId("range-panel-desktop")).getByRole("button", { name: "Hôm nay" }));
+    expect(pushed().get("brandId")).toBeNull();
+  });
+});
+
 // Wave K5 (plan Review Focus 5): the brand box is the shared Select inside
 // Field. Choosing a brand then "Lọc" keeps the range on the address.
 describe("SalesFilter brand box (wave K5)", () => {

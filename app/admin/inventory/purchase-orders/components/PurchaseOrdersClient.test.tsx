@@ -48,7 +48,7 @@ const pageData: PurchaseOrderListPage & { suppliers: { id: string; name: string 
   pageCount: 1,
   firstIndex: 0,
   lastIndex: 0,
-  rangeError: false,
+  rangeError: false, daySpan: null,
   suppliers: [
     { id: 'SUP-1', name: 'Nhà cung cấp A' },
     { id: 'SUP-2', name: 'Nhà cung cấp B' }

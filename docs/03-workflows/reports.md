@@ -34,8 +34,8 @@ profit and loss at `/admin/reports/pnl`.
    only). The dashboard and the sales report put one compare line per earlier
    period under each figure card — the same days of the period before, and for a
    single day both the day before and the same weekday a week earlier. The
-   issued-goods report keeps its own tabs. Each screen also offers and read-only controls to sort
-   or expand rows. There is no create, edit, delete, or export-that-writes button
+   issued-goods report keeps its own tabs. Each screen also offers read-only
+   controls to sort or expand rows. There is no create, edit, delete, or export-that-writes button
    anywhere in this flow, because the flow writes nothing; any such button would be
    out of place and should never appear. The dashboard at `/admin` presents its
    revenue and orders summary directly, with links through to the detailed reports.

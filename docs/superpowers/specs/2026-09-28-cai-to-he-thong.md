@@ -113,7 +113,7 @@ ngoài bán/mua → xem báo cáo → cài đặt một lần.
 | **Nhập hàng** | Phiếu nhập, Nhà cung cấp | Đồng ý tách như anh đề xuất: là việc làm nhiều nhất hằng tuần, có đối tác riêng |
 | **Kho** | Tồn kho, Phiếu xuất, Kiểm kê, Hàng hoá, Tài sản | Mọi thứ đang nằm trong quán |
 | **Thu chi** | Sổ thu chi | Là chỗ **ghi** tiền. Báo cáo chỉ để **xem** — để một trang nhập liệu trong Báo cáo thì nhóm Báo cáo mất nghĩa |
-| **Báo cáo** | Tổng kết ngày, Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | Chỉ xem, không nhập |
+| **Báo cáo** | Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | Chỉ xem, không nhập. Tổng kết ngày bỏ 2026-10-09: Doanh số lọc Hôm nay thay (`BR-UI-007`) |
 | **Cài đặt** | Thương hiệu & điểm bán, Nhân viên & quyền, Đơn vị tính, Phân loại hàng, Nhóm thu chi, Tài khoản ngân hàng, Thời hạn khấu hao, Nhật ký | Thứ đặt một lần rồi ít đụng. Thương hiệu, điểm bán thuộc loại này, nên bỏ nhóm "Vận hành" |
 
 Bảy nhóm, không nhóm nào vừa để nhập vừa để xem.
@@ -164,7 +164,7 @@ nhóm dưới đây là bản chốt; chỉ còn nội dung trang Tổng quan (Q
 | Nhập hàng | Phiếu nhập, Nhà cung cấp | |
 | Kho | Tồn kho, Phiếu xuất, Kiểm kê, Hàng hoá, Tài sản, Thời hạn khấu hao, Đơn vị tính, Phân loại hàng | |
 | Thu chi | Sổ thu chi, Nhóm thu chi, Tài khoản ngân hàng | |
-| Báo cáo | Tổng kết ngày, Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | |
+| Báo cáo | Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | |
 | Cài đặt | Nhân viên & quyền, Nhật ký hoạt động | |
 
 Tên mục theo mục 5.3; anh chưa phản đối cách đặt tên.
