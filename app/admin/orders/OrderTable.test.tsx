@@ -4,6 +4,10 @@ import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/re
 import OrderTable from "./OrderTable";
 import type { OrderListItem } from "./actions";
 
+// BR-UI-007: the list now takes its range from the page.
+const TEST_TODAY = "2026-10-09";
+const TEST_RANGE = { preset: "THIS_MONTH", start: "2026-10-01", end: "2026-10-31" } as const;
+
 const { push, replace, router, mockSearchParams, searchParamsObject } = vi.hoisted(() => {
   const pushFn = vi.fn();
   const replaceFn = vi.fn();
@@ -104,7 +108,7 @@ describe("OrderTable buttons (BR-UI-005, spec 2.1)", () => {
   it('"Xóa bộ lọc" only clears the filters, so it wears the Phụ look, not the red delete outline', () => {
     mockSearchParams.set("payment", "Chuyen khoan");
     render(
-      <OrderTable
+      <OrderTable range={TEST_RANGE} today={TEST_TODAY}
         initialOrders={[makeOrder("ORD-1", "000001")]}
         totalCount={1}
         itemsPerPage={20}
@@ -126,7 +130,7 @@ describe("OrderTable navigation", () => {
     mockSearchParams.set("payment", "Chuyen khoan");
 
     render(
-      <OrderTable
+      <OrderTable range={TEST_RANGE} today={TEST_TODAY}
         initialOrders={[makeOrder("ORD-1", "000001")]}
         totalCount={1}
         itemsPerPage={20}
@@ -154,7 +158,7 @@ describe("OrderTable navigation", () => {
       mockSearchParams.set("to", "2026-09-15");
 
       render(
-        <OrderTable
+        <OrderTable range={TEST_RANGE} today={TEST_TODAY}
           initialOrders={[makeOrder("ORD-1", "000001")]}
           totalCount={1}
           itemsPerPage={20}
@@ -179,7 +183,7 @@ describe("OrderTable navigation", () => {
 describe("OrderTable -- shared table (wave K4)", () => {
   const renderList = () =>
     render(
-      <OrderTable
+      <OrderTable range={TEST_RANGE} today={TEST_TODAY}
         initialOrders={[makeOrder("ORD-1", "000001"), makeOrder("ORD-2", "000002")]}
         totalCount={2}
         itemsPerPage={20}
@@ -202,49 +206,5 @@ describe("OrderTable -- shared table (wave K4)", () => {
     expect(phone).not.toBeNull();
     expect(phone!.textContent).toContain("ORD000001");
     expect(phone!.textContent).toContain("ORD000002");
-  });
-});
-
-// Review of wave K4: the date boxes sit in the shared filter card, where Enter
-// applies the filter. Enter must apply the day just typed, and a day that is
-// not a date says so under its box instead of silently dropping the filter.
-describe("OrderTable -- date filter (wave K4 review)", () => {
-  const renderList = () =>
-    render(
-      <OrderTable
-        initialOrders={[makeOrder("ORD-1", "000001")]}
-        totalCount={1}
-        itemsPerPage={20}
-        brands={[]}
-        products={[]}
-        variants={[]}
-        modifiers={[]}
-        categories={[]}
-      />
-    );
-  const lastUrl = () => {
-    const calls = [...push.mock.calls, ...replace.mock.calls];
-    return calls.length ? String(calls[calls.length - 1][0]) : "";
-  };
-
-  it("Enter in Từ ngày applies the typed day", async () => {
-    mockSearchParams.set("from", "2026-09-01");
-    renderList();
-    const box = screen.getByLabelText("Từ ngày");
-    fireEvent.change(box, { target: { value: "15/09/2026" } });
-    fireEvent.keyDown(box, { key: "Enter" });
-    await waitFor(() => expect(lastUrl()).toContain("from=2026-09-15"));
-    await new Promise((r) => setTimeout(r, 20));
-    expect(lastUrl()).toContain("from=2026-09-15");
-  });
-
-  it("a day that is not a date is said under the box and keeps the filter", async () => {
-    mockSearchParams.set("from", "2026-09-01");
-    renderList();
-    const box = screen.getByLabelText("Từ ngày");
-    fireEvent.change(box, { target: { value: "32/13/2026" } });
-    fireEvent.keyDown(box, { key: "Enter" });
-    await waitFor(() => expect(screen.getByText("Ngày không hợp lệ")).toBeInTheDocument());
-    expect(lastUrl()).not.toMatch(/from=(?!2026-09-01)/);
   });
 });

@@ -4,6 +4,10 @@ import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import React from "react";
 import ActivityLogClient from "./ActivityLogClient";
 
+// BR-UI-007: the list now takes its range from the page.
+const TEST_TODAY = "2026-10-09";
+const TEST_RANGE = { preset: "THIS_MONTH", start: "2026-10-01", end: "2026-10-31" } as const;
+
 // DayInput asks matchMedia whether it is on a phone.
 if (typeof window.matchMedia !== "function") {
   window.matchMedia = ((query: string) => ({
@@ -52,7 +56,7 @@ beforeEach(() => {
 describe("ActivityLogClient", () => {
   it("renders event type options with Vietnamese-only labels (no English)", () => {
     render(
-      <ActivityLogClient
+      <ActivityLogClient range={TEST_RANGE} today={TEST_TODAY}
         initialEvents={[]}
         actors={["admin"]}
         totalCount={0}
@@ -75,40 +79,3 @@ describe("ActivityLogClient", () => {
   });
 });
 
-// Wave K6 (plan Review Focus 3): "Từ ngày" and "Đến ngày" move to the shared
-// DayInput. A typed day puts from/to (yyyy-mm-dd) on the address as before; a
-// day that is not a date is said under the box and the address stays put.
-describe("ActivityLogClient day boxes (wave K6)", () => {
-  const renderLog = () =>
-    render(<ActivityLogClient initialEvents={[]} actors={["admin"]} totalCount={0} itemsPerPage={20} />);
-
-  it("typing 15/09/2026 in Từ ngày puts from=2026-09-15 on the address", () => {
-    renderLog();
-    const from = screen.getByLabelText(/^Từ ngày( \*)?$/) as HTMLInputElement;
-    fireEvent.change(from, { target: { value: "15/09/2026" } });
-    fireEvent.blur(from);
-    expect(push).toHaveBeenCalledTimes(1);
-    expect(push.mock.calls[0][0]).toBe("/admin/activity-log?from=2026-09-15");
-  });
-
-  it("typing 32/13/2026 in Đến ngày says the day is wrong and leaves the address alone", async () => {
-    renderLog();
-    const to = screen.getByLabelText(/^Đến ngày( \*)?$/) as HTMLInputElement;
-    fireEvent.change(to, { target: { value: "32/13/2026" } });
-    fireEvent.blur(to);
-    expect(await screen.findByText("Ngày không hợp lệ")).toBeInTheDocument();
-    expect(push).not.toHaveBeenCalled();
-  });
-
-  // K6 review: DayInput reports on every blur, so passing through a box must
-  // not send the reader back to page 1.
-  it("leaving a date box without changing it keeps the page (no new address)", () => {
-    mockSearchParams = new URLSearchParams("from=2026-09-15&page=3");
-    render(<ActivityLogClient initialEvents={[]} actors={["admin"]} totalCount={100} itemsPerPage={20} />);
-    const from = screen.getByLabelText(/^Từ ngày( \*)?$/) as HTMLInputElement;
-    const to = screen.getByLabelText(/^Đến ngày( \*)?$/) as HTMLInputElement;
-    fireEvent.blur(from);
-    fireEvent.blur(to);
-    expect(push).not.toHaveBeenCalled();
-  });
-});

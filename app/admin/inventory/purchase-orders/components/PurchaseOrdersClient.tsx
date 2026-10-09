@@ -1,24 +1,38 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
-import { DayInput } from "@/components/ui/DayInput";
+import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
 import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { formatNumber } from "@/lib/shared/format";
 import { useFilterForm } from "@/lib/shared/use-filter-form";
+import {
+  formatRangeButtonText,
+  writeRangeParams,
+  type RangeValue,
+} from "@/lib/shared/date-range-params";
 import type { PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
 
-interface PurchaseOrdersClientProps {
+function formatEmptyRangePart(range: RangeValue): string {
+  const text = formatRangeButtonText(range);
+  const [preset, ...rest] = text.split(" · ");
+  return `${preset} (${rest.join(" · ")})`;
+}
+
+export interface PurchaseOrdersClientProps {
   pageData: PurchaseOrderListPage & { suppliers: { id: string; name: string }[] };
+  range: RangeValue;
+  today: string;
+  searching?: boolean;
 }
 
 type PurchaseOrderRow = PurchaseOrderListPage["rows"][number];
@@ -36,38 +50,40 @@ function renderStatusBadge(status: string) {
   return <Badge variant="neutral">{status}</Badge>;
 }
 
-export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientProps): JSX.Element {
+export default function PurchaseOrdersClient({
+  pageData,
+  range,
+  today,
+  searching = false,
+}: PurchaseOrdersClientProps): JSX.Element {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+
 
   const defaultFilters = {
     q: "",
     status: "ACTIVE",
     supplier: "ALL",
-    from: "",
-    to: "",
     page: "1",
     pay: "ALL",
   };
   const { draft, setField, applyFilters, isPending } = useFilterForm(defaultFilters);
-  const [fromError, setFromError] = useState("");
-  const [toError, setToError] = useState("");
-  const [rangeMsg, setRangeMsg] = useState("");
   const [applyRequested, setApplyRequested] = useState(false);
 
   const hasAnyFilter = Boolean(
     searchParams.get("q") ||
-      searchParams.get("status") ||
-      searchParams.get("supplier") ||
+      (searchParams.get("status") && searchParams.get("status") !== "ACTIVE") ||
+      (searchParams.get("supplier") && searchParams.get("supplier") !== "ALL") ||
+      (searchParams.get("pay") && searchParams.get("pay") !== "ALL") ||
+      (searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
       searchParams.get("from") ||
-      searchParams.get("to") ||
-      searchParams.get("pay")
+      searchParams.get("to")
   );
   const draftChanged =
     draft.q !== defaultFilters.q ||
     draft.status !== defaultFilters.status ||
     draft.supplier !== defaultFilters.supplier ||
-    draft.from !== defaultFilters.from ||
-    draft.to !== defaultFilters.to ||
     draft.pay !== defaultFilters.pay;
   const showClear = hasAnyFilter || draftChanged;
 
@@ -78,45 +94,31 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
   }, [applyRequested, draft]);
 
   function handleApply() {
-    setFromError("");
-    setToError("");
-    setRangeMsg("");
-    let hasError = false;
-    if (draft.from === "invalid") {
-      setFromError("Ngày không hợp lệ");
-      hasError = true;
-    }
-    if (draft.to === "invalid") {
-      setToError("Ngày không hợp lệ");
-      hasError = true;
-    }
-    if (hasError) return;
-    if (draft.from && draft.to && draft.from > draft.to) {
-      setRangeMsg("Ngày bắt đầu phải trước ngày kết thúc");
-      return;
-    }
     applyFilters({ page: "1" });
   }
 
   function handleClear() {
-    setFromError("");
-    setToError("");
-    setRangeMsg("");
     setField("q", "");
     setField("status", "ACTIVE");
     setField("supplier", "ALL");
-    setField("from", "");
-    setField("to", "");
     setField("pay", "ALL");
-    applyFilters({
-      q: "",
-      status: "ACTIVE",
-      supplier: "ALL",
-      from: "",
-      to: "",
-      page: "1",
-      pay: "ALL",
-    });
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("range");
+    params.delete("from");
+    params.delete("to");
+    params.delete("q");
+    params.delete("status");
+    params.delete("supplier");
+    params.delete("pay");
+    params.delete("page");
+    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname, { scroll: false });
+  }
+
+  function handleDateRangeChange(nextRange: RangeValue) {
+    const params = new URLSearchParams(searchParams.toString());
+    writeRangeParams(params, nextRange);
+    params.delete("page");
+    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname, { scroll: false });
   }
 
   const { page, pageCount, firstIndex, lastIndex, total, rows, rangeError } = pageData;
@@ -224,6 +226,15 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
         onClear={handleClear}
         showClear={showClear}
       >
+        <div className="w-full md:w-auto shrink-0">
+          <DateRangeButton
+            value={range}
+            today={today}
+            onChange={handleDateRangeChange}
+            disabled={searching}
+            disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
+          />
+        </div>
         <div className="flex-1 min-w-[200px]">
           <Field label="Tìm kiếm" htmlFor="search-input">
             <TextInput
@@ -278,37 +289,7 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
             </Select>
           </Field>
         </div>
-        <div className="w-full md:w-40">
-          <DayInput
-            label="Từ ngày"
-            value={draft.from}
-            onChange={(v) => {
-              setField("from", v);
-              setFromError("");
-              setRangeMsg("");
-            }}
-            error={fromError}
-          />
-        </div>
-        <div className="w-full md:w-40">
-          <DayInput
-            label="Đến ngày"
-            value={draft.to}
-            onChange={(v) => {
-              setField("to", v);
-              setToError("");
-              setRangeMsg("");
-            }}
-            error={toError}
-          />
-        </div>
       </FilterCard>
-
-      {(rangeError || rangeMsg) && (
-        <div className="bg-danger/10 text-danger px-4 py-3 rounded-lg text-sm font-medium">
-          Ngày bắt đầu phải trước ngày kết thúc
-        </div>
-      )}
 
       {isPending && <div className="text-text-muted text-sm animate-pulse">Đang tải...</div>}
 
@@ -327,8 +308,11 @@ export default function PurchaseOrdersClient({ pageData }: PurchaseOrdersClientP
           empty={
             <EmptyState
               icon={<span className="text-4xl">📦</span>}
-              title={hasAnyFilter ? "Không có phiếu nào khớp bộ lọc" : "Chưa có phiếu nhập nào"}
-              description={hasAnyFilter ? undefined : "Tạo phiếu nhập để thêm vào tồn kho."}
+              title={
+                searching
+                  ? "Không tìm thấy phiếu nào trên mọi ngày"
+                  : `Không có phiếu nào trong ${formatEmptyRangePart(range)}`
+              }
               action={hasAnyFilter ? { label: "Xoá lọc", onClick: handleClear } : undefined}
             />
           }

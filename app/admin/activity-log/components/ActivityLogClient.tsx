@@ -5,19 +5,33 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
-import { DayInput } from "@/components/ui/DayInput";
+import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  formatRangeButtonText,
+  writeRangeParams,
+  type RangeValue,
+} from "@/lib/shared/date-range-params";
 import type { ActivityLogEvent as OrderEvent } from "../actions";
 
-interface ActivityLogClientProps {
+function formatEmptyRangePart(range: RangeValue): string {
+  const text = formatRangeButtonText(range);
+  const [preset, ...rest] = text.split(" · ");
+  return `${preset} (${rest.join(" · ")})`;
+}
+
+export interface ActivityLogClientProps {
   initialEvents: OrderEvent[];
   actors: string[];
   totalCount: number;
   itemsPerPage: number;
+  range: RangeValue;
+  today: string;
+  searching?: boolean;
 }
 
 export default function ActivityLogClient({
@@ -25,18 +39,19 @@ export default function ActivityLogClient({
   actors,
   totalCount,
   itemsPerPage,
+  range,
+  today,
+  searching = false,
 }: ActivityLogClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+
+
   const [search, setSearch] = useState(() => searchParams.get("q") || "");
   const [eventType, setEventType] = useState(() => searchParams.get("type") || "ALL");
   const [actorFilter, setActorFilter] = useState(() => searchParams.get("actor") || "ALL");
-  const [startDate, setStartDate] = useState(() => searchParams.get("from") || "");
-  const [endDate, setEndDate] = useState(() => searchParams.get("to") || "");
-  const [fromError, setFromError] = useState("");
-  const [toError, setToError] = useState("");
   const [currentPage, setCurrentPage] = useState(() => {
     const page = Number(searchParams.get("page"));
     return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
@@ -46,10 +61,6 @@ export default function ActivityLogClient({
     setSearch(searchParams.get("q") || "");
     setEventType(searchParams.get("type") || "ALL");
     setActorFilter(searchParams.get("actor") || "ALL");
-    setStartDate(searchParams.get("from") || "");
-    setEndDate(searchParams.get("to") || "");
-    setFromError("");
-    setToError("");
     const page = Number(searchParams.get("page"));
     setCurrentPage(Number.isFinite(page) && page > 0 ? Math.floor(page) : 1);
   }, [searchParams]);
@@ -59,18 +70,16 @@ export default function ActivityLogClient({
     q?: string;
     type?: string;
     actor?: string;
-    from?: string;
-    to?: string;
   }) => {
     const params = new URLSearchParams(searchParams.toString());
-    for (const key of ["q", "type", "actor", "from", "to"] as const) {
+    for (const key of ["q", "type", "actor"] as const) {
       const value = updates[key];
       if (value === undefined) continue;
       if (value && value !== "ALL") params.set(key, value);
       else params.delete(key);
     }
 
-    const isFilterChange = ["q", "type", "actor", "from", "to"]
+    const isFilterChange = ["q", "type", "actor"]
       .some(key => updates[key as keyof typeof updates] !== undefined);
     const targetPage = updates.page ?? (isFilterChange ? 1 : currentPage);
     if (targetPage > 1) params.set("page", String(targetPage));
@@ -83,6 +92,39 @@ export default function ActivityLogClient({
       else router.push(href, { scroll: false });
     });
   };
+
+  const handleDateRangeChange = (nextRange: RangeValue) => {
+    const params = new URLSearchParams(searchParams.toString());
+    writeRangeParams(params, nextRange);
+    params.delete("page");
+    setCurrentPage(1);
+    const href = params.size > 0 ? `${pathname}?${params.toString()}` : pathname;
+    startTransition(() => {
+      router.push(href, { scroll: false });
+    });
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    setEventType("ALL");
+    setActorFilter("ALL");
+    setCurrentPage(1);
+    startTransition(() => {
+      router.push(pathname, { scroll: false });
+    });
+  };
+
+  const hasAnyFilter = Boolean(
+    search ||
+      (eventType && eventType !== "ALL") ||
+      (actorFilter && actorFilter !== "ALL") ||
+      searchParams.get("q") ||
+      (searchParams.get("type") && searchParams.get("type") !== "ALL") ||
+      (searchParams.get("actor") && searchParams.get("actor") !== "ALL") ||
+      (searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
+      searchParams.get("from") ||
+      searchParams.get("to")
+  );
 
   const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
 
@@ -178,6 +220,15 @@ export default function ActivityLogClient({
         subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">
+        <div className="w-full md:w-auto shrink-0">
+          <DateRangeButton
+            value={range}
+            today={today}
+            onChange={handleDateRangeChange}
+            disabled={searching}
+            disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
+          />
+        </div>
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-56">
           <Field label="Tìm kiếm" htmlFor="filter-search">
             <TextInput
@@ -200,6 +251,17 @@ export default function ActivityLogClient({
         >
           Lọc
         </Button>
+        {hasAnyFilter && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClear}
+            disabled={isPending}
+            className="w-full md:w-auto"
+          >
+            Xoá lọc
+          </Button>
+        )}
         <div className="shrink-0 flex-1 md:flex-none w-full md:w-40">
           <Field label="Loại sự kiện" htmlFor="filter-event-type">
             <Select
@@ -238,41 +300,6 @@ export default function ActivityLogClient({
             </Select>
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
-          <DayInput
-            label="Từ ngày"
-            value={startDate}
-            onChange={(v) => {
-              if (v === "invalid") {
-                setFromError("Ngày không hợp lệ");
-                return;
-              }
-              setFromError("");
-              // DayInput reports on every blur; only a new day moves the list.
-              if (v === startDate) return;
-              setStartDate(v);
-              updateUrl({ from: v });
-            }}
-            error={fromError}
-          />
-        </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
-          <DayInput
-            label="Đến ngày"
-            value={endDate}
-            onChange={(v) => {
-              if (v === "invalid") {
-                setToError("Ngày không hợp lệ");
-                return;
-              }
-              setToError("");
-              if (v === endDate) return;
-              setEndDate(v);
-              updateUrl({ to: v });
-            }}
-            error={toError}
-          />
-        </div>
       </div>
 
       <div className={`relative pl-6 md:pl-10 ${isPending ? "opacity-60" : ""}`}>
@@ -283,8 +310,20 @@ export default function ActivityLogClient({
           {initialEvents.length === 0 ? (
             <EmptyState 
               icon="🕒" 
-              title="Chưa có nhật ký hoạt động" 
-              description="Hệ thống sẽ ghi nhận lịch sử các thao tác thay đổi ở đây."
+              title={
+                searching
+                  ? "Không tìm thấy nhật ký nào trên mọi ngày"
+                  : `Không có nhật ký nào trong ${formatEmptyRangePart(range)}`
+              }
+              description={
+                searching || hasAnyFilter
+                  ? undefined
+                  : "Hệ thống sẽ ghi nhận lịch sử các thao tác thay đổi ở đây."
+              }
+              action={{
+                label: "Xoá lọc",
+                onClick: handleClear,
+              }}
             />
           ) : (
             initialEvents.map((evt) => {

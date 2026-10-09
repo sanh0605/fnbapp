@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { getOrdersV2 } from "./actions";
 import OrderTable from "./OrderTable";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
+import { saigonToday } from "@/lib/shared/datetime";
+import { readRangeParams } from "@/lib/shared/date-range-params";
 
 export const dynamic = "force-dynamic";
 
@@ -18,25 +20,28 @@ function toEndOfDayIso(dateOnly: string): string {
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const getParam = (key: string) => {
     const val = searchParams?.[key];
     return typeof val === "string" ? val : Array.isArray(val) ? val[0] : undefined;
   };
 
+  const today = saigonToday();
+  const range = readRangeParams(searchParams ?? {}, today, "THIS_MONTH");
+
   const page = parseInt(getParam("page") || "1", 10) || 1;
-  const q = getParam("q") || undefined;
-  const fromParam = getParam("from");
-  const toParam = getParam("to");
+  const q = getParam("q");
+  const searching = Boolean(q?.trim());
+
   const payment = getParam("payment") || undefined;
   const brand = getParam("brand") || undefined;
 
   const { orders, totalCount, itemsPerPage, brands, products, variants, modifiers, categories } = await getOrdersV2({
     page,
-    q,
-    from: fromParam ? toStartOfDayIso(fromParam) : undefined,
-    to: toParam ? toEndOfDayIso(toParam) : undefined,
+    q: q || undefined,
+    from: searching ? undefined : toStartOfDayIso(range.start),
+    to: searching ? undefined : toEndOfDayIso(range.end),
     payment,
     brand,
   });
@@ -53,6 +58,9 @@ export default async function OrdersPage({
           variants={variants}
           modifiers={modifiers}
           categories={categories}
+          range={range}
+          today={today}
+          searching={searching}
         />
       </Suspense>
     </div>

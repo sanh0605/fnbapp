@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef, useTransition } from "react";
+import { useMemo, useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -8,13 +8,25 @@ import { Badge } from "@/components/ui/Badge";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
-import { DayInput } from "@/components/ui/DayInput";
+import { DateRangeButton } from "@/components/ui/DateRangeButton";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterCard } from "@/components/ui/list/FilterCard";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
+import {
+  formatRangeButtonText,
+  writeRangeParams,
+  type RangeValue,
+} from "@/lib/shared/date-range-params";
 
 import type { OrderListItem } from "./actions";
+
+function formatEmptyRangePart(range: RangeValue): string {
+  const text = formatRangeButtonText(range);
+  const [preset, ...rest] = text.split(" · ");
+  return `${preset} (${rest.join(" · ")})`;
+}
 
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
@@ -44,6 +56,20 @@ interface Category {
   name: string;
 }
 
+export interface OrderTableProps {
+  initialOrders: Order[];
+  totalCount: number;
+  itemsPerPage: number;
+  brands: Brand[];
+  products: Product[];
+  variants: Variant[];
+  modifiers: Modifier[];
+  categories: Category[];
+  range: RangeValue;
+  today: string;
+  searching?: boolean;
+}
+
 export default function OrderTable({
   initialOrders,
   totalCount,
@@ -53,16 +79,10 @@ export default function OrderTable({
   variants: _variants,
   modifiers: _modifiers,
   categories: _categories,
-}: {
-  initialOrders: Order[];
-  totalCount: number;
-  itemsPerPage: number;
-  brands: Brand[];
-  products: Product[];
-  variants: Variant[];
-  modifiers: Modifier[];
-  categories: Category[];
-}) {
+  range,
+  today,
+  searching = false,
+}: OrderTableProps) {
   const [orders, setOrders] = useState(initialOrders);
   useEffect(() => {
     setOrders(initialOrders);
@@ -70,6 +90,7 @@ export default function OrderTable({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+
 
   const [isPendingFilter, startFilterTransition] = useTransition();
 
@@ -81,23 +102,12 @@ export default function OrderTable({
   const [searchQuery, setSearchQuery] = useState<string>(() => {
     return searchParams.get("q") || "";
   });
-  const [startDate, setStartDate] = useState<string>(() => {
-    return searchParams.get("from") || "";
-  });
-  const [endDate, setEndDate] = useState<string>(() => {
-    return searchParams.get("to") || "";
-  });
   const [paymentFilter, setPaymentFilter] = useState<string>(() => {
     return searchParams.get("payment") || "";
   });
   const [brandFilter, setBrandFilter] = useState<string>(() => {
     return searchParams.get("brand") || "";
   });
-
-  const fromRef = useRef<string>(searchParams.get("from") || "");
-  const toRef = useRef<string>(searchParams.get("to") || "");
-  const [fromError, setFromError] = useState<string>("");
-  const [toError, setToError] = useState<string>("");
 
   const currentUrl = searchParams.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
   const returnTo = encodeURIComponent(currentUrl);
@@ -109,26 +119,16 @@ export default function OrderTable({
     const brand = searchParams.get("brand") || "";
     const pageVal = searchParams.get("page");
     const page = pageVal ? parseInt(pageVal, 10) || 1 : 1;
-    const from = searchParams.get("from") || "";
-    const to = searchParams.get("to") || "";
 
     if (q !== searchQuery) setSearchQuery(q);
     if (payment !== paymentFilter) setPaymentFilter(payment);
     if (brand !== brandFilter) setBrandFilter(brand);
     if (page !== currentPage) setCurrentPage(page);
-    if (from !== startDate) setStartDate(from);
-    if (to !== endDate) setEndDate(to);
-    fromRef.current = from;
-    toRef.current = to;
-    setFromError("");
-    setToError("");
   }, [searchParams]);
 
   const handleFilterChange = (updates: {
     page?: number;
     q?: string;
-    from?: string | null;
-    to?: string | null;
     payment?: string;
     brand?: string;
   }) => {
@@ -149,18 +149,6 @@ export default function OrderTable({
       else params.delete("brand");
       setBrandFilter(updates.brand);
     }
-    if (updates.from !== undefined) {
-      if (updates.from && updates.from !== "invalid") params.set("from", updates.from);
-      else params.delete("from");
-      setStartDate(updates.from || "");
-      fromRef.current = updates.from || "";
-    }
-    if (updates.to !== undefined) {
-      if (updates.to && updates.to !== "invalid") params.set("to", updates.to);
-      else params.delete("to");
-      setEndDate(updates.to || "");
-      toRef.current = updates.to || "";
-    }
 
     let targetPage = 1;
     if (updates.page !== undefined) {
@@ -169,9 +157,7 @@ export default function OrderTable({
       const isFilterChange =
         updates.q !== undefined ||
         updates.payment !== undefined ||
-        updates.brand !== undefined ||
-        updates.from !== undefined ||
-        updates.to !== undefined;
+        updates.brand !== undefined;
       if (!isFilterChange) {
         const pageVal = params.get("page");
         targetPage = pageVal ? parseInt(pageVal, 10) || 1 : 1;
@@ -195,31 +181,19 @@ export default function OrderTable({
     });
   };
 
+  const handleDateRangeChange = (nextRange: RangeValue) => {
+    const params = new URLSearchParams(searchParams.toString());
+    writeRangeParams(params, nextRange);
+    params.delete("page");
+    setCurrentPage(1);
+    startFilterTransition(() => {
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    });
+  };
+
   const handleApply = () => {
-    const from = fromRef.current;
-    const to = toRef.current;
-    let hasError = false;
-
-    if (from === "invalid") {
-      setFromError("Ngày không hợp lệ");
-      hasError = true;
-    } else {
-      setFromError("");
-    }
-
-    if (to === "invalid") {
-      setToError("Ngày không hợp lệ");
-      hasError = true;
-    } else {
-      setToError("");
-    }
-
-    if (hasError) return;
-
     handleFilterChange({
       q: searchQuery,
-      from,
-      to,
     });
   };
 
@@ -227,24 +201,25 @@ export default function OrderTable({
   const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
 
   const clearFilters = () => {
-    setFromError("");
-    setToError("");
-    fromRef.current = "";
-    toRef.current = "";
-    setStartDate("");
-    setEndDate("");
-    handleFilterChange({
-      q: "",
-      from: "",
-      to: "",
-      payment: "",
-      brand: "",
-      page: 1,
+    setSearchQuery("");
+    setPaymentFilter("");
+    setBrandFilter("");
+    setCurrentPage(1);
+    startFilterTransition(() => {
+      router.push(pathname, { scroll: false });
     });
   };
 
   const hasActiveFilters = Boolean(
-    searchQuery || startDate || endDate || paymentFilter || brandFilter
+    searchQuery ||
+    paymentFilter ||
+    brandFilter ||
+    searchParams.get("q") ||
+    searchParams.get("payment") ||
+    searchParams.get("brand") ||
+    searchParams.get("range") ||
+    searchParams.get("from") ||
+    searchParams.get("to")
   );
 
   const rightContent = (
@@ -392,6 +367,15 @@ export default function OrderTable({
         onClear={clearFilters}
         showClear={false}
       >
+        <div className="w-full md:w-auto shrink-0">
+          <DateRangeButton
+            value={range}
+            today={today}
+            onChange={handleDateRangeChange}
+            disabled={searching}
+            disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
+          />
+        </div>
         <div className="flex-1 min-w-[200px]">
           <Field label="Tìm mã đơn" htmlFor="search-order-no">
             <TextInput
@@ -401,30 +385,6 @@ export default function OrderTable({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </Field>
-        </div>
-        <div className="w-full md:w-40">
-          <DayInput
-            label="Từ ngày"
-            value={startDate}
-            onChange={(val) => {
-              fromRef.current = val;
-              setStartDate(val);
-              setFromError("");
-            }}
-            error={fromError}
-          />
-        </div>
-        <div className="w-full md:w-40">
-          <DayInput
-            label="Đến ngày"
-            value={endDate}
-            onChange={(val) => {
-              toRef.current = val;
-              setEndDate(val);
-              setToError("");
-            }}
-            error={toError}
-          />
         </div>
         <div className="w-full md:w-44">
           <Field label="Phương thức thanh toán" htmlFor="payment-filter">
@@ -475,7 +435,20 @@ export default function OrderTable({
           }
           columns={columns}
           renderCard={renderCard}
-          empty="Không tìm thấy đơn hàng nào"
+          empty={
+            <EmptyState
+              icon={<span className="text-4xl">📦</span>}
+              title={
+                searching
+                  ? "Không tìm thấy đơn hàng nào trên mọi ngày"
+                  : `Không có đơn hàng nào trong ${formatEmptyRangePart(range)}`
+              }
+              action={{
+                label: "Xoá lọc",
+                onClick: clearFilters,
+              }}
+            />
+          }
         />
       </div>
 

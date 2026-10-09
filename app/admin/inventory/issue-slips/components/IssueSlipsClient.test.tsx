@@ -4,6 +4,10 @@ import { render, screen, cleanup, within } from "@testing-library/react";
 import IssueSlipsClient from "./IssueSlipsClient";
 import type { IssueSlipListPage } from "@/lib/stock/issue-slip-list";
 
+// BR-UI-007: the list now takes its range from the page.
+const TEST_TODAY = "2026-10-09";
+const TEST_RANGE = { preset: "THIS_MONTH", start: "2026-10-01", end: "2026-10-31" } as const;
+
 if (typeof window.matchMedia !== "function") {
   window.matchMedia = ((query: string) => ({
     matches: false,
@@ -65,7 +69,7 @@ describe("IssueSlipsClient", () => {
       lastIndex: 3,
       firstIndex: 1,
     };
-    render(<IssueSlipsClient pageData={pageData} />);
+    render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={pageData} />);
 
     const table = screen.getByRole("table");
     const tableScope = within(table);
@@ -81,7 +85,7 @@ describe("IssueSlipsClient", () => {
   });
 
   it("Loại có đúng bốn lựa chọn", () => {
-    render(<IssueSlipsClient pageData={defaultPageData} />);
+    render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={defaultPageData} />);
     const typeSelect = screen.getByLabelText("Loại");
     const options = Array.from(typeSelect.querySelectorAll("option"));
     
@@ -108,7 +112,7 @@ describe("IssueSlipsClient", () => {
     });
 
     it("header cells are plain text, not capitals", () => {
-      render(<IssueSlipsClient pageData={rows} />);
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
       for (const th of within(screen.getByRole("table")).getAllByRole("columnheader")) {
         // The capitals can come from the cell or from its header row.
         expect(th.closest(".uppercase")).toBeNull();
@@ -118,7 +122,7 @@ describe("IssueSlipsClient", () => {
     it("a slip row opens with returnTo carrying the active filter; the stocktake row is unchanged", () => {
       searchParams.set("kind", "SLIP");
       searchParams.set("page", "2");
-      render(<IssueSlipsClient pageData={rows} />);
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
       const table = within(screen.getByRole("table"));
       const slip = table.getByRole("link", { name: "Xem chi tiết ISL-01" }).getAttribute("href")!;
       const url = new URL(slip, "http://x");
@@ -128,7 +132,7 @@ describe("IssueSlipsClient", () => {
     });
 
     it("the phone list is cards, one per row, with no table", () => {
-      const { container } = render(<IssueSlipsClient pageData={rows} />);
+      const { container } = render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
       const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
       expect(phone).toBeTruthy();
       expect(phone.querySelector("table")).toBeNull();
@@ -138,7 +142,7 @@ describe("IssueSlipsClient", () => {
   });
 
   it("create link reads 'Tạo' and points to /admin/inventory/issue-slips/new", () => {
-    render(<IssueSlipsClient pageData={defaultPageData} />);
+    render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={defaultPageData} />);
     const link = screen.getByRole("link", { name: "Tạo" });
     expect(link).toBeInTheDocument();
     expect(link.getAttribute("href")).toBe("/admin/inventory/issue-slips/new");
