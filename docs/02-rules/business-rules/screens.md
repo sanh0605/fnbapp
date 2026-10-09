@@ -53,6 +53,13 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 
 **Status:** `APPROVED` direction — owner 2026-10-06: *"Các bộ lọc thời gian hiện tại chưa đồng nhất. Anh muốn bộ lọc phải có cách lọc như của Looker hoặc Data Studio."* Not built yet; needs a design shown to the owner first. Whole days only, as `BR-DATA-006` already says.
 
+Owner choices on 2026-10-09, after trying a clickable sample (two styles, computer and phone):
+- **Looker style.** The filter is one button naming the range in use, for example "Tháng này · 01/10/2026 – 31/10/2026". He passed over the Sổ thu chi dropdown in favour of this; he said *"Máy tính đang hiện tốt"*.
+- **On a computer** the button opens a panel under it. On the left are all 16 ranges of `lib/shared/date-range-presets.ts`; on the right, two day boxes and two months of calendar. Asked whether the computer should drop ranges as the phone does, he chose *"2a"*: keep all 16.
+- **On a phone it fits one screen** (*"điện thoại có được gói gọn trong 1 màn hình không ? Có lẽ nên giảm bớt các lựa chọn nhanh như 'X ngày qua'"*, then *"1a"*). Opening it shows nine large buttons, three by three: Hôm nay, Hôm qua, Tuần này, Tuần trước, Tháng này, Tháng trước, Quý này, Năm nay, Tuỳ chọn. Tuỳ chọn swaps them for two day boxes and one month of calendar. Every other range is reached through Tuỳ chọn.
+- **The two devices share names and arithmetic.** "Tháng trước" is 01/09–30/09 on both. A range set on a computer that the phone has no button for, such as 7 ngày qua, still filters on the phone, and the button still names it.
+- **A ready range filters at once.** Days picked on the calendar or typed filter only after "Áp dụng".
+
 ### BR-UI-008 — A comma separates thousands, a dot marks decimals, everywhere
 
 **Status:** `APPROVED` — owner 2026-10-07, in chat:
