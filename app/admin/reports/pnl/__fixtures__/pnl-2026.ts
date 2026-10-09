@@ -21,7 +21,8 @@ export function monthFigures(month: string, overrides: Partial<PnlMonthFigures> 
 
 export function pnlFigures2026(): PnlFigures {
   return {
-    year: 2026,
+    fromMonth: "2026-01",
+    toMonth: "2026-12",
     expenseCategories: [
       { id: "CFC-001", name: "Vận hành" },
       { id: "CFC-002", name: "Điện, nước, gas" },

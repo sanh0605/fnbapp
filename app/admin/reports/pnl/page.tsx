@@ -1,7 +1,9 @@
 import { getProfitAndLossReport } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { YearSelect } from "./components/YearSelect";
+import { DateRangeUrlButton } from "@/components/ui/DateRangeUrlButton";
+import { saigonToday } from "@/lib/shared/datetime";
+import { readMonthRangeParams } from "@/lib/shared/date-range-params";
 import { PnlSummary } from "./components/PnlSummary";
 import { PnlChart } from "./components/PnlChart";
 import { PnlTableView } from "./components/PnlTableView";
@@ -15,13 +17,22 @@ function joinBrandNames(names: string[]): string {
   return `${names.slice(0, -1).join(", ")} và ${names[names.length - 1]}`;
 }
 
-// docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md. A malformed or
-// data-less ?year= falls back to the newest year with data, without an error
-// (plan, question 4): getProfitAndLossReport does the fallback.
-export default async function ProfitAndLossPage({ searchParams }: { searchParams: { year?: string } }) {
-  const raw = searchParams?.year;
-  const requestedYear = raw && /^\d{4}$/.test(raw) ? Number(raw) : undefined;
-  const { availableYears, table, brandNames } = await getProfitAndLossReport(requestedYear);
+function formatMonth(ym: string): string {
+  const [y, m] = ym.split("-");
+  return `${m}/${y}`;
+}
+
+// docs/superpowers/specs/2026-10-09-bo-loc-thoi-gian-design.md.
+// Lãi lỗ uses the shared Looker-style time filter in whole months (BR-UI-007),
+// opening on Năm nay (January to this month) and supporting custom month spans.
+export default async function ProfitAndLossPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
+  const today = saigonToday();
+  const range = readMonthRangeParams(searchParams ?? {}, today);
+  const { table, brandNames } = await getProfitAndLossReport(range);
   const brandsText = joinBrandNames(brandNames);
   const subtitle = brandsText
     ? `Cả quán, gồm ${brandsText} · đơn vị: đồng · tháng theo giờ Việt Nam`
@@ -32,10 +43,10 @@ export default async function ProfitAndLossPage({ searchParams }: { searchParams
       <PageHeader
         title="Lãi lỗ"
         subtitle={subtitle}
-        actions={<YearSelect years={availableYears} selected={table.year} />}
+        actions={<DateRangeUrlButton mode="month" value={range} today={today} />}
       />
       {table.months.length === 0 ? (
-        <EmptyState title={`Năm ${table.year} chưa có số liệu nào.`} />
+        <EmptyState title={`Từ ${formatMonth(range.start)} đến ${formatMonth(range.end)} chưa có số liệu nào.`} />
       ) : (
         <>
           <PnlSummary table={table} />

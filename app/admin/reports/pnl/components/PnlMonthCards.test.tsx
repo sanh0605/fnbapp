@@ -6,17 +6,17 @@ import { pnlFigures2026 } from "../__fixtures__/pnl-2026";
 import { PnlMonthCards } from "./PnlMonthCards";
 
 afterEach(() => cleanup());
-const table = () => buildPnlTable(pnlFigures2026(), "2026-09-11");
+const table = () => buildPnlTable(pnlFigures2026(), "2026-09-11", "năm nay");
 
 describe("PnlMonthCards", () => {
-  it("puts the year first, then the months newest first", () => {
+  it("puts the range first, named as chosen, then the months newest first", () => {
     render(<PnlMonthCards table={table()} />);
     const section = screen.getByRole("region", { name: "Từng tháng" });
     const titles = Array.from(section.children)
       .filter(c => c.tagName === "DETAILS")
       .map(c => c.querySelector("summary")!.textContent);
     expect(titles).toHaveLength(4);
-    expect(titles[0]).toContain("TỪ ĐẦU NĂM");
+    expect(titles[0]).toContain("NĂM NAY");
     expect(titles[0]).toContain("Doanh thu");
     expect(titles[1]).toContain("09/2026");
     expect(titles[1]).toContain("đến 11/09");
@@ -86,5 +86,19 @@ describe("PnlMonthCards", () => {
     render(<PnlMonthCards table={table()} />);
     const notes = screen.getByRole("region", { name: "Ghi chú" });
     expect(notes.textContent).toContain("kiểm kho");
+  });
+
+  // BR-UI-007: a span of 24 months gives 24 cards on a phone.
+  it("24 months give 24 month cards", () => {
+    const figures = pnlFigures2026();
+    const months = Array.from({ length: 24 }, (_, i) => {
+      const y = 2024 + Math.floor((9 + i) / 12);
+      const m = ((9 + i) % 12) + 1;
+      return { ...figures.months[0], month: `${y}-${String(m).padStart(2, "0")}` };
+    });
+    render(<PnlMonthCards table={buildPnlTable({ ...figures, fromMonth: "2024-10", toMonth: "2026-09", months }, "2026-10-09", "trong khoảng đã chọn")} />);
+    expect(screen.getAllByTestId(/^pnl-month-/)).toHaveLength(24);
+    expect(screen.getByTestId("pnl-month-2024-10")).toBeInTheDocument();
+    expect(screen.getByTestId("pnl-month-2026-09")).toBeInTheDocument();
   });
 });

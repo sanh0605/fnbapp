@@ -22,12 +22,14 @@ async function main(): Promise<void> {
   const { getPnLDataV2 } = await import("@/app/admin/reports/actions");
   const { checkPnlMonth } = await import("./verify-pnl-monthly-core");
 
-  const { availableYears } = await getProfitAndLossReport();
+  const { saigonToday } = await import("@/lib/shared/datetime");
+  const thisYear = saigonToday().slice(0, 4);
+  const { availableYears } = await getProfitAndLossReport({ preset: "CUSTOM", start: `${thisYear}-01`, end: `${thisYear}-12` });
   const problems: string[] = [];
   let monthsChecked = 0;
 
   for (const year of availableYears) {
-    const { figures } = await getProfitAndLossReport(year);
+    const { figures } = await getProfitAndLossReport({ preset: "CUSTOM", start: `${year}-01`, end: `${year}-12` });
     console.log(`\n== ${year} ==`);
     console.log("month   | POS revenue | ghi tay | Giá vốn | NL dùng ngay | Hao hụt | Chi phí | Khấu hao | Thu khác");
     for (const month of figures.months) {

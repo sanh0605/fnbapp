@@ -6,7 +6,7 @@ import { pnlFigures2026 } from "../__fixtures__/pnl-2026";
 import { PnlTableView } from "./PnlTableView";
 
 afterEach(() => cleanup());
-const table = () => buildPnlTable(pnlFigures2026(), "2026-09-11");
+const table = () => buildPnlTable(pnlFigures2026(), "2026-09-11", "năm nay");
 
 describe("PnlTableView", () => {
   it("clicking Vận hành in 08/2026 lists its four cash-book rows under the table, each shown with a minus; clicking again closes them", () => {
@@ -126,5 +126,20 @@ describe("PnlTableView -- the approved look on the Table set (wave K5)", () => {
     }
     expect(plain.className).not.toMatch(/hover:/);
     expect(cls(container.querySelector("table")!.parentElement!)).not.toContain("border");
+  });
+
+  // BR-UI-007: a span of 24 months is 24 month columns plus Tổng on a computer.
+  it("24 months give 24 month headers and Tổng", () => {
+    const figures = pnlFigures2026();
+    const months = Array.from({ length: 24 }, (_, i) => {
+      const y = 2024 + Math.floor((9 + i) / 12);
+      const m = ((9 + i) % 12) + 1;
+      return { ...figures.months[0], month: `${y}-${String(m).padStart(2, "0")}` };
+    });
+    render(<PnlTableView table={buildPnlTable({ ...figures, fromMonth: "2024-10", toMonth: "2026-09", months }, "2026-10-09", "trong khoảng đã chọn")} />);
+    const heads = screen.getAllByRole("columnheader").map(h => h.getAttribute("aria-label") ?? h.textContent?.trim());
+    expect(heads.filter(h => /^\d{2}\/\d{4}/.test(h ?? ""))).toHaveLength(24);
+    expect(heads).toContain("10/2024");
+    expect(heads).toContain("Tổng");
   });
 });

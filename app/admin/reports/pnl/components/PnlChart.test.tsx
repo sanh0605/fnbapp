@@ -9,12 +9,12 @@ afterEach(() => cleanup());
 
 describe("PnlChart", () => {
   it("shows the section heading", () => {
-    render(<PnlChart table={buildPnlTable(pnlFigures2026(), "2026-09-11")} />);
+    render(<PnlChart table={buildPnlTable(pnlFigures2026(), "2026-09-11", "năm nay")} />);
     expect(screen.getByRole("heading", { name: "Lãi lỗ từng tháng và luỹ kế" })).toBeInTheDocument();
   });
 
   it("labels every bar and every axis tick with one unit, and marks the loss month with a minus", () => {
-    const { container } = render(<PnlChart table={buildPnlTable(pnlFigures2026(), "2026-09-11")} />);
+    const { container } = render(<PnlChart table={buildPnlTable(pnlFigures2026(), "2026-09-11", "năm nay")} />);
     const svgTexts = Array.from(container.querySelectorAll("svg text")).map(t => t.textContent ?? "");
     // Bar labels and tick labels are the only text nodes shaped like a
     // compact money figure ("-32.372,96k", "10.000k", "-49,23k"...); month
@@ -27,5 +27,13 @@ describe("PnlChart", () => {
 
     const lossLabel = compactLabels.find(t => t.startsWith("-"));
     expect(lossLabel).toBeDefined();
+  });
+
+  // BR-UI-007: the chart names the months it shows, not a year.
+  it("names the span of months, not a year", () => {
+    const { container } = render(<PnlChart table={buildPnlTable(pnlFigures2026(), "2026-09-11", "năm nay")} />);
+    const label = container.querySelector("svg[aria-label]")!.getAttribute("aria-label")!;
+    expect(label).toContain("từ 03/2026 đến 09/2026");
+    expect(label).not.toContain("năm 2026");
   });
 });

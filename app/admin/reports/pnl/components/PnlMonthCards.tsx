@@ -5,7 +5,7 @@ import { PnlSourceList } from "./PnlSourceList";
 import { PnlNotes } from "./PnlNotes";
 
 // Phone layout (.claude/rules/ui-devices.md): no wide table. A card for the
-// year, then one card per month, newest first. Native <details>, so no
+// range, then one card per month, newest first. Native <details>, so no
 // client component. A line opens only if it has sources or a formula (the
 // same rule as the computer table). Card look and cost-row minus signs
 // follow the sample the owner approved 2026-09-11 (plan Mục 3).
@@ -28,7 +28,7 @@ function YearCard({ table }: { table: PnlTable }) {
   const net = table.rows.find(r => r.key === "netProfit")!;
   const revenue = table.rows.find(r => r.key === "revenue")!;
   const lines = table.rows.filter(r => r.total !== null);
-  const eyebrow = table.periodLabel === "cả năm" ? `CẢ NĂM ${table.year}` : "TỪ ĐẦU NĂM";
+  const eyebrow = table.rangeName.toLocaleUpperCase("vi-VN");
   return (
     <details data-testid="pnl-year" className="rounded-xl bg-surface-secondary">
       <summary className="flex min-h-[44px] cursor-pointer flex-col gap-1 px-4 py-3">
