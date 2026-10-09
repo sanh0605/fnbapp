@@ -60,7 +60,8 @@ Owner choices on 2026-10-09, after trying a clickable sample (two styles, comput
 - **The two devices share names and arithmetic.** "Tháng trước" is 01/09–30/09 on both. A range set on a computer that the phone has no button for, such as 7 ngày qua, still filters on the phone, and the button still names it.
 - **A ready range filters at once.** Days picked on the calendar or typed filter only after "Áp dụng".
 - **The lists open on Tháng này** (owner 2026-10-09, *"1a"*, replacing his first answer *"1b"*, which was to keep showing everything). This covers Đơn hàng, Phiếu nhập, Phiếu xuất and Nhật ký hoạt động, which until now opened with both day boxes empty and showed every record.
-- **A typed code searches only inside the range in use** (owner 2026-10-09, *"2b"*). He was told that this means a code from August is not found while Tháng này is in use. When a search finds nothing, the list names the range it searched, so an empty result is not read as a lost record.
+- **A typed code searches every day, whatever range is in use** (owner 2026-10-09: *"Anh nghĩ nên đổi lại thành 2a luôn đi nhỉ ? thế sẽ tiện hơn"*). This replaces his earlier *"2b"*, which searched only inside the range. He changed it after being told that 2b with Tháng này as the default leaves a code from August unfindable. While a code is typed, only the day range is set aside: the list says it is searching every day, and the other filters still apply. Clearing the box brings the range back.
+- **No "Tất cả" range is added to the lists.** It was offered to close the gap above, and 2a closes it.
 
 ### BR-UI-008 — A comma separates thousands, a dot marks decimals, everywhere
 
