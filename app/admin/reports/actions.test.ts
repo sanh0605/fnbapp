@@ -17,7 +17,7 @@ import {
   findAllWhere,
   findAllWhereInBatches,
 } from "@/lib/db/tables";
-import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2, getPromotionPerformanceV2 } from "./actions";
+import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2, getSalesTotalsV2, getPromotionPerformanceV2 } from "./actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
 beforeEach(() => {
@@ -1435,5 +1435,49 @@ describe("getPromotionPerformanceV2", () => {
     (findAll as any).mockResolvedValue([]);
 
     await expect(getPromotionPerformanceV2({})).resolves.toEqual([]);
+  });
+});
+
+describe("getSalesTotalsV2 -- the compare cards of Doanh số (BR-UI-007)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    requireAdminMock.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" } });
+  });
+
+  it("refuses a reader who is not signed in, before loading data", async () => {
+    requireAdminMock.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
+    await expect(getSalesTotalsV2({ startDate: "2026-09-01", endDate: "2026-09-09" })).rejects.toThrow("Yêu cầu đăng nhập");
+    expect(findAllWhere).not.toHaveBeenCalled();
+  });
+
+  it("gives the same three numbers as the full report, without a category", async () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    (findAllWhere as any).mockResolvedValue([fixture.order]);
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => (sheet === "Order_Lines_V2" ? fixture.lines : []));
+    (findAllNoCache as any).mockResolvedValue([]);
+    (findAll as any).mockResolvedValue([]);
+
+    const full = await getSalesDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
+    (findAllWhereInBatches as any).mockClear();
+    const totals = await getSalesTotalsV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
+
+    expect(totals).toEqual({ totalRevenue: full.totalRevenue, totalOrders: full.totalOrders, avgOrderValue: full.avgOrderValue });
+    expect(findAllWhereInBatches).not.toHaveBeenCalledWith("Order_Lines_V2", expect.anything(), expect.anything());
+  });
+
+  it("gives the same three numbers as the full report, with a category", async () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    const categoryId = JSON.parse(fixture.lines[0].product_snapshot_json).category_id;
+    (findAllWhere as any).mockResolvedValue([fixture.order]);
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => (sheet === "Order_Lines_V2" ? fixture.lines : []));
+    (findAllNoCache as any).mockResolvedValue([]);
+    (findAll as any).mockResolvedValue([]);
+
+    const filters = { startDate: "2026-06-01", endDate: "2026-06-30", categoryId };
+    const full = await getSalesDataV2(filters);
+    const totals = await getSalesTotalsV2(filters);
+
+    expect(totals).toEqual({ totalRevenue: full.totalRevenue, totalOrders: full.totalOrders, avgOrderValue: full.avgOrderValue });
+    expect(totals.totalOrders).toBe(1);
   });
 });

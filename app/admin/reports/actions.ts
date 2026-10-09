@@ -14,6 +14,7 @@ import {
   type ProductRevenueRow,
 } from "@/lib/reports/report-v2-allocators";
 import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
+import { computeSalesTotals, type SalesTotals } from "@/lib/reports/sales-totals";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { computePeriodIssuedValue, computePeriodIssuedValueSplit } from "@/lib/costing/issue-costing";
 import { buildIssueCostingPurchases, buildIssueCostingIssues, buildClassifiedIssues, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
@@ -379,6 +380,50 @@ export interface SalesReportResult {
   v2OrderCount: number;
 }
 
+// Same order set for the full Doanh số report and its compare cards.
+function selectSalesOrders(orders: any[], filters: PnLReportFilters): any[] {
+  const { startDate, endDate, brandId, staffName } = filters;
+  // Claude code — Phase 5.3: Asia/Saigon date bounds.
+  const dateRange = toSaigonUtcRange(startDate, endDate);
+  return orders.filter(o => {
+    if (o.status !== ORDER_STATUS.COMPLETED) return false;
+    if (o.superseded_by && o.superseded_by !== "") return false;
+    if (!o.created_at) return false;
+    if (dateRange) {
+      const d = new Date(o.created_at);
+      if (d < dateRange.startUtc || d > dateRange.endUtc) return false;
+    }
+    if (brandId && o.brand_id !== brandId) return false;
+    if (staffName && o.created_by_name !== staffName) return false;
+    return true;
+  });
+}
+
+function filterLinesByCategory(lines: OrderLineV2[], categoryId: string): OrderLineV2[] {
+  return lines.filter(l => {
+    try {
+      const snap = JSON.parse(l.product_snapshot_json || "{}");
+      return snap.category_id === categoryId;
+    } catch {
+      return false;
+    }
+  });
+}
+
+/** Only the three Doanh số cards; loads lines only when a category is chosen. */
+export async function getSalesTotalsV2(filters: PnLReportFilters = {}): Promise<SalesTotals> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const orders = await findCompletedOrders(toSaigonUtcRange(filters.startDate, filters.endDate), filters);
+  const typedOrders: OrderV2[] = selectSalesOrders(orders, filters).map(coerceOrderV2);
+  if (!filters.categoryId) return computeSalesTotals(typedOrders, null);
+
+  const lines = await findAllWhereInBatches("Order_Lines_V2", "order_id", typedOrders.map(o => o.id));
+  const typedLines = filterLinesByCategory((lines as any[]).map(coerceLineV2), filters.categoryId);
+  return computeSalesTotals(typedOrders, typedLines);
+}
+
 export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<SalesReportResult> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
@@ -406,24 +451,8 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     // (migration 0097). See the sibling call in getPnLDataV2 above.
     const standaloneToppingToModId = buildStandaloneToppingProductLinks(modifiers as any[]);
 
-    const { startDate, endDate, brandId, staffName, categoryId } = filters;
-    // Claude code — Phase 5.3: Asia/Saigon date bounds.
-    const dateRange = toSaigonUtcRange(startDate, endDate);
-
-    const filteredOrders = (orders as any[]).filter(o => {
-      if (o.status !== ORDER_STATUS.COMPLETED) return false;
-      if (o.superseded_by && o.superseded_by !== "") return false;
-      if (!o.created_at) return false;
-
-      if (dateRange) {
-        const d = new Date(o.created_at);
-        if (d < dateRange.startUtc || d > dateRange.endUtc) return false;
-      }
-      if (brandId && o.brand_id !== brandId) return false;
-      if (staffName && o.created_by_name !== staffName) return false;
-
-      return true;
-    });
+    const { categoryId } = filters;
+    const filteredOrders = selectSalesOrders(orders, filters);
 
     const orderIds = new Set(filteredOrders.map(o => o.id));
     const filteredLines = (orderLines as any[]).filter(l => orderIds.has(l.order_id));
@@ -431,28 +460,12 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     const typedOrders: OrderV2[] = filteredOrders.map(coerceOrderV2);
     let typedLines: OrderLineV2[] = filteredLines.map(coerceLineV2);
 
-    if (categoryId) {
-      typedLines = typedLines.filter(l => {
-        try {
-          const snap = JSON.parse(l.product_snapshot_json || "{}");
-          return snap.category_id === categoryId;
-        } catch {
-          return false;
-        }
-      });
-      // If filtering by category, we only want orders that contain these lines
-      const validOrdersForCat = new Set(typedLines.map(l => l.order_id));
-    }
+    if (categoryId) typedLines = filterLinesByCategory(typedLines, categoryId);
 
-    const totalRevenue = categoryId
-      ? typedLines.reduce((s, l) => s + l.net_line_total, 0)
-      : typedOrders.reduce((s, o) => s + o.net_total, 0);
-
-    const totalOrders = categoryId
-      ? new Set(typedLines.map(l => l.order_id)).size
-      : typedOrders.length;
-
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const { totalRevenue, totalOrders, avgOrderValue } = computeSalesTotals(
+      typedOrders,
+      categoryId ? typedLines : null,
+    );
 
     // Claude code — Phase 5.2: revenue breakdown + CODE-16: build Set once outside filter.
     // Compute at order level (gross/discount are order-wide fields). For category filter,
