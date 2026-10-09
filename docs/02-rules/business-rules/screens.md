@@ -67,6 +67,10 @@ Owner choices on 2026-10-09, after trying a clickable sample (two styles, comput
   - **Báo cáo ngày is removed.** Doanh số filtered to Hôm nay gives the same day's figures. What only the daily report had: "so hôm qua" and "so cùng thứ tuần trước", which belong to the compare question still open; and the "Cần đặt hàng sớm" box, which is switched off until the first stocktake.
   - Lãi lỗ takes the shared filter and opens on Năm nay. **Only whole months** (owner 2026-10-09, *"1a"*). He was told that a range cutting a month would load a month's rent into a week and split depreciation by days. So on Lãi lỗ the filter offers only Tháng này, Tháng trước, Quý này, Quý trước, Năm nay, Năm trước and Từ đầu năm đến nay, and its Tuỳ chọn picks a first and last month, not days. One column per month, as now.
   - Giá trị xuất kho keeps its own tabs.
+- **Compare with the period before** (owner 2026-10-09, *"1a 2a 3a"*):
+  - **Same number of days, cut at the same point.** On 09/10/2026, Tháng này compares with 01/09–09/09, not with all of September. Tổng quan already did this.
+  - **One day compares two ways:** with the day before, and with the same weekday a week earlier. For Friday 09/10 that is Thursday 08/10 and Friday 02/10. Both lines of the removed Báo cáo ngày live on here.
+  - **Only Tổng quan and Doanh số compare.** Lãi lỗ does not, because its months already stand side by side.
 
 ### BR-UI-008 — A comma separates thousands, a dot marks decimals, everywhere
 
