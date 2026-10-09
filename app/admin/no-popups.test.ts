@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 // be listed here with the reason it is allowed; a new one turns this red.
 const ALLOWED: Record<string, string> = {
   "app/admin/layout.tsx":
-    "the admin frame itself (fixed inset-0 shell) and the brand picker that opens the POS, which belongs to the exempt POS flow",
+    "the admin frame itself (fixed inset-0 shell) and the Chọn điểm bán outlet picker that opens the POS, which belongs to the exempt POS flow (chủ quán chốt 09/10/2026)",
   "app/admin/components/MoreSheet.tsx": "phone menu sheet, navigation not an input box",
   "app/admin/inventory/components/InventoryForms.tsx": "ActionGroup asks yes/no before deleting",
   // Moved out of IssueSlipDetailClient.tsx unchanged when it was split (wave K3).
