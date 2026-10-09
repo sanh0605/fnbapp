@@ -1,4 +1,3 @@
-// orphan-allow: first caller lands in Task 3 of docs/superpowers/plans/2026-10-09-bo-loc-thoi-gian.md (Sổ thu chi); remove this line then
 import {
   DATE_RANGE_PRESETS,
   MONTH_PRESET_KEYS,

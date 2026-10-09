@@ -24,8 +24,7 @@ const AFFECTS_PNL_CHANGE_WARNING =
 // jsdom + React 18 (this repo's test toolchain) does not execute a
 // function-valued <form action>, which is a React 19 / Next.js
 // canary-channel feature -- so a simulated click-to-submit never reaches
-// handleSubmit in a test. Same reasoning as resolveDateRange in
-// app/admin/finance/resolve-date-range.ts.
+// handleSubmit in a test.
 export function shouldConfirmAffectsPnlChange(
   isKindLocked: boolean,
   previousAffectsPnl: boolean,

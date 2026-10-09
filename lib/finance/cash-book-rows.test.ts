@@ -63,19 +63,19 @@ describe("buildCashBookRows", () => {
         key: "SALE:2026-09-15:CASH", kind: "SALE", id: null, date: "2026-09-15",
         groupLabel: "Bán hàng", sideLabel: "Thu", amount: 522000, methodLabel: "Tiền mặt",
         accountLabel: "—", note: "23 đơn", creator: "—", status: "ACTIVE",
-        href: "/admin/orders?from=2026-09-15&to=2026-09-15&payment=Tien%20mat",
+        href: "/admin/orders?range=CUSTOM&from=2026-09-15&to=2026-09-15&payment=Tien%20mat",
       },
       {
         key: "SALE:2026-09-15:BANK_TRANSFER", kind: "SALE", id: null, date: "2026-09-15",
         groupLabel: "Bán hàng", sideLabel: "Thu", amount: 482000, methodLabel: "Chuyển khoản",
         accountLabel: "—", note: "11 đơn", creator: "—", status: "ACTIVE",
-        href: "/admin/orders?from=2026-09-15&to=2026-09-15&payment=Chuyen%20khoan",
+        href: "/admin/orders?range=CUSTOM&from=2026-09-15&to=2026-09-15&payment=Chuyen%20khoan",
       },
       {
         key: "PURCHASE:2026-09-15:CASH:-", kind: "PURCHASE", id: null, date: "2026-09-15",
         groupLabel: "Nhập hàng", sideLabel: "Chi", amount: 536023, methodLabel: "Tiền mặt",
         accountLabel: "—", note: "2 đơn nhập", creator: "—", status: "ACTIVE",
-        href: "/admin/inventory/purchase-orders?from=2026-09-15&to=2026-09-15&pay=CASH",
+        href: "/admin/inventory/purchase-orders?range=CUSTOM&from=2026-09-15&to=2026-09-15&pay=CASH",
       },
     ]);
   });
@@ -90,7 +90,7 @@ describe("buildCashBookRows", () => {
     const known = rows.find((r) => r.key.endsWith("BA-001"))!;
     expect(known.accountLabel).toBe("ACB - Phin Di");
     expect(known.methodLabel).toBe("Chuyển khoản");
-    expect(known.href).toBe("/admin/inventory/purchase-orders?from=2026-09-16&to=2026-09-16&pay=BANK_TRANSFER");
+    expect(known.href).toBe("/admin/inventory/purchase-orders?range=CUSTOM&from=2026-09-16&to=2026-09-16&pay=BANK_TRANSFER");
     // An account no longer in the list still shows its id rather than a blank.
     expect(rows.find((r) => r.key.endsWith("BA-009"))!.accountLabel).toBe("BA-009");
   });

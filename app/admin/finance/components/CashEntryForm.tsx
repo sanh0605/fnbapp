@@ -18,7 +18,7 @@ interface CashEntryFormProps {
   categories: DBCashCategory[];
   accounts: DBBankAccount[];
   // M7: today in Asia/Saigon, the same value the page already computes for
-  // DateRangeFilter -- only used to default the add form's date. The edit
+  // DateRangeButton -- only used to default the add form's date. The edit
   // form always keeps the entry's own date.
   today?: string;
   returnTo?: string;

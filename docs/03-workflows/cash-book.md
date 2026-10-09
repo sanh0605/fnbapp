@@ -96,10 +96,11 @@ the two settings screens where they still apply.
    on `entry_date`), then narrows the table by status — Đang dùng by
    default, Đã huỷ, or Tất cả; a cancelled row keeps its badge and drops out
    of the totals, which always cover the whole range — newest `entry_date`
-   first, then newest id, 20 rows a page. A hand-edited range in the URL that is
-   not two real calendar dates written `YYYY-MM-DD`, in order, falls back to
-   "Tháng này" (`app/admin/finance/resolve-date-range.ts`; `2026-02-30` counts
-   as not real). The two
+   first, then newest id, 20 rows a page. The range is picked with the shared
+   time filter button (`BR-UI-007`) and written on the URL as `range`, plus
+   `from`/`to` for Tuỳ chọn. A hand-edited range that is not two real calendar
+   dates written `YYYY-MM-DD`, in order, falls back to "Tháng này"
+   (`lib/shared/date-range-params.ts`; `2026-02-30` counts as not real). The two
    settings screens show their own table filtered by status (Đang dùng by
    default, Ngừng dùng, Tất cả) and by a name-or-code search, newest code first;
    only the ledger's own add/edit form narrows their pickers to `ACTIVE`

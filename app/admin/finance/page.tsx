@@ -5,9 +5,11 @@ import CashBookClient from "./components/CashBookClient";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { Button } from "@/components/ui/Button";
 import { saigonToday } from "@/lib/shared/datetime";
-import { readParam, resolveDateRange } from "./resolve-date-range";
+import { readRangeParams, writeRangeParams } from "@/lib/shared/date-range-params";
 
 export const dynamic = "force-dynamic";
+
+const readParam = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 export default async function FinancePage({
   searchParams,
@@ -15,35 +17,22 @@ export default async function FinancePage({
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const today = saigonToday();
+  const range = readRangeParams(searchParams ?? {}, today, "THIS_MONTH");
 
-  const rawPreset = readParam(searchParams?.preset);
-  const rawStart = readParam(searchParams?.start);
-  const rawEnd = readParam(searchParams?.end);
   const rawKind = readParam(searchParams?.kind);
   const rawStatus = readParam(searchParams?.status);
   const rawPage = readParam(searchParams?.page);
   const rawSort = readParam(searchParams?.sort);
   const rawDir = readParam(searchParams?.dir);
 
-  const { preset, start, end } = resolveDateRange(
-    rawPreset,
-    rawStart,
-    rawEnd,
-    today,
-  );
-
   const [{ rows, summary, categories, accounts }, auth] = await Promise.all([
-    getFinancePageData(start, end),
+    getFinancePageData(range.start, range.end),
     resolveActor(),
   ]);
   const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
 
   const p = new URLSearchParams();
-  if (preset) p.set("preset", preset);
-  if (preset === "CUSTOM") {
-    if (start) p.set("start", start);
-    if (end) p.set("end", end);
-  }
+  writeRangeParams(p, range);
   if (rawKind && rawKind !== "ALL") p.set("kind", rawKind);
   if (rawStatus && rawStatus !== "ACTIVE") p.set("status", rawStatus);
   if (rawPage && rawPage !== "1") p.set("page", rawPage);
@@ -84,7 +73,7 @@ export default async function FinancePage({
           accounts={accounts}
           canDelete={canDelete}
           today={today}
-          resolvedRange={{ preset, start, end }}
+          resolvedRange={range}
           initialKind={rawKind}
           initialStatus={rawStatus}
           initialPage={rawPage}

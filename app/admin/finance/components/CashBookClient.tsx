@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Field } from "@/components/ui/Field";
-import { DateRangeFilter, type DateRangeValue } from "@/components/ui/DateRangeFilter";
+import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { formatDate, formatVnDay } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { cancelCashEntry } from "@/app/admin/finance/actions";
@@ -19,7 +19,7 @@ import { cancelCashTransfer } from "@/app/admin/finance/transfers/actions";
 import type { DBBankAccount, DBCashCategory } from "@/types/db";
 import type { CashBookRow } from "@/lib/finance/cash-book-rows";
 import type { CashBookSummary, Balance } from "@/lib/finance/cash-flow";
-import type { DateRangePresetKey } from "@/lib/shared/date-range-presets";
+import { writeRangeParams, type RangeValue } from "@/lib/shared/date-range-params";
 
 export interface CashBookClientProps {
   rows: CashBookRow[];
@@ -28,11 +28,7 @@ export interface CashBookClientProps {
   accounts: DBBankAccount[];
   canDelete: boolean;
   today: string;
-  resolvedRange: {
-    preset: DateRangePresetKey;
-    start: string;
-    end: string;
-  };
+  resolvedRange: RangeValue;
   initialKind?: string;
   initialStatus?: string;
   initialPage?: string;
@@ -70,7 +66,7 @@ function money(value: number): string {
 }
 
 function listUrl(
-  range: DateRangeValue,
+  range: RangeValue,
   kind: CashBookKindFilter,
   status: CashEntryStatusFilter,
   page: number = 1,
@@ -78,11 +74,7 @@ function listUrl(
   dir?: string,
 ): string {
   const p = new URLSearchParams();
-  if (range.preset) p.set("preset", range.preset);
-  if (range.preset === "CUSTOM") {
-    if (range.start) p.set("start", range.start);
-    if (range.end) p.set("end", range.end);
-  }
+  writeRangeParams(p, range);
   if (kind && kind !== "ALL") p.set("kind", kind);
   if (status && status !== "ACTIVE") p.set("status", status);
   if (page > 1) p.set("page", String(page));
@@ -158,11 +150,7 @@ export default function CashBookClient({
   const rawSort = searchParams?.get("sort");
   const rawDir = searchParams?.get("dir");
 
-  const [range, setRange] = useState<DateRangeValue>(() => ({
-    preset: resolvedRange.preset,
-    start: resolvedRange.start,
-    end: resolvedRange.end,
-  }));
+  const [range, setRange] = useState<RangeValue>(() => resolvedRange);
 
   const [kind, setKind] = useState<CashBookKindFilter>(() =>
     parseKind(initialKind ?? searchParams?.get("kind")),
@@ -177,11 +165,7 @@ export default function CashBookClient({
   );
 
   useEffect(() => {
-    setRange({
-      preset: resolvedRange.preset,
-      start: resolvedRange.start,
-      end: resolvedRange.end,
-    });
+    setRange(resolvedRange);
   }, [resolvedRange.preset, resolvedRange.start, resolvedRange.end]);
 
   useEffect(() => {
@@ -357,7 +341,7 @@ export default function CashBookClient({
     dirParam,
   );
 
-  const handleDateRangeChange = (nextRange: DateRangeValue) => {
+  const handleDateRangeChange = (nextRange: RangeValue) => {
     setRange(nextRange);
     setPage(1);
     router.replace(listUrl(nextRange, kind, status, 1, sortParam, dirParam), {
@@ -495,7 +479,7 @@ export default function CashBookClient({
           <label className="block text-[13px] font-medium text-text-primary mb-1">
             Thời gian
           </label>
-          <DateRangeFilter
+          <DateRangeButton
             value={range}
             today={today}
             onChange={handleDateRangeChange}

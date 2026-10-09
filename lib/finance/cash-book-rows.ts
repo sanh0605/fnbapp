@@ -45,7 +45,7 @@ function endText(id: string | null, names: Map<string, string>): string {
 // "Tien mat" / "Chuyen khoan" (app/admin/orders/actions.ts), the purchase
 // order list takes the stored method.
 function dayRowHref(row: DBCashBookDailyRow): string {
-  const range = `from=${row.day}&to=${row.day}`;
+  const range = `range=CUSTOM&from=${row.day}&to=${row.day}`;
   if (row.source === "SALE") {
     const payment = row.method === "CASH" ? "Tien%20mat" : "Chuyen%20khoan";
     return `/admin/orders?${range}&payment=${payment}`;
