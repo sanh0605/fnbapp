@@ -51,7 +51,7 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 
 ### BR-UI-007 — Date filters work like Looker Studio's
 
-**Status:** `APPROVED` direction — owner 2026-10-06: *"Các bộ lọc thời gian hiện tại chưa đồng nhất. Anh muốn bộ lọc phải có cách lọc như của Looker hoặc Data Studio."* Not built yet; needs a design shown to the owner first. Whole days only, as `BR-DATA-006` already says.
+**Status:** `APPROVED` direction — owner 2026-10-06: *"Các bộ lọc thời gian hiện tại chưa đồng nhất. Anh muốn bộ lọc phải có cách lọc như của Looker hoặc Data Studio."* Owner chose every point on 2026-10-09 (below); built on the branch `feat/no-popups` 2026-10-09, not yet pushed. Design: `docs/superpowers/specs/2026-10-09-bo-loc-thoi-gian-design.md`. Whole days only, as `BR-DATA-006` already says.
 
 Owner choices on 2026-10-09, after trying a clickable sample (two styles, computer and phone):
 - **Looker style.** The filter is one button naming the range in use, for example "Tháng này · 01/10/2026 – 31/10/2026". He passed over the Sổ thu chi dropdown in favour of this; he said *"Máy tính đang hiện tốt"*.
@@ -65,7 +65,7 @@ Owner choices on 2026-10-09, after trying a clickable sample (two styles, comput
 - **No "Tất cả" range is added to the lists.** It was offered to close the gap above, and 2a closes it.
 - **Reports** (owner 2026-10-09, *"1a 2a, tuy nhiên, anh nghĩ báo cáo ngày có lẽ nên xoá luôn vì không còn phù hợp, anh có thể xem được báo cáo ngày bằng báo cáo doanh số. Còn báo cáo lãi lỗ vẫn dùng bộ lọc đồng nhất của hệ thống nhưng mặc định là năm nay"*):
   - Tổng quan and Doanh số take the shared filter and open on Tháng này. Tổng quan's own eight buttons and Doanh số's three buttons and two day boxes go.
-  - **Báo cáo ngày is removed.** Doanh số filtered to Hôm nay gives the same day's figures. What only the daily report had: "so hôm qua" and "so cùng thứ tuần trước", which belong to the compare question still open; and the "Cần đặt hàng sớm" box, which is switched off until the first stocktake.
+  - **Báo cáo ngày is removed.** Doanh số filtered to Hôm nay gives the same day's figures. What only the daily report had: "so hôm qua" and "so cùng thứ tuần trước", which live on as Doanh số's compare lines on Hôm nay (below); and the "Cần đặt hàng sớm" box, which is switched off until the first stocktake.
   - Lãi lỗ takes the shared filter and opens on Năm nay. **Only whole months** (owner 2026-10-09, *"1a"*). He was told that a range cutting a month would load a month's rent into a week and split depreciation by days. So on Lãi lỗ the filter offers only Tháng này, Tháng trước, Quý này, Quý trước, Năm nay, Năm trước and Từ đầu năm đến nay, and its Tuỳ chọn picks a first and last month, not days. One column per month, as now.
   - Giá trị xuất kho keeps its own tabs.
 - **Compare with the period before** (owner 2026-10-09, *"1a 2a 3a"*):

@@ -28,8 +28,13 @@ profit and loss at `/admin/reports/pnl`.
    slips shows updated figures, because it re-reads the source each time. There is
    no draft, no saved report, and no approval step.
 
-2. **Buttons per screen, and when to hide them.** Each report screen offers a date
-   range or period picker to choose what to show, and read-only controls to sort
+2. **Buttons per screen, and when to hide them.** The dashboard, the sales report
+   and the profit and loss each carry the shared time filter (`BR-UI-007`): one
+   button naming the range, opening on Tháng này (Lãi lỗ: Năm nay, whole months
+   only). The dashboard and the sales report put one compare line per earlier
+   period under each figure card — the same days of the period before, and for a
+   single day both the day before and the same weekday a week earlier. The
+   issued-goods report keeps its own tabs. Each screen also offers and read-only controls to sort
    or expand rows. There is no create, edit, delete, or export-that-writes button
    anywhere in this flow, because the flow writes nothing; any such button would be
    out of place and should never appear. The dashboard at `/admin` presents its
@@ -73,7 +78,7 @@ counted as loss if it had issue slips to measure against).
 
 ## The profit and loss page
 
-`/admin/reports/pnl` shows one year of monthly profit and loss for the whole
+`/admin/reports/pnl` shows a span of whole months of profit and loss for the whole
 shop (`BR-PNL-001`), months as columns (`BR-PNL-002`), for `ADMIN` and
 `MANAGER` (`BR-PNL-004`). Design:
 `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md`.
@@ -83,14 +88,17 @@ shop (`BR-PNL-001`), months as columns (`BR-PNL-002`), for `ADMIN` and
   figure on every open (`lib/reports/profit-and-loss.ts`);
   `lib/reports/profit-and-loss-table.ts` rounds for display (`BR-DATA-005`).
   Nothing is stored and no month is locked.
-- **One control: the year**, as `?year=YYYY`. A malformed year, or a year with
-  no data, falls back to the newest year with data, without an error.
+- **One control: the shared time filter in whole months** (`BR-UI-007`), as
+  `?range=` with `from`/`to` months for Tuỳ chọn; it opens on Năm nay. An old
+  `?year=YYYY` link opens that year. A span with no data says "Từ MM/YYYY đến
+  MM/YYYY chưa có số liệu nào." instead of jumping to another year. Months after
+  this month are not shown.
 - **Cells open their sources.** On a computer, clicking a month cell lists the
   rows behind it under the table: POS order count and hand-recorded revenue
   (`BR-PNL-003`), cash-book rows, purchase lines, stocktakes and issue slips,
   assets; a profit cell shows its sum. The Tổng column does not open. On a
-  phone there is no wide table: a year card, then one card per month, newest
-  first.
+  phone there is no wide table: a card for the range, then one card per month,
+  newest first.
 - **Checked against the older report.** `scripts/verify-pnl-monthly.ts`
   confirms that every month's POS revenue, and Giá vốn plus Hao hụt, equal
   `getPnLDataV2` for the same month, and that every line's sources add up to

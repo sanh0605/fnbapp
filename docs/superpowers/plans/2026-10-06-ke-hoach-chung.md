@@ -48,7 +48,7 @@ tối ưu được diện tích sử dụng"*.
 | # | Phần | Trạng thái |
 |---|---|---|
 | 1 | Giao diện đồng nhất — đợt 8: Phiếu nhập, Phiếu xuất, Đơn hàng | đang làm |
-| 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | đang làm: khuôn K1–K6 xong (K2–K6 chờ đẩy); bộ lọc thời gian chưa làm |
+| 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | đang làm: khuôn K1–K6 xong (K2–K6 chờ đẩy); bộ lọc thời gian xong trên nhánh 2026-10-09, chờ đẩy |
 | 2 | Giao diện đồng nhất — các trang ngoài khuôn | chưa làm |
 | 3 | Tổng quan mới (bước D của bản cải tổ) | chưa làm |
 | 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E), trả phiếu nhập bằng nhiều hình thức, bảng chữ viết tắt, số tiền thu khi thanh lý | chưa làm |
@@ -115,7 +115,9 @@ Luật: `docs/02-rules/business-rules/screens.md`.
   (khoảng có sẵn: hôm nay, hôm qua, 7 ngày qua, tháng này, tháng trước…; tự chọn; có thể so
   với kỳ trước), rồi thay ở mọi danh sách và báo cáo. Chủ quán chọn xong 2026-10-09; thiết
   kế `docs/superpowers/specs/2026-10-09-bo-loc-thoi-gian-design.md` chủ quán duyệt 2026-10-09;
-  kế hoạch `docs/superpowers/plans/2026-10-09-bo-loc-thoi-gian.md` chờ chủ quán xem.
+  kế hoạch `docs/superpowers/plans/2026-10-09-bo-loc-thoi-gian.md` chủ quán duyệt 2026-10-09; xong trên nhánh
+  2026-10-09, chờ đẩy: bốn danh sách mở ở Tháng này, Tổng quan và Doanh số so với kỳ trước, Lãi lỗ theo tháng
+  trọn, Báo cáo ngày bỏ (địa chỉ cũ mở Doanh số Hôm nay).
 - **Dòng tổng dưới tiêu đề cột** (`BR-UI-004`): thiết kế ngắn (cột nào cộng được, điện
   thoại hiện ở đâu), máy chủ cộng theo bộ lọc chứ không cộng trang đang hiện.
 - **Công cụ Góp ý:** sửa được góp ý đã lưu (chủ quán hỏi 2026-10-06; khuyến nghị có).

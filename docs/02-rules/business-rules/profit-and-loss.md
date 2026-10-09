@@ -28,8 +28,10 @@ report.
 
 **Status:** `APPROVED` — owner decision 2026-09-11.
 
-One year per view. Each month is a column, followed by the year's total and
-the share of revenue; each line (revenue, cost of goods, each expense group,
+One span of whole months per view: one year until 2026-10-09; since then any
+range the shared time filter offers in whole months, opening on Năm nay
+(`BR-UI-007`, owner 2026-10-09). Each month is a column, followed by the
+range's total and the share of revenue; each line (revenue, cost of goods, each expense group,
 profit) is a row. The owner compared this against his own sheet's layout
 (months as rows) on a clickable sample with real figures and chose columns:
 "Tháng theo cột". On a phone there is no wide table: one card per month,
