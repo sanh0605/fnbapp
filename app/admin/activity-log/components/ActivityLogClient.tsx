@@ -248,6 +248,8 @@ export default function ActivityLogClient({
                 return;
               }
               setFromError("");
+              // DayInput reports on every blur; only a new day moves the list.
+              if (v === startDate) return;
               setStartDate(v);
               updateUrl({ from: v });
             }}
@@ -264,6 +266,7 @@ export default function ActivityLogClient({
                 return;
               }
               setToError("");
+              if (v === endDate) return;
               setEndDate(v);
               updateUrl({ to: v });
             }}

@@ -99,4 +99,16 @@ describe("ActivityLogClient day boxes (wave K6)", () => {
     expect(await screen.findByText("Ngày không hợp lệ")).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
   });
+
+  // K6 review: DayInput reports on every blur, so passing through a box must
+  // not send the reader back to page 1.
+  it("leaving a date box without changing it keeps the page (no new address)", () => {
+    mockSearchParams = new URLSearchParams("from=2026-09-15&page=3");
+    render(<ActivityLogClient initialEvents={[]} actors={["admin"]} totalCount={100} itemsPerPage={20} />);
+    const from = screen.getByLabelText(/^Từ ngày( \*)?$/) as HTMLInputElement;
+    const to = screen.getByLabelText(/^Đến ngày( \*)?$/) as HTMLInputElement;
+    fireEvent.blur(from);
+    fireEvent.blur(to);
+    expect(push).not.toHaveBeenCalled();
+  });
 });
