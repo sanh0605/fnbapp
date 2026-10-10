@@ -328,7 +328,7 @@ export function DateRangeButton(props: {
             data-testid="range-panel-desktop"
             className={`hidden md:block absolute ${
               align === "right" ? "right-0" : "left-0"
-            } top-full z-20 mt-2 bg-surface-card border border-border rounded-2xl shadow-xl p-4 min-w-[640px]`}
+            } top-full z-20 mt-2 bg-surface-card border border-border rounded-2xl shadow-xl p-4 w-max`}
           >
             <div className="flex divide-x divide-border">
               {/* Presets list */}
@@ -418,6 +418,7 @@ export function DateRangeButton(props: {
                         showMonthYearPicker
                         calendarStartDay={1}
                         locale="vi"
+                        calendarClassName="range-calendar"
                         startDate={startMonthDateObj}
                         endDate={endMonthDateObj}
                         onChange={handleCalendarChange as any}
@@ -429,6 +430,7 @@ export function DateRangeButton(props: {
                         monthsShown={2}
                         calendarStartDay={1}
                         locale="vi"
+                        calendarClassName="range-calendar"
                         startDate={startDateObj}
                         endDate={endDateObj}
                         onChange={handleCalendarChange as any}

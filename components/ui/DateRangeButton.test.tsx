@@ -185,3 +185,36 @@ describe("DateRangeButton -- not a popup (BR-DATA-007)", () => {
     }
   });
 });
+
+// Owner screenshot 2026-10-10 ("Lỗi giao diện"): on Tổng quan the two-month
+// calendar and "Đến ngày" ran past the panel's right edge, and the chosen days
+// were the calendar library's blue instead of the shop's brown.
+describe("DateRangeButton -- the computer panel's look", () => {
+  it("grows to fit the presets and the two months instead of a fixed 640px", () => {
+    open();
+    const panel = screen.getByTestId("range-panel-desktop");
+    expect(panel).toHaveClass("w-max");
+    expect(panel.className).not.toContain("min-w-[640px]");
+  });
+
+  it("the calendar carries the range-calendar class in both modes", () => {
+    open();
+    expect(screen.getByTestId("range-panel-desktop").querySelector(".react-datepicker.range-calendar")).not.toBeNull();
+    cleanup();
+    open({ preset: "THIS_YEAR", start: "2026-01", end: "2026-12" }, { mode: "month" });
+    expect(screen.getByTestId("range-panel-desktop").querySelector(".react-datepicker.range-calendar")).not.toBeNull();
+  });
+
+  it("range-calendar paints chosen days in the shop's colours and the page's font", () => {
+    const css = readFileSync(join(process.cwd(), "app/globals.css"), "utf8");
+    const block = (sel: string) => {
+      const i = css.indexOf(sel);
+      return i < 0 ? "" : css.slice(i, css.indexOf("}", i));
+    };
+    expect(block(".range-calendar.react-datepicker")).toContain("font-family: inherit");
+    expect(block(".range-calendar .react-datepicker__day--in-range")).toContain("var(--color-primary)");
+    expect(block(".range-calendar .react-datepicker__day--in-selecting-range")).toContain("var(--color-primary-soft)");
+    expect(block(".range-calendar .react-datepicker__month-text--in-range")).toContain("var(--color-primary)");
+    expect(css).not.toMatch(/range-calendar[^}]*#216ba5/);
+  });
+});
