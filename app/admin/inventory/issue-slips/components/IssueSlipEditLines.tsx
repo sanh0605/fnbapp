@@ -97,9 +97,9 @@ export function IssueSlipEditLines({
             </TableHeaderCell>
             <TableHeaderCell>Mặt hàng</TableHeaderCell>
             <TableHeaderCell>Đơn vị</TableHeaderCell>
-            <TableHeaderCell align="right">Số lượng</TableHeaderCell>
-            <TableHeaderCell align="right">Quy ra</TableHeaderCell>
-            <TableHeaderCell align="right">Giá trị</TableHeaderCell>
+            <TableHeaderCell>Số lượng</TableHeaderCell>
+            <TableHeaderCell>Quy ra</TableHeaderCell>
+            <TableHeaderCell>Giá trị</TableHeaderCell>
           </TableHead>
           <TableBody>
             {draft.map((l) => {

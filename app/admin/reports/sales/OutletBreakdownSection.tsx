@@ -64,10 +64,10 @@ export function OutletBreakdownSection({ outletBreakdown }: OutletBreakdownSecti
         <Table>
           <TableHead>
             <TableHeaderCell>Điểm bán</TableHeaderCell>
-            <TableHeaderCell align="right">Số đơn</TableHeaderCell>
-            <TableHeaderCell align="right">Doanh thu</TableHeaderCell>
-            <TableHeaderCell align="right">TB/đơn</TableHeaderCell>
-            <TableHeaderCell align="right">% tổng</TableHeaderCell>
+            <TableHeaderCell>Số đơn</TableHeaderCell>
+            <TableHeaderCell>Doanh thu</TableHeaderCell>
+            <TableHeaderCell>TB/đơn</TableHeaderCell>
+            <TableHeaderCell>% tổng</TableHeaderCell>
           </TableHead>
           <TableTotalRow>
             <TableCell>Tổng</TableCell>

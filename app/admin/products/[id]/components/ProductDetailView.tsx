@@ -229,7 +229,7 @@ export function ProductDetailView({
               <Table>
                 <TableHead>
                   <TableHeaderCell>Size</TableHeaderCell>
-                  <TableHeaderCell align="right">Giá bán</TableHeaderCell>
+                  <TableHeaderCell>Giá bán</TableHeaderCell>
                   <TableHeaderCell>Trạng thái</TableHeaderCell>
                 </TableHead>
                 <TableBody>
@@ -304,8 +304,8 @@ export function ProductDetailView({
                 <TableHead>
                   <TableHeaderCell>Ngày áp dụng</TableHeaderCell>
                   <TableHeaderCell>Size</TableHeaderCell>
-                  <TableHeaderCell align="right">Giá cũ</TableHeaderCell>
-                  <TableHeaderCell align="right">Giá mới</TableHeaderCell>
+                  <TableHeaderCell>Giá cũ</TableHeaderCell>
+                  <TableHeaderCell>Giá mới</TableHeaderCell>
                   <TableHeaderCell>Lý do</TableHeaderCell>
                 </TableHead>
                 <TableBody>

@@ -49,14 +49,14 @@ export function PnlTableView({ table }: { table: PnlTable }) {
         <TableHead>
           <TableHeaderCell stick="left">Khoản</TableHeaderCell>
           {table.months.map(m => (
-            <TableHeaderCell key={m.month} align="right" aria-label={m.label}>
+            <TableHeaderCell key={m.month} aria-label={m.label}>
               {m.head}
               <NoteMarks numbers={m.notes} />
               {m.until && <span className="block text-[11.5px] font-normal text-text-secondary">đến {m.until}</span>}
             </TableHeaderCell>
           ))}
-          <TableHeaderCell align="right" stick="right-2">Tổng</TableHeaderCell>
-          <TableHeaderCell align="right" stick="right">% doanh thu</TableHeaderCell>
+          <TableHeaderCell stick="right-2">Tổng</TableHeaderCell>
+          <TableHeaderCell stick="right">% doanh thu</TableHeaderCell>
         </TableHead>
         <TableBody>
           {table.rows.map(row => {

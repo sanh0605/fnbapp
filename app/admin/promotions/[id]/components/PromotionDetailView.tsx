@@ -151,7 +151,7 @@ export function PromotionDetailView({
                   <TableHead>
                     <TableHeaderCell>Món</TableHeaderCell>
                     <TableHeaderCell>Size</TableHeaderCell>
-                    <TableHeaderCell align="right">Giá áp dụng</TableHeaderCell>
+                    <TableHeaderCell>Giá áp dụng</TableHeaderCell>
                   </TableHead>
                   <TableBody>
                     {applicableItems.map((item, idx) => (

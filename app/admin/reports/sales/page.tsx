@@ -242,8 +242,8 @@ export default async function SalesReportPage({
           <Table>
             <TableHead>
               <TableHeaderCell>Phương thức</TableHeaderCell>
-              <TableHeaderCell align="right">Số đơn</TableHeaderCell>
-              <TableHeaderCell align="right">Doanh thu</TableHeaderCell>
+              <TableHeaderCell>Số đơn</TableHeaderCell>
+              <TableHeaderCell>Doanh thu</TableHeaderCell>
             </TableHead>
             <TableBody>
               {paymentBreakdown.length === 0 ? (
@@ -441,8 +441,8 @@ export default async function SalesReportPage({
             <Table pinHead>
               <TableHead>
                 <TableHeaderCell>Topping</TableHeaderCell>
-                <TableHeaderCell align="right">Số lượng</TableHeaderCell>
-                <TableHeaderCell align="right">Doanh thu</TableHeaderCell>
+                <TableHeaderCell>Số lượng</TableHeaderCell>
+                <TableHeaderCell>Doanh thu</TableHeaderCell>
               </TableHead>
               {bestToppings.length > 0 && (
                 <TableTotalRow>

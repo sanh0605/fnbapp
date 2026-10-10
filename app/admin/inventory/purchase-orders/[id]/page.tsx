@@ -197,9 +197,9 @@ export default async function PurchaseOrderDetail({
                       <TableHead>
                         <TableHeaderCell>Mặt hàng</TableHeaderCell>
                         <TableHeaderCell>Đơn vị</TableHeaderCell>
-                        <TableHeaderCell align="right">Số lượng</TableHeaderCell>
-                        <TableHeaderCell align="right">Đơn giá</TableHeaderCell>
-                        <TableHeaderCell align="right">Thành tiền</TableHeaderCell>
+                        <TableHeaderCell>Số lượng</TableHeaderCell>
+                        <TableHeaderCell>Đơn giá</TableHeaderCell>
+                        <TableHeaderCell>Thành tiền</TableHeaderCell>
                       </TableHead>
                       <TableBody>
                         {poLines.map((line: any, idx: number) => {

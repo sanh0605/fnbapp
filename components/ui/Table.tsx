@@ -65,13 +65,11 @@ export function TableHead({ children }: { children: React.ReactNode }): JSX.Elem
 
 export function TableHeaderCell({
   children,
-  align,
   stick,
   "aria-label": ariaLabel,
   colSpan,
 }: {
   children?: React.ReactNode;
-  align?: "right";
   stick?: TableStick;
   "aria-label"?: string;
   colSpan?: number;
@@ -80,10 +78,11 @@ export function TableHeaderCell({
   const headBg = statement ? "bg-surface-secondary" : "bg-page";
   const stickClasses = getStickClasses(stick, headBg);
   const baseClasses = [
+    // BR-UI-011: every title is bold and on the left, an amount column's
+    // too; its figures stay right in the body cells.
     statement
-      ? "px-3 py-2 whitespace-nowrap font-medium text-text-secondary"
-      : "px-4 py-3 text-[13px] font-medium text-text-secondary",
-    align === "right" ? "text-right" : "",
+      ? "px-3 py-2 whitespace-nowrap text-left font-semibold text-text-secondary"
+      : "px-4 py-3 text-[13px] text-left font-semibold text-text-secondary",
   ]
     .filter(Boolean)
     .join(" ");

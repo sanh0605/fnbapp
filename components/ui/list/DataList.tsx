@@ -413,16 +413,16 @@ export function DataList<T>({
                     <th
                       key={col.key}
                       aria-sort={ariaSort}
-                      className={`px-6 py-4 text-[13px] font-medium text-text-secondary ${
-                        col.align === "right" ? "text-right" : ""
-                      } ${col.secondary ? "hidden xl:table-cell" : ""}`}
+                      className={`px-6 py-4 text-[13px] text-left font-semibold text-text-secondary ${
+                        col.secondary ? "hidden xl:table-cell" : ""
+                      }`}
                     >
                       {isSortable && sort ? (
                         <Link
                           href={sort.href(col.key, nextDir)}
                           className={`inline-flex items-center gap-1 hover:text-text-primary transition-colors ${
                             isActive ? "text-text-primary" : ""
-                          } ${col.align === "right" ? "justify-end" : ""}`}
+                          }`}
                         >
                           <span>{col.header}</span>
                           {isActive && (

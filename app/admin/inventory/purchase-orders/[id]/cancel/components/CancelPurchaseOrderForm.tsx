@@ -78,9 +78,9 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                   <TableHead>
                     <TableHeaderCell>Mặt hàng</TableHeaderCell>
                     <TableHeaderCell>Đơn vị</TableHeaderCell>
-                    <TableHeaderCell align="right">Số lượng</TableHeaderCell>
-                    <TableHeaderCell align="right">Đơn giá</TableHeaderCell>
-                    <TableHeaderCell align="right">Thành tiền</TableHeaderCell>
+                    <TableHeaderCell>Số lượng</TableHeaderCell>
+                    <TableHeaderCell>Đơn giá</TableHeaderCell>
+                    <TableHeaderCell>Thành tiền</TableHeaderCell>
                   </TableHead>
                   <TableBody>
                     {lines.map((line) => (
@@ -138,8 +138,8 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                   <TableHeaderCell>Mặt hàng</TableHeaderCell>
                   <TableHeaderCell>Mã</TableHeaderCell>
                   <TableHeaderCell>Tên</TableHeaderCell>
-                  <TableHeaderCell align="right">Số lượng</TableHeaderCell>
-                  <TableHeaderCell align="right">Nguyên giá</TableHeaderCell>
+                  <TableHeaderCell>Số lượng</TableHeaderCell>
+                  <TableHeaderCell>Nguyên giá</TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {assets.map((asset) => (

@@ -58,10 +58,10 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
           <TableHead>
             <TableHeaderCell>Món</TableHeaderCell>
             {tableUniqueSizes.map(size => (
-              <TableHeaderCell key={size} align="right">Size {size}</TableHeaderCell>
+              <TableHeaderCell key={size}>Size {size}</TableHeaderCell>
             ))}
-            <TableHeaderCell align="right">Tổng SL</TableHeaderCell>
-            <TableHeaderCell align="right">Tổng thu</TableHeaderCell>
+            <TableHeaderCell>Tổng SL</TableHeaderCell>
+            <TableHeaderCell>Tổng thu</TableHeaderCell>
           </TableHead>
           {items.length > 0 && (
             <TableTotalRow>

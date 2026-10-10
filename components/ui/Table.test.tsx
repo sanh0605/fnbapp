@@ -20,7 +20,7 @@ function Sample() {
     <Table aria-label="Phiếu xuất">
       <TableHead>
         <TableHeaderCell>Mặt hàng</TableHeaderCell>
-        <TableHeaderCell align="right">Giá trị xuất</TableHeaderCell>
+        <TableHeaderCell>Giá trị xuất</TableHeaderCell>
       </TableHead>
       <TableTotalRow>
         <TableCell>Tổng</TableCell>
@@ -75,6 +75,48 @@ describe("BR-UI-005 Table set", () => {
   });
 });
 
+// BR-UI-011 (owner 2026-10-10): every column title is bold and on the left;
+// a column of amounts keeps its figures on the right under a left title.
+describe("BR-UI-011 column titles", () => {
+  function StatementSample() {
+    return (
+      <Table statement aria-label="Lãi lỗ">
+        <TableHead>
+          <TableHeaderCell stick="left">Khoản</TableHeaderCell>
+          <TableHeaderCell>T1</TableHeaderCell>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableRowHeader stick="left">Doanh thu</TableRowHeader>
+            <TableCell align="right">7,043,000</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    );
+  }
+
+  it("every title is bold and sits on the left, an amount column's too", () => {
+    render(<Sample />);
+    for (const th of screen.getAllByRole("columnheader")) {
+      expect(th.className).toMatch(/\bfont-(semibold|bold)\b/);
+      expect(th.className).not.toMatch(/\bfont-medium\b/);
+      expect(th.className).toContain("text-left");
+      expect(th.className).not.toContain("text-right");
+    }
+    expect(screen.getByText("27,100đ").className).toContain("text-right");
+  });
+
+  it("a statement's titles are bold and on the left too", () => {
+    render(<StatementSample />);
+    for (const th of screen.getAllByRole("columnheader")) {
+      expect(th.className).toMatch(/\bfont-(semibold|bold)\b/);
+      expect(th.className).toContain("text-left");
+      expect(th.className).not.toContain("text-right");
+    }
+    expect(screen.getByText("7,043,000").className).toContain("text-right");
+  });
+});
+
 // Wave K5: a statement (the P&L, owner-approved sample 2026-09-11) is drawn by
 // the same set — label column and total columns stay put while the months
 // scroll, subtotal rows are shaded and bold, detail rows small and grey, a
@@ -85,9 +127,9 @@ describe("BR-UI-005 Table set: a statement (wave K5)", () => {
       <Table aria-label="Lãi lỗ">
         <TableHead>
           <TableHeaderCell stick="left">Khoản</TableHeaderCell>
-          <TableHeaderCell align="right" aria-label="Tháng 1 năm 2026">T1</TableHeaderCell>
-          <TableHeaderCell align="right" stick="right-2">Tổng</TableHeaderCell>
-          <TableHeaderCell align="right" stick="right">% doanh thu</TableHeaderCell>
+          <TableHeaderCell aria-label="Tháng 1 năm 2026">T1</TableHeaderCell>
+          <TableHeaderCell stick="right-2">Tổng</TableHeaderCell>
+          <TableHeaderCell stick="right">% doanh thu</TableHeaderCell>
         </TableHead>
         <TableBody>
           <TableRow look="strong">
@@ -177,9 +219,9 @@ describe("BR-UI-005 Table set: statement density (K5 review)", () => {
       <Table aria-label="Lãi lỗ" statement>
         <TableHead>
           <TableHeaderCell stick="left">Khoản</TableHeaderCell>
-          <TableHeaderCell align="right">T1</TableHeaderCell>
-          <TableHeaderCell align="right" stick="right-2">Tổng</TableHeaderCell>
-          <TableHeaderCell align="right" stick="right">% doanh thu</TableHeaderCell>
+          <TableHeaderCell>T1</TableHeaderCell>
+          <TableHeaderCell stick="right-2">Tổng</TableHeaderCell>
+          <TableHeaderCell stick="right">% doanh thu</TableHeaderCell>
         </TableHead>
         <TableBody>
           <TableRow>
@@ -245,7 +287,7 @@ describe("BR-UI-005 Table set: a pinned head (K5 review)", () => {
       <Table aria-label="Bán chạy" pinHead>
         <TableHead>
           <TableHeaderCell>Món</TableHeaderCell>
-          <TableHeaderCell align="right">Tổng SL</TableHeaderCell>
+          <TableHeaderCell>Tổng SL</TableHeaderCell>
         </TableHead>
         <TableBody>
           <TableRow>

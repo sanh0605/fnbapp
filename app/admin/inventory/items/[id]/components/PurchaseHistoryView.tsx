@@ -35,10 +35,10 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
           <TableHead>
             <TableHeaderCell>Ngày</TableHeaderCell>
             <TableHeaderCell>Nhà cung cấp</TableHeaderCell>
-            <TableHeaderCell align="right">Số lượng</TableHeaderCell>
-            <TableHeaderCell align="right">Đơn giá</TableHeaderCell>
-            <TableHeaderCell align="right">Thành tiền</TableHeaderCell>
-            <TableHeaderCell align="right">Đơn nhập</TableHeaderCell>
+            <TableHeaderCell>Số lượng</TableHeaderCell>
+            <TableHeaderCell>Đơn giá</TableHeaderCell>
+            <TableHeaderCell>Thành tiền</TableHeaderCell>
+            <TableHeaderCell>Đơn nhập</TableHeaderCell>
           </TableHead>
           <TableBody>
             {rows.map((row, idx) => (

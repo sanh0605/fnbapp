@@ -300,9 +300,9 @@ function ActiveSessionView({ session }: { session: StocktakeSessionView }) {
                 <Table aria-label="Dự kiến áp dụng kiểm kê">
                   <TableHead>
                     <TableHeaderCell>Mặt hàng</TableHeaderCell>
-                    <TableHeaderCell align="right">Tồn hiện tại</TableHeaderCell>
-                    <TableHeaderCell align="right">Điều chỉnh</TableHeaderCell>
-                    <TableHeaderCell align="right">Dự kiến sau áp dụng</TableHeaderCell>
+                    <TableHeaderCell>Tồn hiện tại</TableHeaderCell>
+                    <TableHeaderCell>Điều chỉnh</TableHeaderCell>
+                    <TableHeaderCell>Dự kiến sau áp dụng</TableHeaderCell>
                   </TableHead>
                   <TableBody>
                     {preview.rows.map(row => {

@@ -144,7 +144,7 @@ export function ItemDetailView({
               <Table>
                 <TableHead>
                   <TableHeaderCell>Đơn vị mua</TableHeaderCell>
-                  <TableHeaderCell align="right">Hệ số</TableHeaderCell>
+                  <TableHeaderCell>Hệ số</TableHeaderCell>
                   <TableHeaderCell>Đơn vị gốc</TableHeaderCell>
                   <TableHeaderCell>Trạng thái</TableHeaderCell>
                 </TableHead>

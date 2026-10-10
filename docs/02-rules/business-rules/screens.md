@@ -106,6 +106,6 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 
 ### BR-UI-011 — Column titles are bold and sit on the left
 
-**Status:** `APPROVED` — owner 2026-10-10, in chat: *"Tên tiêu đề của mỗi table phải in đậm và luôn align left"*. Every table's column titles are bold and left-aligned, on every screen. Not built yet.
+**Status:** `APPROVED` — owner 2026-10-10, in chat: *"Tên tiêu đề của mỗi table phải in đậm và luôn align left"*. Every table's column titles are bold and left-aligned, on every screen. Built on the branch 2026-10-10: the shared title cell (`components/ui/Table.tsx`) and the shared list (`components/ui/list/DataList.tsx`) draw every title bold and left, so a title cell no longer takes a right alignment; tests in `components/ui/Table.test.tsx` and `components/ui/list/DataList.test.tsx`.
 
 - **A column of amounts: title on the left, figures stay on the right** (owner 2026-10-10, *"Làm theo em khuyến nghị"*, option A). He was told that moving the figures left too would stop the thousands lining up for comparing (`BR-UI-008`); he kept them right.

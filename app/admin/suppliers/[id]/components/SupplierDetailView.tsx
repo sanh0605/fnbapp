@@ -144,7 +144,7 @@ export function SupplierDetailView({
                   <TableHeaderCell>Ngày nhập</TableHeaderCell>
                   <TableHeaderCell>Nguồn</TableHeaderCell>
                   <TableHeaderCell>Trạng thái</TableHeaderCell>
-                  <TableHeaderCell align="right">Tổng tiền</TableHeaderCell>
+                  <TableHeaderCell>Tổng tiền</TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {orders.rows.map((po) => (

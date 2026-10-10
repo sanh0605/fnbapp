@@ -702,6 +702,33 @@ describe("DataList wears the table template", () => {
     }
   });
 
+  it("titles are bold and on the left, an amount column's too; its figures stay right (BR-UI-011)", () => {
+    renderList({
+      columns: [
+        ...columns,
+        { key: "debt", header: "Công nợ", align: "right", render: () => "120,000đ" },
+      ],
+    });
+    for (const th of screen.getAllByRole("columnheader")) {
+      expect(th.className).toMatch(/\bfont-(semibold|bold)\b/);
+      expect(th.className).not.toMatch(/\bfont-medium\b/);
+      expect(th.className).not.toContain("text-right");
+    }
+    expect(screen.getAllByText("120,000đ")[0].closest("td")!.className).toContain("text-right");
+  });
+
+  it("a sortable amount column's title link sits on the left too (BR-UI-011)", () => {
+    renderList({
+      columns: [
+        ...columns,
+        { key: "debt", header: "Công nợ", align: "right", render: () => "120,000đ", sortValue: () => 1 },
+      ],
+      sort: { key: "id", dir: "asc", href: (k, d) => `?sort=${k}&dir=${d}` },
+    });
+    const link = screen.getByRole("link", { name: /Công nợ/ });
+    expect(link.className).not.toContain("justify-end");
+  });
+
   it("no row cell is bold", () => {
     renderList();
     for (const td of screen.getAllByRole("cell")) {

@@ -25,8 +25,8 @@ export function IssueSlipViewLines({ detail }: IssueSlipViewLinesProps): JSX.Ele
           <TableHead>
             <TableHeaderCell>#</TableHeaderCell>
             <TableHeaderCell>Mặt hàng</TableHeaderCell>
-            <TableHeaderCell align="right">Số lượng</TableHeaderCell>
-            <TableHeaderCell align="right">Giá trị</TableHeaderCell>
+            <TableHeaderCell>Số lượng</TableHeaderCell>
+            <TableHeaderCell>Giá trị</TableHeaderCell>
           </TableHead>
           <TableBody>
             {detail.lines.map((l, i) => (

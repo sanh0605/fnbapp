@@ -123,10 +123,10 @@ export function AssetItemDetailView({
                   <TableHeaderCell>Mã tài sản</TableHeaderCell>
                   <TableHeaderCell>Ngày mua</TableHeaderCell>
                   <TableHeaderCell>Phiếu nhập</TableHeaderCell>
-                  <TableHeaderCell align="right">Còn / Mua</TableHeaderCell>
-                  <TableHeaderCell align="right">Giá một cái</TableHeaderCell>
-                  <TableHeaderCell align="right">Thời hạn</TableHeaderCell>
-                  <TableHeaderCell align="right">Giá trị còn lại</TableHeaderCell>
+                  <TableHeaderCell>Còn / Mua</TableHeaderCell>
+                  <TableHeaderCell>Giá một cái</TableHeaderCell>
+                  <TableHeaderCell>Thời hạn</TableHeaderCell>
+                  <TableHeaderCell>Giá trị còn lại</TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {detail.lots.map((lot) => (
@@ -234,9 +234,9 @@ export function AssetItemDetailView({
                 <TableHead>
                   <TableHeaderCell>Ngày</TableHeaderCell>
                   <TableHeaderCell>Lần mua</TableHeaderCell>
-                  <TableHeaderCell align="right">Số lượng</TableHeaderCell>
+                  <TableHeaderCell>Số lượng</TableHeaderCell>
                   <TableHeaderCell>Lý do</TableHeaderCell>
-                  <TableHeaderCell align="right">Tiền dồn vào chi phí</TableHeaderCell>
+                  <TableHeaderCell>Tiền dồn vào chi phí</TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {detail.disposals.map((d) => (
@@ -297,8 +297,8 @@ export function AssetItemDetailView({
               <Table aria-label="Khấu hao theo tháng">
                 <TableHead>
                   <TableHeaderCell>Tháng</TableHeaderCell>
-                  <TableHeaderCell align="right">Số cái giữ</TableHeaderCell>
-                  <TableHeaderCell align="right">Khấu hao</TableHeaderCell>
+                  <TableHeaderCell>Số cái giữ</TableHeaderCell>
+                  <TableHeaderCell>Khấu hao</TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {detail.months.map((m, idx) => (

@@ -259,9 +259,9 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
             <TableHeaderCell>Mặt hàng</TableHeaderCell>
             <TableHeaderCell>Tồn hiện tại</TableHeaderCell>
             <TableHeaderCell>Đơn vị</TableHeaderCell>
-            <TableHeaderCell align="right">Số lượng</TableHeaderCell>
-            <TableHeaderCell align="right">Quy ra</TableHeaderCell>
-            <TableHeaderCell align="right">Giá trị xuất</TableHeaderCell>
+            <TableHeaderCell>Số lượng</TableHeaderCell>
+            <TableHeaderCell>Quy ra</TableHeaderCell>
+            <TableHeaderCell>Giá trị xuất</TableHeaderCell>
             <TableHeaderCell>
               <span className="sr-only" aria-label="Xoá dòng">Xoá dòng</span>
             </TableHeaderCell>
