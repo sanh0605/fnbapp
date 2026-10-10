@@ -28,7 +28,7 @@ export default async function NewPurchaseOrderPage({
   const bankAccounts = (allBankAccounts as any[]).filter(a => a.status === "ACTIVE");
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-screen-xl mx-auto w-full">
       <BackLink href="/admin/inventory/purchase-orders" label="Phiếu nhập" />
       <PageHeader
         title="Tạo phiếu nhập"

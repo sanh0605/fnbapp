@@ -276,7 +276,7 @@ export default function PurchaseOrderForm({
   };
 
   return (
-    <div className="bg-surface-card rounded-xl shadow-sm border border-border p-6">
+    <>
       {restoreFailed && (
         <div
           role="status"
@@ -285,167 +285,183 @@ export default function PurchaseOrderForm({
           Không khôi phục được phiếu đang nhập dở
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-card p-6 rounded-2xl shadow-sm border border-border mb-6">
-        <div>
-          <Field label="Nhà cung cấp" htmlFor={`${formId}-supplierId`} required>
-            <SearchableSelect
-              id={`${formId}-supplierId`}
-              value={supplierId}
-              onChange={(val) => setSupplierId(val)}
-              options={suppliers.map((s: any) => ({ id: s.id, label: s.name }))}
-              placeholder="Chọn nhà cung cấp..."
-              onCreateNew={(searchTerm) => {
-                const currentParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
-                currentParams.delete("newSupplier");
-                currentParams.set("draft", "1");
-                const currentPath = pathname || (isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders/new");
-                const returnTo = `${currentPath}?${currentParams.toString()}`;
+      <div
+        data-testid="form-layout"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start lg:grid-rows-[auto_1fr]"
+      >
+        <div
+          data-testid="form-shared"
+          className="bg-surface-card rounded-xl shadow-sm border border-border p-6 lg:col-start-3 lg:row-start-1 space-y-4"
+        >
+          <div>
+            <Field label="Nhà cung cấp" htmlFor={`${formId}-supplierId`} required>
+              <SearchableSelect
+                id={`${formId}-supplierId`}
+                value={supplierId}
+                onChange={(val) => setSupplierId(val)}
+                options={suppliers.map((s: any) => ({ id: s.id, label: s.name }))}
+                placeholder="Chọn nhà cung cấp..."
+                onCreateNew={(searchTerm) => {
+                  const currentParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
+                  currentParams.delete("newSupplier");
+                  currentParams.set("draft", "1");
+                  const currentPath = pathname || (isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders/new");
+                  const returnTo = `${currentPath}?${currentParams.toString()}`;
 
-                const storage = typeof window !== "undefined" ? window.localStorage : null;
-                const draftState: PoDraftState = {
-                  supplierId,
-                  sourceId,
-                  supplierInvoiceCode,
-                  transactionDate: transactionDate ? transactionDate.toISOString() : null,
-                  notes,
-                  lines,
-                  shippingFee,
-                  taxAmount,
-                  voucherAmount,
-                  discountAmount,
-                  paymentMethod: paymentMethod || null,
-                  bankAccountId: bankAccountId || null,
-                };
-                saveDraft(storage, draftKey(po.id), draftState, Date.now());
-                router.push(`/admin/suppliers/new?from=po&name=${encodeURIComponent(searchTerm)}&returnTo=${encodeURIComponent(returnTo)}`);
-              }}
-            />
-          </Field>
-        </div>
-        <div>
-          <Field
-            label="Ngày nhập hàng thực tế"
-            htmlFor={`${formId}-transactionDate`}
-            hint="Để trống hệ thống sẽ lấy thời điểm hiện tại."
-          >
-            <CustomDatePicker
-              id={`${formId}-transactionDate`}
-              name="transaction_date"
-              selected={transactionDate}
-              onChange={(date) => setTransactionDate(date)}
-              placeholderText="Chọn ngày nhập hàng (ngày/tháng/năm)"
-            />
-          </Field>
-        </div>
-        <div>
-          <Field label="Nguồn nhập hàng" htmlFor={`${formId}-sourceId`}>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <SearchableSelect
-                  id={`${formId}-sourceId`}
-                  value={sourceId}
-                  onChange={(val) => setSourceId(val)}
-                  options={sources.map((s: any) => ({ id: s.id, label: s.name }))}
-                  placeholder="Ví dụ: Shopee, Lazada..."
-                />
+                  const storage = typeof window !== "undefined" ? window.localStorage : null;
+                  const draftState: PoDraftState = {
+                    supplierId,
+                    sourceId,
+                    supplierInvoiceCode,
+                    transactionDate: transactionDate ? transactionDate.toISOString() : null,
+                    notes,
+                    lines,
+                    shippingFee,
+                    taxAmount,
+                    voucherAmount,
+                    discountAmount,
+                    paymentMethod: paymentMethod || null,
+                    bankAccountId: bankAccountId || null,
+                  };
+                  saveDraft(storage, draftKey(po.id), draftState, Date.now());
+                  router.push(`/admin/suppliers/new?from=po&name=${encodeURIComponent(searchTerm)}&returnTo=${encodeURIComponent(returnTo)}`);
+                }}
+              />
+            </Field>
+          </div>
+          <div>
+            <Field
+              label="Ngày nhập hàng thực tế"
+              htmlFor={`${formId}-transactionDate`}
+              hint="Để trống hệ thống sẽ lấy thời điểm hiện tại."
+            >
+              <CustomDatePicker
+                id={`${formId}-transactionDate`}
+                name="transaction_date"
+                selected={transactionDate}
+                onChange={(date) => setTransactionDate(date)}
+                placeholderText="Chọn ngày nhập hàng (ngày/tháng/năm)"
+              />
+            </Field>
+          </div>
+          <div>
+            <Field label="Nguồn nhập hàng" htmlFor={`${formId}-sourceId`}>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <SearchableSelect
+                    id={`${formId}-sourceId`}
+                    value={sourceId}
+                    onChange={(val) => setSourceId(val)}
+                    options={sources.map((s: any) => ({ id: s.id, label: s.name }))}
+                    placeholder="Ví dụ: Shopee, Lazada..."
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={async () => {
+                    const name = window.prompt("Nhập tên nguồn mới (VD: Tiktok Shop):");
+                    if (name && name.trim()) {
+                      const res = await addPurchaseSource(name.trim());
+                      if (res.success) {
+                        await alert({ title: "Thiếu thông tin", message: "Đã thêm nguồn thành công! Vui lòng tải lại trang để cập nhật danh sách.", variant: "warning" });
+                      } else {
+                        await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+                      }
+                    }
+                  }}
+                >
+                  + Thêm
+                </Button>
               </div>
+            </Field>
+          </div>
+          <div>
+            <Field label="Mã hoá đơn" htmlFor={`${formId}-supplierInvoiceCode`}>
+              <TextInput
+                id={`${formId}-supplierInvoiceCode`}
+                type="text"
+                value={supplierInvoiceCode}
+                onChange={(e) => setSupplierInvoiceCode(e.target.value)}
+                placeholder="Ví dụ: INV-20231201"
+              />
+            </Field>
+          </div>
+          <div>
+            <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
+              <TextInput
+                id={`${formId}-notes`}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Ví dụ: giao buổi sáng"
+              />
+            </Field>
+          </div>
+        </div>
+
+        <div
+          data-testid="form-lines"
+          className="bg-surface-card rounded-xl shadow-sm border border-border p-6 lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:row-span-2"
+        >
+          <PurchaseOrderLines
+            lines={lines}
+            items={items}
+            conversions={conversions}
+            units={units}
+            formId={formId}
+            addLine={addLine}
+            removeLine={removeLine}
+            updateLine={updateLine}
+          />
+        </div>
+
+        <div
+          data-testid="form-money"
+          className="lg:col-start-3 lg:row-start-2"
+        >
+          <PurchaseOrderTotals
+            formId={formId}
+            subtotalAmount={subtotalAmount}
+            totalAmount={totalAmount}
+            shippingFee={shippingFee}
+            setShippingFee={setShippingFee}
+            taxAmount={taxAmount}
+            setTaxAmount={setTaxAmount}
+            voucherAmount={voucherAmount}
+            setVoucherAmount={setVoucherAmount}
+            discountAmount={discountAmount}
+            setDiscountAmount={setDiscountAmount}
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            bankAccountId={bankAccountId}
+            setBankAccountId={setBankAccountId}
+            bankAccounts={bankAccounts}
+            paymentError={paymentError}
+            setPaymentError={setPaymentError}
+          />
+
+          <div className="flex flex-col gap-3">
+            <Button
+              type="button"
+              variant="primary"
+              loading={loading}
+              onClick={() => handleSubmit("COMPLETED")}
+              className="w-full min-h-[44px]"
+            >
+              {isEdit ? "Cập nhật & Hoàn thành" : "Tạo"}
+            </Button>
+            {!(isEdit && po.status === "COMPLETED") && (
               <Button
                 type="button"
                 variant="secondary"
-                onClick={async () => {
-                  const name = window.prompt("Nhập tên nguồn mới (VD: Tiktok Shop):");
-                  if (name && name.trim()) {
-                    const res = await addPurchaseSource(name.trim());
-                    if (res.success) {
-                      await alert({ title: "Thiếu thông tin", message: "Đã thêm nguồn thành công! Vui lòng tải lại trang để cập nhật danh sách.", variant: "warning" });
-                    } else {
-                      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
-                    }
-                  }
-                }}
+                loading={loading}
+                onClick={() => handleSubmit("DRAFT")}
+                className="w-full min-h-[44px]"
               >
-                + Thêm
+                Lưu nháp
               </Button>
-            </div>
-          </Field>
-        </div>
-        <div>
-          <Field label="Mã hoá đơn" htmlFor={`${formId}-supplierInvoiceCode`}>
-            <TextInput
-              id={`${formId}-supplierInvoiceCode`}
-              type="text"
-              value={supplierInvoiceCode}
-              onChange={(e) => setSupplierInvoiceCode(e.target.value)}
-              placeholder="Ví dụ: INV-20231201"
-            />
-          </Field>
-        </div>
-        <div className="md:col-span-2">
-          <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
-            <TextInput
-              id={`${formId}-notes`}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ví dụ: giao buổi sáng"
-            />
-          </Field>
-        </div>
-      </div>
-
-      <PurchaseOrderLines
-        lines={lines}
-        items={items}
-        conversions={conversions}
-        units={units}
-        formId={formId}
-        addLine={addLine}
-        removeLine={removeLine}
-        updateLine={updateLine}
-      />
-
-      <div className="flex flex-col items-end pt-6 border-t border-border">
-        <PurchaseOrderTotals
-          formId={formId}
-          subtotalAmount={subtotalAmount}
-          totalAmount={totalAmount}
-          shippingFee={shippingFee}
-          setShippingFee={setShippingFee}
-          taxAmount={taxAmount}
-          setTaxAmount={setTaxAmount}
-          voucherAmount={voucherAmount}
-          setVoucherAmount={setVoucherAmount}
-          discountAmount={discountAmount}
-          setDiscountAmount={setDiscountAmount}
-          paymentMethod={paymentMethod}
-          setPaymentMethod={setPaymentMethod}
-          bankAccountId={bankAccountId}
-          setBankAccountId={setBankAccountId}
-          bankAccounts={bankAccounts}
-          paymentError={paymentError}
-          setPaymentError={setPaymentError}
-        />
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-end">
-          {!(isEdit && po.status === "COMPLETED") && (
-            <Button
-              type="button"
-              variant="secondary"
-              loading={loading}
-              onClick={() => handleSubmit("DRAFT")}
-              className="w-full sm:w-auto"
-            >
-              Lưu nháp
-            </Button>
-          )}
-          <Button
-            type="button"
-            variant="primary"
-            loading={loading}
-            onClick={() => handleSubmit("COMPLETED")}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật & Hoàn thành" : "Tạo"}
-          </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -454,6 +470,6 @@ export default function PurchaseOrderForm({
           <option key={u.id} value={u.name} />
         ))}
       </datalist>
-    </div>
+    </>
   );
 }

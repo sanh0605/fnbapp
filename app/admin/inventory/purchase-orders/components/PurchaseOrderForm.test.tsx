@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PurchaseOrderForm from "./PurchaseOrderForm";
 import type { DBBankAccount, DBPurchaseOrder, DBPurchasedItem, DBSupplier, DBPurchaseSource, DBUOMConversion, DBUnit, DBPurchaseOrderLine } from "@/types/db";
@@ -547,5 +547,73 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
       expect(screen.getByRole("button", { name: "Lưu nháp" })).toBeTruthy();
       expect(screen.queryByText(/Draft/i)).toBeNull();
     });
+  });
+});
+
+
+// Owner 2026-10-10: a create/edit form looks like the slip's detail page —
+// on a computer the lines take the left two thirds and the slip-wide boxes
+// stack in the right third; on a phone the same blocks run top to bottom in
+// their source order (shared boxes, lines, then money and buttons).
+function expectBefore(a: Element, b: Element) {
+  expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+}
+
+describe("PurchaseOrderForm two columns (owner 2026-10-10)", () => {
+  function renderForm() {
+    return render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+  }
+
+  it("on a computer: lines on the left two thirds, shared boxes then money on the right third", () => {
+    renderForm();
+    const layout = screen.getByTestId("form-layout");
+    expect(layout.className).toMatch(/\bgrid\b/);
+    expect(layout.className).toContain("lg:grid-cols-3");
+    const lines = screen.getByTestId("form-lines");
+    const shared = screen.getByTestId("form-shared");
+    const money = screen.getByTestId("form-money");
+    expect(lines.className).toContain("lg:col-span-2");
+    expect(lines.className).toContain("lg:col-start-1");
+    expect(shared.className).toContain("lg:col-start-3");
+    expect(money.className).toContain("lg:col-start-3");
+    for (const block of [lines, shared, money]) expect(layout.contains(block)).toBe(true);
+  });
+
+  it("each box sits in its block", () => {
+    renderForm();
+    const shared = screen.getByTestId("form-shared");
+    const lines = screen.getByTestId("form-lines");
+    const money = screen.getByTestId("form-money");
+    expect(within(shared).getByText("Nhà cung cấp")).toBeInTheDocument();
+    expect(within(shared).getByText("Mã hoá đơn")).toBeInTheDocument();
+    expect(within(shared).getByText("Ghi chú")).toBeInTheDocument();
+    expect(within(lines).getByText("Chi tiết nhập hàng")).toBeInTheDocument();
+    expect(within(money).getByText(/Tổng tiền hàng/)).toBeInTheDocument();
+    expect(within(money).getByRole("button", { name: "Lưu nháp" })).toBeInTheDocument();
+    expect(within(money).getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+  });
+
+  it("on a phone the blocks run shared, lines, money", () => {
+    renderForm();
+    expectBefore(screen.getByTestId("form-shared"), screen.getByTestId("form-lines"));
+    expectBefore(screen.getByTestId("form-lines"), screen.getByTestId("form-money"));
+  });
+
+  it("no white frame around the whole form (no frame inside a frame on a phone)", () => {
+    const { container } = renderForm();
+    let el: HTMLElement | null = screen.getByTestId("form-layout");
+    while (el && el !== container) {
+      expect(el.className).not.toContain("bg-surface-card");
+      el = el.parentElement;
+    }
   });
 });

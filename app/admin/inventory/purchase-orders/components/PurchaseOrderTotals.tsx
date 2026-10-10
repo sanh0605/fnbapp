@@ -49,7 +49,7 @@ export function PurchaseOrderTotals({
 }: PurchaseOrderTotalsProps): JSX.Element {
   return (
     <>
-      <div className="w-full max-w-md mb-6 space-y-3 bg-surface-card rounded-xl shadow-sm border border-border p-5">
+      <div className="w-full mb-6 space-y-3 bg-surface-card rounded-xl shadow-sm border border-border p-5">
         <div className="flex justify-between items-center text-sm text-text-secondary">
           <span className="font-medium">Tổng tiền hàng:</span>
           <span className="font-semibold text-text-primary">{formatNumber(subtotalAmount)}</span>
@@ -116,7 +116,7 @@ export function PurchaseOrderTotals({
         </div>
       </div>
 
-      <div className="w-full max-w-md mb-6">
+      <div className="w-full mb-6">
         <span className="block text-sm font-semibold text-text-secondary mb-2">
           Hình thức thanh toán
         </span>
