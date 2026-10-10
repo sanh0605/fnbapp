@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { OrderEditForm } from "./OrderEditForm";
 import { editOrderV2, type OrderListItem } from "@/app/admin/orders/actions";
 
@@ -156,5 +156,53 @@ describe("OrderEditForm", () => {
       );
       expect(refresh).toHaveBeenCalled();
     });
+  });
+});
+
+
+// Owner 2026-10-10: a create/edit form looks like the slip's detail page —
+// on a computer the lines take the left two thirds and the slip-wide boxes
+// stack in the right third; on a phone the same blocks run top to bottom in
+// their source order (shared boxes, lines, then money and buttons).
+function expectBefore(a: Element, b: Element) {
+  expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+}
+
+describe("OrderEditForm two columns (owner 2026-10-10)", () => {
+  function renderForm() {
+    return render(
+      <OrderEditForm
+        order={makeOrder()}
+        brands={[]}
+        products={[]}
+        variants={[]}
+        modifiers={[]}
+        categories={[]}
+        returnTo="/admin/orders"
+      />
+    );
+  }
+
+  it("on a computer: the dishes on the left two thirds, payment, total, reason and buttons on the right third", () => {
+    renderForm();
+    const layout = screen.getByTestId("form-layout");
+    const lines = screen.getByTestId("form-lines");
+    const money = screen.getByTestId("form-money");
+    expect(layout.className).toContain("lg:grid-cols-3");
+    expect(lines.className).toContain("lg:col-span-2");
+    expect(lines.className).toContain("lg:col-start-1");
+    expect(money.className).toContain("lg:col-start-3");
+    expect(layout.className).not.toContain("max-w-4xl");
+
+    expect(within(lines).getByText("+ Thêm sản phẩm")).toBeInTheDocument();
+    expect(within(money).getByText("Tổng cộng")).toBeInTheDocument();
+    expect(within(money).getByLabelText("Lý do chỉnh sửa")).toBeInTheDocument();
+    expect(within(money).getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(within(money).getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
+  it("on a phone the dishes come before the payment and the buttons", () => {
+    renderForm();
+    expectBefore(screen.getByTestId("form-lines"), screen.getByTestId("form-money"));
   });
 });

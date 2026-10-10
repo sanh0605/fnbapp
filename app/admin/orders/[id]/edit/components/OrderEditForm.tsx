@@ -226,7 +226,7 @@ export function OrderEditForm({
   const totalAmount = calculateTotal();
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       <BackLink href={viewUrl} label={order.display_order_no || order.order_no} />
 
       <PageHeader
@@ -234,24 +234,30 @@ export function OrderEditForm({
         subtitle={order.display_order_no || order.order_no}
       />
 
-      <form onSubmit={handleSave} className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
+      <form
+        onSubmit={handleSave}
+        data-testid="form-layout"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start"
+      >
+        {/* Dishes list */}
+        <div
+          data-testid="form-lines"
+          className="bg-surface-card rounded-card shadow-sm border border-border p-4 space-y-3 lg:col-span-2 lg:col-start-1 lg:row-start-1"
+        >
+          {inlineError && (
+            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/30 flex justify-between">
+              <span>{inlineError}</span>
+              <button
+                type="button"
+                onClick={() => setInlineError(null)}
+                className="ml-2 text-danger hover:opacity-80"
+                aria-label="Đóng"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
-        {inlineError && (
-          <div role="alert" aria-live="polite" className="mx-4 mt-4 p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/30 flex justify-between">
-            <span>{inlineError}</span>
-            <button
-              type="button"
-              onClick={() => setInlineError(null)}
-              className="ml-2 text-danger hover:opacity-80"
-              aria-label="Đóng"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Items list */}
-        <div className="p-4 space-y-3">
           {items.length === 0 && !isAddingProduct && (
             <div className="text-center text-text-muted py-8">Không có món nào trong đơn</div>
           )}
@@ -513,8 +519,11 @@ export function OrderEditForm({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-border shrink-0">
+        {/* Totals, reason, actions */}
+        <div
+          data-testid="form-money"
+          className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden lg:col-start-3 lg:sticky lg:top-4"
+        >
           <div className="px-4 py-3 bg-page space-y-3">
             <DiscountEditor
               orderDiscount={orderDiscount}
@@ -557,23 +566,23 @@ export function OrderEditForm({
             />
           </div>
 
-          <div className="px-4 py-3 flex flex-col sm:flex-row gap-3 bg-surface-card border-t border-border">
+          <div className="p-4 flex flex-col gap-3 bg-surface-card border-t border-border">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSaving || items.length === 0 || !editReason.trim()}
+              className="w-full min-h-[44px]"
+            >
+              {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
+            </Button>
             <Button
               type="button"
               variant="secondary"
               onClick={() => router.push(viewUrl)}
               disabled={isSaving}
-              className="w-full sm:w-auto sm:flex-1 min-h-[44px]"
+              className="w-full min-h-[44px]"
             >
               Bỏ
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSaving || items.length === 0 || !editReason.trim()}
-              className="w-full sm:w-auto sm:flex-1 min-h-[44px]"
-            >
-              {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
             </Button>
           </div>
         </div>
