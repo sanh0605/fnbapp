@@ -219,7 +219,7 @@ export default function BrandsClient({
         onClear={handleClearFilter}
         showClear={Boolean(search)}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm thương hiệu" htmlFor="brands-search">
             <TextInput
               id="brands-search"

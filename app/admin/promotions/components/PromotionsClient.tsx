@@ -423,7 +423,7 @@ export default function PromotionsClient({
         onClear={handleClearFilter}
         showClear={Boolean(search || status !== "ALL" || type !== "ALL")}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm khuyến mãi" htmlFor="promotions-search">
             <TextInput
               id="promotions-search"
@@ -433,7 +433,7 @@ export default function PromotionsClient({
             />
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+        <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="promotions-status">
             <Select
               id="promotions-status"
@@ -447,7 +447,7 @@ export default function PromotionsClient({
             </Select>
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+        <div className="shrink-0 w-full md:w-48">
           <Field label="Loại" htmlFor="promotions-type">
             <Select
               id="promotions-type"

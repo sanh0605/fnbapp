@@ -280,7 +280,7 @@ export default function CategoriesClient({
         onClear={handleClearFilter}
         showClear={Boolean(search || status !== "ACTIVE")}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm nhóm" htmlFor="categories-search">
             <TextInput
               id="categories-search"
@@ -290,7 +290,7 @@ export default function CategoriesClient({
             />
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+        <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="categories-status">
             <Select
               id="categories-status"

@@ -229,7 +229,7 @@ export default function ActivityLogClient({
             disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
           />
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-56">
+        <div className="shrink-0 w-full md:w-56">
           <Field label="Tìm kiếm" htmlFor="filter-search">
             <TextInput
               id="filter-search"
@@ -262,7 +262,7 @@ export default function ActivityLogClient({
             Xoá lọc
           </Button>
         )}
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-40">
+        <div className="shrink-0 w-full md:w-40">
           <Field label="Loại sự kiện" htmlFor="filter-event-type">
             <Select
               id="filter-event-type"
@@ -281,7 +281,7 @@ export default function ActivityLogClient({
             </Select>
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-40">
+        <div className="shrink-0 w-full md:w-40">
           <Field label="Tài khoản" htmlFor="filter-actor">
             <Select
               id="filter-actor"

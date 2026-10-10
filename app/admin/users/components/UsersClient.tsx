@@ -242,7 +242,7 @@ export default function UsersClient({
         onClear={handleClearFilter}
         showClear={Boolean(search || role !== "ALL")}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm nhân sự" htmlFor="users-search">
             <TextInput
               id="users-search"
@@ -252,7 +252,7 @@ export default function UsersClient({
             />
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+        <div className="shrink-0 w-full md:w-48">
           <Field label="Quyền hạn" htmlFor="users-role">
             <Select
               id="users-role"

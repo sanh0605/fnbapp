@@ -272,7 +272,7 @@ export default function BankAccountsClient({
         onClear={handleClearFilter}
         showClear={Boolean(search || status !== "ACTIVE")}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm tài khoản" htmlFor="bank-accounts-search">
             <TextInput
               id="bank-accounts-search"
@@ -282,7 +282,7 @@ export default function BankAccountsClient({
             />
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+        <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="bank-accounts-status">
             <Select
               id="bank-accounts-status"

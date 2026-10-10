@@ -334,7 +334,7 @@ export default function ItemsClient({
         onClear={handleClearFilter}
         showClear={Boolean(search || (category && category !== "ALL"))}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm kiếm" htmlFor="items-search">
             <TextInput
               id="items-search"
@@ -344,7 +344,7 @@ export default function ItemsClient({
             />
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+        <div className="shrink-0 w-full md:w-48">
           <Field label="Phân loại" htmlFor="items-category">
             <Select
               id="items-category"

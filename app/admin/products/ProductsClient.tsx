@@ -390,7 +390,7 @@ export default function ProductsClient({
         onClear={handleClearFilter}
         showClear={Boolean(search || (category && category !== "ALL") || status !== "ACTIVE")}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm món" htmlFor="products-search">
             <TextInput
               id="products-search"
@@ -400,7 +400,7 @@ export default function ProductsClient({
             />
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+        <div className="shrink-0 w-full md:w-48">
           <Field label="Nhóm món" htmlFor="products-category">
             <Select
               id="products-category"
@@ -416,7 +416,7 @@ export default function ProductsClient({
             </Select>
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+        <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="products-status">
             <Select
               id="products-status"

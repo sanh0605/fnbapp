@@ -306,7 +306,7 @@ export default function OutletsClient({
         onClear={handleClearFilter}
         showClear={Boolean(search || status !== "ACTIVE")}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm điểm bán" htmlFor="outlets-search">
             <TextInput
               id="outlets-search"
@@ -316,7 +316,7 @@ export default function OutletsClient({
             />
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
+        <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="outlets-status">
             <Select
               id="outlets-status"

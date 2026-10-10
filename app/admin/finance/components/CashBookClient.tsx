@@ -475,7 +475,7 @@ export default function CashBookClient({
         onClear={handleClearFilter}
         showClear={status !== "ACTIVE" || kind !== "ALL"}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
+        <div className="shrink-0 w-full md:w-auto">
           <label className="block text-[13px] font-medium text-text-primary mb-1">
             Thời gian
           </label>
@@ -485,7 +485,7 @@ export default function CashBookClient({
             onChange={handleDateRangeChange}
           />
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
+        <div className="shrink-0 w-full md:w-44">
           <Field label="Loại" htmlFor="cashbook-kind">
             <Select
               id="cashbook-kind"
@@ -504,7 +504,7 @@ export default function CashBookClient({
             </Select>
           </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
+        <div className="shrink-0 w-full md:w-44">
           <Field label="Trạng thái" htmlFor="cashbook-status">
             <Select
               id="cashbook-status"

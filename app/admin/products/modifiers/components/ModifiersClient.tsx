@@ -240,7 +240,7 @@ export default function ModifiersClient({
         onClear={handleClearFilter}
         showClear={Boolean(search)}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm tuỳ chọn" htmlFor="modifiers-search">
             <TextInput
               id="modifiers-search"

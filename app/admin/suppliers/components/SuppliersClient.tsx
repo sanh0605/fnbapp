@@ -241,7 +241,7 @@ export default function SuppliersClient({
         onClear={handleClearFilter}
         showClear={Boolean(search)}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
+        <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm kiếm" htmlFor="suppliers-search">
             <TextInput
               id="suppliers-search"
