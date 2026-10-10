@@ -32,11 +32,11 @@ export function FilterCard({
     <div className="bg-surface-card rounded-2xl shadow-sm border border-border p-4 space-y-4">
       <div className="flex flex-wrap items-end gap-3" onKeyDown={handleKeyDown}>
         {children}
-        <div className="flex gap-2 w-full md:w-auto min-h-[44px]">
+        <div className="flex gap-2 w-full md:w-auto min-h-[44px] md:min-h-[40px]">
           <button
             type="button"
             onClick={onApply}
-            className="flex-1 md:flex-none bg-surface-secondary text-text-primary px-4 rounded-lg font-medium hover:bg-surface-secondary/80 transition border border-border flex items-center justify-center min-w-[80px] min-h-[44px]"
+            className="flex-1 md:flex-none bg-surface-secondary text-text-primary px-4 rounded-lg font-medium hover:bg-surface-secondary/80 transition border border-border flex items-center justify-center min-w-[80px] min-h-[44px] md:min-h-[40px]"
           >
             Lọc
           </button>
@@ -44,7 +44,7 @@ export function FilterCard({
             <button
               type="button"
               onClick={onClear}
-              className="flex-1 md:flex-none text-danger px-4 rounded-lg font-medium hover:bg-danger/10 transition flex items-center justify-center min-w-[80px] min-h-[44px]"
+              className="flex-1 md:flex-none text-danger px-4 rounded-lg font-medium hover:bg-danger/10 transition flex items-center justify-center min-w-[80px] min-h-[44px] md:min-h-[40px]"
             >
               Xoá lọc
             </button>

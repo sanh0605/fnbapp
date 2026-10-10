@@ -464,7 +464,7 @@ export default function ProductsClient({
                       { scroll: false },
                     );
                   }}
-                  className="text-primary hover:text-primary-hover font-medium underline text-sm min-h-[44px] inline-flex items-center"
+                  className="text-primary hover:text-primary-hover font-medium underline text-sm min-h-[44px] md:min-h-[40px] inline-flex items-center"
                 >
                   Xem &ldquo;{STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}&rdquo;
                 </button>
@@ -479,7 +479,7 @@ export default function ProductsClient({
                 <button
                   type="button"
                   onClick={handleClearFilter}
-                  className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
+                  className="text-danger hover:underline font-medium text-sm min-h-[44px] md:min-h-[40px] inline-flex items-center"
                 >
                   Xoá lọc
                 </button>

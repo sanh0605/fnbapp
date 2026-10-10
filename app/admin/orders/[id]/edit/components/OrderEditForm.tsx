@@ -358,7 +358,7 @@ export function OrderEditForm({
                           setSelectedNewProduct(p);
                           setSelectedNewVariant(null);
                         }}
-                        className="p-2 rounded-lg border border-border bg-surface-card hover:border-primary text-center transition-colors min-h-[44px]"
+                        className="p-2 rounded-lg border border-border bg-surface-card hover:border-primary text-center transition-colors min-h-[44px] md:min-h-[40px]"
                       >
                         <div className="text-sm font-medium text-text-primary truncate">{p.name}</div>
                       </button>
@@ -386,7 +386,7 @@ export function OrderEditForm({
                             key={v.id}
                             type="button"
                             onClick={() => setSelectedNewVariant(v)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors min-h-[44px] ${
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors min-h-[44px] md:min-h-[40px] ${
                               selectedNewVariant?.id === v.id
                                 ? "border-primary bg-primary-soft text-primary"
                                 : "border-border bg-surface-card text-text-secondary hover:border-border-hover"
@@ -490,7 +490,7 @@ export function OrderEditForm({
                         setSelectedNewVariant(null);
                         setSelectedNewModifiers([]);
                       }}
-                      className="flex-1 min-h-[44px]"
+                      className="flex-1 min-h-[44px] md:min-h-[40px]"
                     >
                       Quay lại
                     </Button>
@@ -499,7 +499,7 @@ export function OrderEditForm({
                       variant="secondary"
                       onClick={confirmAddProduct}
                       disabled={!selectedNewVariant}
-                      className="flex-1 min-h-[44px]"
+                      className="flex-1 min-h-[44px] md:min-h-[40px]"
                     >
                       Thêm vào đơn
                     </Button>
@@ -511,7 +511,7 @@ export function OrderEditForm({
             <Button
               type="button"
               variant="secondary"
-              className="w-full border-dashed min-h-[44px]"
+              className="w-full border-dashed min-h-[44px] md:min-h-[40px]"
               onClick={() => setIsAddingProduct(true)}
             >
               + Thêm sản phẩm
@@ -571,7 +571,7 @@ export function OrderEditForm({
               type="submit"
               variant="primary"
               disabled={isSaving || items.length === 0 || !editReason.trim()}
-              className="w-full min-h-[44px]"
+              className="w-full min-h-[44px] md:min-h-[40px]"
             >
               {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
             </Button>
@@ -580,7 +580,7 @@ export function OrderEditForm({
               variant="secondary"
               onClick={() => router.push(viewUrl)}
               disabled={isSaving}
-              className="w-full min-h-[44px]"
+              className="w-full min-h-[44px] md:min-h-[40px]"
             >
               Bỏ
             </Button>

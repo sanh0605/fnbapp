@@ -240,3 +240,28 @@ describe("OutletForm add mode", () => {
     }
   });
 });
+
+// Owner 2026-10-11 trial (BR-UI-012): a form with few boxes uses the whole
+// 1,280 px page frame and lays its boxes in two columns on a computer, rather
+// than a 672 px box on the left; a phone keeps one column.
+describe("OutletForm in two columns on a computer (owner 2026-10-11 trial)", () => {
+  it("the card keeps no width of its own", () => {
+    render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
+    const form = document.querySelector("form") as HTMLElement;
+    let el: HTMLElement | null = form;
+    while (el && el !== document.body) {
+      expect(el.className).not.toMatch(/\bmax-w-/);
+      el = el.parentElement;
+    }
+  });
+
+  it("name, brand, address and start date sit in one two-column grid", () => {
+    render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
+    const grid = screen.getByTestId("form-fields");
+    expect(grid.className).toMatch(/\bgrid-cols-1\b/);
+    expect(grid.className).toMatch(/\bmd:grid-cols-2\b/);
+    for (const name of ["name", "brand_id", "address", "open_time", "close_time"]) {
+      expect(grid.querySelector(`[name="${name}"]`)).not.toBeNull();
+    }
+  });
+});

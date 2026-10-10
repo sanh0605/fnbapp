@@ -176,7 +176,7 @@ export function ConversionForm({
 
         <label
           htmlFor={`${formId}-purchase_only`}
-          className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px]"
+          className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px] md:min-h-[40px]"
         >
           <input
             type="checkbox"

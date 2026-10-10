@@ -120,7 +120,7 @@ export function PurchaseOrderTotals({
         <span className="block text-sm font-semibold text-text-secondary mb-2">
           Hình thức thanh toán
         </span>
-        <div className="flex items-center gap-6 min-h-[44px]">
+        <div className="flex items-center gap-6 min-h-[44px] md:min-h-[40px]">
           <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
             <input
               type="radio"

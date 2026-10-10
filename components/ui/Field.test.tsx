@@ -64,3 +64,21 @@ describe("BR-UI-005 Field, TextInput, Select", () => {
     expect(screen.getByLabelText("b").className).toContain("min-h-[44px]");
   });
 });
+
+describe("box height by device (owner 2026-10-11 trial)", () => {
+  it("text box and select are 44px on a phone and 40px on a computer", () => {
+    render(
+      <>
+        <TextInput aria-label="a" />
+        <Select aria-label="b">
+          <option>x</option>
+        </Select>
+      </>,
+    );
+    for (const label of ["a", "b"]) {
+      const cls = screen.getByLabelText(label).className;
+      expect(cls).toContain("min-h-[44px]");
+      expect(cls).toContain("md:min-h-[40px]");
+    }
+  });
+});

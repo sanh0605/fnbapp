@@ -110,7 +110,7 @@ export function VoidOrderButton({
               <Button
                 type="button"
                 variant="secondary"
-                className="flex-1 min-h-[44px]"
+                className="flex-1 min-h-[44px] md:min-h-[40px]"
                 onClick={handleClose}
                 disabled={isSubmitting}
               >
@@ -119,7 +119,7 @@ export function VoidOrderButton({
               <Button
                 type="button"
                 variant="primary"
-                className="flex-1 !bg-danger hover:!bg-danger/90 min-h-[44px]"
+                className="flex-1 !bg-danger hover:!bg-danger/90 min-h-[44px] md:min-h-[40px]"
                 onClick={confirmVoid}
                 disabled={!voidReason.trim() || isSubmitting}
               >

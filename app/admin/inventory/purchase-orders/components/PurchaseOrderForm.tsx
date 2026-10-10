@@ -446,7 +446,7 @@ export default function PurchaseOrderForm({
               variant="primary"
               loading={loading}
               onClick={() => handleSubmit("COMPLETED")}
-              className="w-full min-h-[44px]"
+              className="w-full min-h-[44px] md:min-h-[40px]"
             >
               {isEdit ? "Cập nhật & Hoàn thành" : "Tạo"}
             </Button>
@@ -456,7 +456,7 @@ export default function PurchaseOrderForm({
                 variant="secondary"
                 loading={loading}
                 onClick={() => handleSubmit("DRAFT")}
-                className="w-full min-h-[44px]"
+                className="w-full min-h-[44px] md:min-h-[40px]"
               >
                 Lưu nháp
               </Button>

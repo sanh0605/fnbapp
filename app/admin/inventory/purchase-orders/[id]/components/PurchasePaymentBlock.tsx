@@ -84,7 +84,7 @@ export function PurchasePaymentBlock({
             Đổi cách trả tiền
           </div>
 
-          <div className="flex items-center gap-6 min-h-[44px]">
+          <div className="flex items-center gap-6 min-h-[44px] md:min-h-[40px]">
             <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
               <input
                 type="radio"

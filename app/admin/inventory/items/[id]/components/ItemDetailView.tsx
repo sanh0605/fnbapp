@@ -51,7 +51,7 @@ export function ItemDetailView({
       stockValue = (
         <Link
           href={`/admin/inventory/assets?q=${encodeURIComponent(item.id)}`}
-          className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] inline-flex items-center"
+          className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] md:min-h-[40px] inline-flex items-center"
         >
           Xem ở Tài sản
         </Link>
@@ -127,7 +127,7 @@ export function ItemDetailView({
           </h2>
           <Link
             href={`/admin/inventory/conversions?q=${encodeURIComponent(item.name)}`}
-            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] inline-flex items-center"
+            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] md:min-h-[40px] inline-flex items-center"
           >
             Xem trong Bảng quy đổi &rarr;
           </Link>

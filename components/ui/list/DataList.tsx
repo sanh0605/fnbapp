@@ -347,7 +347,7 @@ export function DataList<T>({
                 aria-label="Sắp xếp"
                 value={sort.href(sort.key, sort.dir)}
                 onChange={(e) => router.replace(e.target.value)}
-                className="w-full bg-surface-card border border-border text-text-primary text-sm rounded-lg px-3 py-2 min-h-[44px] focus:ring-2 focus:ring-primary outline-none"
+                className="w-full bg-surface-card border border-border text-text-primary text-sm rounded-lg px-3 py-2 min-h-[44px] md:min-h-[40px] focus:ring-2 focus:ring-primary outline-none"
               >
                 {sortableColumns.map((col) => (
                   <React.Fragment key={col.key}>
@@ -372,7 +372,7 @@ export function DataList<T>({
                   setSelectedIds(new Set());
                 }
               }}
-              className="text-sm font-medium text-primary hover:text-primary-hover px-3 py-1.5 rounded-lg border border-border hover:bg-surface-secondary transition min-h-[44px] flex items-center justify-center shrink-0"
+              className="text-sm font-medium text-primary hover:text-primary-hover px-3 py-1.5 rounded-lg border border-border hover:bg-surface-secondary transition min-h-[44px] md:min-h-[40px] flex items-center justify-center shrink-0"
             >
               {isMobileSelecting ? "Xong" : "Chọn"}
             </button>
@@ -387,7 +387,7 @@ export function DataList<T>({
             <thead>
               <tr className="bg-page border-b border-border">
                 {removal && (
-                  <th className="px-4 py-4 w-12 text-center text-[13px] font-medium text-text-secondary">
+                  <th className="px-4 py-3 w-12 text-center text-[13px] font-medium text-text-secondary">
                     {hasRemovableRows && (
                       <input
                         type="checkbox"
@@ -413,7 +413,7 @@ export function DataList<T>({
                     <th
                       key={col.key}
                       aria-sort={ariaSort}
-                      className={`px-6 py-4 text-[13px] text-left font-semibold text-text-secondary ${
+                      className={`px-6 py-3 text-[13px] text-left font-semibold text-text-secondary ${
                         col.secondary ? "hidden xl:table-cell" : ""
                       }`}
                     >
@@ -438,7 +438,7 @@ export function DataList<T>({
                   );
                 })}
                 {removal && (
-                  <th className="px-4 py-4 w-16 text-center text-[13px] font-medium text-text-secondary">
+                  <th className="px-4 py-3 w-16 text-center text-[13px] font-medium text-text-secondary">
                     <span className="sr-only">{removal.verb}</span>
                   </th>
                 )}
@@ -447,7 +447,7 @@ export function DataList<T>({
             <tbody className="divide-y divide-border">
               {totals && (
                 <tr className="bg-primary-soft">
-                  {removal && <td className="px-4 py-4" />}
+                  {removal && <td className="px-4 py-3" />}
                   {columns.map((col) => {
                     const hasVal =
                       totals.values[col.key] !== undefined &&
@@ -468,7 +468,7 @@ export function DataList<T>({
                     return (
                       <td
                         key={col.key}
-                        className={`px-6 py-4 text-sm font-normal text-text-primary ${
+                        className={`px-6 py-3 text-sm font-normal text-text-primary ${
                           col.align === "right" ? "text-right tabular-nums" : ""
                         } ${col.secondary ? "hidden xl:table-cell" : ""}`}
                       >
@@ -476,7 +476,7 @@ export function DataList<T>({
                       </td>
                     );
                   })}
-                  {removal && <td className="px-4 py-4" />}
+                  {removal && <td className="px-4 py-3" />}
                 </tr>
               )}
               {rows.map((row) => {
@@ -495,7 +495,7 @@ export function DataList<T>({
                     }`}
                   >
                     {removal && (
-                      <td className="px-4 py-4 text-center relative z-20">
+                      <td className="px-4 py-3 text-center relative z-20">
                         {isRemovable && (
                           <input
                             type="checkbox"
@@ -510,7 +510,7 @@ export function DataList<T>({
                     {columns.map((col, idx) => (
                       <td
                         key={col.key}
-                        className={`px-6 py-4 text-sm font-normal text-text-primary ${
+                        className={`px-6 py-3 text-sm font-normal text-text-primary ${
                           col.align === "right" ? "text-right tabular-nums" : ""
                         } ${col.secondary ? "hidden xl:table-cell" : ""}`}
                       >
@@ -526,7 +526,7 @@ export function DataList<T>({
                       </td>
                     ))}
                     {removal && (
-                      <td className="px-4 py-4 text-center relative z-20">
+                      <td className="px-4 py-1.5 text-center relative z-20">
                         {isRemovable && (
                           <button
                             type="button"
@@ -536,7 +536,7 @@ export function DataList<T>({
                               e.stopPropagation();
                               handleRemoveSingle(row);
                             }}
-                            className="p-2 text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors inline-flex items-center justify-center min-w-[36px] min-h-[36px]"
+                            className="p-1.5 text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors inline-flex items-center justify-center min-w-[32px] min-h-[32px]"
                           >
                             <TrashIcon />
                             <span className="sr-only">{verb}</span>
@@ -603,19 +603,19 @@ export function DataList<T>({
                     <button
                       type="button"
                       onClick={() => toggleSelectRow(id)}
-                      className="w-full text-left focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px]"
+                      className="w-full text-left focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px] md:min-h-[40px]"
                     >
                       {renderCard(row)}
                     </button>
                   ) : (
-                    <div className="w-full text-left min-h-[44px]">
+                    <div className="w-full text-left min-h-[44px] md:min-h-[40px]">
                       {renderCard(row)}
                     </div>
                   )
                 ) : (
                   <Link
                     href={href}
-                    className={`block focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px] ${
+                    className={`block focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px] md:min-h-[40px] ${
                       removal && isRemovable ? "pr-12" : ""
                     }`}
                   >

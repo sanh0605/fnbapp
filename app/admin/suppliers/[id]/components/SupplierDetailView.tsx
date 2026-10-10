@@ -124,7 +124,7 @@ export function SupplierDetailView({
           </h2>
           <Link
             href={purchaseOrdersHref}
-            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] inline-flex items-center"
+            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] md:min-h-[40px] inline-flex items-center"
           >
             Xem trong Phiếu nhập &rarr;
           </Link>
@@ -185,7 +185,7 @@ export function SupplierDetailView({
                 <Link
                   key={po.id}
                   href={`/admin/inventory/purchase-orders/${encodeURIComponent(po.id)}`}
-                  className="block p-4 hover:bg-surface-secondary/50 transition-colors focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px]"
+                  className="block p-4 hover:bg-surface-secondary/50 transition-colors focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px] md:min-h-[40px]"
                 >
                   <div className="flex justify-between items-start gap-2 mb-1">
                     <span className="font-mono text-xs text-text-muted">

@@ -257,7 +257,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
                         ref={(el) => { optionRefs.current[idx] = el; }}
                         role="option"
                         aria-selected={isSelected}
-                        className={`px-4 py-2 text-sm cursor-pointer min-h-[44px] flex items-center whitespace-normal break-words ${
+                        className={`px-4 py-2 text-sm cursor-pointer min-h-[44px] md:min-h-[40px] flex items-center whitespace-normal break-words ${
                           isSelected ? 'bg-primary-soft text-primary font-medium' : 'text-text-primary'
                         } ${idx === activeIndex ? 'ring-2 ring-inset ring-focus-ring bg-primary-soft' : 'hover:bg-primary-soft'}`}
                         onClick={() => {

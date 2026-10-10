@@ -135,7 +135,7 @@ export function DisposeAssetForm({
                 return (
                   <label
                     key={lot.id}
-                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition min-h-[44px] ${
+                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition min-h-[44px] md:min-h-[40px] ${
                       isSelected
                         ? "border-primary bg-primary-soft/30 text-text-primary"
                         : "border-border bg-surface-card hover:bg-surface-secondary/50 text-text-secondary"

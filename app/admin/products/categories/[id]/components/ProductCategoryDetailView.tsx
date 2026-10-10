@@ -132,7 +132,7 @@ export function ProductCategoryDetailView({
                 <Link
                   key={dish.id}
                   href={`/admin/products/${encodeURIComponent(dish.id)}`}
-                  className="p-4 flex items-center justify-between hover:bg-surface-secondary/50 transition-colors min-h-[44px]"
+                  className="p-4 flex items-center justify-between hover:bg-surface-secondary/50 transition-colors min-h-[44px] md:min-h-[40px]"
                 >
                   <div>
                     <div className="text-text-primary text-sm">

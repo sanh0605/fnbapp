@@ -332,7 +332,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
                           <button
                             type="button"
                             onClick={() => removeLine(index)}
-                            className="text-text-muted hover:text-danger p-2 transition-colors inline-flex items-center justify-center rounded-lg min-h-[44px] min-w-[44px]"
+                            className="text-text-muted hover:text-danger p-2 transition-colors inline-flex items-center justify-center rounded-lg min-h-[44px] md:min-h-[40px] min-w-[44px]"
                             aria-label="Xoá dòng"
                           >
                             ✕
@@ -347,7 +347,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
                     <button
                       type="button"
                       onClick={addLine}
-                      className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px]"
+                      className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px] md:min-h-[40px]"
                     >
                       + Thêm mặt hàng
                     </button>
@@ -381,7 +381,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
                 variant="primary"
                 onClick={handleSubmit}
                 loading={submitting}
-                className="w-full min-h-[44px]"
+                className="w-full min-h-[44px] md:min-h-[40px]"
               >
                 Ghi phiếu xuất ({lines.length} dòng)
               </Button>
@@ -408,7 +408,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
             <SaigonDateTimeInput
               value={issuedAtLocal}
               onChange={setIssuedAtLocal}
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px]"
+              className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px] md:min-h-[40px]"
             />
             {affectedMonths.length > 0 && (
               <p className="mt-1.5 text-xs text-warning">
@@ -437,7 +437,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
                   <button
                     type="button"
                     onClick={() => removeLine(index)}
-                    className="absolute top-2 right-2 text-text-muted hover:text-danger p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    className="absolute top-2 right-2 text-text-muted hover:text-danger p-2 min-h-[44px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
                     aria-label="Xoá dòng"
                   >
                     ✕
@@ -516,7 +516,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
         <button
           type="button"
           onClick={addLine}
-          className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px]"
+          className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px] md:min-h-[40px]"
         >
           + Thêm mặt hàng
         </button>
@@ -527,7 +527,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
             variant="primary"
             onClick={handleSubmit}
             loading={submitting}
-            className="w-full min-h-[44px]"
+            className="w-full min-h-[44px] md:min-h-[40px]"
           >
             Ghi phiếu xuất ({lines.length} dòng)
           </Button>

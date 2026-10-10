@@ -729,6 +729,21 @@ describe("DataList wears the table template", () => {
     expect(link.className).not.toContain("justify-end");
   });
 
+  it("a computer row is about 45px tall, with or without its delete button (owner 2026-10-11 trial)", () => {
+    renderList({
+      removal: { verb: "Xoá", confirmMessage: (n: number) => `Xoá ${n}?`, remove: vi.fn() },
+    });
+    const row = screen.getAllByText("Vinamilk")[0].closest("tr") as HTMLElement;
+    for (const td of Array.from(row.querySelectorAll("td"))) {
+      expect(td.className).not.toMatch(/\bpy-4\b/);
+    }
+    expect(screen.getAllByText("Vinamilk")[0].closest("td")!.className).toMatch(/\bpy-3\b/);
+    const del = screen.getAllByRole("button", { name: "Xoá Vinamilk" }).find(b => b.closest("td"))!;
+    expect(del.className).toContain("min-h-[32px]");
+    expect(del.className).not.toContain("min-h-[36px]");
+    expect((del.closest("td") as HTMLElement).className).toMatch(/\bpy-1\.5\b/);
+  });
+
   it("no row cell is bold", () => {
     renderList();
     for (const td of screen.getAllByRole("cell")) {

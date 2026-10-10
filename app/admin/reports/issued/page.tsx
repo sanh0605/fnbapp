@@ -67,7 +67,7 @@ export default async function IssuedValueReportPage({
 
   // Three tabs on one phone-width strip: fixed labels, not truncated --
   // "Theo nguyên liệu" is the longest and wraps to two lines on a narrow
-  // screen rather than overflowing or shrinking illegibly. min-h-[44px] is
+  // screen rather than overflowing or shrinking illegibly. min-h-[44px] md:min-h-[40px] is
   // a floor, not a fixed height, so a wrapped label still gets a real tap
   // target, just a taller one. Checked at 360px width, the narrowest
   // common Android viewport.

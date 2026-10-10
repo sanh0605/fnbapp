@@ -63,7 +63,7 @@ export function PurchaseOrderLines({
                   type="button"
                   onClick={() => removeLine(index)}
                   aria-label="Xoá dòng"
-                  className="absolute top-4 right-4 text-text-muted hover:text-danger min-h-[44px] min-w-[44px] flex items-center justify-center"
+                  className="absolute top-4 right-4 text-text-muted hover:text-danger min-h-[44px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
                 >
                   ✕
                 </button>

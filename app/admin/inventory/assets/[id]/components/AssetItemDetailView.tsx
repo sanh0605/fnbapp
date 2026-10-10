@@ -180,7 +180,7 @@ export function AssetItemDetailView({
                     {lot.purchaseOrderId ? (
                       <Link
                         href={`/admin/inventory/purchase-orders/${lot.purchaseOrderId}`}
-                        className="font-mono text-primary hover:underline min-h-[44px] flex items-center"
+                        className="font-mono text-primary hover:underline min-h-[44px] md:min-h-[40px] flex items-center"
                       >
                         {lot.purchaseOrderId}
                       </Link>

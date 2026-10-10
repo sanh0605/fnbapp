@@ -299,7 +299,7 @@ export function DateRangeButton(props: {
         data-testid="range-button"
         disabled={disabled}
         onClick={handleTriggerClick}
-        className="w-full md:w-auto min-h-[44px] px-3.5 py-2 rounded-xl border border-border bg-surface-card hover:bg-page transition-colors text-left flex items-center justify-between gap-3 shadow-sm disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
+        className="w-full md:w-auto min-h-[44px] md:min-h-[40px] px-3.5 py-2 rounded-xl border border-border bg-surface-card hover:bg-page transition-colors text-left flex items-center justify-between gap-3 shadow-sm disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
       >
         <div className="flex flex-col md:flex-row md:items-center">
           <span className="font-semibold text-text-primary text-sm">{presetName}</span>
@@ -341,7 +341,7 @@ export function DateRangeButton(props: {
                       type="button"
                       aria-pressed={isPressed ? "true" : "false"}
                       onClick={() => handlePresetClick(key)}
-                      className={`w-full text-left px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-colors ${
+                      className={`w-full text-left px-3 py-2 min-h-[44px] md:min-h-[40px] rounded-lg text-sm font-medium transition-colors ${
                         isPressed
                           ? "bg-primary-soft text-primary font-semibold"
                           : "text-text-primary hover:bg-page"
@@ -471,7 +471,7 @@ export function DateRangeButton(props: {
                       type="button"
                       aria-pressed={isPressed ? "true" : "false"}
                       onClick={() => handlePhonePresetClick(key)}
-                      className={`px-2 py-2 min-h-[44px] rounded-lg text-xs sm:text-sm font-medium border text-center transition-colors flex items-center justify-center ${
+                      className={`px-2 py-2 min-h-[44px] md:min-h-[40px] rounded-lg text-xs sm:text-sm font-medium border text-center transition-colors flex items-center justify-center ${
                         isPressed
                           ? "bg-primary-soft text-primary border-primary font-semibold"
                           : "bg-surface-card text-text-primary border-border hover:bg-page"

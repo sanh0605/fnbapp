@@ -306,7 +306,7 @@ export default async function SalesReportPage({
                   const dayTotalOrders = dayCells.reduce((s, c) => s + c.orderCount, 0);
                   return (
                     <details key={day} className="rounded-xl border border-border bg-page overflow-hidden group">
-                      <summary className="flex items-center justify-between p-3 cursor-pointer list-none min-h-[44px] [&::-webkit-details-marker]:hidden">
+                      <summary className="flex items-center justify-between p-3 cursor-pointer list-none min-h-[44px] md:min-h-[40px] [&::-webkit-details-marker]:hidden">
                         <div className="flex items-center gap-3">
                           <div className="w-11 h-11 shrink-0 rounded-lg bg-primary-soft text-primary flex items-center justify-center font-bold text-sm">
                             {day === "CN" ? "CN" : day}

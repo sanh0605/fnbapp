@@ -267,7 +267,7 @@ export function NumberInput({
           onChange={handleChange}
           onBlur={handleBlur}
           onInvalid={handleInvalid}
-          className={`w-full min-h-[44px] rounded-button bg-surface-card border px-3 text-sm text-text-primary text-right tabular-nums outline-none focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50 ${
+          className={`w-full min-h-[44px] md:min-h-[40px] rounded-button bg-surface-card border px-3 text-sm text-text-primary text-right tabular-nums outline-none focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50 ${
             isError
               ? "border-danger focus:border-danger"
               : "border-border focus:border-primary"

@@ -442,7 +442,7 @@ export function PurchasedItemForm({
           {(isConsumable || isRaw) && (
             <label
               htmlFor={`${formId}-isNonInventory`}
-              className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px]"
+              className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px] md:min-h-[40px]"
             >
               <input
                 type="checkbox"
@@ -514,7 +514,7 @@ function BaseUnitSelector({
       {isUnitLocked ? (
         <div
           id={`${formId}-baseUnitId`}
-          className="w-full min-h-[44px] flex items-center border border-border rounded-button px-3 text-sm bg-surface-secondary text-text-secondary"
+          className="w-full min-h-[44px] md:min-h-[40px] flex items-center border border-border rounded-button px-3 text-sm bg-surface-secondary text-text-secondary"
         >
           {selectedBaseUnitName || "—"}
         </div>

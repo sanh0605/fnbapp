@@ -486,7 +486,7 @@ export default function PromotionsClient({
               <button
                 type="button"
                 onClick={handleClearFilter}
-                className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
+                className="text-danger hover:underline font-medium text-sm min-h-[44px] md:min-h-[40px] inline-flex items-center"
               >
                 Xoá lọc
               </button>

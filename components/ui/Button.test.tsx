@@ -54,3 +54,12 @@ describe("BR-UI-005 Button", () => {
     expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
   });
 });
+
+describe("Button height by device (owner 2026-10-11 trial)", () => {
+  it.each(["primary", "secondary", "delete", "danger"] as const)("%s is 44px on a phone and 40px on a computer", variant => {
+    render(<Button variant={variant}>Bấm</Button>);
+    const cls = screen.getByRole("button", { name: "Bấm" }).className;
+    expect(cls).toContain("min-h-[44px]");
+    expect(cls).toContain("md:min-h-[40px]");
+  });
+});
