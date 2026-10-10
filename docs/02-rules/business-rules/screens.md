@@ -109,3 +109,19 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 **Status:** `APPROVED` — owner 2026-10-10, in chat: *"Tên tiêu đề của mỗi table phải in đậm và luôn align left"*. Every table's column titles are bold and left-aligned, on every screen. Built on the branch 2026-10-10: the shared title cell (`components/ui/Table.tsx`) and the shared list (`components/ui/list/DataList.tsx`) draw every title bold and left, so a title cell no longer takes a right alignment; tests in `components/ui/Table.test.tsx` and `components/ui/list/DataList.test.tsx`.
 
 - **A column of amounts: title on the left, figures stay on the right** (owner 2026-10-10, *"Làm theo em khuyến nghị"*, option A). He was told that moving the figures left too would stop the thousands lining up for comparing (`BR-UI-008`); he kept them right.
+
+### BR-UI-012 — Every page has the same width: at most 1,280 px, centred
+
+**Status:** `APPROVED` — owner 2026-10-11, in chat, after asking why pages cover the screen differently: *"Anh nghĩ có lẽ nên dùng cách b để màn laptop cũng xài được"*, option b of three (a: every page as wide as the screen; b: every page at most 1,280 px, centred; c: lists wide, other pages 1,280). Not built yet; plan `docs/superpowers/plans/2026-10-11-kho-trang-va-mat-do.md`.
+
+- **Measured 2026-10-11 on 8386** at the owner's 1,920 px screen (1,584 px beside the menu): four widths in use — about 1,584 (every list, Tổng quan, Doanh số, a Phiếu nhập's and a Phiếu xuất's page, Sửa đơn hàng), 1,280 centred (most detail and edit pages, Tạo phiếu nhập, Tạo phiếu xuất, Lãi lỗ), 896 on the left (Thêm món, Tạo khuyến mãi), 672 (Thêm thương hiệu, điểm bán, nhân sự, thu chi, nhóm món, tuỳ chọn; a sales order's page; Hàng đã xuất). Each wave had set its own; no rule existed.
+- **On a laptop nothing narrows:** at 1,440 px wide the space beside the menu is about 1,100 px, under the cap, so every page fills it. Measured that day at 1,440: every page fits except Lãi lỗ (14 px too wide) and Doanh số (its table 1,120 px in 1,039), which scroll sideways inside their table.
+- **A phone is unchanged:** pages there already take the whole width.
+- Every page — list, detail, create, edit, report — uses the whole frame; no page keeps a narrower box of its own. A form with few boxes lays them in columns rather than stretching one box across the frame.
+
+### BR-UI-013 — Page titles: a capital only on the first word, and a create page says "Tạo …"
+
+**Status:** `APPROVED` — owner 2026-10-11, in chat, *"Có"*, to: titles capitalise only the first word ("Tạo đơn vị tính", not "Thêm Đơn Vị Mới"), and a page that creates a record is titled "Tạo" plus what it creates, matching the button (`BR-UI-002`). Not built yet; plan `docs/superpowers/plans/2026-10-11-kho-trang-va-mat-do.md`.
+
+- Counted 2026-10-11: 19 create pages. 7 capitalise every word ("Tạo Phân Loại Hàng Hoá", "Thêm Quy Đổi Mới", "Thêm Hàng Hóa Mua Vào", "Thêm Đơn Vị Mới", "Thêm Danh Mục Mới", "Thêm Tùy Chọn Mới", "Thêm Món Mới"); 13 start with "Thêm", 4 with "Tạo", and 2 use their own verb ("Ghi khoản thu chi", "Chuyển tiền").
+- Names keep their own capitals (Topping, Voucher, a supplier's name).

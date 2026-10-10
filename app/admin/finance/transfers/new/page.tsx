@@ -20,7 +20,7 @@ export default async function NewCashTransferPage({
     <div className="space-y-6">
       <BackLink href={returnTo} label="Sổ thu chi" />
       <PageHeader
-        title="Chuyển tiền"
+        title="Tạo khoản chuyển tiền"
         subtitle="Chuyển tiền giữa két và tài khoản ngân hàng."
       />
       <CashTransferForm

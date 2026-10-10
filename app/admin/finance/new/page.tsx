@@ -24,7 +24,7 @@ export default async function NewCashEntryPage({
     <div className="space-y-6">
       <BackLink href={returnTo} label="Sổ thu chi" />
       <PageHeader
-        title="Ghi khoản thu chi"
+        title="Tạo khoản thu chi"
         subtitle="Ghi các khoản chi và thu ngoài bán hàng, mua hàng."
       />
       <CashEntryForm

@@ -10,7 +10,7 @@ export default function NewCashCategoryPage({ searchParams }: { searchParams?: {
   return (
     <div className="space-y-6">
       <BackLink href={returnTo} label="Nhóm thu chi" />
-      <PageHeader title="Thêm nhóm thu chi" subtitle="Đặt tên các nhóm chi và thu." />
+      <PageHeader title="Tạo nhóm thu chi" subtitle="Đặt tên các nhóm chi và thu." />
       <CategoryForm returnTo={returnTo} />
     </div>
   );

@@ -18,7 +18,7 @@ export default async function NewProductPage({
     <div className="space-y-6">
       <BackLink href={returnTo} label="Món" />
       <PageHeader
-        title="Thêm Món Mới"
+        title="Tạo món"
         subtitle="Thêm món mới vào thực đơn bán hàng."
       />
       <ProductForm

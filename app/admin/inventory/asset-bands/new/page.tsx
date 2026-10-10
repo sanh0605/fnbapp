@@ -17,7 +17,7 @@ export default function NewAssetBandPage({
       <DetailHeader
         backHref={returnTo}
         backLabel="Thời hạn khấu hao"
-        title="Thêm khung khấu hao"
+        title="Tạo khung khấu hao"
         subtitle="Xác định số tháng khấu hao theo đơn giá 1 cái."
       />
       <AddBandForm returnTo={returnTo} />

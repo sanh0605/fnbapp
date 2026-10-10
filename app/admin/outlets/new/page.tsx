@@ -22,7 +22,7 @@ export default async function NewOutletPage({
   return (
     <div className="space-y-6">
       <BackLink href={returnTo} label="Điểm bán" />
-      <PageHeader title="Thêm điểm bán" subtitle="Thêm điểm bán mới vào hệ thống." />
+      <PageHeader title="Tạo điểm bán" subtitle="Thêm điểm bán mới vào hệ thống." />
       <OutletForm brands={brands} outlets={outlets} returnTo={returnTo} />
     </div>
   );

@@ -16,7 +16,7 @@ export default async function NewProductCategoryPage({
     <div className="space-y-6">
       <BackLink href={returnTo} label="Nhóm món" />
       <PageHeader
-        title="Thêm Danh Mục Mới"
+        title="Tạo nhóm món"
         subtitle="Thêm nhóm sản phẩm mới vào Menu bán hàng."
       />
       <ProductCategoryForm returnTo={returnTo} />

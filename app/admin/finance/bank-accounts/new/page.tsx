@@ -10,7 +10,7 @@ export default function NewBankAccountPage({ searchParams }: { searchParams?: { 
   return (
     <div className="space-y-6">
       <BackLink href={returnTo} label="Tài khoản ngân hàng" />
-      <PageHeader title="Thêm tài khoản ngân hàng" subtitle="Khai báo tài khoản để ghi các khoản chuyển khoản." />
+      <PageHeader title="Tạo tài khoản ngân hàng" subtitle="Khai báo tài khoản để ghi các khoản chuyển khoản." />
       <BankAccountForm returnTo={returnTo} />
     </div>
   );

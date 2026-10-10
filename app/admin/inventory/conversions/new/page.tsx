@@ -19,7 +19,7 @@ export default async function NewConversionPage({
       <DetailHeader
         backHref={returnTo}
         backLabel="Bảng quy đổi"
-        title="Thêm Quy Đổi Mới"
+        title="Tạo quy đổi"
         subtitle="Thiết lập tỷ lệ quy đổi từ đơn vị mua hàng sang đơn vị cơ bản dùng trong pha chế."
       />
       <ConversionForm

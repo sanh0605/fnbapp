@@ -21,7 +21,7 @@ export default function NewSupplierPage({
       <DetailHeader
         backHref={returnTo}
         backLabel={label}
-        title="Thêm nhà cung cấp"
+        title="Tạo nhà cung cấp"
         subtitle="Thông tin liên hệ của đối tác cung ứng."
       />
       <SupplierForm

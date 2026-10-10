@@ -17,7 +17,7 @@ export default function NewCategoryPage({
       <DetailHeader
         backHref={returnTo}
         backLabel="Phân loại hàng"
-        title="Tạo Phân Loại Hàng Hoá"
+        title="Tạo phân loại hàng"
         subtitle="Tự do tạo các phân loại tuỳ chỉnh (Bao bì, Nguyên liệu ướt, v.v.)."
       />
       <CategoryForm returnTo={returnTo} />

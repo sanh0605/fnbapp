@@ -14,7 +14,7 @@ export default function NewUserPage({
   return (
     <div className="space-y-6">
       <BackLink href={returnTo} label="Nhân sự" />
-      <PageHeader title="Thêm nhân sự" subtitle="Tạo tài khoản đăng nhập và phân quyền hệ thống." />
+      <PageHeader title="Tạo nhân viên" subtitle="Tạo tài khoản đăng nhập và phân quyền hệ thống." />
       <UserForm returnTo={returnTo} />
     </div>
   );
