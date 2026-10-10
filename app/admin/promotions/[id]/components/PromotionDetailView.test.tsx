@@ -90,6 +90,22 @@ describe("PromotionDetailView", () => {
     expect(screen.getAllByText("Size L").length).toBeGreaterThan(0);
   });
 
+  it("draws the computer table's titles in a single header row (not a row inside a row)", () => {
+    const { container } = render(
+      <PromotionDetailView
+        promo={samplePromo}
+        brandName="Uchako"
+        applicableItems={sampleItems}
+        canDelete={true}
+        returnTo="/admin/promotions"
+      />,
+    );
+
+    expect(container.querySelectorAll("tr tr")).toHaveLength(0);
+    const headRow = container.querySelector("thead > tr")!;
+    expect([...headRow.children].map((c) => c.textContent)).toEqual(["Món", "Size", "Giá áp dụng"]);
+  });
+
   it("shows Xoá button only when canDelete is true", () => {
     const { unmount } = render(
       <PromotionDetailView

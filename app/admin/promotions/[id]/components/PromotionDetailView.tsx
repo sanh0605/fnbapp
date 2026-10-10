@@ -149,11 +149,9 @@ export function PromotionDetailView({
               <div className="hidden md:block overflow-x-auto">
                 <Table>
                   <TableHead>
-                    <TableRow>
-                      <TableHeaderCell>Món</TableHeaderCell>
-                      <TableHeaderCell>Size</TableHeaderCell>
-                      <TableHeaderCell align="right">Giá áp dụng</TableHeaderCell>
-                    </TableRow>
+                    <TableHeaderCell>Món</TableHeaderCell>
+                    <TableHeaderCell>Size</TableHeaderCell>
+                    <TableHeaderCell align="right">Giá áp dụng</TableHeaderCell>
                   </TableHead>
                   <TableBody>
                     {applicableItems.map((item, idx) => (
