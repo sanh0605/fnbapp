@@ -948,3 +948,40 @@ describe("IssueSlipClient -- Row 3 Giá trị xuất", () => {
 });
 
 
+
+
+// Owner 2026-10-10: a create/edit form looks like the slip's detail page —
+// on a computer the lines take the left two thirds and the slip-wide boxes
+// stack in the right third; on a phone the same blocks run top to bottom in
+// their source order (shared boxes, lines, then money and buttons).
+function expectBefore(a: Element, b: Element) {
+  expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+}
+
+describe("IssueSlipClient two columns on a computer (owner 2026-10-10)", () => {
+  it("lines on the left two thirds, the issue time then the total and buttons on the right third", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[itemWithRealUnit]} />);
+    const q = (id: string) => container.querySelectorAll(`[data-testid="${id}"]`);
+    // One of each: the phone view keeps its own layout, without these marks.
+    for (const id of ["form-layout", "form-lines", "form-shared", "form-money"]) expect(q(id)).toHaveLength(1);
+    const layout = q("form-layout")[0] as HTMLElement;
+    const lines = q("form-lines")[0] as HTMLElement;
+    const shared = q("form-shared")[0] as HTMLElement;
+    const money = q("form-money")[0] as HTMLElement;
+    expect(layout.className).toContain("lg:grid-cols-3");
+    expect(lines.className).toContain("lg:col-span-2");
+    expect(lines.className).toContain("lg:col-start-1");
+    expect(shared.className).toContain("lg:col-start-3");
+    expect(money.className).toContain("lg:col-start-3");
+    expect(layout.closest(".md\\:hidden")).toBeNull();
+
+    expect(shared.textContent).toContain("Thời điểm xuất");
+    expect(shared.textContent).toContain("Đã điền đủ");
+    expect(lines.querySelector("table")).not.toBeNull();
+    expect(money.textContent).toContain("Tổng giá trị xuất");
+    expect(money.textContent).toContain("Ghi phiếu xuất");
+    expect(money.textContent).toContain("Quay lại");
+    expectBefore(shared, lines);
+    expectBefore(lines, money);
+  });
+});
