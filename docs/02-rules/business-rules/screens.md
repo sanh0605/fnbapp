@@ -103,3 +103,9 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 ### BR-UI-010 — A long name in a pick list is shown whole
 
 **Status:** `APPROVED` — owner 2026-10-08, in chat: *"trong các dropdown, khi anh muốn tìm sản phẩm nào đó, nhưng anh không thể đọc được hết tên của sản phẩm đó, anh cần cách tối ưu hơn"*. How, decided by Opus and reported to him the same day: in the searchable pick list (`components/ui/SearchableSelect.tsx`, used by 6 screens) a long name wraps onto more lines instead of being cut with "…"; on a computer the open list may be wider than the box; the chosen name in the closed box shows up to two lines. Built in wave K3 on 2026-10-08.
+
+### BR-UI-011 — Column titles are bold and sit on the left
+
+**Status:** `APPROVED` — owner 2026-10-10, in chat: *"Tên tiêu đề của mỗi table phải in đậm và luôn align left"*. Every table's column titles are bold and left-aligned, on every screen. Not built yet.
+
+- **A column of amounts: title on the left, figures stay on the right** (owner 2026-10-10, *"Làm theo em khuyến nghị"*, option A). He was told that moving the figures left too would stop the thousands lining up for comparing (`BR-UI-008`); he kept them right.

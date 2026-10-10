@@ -47,6 +47,7 @@ tối ưu được diện tích sử dụng"*.
 
 | # | Phần | Trạng thái |
 |---|---|---|
+| 0 | Sửa chỗ hỏng sau đợt K2–K6 và bộ lọc thời gian; đo tốc độ trước và sau; rồi tiêu đề cột đậm, căn trái (`BR-UI-011`); trang tạo/sửa hai cột cho Phiếu nhập, Phiếu xuất, Sửa đơn hàng — trước khi đẩy | đang làm (chủ quán 2026-10-10) |
 | 1 | Giao diện đồng nhất — đợt 8: Phiếu nhập, Phiếu xuất, Đơn hàng | đang làm |
 | 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | đang làm: khuôn K1–K6 xong (K2–K6 chờ đẩy); bộ lọc thời gian xong trên nhánh 2026-10-09, chờ đẩy |
 | 2 | Giao diện đồng nhất — các trang ngoài khuôn | chưa làm |
@@ -56,6 +57,8 @@ tối ưu được diện tích sử dụng"*.
 | 6 | Dọn phần sót (bước H) | chưa làm |
 | 7 | Máy bán hàng và trang đăng nhập | chưa làm |
 | 8 | Lộ trình dài hạn | chưa làm |
+
+Phần 0 (chủ quán 2026-10-10, *"Làm theo em khuyến nghị, nhưng em nên cân nhắc cả màn hình điện thoại nữa nhé"*): chủ quán thấy đợt vừa rồi làm hư nhiều giao diện và trang chạy chậm hơn. Sửa và đo xong mới đẩy. Mỗi trang soát và sửa ở cả máy tính lẫn điện thoại. Trang hai cột: Phiếu nhập, Phiếu xuất, Sửa đơn hàng trước; Món và Khuyến mãi vẽ mẫu cho chủ quán xem rồi mới quyết.
 
 Lý do thứ tự: chủ quán đang chê giao diện, nên giao diện đi trước (1, 2). Tổng quan (3) và
 Tồn kho (4) là màn hình mới, dựng sau khi khuôn đã phủ hết để dựng thẳng theo khuôn. Máy
