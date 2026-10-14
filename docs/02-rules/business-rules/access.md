@@ -58,3 +58,9 @@ per screen.
 - A `MANAGER` keeps Nhân sự: adding and editing `STAFF` and `MANAGER` accounts, including resetting their passwords.
 - Only an `ADMIN` may give the `ADMIN` role (create or change), and only an `ADMIN` may edit an account that is already `ADMIN` (role or password). Checked on the server with `requireOwner()`, not by hiding buttons.
 - For a manager the role list offers only Nhân viên and Quản lý, and an `ADMIN` account shows no edit button.
+
+### BR-ACCESS-005 — The public API roles hold no table or function rights
+
+**Status:** `APPROVED` — technical decision, audit item E9, 2026-10-14. Measured that day: 6 tables still granted every right to both roles, 2 functions callable by `anon`, 0 sequences. Migration `0117` not yet run on the server.
+
+The `anon` and `authenticated` roles hold no right on any table, function or sequence in `public`. Tables and sequences created later get none either. A function created later still gets the global "everyone may run it" default, so each migration that creates one must revoke it from `public`, `anon` and `authenticated` itself, as every migration since `0091` does. Row-level security already blocks their rows; this also closes `TRUNCATE` and function calls. The app uses only the service-role key on the server, whose rights are untouched.

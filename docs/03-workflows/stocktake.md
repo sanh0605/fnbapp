@@ -7,6 +7,8 @@ tables: stocktake_sessions, stocktake_lines, stock_issues
 brCodes: BR-INV-007, BR-COGS-007, BR-INV-010, BR-INV-011, BR-INV-012
 ```
 
+**Behaviour change — 2026-10-14 (`BR-INV-017`, migration `0115`, not yet run on the server):** preview and confirm work each counted line's book out again as of its `counted_at` (a reversal row counts from its original's date) and return `recomputedLines`; the preview lists each line whose figure changed under "Số trên sổ đã tính lại theo giờ đếm", and confirm stores the recomputed figure in `theoretical_at_count`.
+
 **Behaviour change — 2026-10-14 (audit A1; migration `0111`, ran on the server 2026-10-14 with the owner's approval):** undoing a confirmed stocktake is refused when taking found-at-count goods back out would leave an item below zero, naming the item.
 
 **Behaviour change — 2026-10-14:** the owner can correct the counts of the most recent confirmed

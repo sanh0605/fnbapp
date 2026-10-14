@@ -32,10 +32,11 @@ export default async function SalesReportPage({
 }: {
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const [brands, users, categories] = await Promise.all([
+  const [brands, users, categories, productTypes] = await Promise.all([
     findAll("Brands"),
     findAll("Users"),
-    findAll("Product_Categories")
+    findAll("Product_Categories"),
+    findAll("Product_Types"),
   ]);
 
   const today = saigonToday();
@@ -120,14 +121,20 @@ export default async function SalesReportPage({
     outletBreakdown,
   } = data;
 
+  const categoryTypeId = new Map<string, string>();
+  for (const c of categories) categoryTypeId.set(c.id, c.type_id);
+  const drinkTypeIds = new Set(productTypes.filter(t => t.is_drink).map(t => t.id));
+
   const bestDrinks = bestSellers.filter(item => {
     const p = (products as any[]).find(x => x.id === item.product_id);
-    return p?.category_id !== "CAT-006"; // CAT-006 is Food
+    const typeId = p?.category_id ? categoryTypeId.get(p.category_id) : undefined;
+    return Boolean(typeId && drinkTypeIds.has(typeId));
   });
 
   const bestFoods = bestSellers.filter(item => {
     const p = (products as any[]).find(x => x.id === item.product_id);
-    return p?.category_id === "CAT-006";
+    const typeId = p?.category_id ? categoryTypeId.get(p.category_id) : undefined;
+    return !Boolean(typeId && drinkTypeIds.has(typeId));
   });
 
   const totalToppingQty = bestToppings.reduce((s, t) => s + t.qty, 0);
@@ -171,7 +178,7 @@ export default async function SalesReportPage({
             </div>
           ))}
           <div className="text-xs text-text-muted mt-2">
-            Gross: {formatNumber(grossRevenue)}
+            Trước giảm giá: {formatNumber(grossRevenue)}
             {" • "}
             Giảm giá: {formatNumber(totalDiscount)}
           </div>
@@ -230,7 +237,7 @@ export default async function SalesReportPage({
               <dd className="font-bold text-danger">{formatNumber(totalDiscount)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-text-secondary">Doanh thu Gross</dt>
+              <dt className="text-text-secondary">Doanh thu trước giảm giá</dt>
               <dd className="font-medium text-text-primary">{formatNumber(grossRevenue)}</dd>
             </div>
             <div className="flex justify-between">

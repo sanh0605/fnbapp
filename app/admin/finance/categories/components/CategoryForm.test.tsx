@@ -159,5 +159,12 @@ describe("CategoryForm sales-revenue box (BR-CASH-006)", () => {
     fireEvent.click(screen.getByLabelText("Tính vào lãi lỗ"));
     expect((screen.getByLabelText("Tính là doanh thu bán hàng") as HTMLInputElement).checked).toBe(false);
   });
+
+  it("shows hint with 'Trang Lãi lỗ' instead of 'Trang Báo cáo tài chính' (audit B11)", () => {
+    open(<CategoryForm category={MANUAL_REVENUE} hasEntries />);
+    expect(screen.getByText(/Trang Lãi lỗ cộng vào dòng Doanh thu thay vì Thu khác/)).toBeInTheDocument();
+    expect(screen.queryByText(/Trang Báo cáo tài chính/)).toBeNull();
+  });
 });
+
 

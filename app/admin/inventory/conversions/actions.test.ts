@@ -280,3 +280,40 @@ describe("deleteConversionAction -- tells a hard delete from a deactivation", ()
     expect(mocks.update).not.toHaveBeenCalled();
   });
 });
+
+describe("updateConversion -- never relabels other conversions' purchase lines (audit A5)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it("renaming an unused conversion's purchase unit leaves a line of another conversion with the same unit alone, even with update_history", async () => {
+    mocks.findAllWhere.mockImplementation((sheet: string) => {
+      if (sheet === "UOM_Conversions") return Promise.resolve([{ id: "QD-1", base_unit: "U-KG" }]);
+      return Promise.resolve([]);
+    });
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "UOM_Conversions") return Promise.resolve([
+        { id: "QD-1", purchased_item_id: "SPM-TRAITAC", purchased_unit: "U-BAO", conversion_rate: "10", base_unit: "U-KG" },
+        { id: "QD-2", purchased_item_id: "SPM-TRAITAC", purchased_unit: "U-BAO", conversion_rate: "25", base_unit: "U-KG" },
+      ]);
+      // Bought through QD-2, not QD-1: QD-1 itself is unused, so its edit is allowed.
+      if (sheet === "Purchase_Order_Lines") return Promise.resolve([{ id: "POL-9", purchased_item_id: "SPM-TRAITAC", unit: "U-BAO", conversion_id: "QD-2" }]);
+      return Promise.resolve([]);
+    });
+
+    const res = await updateConversion(formData({
+      id: "QD-1",
+      purchased_item_id: "SPM-TRAITAC",
+      purchased_unit: "U-THUNG",
+      conversion_rate: "10",
+      base_unit: "U-KG",
+      update_history: "true",
+    }));
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.update).not.toHaveBeenCalledWith("Purchase_Order_Lines", expect.anything(), expect.anything());
+    expect(mocks.update).toHaveBeenCalledWith("UOM_Conversions", "QD-1", expect.objectContaining({ purchased_unit: "U-THUNG" }));
+  });
+});

@@ -38,7 +38,6 @@ export function ConversionForm({
     initialData ? units.find(u => u.id === initialData.purchased_unit)?.name || "" : ""
   );
   const [conversionRate, setConversionRate] = useState(initialData?.conversion_rate || "");
-  const [updateHistory, setUpdateHistory] = useState(true);
   // Plan D D15: a purchase-only bundle (e.g. "Combo 2") -- keeps showing up
   // when receiving a purchase order, hidden from stocktake/issue-slip lines.
   const [purchaseOnly, setPurchaseOnly] = useState(initialData?.purchase_only === true);
@@ -98,7 +97,6 @@ export function ConversionForm({
     // the server cache stale but does not repaint this already-open page.
     if (isEdit) {
       formData.append("id", initialData!.id);
-      formData.append("update_history", String(updateHistory));
       const res = await updateConversion(formData);
       setLoading(false);
       if (res.error) setError(res.error);
@@ -190,21 +188,6 @@ export function ConversionForm({
             vẫn hiện khi nhập hàng, nhưng ẩn khỏi kiểm kê và phiếu xuất kho vì đây không phải thứ cầm lên đếm được.
           </span>
         </label>
-
-        {isEdit && (
-          <div className="flex items-start gap-2 p-2 bg-warning/10 rounded-lg border border-warning/20">
-            <input
-              type="checkbox"
-              id={`${formId}-update_history`}
-              checked={updateHistory}
-              onChange={(e) => setUpdateHistory(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded border-border text-warning focus:ring-warning"
-            />
-            <label htmlFor={`${formId}-update_history`} className="text-xs text-warning-active leading-tight">
-              Cập nhật đơn vị mua cho các đơn hàng cũ của mặt hàng này nếu đơn vị mua thay đổi.
-            </label>
-          </div>
-        )}
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
           <Button

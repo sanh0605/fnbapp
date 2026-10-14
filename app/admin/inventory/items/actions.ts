@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllWhere, insert, update, updateMany, remove, generateNewId, getCacheTag } from "@/lib/db/tables";
+import { findAll, findAllWhere, insert, update, remove, generateNewId, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
@@ -199,7 +199,6 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
   const item_category_id = formData.get("item_category_id") as string;
   const unitsJson = formData.get("units_json") as string;
   const base_unit = formData.get("base_unit") as string;
-  const update_history = formData.get("update_history") === "true";
   const is_non_inventory = formData.get("is_non_inventory") === "true";
   const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
   const assetRemovalConfirmed = formData.get("asset_removal_confirmed") === "true";
@@ -332,18 +331,6 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
         if (!u.name || !u.conversion_rate) continue;
         
         if (u.id) {
-          const oldConv = existingConversions.find((c: any) => c.id === u.id);
-
-          if (update_history) {
-            if (oldConv && oldConv.purchased_unit !== u.name) {
-              const linesToUpdate = poLines
-                .filter((p: any) => p.purchased_item_id === id && p.unit === oldConv.purchased_unit)
-                .map((line: any) => ({ id: line.id, unit: u.name }));
-              if (linesToUpdate.length > 0) {
-                await updateMany("Purchase_Order_Lines", linesToUpdate);
-              }
-            }
-          }
           // Cập nhật record cũ
           await update("UOM_Conversions", u.id, {
             purchased_item_id: id,

@@ -30,7 +30,7 @@ app/admin/inventory/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/actions.ts -> Purchased_Items (write)
 app/admin/inventory/actions.ts -> Units (write)
 app/admin/inventory/actions.ts -> UOM_Conversions (write)
-app/admin/inventory/asset-bands/actions.ts -> asset_depreciation_bands (write)
+lib/assets/asset-bands-transaction.ts -> asset_depreciation_bands (write)
 app/admin/inventory/assets/actions.ts -> asset_disposals (write)
 app/admin/inventory/conversions/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/conversions/actions.ts -> UOM_Conversions (write)
@@ -119,7 +119,7 @@ item's assets `INACTIVE` when it leaves the equipment category, BR-COGS-008).
 `Purchase_Order_Lines`.
 
 **Assets.** `app/admin/inventory/assets/actions.ts` writes `asset_disposals`;
-`app/admin/inventory/asset-bands/actions.ts` writes `asset_depreciation_bands`.
+`lib/assets/asset-bands-transaction.ts` writes `asset_depreciation_bands`, the whole table in one save (migration `0118`).
 (`assets` rows are created via purchasing, and marked `INACTIVE` from the
 item edit page.)
 

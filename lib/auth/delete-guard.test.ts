@@ -9,7 +9,6 @@ const HARD_DELETE_ACTIONS: Array<[string, string]> = [
   ["app/admin/inventory/actions.ts", "deletePurchasedItem"],
   ["app/admin/inventory/actions.ts", "deleteConversion"],
   ["app/admin/inventory/actions.ts", "deleteUnit"],
-  ["app/admin/inventory/asset-bands/actions.ts", "deleteAssetBand"],
   ["app/admin/inventory/conversions/actions.ts", "deleteConversionAction"],
   ["app/admin/inventory/items/actions.ts", "deletePurchasedItemAction"],
   ["app/admin/promotions/actions.ts", "deletePromotionAction"],

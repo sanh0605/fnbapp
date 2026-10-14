@@ -61,7 +61,7 @@ Mỗi mục: viết phép thử đỏ trước, rồi sửa. Backend → Sonnet;
 | B4, B5 | Bản đồ giờ bỏ qua lọc nhân viên/nhóm món; ô chọn người ở Nhật ký thiếu người mới | Dùng chung bộ lọc; lấy danh sách từ Nhân sự | Sonnet |
 | B10, B11, B12 | Doanh số tách đồ ăn bằng mã nhóm viết cứng `CAT-006`; chữ tiếng Anh Gross/Net/UNKNOWN; luật Lãi lỗ ghi sai tên trang | Đọc Loại món; chữ Việt; sửa tài liệu | Gemini, Opus |
 | F8 | Ngày ở Món, Khuyến mãi, Thương hiệu, Điểm bán thiếu giây (BR-DATA-006) | Dùng `formatDateTimeFull` | Gemini |
-| E9 | Có thể còn quyền cũ thời tháng 4 trên cơ sở dữ liệu | Một truy vấn chỉ đọc liệt kê; rồi migration gỡ | Opus đo, Sonnet sửa |
+| E9 | Có thể còn quyền cũ thời tháng 4 trên cơ sở dữ liệu | Đo 2026-10-14 (chỉ đọc): mọi bảng `public` bật RLS, 0 policy; nhưng 6 bảng (`assets`, `asset_disposals`, `asset_depreciation_bands`, `order_payments`, `outlets`, `purchase_order_edits`) còn cấp đủ quyền, kể cả TRUNCATE, cho `anon`/`authenticated`; 2 hàm (`rls_auto_enable`, `touch_updated_at`) `anon` gọi được; quyền mặc định cấp cho bảng mới. Migration `0117` gỡ | Opus đo, Sonnet sửa |
 
 ## Đợt 2 — chậm dần theo thời gian
 

@@ -1,7 +1,6 @@
 # Việc đang làm (sinh tự động từ it.todo — đừng sửa tay)
 
 - Trang thanh lý ghi số tiền thu được (bỏ đi thì 0đ), tự ghi một dòng thu vào sổ thu chi nhóm "Thu thanh lý tài sản", lãi lỗ hiện dòng riêng (chủ quán chốt 08/10/2026) (app/admin/inventory/assets/components/DisposeAssetForm.test.tsx)
-- Khi xác nhận kiểm kê, máy tính lại số trên sổ tại giờ đếm, kể cả phiếu nhập trễ ghi ngày trước giờ đếm, nên không trừ hai lần (chủ quán chốt 14/10/2026) (app/admin/inventory/stocktake/actions.test.ts)
 - Giảm % cả đơn tính trên tổng sau giảm từng món, máy chủ ra đúng số máy bán hiện (chủ quán chốt 14/10/2026) (app/pos/actions.test.ts)
 - Khuyến mãi giảm cả hoá đơn áp trước, giảm tay cả đơn áp sau, máy chủ ra đúng số máy bán hiện (chủ quán chốt 14/10/2026) (app/pos/actions.test.ts)
 - Khuyến mãi không mã tự áp khi đủ điều kiện; hai khuyến mãi chỉ cộng khi cả hai đặt Dùng chung, không thì thu ngân chọn một; máy chủ không tự áp loại cần mã (chủ quán chốt 14/10/2026) (app/pos/actions.test.ts)

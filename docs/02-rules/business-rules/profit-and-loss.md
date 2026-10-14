@@ -1,6 +1,6 @@
 # Profit and loss rules
 
-The monthly profit-and-loss page is `/admin/reports/pnl`, named **Báo cáo tài chính** (menu Báo cáo → Báo cáo tài chính; owner decision 2026-09-12, renamed from Lãi lỗ; the route keeps its old name). Design:
+The monthly profit-and-loss page is `/admin/reports/pnl`, named **Lãi lỗ** (menu Báo cáo → Lãi lỗ, and the page title; read from `app/admin/nav-items.ts` 2026-10-14. The 2026-09-12 name "Báo cáo tài chính" is no longer used on screen). Design:
 `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md`. The rules below
 are the owner's decisions for it; how each line is computed is in the design
 and in `BR-COGS-007`, `BR-COGS-008`, `BR-CASH-001` and `BR-CASH-003`.

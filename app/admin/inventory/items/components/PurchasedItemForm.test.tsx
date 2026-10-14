@@ -545,4 +545,37 @@ describe("PurchasedItemForm -- asset removal confirmation on category change (Ta
   });
 });
 
+describe("PurchasedItemForm -- update_history removed (audit A5)", () => {
+  const EDIT_ITEM = {
+    id: "SPM-067",
+    name: "Hộp đựng topping liền nắp",
+    item_category_id: "NHH-002",
+    is_non_inventory: false,
+  };
+  const EDIT_CONVERSIONS = [
+    { id: "QD-067", purchased_item_id: "SPM-067", purchased_unit: "U-BAO", base_unit: "U-G", conversion_rate: "200" },
+  ];
+
+  it("edit form does not render update_history checkbox and does not submit update_history in FormData", async () => {
+    let capturedFormData: FormData | null = null;
+    mocks.updatePurchasedItem.mockImplementationOnce(async (fd: FormData) => {
+      capturedFormData = fd;
+      return { ok: true };
+    });
+
+    const container = await openEditForm(EDIT_ITEM, EDIT_CONVERSIONS);
+
+    // The update_history checkbox is absent
+    expect(container.querySelector('input[type="checkbox"][id*="update_history"]')).toBeNull();
+    expect(document.body.textContent).not.toContain("Cập nhật lại đơn vị mua cho các đơn đặt hàng cũ");
+
+    await submitForm(container);
+
+    expect(mocks.updatePurchasedItem).toHaveBeenCalledTimes(1);
+    expect(capturedFormData).not.toBeNull();
+    expect(capturedFormData!.get("update_history")).toBeNull();
+  });
+});
+
+
 

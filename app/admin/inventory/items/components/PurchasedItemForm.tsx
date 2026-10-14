@@ -147,8 +147,6 @@ export function PurchasedItemForm({
       : [{ name: "", conversion_rate: "" }]
   );
 
-  const [updateHistory, setUpdateHistory] = useState(true);
-
   // 2026-08-21:
   // the discriminator is BR-INV-007 -- does a sealed pack of it sit on the
   // shelf to be counted -- not the category itself, so this is offered for
@@ -257,7 +255,6 @@ export function PurchasedItemForm({
     const submitFn = isEdit ? updatePurchasedItem : addPurchasedItem;
     if (isEdit) {
       formData.append("id", initialData!.id);
-      formData.append("update_history", String(updateHistory));
     }
     let res = await submitFn(formData);
     // Batch 1 follow-up, level 2 (BR-CATALOG-001): a near-match warning,
@@ -371,8 +368,6 @@ export function PurchasedItemForm({
                   updateUnitRow={updateUnitRow}
                   removeUnitRow={removeUnitRow}
                   isEdit={isEdit}
-                  updateHistory={updateHistory}
-                  setUpdateHistory={setUpdateHistory}
                 />
               )}
             </div>
@@ -409,8 +404,6 @@ export function PurchasedItemForm({
                   updateUnitRow={updateUnitRow}
                   removeUnitRow={removeUnitRow}
                   isEdit={isEdit}
-                  updateHistory={updateHistory}
-                  setUpdateHistory={setUpdateHistory}
                 />
               )}
             </div>
@@ -544,8 +537,6 @@ function ConversionRowsSection({
   updateUnitRow,
   removeUnitRow,
   isEdit,
-  updateHistory,
-  setUpdateHistory,
 }: {
   formId: string;
   unitsState: Array<{ id?: string; name: string; conversion_rate: string }>;
@@ -555,8 +546,6 @@ function ConversionRowsSection({
   updateUnitRow: (index: number, field: "name" | "conversion_rate", value: string) => void;
   removeUnitRow: (index: number) => void;
   isEdit: boolean;
-  updateHistory: boolean;
-  setUpdateHistory: (value: boolean) => void;
 }) {
   return (
     <div className="bg-page p-4 rounded-xl border border-border">
@@ -623,21 +612,6 @@ function ConversionRowsSection({
           );
         })}
       </div>
-
-      {isEdit && (
-        <div className="mt-4 flex items-start gap-2 p-2 bg-warning/10 rounded-lg border border-warning/20">
-          <input
-            type="checkbox"
-            id={`${formId}-update_history`}
-            checked={updateHistory}
-            onChange={(e) => setUpdateHistory(e.target.checked)}
-            className="mt-1 w-4 h-4 rounded border-border text-warning focus:ring-warning"
-          />
-          <label htmlFor={`${formId}-update_history`} className="text-xs text-warning-active leading-tight">
-            Cập nhật lại đơn vị mua cho các đơn đặt hàng cũ của mặt hàng này nếu đơn vị mua bị thay đổi.
-          </label>
-        </div>
-      )}
     </div>
   );
 }

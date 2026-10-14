@@ -189,6 +189,58 @@ describe("stocktake atomic adapters", () => {
   });
 });
 
+describe("recomputed book on confirm (BR-INV-017)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
+  });
+
+  // Sữa tươi counted 8 at 15:00, frozen book 10; a slip of 2 dated 14:00 was entered afterwards.
+  it("passes through the lines whose book figure changed since the count (Sữa tươi 10 -> 8, nothing written)", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        session_id: "STK-001",
+        status: "CONFIRMED",
+        dry_run: false,
+        ledger_count: 0,
+        issue_count: 0,
+        rows: [],
+        issue_ids: [],
+        skipped_ingredients: [],
+        recomputed_lines: [
+          { line_id: "SKL-00001", item_reference: "SPM-001", frozen_qty: 10, recomputed_qty: 8 },
+        ],
+        plan_hash: "recompute-hash",
+      },
+      error: null,
+    });
+
+    const result = await stocktakeTransaction.applyStocktakeSessionAtomic({
+      sessionId: "STK-001",
+      confirmedById: "admin-1",
+      confirmedByName: "Admin",
+      dryRun: false,
+      expectedPlanHash: "recompute-hash",
+    });
+
+    expect(result.rows).toEqual([]);
+    expect(result.recomputedLines).toEqual([
+      { lineId: "SKL-00001", itemReference: "SPM-001", frozenQty: 10, recomputedQty: 8 },
+    ]);
+  });
+
+  it("defaults recomputedLines to empty when the function does not send them (the old function)", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: { session_id: "STK-001", status: "OPEN", dry_run: true, ledger_count: 0, issue_count: 0, rows: [], plan_hash: "h" },
+      error: null,
+    });
+    const result = await stocktakeTransaction.applyStocktakeSessionAtomic({
+      sessionId: "STK-001", confirmedById: "admin-1", confirmedByName: "Admin", dryRun: true,
+    });
+    expect(result.recomputedLines).toEqual([]);
+  });
+});
+
 describe("reverseStocktakeSessionAtomic (Plan D D14, U1-U8)", () => {
   beforeEach(() => {
     vi.clearAllMocks();

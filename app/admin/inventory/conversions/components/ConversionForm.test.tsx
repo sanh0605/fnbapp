@@ -2,6 +2,7 @@
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ConversionForm } from "./ConversionForm";
+import { updateConversion } from "../actions";
 
 const { push, refresh } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -90,3 +91,30 @@ describe("ConversionForm on-page behaviour", () => {
     expect(push).toHaveBeenCalledWith("/admin/inventory/conversions?q=sữa");
   });
 });
+
+describe("ConversionForm update_history removed (audit A5)", () => {
+  const EDIT = {
+    id: "CONV-1",
+    purchased_item_id: "ITEM-1",
+    purchased_unit: "U-THUNG",
+    conversion_rate: "1000",
+    base_unit: "U-ML",
+  } as any;
+  const UNITS = [
+    { id: "U-THUNG", name: "Thùng" },
+    { id: "U-ML", name: "ml" },
+  ] as any;
+
+  it("edit form does not render the update_history checkbox and does not send update_history in FormData", () => {
+    render(<ConversionForm items={ITEMS} conversions={[EDIT]} units={UNITS} initialData={EDIT} />);
+
+    expect(screen.queryByLabelText(/Cập nhật đơn vị mua cho các đơn hàng cũ/)).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+
+    expect(updateConversion).toHaveBeenCalledTimes(1);
+    const fd = vi.mocked(updateConversion).mock.calls[0][0] as FormData;
+    expect(fd.get("update_history")).toBeNull();
+  });
+});
+

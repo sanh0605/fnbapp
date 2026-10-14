@@ -672,7 +672,29 @@ describe("editing a confirmed stocktake (BR-INV-012)", () => {
 });
 
 describe("confirming a stocktake after a late slip (BR-INV-017)", () => {
-  it.todo(
-    "Khi xác nhận kiểm kê, máy tính lại số trên sổ tại giờ đếm, kể cả phiếu nhập trễ ghi ngày trước giờ đếm, nên không trừ hai lần (chủ quán chốt 14/10/2026)",
-  );
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+  });
+
+  it("Khi xác nhận kiểm kê, máy tính lại số trên sổ tại giờ đếm, kể cả phiếu nhập trễ ghi ngày trước giờ đếm, nên không trừ hai lần (chủ quán chốt 14/10/2026)", async () => {
+    // Sữa tươi counted 8 at 15:00, frozen book 10; a slip of 2 dated 14:00 entered afterwards:
+    // the database recomputes 10 -> 8, writes nothing, and says which line changed.
+    const applied = {
+      sessionId: "STK-001", status: "CONFIRMED", dryRun: false, ledgerCount: 0, issueCount: 0,
+      rows: [], skippedIngredients: [], planHash: "h1", issueIds: [],
+      recomputedLines: [{ lineId: "SKL-00001", itemReference: "SPM-001", frozenQty: 10, recomputedQty: 8 }],
+    };
+    mocks.applyStocktakeSessionAtomic.mockResolvedValue(applied);
+
+    const result = await stocktakeActions.confirmStocktakeSession("STK-001", "h1");
+
+    expect(mocks.applyStocktakeSessionAtomic).toHaveBeenCalledWith(expect.objectContaining({
+      sessionId: "STK-001", dryRun: false, expectedPlanHash: "h1",
+    }));
+    expect(result.result?.rows).toEqual([]);
+    expect(result.result?.recomputedLines).toEqual([
+      { lineId: "SKL-00001", itemReference: "SPM-001", frozenQty: 10, recomputedQty: 8 },
+    ]);
+  });
 });

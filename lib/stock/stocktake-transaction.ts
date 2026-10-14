@@ -52,6 +52,16 @@ export type StocktakeApplyResult = {
   skippedIngredients: StocktakeSkippedIngredient[];
   planHash: string;
   issueIds: string[];
+  // BR-INV-017: counted lines whose book figure changed between the count and
+  // the confirmation (a slip or order dated before the count, entered after it).
+  recomputedLines: StocktakeRecomputedLine[];
+};
+
+export type StocktakeRecomputedLine = {
+  lineId: string;
+  itemReference: string;
+  frozenQty: number;
+  recomputedQty: number;
 };
 
 export async function openStocktakeSessionAtomic(input: {
@@ -222,6 +232,7 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     }>;
     issue_ids?: string[];
     skipped_ingredients?: Array<{ ingredient_id?: string; reason?: string }>;
+    recomputed_lines?: Array<{ line_id?: string; item_reference?: string; frozen_qty?: number; recomputed_qty?: number }>;
     plan_hash?: string;
   } | null;
   if (!result?.session_id || (result.status !== "OPEN" && result.status !== "CONFIRMED")) {
@@ -255,6 +266,13 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     reason: s.reason || "",
   }));
 
+  const recomputedLines = (result.recomputed_lines || []).map(l => ({
+    lineId: l.line_id || "",
+    itemReference: l.item_reference || "",
+    frozenQty: Number(l.frozen_qty) || 0,
+    recomputedQty: Number(l.recomputed_qty) || 0,
+  }));
+
   return {
     sessionId: result.session_id,
     status: result.status,
@@ -265,5 +283,6 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     skippedIngredients,
     planHash: result.plan_hash,
     issueIds: result.issue_ids || [],
+    recomputedLines,
   };
 }

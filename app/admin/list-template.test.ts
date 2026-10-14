@@ -11,6 +11,11 @@ import { describe, expect, it } from "vitest";
 // page but is still listed also turns this red, so the list cannot rot.
 const PENDING: string[] = [];
 
+// Not a record edit: these pages edit a whole table in one save, so the list
+// is where it starts (audit A4, 2026-10-14: depreciation bands must be saved
+// together or every single add/remove opens a gap).
+const WHOLE_TABLE_EDIT = ["app/admin/inventory/asset-bands/components/BandsClient.tsx"];
+
 const EDIT_LINK = /\/edit[?`"'/]/;
 
 function adminSources(dir: string): string[] {
@@ -34,6 +39,6 @@ describe("list/detail template: edit only from the detail page", () => {
       .filter(f => !f.path.includes("/[id]/") && EDIT_LINK.test(f.src))
       .map(f => f.path)
       .sort();
-    expect(linking).toEqual([...PENDING].sort());
+    expect(linking).toEqual([...PENDING, ...WHOLE_TABLE_EDIT].sort());
   });
 });

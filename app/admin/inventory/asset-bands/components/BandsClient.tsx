@@ -9,13 +9,12 @@ import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
-import { deleteAssetBand } from "../actions";
 import { formatBandRange } from "@/lib/assets/asset-depreciation";
 import type { DBAssetDepreciationBand } from "@/types/db";
 
 interface BandsClientProps {
   bands: DBAssetDepreciationBand[];
-  canDelete: boolean;
+  canDelete?: boolean;
   initialPage?: string;
 }
 
@@ -30,7 +29,6 @@ function listUrl(page: number = 1, sort?: string, dir?: string): string {
 
 export default function BandsClient({
   bands,
-  canDelete,
   initialPage,
 }: BandsClientProps) {
   const searchParams = useSearchParams();
@@ -110,22 +108,6 @@ export default function BandsClient({
     </div>
   );
 
-  const removal = canDelete
-    ? {
-        verb: "Xoá",
-        confirmMessage: (count: number) => `Xoá ${count} khung khấu hao đã chọn?`,
-        remove: async (id: string) => {
-          const fd = new FormData();
-          fd.append("id", id);
-          const res = await deleteAssetBand(fd);
-          if (res?.error) {
-            return { error: res.error };
-          }
-          return {};
-        },
-      }
-    : undefined;
-
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -142,10 +124,10 @@ export default function BandsClient({
                 Tài sản
               </Button>
               <Button
-                href={`/admin/inventory/asset-bands/new?returnTo=${encodeURIComponent(currentListUrl)}`}
+                href={`/admin/inventory/asset-bands/edit?returnTo=${encodeURIComponent(currentListUrl)}`}
                 className="w-full md:w-auto"
               >
-                Tạo
+                Sửa khung
               </Button>
             </div>
           }
@@ -169,7 +151,6 @@ export default function BandsClient({
           dir: sortDir,
           href: (k, d) => listUrl(1, k, d),
         }}
-        removal={removal}
         empty={
           <EmptyState
             title="Chưa có khung khấu hao nào."

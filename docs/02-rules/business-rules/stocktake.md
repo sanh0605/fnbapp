@@ -48,10 +48,10 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
 ### BR-INV-017 — Confirming a stocktake recomputes the book as of the count, so a slip entered late is not counted twice
 
-**Status:** `APPROVED` — owner 2026-10-14, audit item A2, chose *"Tự tính lại lúc xác nhận"* over "refuse and recount". Not built yet.
+**Status:** `APPROVED` — owner 2026-10-14, audit item A2, chose *"Tự tính lại lúc xác nhận"* over "refuse and recount". Built 2026-10-14 on the branch feat/no-popups, not yet pushed; migration 0115 not yet run on the server.
 
 **The example he was shown.** At 15:00 Sữa tươi is counted at 8 cartons against a book of 10, so the stocktake reads short 2. Before it is confirmed, a manager enters an issue slip for 2 cartons used at 14:00. The book now reads 8 and matches the count, but the stocktake still says short 2. Confirming it would take the 2 cartons off twice: the book would read 6 while the shelf holds 8, and the cost of goods would be counted twice.
 
 - **When the stocktake is confirmed,** each counted line's book quantity is worked out again as of the moment it was counted, from every movement dated before that moment, including slips and purchase orders entered after the count. The shortfall or found goods come from that figure. In the example: book 8, counted 8, nothing written.
-- **No recount is needed.** The confirmed stocktake names the lines whose book figure changed since the count.
-- Today the book figure is frozen when the line is counted (`theoretical_at_count`, migration `0092`) and `apply_stocktake_session_atomic` (`0089`) writes from that frozen figure.
+- **No recount is needed.** The preview shown before "Xác nhận" lists each line whose book figure was recomputed, with the figure at the count and the recomputed one (screen being built separately).
+- The book figure is still frozen when the line is counted (`theoretical_at_count`, migration `0092`), but `apply_stocktake_session_atomic` (`0115`) no longer writes from it: it recomputes and stores the new figure on the line. A reversal row (a slip cancelled, a stocktake undone) counts from its original's date, so a slip cancelled after the count nets out.

@@ -42,6 +42,11 @@ export function ActiveSessionView({ session }: { session: StocktakeSessionView }
   // exactly S2, that ingredient is left untouched -- but the owner must see
   // which ones by name, not discover it silently.
   const unconfirmedLines = session.lines.filter(l => l.countedQty === null);
+  // BR-INV-017: counted lines whose book figure changed between the count and
+  // the confirmation (a slip or order dated before the count, entered after it).
+  const recomputedDiffs = (preview?.recomputedLines ?? []).filter(
+    l => l.frozenQty !== l.recomputedQty,
+  );
 
   async function handlePreview() {
     setPreviewLoading(true);
@@ -154,6 +159,23 @@ export function ActiveSessionView({ session }: { session: StocktakeSessionView }
               ? "Không có chênh lệch cần điều chỉnh. Xác nhận để khoá phiên kiểm kê."
               : `Sẽ ghi ${preview.ledgerCount} điều chỉnh sổ kho và ${preview.issueCount} dòng xuất kho (kiểm kê). Chênh lệch được giữ theo thời điểm từng mặt hàng được đếm, nên các giao dịch phát sinh sau đó vẫn được bảo toàn.`}
           </Alert>
+          {recomputedDiffs.length > 0 && (
+            <Alert variant="info" title="Số trên sổ đã tính lại theo giờ đếm">
+              <p>Có phiếu nhập hoặc phiếu xuất ghi ngày trước giờ đếm nhưng nhập sau, nên số trên sổ lúc đếm đã được tính lại.</p>
+              <ul className="mt-1.5 list-disc list-inside space-y-0.5">
+                {recomputedDiffs.map(rec => {
+                  const line = session.lines.find(candidate => candidate.id === rec.lineId);
+                  const unitName = line?.unitName || "";
+                  const displayName = line?.itemName || rec.itemReference;
+                  return (
+                    <li key={rec.lineId || rec.itemReference}>
+                      {displayName}: {formatNumber(rec.frozenQty)} → {formatNumber(rec.recomputedQty)}{unitName ? ` ${unitName}` : ""}
+                    </li>
+                  );
+                })}
+              </ul>
+            </Alert>
+          )}
           {unconfirmedLines.length > 0 && (
             <Alert variant="danger" title={`${unconfirmedLines.length} mặt hàng chưa xác nhận`}>
               Những mặt hàng sau sẽ giữ nguyên tồn kho hiện tại, không bị đụng tới:{" "}

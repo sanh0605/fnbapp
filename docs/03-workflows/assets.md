@@ -1,11 +1,13 @@
 # Assets flow (tools, depreciation, disposal)
 
 ```flow-decl
-routes: /admin/inventory/assets, /admin/inventory/assets/[id], /admin/inventory/assets/[id]/dispose, /admin/inventory/asset-bands, /admin/inventory/asset-bands/new, /admin/inventory/asset-bands/[id], /admin/inventory/asset-bands/[id]/edit
-files: app/admin/inventory/assets/actions.ts, app/admin/inventory/asset-bands/actions.ts
+routes: /admin/inventory/assets, /admin/inventory/assets/[id], /admin/inventory/assets/[id]/dispose, /admin/inventory/asset-bands, /admin/inventory/asset-bands/[id], /admin/inventory/asset-bands/edit
+files: app/admin/inventory/assets/actions.ts, app/admin/inventory/asset-bands/actions.ts, lib/assets/asset-bands-transaction.ts
 tables: asset_disposals, asset_depreciation_bands
 brCodes: BR-COGS-008
 ```
+
+**Behaviour change — 2026-10-14 (audit A4, plan `docs/superpowers/plans/2026-10-14-khung-khau-hao.md`):** bands are edited as one table at `/admin/inventory/asset-bands/edit`, reached from "Sửa khung" on the list or "Sửa" on a band's page, and saved together by `saveAssetBands` through `replace_asset_depreciation_bands` (migration `0118`, not yet run on the server). Each row takes "Từ giá" and "Số tháng"; "Đến dưới" is the next row's "Từ giá", so the price line never has a gap or overlap. A manager may change prices and months and add rows; removing a row needs `ADMIN`. `createAssetBand`, `updateAssetBand`, `deleteAssetBand`, the `new` page, the `[id]/edit` page and the Xoá buttons are gone: each single step left a gap or overlap and was refused.
 
 **Behaviour change — 2026-10-03 (asset register per purchased item, owner choices 2026-10-02):** the asset list shows one row per purchased item, grouping its purchase lines (new pure `lib/assets/asset-items.ts`; new read-only `getAssetItemsData`, `getAssetItemDetail`, `findItemIdForAsset`; `getAssetDetail` removed). `/admin/inventory/assets/[id]` now takes the item code, and an old `TS-…` address redirects to its item. The detail page lists each purchase, each disposal with the amount it moved into that month's depreciation, and the monthly charge summed over purchases. Disposal picks the purchase line (oldest with stock preselected) and still writes through the unchanged `disposeAsset`. No figure changes.
 
