@@ -180,7 +180,7 @@ A stocktake session cancelled before it is confirmed is deleted outright: the se
 
 ### BR-INV-012 — The owner can edit a confirmed stocktake; the change lands on the count's own date
 
-**Status:** `APPROVED` — owner decision 2026-09-28, last point settled 2026-10-14. Built 2026-10-14 on the branch `feat/no-popups`, not yet pushed (migration `0110`, function `edit_confirmed_stocktake_atomic`; pages `/admin/inventory/stocktake/[id]` and `/admin/inventory/stocktake/[id]/edit`). Design: `docs/superpowers/specs/2026-10-14-sua-phieu-kiem-ke-design.md`. `0110` has not run on the server yet.
+**Status:** `APPROVED` — owner decision 2026-09-28, last point settled 2026-10-14. Built 2026-10-14 on the branch `feat/no-popups`, not yet pushed (migration `0110`, function `edit_confirmed_stocktake_atomic`; pages `/admin/inventory/stocktake/[id]` and `/admin/inventory/stocktake/[id]/edit`). Design: `docs/superpowers/specs/2026-10-14-sua-phieu-kiem-ke-design.md`. `0110` ran on the server 2026-10-14 with the owner's approval (*"a"*).
 
 Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
