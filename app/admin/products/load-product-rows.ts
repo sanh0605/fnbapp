@@ -84,7 +84,7 @@ export async function loadProductRows() {
     // has no ACTIVE size at all is a silent trap -- the list claims it is
     // sellable (or pausably sellable), POS never shows it, and nothing on
     // the row explains the gap. Scoped to ACTIVE/INACTIVE only; a DELETED
-    // product already shows its own "Đã xóa" badge and needs no second
+    // product already shows its own "Đã xoá" badge and needs no second
     // warning.
     const hasNoSellableVariant = p.status !== "DELETED" && !productVariants.some(v => v.status === "ACTIVE");
 

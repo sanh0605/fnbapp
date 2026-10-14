@@ -83,8 +83,8 @@ describe("ConversionForm on-page behaviour", () => {
       />,
     );
 
-    // SearchableSelect renders with placeholder "Chọn hàng hóa..."
-    expect(screen.getByText("Chọn hàng hóa...")).toBeInTheDocument();
+    // SearchableSelect renders with placeholder "Chọn hàng hoá..."
+    expect(screen.getByText("Chọn hàng hoá...")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
     expect(push).toHaveBeenCalledWith("/admin/inventory/conversions?q=sữa");

@@ -126,13 +126,13 @@ export function ConversionForm({
           </div>
         )}
 
-        <Field label="Hàng hóa" htmlFor={`${formId}-selectedItemId`}>
+        <Field label="Hàng hoá" htmlFor={`${formId}-selectedItemId`}>
           <SearchableSelect
             id={`${formId}-selectedItemId`}
             options={itemOptions}
             value={selectedItemId}
             onChange={setSelectedItemId}
-            placeholder="Chọn hàng hóa..."
+            placeholder="Chọn hàng hoá..."
           />
         </Field>
 

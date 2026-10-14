@@ -183,3 +183,33 @@ describe("listPurchaseOrdersPage", () => {
     });
   });
 });
+
+describe("listPurchaseOrdersPage totals (BR-UI-004)", () => {
+  // 21 completed slips (20 on page 1, 1 beyond), plus a cancelled and a draft.
+  const completed = Array.from({ length: 21 }, (_, i) =>
+    po(`PO-${String(100 + i).padStart(3, "0")}`, `2026-09-${String(i + 1).padStart(2, "0")}T05:00:00+00:00`, {
+      total_amount: String(1000 * (i + 1)),
+    }));
+  const cancelled = po("PO-900", "2026-09-10T06:00:00+00:00", { status: "CANCELLED", total_amount: "777777" });
+  const draft = po("PO-901", "2026-09-11T06:00:00+00:00", { status: "DRAFT", total_amount: "555555" });
+  const orders = [...completed, cancelled, draft];
+  const expected = 1000 * (21 * 22) / 2;
+
+  it("sums every completed slip the filter matches, not just the page on screen", () => {
+    const r = listPurchaseOrdersPage({ ...base, orders, filters: {} });
+    expect(r.rows).toHaveLength(20);
+    expect(r.totals).toEqual({ count: 21, totalAmount: expected });
+  });
+
+  it("leaves cancelled and draft slips out even when the status filter shows them", () => {
+    const all = listPurchaseOrdersPage({ ...base, orders, filters: { status: "ALL" } });
+    expect(all.totals).toEqual({ count: 21, totalAmount: expected });
+    const drafts = listPurchaseOrdersPage({ ...base, orders, filters: { status: "DRAFT" } });
+    expect(drafts.totals).toEqual({ count: 0, totalAmount: 0 });
+  });
+
+  it("follows the same filter as the rows", () => {
+    const r = listPurchaseOrdersPage({ ...base, orders, filters: { from: "2026-09-01", to: "2026-09-03" } });
+    expect(r.totals).toEqual({ count: 3, totalAmount: 6000 });
+  });
+});

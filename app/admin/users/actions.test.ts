@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findAllMock = vi.fn();
 const requireAdminMock = vi.fn();
+const requireOwnerMock = vi.fn();
+const removeMock = vi.fn();
 
 vi.mock("@/lib/db/tables", () => ({
   findAll: findAllMock,
   insert: vi.fn(),
   update: vi.fn(),
-  remove: vi.fn(),
+  remove: removeMock,
   generateNewId: vi.fn(),
 }));
 
@@ -17,12 +19,19 @@ vi.mock("next/cache", () => ({
 
 vi.mock("@/lib/auth/auth", () => ({
   requireAdmin: requireAdminMock,
+  requireOwner: requireOwnerMock,
 }));
 
 describe("admin user client payloads", () => {
   beforeEach(() => {
     findAllMock.mockReset();
     requireAdminMock.mockReset();
+    requireOwnerMock.mockReset();
+    removeMock.mockReset();
+    requireOwnerMock.mockResolvedValue({
+      ok: true,
+      actor: { id: "USR-001", name: "Chủ quán", role: "ADMIN" },
+    });
     requireAdminMock.mockResolvedValue({
       ok: true,
       actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
@@ -31,7 +40,7 @@ describe("admin user client payloads", () => {
 
   it("rejects an unauthenticated user read before loading credential rows", async () => {
     const { getUsers } = await import("./actions");
-    requireAdminMock.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
+    requireAdminMock.mockResolvedValue({ error: "Yêu cầu đăng nhập" });
 
     await expect(getUsers()).rejects.toThrow("Yêu cầu đăng nhập");
     expect(findAllMock).not.toHaveBeenCalled();
@@ -111,5 +120,75 @@ describe("admin user client payloads", () => {
     findAllMock.mockResolvedValue([]);
 
     await expect(getUserById("USR-002")).resolves.toBeNull();
+  });
+
+  describe("deleteUserAction safety checks", () => {
+    const form = (id: string) => {
+      const fd = new FormData();
+      fd.set("id", id);
+      return fd;
+    };
+    const owner = { id: "USR-001", username: "owner", role: "ADMIN", status: "ACTIVE" };
+    const owner2 = { id: "USR-003", username: "owner2", role: "ADMIN", status: "ACTIVE" };
+    const staff = { id: "USR-002", username: "staff", role: "STAFF", status: "ACTIVE" };
+
+    it("refuses to delete the signed-in account and removes nothing", async () => {
+      const { deleteUserAction } = await import("./actions");
+      findAllMock.mockResolvedValue([owner, owner2, staff]);
+
+      const result = await deleteUserAction(form("USR-001"));
+
+      expect(result).toEqual({ error: "Không thể xoá tài khoản đang đăng nhập." });
+      expect(removeMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses to delete the last ADMIN account and removes nothing", async () => {
+      const { deleteUserAction } = await import("./actions");
+      requireOwnerMock.mockResolvedValue({
+        ok: true,
+        actor: { id: "system", name: "Hệ thống", role: "SYSTEM" },
+      });
+      findAllMock.mockResolvedValue([owner, staff]);
+
+      const result = await deleteUserAction(form("USR-001"));
+
+      expect(result).toEqual({ error: "Không thể xoá tài khoản chủ quán cuối cùng." });
+      expect(removeMock).not.toHaveBeenCalled();
+    });
+
+    // A stopped ADMIN cannot sign in (lib/auth/auth.ts), so it does not count.
+    it("refuses to delete the last active ADMIN even when a stopped ADMIN remains", async () => {
+      const { deleteUserAction } = await import("./actions");
+      requireOwnerMock.mockResolvedValue({
+        ok: true,
+        actor: { id: "system", name: "Hệ thống", role: "SYSTEM" },
+      });
+      findAllMock.mockResolvedValue([owner, { ...owner2, status: "INACTIVE" }, staff]);
+
+      const result = await deleteUserAction(form("USR-001"));
+
+      expect(result).toEqual({ error: "Không thể xoá tài khoản chủ quán cuối cùng." });
+      expect(removeMock).not.toHaveBeenCalled();
+    });
+
+    it("allows deleting one of two ADMIN accounts", async () => {
+      const { deleteUserAction } = await import("./actions");
+      findAllMock.mockResolvedValue([owner, owner2, staff]);
+
+      const result = await deleteUserAction(form("USR-003"));
+
+      expect(result).toEqual({ success: true });
+      expect(removeMock).toHaveBeenCalledWith("Users", "USR-003");
+    });
+
+    it("allows deleting a non-admin account", async () => {
+      const { deleteUserAction } = await import("./actions");
+      findAllMock.mockResolvedValue([owner, staff]);
+
+      const result = await deleteUserAction(form("USR-002"));
+
+      expect(result).toEqual({ success: true });
+      expect(removeMock).toHaveBeenCalledWith("Users", "USR-002");
+    });
   });
 });

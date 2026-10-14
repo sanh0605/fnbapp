@@ -38,6 +38,13 @@ integrity. Deleting an ingredient used in a recipe, or a product already sold,
 still fails — the `RESTRICT` foreign keys refuse it. The role decides who may
 press the button; the data decides whether the button can succeed.
 
+**Staff accounts (Opus 2026-10-14, gap G4 of the master plan).** Deleting a staff
+account refuses two cases on the server: the account that is signed in ("Không
+thể xoá tài khoản đang đăng nhập.") and the last active `ADMIN` ("Không thể xoá
+tài khoản chủ quán cuối cùng."). A stopped `ADMIN` cannot sign in, so it does not
+count. Without this, the owner could lock everyone out of owner-only screens.
+Code: `deleteUserAction` in `app/admin/users/actions.ts`.
+
 **Why:** the owner replaced the earlier per-table exception with one system-wide
 rule so that "who can erase history" has a single answer instead of one answer
 per screen.

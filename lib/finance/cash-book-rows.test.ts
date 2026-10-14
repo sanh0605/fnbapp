@@ -6,7 +6,7 @@ import type {
   DBCashEntry,
   DBCashTransfer,
 } from "@/types/db";
-import { buildCashBookRows } from "./cash-book-rows";
+import { buildCashBookRows, cashBookRowTotals, type CashBookRow } from "./cash-book-rows";
 
 const ACCOUNTS: DBBankAccount[] = [
   {
@@ -140,5 +140,28 @@ describe("buildCashBookRows", () => {
 
   it("never gives a day row a delete id", () => {
     for (const r of build().filter((x) => x.kind === "SALE" || x.kind === "PURCHASE")) expect(r.id).toBeNull();
+  });
+});
+
+describe("cashBookRowTotals (BR-UI-004)", () => {
+  const row = (over: Partial<CashBookRow>): CashBookRow => ({
+    key: "k", kind: "HAND", id: null, date: "2026-09-15", groupLabel: "x", sideLabel: "Thu", amount: 0,
+    methodLabel: "Tiền mặt", accountLabel: "—", note: "", creator: "—", status: "ACTIVE", href: "", ...over,
+  });
+  // 2 income + 1 expense counted; a cancelled line, a transfer: never counted.
+  const rows = [
+    row({ key: "a", kind: "SALE", sideLabel: "Thu", amount: 500000 }),
+    row({ key: "b", kind: "HAND", sideLabel: "Thu", amount: 200000 }),
+    row({ key: "c", kind: "PURCHASE", sideLabel: "Chi", amount: 120000 }),
+    row({ key: "d", kind: "HAND", sideLabel: "Chi", amount: 999999, status: "CANCELLED" }),
+    row({ key: "e", kind: "TRANSFER", sideLabel: "Chuyển", amount: 300000 }),
+  ];
+
+  it("splits money in from money out over every given row and leaves cancelled rows and transfers out", () => {
+    expect(cashBookRowTotals(rows)).toEqual({ count: 3, income: 700000, expense: 120000, net: 580000 });
+  });
+
+  it("is all zero for no rows", () => {
+    expect(cashBookRowTotals([])).toEqual({ count: 0, income: 0, expense: 0, net: 0 });
   });
 });

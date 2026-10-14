@@ -17,7 +17,9 @@ import {
   findAllWhere,
   findAllWhereInBatches,
 } from "@/lib/db/tables";
-import { getHourlyHeatmapV2, getPnLDataV2, getSalesDataV2, getSalesTotalsV2, getPromotionPerformanceV2 } from "./actions";
+import { getPnLDataV2 } from "./pnl-actions";
+import { getSalesDataV2, getSalesTotalsV2 } from "./sales-actions";
+import { getHourlyHeatmapV2, getPromotionPerformanceV2 } from "./engagement-actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
 beforeEach(() => {

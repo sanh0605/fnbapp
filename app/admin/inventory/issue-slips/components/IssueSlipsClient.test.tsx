@@ -54,6 +54,7 @@ const defaultPageData: IssueSlipListPage = {
   lastIndex: 0,
   rangeError: false,
   people: ["admin", "tuyen2612"],
+  totals: { count: 0, value: 0 },
 };
 
 describe("IssueSlipsClient", () => {
@@ -146,5 +147,18 @@ describe("IssueSlipsClient", () => {
     const link = screen.getByRole("link", { name: "Tạo" });
     expect(link).toBeInTheDocument();
     expect(link.getAttribute("href")).toBe("/admin/inventory/issue-slips/new");
+  });
+
+  // BR-UI-004: total of every slip the filter matches, cancelled slips left out.
+  it("shows the filter's total under the value header", () => {
+    const withTotals: IssueSlipListPage = {
+      ...defaultPageData,
+      rows: [{ id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", reason: "Hư hỏng", dateText: "29/09", createdByName: "admin", value: 100 }],
+      total: 1, firstIndex: 1, lastIndex: 1,
+      totals: { count: 21, value: 2108 },
+    };
+    render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={withTotals} />);
+    expect(screen.getAllByText("Tổng (không tính huỷ)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("2,108").length).toBeGreaterThan(0);
   });
 });

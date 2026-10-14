@@ -20,7 +20,7 @@ export default async function NewPurchasedItemPage({
         backHref={returnTo}
         backLabel="Hàng hoá"
         title="Tạo hàng hoá"
-        subtitle="Thêm mặt hàng mới vào danh mục hàng hóa."
+        subtitle="Thêm mặt hàng mới vào danh mục hàng hoá."
       />
       <PurchasedItemForm
         itemCategories={categories}

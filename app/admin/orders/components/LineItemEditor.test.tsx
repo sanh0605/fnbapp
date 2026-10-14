@@ -67,9 +67,9 @@ describe("LineItemEditor -- discount box (wave K4)", () => {
 });
 
 // Review of wave K4: the line editor sits inside the order's <form>. Its own
-// "Hủy" and "Lưu" only close the line; they must never save the whole order.
+// "Huỷ" and "Lưu" only close the line; they must never save the whole order.
 describe("LineItemEditor -- line buttons inside the order form", () => {
-  it.each(["Hủy", "Lưu"])("the line's %s does not submit the order", (name) => {
+  it.each(["Huỷ", "Lưu"])("the line's %s does not submit the order", (name) => {
     const onSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
     render(
       <form onSubmit={onSubmit}>

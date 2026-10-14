@@ -23,10 +23,13 @@ export interface IssueSlipListRow {
 export interface IssueSlipListPage {
   rows: IssueSlipListRow[]; total: number; page: number; pageCount: number;
   firstIndex: number; lastIndex: number; rangeError: boolean; people: string[];
+  // BR-UI-004: value total over every matched row (all pages), rounded once from
+  // the exact sum (BR-DATA-005). Cancelled slips never count (BR-ACCESS-003).
+  totals: { count: number; value: number };
 }
 
 interface Candidate {
-  row: IssueSlipListRow; timeMs: number; createdMs: number; haystack: string;
+  row: IssueSlipListRow; exactValue: number; timeMs: number; createdMs: number; haystack: string;
 }
 
 function ms(value: string | null | undefined): number {
@@ -50,13 +53,15 @@ export function listIssueSlipsPage(input: {
 
   for (const slip of slips) {
     const cancelled = slipCancellation(slip.id, issues, reversed) !== null;
-    const value = cancelled ? 0 : displayMoney(sumValues(activeSlipLines(slip.id, issues, reversed)));
+    const exactValue = cancelled ? 0 : sumValues(activeSlipLines(slip.id, issues, reversed));
+    const value = displayMoney(exactValue);
     candidates.push({
       row: {
         id: slip.id, href: `/admin/inventory/issue-slips/${slip.id}`,
         kind: cancelled ? "CANCELLED" : "SLIP", reason: (slip.note ?? "").trim(),
         dateText: formatDateTimeFull(slip.issued_at), createdByName: slip.created_by_name ?? NO_NAME, value,
       },
+      exactValue,
       timeMs: ms(slip.issued_at), createdMs: ms(slip.created_at),
       haystack: `${slip.id} ${namesOf(slipLines(slip.id, issues))}`.toLowerCase(),
     });
@@ -66,12 +71,14 @@ export function listIssueSlipsPage(input: {
     if (s.status !== "CONFIRMED") continue;
     const shortfall = issues.filter(i => i.source === "STOCKTAKE" && i.session_id === s.id && Number(i.base_quantity) > 0);
     if (shortfall.length === 0) continue;
+    const exactValue = sumValues(shortfall);
     candidates.push({
       row: {
         id: s.id, href: "/admin/inventory/stocktake", kind: "STOCKTAKE", reason: "",
         dateText: formatDateTimeFull(s.confirmed_at), createdByName: s.confirmed_by_name ?? NO_NAME,
-        value: displayMoney(sumValues(shortfall)),
+        value: displayMoney(exactValue),
       },
+      exactValue,
       timeMs: ms(s.confirmed_at), createdMs: ms(s.confirmed_at),
       haystack: `${s.id} ${namesOf(shortfall)}`.toLowerCase(),
     });
@@ -100,6 +107,11 @@ export function listIssueSlipsPage(input: {
     b.timeMs - a.timeMs || b.createdMs - a.createdMs || b.row.id.localeCompare(a.row.id));
 
   const total = matched.length;
+  const counted = matched.filter(c => c.row.kind !== "CANCELLED");
+  const totals = {
+    count: counted.length,
+    value: displayMoney(counted.reduce((sum, c) => sum + c.exactValue, 0)),
+  };
   const pageCount = Math.max(1, Math.ceil(total / ISSUE_SLIPS_PER_PAGE));
   const asked = Number(filters.page);
   const page = Number.isInteger(asked) && asked >= 1 ? Math.min(asked, pageCount) : 1;
@@ -108,6 +120,6 @@ export function listIssueSlipsPage(input: {
 
   return {
     rows: slice.map(c => c.row), total, page, pageCount,
-    firstIndex: total === 0 ? 0 : start + 1, lastIndex: start + slice.length, rangeError, people,
+    firstIndex: total === 0 ? 0 : start + 1, lastIndex: start + slice.length, rangeError, people, totals,
   };
 }

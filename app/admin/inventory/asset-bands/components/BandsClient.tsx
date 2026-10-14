@@ -96,10 +96,10 @@ export default function BandsClient({
   const renderCard = (band: DBAssetDepreciationBand) => (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
-        <span className="font-mono font-bold text-text-primary text-base">
+        <span className="font-mono text-sm text-text-primary">
           {band.id}
         </span>
-        <span className="font-bold text-primary text-sm">
+        <span className="text-sm text-text-primary">
           {band.term_months} tháng
         </span>
       </div>

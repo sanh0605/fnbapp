@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { findAll } from "@/lib/db/tables";
-import { getOrderDetailV2 } from "@/app/admin/orders/actions";
+import { getOrderDetailV2 } from "@/app/admin/orders/order-detail-actions";
 import { safeReturnTo } from "@/app/admin/orders/components/return-to";
 import { OrderEditForm } from "./components/OrderEditForm";
 

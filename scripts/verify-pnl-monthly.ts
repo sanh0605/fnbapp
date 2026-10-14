@@ -19,7 +19,7 @@ function lastDayOfMonth(month: string): string {
 
 async function main(): Promise<void> {
   const { getProfitAndLossReport } = await import("@/app/admin/reports/pnl/actions");
-  const { getPnLDataV2 } = await import("@/app/admin/reports/actions");
+  const { getPnLDataV2 } = await import("@/app/admin/reports/pnl-actions");
   const { checkPnlMonth } = await import("./verify-pnl-monthly-core");
 
   const { saigonToday } = await import("@/lib/shared/datetime");

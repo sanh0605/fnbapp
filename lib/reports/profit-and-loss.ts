@@ -125,7 +125,7 @@ export function computeProfitAndLoss(input: PnlInput): PnlFigures {
   const months = candidateMonths(input.fromMonth, input.toMonth, input.today);
   const byMonth = new Map(months.map(m => [m, emptyMonth(m)]));
 
-  // 1. POS revenue: exactly getPnLDataV2's filter (app/admin/reports/actions.ts).
+  // 1. POS revenue: exactly getPnLDataV2's filter (app/admin/reports/pnl-actions.ts).
   const firstPaymentMs = input.firstPaymentAt ? new Date(input.firstPaymentAt).getTime() : null;
   for (const o of input.orders) {
     if (o.status !== ORDER_STATUS.COMPLETED) continue;

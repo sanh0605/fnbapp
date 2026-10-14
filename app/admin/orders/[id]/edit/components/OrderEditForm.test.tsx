@@ -2,7 +2,8 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { OrderEditForm } from "./OrderEditForm";
-import { editOrderV2, type OrderListItem } from "@/app/admin/orders/actions";
+import { editOrderV2 } from "@/app/admin/orders/order-edit-actions";
+import type { OrderListItem } from "@/app/admin/orders/actions";
 
 const { push, refresh, router } = vi.hoisted(() => {
   const pushFn = vi.fn();
@@ -18,7 +19,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => router,
 }));
 
-vi.mock("@/app/admin/orders/actions", () => ({
+vi.mock("@/app/admin/orders/order-edit-actions", () => ({
   editOrderV2: vi.fn(),
 }));
 

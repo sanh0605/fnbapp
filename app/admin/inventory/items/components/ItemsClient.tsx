@@ -380,8 +380,8 @@ export default function ItemsClient({
         empty={
           <EmptyState
             icon="📦"
-            title="Chưa có hàng hóa"
-            description="Thêm hàng hóa để quản lý tồn kho."
+            title="Chưa có hàng hoá"
+            description="Thêm hàng hoá để quản lý tồn kho."
           />
         }
       />

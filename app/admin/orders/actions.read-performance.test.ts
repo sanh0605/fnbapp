@@ -27,7 +27,8 @@ vi.mock("@/lib/sales/void-order-transaction", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { getOrderDetailV2, voidOrderV2 } from "./actions";
+import { getOrderDetailV2 } from "./order-detail-actions";
+import { voidOrderV2 } from "./order-void-actions";
 
 describe("getOrderDetailV2 query scope", () => {
   const rootOrder = {

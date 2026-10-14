@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
 
 const mockBrands = [
   { id: "BR-001", name: "Phin Đi", code: "PHD", status: "ACTIVE" },
-  { id: "BR-003", name: "Thương hiệu đã xóa", code: "DEL", status: "DELETED" },
+  { id: "BR-003", name: "Thương hiệu đã xoá", code: "DEL", status: "DELETED" },
 ];
 
 const mockOutlets = [

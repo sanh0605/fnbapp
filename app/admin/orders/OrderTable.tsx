@@ -59,6 +59,7 @@ interface Category {
 export interface OrderTableProps {
   initialOrders: Order[];
   totalCount: number;
+  totals?: { count: number; netTotal: number };
   itemsPerPage: number;
   brands: Brand[];
   products: Product[];
@@ -73,6 +74,7 @@ export interface OrderTableProps {
 export default function OrderTable({
   initialOrders,
   totalCount,
+  totals,
   itemsPerPage,
   brands,
   products: _products,
@@ -229,7 +231,7 @@ export default function OrderTable({
           variant="secondary"
           onClick={clearFilters}
         >
-          Xóa bộ lọc
+          Xoá bộ lọc
         </Button>
       )}
       <div className="text-xs font-bold text-text-secondary whitespace-nowrap px-3 py-1.5 bg-surface-secondary rounded-lg">
@@ -435,6 +437,14 @@ export default function OrderTable({
           }
           columns={columns}
           renderCard={renderCard}
+          totals={
+            totals
+              ? {
+                  label: "Tổng (không tính huỷ)",
+                  values: { net_total: formatNumber(totals.netTotal) },
+                }
+              : undefined
+          }
           empty={
             <EmptyState
               icon={<span className="text-4xl">📦</span>}

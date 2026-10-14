@@ -3,6 +3,7 @@
 // summarizeAsset and changes no depreciation rule. Nothing here rounds: sums are
 // exact, display rounds (BR-DATA-005).
 
+import { displayMoney } from "@/lib/reports/display-rounding";
 import {
   buildAssetSchedule,
   chargeForMonth,
@@ -198,5 +199,18 @@ export function buildAssetItemDetail(
     lots: lotViews,
     disposals: itemDisposals,
     months,
+  };
+}
+
+// BR-UI-004: total of the "Giá trị còn lại" column over the rows a filter
+// leaves. The assets screen filters (search, "show fully disposed") in the
+// browser over every item, so it passes the rows its filter left, not just the
+// page on screen. A fully disposed item holds no value and is not counted.
+// Rounded once from the exact sum (BR-DATA-005).
+export function assetItemTotals(rows: AssetItemRow[]): { count: number; remainingValue: number } {
+  const live = rows.filter(r => !r.fullyDisposed);
+  return {
+    count: live.length,
+    remainingValue: displayMoney(live.reduce((sum, r) => sum + r.remainingValue, 0)),
   };
 }

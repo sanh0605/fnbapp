@@ -13,7 +13,7 @@ import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { formatNumber } from "@/lib/shared/format";
 import { AssetItemCard } from "./AssetItemCard";
-import type { AssetItemRow } from "@/lib/assets/asset-items";
+import { assetItemTotals, type AssetItemRow } from "@/lib/assets/asset-items";
 
 interface AssetsClientProps {
   items: AssetItemRow[];
@@ -165,6 +165,8 @@ export default function AssetsClient({
     });
   }, [items, search, showAll]);
 
+  const assetTotals = useMemo(() => assetItemTotals(filteredAssets), [filteredAssets]);
+
   const sortedAssets = useMemo(() => {
     const col = columns.find((c) => c.key === sortKey);
     return col?.sortValue ? sortRows(filteredAssets, col.sortValue, sortDir) : filteredAssets;
@@ -230,6 +232,10 @@ export default function AssetsClient({
         }
         columns={columns}
         renderCard={(asset) => <AssetItemCard item={asset} />}
+        totals={{
+          label: "Tổng (không tính đã thanh lý hết)",
+          values: { remainingValue: formatNumber(assetTotals.remainingValue) },
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

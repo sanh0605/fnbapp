@@ -1,5 +1,6 @@
 import { findAll } from "@/lib/db/tables";
-import { getSalesDataV2, getHourlyHeatmapV2, getSalesTotalsV2 } from "../actions";
+import { getSalesDataV2, getSalesTotalsV2 } from "../sales-actions";
+import { getHourlyHeatmapV2 } from "../engagement-actions";
 import SalesFilter from "@/app/admin/reports/components/SalesFilter";
 import SalesCharts from "@/app/admin/reports/components/SalesCharts";
 import CategoryPieChart from "@/app/admin/reports/components/CategoryPieChart";
@@ -301,7 +302,7 @@ export default async function SalesReportPage({
                     .filter(c => c.dayOfWeek === day && c.revenue > 0)
                     .sort((a, b) => a.hour - b.hour);
                   if (dayCells.length === 0) return null;
-                  const dayLabel = day === "CN" ? "Chủ Nhật" : `Thứ ${day.replace("T", "")}`;
+                  const dayLabel = day === "CN" ? "Chủ nhật" : `Thứ ${day.replace("T", "")}`;
                   const dayTotalRevenue = dayCells.reduce((s, c) => s + c.revenue, 0);
                   const dayTotalOrders = dayCells.reduce((s, c) => s + c.orderCount, 0);
                   return (
@@ -319,7 +320,7 @@ export default async function SalesReportPage({
                         <div className="text-right">
                           <div className="font-bold text-success">{formatNumber(dayTotalRevenue)}</div>
                           <div className="text-[10px] text-text-muted flex items-center justify-end gap-1">
-                            tap để mở/đóng
+                            bấm để mở/đóng
                             <ChevronDown className="w-3 h-3 transition-transform group-open:rotate-180" />
                           </div>
                         </div>
@@ -364,7 +365,7 @@ export default async function SalesReportPage({
               return (
                 <div key={day} className="flex items-center h-11">
                   <div className="w-16 shrink-0 text-sm font-semibold text-text-secondary">
-                    {day === "CN" ? "Chủ Nhật" : `Thứ ${day.replace("T", "")}`}
+                    {day === "CN" ? "Chủ nhật" : `Thứ ${day.replace("T", "")}`}
                   </div>
                   <div className="flex-1 gap-1 h-full" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
                     {Array.from({ length: 24 }, (_, i) => i).map(hour => {

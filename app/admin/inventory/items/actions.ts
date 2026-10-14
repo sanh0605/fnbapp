@@ -65,7 +65,7 @@ export async function getItemsData(): Promise<{
   } catch (error) {
     // this is the exact defect the plan was written to fix -- returning []
     // here is how the owner's real 145-row catalogue rendered as "Chưa có
-    // hàng hóa" in production. Rethrow instead; app/error.tsx handles it.
+    // hàng hoá" in production. Rethrow instead; app/error.tsx handles it.
     console.error("Loi getItemsData:", error);
     throw error;
   }

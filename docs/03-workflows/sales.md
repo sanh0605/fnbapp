@@ -7,6 +7,8 @@ tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
+**Behaviour change — 2026-10-14 (`BR-UI-004`):** the Đơn hàng list shows a total row under the column titles, "Tổng (không tính huỷ)", the net total of every order the filter keeps, not only the page shown (`sumFilteredOrders` in `app/admin/orders/actions.ts`); cancelled orders are left out (`BR-ACCESS-003`). The order actions are split into `order-detail-actions.ts`, `order-edit-actions.ts`, `order-void-actions.ts` and `order-helpers.ts` with no logic change. `app/pos/actions.ts` comment only: it now points at `app/admin/reports/pnl-actions.ts`.
+
 **Behaviour change — 2026-10-03 (list/detail template, wave 5):** `/admin/promotions` is a
 table on desktop (cards before) and cards on phone; each row opens
 `/admin/promotions/[id]`, which lists the dishes and sizes a dish discount applies to, and

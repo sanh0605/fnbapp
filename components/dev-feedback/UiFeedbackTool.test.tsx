@@ -197,6 +197,89 @@ describe("UiFeedbackTool", () => {
     expect(document.body.textContent).not.toContain("Ghi chú cũ");
   });
 
+  // Owner 2026-10-06: a saved note can be edited (plan 2026-10-14-dot-9, task 4).
+  it("an entry can be edited in place and saved with PATCH", async () => {
+    mockFetchSequence([
+      {
+        ok: true,
+        json: {
+          entries: [
+            { id: "e1", route: "/pos", viewportWidth: 390, note: "Ghi chú cũ", createdAt: "2026-08-26T00:00:00.000Z" },
+          ],
+        },
+      },
+      { ok: true, json: { entry: { id: "e1", note: "Ghi chú mới" } } }, // PATCH
+      {
+        ok: true,
+        json: {
+          entries: [
+            { id: "e1", route: "/pos", viewportWidth: 390, note: "Ghi chú mới", createdAt: "2026-08-26T00:00:00.000Z" },
+          ],
+        },
+      }, // reload after edit
+    ]);
+    await renderInsideAppTree(<UiFeedbackTool />);
+
+    await fireClick(findButton("Góp ý"));
+    await fireClick(findButton("Sửa"));
+
+    const textarea = document.querySelector("textarea") as HTMLTextAreaElement;
+    expect(textarea.value).toBe("Ghi chú cũ");
+    await setTextareaValue(textarea, "  Ghi chú mới  ");
+    await fireClick(findButton("Lưu"));
+
+    const calls = (fetch as any).mock.calls;
+    const patchCall = calls.find((c: any[]) => c[1]?.method === "PATCH");
+    expect(patchCall[0]).toBe("/api/dev-feedback");
+    expect(JSON.parse(patchCall[1].body)).toEqual({ id: "e1", note: "Ghi chú mới" });
+    expect(document.body.textContent).toContain("Ghi chú mới");
+    expect(document.body.textContent).not.toContain("Ghi chú cũ");
+  });
+
+  it("an empty edited note is not saved", async () => {
+    mockFetchSequence([
+      {
+        ok: true,
+        json: {
+          entries: [
+            { id: "e1", route: "/pos", viewportWidth: 390, note: "Ghi chú cũ", createdAt: "2026-08-26T00:00:00.000Z" },
+          ],
+        },
+      },
+    ]);
+    await renderInsideAppTree(<UiFeedbackTool />);
+
+    await fireClick(findButton("Góp ý"));
+    await fireClick(findButton("Sửa"));
+    await setTextareaValue(document.querySelector("textarea") as HTMLTextAreaElement, "   ");
+    await fireClick(findButton("Lưu"));
+
+    const calls = (fetch as any).mock.calls;
+    expect(calls.some((c: any[]) => c[1]?.method === "PATCH")).toBe(false);
+  });
+
+  it("Bỏ closes the edit box and keeps the old note", async () => {
+    mockFetchSequence([
+      {
+        ok: true,
+        json: {
+          entries: [
+            { id: "e1", route: "/pos", viewportWidth: 390, note: "Ghi chú cũ", createdAt: "2026-08-26T00:00:00.000Z" },
+          ],
+        },
+      },
+    ]);
+    await renderInsideAppTree(<UiFeedbackTool />);
+
+    await fireClick(findButton("Góp ý"));
+    await fireClick(findButton("Sửa"));
+    await setTextareaValue(document.querySelector("textarea") as HTMLTextAreaElement, "Đang gõ dở");
+    await fireClick(findButton("Bỏ"));
+
+    expect(document.querySelector("textarea")).toBeNull();
+    expect(document.body.textContent).toContain("Ghi chú cũ");
+  });
+
   it("hides already-sent feedback behind a toggle button by default and toggles visibility on click", async () => {
     mockFetchSequence([
       {

@@ -1,3 +1,4 @@
+import { displayMoney } from "@/lib/reports/display-rounding";
 import type {
   DBBankAccount,
   DBCashBookDailyRow,
@@ -126,4 +127,26 @@ export function buildCashBookRows(input: {
   // Newest day first; Array.prototype.sort is stable, so a day keeps the given
   // order (day rows, then hand rows, then transfers).
   return rows.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+}
+
+// BR-UI-004: totals of the cash-book rows a filter leaves. The cash book
+// filters by Loại / Trạng thái in the browser, so the screen passes the rows
+// its filter left (every page, not just the one shown). A cancelled row is out
+// of every total (BR-ACCESS-003); a transfer moves money between the shop's own
+// places, so it is neither money in nor money out. Thu and Chi are never mixed
+// into one figure without saying which is which, hence the three numbers.
+export interface CashBookRowTotals { count: number; income: number; expense: number; net: number }
+
+export function cashBookRowTotals(rows: CashBookRow[]): CashBookRowTotals {
+  let count = 0;
+  let income = 0;
+  let expense = 0;
+  for (const r of rows) {
+    if (r.status === "CANCELLED" || r.kind === "TRANSFER") continue;
+    count += 1;
+    if (r.sideLabel === "Thu") income += r.amount;
+    else if (r.sideLabel === "Chi") expense += r.amount;
+  }
+  const shown = (n: number) => displayMoney(n);
+  return { count, income: shown(income), expense: shown(expense), net: shown(income - expense) };
 }

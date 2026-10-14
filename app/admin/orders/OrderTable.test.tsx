@@ -39,7 +39,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("./components/VoidOrderButton", () => ({
-  VoidOrderButton: () => <button>Hủy đơn</button>,
+  VoidOrderButton: () => <button>Huỷ đơn</button>,
 }));
 
 vi.mock("@/components/ui/CustomDatePicker", () => ({
@@ -105,7 +105,7 @@ function makeOrder(id: string, orderNo: string): OrderListItem {
 }
 
 describe("OrderTable buttons (BR-UI-005, spec 2.1)", () => {
-  it('"Xóa bộ lọc" only clears the filters, so it wears the Phụ look, not the red delete outline', () => {
+  it('"Xoá bộ lọc" only clears the filters, so it wears the Phụ look, not the red delete outline', () => {
     mockSearchParams.set("payment", "Chuyen khoan");
     render(
       <OrderTable range={TEST_RANGE} today={TEST_TODAY}
@@ -119,7 +119,7 @@ describe("OrderTable buttons (BR-UI-005, spec 2.1)", () => {
         categories={[]}
       />
     );
-    const classes = screen.getByRole("button", { name: "Xóa bộ lọc" }).className.split(/\s+/);
+    const classes = screen.getByRole("button", { name: "Xoá bộ lọc" }).className.split(/\s+/);
     expect(classes).toContain("border-border");
     expect(classes).not.toContain("text-danger");
   });
@@ -197,7 +197,7 @@ describe("OrderTable -- shared table (wave K4)", () => {
 
   it("no row carries a cancel button", () => {
     renderList();
-    expect(screen.queryByRole("button", { name: "Hủy đơn" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Huỷ đơn" })).toBeNull();
   });
 
   it("the phone list shows one card per order", () => {
@@ -206,5 +206,25 @@ describe("OrderTable -- shared table (wave K4)", () => {
     expect(phone).not.toBeNull();
     expect(phone!.textContent).toContain("ORD000001");
     expect(phone!.textContent).toContain("ORD000002");
+  });
+
+  // BR-UI-004: total of every order the filter matches, across all pages;
+  // voided orders and old versions are left out.
+  it("shows the filter's total under the Khách trả header", () => {
+    render(
+      <OrderTable range={TEST_RANGE} today={TEST_TODAY}
+        initialOrders={[makeOrder("ORD-1", "000001")]}
+        totalCount={21}
+        totals={{ count: 21, netTotal: 1234000 }}
+        itemsPerPage={20}
+        brands={[]}
+        products={[]}
+        variants={[]}
+        modifiers={[]}
+        categories={[]}
+      />
+    );
+    expect(screen.getAllByText("Tổng (không tính huỷ)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("1,234,000").length).toBeGreaterThan(0);
   });
 });

@@ -113,6 +113,8 @@ export function UiFeedbackTool() {
   const [showEntries, setShowEntries] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingNote, setEditingNote] = useState("");
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const triggerButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -136,6 +138,8 @@ export function UiFeedbackTool() {
       setIsOpen(false);
       setComposingGeneral(false);
       setPendingFingerprint(null);
+      setEditingId(null);
+      setEditingNote("");
     }
 
     document.addEventListener("pointerdown", handlePointerDown);
@@ -159,12 +163,19 @@ export function UiFeedbackTool() {
   function toggleOpen() {
     const next = !isOpen;
     setIsOpen(next);
-    if (next) void loadEntries();
+    if (next) {
+      void loadEntries();
+    } else {
+      setEditingId(null);
+      setEditingNote("");
+    }
   }
 
   function startPicking() {
     setIsOpen(false);
     setPicking(true);
+    setEditingId(null);
+    setEditingNote("");
   }
 
   useEffect(() => {
@@ -250,6 +261,41 @@ export function UiFeedbackTool() {
     }
   }
 
+  function startEditing(entry: FeedbackEntry) {
+    setEditingId(entry.id);
+    setEditingNote(entry.note);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditingNote("");
+  }
+
+  async function saveEdit(id: string) {
+    const trimmed = editingNote.trim();
+    if (!trimmed) {
+      setStatusMessage("Ghi chú không được để trống.");
+      return;
+    }
+    try {
+      const res = await fetch("/api/dev-feedback", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, note: trimmed }),
+      });
+      if (!res.ok) {
+        setStatusMessage("Sửa không thành công.");
+        return;
+      }
+      await loadEntries();
+      setEditingId(null);
+      setEditingNote("");
+      setStatusMessage(null);
+    } catch {
+      setStatusMessage("Sửa không thành công.");
+    }
+  }
+
   function cancelComposing() {
     setPendingFingerprint(null);
     setComposingGeneral(false);
@@ -310,7 +356,15 @@ export function UiFeedbackTool() {
             <button type="button" style={actionButtonStyle} onClick={startPicking}>
               Chọn phần tử để góp ý
             </button>
-            <button type="button" style={actionButtonStyle} onClick={() => setComposingGeneral(true)}>
+            <button
+              type="button"
+              style={actionButtonStyle}
+              onClick={() => {
+                setComposingGeneral(true);
+                setEditingId(null);
+                setEditingNote("");
+              }}
+            >
               Góp ý chung (không chọn phần tử)
             </button>
 
@@ -342,22 +396,80 @@ export function UiFeedbackTool() {
                         <div style={{ color: "#9ca3af", fontSize: 11, marginBottom: 4 }}>
                           {entry.route} · {entry.viewportWidth}px
                         </div>
-                        <div style={{ marginBottom: 6, whiteSpace: "pre-wrap" }}>{entry.note}</div>
-                        <button
-                          type="button"
-                          onClick={() => void deleteEntry(entry.id)}
-                          style={{
-                            background: "transparent",
-                            color: "#f87171",
-                            border: "none",
-                            cursor: "pointer",
-                            fontFamily: "inherit",
-                            fontSize: 12,
-                            padding: 0,
-                          }}
-                        >
-                          Xoá
-                        </button>
+                        {editingId === entry.id ? (
+                          <div>
+                            <textarea
+                              style={textareaStyle}
+                              value={editingNote}
+                              onChange={e => setEditingNote(e.target.value)}
+                              autoFocus
+                            />
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button
+                                type="button"
+                                onClick={() => void saveEdit(entry.id)}
+                                style={{
+                                  ...actionButtonStyle,
+                                  marginBottom: 0,
+                                  background: "#4f46e5",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Lưu
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelEdit}
+                                style={{
+                                  ...actionButtonStyle,
+                                  marginBottom: 0,
+                                  width: "auto",
+                                  flex: "0 0 auto",
+                                  background: "#3f4657",
+                                  textAlign: "center",
+                                }}
+                              >
+                                Bỏ
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div style={{ marginBottom: 6, whiteSpace: "pre-wrap" }}>{entry.note}</div>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button
+                                type="button"
+                                onClick={() => startEditing(entry)}
+                                style={{
+                                  background: "transparent",
+                                  color: "#93c5fd",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontFamily: "inherit",
+                                  fontSize: 12,
+                                  padding: 0,
+                                }}
+                              >
+                                Sửa
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void deleteEntry(entry.id)}
+                                style={{
+                                  background: "transparent",
+                                  color: "#f87171",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontFamily: "inherit",
+                                  fontSize: 12,
+                                  padding: 0,
+                                }}
+                              >
+                                Xoá
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                 </>

@@ -82,3 +82,39 @@ describe("listIssueSlipsPage", () => {
     expect(p).toMatchObject({ page: 3, pageCount: 3, firstIndex: 41, lastIndex: 45, total: 45 });
   });
 });
+
+describe("listIssueSlipsPage totals (BR-UI-004)", () => {
+  // 21 live slips (20 on page 1, 1 beyond) of 100,4đ each, plus a cancelled slip.
+  const many: IssueSlipRecord[] = Array.from({ length: 21 }, (_, i) => ({
+    id: `ISL-${String(200 + i)}`, issued_at: `2026-09-${String(i + 1).padStart(2, "0")}T05:00:00Z`, note: "Khác",
+    created_by_id: "USR-001", created_by_name: "admin", created_at: null,
+  }));
+  const manyIssues: IssueRowRecord[] = [
+    ...many.map((s, i) => line(`ISS-${300 + i}`, s.id, "SPM-038", 1, s.issued_at)),
+    line("ISS-400", "ISL-041", "SPM-067", 1, "2026-09-02T05:00:00Z"),
+    line("ISS-401", null, "SPM-067", -1, "2026-09-03T05:00:00Z", { reverses_issue_id: "ISS-400" }),
+  ];
+  const cancelledSlip: IssueSlipRecord = {
+    id: "ISL-041", issued_at: "2026-09-02T05:00:00Z", note: "Khác", created_by_id: "USR-001", created_by_name: "admin", created_at: null,
+  };
+  const values = new Map<string, number>([["ISS-400", 99999], ["ISS-401", -99999]]);
+  many.forEach((_, i) => values.set(`ISS-${300 + i}`, 100.4));
+  const run = (filters = {}) => listIssueSlipsPage({
+    slips: [...many, cancelledSlip], issues: manyIssues, sessions: [], items, lineValues: values, filters,
+  });
+
+  it("totals every live slip the filter matches, rounded once from the exact sum", () => {
+    const p = run();
+    expect(p.rows).toHaveLength(20);
+    // 21 x 100.4 = 2108.4 -> 2108 (not 21 x 100 = 2100)
+    expect(p.totals).toEqual({ count: 21, value: 2108 });
+  });
+
+  it("leaves cancelled slips out of the total even on the Đã huỷ filter", () => {
+    expect(run({ kind: "CANCELLED" }).totals).toEqual({ count: 0, value: 0 });
+  });
+
+  it("follows the same filter as the rows", () => {
+    expect(run({ from: "2026-09-01", to: "2026-09-02" }).totals).toEqual({ count: 2, value: 201 });
+  });
+});

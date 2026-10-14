@@ -3,7 +3,7 @@ import { formatDecimal } from "@/lib/shared/format";
 // Pure derived-column logic for the outlet breakdown table.
 // section 2.
 // Presentation only -- orders and revenue themselves are untouched, both
-// already computed by app/admin/reports/actions.ts's getSalesDataV2. These
+// already computed by app/admin/reports/sales-actions.ts's getSalesDataV2. These
 // two columns are new; extracted so the division-by-zero guards are
 // directly testable without rendering anything.
 

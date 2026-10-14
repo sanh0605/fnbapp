@@ -113,7 +113,7 @@ export async function createStandaloneToppingAction(modifierId: string): Promise
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
-  if (!modifierId) return fail("Thiếu mã tùy chọn");
+  if (!modifierId) return fail("Thiếu mã tuỳ chọn");
 
   try {
     await createStandaloneToppingProductAtomic({ modifierId });

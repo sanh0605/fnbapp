@@ -34,7 +34,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-const empty: IssueSlipListPage = { rows: [], total: 0, page: 1, pageCount: 1, firstIndex: 0, lastIndex: 0, rangeError: false, people: ["admin"] };
+const empty: IssueSlipListPage = { rows: [], total: 0, page: 1, pageCount: 1, firstIndex: 0, lastIndex: 0, rangeError: false, people: ["admin"], totals: { count: 0, value: 0 } };
 const THIS_MONTH = { preset: "THIS_MONTH" as const, start: "2026-10-01", end: "2026-10-31" };
 const base = { pageData: empty, range: THIS_MONTH, today: "2026-10-09", searching: false };
 

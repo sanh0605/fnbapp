@@ -49,12 +49,12 @@ tối ưu được diện tích sử dụng"*.
 |---|---|---|
 | 0 | Sửa chỗ hỏng sau đợt K2–K6 và bộ lọc thời gian; đo tốc độ trước và sau; rồi tiêu đề cột đậm, căn trái (`BR-UI-011`); trang tạo/sửa hai cột cho Phiếu nhập, Phiếu xuất, Sửa đơn hàng — trước khi đẩy | xong trên nhánh 2026-10-10, chờ đẩy: sửa bảng Khuyến mãi, ô lọc trên điện thoại (15 trang), tiêu đề cột đậm căn trái, ba trang tạo/sửa hai cột; đo tốc độ bản chạy thật: nhánh không chậm hơn bản đang dùng. Thêm 2026-10-11 → 14: mọi trang chung một khung tối đa 1.280 căn giữa (`BR-UI-012`), ô và dòng gọn hơn trên máy tính (`BR-UI-014`), tiêu đề trang tạo là "Tạo …" (`BR-UI-013`), mọi form còn lại hai cột kể cả Món và Khuyến mãi (chủ quán chốt 2026-10-14 thay cho bản mẫu), trang một đơn hàng hai cột, Hàng đã xuất có bảng trên máy tính |
 | 1 | Giao diện đồng nhất — đợt 8: Phiếu nhập, Phiếu xuất, Đơn hàng | đang làm |
-| 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | đang làm: khuôn K1–K6 xong (K2–K6 chờ đẩy); bộ lọc thời gian xong trên nhánh 2026-10-09, chờ đẩy |
-| 2 | Giao diện đồng nhất — các trang ngoài khuôn | chưa làm |
+| 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | xong trên nhánh, chờ đẩy: khuôn K1–K6 (K2–K6 chờ đẩy); bộ lọc thời gian 2026-10-09; 2026-10-14 dòng danh sách một kiểu, chữ một cách viết, dòng tổng dưới tiêu đề cột, sửa góp ý đã lưu (kế hoạch con `docs/superpowers/plans/2026-10-14-dot-9-phan-con-lai.md`) |
+| 2 | Giao diện đồng nhất — các trang ngoài khuôn | gần xong trên nhánh, chờ đẩy: trang lẻ và báo cáo theo khuôn (K5, K6), trang tạo theo khuôn (2026-10-11 → 14), Kiểm kê tách thành bốn file 2026-10-14; còn câu Q4 kiểm kê hỏi chủ quán |
 | 3 | Tổng quan mới (bước D của bản cải tổ) | chưa làm |
 | 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E), trả phiếu nhập bằng nhiều hình thức, bảng chữ viết tắt, số tiền thu khi thanh lý | chưa làm |
 | 5 | Ô tiền tự thêm dấu chấm ở các màn còn lại | chưa làm |
-| 6 | Dọn phần sót (bước H) | chưa làm |
+| 6 | Dọn phần sót (bước H) | đang làm: báo cáo và Đơn hàng tách file 2026-10-14; còn máy bán hàng (phần 7) và code chết chờ chủ quán |
 | 7 | Máy bán hàng và trang đăng nhập | chưa làm |
 | 8 | Lộ trình dài hạn | chưa làm |
 
@@ -176,8 +176,8 @@ màn này. Ô tiền của trang thanh lý đi cùng việc "số tiền thu khi
 ## 6. Dọn phần sót
 
 File lớn chưa bước nào đụng (đo 2026-10-06): `app/pos/components/POSScreen.tsx` 1.144 dòng,
-`app/pos/components/CartPanel.tsx` 689, `app/admin/reports/actions.ts` 898,
-`app/admin/orders/actions.ts` 613. `lib/db/tables.ts` không còn nhắc bảng đã xoá (đã kiểm).
+`app/pos/components/CartPanel.tsx` 689, báo cáo 898 (đã tách thành bốn file dưới 320 dòng ngày 2026-10-14),
+`app/admin/orders/actions.ts` 613 (đã tách thành năm file, lớn nhất 223 dòng, ngày 2026-10-14). `lib/db/tables.ts` không còn nhắc bảng đã xoá (đã kiểm).
 Mỗi lần dọn: mọi phép kiểm xanh và giá vốn tính lại ra đúng số cũ (đo lại trước khi dùng).
 
 Code chết đã thấy, chỉ báo chưa xoá: `getCashEntries` (`app/admin/finance/actions.ts`),
@@ -206,7 +206,7 @@ thuật thì tự sửa rồi báo.
 | G1 | ~~Sửa phiếu nhập mà đổi mặt hàng của một dòng: tài sản của dòng đó mất liên kết~~ — đóng 2026-10-08 (đợt K3): sửa phiếu đã hoàn thành thì tài sản sinh từ phiếu đổi theo; dòng đổi mặt hàng thì tài sản cũ ngừng, tài sản mới sinh (`BR-COGS-008`) | — |
 | G2 | ~~Phiếu nhập nháp luôn mở form nên không thấy nút "Huỷ phiếu"~~ — đóng 2026-10-08 (đợt K3): phiếu nháp có "Huỷ phiếu" ngay trên form, chủ quán chốt "A" (`BR-INV-015`) | — |
 | G3 | ~~Tạo phiếu xuất: "Tồn hiện tại" là tồn hôm nay, kể cả khi ghi lùi ngày~~ — đóng 2026-10-06, giữ nguyên. Chủ quán: *"anh chỉ cần xem tồn hiện tại thôi, nên nếu anh có thêm 1 phiếu tồn trong quá khứ thì tồn hiện tại sẽ thay đổi. Chứ không cần tồn theo thời điểm lọc."* Mặt hàng hết hàng hôm nay không xuất lùi ngày được (tồn hôm nay sẽ âm, `issue_stock_headroom` từ chối), nên ẩn nó khỏi danh sách là đúng | — |
-| G4 | Xoá nhân viên (`deleteUserAction`, `app/admin/users/actions.ts`): không chặn việc chủ quán tự xoá chính mình hay xoá tài khoản `ADMIN` cuối cùng | Phần 2 (Nhân viên) |
+| G4 | ~~Xoá nhân viên (`deleteUserAction`, `app/admin/users/actions.ts`): không chặn việc chủ quán tự xoá chính mình hay xoá tài khoản `ADMIN` cuối cùng~~ — đóng 2026-10-14 trên nhánh: máy từ chối xoá tài khoản đang đăng nhập và tài khoản chủ quán cuối cùng còn dùng (luật ở `docs/02-rules/business-rules/access.md`) | — |
 | G5 | ~~10 tài sản không còn dòng phiếu nhập~~ — đóng 2026-10-08: chủ quán đồng ý gắn lại, đã gắn 10 tài sản của PO-098 và PO-100 vào dòng còn sống (`BR-COGS-008`) | — |
 
 ## File đã xoá ngày 2026-10-06

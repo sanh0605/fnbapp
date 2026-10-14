@@ -66,7 +66,7 @@ describe("ActivityLogClient", () => {
 
     expect(screen.getByRole("option", { name: "Tạo mới" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Chỉnh sửa" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Hủy đơn" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Huỷ đơn" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Mở lại" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Di trú" })).toBeInTheDocument();
 

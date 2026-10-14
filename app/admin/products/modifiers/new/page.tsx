@@ -17,7 +17,7 @@ export default async function NewModifierPage({
       <BackLink href={returnTo} label="Topping & tuỳ chọn" />
       <PageHeader
         title="Tạo tuỳ chọn"
-        subtitle="Thêm tùy chọn mới vào Menu bán hàng."
+        subtitle="Thêm tuỳ chọn mới vào Menu bán hàng."
       />
       <ModifierForm returnTo={returnTo} />
     </div>

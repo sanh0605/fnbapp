@@ -17,7 +17,7 @@ describe("admin order edit COGS calculation", () => {
   // Phase C removed supersede_order_v2_atomic's stock_ledger write
   // entirely, so there is no longer a consumeEntries field to send at all.
   it("computes no cost for the edited lines and writes no new consumption", () => {
-    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const source = readFileSync(resolve(__dirname, "order-edit-actions.ts"), "utf8");
     const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
 
     expect(source).not.toContain("computeMacCostForConsumptionRows");
@@ -29,7 +29,7 @@ describe("admin order edit COGS calculation", () => {
   });
 
   it("preserves payment rows through the atomic edit transaction", () => {
-    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const source = readFileSync(resolve(__dirname, "order-edit-actions.ts"), "utf8");
     const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
 
     expect(editOrderSource).toContain('findAllWhere<{');
@@ -39,7 +39,7 @@ describe("admin order edit COGS calculation", () => {
   });
 
   it("bounds edit reads to the target order, and reads no ledger table at all", () => {
-    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const source = readFileSync(resolve(__dirname, "order-edit-actions.ts"), "utf8");
     const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
 
     expect(editOrderSource).toContain('findById("Orders_V2", input.orderId)');
@@ -74,7 +74,7 @@ describe("admin order edit COGS calculation", () => {
   // stock_ledger write entirely, so there is no longer a reversalEntries
   // field to construct or send at all.
   it("no longer builds a reversal from ledger data -- there is no reversalEntries field left to send", () => {
-    const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
+    const source = readFileSync(resolve(__dirname, "order-edit-actions.ts"), "utf8");
     const editOrderSource = source.slice(
       source.indexOf("export async function editOrderV2"),
       source.indexOf("export async function", source.indexOf("export async function editOrderV2") + 1),
@@ -93,10 +93,7 @@ describe("admin order edit COGS calculation", () => {
 describe("getOrdersV2 -- not in the plan's own list, found while re-deriving it", () => {
   it("rethrows on failure instead of returning a fabricated empty page", () => {
     const source = readFileSync(resolve(__dirname, "actions.ts"), "utf8");
-    const getOrdersSource = source.slice(
-      source.indexOf("export async function getOrdersV2"),
-      source.indexOf("export async function getOrderDetailV2"),
-    );
+    const getOrdersSource = source.slice(source.indexOf("export async function getOrdersV2"));
 
     expect(getOrdersSource).toContain("} catch (err: any) {");
     expect(getOrdersSource).toContain("throw err;");

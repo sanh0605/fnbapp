@@ -318,7 +318,7 @@ export function LineItemEditor({
             onClick={onCancelEdit}
             className="flex-1"
           >
-            Hủy
+            Huỷ
           </Button>
           <Button
             type="button"
@@ -387,7 +387,7 @@ export function LineItemEditor({
           onClick={() => onRemove(idx)}
           className="text-xs font-medium text-danger px-2 py-1 bg-danger/20 rounded hover:bg-danger/30"
         >
-          Xóa
+          Xoá
         </button>
       </div>
     </div>

@@ -295,7 +295,7 @@ export default function ConversionsClient({
         showClear={Boolean(search)}
       >
         <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm hàng hóa" htmlFor="conversions-search">
+          <Field label="Tìm hàng hoá" htmlFor="conversions-search">
             <TextInput
               id="conversions-search"
               placeholder="Ví dụ: Trứng gà"

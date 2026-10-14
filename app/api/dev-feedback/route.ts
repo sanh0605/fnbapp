@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import crypto from "node:crypto";
-import { appendEntry, emptyFeedbackFile, parseFeedback, removeEntry, type FeedbackEntry } from "@/lib/dev-feedback/ui-feedback-store";
+import { appendEntry, emptyFeedbackFile, parseFeedback, removeEntry, updateEntryNote, type FeedbackEntry } from "@/lib/dev-feedback/ui-feedback-store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -74,6 +74,37 @@ export async function POST(request: Request) {
   const current = await readFeedbackFile();
   await writeFile(FEEDBACK_PATH, appendEntry(current, entry), "utf8");
   return NextResponse.json({ entry }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const blocked = devOnlyGuard();
+  if (blocked) return blocked;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+  }
+
+  const input = (body ?? {}) as { id?: unknown; note?: unknown };
+  const id = typeof input.id === "string" ? input.id : "";
+  if (!id) {
+    return NextResponse.json({ error: "id is required" }, { status: 400 });
+  }
+  const note = typeof input.note === "string" ? input.note.trim() : "";
+  if (!note) {
+    return NextResponse.json({ error: "note is required" }, { status: 400 });
+  }
+
+  const current = await readFeedbackFile();
+  const updated = updateEntryNote(current, id, note);
+  if (updated === null) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
+  await writeFile(FEEDBACK_PATH, updated, "utf8");
+  const entry = parseFeedback(updated).find(e => e.id === id);
+  return NextResponse.json({ entry });
 }
 
 export async function DELETE(request: Request) {

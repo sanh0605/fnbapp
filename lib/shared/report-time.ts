@@ -74,7 +74,7 @@ export interface SaigonBucketKeys {
 /**
  * Derives the Saigon calendar date/month/day-of-week/hour a timestamp falls
  * on, for chart bucketing. Sales-chart timezone fix, 2026-08-26:
- * app/admin/reports/actions.ts previously bucketed with
+ * the sales report actions previously bucketed with
  * toISOString() (UTC) and getDay()/getHours() (the runtime's local zone,
  * UTC on Vercel) -- both wrong by the same 7-hour Saigon offset. One
  * helper for all four series, so they cannot drift apart from each other

@@ -51,7 +51,7 @@ export function ProductDetailView({
       ? "Đang bán"
       : product.status === "INACTIVE"
       ? "Ngừng bán"
-      : "Đã xóa";
+      : "Đã xoá";
 
   const fields: Field[] = [
     { label: "Mã", value: product.id },
@@ -189,7 +189,7 @@ export function ProductDetailView({
             </span>
           ) : product.status === "DELETED" ? (
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-surface-secondary text-text-secondary border border-border">
-              Đã xóa
+              Đã xoá
             </span>
           ) : undefined
         }

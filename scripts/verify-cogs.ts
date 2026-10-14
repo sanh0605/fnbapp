@@ -40,7 +40,7 @@ function fmt(n: number): string {
 
 async function main(): Promise<void> {
   const { findAllNoCache } = await import("@/lib/db/tables");
-  const { getPnLDataV2 } = await import("@/app/admin/reports/actions");
+  const { getPnLDataV2 } = await import("@/app/admin/reports/pnl-actions");
   // Not a lib/costing import (the independence Gate 2 requires) -- this is
   // the owner's display-rounding rule (BR-DATA-005: nearest đồng), applied
   // identically to both sides so the comparison is against what

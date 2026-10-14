@@ -7,6 +7,8 @@ tables: users, Users
 brCodes: BR-ACCESS-001, BR-ACCESS-002, BR-U-003
 ```
 
+**Behaviour change — 2026-10-14 (gap G4):** `deleteUserAction` refuses the signed-in account ("Không thể xoá tài khoản đang đăng nhập.") and an `ADMIN` when no other `ACTIVE` `ADMIN` remains ("Không thể xoá tài khoản chủ quán cuối cùng."); a stopped `ADMIN` cannot sign in, so it does not count.
+
 **Behaviour change — 2026-10-03 (list/detail template, wave 7):** the list is on
 the shared template; each row opens `/admin/users/[id]`, and editing starts only
 from there, at `/admin/users/[id]/edit` (the old `/admin/users/edit/[id]` is

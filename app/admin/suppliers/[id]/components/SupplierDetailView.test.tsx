@@ -54,6 +54,7 @@ const ordersWithTwelve: PurchaseOrderListPage = {
   lastIndex: 1,
   rangeError: false,
   daySpan: { first: "2026-03-14", last: "2026-10-01" },
+  totals: { count: 0, totalAmount: 0 },
 };
 
 afterEach(() => {
@@ -136,6 +137,7 @@ describe("SupplierDetailView", () => {
       lastIndex: 0,
       rangeError: false,
       daySpan: null,
+      totals: { count: 0, totalAmount: 0 },
     };
 
     render(
@@ -171,6 +173,7 @@ describe("SupplierDetailView", () => {
       lastIndex: 1,
       rangeError: false,
       daySpan: { first: "2026-08-12", last: "2026-08-12" },
+      totals: { count: 0, totalAmount: 0 },
     };
 
     render(

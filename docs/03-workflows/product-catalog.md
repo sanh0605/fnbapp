@@ -7,6 +7,8 @@ tables: Products, products, Product_Variants, product_variants, product_price_hi
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003
 ```
 
+**Reviewed, no behaviour change — 2026-10-14:** `app/admin/products/modifiers/actions.ts` one message spelled "Thiếu mã tuỳ chọn" instead of "tùy" (`BR-UI-001`); no logic changed.
+
 **Behaviour change — 2026-10-03 (list/detail template, wave 4):** on screen only; no server action, table or figure changes. A dish row opens `/admin/products/[id]`: its fields, its sizes and prices, and its price history as recorded, one row per change with the size named (the old timeline worked out "Đến" and "Đang áp dụng" across sizes, so a dish with three sizes showed one of them as current). "Chỉnh sửa", "Ngừng bán" or "Bán lại", and the ADMIN-only "Xoá vĩnh viễn" live on that page. The list keeps a "Ngừng bán" bin and multi-select, shown only while the filter is "Đang bán". `/admin/products/[id]/history` now redirects to the detail page. Nhóm món and Topping & tuỳ chọn rows open their own `[id]` pages, with "Chỉnh sửa" and "Xoá" there and a "Xoá" bin on the list. The "Bán độc lập" switch moved from the option list to the option detail page; the list shows "Có" or "Không".
 
 **A topping with no standalone món can grow one, 2026-09-08 (`BR-CATALOG-003`,

@@ -83,7 +83,7 @@ export async function addUser(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// PRESERVE: hard delete, no admin protection check (matches current behavior)
+// PRESERVE: hard delete. Refuses self-delete and removing the last ADMIN account.
 export async function deleteUserAction(formData: FormData): Promise<ActionResponse> {
   // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
   const auth = await requireOwner();
@@ -92,7 +92,21 @@ export async function deleteUserAction(formData: FormData): Promise<ActionRespon
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
 
+  // Never let the signed-in owner delete their own account.
+  if (auth.actor.id === id) return fail("Không thể xoá tài khoản đang đăng nhập.");
+
   try {
+    // Never remove the last active ADMIN: nobody could open owner-only screens
+    // again. A stopped ADMIN cannot sign in (lib/auth/auth.ts), so it does not count.
+    const users = await findAll(SHEET) as DBUserRow[];
+    const target = users.find(candidate => candidate.id === id);
+    if (target?.role === "ADMIN") {
+      const otherActiveAdmins = users.filter(
+        candidate => candidate.id !== id && candidate.role === "ADMIN" && candidate.status === "ACTIVE",
+      ).length;
+      if (otherActiveAdmins === 0) return fail("Không thể xoá tài khoản chủ quán cuối cùng.");
+    }
+
     await remove(SHEET, id);
     revalidatePath(PATH);
     return ok();

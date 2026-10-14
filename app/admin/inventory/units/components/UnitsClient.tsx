@@ -92,7 +92,7 @@ export default function UnitsClient({
 
   const renderCard = (unit: DBUnit) => (
     <div className="flex flex-col gap-1">
-      <div className="font-bold text-text-primary text-base leading-tight">
+      <div className="text-sm text-text-primary">
         {unit.name}
       </div>
       <div className="text-sm text-text-muted">

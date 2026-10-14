@@ -7,6 +7,8 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004
 ```
 
+**Reviewed, no behaviour change — 2026-10-14:** `app/admin/inventory/items/actions.ts` comment spelling only (hàng hoá, `BR-UI-001`); no logic changed.
+
 **Behaviour change — 2026-10-05 (current stock, `BR-CATALOG-004`):** the Hàng hoá list gains a
 "Tồn kho" column (sortable; also a line on the phone card) and an item's page gains "Tồn kho
 hiện tại". The figure is today's on-hand in the base unit ("42.000 ml" for Sữa tươi Mlekovita)

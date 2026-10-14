@@ -7,6 +7,8 @@ tables: Cash_Categories, Bank_Accounts, Cash_Entries, Cash_Transfers
 brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006, BR-CASH-007, BR-CASH-008
 ```
 
+**Behaviour change — 2026-10-14 (`BR-UI-004`):** the Sổ thu chi list shows a total row under the column titles, "Tổng (không tính huỷ, chuyển tiền)" with "Thu … · Chi …", from `cashBookRowTotals` in `lib/finance/cash-book-rows.ts` over the rows the filter keeps; cancelled rows and transfers are left out (`BR-ACCESS-003`). Same day, one spelling in messages (huỷ, hoá, xoá, tuỳ, khoá; `BR-UI-001`).
+
 **Reviewed — 2026-10-07 (`BR-UI-008`):** `parseAmountVn` in `lib/finance/cash-entry-rules.ts` now reads `150,000` (comma thousands) and refuses `150.000`, because a dot marks decimals and money is whole đồng. The amount box posts plain digits, so nothing a user types changes; only the server backstop's accepted shape and its message do.
 
 **Behaviour change — 2026-10-04 (money flow, migration `0107`):** the ledger

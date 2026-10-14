@@ -37,7 +37,7 @@ export default async function OrdersPage({
   const payment = getParam("payment") || undefined;
   const brand = getParam("brand") || undefined;
 
-  const { orders, totalCount, itemsPerPage, brands, products, variants, modifiers, categories } = await getOrdersV2({
+  const { orders, totalCount, totals, itemsPerPage, brands, products, variants, modifiers, categories } = await getOrdersV2({
     page,
     q: q || undefined,
     from: searching ? undefined : toStartOfDayIso(range.start),
@@ -52,6 +52,7 @@ export default async function OrdersPage({
         <OrderTable
           initialOrders={orders as any}
           totalCount={totalCount}
+          totals={totals}
           itemsPerPage={itemsPerPage}
           brands={brands}
           products={products}

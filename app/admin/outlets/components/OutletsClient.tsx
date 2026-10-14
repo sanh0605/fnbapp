@@ -234,7 +234,7 @@ export default function OutletsClient({
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-start gap-2">
         <div>
-          <div className="font-bold text-text-primary text-base leading-tight">
+          <div className="text-sm text-text-primary">
             {outlet.name}
           </div>
           <div className="text-[11px] text-text-muted mt-0.5">
@@ -242,7 +242,7 @@ export default function OutletsClient({
           </div>
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary-soft text-primary border border-primary/20 font-mono">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-primary-soft text-text-primary border border-primary/20 font-mono">
             {outlet.code}
           </span>
           {outlet.status === "ACTIVE" ? (

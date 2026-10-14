@@ -9,7 +9,7 @@ export default async function ClearCachePage() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Xóa bộ nhớ đệm" 
+        title="Xoá bộ nhớ đệm" 
         subtitle="Hệ thống đã tự động làm mới bộ nhớ đệm khi bạn truy cập trang này."
       />
       <div className="bg-success/10 border border-success/30 text-success-active px-4 py-4 rounded-2xl shadow-sm">

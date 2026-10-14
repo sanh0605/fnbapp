@@ -28,7 +28,7 @@ vi.mock("@/lib/sales/void-order-transaction", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { voidOrderV2 } from "./actions";
+import { voidOrderV2 } from "./order-void-actions";
 
 describe("voidOrderV2 atomic failure handling", () => {
   let orderStatus: string;

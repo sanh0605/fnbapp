@@ -188,7 +188,7 @@ export default function ActivityLogClient({
         };
       case "VOIDED":
         return {
-          label: "Hủy đơn",
+          label: "Huỷ đơn",
           classes: "bg-danger/10 text-danger-active border-danger/30",
           dotColor: "bg-danger ring-danger/20",
         };
@@ -217,7 +217,7 @@ export default function ActivityLogClient({
     <div className="space-y-6">
       <PageHeader
         title="Nhật ký hoạt động"
-        subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
+        subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, huỷ đơn, và các sự kiện trong hệ thống."
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">
         <div className="w-full md:w-auto shrink-0">
@@ -275,7 +275,7 @@ export default function ActivityLogClient({
               <option value="ALL">Tất cả</option>
               <option value="CREATED">Tạo mới</option>
               <option value="EDITED">Chỉnh sửa</option>
-              <option value="VOIDED">Hủy đơn</option>
+              <option value="VOIDED">Huỷ đơn</option>
               <option value="REOPENED">Mở lại</option>
               <option value="MIGRATED">Di trú</option>
             </Select>

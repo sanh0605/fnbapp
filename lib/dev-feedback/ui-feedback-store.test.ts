@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appendEntry, emptyFeedbackFile, parseFeedback, removeEntry, serializeFeedback } from "./ui-feedback-store";
+import { appendEntry, emptyFeedbackFile, parseFeedback, removeEntry, serializeFeedback, updateEntryNote } from "./ui-feedback-store";
 
 const ENTRY_WITH_ELEMENT = {
   id: "abc123",
@@ -74,6 +74,25 @@ describe("appendEntry", () => {
     const withFirst = appendEntry(emptyFeedbackFile(), ENTRY_WITH_ELEMENT);
     const withBoth = appendEntry(withFirst, GENERAL_COMMENT);
     expect(parseFeedback(withBoth)).toEqual([ENTRY_WITH_ELEMENT, GENERAL_COMMENT]);
+  });
+});
+
+describe("updateEntryNote", () => {
+  it("changes only the note of the named entry and keeps order", () => {
+    const both = serializeFeedback([ENTRY_WITH_ELEMENT, GENERAL_COMMENT]);
+    const updated = updateEntryNote(both, "abc123", "Nút đã sửa lại.");
+    expect(updated).not.toBeNull();
+    expect(parseFeedback(updated as string)).toEqual([{ ...ENTRY_WITH_ELEMENT, note: "Nút đã sửa lại." }, GENERAL_COMMENT]);
+  });
+
+  it("replaces a multi-line note (including a handling line) as a whole", () => {
+    const entry = { ...GENERAL_COMMENT, note: "Ghi chú cũ.\nGhi chú xử lý: đã làm." };
+    const updated = updateEntryNote(serializeFeedback([entry]), "def456", "Ghi chú mới.");
+    expect(parseFeedback(updated as string)[0].note).toBe("Ghi chú mới.");
+  });
+
+  it("returns null when the id is not present", () => {
+    expect(updateEntryNote(serializeFeedback([GENERAL_COMMENT]), "nope", "x")).toBeNull();
   });
 });
 

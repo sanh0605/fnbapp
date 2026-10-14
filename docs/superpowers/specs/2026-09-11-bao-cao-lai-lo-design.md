@@ -16,7 +16,7 @@ ghép chúng lại. Hai khoản app đã tính ra mà chưa dẫn đi đâu:
 - Nguyên liệu mua dùng ngay (`BR-COGS-007`, dòng thứ ba chủ quán chốt 2026-08-19).
 - Khấu hao dụng cụ (`BR-COGS-008`: "Not yet consumed anywhere").
 
-`getPnLDataV2` trong `app/admin/reports/actions.ts` ghi sẵn rằng báo cáo lãi lỗ
+`getPnLDataV2` trong `app/admin/reports/pnl-actions.ts` ghi sẵn rằng báo cáo lãi lỗ
 đang được làm lại thành báo cáo tài chính thật. Đây là đợt đó.
 
 ## Luật đòi gì, và vì sao làm bảng quản trị trước
@@ -80,7 +80,7 @@ tháng chi tiết hơn B02-DNSN. Cộng dồn các dòng của bảng ra đúng 
 
 Đã xem:
 
-- `app/admin/reports/actions.ts` và `app/admin/reports/issued/actions.ts`;
+- `app/admin/reports/pnl-actions.ts` và `app/admin/reports/issued/actions.ts`;
 - `lib/assets/asset-depreciation.ts`;
 - `docs/02-rules/business-rules/cogs.md`, `sales.md` và `cash-book.md`;
 - bảng PNL trong Sheet của chủ quán.

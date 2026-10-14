@@ -318,7 +318,7 @@ export function PurchasedItemForm({
         )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Tên hàng hóa" htmlFor={`${formId}-name`} required>
+            <Field label="Tên hàng hoá" htmlFor={`${formId}-name`} required>
               <TextInput
                 id={`${formId}-name`}
                 name="name"
@@ -345,7 +345,7 @@ export function PurchasedItemForm({
           {isRaw && (
             <div className="pt-4 border-t border-border space-y-4">
               <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
-                Đây là nhóm <strong>Hàng Hóa Chế Biến</strong>.
+                Đây là nhóm <strong>Hàng hoá chế biến</strong>.
               </div>
 
  {/* 
@@ -613,7 +613,7 @@ function ConversionRowsSection({
                     type="button"
                     variant="delete"
                     onClick={() => removeUnitRow(idx)}
-                    aria-label="Xóa đơn vị mua"
+                    aria-label="Xoá đơn vị mua"
                   >
                     ✕
                   </Button>

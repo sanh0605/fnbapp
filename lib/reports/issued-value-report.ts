@@ -184,7 +184,7 @@ function lastDayOfMonth(year: number, month: number): number {
 //
 // Section 3 and 5 still hold: no second cost definition. Each month's value
 // comes from computePeriodIssuedValue, the same function
-// app/admin/reports/actions.ts already uses for getPnLDataV2's totalCOGS,
+// app/admin/reports/pnl-actions.ts already uses for getPnLDataV2's totalCOGS,
 // with Asia/Saigon month boundaries from toSaigonUtcRange (the same helper
 // that file uses for its own date filters) -- no hand-rolled timezone
 // arithmetic.

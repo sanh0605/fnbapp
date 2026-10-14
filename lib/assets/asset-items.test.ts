@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { buildAssetSchedule, chargeForMonth } from "@/lib/assets/asset-depreciation";
 import {
   buildAssetItemDetail,
+  assetItemTotals,
   groupAssetItems,
+  type AssetItemRow,
   type AssetLotInput,
   type DisposalRowInput,
 } from "./asset-items";
@@ -203,5 +205,28 @@ describe("buildAssetItemDetail", () => {
 
     expect(detail.months[0]).toEqual({ month: "2026-01", unitsHeld: 2, charge: 200, disposalCharge: 0 });
     expect(detail.months[1]).toEqual({ month: "2026-02", unitsHeld: 3, charge: 300, disposalCharge: 0 });
+  });
+});
+
+describe("assetItemTotals (BR-UI-004)", () => {
+  const row = (over: Partial<AssetItemRow>): AssetItemRow => ({
+    itemId: "SPM-1", name: "Món", quantity: 1, remainingQuantity: 1, disposedQuantity: 0,
+    remainingValue: 0, latestAcquiredDate: "2026-01-01", fullyDisposed: false, ...over,
+  });
+  // 2 live items whose exact values add to a different whole number than their rounded cells;
+  // a fully disposed item never counts.
+  const rows = [
+    row({ itemId: "A", remainingValue: 100.4 }),
+    row({ itemId: "B", remainingValue: 100.4 }),
+    row({ itemId: "C", remainingValue: 100.4 }),
+    row({ itemId: "D", remainingValue: 5000, remainingQuantity: 0, disposedQuantity: 1, fullyDisposed: true }),
+  ];
+
+  it("sums remaining value over every live item given, rounded once from the exact sum", () => {
+    expect(assetItemTotals(rows)).toEqual({ count: 3, remainingValue: 301 });
+  });
+
+  it("is zero for no rows", () => {
+    expect(assetItemTotals([])).toEqual({ count: 0, remainingValue: 0 });
   });
 });

@@ -48,7 +48,7 @@ const pageData: PurchaseOrderListPage & { suppliers: { id: string; name: string 
   pageCount: 1,
   firstIndex: 0,
   lastIndex: 0,
-  rangeError: false, daySpan: null,
+  rangeError: false, daySpan: null, totals: { count: 0, totalAmount: 0 },
   suppliers: [
     { id: 'SUP-1', name: 'Nhà cung cấp A' },
     { id: 'SUP-2', name: 'Nhà cung cấp B' }
@@ -220,5 +220,19 @@ describe("PurchaseOrdersClient", () => {
       expect(phone.textContent).toContain("Trứng Ba Huân");
       expect(phone.textContent).toContain("506,023");
     });
+  });
+
+  // BR-UI-004 (owner 2026-10-06): the money column shows the total of every
+  // slip the filter matches, cancelled and draft slips left out.
+  it("shows the filter's total under the Tổng tiền header", () => {
+    const withTotals: typeof pageData = {
+      ...pageData,
+      total: 1, firstIndex: 1, lastIndex: 1,
+      rows: [{ id: "PO-181", dateText: "15/09/2026 10:00:00", supplierName: "Thế Kỷ Xanh", sourceName: "Shopee", status: "COMPLETED", totalAmount: 506023, paymentLabel: "Tiền mặt" }],
+      totals: { count: 21, totalAmount: 12345678 },
+    };
+    render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={withTotals} />);
+    expect(screen.getAllByText("Tổng (không tính huỷ, nháp)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("12,345,678").length).toBeGreaterThan(0);
   });
 });

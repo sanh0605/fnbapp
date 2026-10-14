@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { formatNumber } from "@/lib/shared/format";
-import { editOrderV2, type OrderListItem } from "@/app/admin/orders/actions";
+import { editOrderV2 } from "@/app/admin/orders/order-edit-actions";
+import type { OrderListItem } from "@/app/admin/orders/actions";
 import type { CartInput } from "@/lib/sales/order-cart";
 import { LineItemEditor, type EditItem } from "@/app/admin/orders/components/LineItemEditor";
 import { DiscountEditor } from "@/app/admin/orders/components/DiscountEditor";
@@ -303,7 +304,7 @@ export function OrderEditForm({
                     setNewQty(1);
                   }}
                   className="text-text-muted hover:text-text-secondary"
-                  aria-label="Hủy thêm sản phẩm"
+                  aria-label="Huỷ thêm sản phẩm"
                 >
                   <X className="w-4 h-4" />
                 </button>

@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { OrderDetailView } from "./OrderDetailView";
-import type { OrderDetailV2Result } from "@/app/admin/orders/actions";
+import type { OrderDetailV2Result } from "@/app/admin/orders/order-detail-actions";
 
 const { push, refresh, router } = vi.hoisted(() => {
   const pushFn = vi.fn();
@@ -87,7 +87,7 @@ function makeDetail(status: string = "COMPLETED"): OrderDetailV2Result {
 }
 
 describe("OrderDetailView", () => {
-  it("shows Sửa đơn link to edit page and Hủy đơn button for COMPLETED order", () => {
+  it("shows Sửa đơn link to edit page and Huỷ đơn button for COMPLETED order", () => {
     const detail = makeDetail("COMPLETED");
     const brands = [{ id: "BRD-1", name: "Phin Đi" }];
     const returnTo = "/admin/orders?payment=Tien+mat";
@@ -103,17 +103,17 @@ describe("OrderDetailView", () => {
       `/admin/orders/ORD-1/edit?returnTo=${encodeURIComponent(returnTo)}`
     );
 
-    const voidButton = screen.getByRole("button", { name: "Hủy đơn" });
+    const voidButton = screen.getByRole("button", { name: "Huỷ đơn" });
     expect(voidButton).toBeDefined();
   });
 
-  it("does not show Sửa đơn or Hủy đơn for VOIDED order", () => {
+  it("does not show Sửa đơn or Huỷ đơn for VOIDED order", () => {
     const detail = makeDetail("VOIDED");
     render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
 
     expect(screen.queryByRole("link", { name: "Sửa đơn" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Hủy đơn" })).toBeNull();
-    expect(screen.getByText("Đã hủy")).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Huỷ đơn" })).toBeNull();
+    expect(screen.getByText("Đã huỷ")).toBeDefined();
   });
 });
 

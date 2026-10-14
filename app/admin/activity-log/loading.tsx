@@ -6,7 +6,7 @@ export default function Loading() {
     <div className="space-y-6">
       <PageHeader 
         title="Nhật ký hoạt động" 
-        subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
+        subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, huỷ đơn, và các sự kiện trong hệ thống."
       />
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={4} />

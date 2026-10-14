@@ -204,7 +204,7 @@ export default function BankAccountsClient({
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-start gap-2">
         <div>
-          <div className="font-bold text-text-primary text-base leading-tight">
+          <div className="text-sm text-text-primary">
             {account.name}
           </div>
           <div className="text-[11px] text-text-muted mt-0.5 font-mono">

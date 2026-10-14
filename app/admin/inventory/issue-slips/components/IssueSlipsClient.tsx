@@ -280,6 +280,10 @@ export default function IssueSlipsClient({
           getHref={getRowHref}
           columns={columns}
           renderCard={renderCard}
+          totals={{
+            label: "Tổng (không tính huỷ)",
+            values: { value: formatNumber(pageData.totals.value) },
+          }}
           empty={
             <EmptyState
               icon={<span className="text-4xl">📦</span>}

@@ -421,7 +421,7 @@ describe("StocktakeClient -- Saigon timezone display", () => {
 });
 
 // BR-UI-005 / BR-UI-008 (wave K3): the loose box is the shared number box
-// with 3 decimals; one brown button while the preview is open; Hủy phiên
+// with 3 decimals; one brown button while the preview is open; Huỷ phiên
 // opens a cancel step, so it is the red outline.
 describe("StocktakeClient -- shared templates (wave K3)", () => {
   it("the loose box is a text box that takes 1.5 and saves 1.5", async () => {
@@ -453,11 +453,11 @@ describe("StocktakeClient -- shared templates (wave K3)", () => {
     expect(brown.map(b => b.textContent?.trim())).toEqual(["Xác nhận áp dụng"]);
   });
 
-  it("Hủy phiên is the red outline, not solid red", async () => {
+  it("Huỷ phiên is the red outline, not solid red", async () => {
     const container = await renderTracked(
       <StocktakeClient session={session([legacyLineItem()])} lastConfirmed={null} />,
     );
-    const btn = findButtonWithText(container, "Hủy phiên")!;
+    const btn = findButtonWithText(container, "Huỷ phiên")!;
     expect(btn.className).toContain("border-danger");
     expect(btn.className.split(/\s+/)).not.toContain("bg-danger");
   });

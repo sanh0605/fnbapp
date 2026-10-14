@@ -17,7 +17,7 @@ import { formatNumber } from "@/lib/shared/format";
 import { cancelCashEntry } from "@/app/admin/finance/actions";
 import { cancelCashTransfer } from "@/app/admin/finance/transfers/actions";
 import type { DBBankAccount, DBCashCategory } from "@/types/db";
-import type { CashBookRow } from "@/lib/finance/cash-book-rows";
+import { cashBookRowTotals, type CashBookRow } from "@/lib/finance/cash-book-rows";
 import type { CashBookSummary, Balance } from "@/lib/finance/cash-flow";
 import { writeRangeParams, type RangeValue } from "@/lib/shared/date-range-params";
 
@@ -321,6 +321,8 @@ export default function CashBookClient({
     });
   }, [rows, kind, status]);
 
+  const rowTotals = useMemo(() => cashBookRowTotals(filteredRows), [filteredRows]);
+
   const sortedRows = useMemo(() => {
     const col = columns.find((c) => c.key === sortKey);
     return col?.sortValue
@@ -381,7 +383,7 @@ export default function CashBookClient({
       <div className={`flex flex-col gap-2 ${isCancelled ? "opacity-60" : ""}`}>
         <div className="flex justify-between items-start gap-2">
           <div>
-            <div className="font-bold text-text-primary text-base leading-tight">
+            <div className="text-sm text-text-primary">
               {row.groupLabel}
             </div>
             <div className="text-[11px] text-text-muted mt-0.5 font-mono">
@@ -390,7 +392,7 @@ export default function CashBookClient({
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="font-bold text-text-primary">
+            <span className="text-text-primary">
               {money(row.amount)}
             </span>
             {!isDayRow &&
@@ -605,6 +607,12 @@ export default function CashBookClient({
         getHref={getRowHref}
         columns={columns}
         renderCard={renderCard}
+        totals={{
+          label: "Tổng (không tính huỷ, chuyển tiền)",
+          values: {
+            amount: `Thu ${formatNumber(rowTotals.income)} · Chi ${formatNumber(rowTotals.expense)}`,
+          },
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

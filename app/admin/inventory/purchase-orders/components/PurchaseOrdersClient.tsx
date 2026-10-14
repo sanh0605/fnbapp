@@ -305,6 +305,10 @@ export default function PurchaseOrdersClient({
           }
           columns={columns}
           renderCard={renderCard}
+          totals={{
+            label: "Tổng (không tính huỷ, nháp)",
+            values: { totalAmount: formatNumber(pageData.totals.totalAmount) },
+          }}
           empty={
             <EmptyState
               icon={<span className="text-4xl">📦</span>}

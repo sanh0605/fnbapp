@@ -44,7 +44,7 @@ import * as actions from "./actions";
 import { getCacheTag } from "@/lib/db/tables";
 
 // OPEN-ITEMS 69: this is the exact production incident that started the
-// plan -- the owner opened Hàng Mua Vào and it said "Chưa có hàng hóa" while
+// plan -- the owner opened Hàng Mua Vào and it said "Chưa có hàng hoá" while
 // 145 rows sat untouched. Both required tests from section 5.
 describe("getItemsData -- the production incident this plan exists to fix", () => {
   beforeEach(() => {

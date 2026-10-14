@@ -116,10 +116,10 @@ export default function CategoriesClient({
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-start gap-2">
         <div>
-          <div className="font-bold text-text-primary text-base leading-tight">
+          <div className="text-sm text-text-primary">
             {cat.name}
           </div>
-          <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+          <div className="font-mono text-[11px] text-text-muted mt-0.5">
             {cat.id}
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function CategoriesClient({
           <EmptyState
             icon="📂"
             title="Chưa có danh mục"
-            description="Thêm danh mục để phân loại hàng hóa."
+            description="Thêm danh mục để phân loại hàng hoá."
           />
         }
       />

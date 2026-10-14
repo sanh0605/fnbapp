@@ -10,6 +10,7 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 
 - No label carries an English twin in brackets: "Lưu nháp", not "Lưu Nháp (Draft)"; "Quản lý", not "Quản lý (MANAGER)". Counted 2026-10-06: 25 such labels in 12 files, removed in wave 8a-2. A full read of every screen for other English words is part of the uniform-look pass.
 - Loanwords the owner uses himself stay: Topping, Voucher.
+- One spelling per word (2026-10-14): the tone mark sits on the second vowel — huỷ, hoá, xoá, tuỳ, khoá — because measured that day the screens wrote it so about 500 times against 47. Guard: `components/ui/spelling.guard.test.ts`. The POS keeps its own text until its own wave; Intl's weekday names ("Chủ Nhật") are not written in the source.
 - Stored values (`STAFF`, `RAW`, `COMPLETED`) are not shown; the screen shows their Vietnamese name.
 
 ### BR-UI-002 — A button that creates a new record reads "Tạo"
@@ -20,15 +21,21 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 
 ### BR-UI-003 — List rows all look the same
 
-**Status:** `APPROVED` — owner 2026-10-06: *"Đối với các trang danh sách, các dòng đều viết thường và có cùng một format, không tự ý viết bold hay bất kỳ một kiểu đặc biệt nào hết. Nếu có phát sinh thêm anh sẽ cung cấp thông tin về quyết định mới nhất của anh sau."* Not built yet; part of the uniform-look pass.
+**Status:** `APPROVED` — owner 2026-10-06: *"Đối với các trang danh sách, các dòng đều viết thường và có cùng một format, không tự ý viết bold hay bất kỳ một kiểu đặc biệt nào hết. Nếu có phát sinh thêm anh sẽ cung cấp thông tin về quyết định mới nhất của anh sau."* Built: computer rows in wave K2–K6 (2026-10-08, `components/ui/template.guard.test.ts` keeps `<td>` plain); phone cards on 2026-10-14 on the branch `feat/no-popups` (`components/ui/list-rows.guard.test.ts`). Summary boxes above a list (Tổng thu, Tổng chi, opening and closing balance, the order counter) are not rows and keep their weight.
 
 - Every cell in a list row uses the same weight and size; no bold code, no bold amount, no coloured text beyond the status badge. Exceptions only when the owner names one.
 
 ### BR-UI-004 — A column that can be added up shows its total under the header
 
-**Status:** `APPROVED` — owner 2026-10-06: *"Các cột có thể thống kê thì nên hiện một dòng số nhỏ bên dưới tiêu đề cột tương ứng cho thấy tổng của tất cả dòng theo bộ lọc."* Not built yet; needs its own short design (which columns count as summable, phone layout).
+**Status:** `APPROVED` — owner 2026-10-06: *"Các cột có thể thống kê thì nên hiện một dòng số nhỏ bên dưới tiêu đề cột tương ứng cho thấy tổng của tất cả dòng theo bộ lọc."* Built 2026-10-14 on the branch `feat/no-popups` (list below).
 
 - The total covers every row the current filter matches, not only the page on screen. Rounding follows `BR-DATA-005`: the rounded exact total.
+- Cancelled rows are left out, as `BR-ACCESS-003` already says for every total; drafts are left out too, since nothing was bought or sold yet (Opus 2026-10-14). The label names what is left out. Only money columns are added up; quantities in different units never are. The shared list draws the total under the header on a computer and as a card on a phone. Built 2026-10-14 on the branch `feat/no-popups`:
+  - Đơn hàng: Khách trả, "Tổng (không tính huỷ)"; old versions of an edited order are left out too.
+  - Phiếu nhập: Tổng tiền, "Tổng (không tính huỷ, nháp)".
+  - Phiếu xuất: Giá trị xuất, "Tổng (không tính huỷ)".
+  - Sổ thu chi: the amount column mixes money in and out, so it shows "Thu … · Chi …", "Tổng (không tính huỷ, chuyển tiền)"; a transfer only moves the shop's own money between places.
+  - Tài sản: Giá trị còn lại, "Tổng (không tính đã thanh lý hết)".
 
 ### BR-UI-005 — One template per screen part
 

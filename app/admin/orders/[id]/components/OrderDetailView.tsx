@@ -15,7 +15,7 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import { VoidOrderButton } from "@/app/admin/orders/components/VoidOrderButton";
-import type { OrderDetailV2Result } from "@/app/admin/orders/actions";
+import type { OrderDetailV2Result } from "@/app/admin/orders/order-detail-actions";
 
 interface OrderDetailViewProps {
   detail: OrderDetailV2Result;
@@ -158,7 +158,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                 {currentOrder.created_by_name}
               </span>
               {currentOrder.status === "VOIDED" && (
-                <Badge variant="danger">Đã hủy</Badge>
+                <Badge variant="danger">Đã huỷ</Badge>
               )}
             </div>
 
@@ -231,7 +231,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                       <span className="font-bold text-text-primary">v{v.version}</span>
                       <span className="ml-2 text-text-secondary">{v.created_by_name}</span>
                       {v.status === "SUPERSEDED" && <span className="ml-2 text-text-muted">(đã thay thế)</span>}
-                      {v.status === "VOIDED" && <span className="ml-2 text-danger">(đã hủy)</span>}
+                      {v.status === "VOIDED" && <span className="ml-2 text-danger">(đã huỷ)</span>}
                     </div>
                     <div className="text-right">
                       <div className="text-text-secondary">{formatDate(v.created_at)}</div>
