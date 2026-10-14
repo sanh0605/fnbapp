@@ -7,7 +7,7 @@ tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
-**Behaviour change — 2026-10-15 (Bán hàng đợt 2, `docs/superpowers/plans/2026-10-15-ban-hang-dot-2.md`):**
+**Behaviour change — 2026-10-15 (Bán hàng đợt 2, design in `docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`):**
 - Huỷ đơn is its own page, `/admin/orders/[id]/void`, with a required reason, instead of a popup (`BR-DATA-007`). The page refuses an order that is not COMPLETED, and so does `voidOrderV2`; the database stays idempotent for a retry.
 - `voidOrderV2` answers in Vietnamese and no longer passes raw database text.
 - The order list has a "Trạng thái" filter (Hoàn tất, the default, or Đã huỷ, which shows each order's reason). Voided orders never count in the total.

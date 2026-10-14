@@ -7,7 +7,7 @@ tables: Products, products, product_variants, product_price_history, Product_Cat
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-007
 ```
 
-**Behaviour change — 2026-10-15 (Bán hàng đợt 2, `docs/superpowers/plans/2026-10-15-ban-hang-dot-2.md`):**
+**Behaviour change — 2026-10-15 (Bán hàng đợt 2, design in `docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`):**
 - Deleting an option whose standalone dish is on sale is refused, with the dish named. Turn "Bán độc lập" off first.
 - The "Bán độc lập" switch pauses or resumes the dish with its sizes, through the same path as the dish page. The dead `/admin/products/toppings` address and `ToppingsManager` are gone.
 - A Nhóm món name already used by a live group is refused.
