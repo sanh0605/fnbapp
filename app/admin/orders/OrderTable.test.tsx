@@ -58,7 +58,11 @@ beforeEach(() => {
   mockSearchParams.clear();
 });
 
-function makeOrder(id: string, orderNo: string): OrderListItem {
+function makeOrder(
+  id: string,
+  orderNo: string,
+  overrides?: Partial<OrderListItem>
+): OrderListItem {
   return {
     id,
     order_no: `#${orderNo}`,
@@ -101,6 +105,8 @@ function makeOrder(id: string, orderNo: string): OrderListItem {
         modifiers: [],
       },
     ],
+    payments: [],
+    ...overrides,
   };
 }
 
@@ -228,3 +234,74 @@ describe("OrderTable -- shared table (wave K4)", () => {
     expect(screen.getAllByText("1,234,000").length).toBeGreaterThan(0);
   });
 });
+
+describe("OrderTable payment method display (BR-SALE-013, owner 2026-10-14 C12)", () => {
+  it("shows 'Tiền mặt + Chuyển khoản' in neutral badge on desktop and phone when payments has two or more entries", () => {
+    const twoPartOrder = makeOrder("ORD-MULTI", "000002", {
+      method: "Tien mat",
+      payments: [
+        { method: "CASH", amount: 9000 },
+        { method: "BANK_TRANSFER", amount: 9000 },
+      ],
+    });
+
+    const { container } = render(
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialOrders={[twoPartOrder]}
+        totalCount={1}
+        itemsPerPage={20}
+        brands={[]}
+        products={[]}
+        variants={[]}
+        modifiers={[]}
+        categories={[]}
+      />
+    );
+
+    // Desktop table column
+    const desktopTable = container.querySelector(".hidden.md\\:block");
+    expect(desktopTable).not.toBeNull();
+    expect(desktopTable!.textContent).toContain("Tiền mặt + Chuyển khoản");
+
+    // Phone card
+    const phoneList = container.querySelector(".md\\:hidden");
+    expect(phoneList).not.toBeNull();
+    expect(phoneList!.textContent).toContain("Tiền mặt + Chuyển khoản");
+
+    // Both badges are rendered
+    const badges = screen.getAllByText("Tiền mặt + Chuyển khoản");
+    expect(badges.length).toBe(2);
+  });
+
+  it("still shows only 'Tiền mặt' (or 'Chuyển khoản') when payments has one entry or is undefined", () => {
+    const singleCash = makeOrder("ORD-CASH", "000003", {
+      method: "Tien mat",
+      payments: [{ method: "CASH", amount: 60000 }],
+    });
+    const singleTransfer = makeOrder("ORD-XFER", "000004", {
+      method: "Chuyen khoan",
+    });
+
+    render(
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialOrders={[singleCash, singleTransfer]}
+        totalCount={2}
+        itemsPerPage={20}
+        brands={[]}
+        products={[]}
+        variants={[]}
+        modifiers={[]}
+        categories={[]}
+      />
+    );
+
+    expect(screen.queryByText("Tiền mặt + Chuyển khoản")).toBeNull();
+    expect(screen.getAllByText("Tiền mặt").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Chuyển khoản").length).toBeGreaterThan(0);
+  });
+});
+

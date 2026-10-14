@@ -13,10 +13,23 @@ import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
+import { NumberInput } from "@/components/ui/NumberInput";
 import { X } from "lucide-react";
 
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
+
+interface PaymentPart {
+  method: "CASH" | "BANK_TRANSFER";
+  amount: number;
+}
+
+function normalizePaymentMethod(method?: string): "CASH" | "BANK_TRANSFER" {
+  if (method === "BANK_TRANSFER" || method === "Chuyen khoan") {
+    return "BANK_TRANSFER";
+  }
+  return "CASH";
+}
 
 function expandModifierSnapshots(modifiers: any[]): any[] {
   return modifiers.flatMap((modifier: any) => {
@@ -81,7 +94,21 @@ export function OrderEditForm({
 
   const [orderDiscount, setOrderDiscount] = useState(Number(order.manual_order_discount || 0));
   const [orderDiscountType, setOrderDiscountType] = useState("VND");
-  const [paymentMethod, setPaymentMethod] = useState(order.method || "Tien mat");
+  const [payments, setPayments] = useState<PaymentPart[]>(() => {
+    if (Array.isArray(order.payments) && order.payments.length > 0) {
+      return order.payments.map((p) => ({
+        method: normalizePaymentMethod(p.method),
+        amount: Number(p.amount) || 0,
+      }));
+    }
+    const fallbackMethod = normalizePaymentMethod(order.method);
+    return [
+      {
+        method: fallbackMethod,
+        amount: Number(order.net_total || 0),
+      },
+    ];
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [editReason, setEditReason] = useState("");
@@ -168,6 +195,51 @@ export function OrderEditForm({
     setAddCategory("ALL");
   };
 
+  const totalAmount = calculateTotal();
+  const totalParts = payments.reduce((sum, p) => sum + p.amount, 0);
+
+  const isPaymentValid =
+    payments.length === 1
+      ? true
+      : payments.length === 2 &&
+        payments.every((p) => p.amount > 0) &&
+        payments[0].method !== payments[1].method &&
+        totalParts === totalAmount;
+
+  const handleMethodChange = (idx: number, newMethod: "CASH" | "BANK_TRANSFER") => {
+    setPayments((prev) =>
+      prev.map((p, i) => {
+        if (i === idx) return { ...p, method: newMethod };
+        if (prev.length === 2 && p.method === newMethod) {
+          return { ...p, method: newMethod === "CASH" ? "BANK_TRANSFER" : "CASH" };
+        }
+        return p;
+      })
+    );
+  };
+
+  const handleAmountChange = (idx: number, amount: number) => {
+    setPayments((prev) =>
+      prev.map((p, i) => (i === idx ? { ...p, amount } : p))
+    );
+  };
+
+  const handleAddPaymentPart = () => {
+    if (payments.length !== 1) return;
+    const currentMethod = payments[0].method;
+    const otherMethod: "CASH" | "BANK_TRANSFER" =
+      currentMethod === "CASH" ? "BANK_TRANSFER" : "CASH";
+    setPayments([
+      { method: currentMethod, amount: totalAmount },
+      { method: otherMethod, amount: 0 },
+    ]);
+  };
+
+  const handleRemovePaymentPart = (removeIdx: number) => {
+    if (payments.length <= 1) return;
+    setPayments((prev) => prev.filter((_, i) => i !== removeIdx));
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setInlineError(null);
@@ -175,6 +247,20 @@ export function OrderEditForm({
     if (!editReason.trim()) {
       setInlineError("Lý do chỉnh sửa là bắt buộc");
       return;
+    }
+    if (payments.length === 2) {
+      if (payments.some((p) => p.amount <= 0)) {
+        setInlineError("Số tiền mỗi phần phải lớn hơn 0");
+        return;
+      }
+      if (totalParts !== totalAmount) {
+        setInlineError("Tổng các phần không khớp với tiền đơn");
+        return;
+      }
+      if (payments[0].method === payments[1].method) {
+        setInlineError("Hai phần thanh toán không được trùng phương thức");
+        return;
+      }
     }
     setIsSaving(true);
 
@@ -199,7 +285,12 @@ export function OrderEditForm({
           manual_item_discount: { value: manualItemValue, type: manualItemType },
         };
       }),
-      payment_method: paymentMethod === "Chuyen khoan" ? "BANK_TRANSFER" : "CASH",
+      payment_method: payments[0]?.method || "CASH",
+      payments: payments.map((p) => ({
+        method: p.method,
+        amount: payments.length === 1 ? totalAmount : p.amount,
+        reference: "",
+      })),
       manual_order_discount:
         orderDiscount > 0
           ? { value: orderDiscount, type: orderDiscountType === "PERCENT" ? "PERCENT" : "VND" }
@@ -223,8 +314,6 @@ export function OrderEditForm({
       setInlineError("Lỗi cập nhật đơn: " + res.error);
     }
   };
-
-  const totalAmount = calculateTotal();
 
   return (
     <div className="space-y-6">
@@ -532,18 +621,110 @@ export function OrderEditForm({
               setOrderDiscount={setOrderDiscount}
               setOrderDiscountType={setOrderDiscountType}
             />
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-text-secondary w-28">Thanh toán:</span>
-              <div className="flex-1">
-                <Select
-                  aria-label="Phương thức thanh toán"
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                >
-                  <option value="Tien mat">Tiền mặt</option>
-                  <option value="Chuyen khoan">Chuyển khoản</option>
-                </Select>
+            {/* Payment Section (BR-SALE-013) */}
+            <div className="space-y-3 pt-1 border-t border-border">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-text-secondary">Thanh toán</span>
+                {payments.length === 1 && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleAddPaymentPart}
+                    className="text-xs min-h-[36px] py-1 px-3"
+                  >
+                    Thêm cách trả
+                  </Button>
+                )}
               </div>
+
+              <div className="space-y-2">
+                {payments.map((part, idx) => (
+                  <div
+                    key={`payment-part-${idx}`}
+                    className="flex flex-col sm:flex-row sm:items-center gap-2"
+                  >
+                    <div className="w-full sm:flex-1">
+                      <Select
+                        aria-label={
+                          payments.length === 2
+                            ? `Phương thức thanh toán ${idx + 1}`
+                            : "Phương thức thanh toán"
+                        }
+                        value={part.method}
+                        onChange={(e) =>
+                          handleMethodChange(idx, e.target.value as "CASH" | "BANK_TRANSFER")
+                        }
+                      >
+                        <option
+                          value="CASH"
+                          disabled={payments.length === 2 && payments[1 - idx]?.method === "CASH"}
+                        >
+                          Tiền mặt
+                        </option>
+                        <option
+                          value="BANK_TRANSFER"
+                          disabled={
+                            payments.length === 2 && payments[1 - idx]?.method === "BANK_TRANSFER"
+                          }
+                        >
+                          Chuyển khoản
+                        </option>
+                      </Select>
+                    </div>
+
+                    {payments.length === 2 ? (
+                      <>
+                        <div className="w-full sm:flex-1">
+                          <NumberInput
+                            id={`payment-amount-${idx}`}
+                            decimals={0}
+                            unit="đ"
+                            min={0}
+                            value={part.amount}
+                            onValueChange={(v) => handleAmountChange(idx, v ?? 0)}
+                            aria-label={`Số tiền ${
+                              part.method === "CASH" ? "tiền mặt" : "chuyển khoản"
+                            }`}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => handleRemovePaymentPart(idx)}
+                          aria-label={`Xoá ${
+                            part.method === "CASH" ? "tiền mặt" : "chuyển khoản"
+                          }`}
+                          className="w-full sm:w-auto px-3 min-h-[44px] md:min-h-[40px] shrink-0"
+                        >
+                          Xoá
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="w-full sm:w-auto text-sm font-semibold text-text-primary text-right tabular-nums py-2 px-1 shrink-0">
+                        {formatNumber(totalAmount)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {payments.length === 2 && (
+                <div className="space-y-1 pt-1">
+                  <div className="text-xs text-text-secondary">
+                    Tổng các phần: {formatNumber(totalParts)} • Tiền đơn: {formatNumber(totalAmount)}
+                  </div>
+                  {totalParts !== totalAmount && (
+                    <div role="alert" className="text-xs font-semibold text-danger">
+                      Còn lệch {formatNumber(Math.abs(totalParts - totalAmount))}
+                    </div>
+                  )}
+                  {totalParts === totalAmount && payments.some((p) => p.amount <= 0) && (
+                    <div role="alert" className="text-xs font-semibold text-danger">
+                      Số tiền mỗi phần phải lớn hơn 0
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -571,7 +752,7 @@ export function OrderEditForm({
             <Button
               type="submit"
               variant="primary"
-              disabled={isSaving || items.length === 0 || !editReason.trim()}
+              disabled={isSaving || items.length === 0 || !editReason.trim() || !isPaymentValid}
               className="w-full min-h-[44px] md:min-h-[40px]"
             >
               {isSaving ? "Đang lưu..." : "Lưu thay đổi"}

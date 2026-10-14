@@ -9,6 +9,7 @@ import {
 import { requireAdmin } from "@/lib/auth/auth";
 import type { OrderEvent } from "@/lib/sales/order-types";
 import type { OrderListItem } from "./actions";
+import { effectivePaymentRows } from "@/lib/sales/payment-method";
 import { parseObject } from "./order-helpers";
 
 export interface OrderDetailV2Result {
@@ -56,8 +57,9 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
   const chainOrders = Array.from(chainById.values());
   chainOrders.sort((a, b) => Number(a.version) - Number(b.version));
 
-  const [orderLines, products, variants, brands, events] = await Promise.all([
+  const [orderLines, paymentRows, products, variants, brands, events] = await Promise.all([
     findAllWhereInBatches("Order_Lines_V2", "order_id", [orderId]),
+    findAllWhereInBatches("Order_Payments", "order_id", [orderId]),
     findAll("Products"),
     findAll("Product_Variants"),
     findAll("Brands"),
@@ -125,6 +127,7 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
       manual_order_discount: Number(current.manual_order_discount) || 0,
       net_total: Number(current.net_total) || 0,
       method: current.payment_method === "BANK_TRANSFER" ? "Chuyen khoan" : "Tien mat",
+      payments: effectivePaymentRows(current, paymentRows as any[]),
       created_by_name: current.created_by_name || "",
       created_at: current.created_at,
       lines: mappedLines,

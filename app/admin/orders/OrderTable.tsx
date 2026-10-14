@@ -31,6 +31,24 @@ function formatEmptyRangePart(range: RangeValue): string {
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
 
+function renderPaymentMethodBadge(order: Order) {
+  const payments = order.payments ?? [];
+  if (payments.length >= 2) {
+    const labels: string[] = [];
+    for (const p of payments) {
+      const label = p.method === "BANK_TRANSFER" ? "Chuyển khoản" : "Tiền mặt";
+      if (!labels.includes(label)) labels.push(label);
+    }
+    return <Badge variant="neutral">{labels.join(" + ")}</Badge>;
+  }
+
+  return order.method === "Chuyen khoan" ? (
+    <Badge variant="neutral">Chuyển khoản</Badge>
+  ) : (
+    <Badge variant="success">Tiền mặt</Badge>
+  );
+}
+
 interface Brand {
   id: string;
   name: string;
@@ -298,12 +316,7 @@ export default function OrderTable({
       {
         key: "method",
         header: "Phương thức",
-        render: (order) =>
-          order.method === "Chuyen khoan" ? (
-            <Badge variant="neutral">Chuyển khoản</Badge>
-          ) : (
-            <Badge variant="success">Tiền mặt</Badge>
-          ),
+        render: (order) => renderPaymentMethodBadge(order),
       },
     ],
     []
@@ -330,11 +343,7 @@ export default function OrderTable({
             {formatNumber(order.net_total)}
           </div>
           <div className="mt-1">
-            {order.method === "Chuyen khoan" ? (
-              <Badge variant="neutral">Chuyển khoản</Badge>
-            ) : (
-              <Badge variant="success">Tiền mặt</Badge>
-            )}
+            {renderPaymentMethodBadge(order)}
           </div>
         </div>
       </div>

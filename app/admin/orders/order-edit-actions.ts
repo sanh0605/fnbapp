@@ -83,13 +83,27 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     // of 2026-09-01 
     // Base_Ingredients is not fetched either -- it was loaded and passed in
     // on every edit but never read inside buildEditedOrderFromCart.
+    // Parts chosen on the form are planned below against the server's own net
+    // total, so the cart math sees only the first part's method.
+    const requestedPayments: unknown = input.cart.payments;
+    const cart: CartInput =
+      requestedPayments === undefined
+        ? input.cart
+        : {
+            ...input.cart,
+            payments: undefined,
+            payment_method:
+              Array.isArray(requestedPayments) && requestedPayments[0]?.method === "BANK_TRANSFER"
+                ? "BANK_TRANSFER"
+                : "CASH",
+          };
     const built = buildEditedOrderFromCart(
-      { ...input.cart, actor },
+      { ...cart, actor },
       { brands, products, variants, categories, modifiers, promotions },
       { order: oldOrderV2, lines: oldLinesV2 },
     );
     const paymentPlan = planEditedOrderPayments(
-      oldPayments.map((payment) => {
+      requestedPayments !== undefined ? [] : oldPayments.map((payment) => {
         if (payment.method !== "CASH" && payment.method !== "BANK_TRANSFER") {
           throw new Error("Ph\u01b0\u01a1ng th\u1ee9c thanh to\u00e1n c\u1ee7a \u0111\u01a1n g\u1ed1c kh\u00f4ng h\u1ee3p l\u1ec7");
         }
@@ -106,6 +120,7 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       oldOrderV2.net_total,
       built.order.net_total,
       built.order.payment_method === "BANK_TRANSFER" ? "BANK_TRANSFER" : "CASH",
+      requestedPayments,
     );
     const editedPayments = paymentPlan.map((payment) => ({
       id: `pay-${crypto.randomUUID()}`,

@@ -23,6 +23,22 @@ interface OrderDetailViewProps {
   returnTo: string;
 }
 
+function renderPaymentMethod(order: OrderDetailV2Result["order"]) {
+  const payments = order.payments ?? [];
+  if (payments.length >= 2) {
+    const parts = payments.map(
+      (p) => `${p.method === "BANK_TRANSFER" ? "Chuyển khoản" : "Tiền mặt"} ${formatNumber(p.amount)}đ`,
+    );
+    return <Badge variant="neutral">{parts.join(" • ")}</Badge>;
+  }
+
+  return order.method === "Chuyen khoan" ? (
+    <Badge variant="neutral">Chuyển khoản</Badge>
+  ) : (
+    <Badge variant="success">Tiền mặt</Badge>
+  );
+}
+
 export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewProps) {
   const router = useRouter();
   const currentOrder = detail.order;
@@ -148,12 +164,8 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
         <div data-testid="detail-side" className="space-y-6">
           {/* Card 1: badges, breakdown, actions */}
           <div className="bg-surface-card rounded-card shadow-sm border border-border p-5 space-y-4">
-            <div className="flex gap-3 items-center">
-              {currentOrder.method === "Chuyen khoan" ? (
-                <Badge variant="neutral">Chuyển khoản</Badge>
-              ) : (
-                <Badge variant="success">Tiền mặt</Badge>
-              )}
+            <div className="flex flex-wrap gap-3 items-center">
+              {renderPaymentMethod(currentOrder)}
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-surface-secondary text-text-secondary">
                 {currentOrder.created_by_name}
               </span>

@@ -51,6 +51,7 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
   - Totals boxes are white with a thin border.
 - **Money boxes everywhere now, not after the financial reports** — owner 2026-10-07, *"Đúng"*, replacing the 2026-09-11 order that put the remaining money boxes after the financial reports.
 - **The POS keeps its own look:** it is used by touch.
+- **Error boxes use the shared `Alert`, with its red ✕ icon, on every screen** — owner 2026-10-14, audit F13, chose *"Có dấu ✕ ở mọi trang"* over text only. Until then 34 forms drew their own red box with text only. Not moved yet (audit wave 4).
 
 ### BR-UI-006 — Words that are too long get a short form the owner keeps
 

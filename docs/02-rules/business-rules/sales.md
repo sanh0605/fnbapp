@@ -114,3 +114,14 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 
 - With Nhóm SP chosen, Doanh số shows only figures that belong to that group's lines. "Chi tiết giảm giá", "Doanh thu theo phương thức thanh toán" and the small "Trước giảm giá", payment-count and "Khuyến mãi hệ thống" lines under the three figure boxes are hidden, replaced by one line telling him to clear the group filter to see them.
 - Without the group filter the page is unchanged.
+
+### BR-SALE-013 — An order paid two ways shows each part on the order screens
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C12, chose *"Giữ nút, Đơn hàng hiện từng phần"* over removing the till's "Thanh toán nhiều hình thức" button and over leaving the screens as they were.
+
+**The example he was shown.** Order 261006002002 on 06/10, one Trà sữa truyền thống 18,000, was booked as 9,000 cash + 9,000 transfer; the order list and the order page said only "Tiền mặt". He first took the split for a fault; it is not: the till never splits by itself, the cashier types each part. Measured 2026-10-14: 2 such orders ever, both by the account tuyen2612 at Điểm bán 2 around 19:42 (27/07, 72,000 as 36,000 + 36,000; 06/10). Whether those customers really paid that way is his to check with the cashier or the bank statement.
+
+- The till keeps the button.
+- The order list shows "Tiền mặt + Chuyển khoản" for such an order; the order page shows each part with its amount. A one-way order shows as before.
+- **Sửa đơn edits each part** — owner 2026-10-14, chose *"Sửa được từng phần"* over merging into one method and over locking the method. Until then the page showed one "Phương thức" box and, for an order paid two ways, silently kept the old parts whatever was chosen. Now the page lists the parts it holds (method and amount); the owner may change a part's method or amount, add the other method, or remove a part down to one. One part always takes the order's whole new total. With two parts, their sum must equal the order's new total or the save is refused with both figures shown; this also lets a split order's total change, which was refused before. Example: 18,000 as 9,000 cash + 9,000 transfer can become 10,000 + 8,000, or 18,000 cash.
+

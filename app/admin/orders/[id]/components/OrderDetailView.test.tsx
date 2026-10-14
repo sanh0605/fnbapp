@@ -36,7 +36,10 @@ beforeEach(() => {
   refresh.mockClear();
 });
 
-function makeDetail(status: string = "COMPLETED"): OrderDetailV2Result {
+function makeDetail(
+  status: string = "COMPLETED",
+  orderOverrides?: Partial<OrderDetailV2Result["order"]>
+): OrderDetailV2Result {
   return {
     order: {
       id: "ORD-1",
@@ -51,6 +54,7 @@ function makeDetail(status: string = "COMPLETED"): OrderDetailV2Result {
       manual_item_discount_total: 0,
       manual_order_discount: 0,
       net_total: 50000,
+      payments: [],
       method: "Tien mat",
       created_by_name: "Thu ngân 1",
       created_at: "2026-10-01T10:00:00.000Z",
@@ -80,6 +84,7 @@ function makeDetail(status: string = "COMPLETED"): OrderDetailV2Result {
           modifiers: [],
         },
       ],
+      ...orderOverrides,
     },
     timeline: [],
     events: [],
@@ -149,3 +154,56 @@ describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
     expect(phone.textContent).toContain("Cà phê sữa");
   });
 });
+
+describe("OrderDetailView payment parts (BR-SALE-013, owner 2026-10-14 C12)", () => {
+  it("shows both parts with amounts when payments has two or more entries", () => {
+    const detail = makeDetail("COMPLETED", {
+      method: "Tien mat",
+      gross_total: 18000,
+      net_total: 18000,
+      payments: [
+        { method: "CASH", amount: 9000 },
+        { method: "BANK_TRANSFER", amount: 9000 },
+      ],
+    });
+
+    render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
+
+    // Shows both parts formatted with amounts
+    const badge = screen.getByText("Tiền mặt 9,000đ • Chuyển khoản 9,000đ");
+    expect(badge).toBeInTheDocument();
+
+    // Verify it is in detail-side, which is displayed on both desktop and phone
+    const side = screen.getByTestId("detail-side");
+    expect(side).toContainElement(badge);
+    expect(side.closest(".hidden")).toBeNull();
+  });
+
+  it("still shows only 'Tiền mặt' (or 'Chuyển khoản') when payments has one entry or is undefined", () => {
+    const singleCashDetail = makeDetail("COMPLETED", {
+      method: "Tien mat",
+      payments: [{ method: "CASH", amount: 50000 }],
+    });
+
+    const { unmount } = render(
+      <OrderDetailView detail={singleCashDetail} brands={[]} returnTo="/admin/orders" />
+    );
+
+    expect(screen.getByText("Tiền mặt")).toBeInTheDocument();
+    expect(screen.queryByText(/•/)).toBeNull();
+
+    unmount();
+
+    const singleTransferDetail = makeDetail("COMPLETED", {
+      method: "Chuyen khoan",
+    });
+
+    render(
+      <OrderDetailView detail={singleTransferDetail} brands={[]} returnTo="/admin/orders" />
+    );
+
+    expect(screen.getByText("Chuyển khoản")).toBeInTheDocument();
+    expect(screen.queryByText(/•/)).toBeNull();
+  });
+});
+

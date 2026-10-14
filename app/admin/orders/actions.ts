@@ -9,7 +9,7 @@ import { getSupabaseClient } from "@/lib/db/supabase";
 import { displayMoney } from "@/lib/reports/display-rounding";
 
 import { ORDER_STATUS, PAYMENT_METHOD } from "@/lib/sales/order-types";
-import { normalizePaymentMethod } from "@/lib/sales/payment-method";
+import { effectivePaymentRows, normalizePaymentMethod } from "@/lib/sales/payment-method";
 import type { OrderLineV2 } from "@/lib/sales/order-types";
 import { parseObject } from "./order-helpers";
 
@@ -31,6 +31,8 @@ export interface OrderListItem {
   manual_order_discount: number;
   net_total: number;
   method: string;
+  // Effective payment rows (C12): two entries for an order paid two ways.
+  payments: Array<{ method: string; amount: number }>;
   created_by_name: string;
   created_at: string;
   lines: Array<OrderLineV2 & {
@@ -157,8 +159,9 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
     if (ordersError) throw new Error(ordersError.message);
 
     const orderIds = (pageOrders || []).map((o: any) => o.id);
-    const [orderLines, products, variants, brands, modifiers, categories] = await Promise.all([
+    const [orderLines, paymentRows, products, variants, brands, modifiers, categories] = await Promise.all([
       findAllWhereInBatches("Order_Lines_V2", "order_id", orderIds),
+      findAllWhereInBatches("Order_Payments", "order_id", orderIds),
       findAll("Products"),
       findAll("Product_Variants"),
       findAll("Brands"),
@@ -220,6 +223,7 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
         manual_order_discount: Number(order.manual_order_discount) || 0,
         net_total: Number(order.net_total) || 0,
         method: normalizePaymentMethod(order.payment_method) === PAYMENT_METHOD.BANK_TRANSFER ? "Chuyen khoan" : "Tien mat",
+        payments: effectivePaymentRows(order, (paymentRows as any[]).filter(p => p.order_id === order.id)),
         created_by_name: order.created_by_name || "",
         created_at: order.created_at,
         lines: mappedLines,
