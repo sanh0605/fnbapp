@@ -86,7 +86,7 @@ export function CashTransferForm({
   const defaultTo = transfer ? (transfer.to_account_id ?? "CASH") : "";
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div
@@ -98,76 +98,80 @@ export function CashTransferForm({
           </div>
         )}
 
-        <div>
-          <DayInput
-            label="Ngày"
-            value={day}
-            onChange={(v) => {
-              setDay(v);
-              setDayError("");
-            }}
-            error={dayError}
-          />
-          <input type="hidden" name="transfer_date" value={day} />
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div>
+            <DayInput
+              label="Ngày"
+              value={day}
+              onChange={(v) => {
+                setDay(v);
+                setDayError("");
+              }}
+              error={dayError}
+            />
+            <input type="hidden" name="transfer_date" value={day} />
+          </div>
+
+          <Field label="Số tiền (đồng)" htmlFor={`${formId}-amount`} required>
+            <MoneyInput
+              id={`${formId}-amount`}
+              name="amount"
+              required
+              defaultValue={transfer?.amount}
+              example="500,000"
+            />
+          </Field>
+
+          <Field label="Từ" htmlFor={`${formId}-from`} required>
+            <Select
+              id={`${formId}-from`}
+              name="from"
+              required
+              defaultValue={defaultFrom}
+            >
+              <option value="" disabled>
+                Chọn nơi chuyển
+              </option>
+              <option value="CASH">Tiền mặt (két)</option>
+              {accountOptions.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field label="Đến" htmlFor={`${formId}-to`} required>
+            <Select
+              id={`${formId}-to`}
+              name="to"
+              required
+              defaultValue={defaultTo}
+            >
+              <option value="" disabled>
+                Chọn nơi nhận
+              </option>
+              <option value="CASH">Tiền mặt (két)</option>
+              {accountOptions.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <div className="md:col-span-2">
+            <Field label="Ghi chú (không bắt buộc)" htmlFor={`${formId}-note`}>
+              <TextInput
+                id={`${formId}-note`}
+                type="text"
+                name="note"
+                defaultValue={transfer?.note ?? ""}
+                placeholder="Ví dụ: nộp tiền vào tài khoản"
+              />
+            </Field>
+          </div>
         </div>
-
-        <Field label="Số tiền (đồng)" htmlFor={`${formId}-amount`} required>
-          <MoneyInput
-            id={`${formId}-amount`}
-            name="amount"
-            required
-            defaultValue={transfer?.amount}
-            example="500,000"
-          />
-        </Field>
-
-        <Field label="Từ" htmlFor={`${formId}-from`} required>
-          <Select
-            id={`${formId}-from`}
-            name="from"
-            required
-            defaultValue={defaultFrom}
-          >
-            <option value="" disabled>
-              Chọn nơi chuyển
-            </option>
-            <option value="CASH">Tiền mặt (két)</option>
-            {accountOptions.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
-
-        <Field label="Đến" htmlFor={`${formId}-to`} required>
-          <Select
-            id={`${formId}-to`}
-            name="to"
-            required
-            defaultValue={defaultTo}
-          >
-            <option value="" disabled>
-              Chọn nơi nhận
-            </option>
-            <option value="CASH">Tiền mặt (két)</option>
-            {accountOptions.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </Select>
-        </Field>
-
-        <Field label="Ghi chú (không bắt buộc)" htmlFor={`${formId}-note`}>
-          <TextInput
-            id={`${formId}-note`}
-            type="text"
-            name="note"
-            defaultValue={transfer?.note ?? ""}
-            placeholder="Ví dụ: nộp tiền vào tài khoản"
-          />
-        </Field>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
           <Button

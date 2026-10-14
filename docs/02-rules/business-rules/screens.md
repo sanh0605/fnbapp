@@ -112,7 +112,7 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 
 ### BR-UI-012 — Every page has the same width: at most 1,280 px, centred
 
-**Status:** `APPROVED` — owner 2026-10-11, in chat, after asking why pages cover the screen differently: *"Anh nghĩ có lẽ nên dùng cách b để màn laptop cũng xài được"*, option b of three (a: every page as wide as the screen; b: every page at most 1,280 px, centred; c: lists wide, other pages 1,280). Not built yet; plan `docs/superpowers/plans/2026-10-11-kho-trang-va-mat-do.md`.
+**Status:** `APPROVED` — owner 2026-10-11, in chat, after asking why pages cover the screen differently: *"Anh nghĩ có lẽ nên dùng cách b để màn laptop cũng xài được"*, option b of three (a: every page as wide as the screen; b: every page at most 1,280 px, centred; c: lists wide, other pages 1,280). The frame was built on the branch `feat/no-popups` 2026-10-11 (`app/admin/layout.tsx`, guard `components/ui/page-width.guard.test.ts`); the pages that kept a narrower box of their own are being opened up and their forms laid in columns, plan `docs/superpowers/plans/2026-10-11-kho-trang-va-mat-do.md`.
 
 - **Measured 2026-10-11 on 8386** at the owner's 1,920 px screen (1,584 px beside the menu): four widths in use — about 1,584 (every list, Tổng quan, Doanh số, a Phiếu nhập's and a Phiếu xuất's page, Sửa đơn hàng), 1,280 centred (most detail and edit pages, Tạo phiếu nhập, Tạo phiếu xuất, Lãi lỗ), 896 on the left (Thêm món, Tạo khuyến mãi), 672 (Thêm thương hiệu, điểm bán, nhân sự, thu chi, nhóm món, tuỳ chọn; a sales order's page; Hàng đã xuất). Each wave had set its own; no rule existed.
 - **On a laptop nothing narrows:** at 1,440 px wide the space beside the menu is about 1,100 px, under the cap, so every page fills it. Measured that day at 1,440: every page fits except Lãi lỗ (14 px too wide) and Doanh số (its table 1,120 px in 1,039), which scroll sideways inside their table.
@@ -121,7 +121,16 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 
 ### BR-UI-013 — Page titles: a capital only on the first word, and a create page says "Tạo …"
 
-**Status:** `APPROVED` — owner 2026-10-11, in chat, *"Có"*, to: titles capitalise only the first word ("Tạo đơn vị tính", not "Thêm Đơn Vị Mới"), and a page that creates a record is titled "Tạo" plus what it creates, matching the button (`BR-UI-002`). Not built yet; plan `docs/superpowers/plans/2026-10-11-kho-trang-va-mat-do.md`.
+**Status:** `APPROVED` — owner 2026-10-11, in chat, *"Có"*, to: titles capitalise only the first word ("Tạo đơn vị tính", not "Thêm Đơn Vị Mới"), and a page that creates a record is titled "Tạo" plus what it creates, matching the button (`BR-UI-002`). Built on the branch `feat/no-popups` 2026-10-11: 16 titles renamed, guard `components/ui/page-title.guard.test.ts`.
 
 - Counted 2026-10-11: 19 create pages. 7 capitalise every word ("Tạo Phân Loại Hàng Hoá", "Thêm Quy Đổi Mới", "Thêm Hàng Hóa Mua Vào", "Thêm Đơn Vị Mới", "Thêm Danh Mục Mới", "Thêm Tùy Chọn Mới", "Thêm Món Mới"); 13 start with "Thêm", 4 with "Tạo", and 2 use their own verb ("Ghi khoản thu chi", "Chuyển tiền").
 - Names keep their own capitals (Topping, Voucher, a supplier's name).
+
+### BR-UI-014 — Compact on a computer, thumb-sized on a phone
+
+**Status:** `APPROVED` — owner 2026-10-11 asked for pages that look neat, with readable text, boxes neither too tall nor crammed (*"các ô không bị quá cao hay cũng không bị dồn quá nhiều thông tin"*); a trial went on 8386 that day, and on 2026-10-14 he kept it: *"Làm theo em khuyến nghị và tiếp tục"*. Built on the branch `feat/no-popups` 2026-10-11 (shared button, text box, select, number box and list).
+
+- **On a computer** a box or button is 40 px tall (was 44) and a list row about 45 px (was 53–73). A row with a delete button is no taller than one without.
+- **On a phone** a box or button stays 44 px, a thumb's width.
+- Text size is unchanged: 14 px.
+- A form with few boxes puts them two to a row on a computer and one per row on a phone (`BR-UI-012`).

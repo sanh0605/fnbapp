@@ -77,7 +77,7 @@ export function CashEntryForm({
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
@@ -85,83 +85,87 @@ export function CashEntryForm({
           </div>
         )}
 
-        <div>
-          <DayInput
-            label="Ngày"
-            value={day}
-            onChange={(v) => {
-              setDay(v);
-              setDayError("");
-            }}
-            error={dayError}
-          />
-          <input type="hidden" name="entry_date" value={day} />
-        </div>
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div>
+            <DayInput
+              label="Ngày"
+              value={day}
+              onChange={(v) => {
+                setDay(v);
+                setDayError("");
+              }}
+              error={dayError}
+            />
+            <input type="hidden" name="entry_date" value={day} />
+          </div>
 
-        <Field label="Nhóm thu chi" htmlFor={`${formId}-category_id`} required>
-          <Select
-            id={`${formId}-category_id`}
-            name="category_id"
-            required
-            defaultValue={entry?.category_id ?? ""}
-          >
-            <option value="" disabled>Chọn nhóm</option>
-            {categoryOptions.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </Select>
-        </Field>
-
-        <Field label="Số tiền (đồng)" htmlFor={`${formId}-amount`} required>
-          <MoneyInput
-            id={`${formId}-amount`}
-            // BR-CASH-005: digits-only box that groups thousands itself
-            // as the owner types -- see components/ui/MoneyInput.tsx.
-            name="amount"
-            required
-            defaultValue={entry?.amount}
-          />
-        </Field>
-
-        <Field label="Cách trả" htmlFor={`${formId}-payment_method`}>
-          <Select
-            id={`${formId}-payment_method`}
-            name="payment_method"
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value === "BANK_TRANSFER" ? "BANK_TRANSFER" : "CASH")}
-          >
-            <option value="CASH">Tiền mặt</option>
-            <option value="BANK_TRANSFER">Chuyển khoản</option>
-          </Select>
-        </Field>
-
-        {/* Cash never needs an account -- the field is not rendered at
-            all when it does not apply, not rendered-and-disabled. */}
-        {paymentMethod === "BANK_TRANSFER" && (
-          <Field label="Tài khoản" htmlFor={`${formId}-bank_account_id`} required>
+          <Field label="Nhóm thu chi" htmlFor={`${formId}-category_id`} required>
             <Select
-              id={`${formId}-bank_account_id`}
-              name="bank_account_id"
+              id={`${formId}-category_id`}
+              name="category_id"
               required
-              defaultValue={entry?.bank_account_id ?? ""}
+              defaultValue={entry?.category_id ?? ""}
             >
-              <option value="" disabled>Chọn tài khoản</option>
-              {accountOptions.map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
+              <option value="" disabled>Chọn nhóm</option>
+              {categoryOptions.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </Select>
           </Field>
-        )}
 
-        <Field label="Ghi chú (không bắt buộc)" htmlFor={`${formId}-note`}>
-          <TextInput
-            id={`${formId}-note`}
-            name="note"
-            type="text"
-            defaultValue={entry?.note ?? ""}
-            placeholder="Ví dụ: Tiền điện tháng 9"
-          />
-        </Field>
+          <Field label="Số tiền (đồng)" htmlFor={`${formId}-amount`} required>
+            <MoneyInput
+              id={`${formId}-amount`}
+              // BR-CASH-005: digits-only box that groups thousands itself
+              // as the owner types -- see components/ui/MoneyInput.tsx.
+              name="amount"
+              required
+              defaultValue={entry?.amount}
+            />
+          </Field>
+
+          <Field label="Cách trả" htmlFor={`${formId}-payment_method`}>
+            <Select
+              id={`${formId}-payment_method`}
+              name="payment_method"
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value === "BANK_TRANSFER" ? "BANK_TRANSFER" : "CASH")}
+            >
+              <option value="CASH">Tiền mặt</option>
+              <option value="BANK_TRANSFER">Chuyển khoản</option>
+            </Select>
+          </Field>
+
+          {/* Cash never needs an account -- the field is not rendered at
+              all when it does not apply, not rendered-and-disabled. */}
+          {paymentMethod === "BANK_TRANSFER" && (
+            <Field label="Tài khoản" htmlFor={`${formId}-bank_account_id`} required>
+              <Select
+                id={`${formId}-bank_account_id`}
+                name="bank_account_id"
+                required
+                defaultValue={entry?.bank_account_id ?? ""}
+              >
+                <option value="" disabled>Chọn tài khoản</option>
+                {accountOptions.map((a) => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </Select>
+            </Field>
+          )}
+
+          <div className="md:col-span-2">
+            <Field label="Ghi chú (không bắt buộc)" htmlFor={`${formId}-note`}>
+              <TextInput
+                id={`${formId}-note`}
+                name="note"
+                type="text"
+                defaultValue={entry?.note ?? ""}
+                placeholder="Ví dụ: Tiền điện tháng 9"
+              />
+            </Field>
+          </div>
+        </div>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
           <Button

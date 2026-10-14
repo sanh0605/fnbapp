@@ -39,50 +39,53 @@ export default function EditUserForm({ user, returnTo: rawReturnTo }: EditUserFo
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl shadow-sm border border-border p-6 max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
             {error}
           </div>
         )}
 
-        <Field
-          label="Tên đăng nhập"
-          htmlFor={`${formId}-username`}
-          hint="Tên đăng nhập không thể thay đổi."
-        >
-          <TextInput
-            id={`${formId}-username`}
-            disabled
-            value={user.username}
-          />
-        </Field>
-
-        <Field
-          label="Mật khẩu mới (Để trống nếu không muốn đổi)"
-          htmlFor={`${formId}-password`}
-        >
-          <TextInput
-            id={`${formId}-password`}
-            type="password"
-            name="password"
-            placeholder="******"
-          />
-        </Field>
-
-        <Field label="Quyền hạn" htmlFor={`${formId}-role`} required>
-          <Select
-            id={`${formId}-role`}
-            name="role"
-            required
-            defaultValue={user.role}
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field
+            label="Tên đăng nhập"
+            htmlFor={`${formId}-username`}
+            hint="Tên đăng nhập không thể thay đổi."
           >
-            <option value="STAFF">Nhân viên</option>
-            <option value="MANAGER">Quản lý</option>
-            <option value="ADMIN">Quản trị viên</option>
-          </Select>
-        </Field>
+            <TextInput
+              id={`${formId}-username`}
+              disabled
+              value={user.username}
+            />
+          </Field>
+
+          <Field
+            label="Mật khẩu mới"
+            htmlFor={`${formId}-password`}
+            hint="Để trống nếu không muốn đổi."
+          >
+            <TextInput
+              id={`${formId}-password`}
+              type="password"
+              name="password"
+              placeholder="******"
+            />
+          </Field>
+
+          <Field label="Quyền hạn" htmlFor={`${formId}-role`} required>
+            <Select
+              id={`${formId}-role`}
+              name="role"
+              required
+              defaultValue={user.role}
+            >
+              <option value="STAFF">Nhân viên</option>
+              <option value="MANAGER">Quản lý</option>
+              <option value="ADMIN">Quản trị viên</option>
+            </Select>
+          </Field>
+        </div>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
           <Button

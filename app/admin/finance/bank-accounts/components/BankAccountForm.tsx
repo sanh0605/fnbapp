@@ -42,7 +42,7 @@ export function BankAccountForm({ account, returnTo: rawReturnTo }: BankAccountF
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
@@ -50,34 +50,36 @@ export function BankAccountForm({ account, returnTo: rawReturnTo }: BankAccountF
           </div>
         )}
 
-        <Field label="Tên gợi nhớ" htmlFor={`${formId}-name`} required>
-          <TextInput
-            id={`${formId}-name`}
-            name="name"
-            required
-            defaultValue={account?.name}
-            placeholder="Ví dụ: Vietcombank Sanh"
-          />
-        </Field>
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên gợi nhớ" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              defaultValue={account?.name}
+              placeholder="Ví dụ: Vietcombank Sanh"
+            />
+          </Field>
 
-        <Field label="Ngân hàng" htmlFor={`${formId}-bank_name`}>
-          <TextInput
-            id={`${formId}-bank_name`}
-            name="bank_name"
-            defaultValue={account?.bank_name ?? ""}
-            placeholder="Ví dụ: Vietcombank"
-          />
-        </Field>
+          <Field label="Ngân hàng" htmlFor={`${formId}-bank_name`}>
+            <TextInput
+              id={`${formId}-bank_name`}
+              name="bank_name"
+              defaultValue={account?.bank_name ?? ""}
+              placeholder="Ví dụ: Vietcombank"
+            />
+          </Field>
 
-        <Field label="Số tài khoản" htmlFor={`${formId}-account_number`}>
-          <TextInput
-            id={`${formId}-account_number`}
-            name="account_number"
-            keypad="digits"
-            defaultValue={account?.account_number ?? ""}
-            placeholder="Ví dụ: 0071001234567"
-          />
-        </Field>
+          <Field label="Số tài khoản" htmlFor={`${formId}-account_number`}>
+            <TextInput
+              id={`${formId}-account_number`}
+              name="account_number"
+              keypad="digits"
+              defaultValue={account?.account_number ?? ""}
+              placeholder="Ví dụ: 0071001234567"
+            />
+          </Field>
+        </div>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
           <Button

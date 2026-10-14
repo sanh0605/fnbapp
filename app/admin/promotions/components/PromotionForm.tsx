@@ -218,7 +218,7 @@ export function PromotionForm({
   }).filter(group => group.products.length > 0);
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-4xl shadow-sm">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
           <div role="alert" aria-live="polite" className="bg-danger/10 text-danger text-sm px-4 py-3 rounded-xl border border-danger/20 font-medium">
@@ -226,9 +226,9 @@ export function PromotionForm({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           <div className="col-span-1 md:col-span-2">
-            <Field label="Tên chương trình *" htmlFor={`${formId}-name`}>
+            <Field label="Tên chương trình" htmlFor={`${formId}-name`} required>
               <TextInput
                 id={`${formId}-name`}
                 value={name}
@@ -240,7 +240,7 @@ export function PromotionForm({
           </div>
 
           <div>
-            <Field label="Mã Code (Để nhập thủ công)" htmlFor={`${formId}-code`}>
+            <Field label="Mã khuyến mãi (để nhập tay)" htmlFor={`${formId}-code`}>
               <TextInput
                 id={`${formId}-code`}
                 value={code}
@@ -306,7 +306,7 @@ export function PromotionForm({
           </div>
 
           <div>
-            <Field label="Giá trị giảm giá *" htmlFor={`${formId}-discountValue`}>
+            <Field label="Giá trị giảm giá" htmlFor={`${formId}-discountValue`} required>
               <NumberInput
                 id={`${formId}-discountValue`}
                 decimals={0}
@@ -343,7 +343,7 @@ export function PromotionForm({
           </div>
 
           <div>
-            <Field label="Ngày/Giờ bắt đầu *" htmlFor={`${formId}-startDate`}>
+            <Field label="Bắt đầu lúc" htmlFor={`${formId}-startDate`} required>
               <SaigonDateTimeInput
                 id={`${formId}-startDate`}
                 value={startDate}
@@ -353,7 +353,7 @@ export function PromotionForm({
           </div>
 
           <div>
-            <Field label="Ngày/Giờ kết thúc (Tuỳ chọn)" htmlFor={`${formId}-endDate`}>
+            <Field label="Kết thúc lúc (không bắt buộc)" htmlFor={`${formId}-endDate`}>
               <SaigonDateTimeInput
                 id={`${formId}-endDate`}
                 value={endDate}

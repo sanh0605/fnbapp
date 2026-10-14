@@ -41,7 +41,7 @@ describe("ProductCategoryForm", () => {
   it("renders the category name field on the page directly, not in a dialog", () => {
     render(<ProductCategoryForm returnTo="/admin/products/categories" />);
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.getByLabelText("Tên Danh Mục")).toBeInTheDocument();
+    expect(screen.getByLabelText("Tên nhóm món")).toBeInTheDocument();
   });
 
   it("pre-fills category name when editing", () => {
@@ -51,7 +51,7 @@ describe("ProductCategoryForm", () => {
         returnTo="/admin/products/categories"
       />
     );
-    expect(screen.getByLabelText("Tên Danh Mục")).toHaveValue("Cà phê");
+    expect(screen.getByLabelText("Tên nhóm món")).toHaveValue("Cà phê");
   });
 
   it("'Bỏ' navigates to returnTo without submitting", () => {

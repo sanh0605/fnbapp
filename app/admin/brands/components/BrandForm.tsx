@@ -57,7 +57,7 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl shadow-sm">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
@@ -65,38 +65,40 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
           </div>
         )}
 
-        <Field label="Tên thương hiệu" htmlFor={`${formId}-name`} required>
-          <TextInput
-            id={`${formId}-name`}
-            name="name"
-            required
-            defaultValue={initialData?.name}
-            placeholder="Ví dụ: Phin Di"
-          />
-        </Field>
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên thương hiệu" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              defaultValue={initialData?.name}
+              placeholder="Ví dụ: Phin Di"
+            />
+          </Field>
 
-        <Field label="Mã đơn hàng (3 ký tự)" htmlFor={`${formId}-code`} required>
-          <TextInput
-            id={`${formId}-code`}
-            name="code"
-            maxLength={3}
-            required
-            defaultValue={initialData?.code}
-            placeholder="Ví dụ: PHD"
-          />
-        </Field>
+          <Field label="Mã đơn hàng (3 ký tự)" htmlFor={`${formId}-code`} required>
+            <TextInput
+              id={`${formId}-code`}
+              name="code"
+              maxLength={3}
+              required
+              defaultValue={initialData?.code}
+              placeholder="Ví dụ: PHD"
+            />
+          </Field>
 
-        <Field label="Ngày bắt đầu hoạt động" htmlFor={`${formId}-start-date`}>
-          <CustomDatePicker
-            id={`${formId}-start-date`}
-            selected={selectedDate}
-            onChange={(date: Date | null) => setSelectedDate(date)}
-            dateFormat="dd/MM/yyyy"
-            showTimeSelect={false}
-            placeholderText="DD/MM/YYYY"
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] md:min-h-[40px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-          />
-        </Field>
+          <Field label="Ngày bắt đầu hoạt động" htmlFor={`${formId}-start-date`}>
+            <CustomDatePicker
+              id={`${formId}-start-date`}
+              selected={selectedDate}
+              onChange={(date: Date | null) => setSelectedDate(date)}
+              dateFormat="dd/MM/yyyy"
+              showTimeSelect={false}
+              placeholderText="DD/MM/YYYY"
+              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] md:min-h-[40px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+            />
+          </Field>
+        </div>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
           <Button

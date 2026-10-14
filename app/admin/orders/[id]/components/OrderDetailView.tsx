@@ -6,6 +6,14 @@ import { formatNumber } from "@/lib/shared/format";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/Table";
 import { VoidOrderButton } from "@/app/admin/orders/components/VoidOrderButton";
 import type { OrderDetailV2Result } from "@/app/admin/orders/actions";
 
@@ -27,7 +35,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
   const formatDate = (s: string) => formatDateTime(s);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6">
       <DetailHeader
         backHref={returnTo}
         backLabel="Đơn hàng"
@@ -47,26 +55,59 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
         }
       />
 
-      <div className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
+      <div data-testid="detail-layout" className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start">
+        {/* Left: dishes */}
+        <div data-testid="detail-lines" className="lg:col-span-2 bg-surface-card rounded-card shadow-sm border border-border p-5">
+          {/* Computer: shared Table */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHead>
+                <TableHeaderCell>Món</TableHeaderCell>
+                <TableHeaderCell>Size</TableHeaderCell>
+                <TableHeaderCell>Tuỳ chọn</TableHeaderCell>
+                <TableHeaderCell>SL</TableHeaderCell>
+                <TableHeaderCell>Giảm</TableHeaderCell>
+                <TableHeaderCell>Thành tiền</TableHeaderCell>
+              </TableHead>
+              <TableBody>
+                {currentOrder.lines.map((line, idx) => {
+                  const discount =
+                    (line.promo_discount || 0) +
+                    (line.manual_item_discount || 0) +
+                    (line.order_discount_allocation || 0);
+                  const modifiersText =
+                    line.modifiers && line.modifiers.length > 0
+                      ? line.modifiers
+                          .map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`)
+                          .join(", ")
+                      : "";
 
-        {/* Content */}
-        <div className="p-5 space-y-4">
-          <div className="flex gap-3 items-center">
-            {currentOrder.method === "Chuyen khoan" ? (
-              <Badge variant="neutral">Chuyển khoản</Badge>
-            ) : (
-              <Badge variant="success">Tiền mặt</Badge>
-            )}
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-surface-secondary text-text-secondary">
-              {currentOrder.created_by_name}
-            </span>
-            {currentOrder.status === "VOIDED" && (
-              <Badge variant="danger">Đã hủy</Badge>
-            )}
+                  return (
+                    <TableRow key={idx}>
+                      <TableCell>{line.product_name}</TableCell>
+                      <TableCell>{line.size_name}</TableCell>
+                      <TableCell>{modifiersText}</TableCell>
+                      <TableCell align="right">{line.qty}</TableCell>
+                      <TableCell align="right" tone={discount > 0 ? "negative" : undefined}>
+                        {discount > 0 ? `-${formatNumber(discount)}` : ""}
+                      </TableCell>
+                      <TableCell align="right">
+                        {line.gross_line_total > line.net_line_total && (
+                          <div className="text-[11px] text-text-muted line-through">
+                            {formatNumber(line.gross_line_total)}
+                          </div>
+                        )}
+                        <div>{formatNumber(line.net_line_total)}</div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
 
-          {/* Line items */}
-          <div className="space-y-3">
+          {/* Phone: line cards */}
+          <div data-testid="detail-lines-phone" className="md:hidden space-y-3">
             {currentOrder.lines.map((line, idx) => {
               const gross = line.gross_line_total;
               const net = line.net_line_total;
@@ -101,40 +142,82 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
               );
             })}
           </div>
+        </div>
 
-          {/* Money breakdown */}
-          <div className="bg-page rounded-xl p-3 text-sm space-y-1">
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Tổng gốc</span>
-              <span className="text-text-primary">{formatNumber(currentOrder.gross_total)}</span>
+        {/* Right: side info */}
+        <div data-testid="detail-side" className="space-y-6">
+          {/* Card 1: badges, breakdown, actions */}
+          <div className="bg-surface-card rounded-card shadow-sm border border-border p-5 space-y-4">
+            <div className="flex gap-3 items-center">
+              {currentOrder.method === "Chuyen khoan" ? (
+                <Badge variant="neutral">Chuyển khoản</Badge>
+              ) : (
+                <Badge variant="success">Tiền mặt</Badge>
+              )}
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-surface-secondary text-text-secondary">
+                {currentOrder.created_by_name}
+              </span>
+              {currentOrder.status === "VOIDED" && (
+                <Badge variant="danger">Đã hủy</Badge>
+              )}
             </div>
-            {currentOrder.promo_discount_total > 0 && (
-              <div className="flex justify-between text-success">
-                <span>Khuyến mãi hệ thống</span>
-                <span>-{formatNumber(currentOrder.promo_discount_total)}</span>
+
+            {/* Money breakdown */}
+            <div className="bg-page rounded-xl p-3 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span className="text-text-secondary">Tổng gốc</span>
+                <span className="text-text-primary">{formatNumber(currentOrder.gross_total)}</span>
               </div>
-            )}
-            {currentOrder.manual_item_discount_total > 0 && (
-              <div className="flex justify-between text-danger">
-                <span>Giảm thủ công từng món</span>
-                <span>-{formatNumber(currentOrder.manual_item_discount_total)}</span>
+              {currentOrder.promo_discount_total > 0 && (
+                <div className="flex justify-between text-success">
+                  <span>Khuyến mãi hệ thống</span>
+                  <span>-{formatNumber(currentOrder.promo_discount_total)}</span>
+                </div>
+              )}
+              {currentOrder.manual_item_discount_total > 0 && (
+                <div className="flex justify-between text-danger">
+                  <span>Giảm thủ công từng món</span>
+                  <span>-{formatNumber(currentOrder.manual_item_discount_total)}</span>
+                </div>
+              )}
+              {currentOrder.manual_order_discount > 0 && (
+                <div className="flex justify-between text-danger">
+                  <span>Giảm cả đơn</span>
+                  <span>-{formatNumber(currentOrder.manual_order_discount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-lg font-bold pt-1 border-t border-border">
+                <span className="text-text-primary">Khách trả</span>
+                <span className="text-primary">{formatNumber(currentOrder.net_total)}</span>
               </div>
-            )}
-            {currentOrder.manual_order_discount > 0 && (
-              <div className="flex justify-between text-danger">
-                <span>Giảm cả đơn</span>
-                <span>-{formatNumber(currentOrder.manual_order_discount)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-lg font-bold pt-1 border-t border-border">
-              <span className="text-text-primary">Khách trả</span>
-              <span className="text-primary">{formatNumber(currentOrder.net_total)}</span>
             </div>
+
+            {/* Actions for COMPLETED order */}
+            {currentOrder.status === "COMPLETED" && (
+              <div className="flex gap-3">
+                <Button
+                  href={`/admin/orders/${encodeURIComponent(currentOrder.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`}
+                  variant="secondary"
+                  className="flex-1"
+                >
+                  Sửa đơn
+                </Button>
+                <VoidOrderButton
+                  orderId={currentOrder.id}
+                  orderNo={orderNo}
+                  className="flex-1"
+                  onVoided={() => {
+                    router.push(returnTo);
+                    router.refresh();
+                  }}
+                />
+              </div>
+            )}
           </div>
 
-          {/* Timeline */}
+          {/* Card 2: Timeline */}
           {timeline.length > 1 && (
-            <div>
+            <div className="bg-surface-card rounded-card shadow-sm border border-border p-5">
               <h2 className="text-sm font-bold text-text-secondary mb-2">Lịch sử phiên bản ({timeline.length})</h2>
               <div className="space-y-1.5">
                 {timeline.map((v) => (
@@ -160,9 +243,9 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
             </div>
           )}
 
-          {/* Events */}
+          {/* Card 3: Events */}
           {events.length > 0 && (
-            <div>
+            <div className="bg-surface-card rounded-card shadow-sm border border-border p-5">
               <h2 className="text-sm font-bold text-text-secondary mb-2">Sự kiện ({events.length})</h2>
               <div className="space-y-1.5">
                 {events.map((e) => (
@@ -180,30 +263,6 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
             </div>
           )}
         </div>
-
-        {/* Actions footer */}
-        {currentOrder.status === "COMPLETED" && (
-          <div className="border-t border-border shrink-0">
-            <div className="px-5 py-4 flex gap-3 bg-surface-card">
-              <Button
-                href={`/admin/orders/${encodeURIComponent(currentOrder.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`}
-                variant="secondary"
-                className="flex-1"
-              >
-                Sửa đơn
-              </Button>
-              <VoidOrderButton
-                orderId={currentOrder.id}
-                orderNo={orderNo}
-                className="flex-1"
-                onVoided={() => {
-                  router.push(returnTo);
-                  router.refresh();
-                }}
-              />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

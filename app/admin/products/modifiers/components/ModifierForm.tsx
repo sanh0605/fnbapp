@@ -59,7 +59,7 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form action={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
@@ -67,7 +67,7 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           <Field label="Nhóm tuỳ chọn" htmlFor={`${formId}-groupName`}>
             <Select
               id={`${formId}-groupName`}
@@ -80,6 +80,7 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
               <option value="Chọn Đá">Chọn Đá</option>
             </Select>
           </Field>
+
           <Field label="Giá thêm" htmlFor={`${formId}-price`}>
             <NumberInput
               id={`${formId}-price`}
@@ -92,17 +93,17 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
               onValueChange={(v) => setPrice(v === null ? "" : String(v))}
             />
           </Field>
-        </div>
 
-        <Field label="Tên tuỳ chọn" htmlFor={`${formId}-name`} required>
-          <TextInput
-            id={`${formId}-name`}
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            example="Trân châu trắng"
-          />
-        </Field>
+          <Field label="Tên tuỳ chọn" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              example="Trân châu trắng"
+            />
+          </Field>
+        </div>
 
         {/* BR-CATALOG-003.
             Its own labelled section, visually separated -- this switch

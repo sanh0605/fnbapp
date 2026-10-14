@@ -84,7 +84,7 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
@@ -92,71 +92,75 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
           </div>
         )}
 
-        <Field label="Tên nhóm" htmlFor={`${formId}-name`} required>
-          <TextInput
-            id={`${formId}-name`}
-            name="name"
-            required
-            defaultValue={category?.name}
-            placeholder="Ví dụ: Vận hành"
-          />
-        </Field>
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên nhóm" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              defaultValue={category?.name}
+              placeholder="Ví dụ: Vận hành"
+            />
+          </Field>
 
-        <Field
-          label="Bên"
-          htmlFor={`${formId}-kind`}
-          hint={isKindLocked ? "Đã có dòng sổ — không đổi được bên" : undefined}
-        >
-          <Select
-            id={`${formId}-kind`}
-            name={isKindLocked ? undefined : "kind"}
-            disabled={isKindLocked}
-            value={kind}
-            onChange={(e) => {
-              const next = e.target.value as "EXPENSE" | "INCOME";
-              setKind(next);
-              if (next !== "INCOME") setIsSalesRevenue(false);
-            }}
+          <Field
+            label="Bên"
+            htmlFor={`${formId}-kind`}
+            hint={isKindLocked ? "Đã có dòng sổ — không đổi được bên" : undefined}
           >
-            <option value="EXPENSE">Chi</option>
-            <option value="INCOME">Thu</option>
-          </Select>
-          {isKindLocked && (
-            <input type="hidden" name="kind" value={category!.kind} />
-          )}
-        </Field>
+            <Select
+              id={`${formId}-kind`}
+              name={isKindLocked ? undefined : "kind"}
+              disabled={isKindLocked}
+              value={kind}
+              onChange={(e) => {
+                const next = e.target.value as "EXPENSE" | "INCOME";
+                setKind(next);
+                if (next !== "INCOME") setIsSalesRevenue(false);
+              }}
+            >
+              <option value="EXPENSE">Chi</option>
+              <option value="INCOME">Thu</option>
+            </Select>
+            {isKindLocked && (
+              <input type="hidden" name="kind" value={category!.kind} />
+            )}
+          </Field>
 
-        <label className="flex items-center gap-2 text-sm text-text-primary">
-          <input
-            type="checkbox"
-            name="affects_pnl"
-            checked={affectsPnl}
-            onChange={(e) => {
-              setAffectsPnl(e.target.checked);
-              if (!e.target.checked) setIsSalesRevenue(false);
-            }}
-            className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
-          />
-          Tính vào lãi lỗ
-        </label>
-
-        {canBeSalesRevenue && (
-          <div>
+          <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm text-text-primary">
               <input
                 type="checkbox"
-                name="is_sales_revenue"
-                checked={isSalesRevenue}
-                onChange={(e) => setIsSalesRevenue(e.target.checked)}
+                name="affects_pnl"
+                checked={affectsPnl}
+                onChange={(e) => {
+                  setAffectsPnl(e.target.checked);
+                  if (!e.target.checked) setIsSalesRevenue(false);
+                }}
                 className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
               />
-              Tính là doanh thu bán hàng
+              Tính vào lãi lỗ
             </label>
-            <p className="mt-1 text-xs text-text-muted">
-              Đánh dấu khi tiền của nhóm này là tiền bán hàng ghi tay. Trang Báo cáo tài chính cộng vào dòng Doanh thu thay vì Thu khác.
-            </p>
+
+            {canBeSalesRevenue && (
+              <div>
+                <label className="flex items-center gap-2 text-sm text-text-primary">
+                  <input
+                    type="checkbox"
+                    name="is_sales_revenue"
+                    checked={isSalesRevenue}
+                    onChange={(e) => setIsSalesRevenue(e.target.checked)}
+                    className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
+                  />
+                  Tính là doanh thu bán hàng
+                </label>
+                <p className="mt-1 text-xs text-text-muted">
+                  Đánh dấu khi tiền của nhóm này là tiền bán hàng ghi tay. Trang Báo cáo tài chính cộng vào dòng Doanh thu thay vì Thu khác.
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
           <Button

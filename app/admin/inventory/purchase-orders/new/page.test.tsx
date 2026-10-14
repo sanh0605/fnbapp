@@ -130,10 +130,10 @@ describe("NewPurchaseOrderPage copyFrom (BR-INV-016)", () => {
     );
   });
 
-  it("the page is as wide as the slip's detail page, for the two-column form (owner 2026-10-10)", async () => {
+  it("the page fills the admin frame like the slip's detail page, for the two-column form (owner 2026-10-10, BR-UI-012)", async () => {
     const tree = (await NewPurchaseOrderPage({})) as ReactElement<{ className?: string }>;
-    expect(tree.props.className).toContain("max-w-screen-xl");
-    expect(tree.props.className).not.toContain("max-w-5xl");
+    expect(tree.props.className).toContain("w-full");
+    expect(tree.props.className).not.toContain("max-w-");
   });
 
   it("without copyFrom parameter it renders normal form with no notices", async () => {

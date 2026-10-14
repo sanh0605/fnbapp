@@ -137,7 +137,7 @@ describe("PromotionForm", () => {
       />
     );
     expect(screen.getByLabelText("Tên chương trình *")).toHaveValue("Khuyến mãi hè");
-    expect(screen.getByLabelText("Mã Code (Để nhập thủ công)")).toHaveValue("SUMMER");
+    expect(screen.getByLabelText("Mã khuyến mãi (để nhập tay)")).toHaveValue("SUMMER");
   });
 
   it("after a successful save, goes to returnTo and refreshes", async () => {
@@ -194,7 +194,7 @@ describe("PromotionForm", () => {
         />
       );
 
-      const startInput = screen.getByLabelText("Ngày/Giờ bắt đầu *") as HTMLInputElement;
+      const startInput = screen.getByLabelText("Bắt đầu lúc *") as HTMLInputElement;
       // 24-hour Saigon box (dd/MM/yyyy HH:mm), not the browser's 12-hour datetime-local.
       expect(startInput.value).toBe("15/09/2026 06:30");
 

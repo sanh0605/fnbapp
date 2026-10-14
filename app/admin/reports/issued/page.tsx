@@ -2,7 +2,16 @@ import { getIssuedValueReport } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/shared/format";
+import { formatDate } from "@/lib/shared/datetime";
 import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/Table";
 import { ItemCard } from "./ItemCard";
 import { EventCard } from "./EventCard";
 
@@ -78,7 +87,7 @@ export default async function IssuedValueReportPage({
   ];
 
   return (
-    <div className="p-4 max-w-2xl mx-auto space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+    <div className="space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
       <div>
         <PageHeader title="Hàng đã xuất" />
         <p className="text-3xl font-black text-danger -mt-4 mb-1">{formatNumber(report.grandTotal)}đ</p>
@@ -93,7 +102,7 @@ export default async function IssuedValueReportPage({
             key={tab}
             href={tabHref(tab)}
             variant={activeTab === tab ? "primary" : "secondary"}
-            className="flex-1"
+            className="flex-1 md:flex-none"
           >
             {label}
           </Button>
@@ -104,17 +113,45 @@ export default async function IssuedValueReportPage({
         report.items.length === 0 ? (
           <EmptyState title="Chưa có mặt hàng nào được xuất." />
         ) : (
-          <div className="flex flex-col gap-3">
-            {report.items.map(item => (
-              <ItemCard key={item.purchasedItemId} {...item} />
-            ))}
-          </div>
+          <>
+            <div className="md:hidden flex flex-col gap-3">
+              {report.items.map(item => (
+                <ItemCard key={item.purchasedItemId} {...item} />
+              ))}
+            </div>
+            <div className="hidden md:block">
+              <Table>
+                <TableHead>
+                  <TableHeaderCell>Nguyên liệu</TableHeaderCell>
+                  <TableHeaderCell>Đã xuất</TableHeaderCell>
+                  <TableHeaderCell>Giá trị đã xuất</TableHeaderCell>
+                  <TableHeaderCell>Giá trị tồn còn lại</TableHeaderCell>
+                </TableHead>
+                <TableBody>
+                  {report.items.map(item => (
+                    <TableRow key={item.purchasedItemId}>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell align="right">
+                        {formatNumber(item.issuedQuantity, { withDecimals: true })} {item.unitName}
+                      </TableCell>
+                      <TableCell align="right" tone="negative">
+                        {formatNumber(item.issuedValue)}đ
+                      </TableCell>
+                      <TableCell align="right">
+                        {formatNumber(item.closingValue)}đ
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )
       ) : activeTab === "events" ? (
         report.events.length === 0 ? (
           <EmptyState title="Chưa có lần xuất nào." />
         ) : (
-          <div className="flex flex-col gap-3">
+          <>
             {/* BR-DATA-005 (lib/reports/display-rounding.ts): each card is
                 rounded from its own exact value, not summed from rounded
                 parts -- cộng các thẻ dưới đây có thể lệch vài đồng so với
@@ -122,27 +159,85 @@ export default async function IssuedValueReportPage({
             <p className="text-xs text-text-secondary -mt-1">
               Mỗi thẻ làm tròn riêng theo số thật của nó -- cộng tay các thẻ có thể lệch vài đồng so với tổng ở trên, số ở trên mới là số đúng.
             </p>
-            {report.events.map(event => (
-              <EventCard
-                key={event.key}
-                kind={event.kind}
-                label={event.label}
-                at={event.at}
-                itemCount={event.itemCount}
-                value={event.value}
-              />
-            ))}
-          </div>
+            <div className="md:hidden flex flex-col gap-3">
+              {report.events.map(event => (
+                <EventCard
+                  key={event.key}
+                  kind={event.kind}
+                  label={event.label}
+                  at={event.at}
+                  itemCount={event.itemCount}
+                  value={event.value}
+                />
+              ))}
+            </div>
+            <div className="hidden md:block">
+              <Table>
+                <TableHead>
+                  <TableHeaderCell>Loại</TableHeaderCell>
+                  <TableHeaderCell>Ngày</TableHeaderCell>
+                  <TableHeaderCell>Lần xuất</TableHeaderCell>
+                  <TableHeaderCell>Số mặt hàng</TableHeaderCell>
+                  <TableHeaderCell>Giá trị xuất</TableHeaderCell>
+                </TableHead>
+                <TableBody>
+                  {report.events.map(event => (
+                    <TableRow key={event.key}>
+                      <TableCell>
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                            event.kind === "STOCKTAKE"
+                              ? "bg-primary-soft text-primary"
+                              : "bg-warning/10 text-warning"
+                          }`}
+                        >
+                          {event.kind === "STOCKTAKE" ? "Kiểm kê" : "Phiếu xuất"}
+                        </span>
+                      </TableCell>
+                      <TableCell>{formatDate(event.at)}</TableCell>
+                      <TableCell>{event.label}</TableCell>
+                      <TableCell align="right">{event.itemCount}</TableCell>
+                      <TableCell align="right" tone="negative">{formatNumber(event.value)}đ</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )
       ) : report.months.length === 0 ? (
         <EmptyState title="Chưa có dữ liệu theo tháng." />
       ) : (
-        <div className="flex flex-col gap-3">
+        <>
           <MonthNotice />
-          {report.months.map(month => (
-            <MonthCard key={month.yearMonth} yearMonth={month.yearMonth} value={month.value} />
-          ))}
-        </div>
+          <div className="md:hidden flex flex-col gap-3">
+            {report.months.map(month => (
+              <MonthCard key={month.yearMonth} yearMonth={month.yearMonth} value={month.value} />
+            ))}
+          </div>
+          <div className="hidden md:block">
+            <Table>
+              <TableHead>
+                <TableHeaderCell>Tháng</TableHeaderCell>
+                <TableHeaderCell>Giá trị</TableHeaderCell>
+              </TableHead>
+              <TableBody>
+                {report.months.map(month => {
+                  const [year, monthNum] = month.yearMonth.split("-");
+                  const isZero = month.value === 0;
+                  return (
+                    <TableRow key={month.yearMonth}>
+                      <TableCell>Tháng {Number(monthNum)}/{year}</TableCell>
+                      <TableCell align="right" tone={isZero ? "muted" : "negative"}>
+                        {formatNumber(month.value)}đ
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
     </div>
   );

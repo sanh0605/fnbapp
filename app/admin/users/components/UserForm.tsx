@@ -38,42 +38,44 @@ export function UserForm({ returnTo: rawReturnTo }: UserFormProps = {}) {
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl shadow-sm">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form id="user-form" onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
             {error}
           </div>
         )}
-        <Field label="Tên đăng nhập" htmlFor={`${formId}-username`} required>
-          <TextInput
-            id={`${formId}-username`}
-            name="username"
-            required
-            placeholder="Ví dụ: nhanvien01"
-          />
-        </Field>
-        <Field label="Mật khẩu" htmlFor={`${formId}-password`} required>
-          <TextInput
-            id={`${formId}-password`}
-            type="password"
-            name="password"
-            required
-            placeholder="******"
-          />
-        </Field>
-        <Field label="Quyền hạn" htmlFor={`${formId}-role`} required>
-          <Select
-            id={`${formId}-role`}
-            name="role"
-            required
-            defaultValue="STAFF"
-          >
-            <option value="STAFF">Nhân viên</option>
-            <option value="MANAGER">Quản lý</option>
-            <option value="ADMIN">Quản trị viên</option>
-          </Select>
-        </Field>
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên đăng nhập" htmlFor={`${formId}-username`} required>
+            <TextInput
+              id={`${formId}-username`}
+              name="username"
+              required
+              placeholder="Ví dụ: nhanvien01"
+            />
+          </Field>
+          <Field label="Mật khẩu" htmlFor={`${formId}-password`} required>
+            <TextInput
+              id={`${formId}-password`}
+              type="password"
+              name="password"
+              required
+              placeholder="******"
+            />
+          </Field>
+          <Field label="Quyền hạn" htmlFor={`${formId}-role`} required>
+            <Select
+              id={`${formId}-role`}
+              name="role"
+              required
+              defaultValue="STAFF"
+            >
+              <option value="STAFF">Nhân viên</option>
+              <option value="MANAGER">Quản lý</option>
+              <option value="ADMIN">Quản trị viên</option>
+            </Select>
+          </Field>
+        </div>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
           <Button
             type="button"

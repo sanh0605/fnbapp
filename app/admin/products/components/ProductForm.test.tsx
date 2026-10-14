@@ -117,11 +117,11 @@ describe("ProductForm -- price field for a topping linked to an ACTIVE modifier"
 });
 
 describe("ProductForm -- buttons (BR-UI-005, spec 2.1)", () => {
-  it('"Xoá Size" removes a size, so it wears the Xoá look: red outline, no class overrides', async () => {
+  it('"Xoá size" removes a size, so it wears the Xoá look: red outline, no class overrides', async () => {
     const container = await renderTracked(<ProductForm categories={CATEGORIES} />);
-    const add = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.includes("Thêm Size"))!;
+    const add = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.includes("Thêm size"))!;
     await fireClick(add);
-    const remove = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Xoá Size")!;
+    const remove = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Xoá size")!;
     expect(remove).toBeTruthy();
     const classes = remove.className.split(/\s+/);
     expect(classes).toContain("border-danger");

@@ -116,3 +116,36 @@ describe("OrderDetailView", () => {
     expect(screen.getByText("Đã hủy")).toBeDefined();
   });
 });
+
+describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
+  it("fills the frame: no narrower box of its own", () => {
+    const { container } = render(<OrderDetailView detail={makeDetail()} brands={[]} returnTo="/admin/orders" />);
+    for (const el of Array.from(container.querySelectorAll("[class]"))) {
+      expect(el.getAttribute("class")).not.toMatch(/(?:^|\s)max-w-(?:[2-7]xl|screen-)/);
+    }
+  });
+
+  it("lays the dishes on the left two thirds and the money on the right", () => {
+    render(<OrderDetailView detail={makeDetail()} brands={[]} returnTo="/admin/orders" />);
+    const layout = screen.getByTestId("detail-layout");
+    expect(layout.className).toContain("grid-cols-1");
+    expect(layout.className).toContain("lg:grid-cols-3");
+    const lines = screen.getByTestId("detail-lines");
+    expect(lines.className).toContain("lg:col-span-2");
+    const side = screen.getByTestId("detail-side");
+    expect(side.textContent).toContain("Khách trả");
+    expect(side.textContent).toContain("Sửa đơn");
+  });
+
+  it("shows the dishes as a table on a computer and as cards on a phone", () => {
+    render(<OrderDetailView detail={makeDetail()} brands={[]} returnTo="/admin/orders" />);
+    const table = screen.getByRole("table");
+    expect(table.closest(".hidden.md\\:block")).not.toBeNull();
+    const headers = screen.getAllByRole("columnheader").map(h => h.textContent);
+    expect(headers).toEqual(expect.arrayContaining(["Món", "Size", "SL", "Thành tiền"]));
+    expect(table.textContent).toContain("Cà phê sữa");
+    const phone = screen.getByTestId("detail-lines-phone");
+    expect(phone.className).toContain("md:hidden");
+    expect(phone.textContent).toContain("Cà phê sữa");
+  });
+});

@@ -6,7 +6,7 @@ export interface DetailFrameProps {
 
 export function DetailFrame({ children }: DetailFrameProps): JSX.Element {
   return (
-    <div className="max-w-screen-xl mx-auto w-full space-y-6 pb-20">
+    <div className="w-full space-y-6 pb-20">
       {children}
     </div>
   );

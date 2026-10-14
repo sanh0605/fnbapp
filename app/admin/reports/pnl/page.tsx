@@ -39,7 +39,7 @@ export default async function ProfitAndLossPage({
     : "Cả quán · đơn vị: đồng · tháng theo giờ Việt Nam";
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:p-6">
+    <div className="space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
       <PageHeader
         title="Lãi lỗ"
         subtitle={subtitle}

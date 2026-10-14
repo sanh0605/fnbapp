@@ -137,45 +137,45 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
   };
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-4xl shadow-sm">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form id={isEdit ? `editProd-${initialData.id}` : "addProd"} onSubmit={handleSubmit} className="space-y-6">
-        {/* THÔNG TIN CHUNG */}
-        <div className="bg-page p-5 rounded-xl border border-border">
-          <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-            <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
-            Thông tin cơ bản
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Tên món" htmlFor={`${formId}-name`} required>
-              <TextInput
-                id={`${formId}-name`}
-                required
-                value={name}
-                onChange={e => setName(e.target.value)}
-                example="Cà phê sữa đá"
-              />
-            </Field>
-            <Field label="Nhóm món" htmlFor={`${formId}-category-id`} required>
-              <Select
-                id={`${formId}-category-id`}
-                required
-                value={categoryId}
-                onChange={e => setCategoryId(e.target.value)}
+        <div data-testid="form-layout" className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:items-start">
+          {/* THÔNG TIN CHUNG */}
+          <div className="bg-page p-5 rounded-xl border border-border">
+            <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
+              <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
+              Thông tin cơ bản
+            </h3>
+            <div className="grid grid-cols-1 gap-4">
+              <Field label="Tên món" htmlFor={`${formId}-name`} required>
+                <TextInput
+                  id={`${formId}-name`}
+                  required
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  example="Cà phê sữa đá"
+                />
+              </Field>
+              <Field label="Nhóm món" htmlFor={`${formId}-category-id`} required>
+                <Select
+                  id={`${formId}-category-id`}
+                  required
+                  value={categoryId}
+                  onChange={e => setCategoryId(e.target.value)}
+                >
+                  <option value="">-- Chọn nhóm --</option>
+                  {categories.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <div className="mt-4 pt-4 border-t border-border">
+              <Field
+                label="Ngày áp dụng giá (không bắt buộc)"
+                htmlFor={`${formId}-effective-date`}
+                hint="Bỏ trống hệ thống sẽ lấy thời gian hiện tại. Dành cho việc cập nhật lịch sử bán hàng cũ."
               >
-                <option value="">-- Chọn nhóm --</option>
-                {categories.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </Select>
-            </Field>
-          </div>
-          <div className="mt-4 pt-4 border-t border-border">
-            <Field
-              label="Ngày áp dụng giá (Tuỳ chọn)"
-              htmlFor={`${formId}-effective-date`}
-              hint="Bỏ trống hệ thống sẽ lấy thời gian hiện tại. Dành cho việc cập nhật lịch sử bán hàng cũ."
-            >
-              <div className="w-full md:w-1/2">
                 <CustomDatePicker
                   id={`${formId}-effective-date`}
                   name="effective_date"
@@ -183,73 +183,73 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
                   onChange={(date) => setEffectiveDate(date)}
                   placeholderText="dd/mm/yyyy hh:mm:ss"
                 />
-              </div>
-            </Field>
-          </div>
-        </div>
-
-        {/* VARIANTS */}
-        <div className="bg-page p-5 rounded-xl border border-border">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-              <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
-              Các size
-            </h3>
-            <Button variant="secondary" type="button" onClick={addVariant} className="min-h-[44px] md:min-h-[40px]">
-              <Plus className="w-4 h-4 mr-1"/> Thêm Size
-            </Button>
+              </Field>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {variants.map((variant, vIdx) => {
-              const variantRowId = `${formId}-variant-${vIdx}`;
-              return (
-                <div key={vIdx} className="bg-surface-card p-4 border border-border rounded-xl flex flex-col sm:flex-row gap-4 sm:items-end">
-                  <div className="flex-1">
-                    <Field label="Tên size" htmlFor={`${variantRowId}-size-name`} required>
-                      <TextInput
-                        id={`${variantRowId}-size-name`}
-                        required
-                        value={variant.size_name}
-                        onChange={e => updateVariant(vIdx, "size_name", e.target.value)}
-                        example="Size M"
-                      />
-                    </Field>
+          {/* VARIANTS */}
+          <div className="bg-page p-5 rounded-xl border border-border">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
+                Các size
+              </h3>
+              <Button variant="secondary" type="button" onClick={addVariant} className="min-h-[44px] md:min-h-[40px]">
+                <Plus className="w-4 h-4 mr-1"/> Thêm size
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {variants.map((variant, vIdx) => {
+                const variantRowId = `${formId}-variant-${vIdx}`;
+                return (
+                  <div key={vIdx} className="bg-surface-card p-4 border border-border rounded-xl flex flex-col sm:flex-row gap-4 sm:items-end">
+                    <div className="flex-1">
+                      <Field label="Tên size" htmlFor={`${variantRowId}-size-name`} required>
+                        <TextInput
+                          id={`${variantRowId}-size-name`}
+                          required
+                          value={variant.size_name}
+                          onChange={e => updateVariant(vIdx, "size_name", e.target.value)}
+                          example="Size M"
+                        />
+                      </Field>
+                    </div>
+                    <div className="flex-1">
+                      <Field label="Giá bán" htmlFor={`${variantRowId}-price`}>
+                        <NumberInput
+                          id={`${variantRowId}-price`}
+                          decimals={0}
+                          unit="đ"
+                          min={0}
+                          required
+                          example="25,000"
+                          disabled={priceReadOnly}
+                          hint={priceReadOnly ? "Giá này đặt ở màn hình Topping & Tuỳ chọn." : undefined}
+                          error={priceErrors[vIdx]}
+                          value={
+                            variant.price === "" || variant.price === null || variant.price === undefined
+                              ? null
+                              : Number(variant.price)
+                          }
+                          onValueChange={v => updateVariant(vIdx, "price", v === null ? "" : v)}
+                        />
+                      </Field>
+                    </div>
+                    {variants.length > 1 && (
+                      <Button
+                        variant="delete"
+                        type="button"
+                        className="self-end sm:self-auto"
+                        onClick={() => removeVariant(vIdx)}
+                      >
+                        Xoá size
+                      </Button>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <Field label="Giá bán" htmlFor={`${variantRowId}-price`}>
-                      <NumberInput
-                        id={`${variantRowId}-price`}
-                        decimals={0}
-                        unit="đ"
-                        min={0}
-                        required
-                        example="25,000"
-                        disabled={priceReadOnly}
-                        hint={priceReadOnly ? "Giá này đặt ở màn hình Topping & Tuỳ chọn." : undefined}
-                        error={priceErrors[vIdx]}
-                        value={
-                          variant.price === "" || variant.price === null || variant.price === undefined
-                            ? null
-                            : Number(variant.price)
-                        }
-                        onValueChange={v => updateVariant(vIdx, "price", v === null ? "" : v)}
-                      />
-                    </Field>
-                  </div>
-                  {variants.length > 1 && (
-                    <Button
-                      variant="delete"
-                      type="button"
-                      className="self-end sm:self-auto"
-                      onClick={() => removeVariant(vIdx)}
-                    >
-                      Xoá Size
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
 

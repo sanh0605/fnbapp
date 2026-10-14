@@ -345,7 +345,7 @@ export default async function SalesReportPage({
 
         {/* Desktop Grid View (>= 768px) */}
         <div className="hidden md:block overflow-x-auto table-mobile-scroll pb-2">
-          <div className="min-w-[1120px] space-y-1">
+          <div className="min-w-[960px] space-y-1">
             {/* Header: Hours */}
             <div className="flex items-center">
               <div className="w-16 shrink-0 text-xs text-text-muted font-bold text-center">Thứ</div>

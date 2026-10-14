@@ -40,22 +40,24 @@ export function ProductCategoryForm({ initialData, returnTo: rawReturnTo }: Prod
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form action={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
             {error}
           </div>
         )}
-        <Field label="Tên Danh Mục" htmlFor={`${formId}-name`}>
-          <TextInput
-            id={`${formId}-name`}
-            name="name"
-            required
-            defaultValue={initialData?.name}
-            example="Cà phê"
-          />
-        </Field>
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên nhóm món" htmlFor={`${formId}-name`}>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              defaultValue={initialData?.name}
+              example="Cà phê"
+            />
+          </Field>
+        </div>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
           <Button
             type="button"
