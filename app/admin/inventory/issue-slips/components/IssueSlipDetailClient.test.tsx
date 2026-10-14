@@ -121,6 +121,13 @@ describe("IssueSlipDetailClient", () => {
     render(<IssueSlipDetailClient detail={detailLocked} items={mockItems} />);
     expect(screen.queryByRole("button", { name: "Chỉnh sửa" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Huỷ phiếu" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Huỷ phiếu" })).not.toBeInTheDocument();
+  });
+
+  it("Huỷ phiếu links to the cancel page", () => {
+    render(<IssueSlipDetailClient detail={defaultDetail} items={mockItems} />);
+    const link = screen.getByRole("link", { name: "Huỷ phiếu" });
+    expect(link).toHaveAttribute("href", "/admin/inventory/issue-slips/ISL-00076/cancel");
   });
 
   it("tick 1 dòng thì nút đổi chữ", async () => {
@@ -154,7 +161,7 @@ describe("IssueSlipDetailClient", () => {
     expect(within(table).getByText("1,000 ml")).toBeInTheDocument();
   });
 
-  it("bỏ hết dòng thì hiện câu hỏi huỷ", async () => {
+  it("bỏ hết dòng thì hiện câu hỏi huỷ với nút Có dẫn sang trang huỷ", async () => {
     render(<IssueSlipDetailClient detail={defaultDetail} items={mockItems} />);
     fireEvent.click(screen.getByRole("button", { name: "Chỉnh sửa" }));
 
@@ -164,8 +171,13 @@ describe("IssueSlipDetailClient", () => {
     
     fireEvent.click(screen.getByRole("button", { name: "Xoá 1 dòng đã chọn" }));
     
-    expect(screen.getByRole("dialog", { name: "Phiếu không còn dòng" })).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: "Phiếu không còn dòng" });
+    expect(dialog).toBeInTheDocument();
     expect(screen.getByText(/Phiếu không còn dòng nào\. Huỷ phiếu này\?/)).toBeInTheDocument();
+    expect(within(dialog).getByRole("link", { name: "Có" })).toHaveAttribute(
+      "href",
+      "/admin/inventory/issue-slips/ISL-00076/cancel"
+    );
   });
 
   it("tick 1 dòng xoá thì tên vẫn hiển thị trên trang", async () => {

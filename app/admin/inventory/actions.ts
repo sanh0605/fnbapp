@@ -32,8 +32,8 @@ export async function addItemCategory(formData: FormData): Promise<ActionRespons
     revalidateTag(getCacheTag("Item_Categories"));
     revalidatePath("/admin/inventory/categories");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -45,17 +45,26 @@ export async function updateItemCategory(formData: FormData): Promise<ActionResp
   const name = formData.get("name") as string;
   const system_type = formData.get("system_type") as string;
 
+  if (!name?.trim()) return fail("Vui lòng nhập tên loại");
+
   try {
     const existingCategories = (await findAll("Item_Categories")) as any[];
     const conflict = findDuplicateActiveName(existingCategories, name, id);
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
+    // Past Giá vốn follows the category's system_type; changing it would re-cost issued stock of closed months (cogs.md).
+    if (existingCategories.find(c => c.id === id)?.system_type !== system_type) {
+      const itemIds = ((await findAll("Purchased_Items")) as any[]).filter(p => p.item_category_id === id).map(p => p.id);
+      const issued = itemIds.length > 0 && (await findAllWhere("Stock_Issues", { in: { purchased_item_id: itemIds } })).length > 0;
+      if (issued) return fail("Loại này đã có hàng xuất kho. Đổi sang loại khác sẽ làm sai giá vốn các tháng trước.");
+    }
+
     await update("Item_Categories", id, { name, system_type });
     revalidateTag(getCacheTag("Item_Categories"));
     revalidatePath("/admin/inventory/categories");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -136,8 +145,8 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
     revalidatePath("/admin/inventory/items");
     revalidatePath("/admin/inventory/conversions");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -214,8 +223,8 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
     revalidatePath("/admin/inventory/items");
     revalidatePath("/admin/inventory/conversions");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -229,8 +238,8 @@ export async function deletePurchasedItem(formData: FormData): Promise<ActionRes
     await remove("Purchased_Items", id);
     revalidatePath("/admin/inventory/items");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -262,8 +271,8 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
     });
     revalidatePath("/admin/inventory/conversions");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -299,8 +308,8 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
     });
     revalidatePath("/admin/inventory/conversions");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -314,8 +323,8 @@ export async function deleteConversion(formData: FormData): Promise<ActionRespon
     await remove("UOM_Conversions", id);
     revalidatePath("/admin/inventory/conversions");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -345,8 +354,8 @@ export async function addUnit(formData: FormData): Promise<ActionResponse> {
     revalidateTag(getCacheTag("Units"));
     revalidatePath("/admin/inventory/units");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -368,8 +377,8 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
     revalidateTag(getCacheTag("Units"));
     revalidatePath("/admin/inventory/units");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 

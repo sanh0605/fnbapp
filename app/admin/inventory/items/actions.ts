@@ -32,6 +32,9 @@ import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/
 
 const SHEET = "Purchased_Items";
 const PATH = "/admin/inventory/items";
+const RATE_REFUSAL = "Hệ số quy đổi phải là số lớn hơn 0.";
+const hasBadRate = (units: Array<{ name?: string; conversion_rate?: unknown }>) =>
+  units.some(u => u.name && !(Number(u.conversion_rate) > 0 && Number.isFinite(Number(u.conversion_rate))));
 
 export async function getItemsData(): Promise<{
   categories: DBItemCategory[];
@@ -122,6 +125,8 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
   if (!name || !item_category_id) return fail("Vui lòng nhập Tên và chọn Phân loại");
 
   try {
+    if (unitsJson && base_unit && hasBadRate(JSON.parse(unitsJson))) return fail(RATE_REFUSAL);
+
     // Batch 1, section A2: the app-level half of the duplicate-name guard --
     // the database index (0065_duplicate_name_guard.sql) is what actually
     // stops it, this is what turns that into a message naming the row.
@@ -252,6 +257,16 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
     // write; refuse and ask both leave the database untouched.
     const itemCategories = (await findAll("Item_Categories")) as Array<{ id: string; system_type?: string }>;
     const systemType = itemCategories.find(c => c.id === item_category_id)?.system_type ?? null;
+
+    // Past Giá vốn counts an item's issues only while it is costed; changing that state either way would add or drop them from closed months (cogs.md).
+    const current = (existingItems as any[]).find(p => p.id === id);
+    if (current) {
+      const wasCosted = itemCategories.find(c => c.id === current.item_category_id)?.system_type !== "EQUIPMENT" && current.is_non_inventory !== true;
+      const willBeCosted = systemType !== "EQUIPMENT" && !is_non_inventory;
+      if (wasCosted !== willBeCosted && (await findAllWhere("Stock_Issues", { eq: { purchased_item_id: id } })).length > 0) {
+        return fail("Hàng này đã có phiếu xuất. Đổi loại sẽ làm sai giá vốn các tháng trước.");
+      }
+    }
     let assetsToRetire: RemovableAsset[] = [];
     if (systemType !== null && systemType !== "EQUIPMENT") {
       const itemAssets = await findAllWhere<RemovableAsset>("assets", { eq: { purchased_item_id: id } });
@@ -277,6 +292,7 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
     let referencedConversionIds = new Set<string>();
     if (unitsJson && base_unit) {
       newUnits = JSON.parse(unitsJson);
+      if (hasBadRate(newUnits)) return fail(RATE_REFUSAL);
       const allConversions = await findAll("UOM_Conversions");
       poLines = await findAll("Purchase_Order_Lines");
       existingConversions = allConversions.filter((c: any) => c.purchased_item_id === id);

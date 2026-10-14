@@ -2,9 +2,16 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findById = vi.hoisted(() => vi.fn());
+const findAll = vi.hoisted(() => vi.fn().mockResolvedValue([]));
+const fetchPurchaseOrderCancelCheck = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({ blocked: [], assets: [] })
+);
 const getServerSession = vi.hoisted(() => vi.fn().mockResolvedValue({ user: { role: "ADMIN" } }));
 
-vi.mock("@/lib/db/tables", () => ({ findById, findAll: vi.fn().mockResolvedValue([]) }));
+vi.mock("@/lib/db/tables", () => ({ findById, findAll }));
+vi.mock("@/lib/purchasing/purchase-order-cancel-transaction", () => ({
+  fetchPurchaseOrderCancelCheck,
+}));
 vi.mock("next-auth/next", () => ({ getServerSession }));
 vi.mock("@/lib/auth/auth", () => ({ authOptions: {} }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn(), notFound: vi.fn() }));
@@ -123,6 +130,19 @@ describe("purchase order header dates (A10)", () => {
     const tree = await PurchaseOrderDetail({ params: { id: "PO-181" }, searchParams: {} });
     const text = collectText(tree as ReactNode).join("");
     expect(text).toContain("Trả bằng: Tiền mặt");
+  });
+
+  it("shows — instead of N/A when transaction_date is absent", async () => {
+    findById.mockResolvedValue({
+      id: "PO-1",
+      status: "COMPLETED",
+      created_at: "2026-09-14T23:30:00Z",
+      transaction_date: null,
+    });
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-1" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join("");
+    expect(text).toContain("Ngày giao dịch: —");
+    expect(text).not.toContain("N/A");
   });
 });
 
@@ -355,5 +375,88 @@ describe("purchase order asset warning (BR-COGS-008)", () => {
     findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED", created_at: "2026-09-20T00:00:00Z" });
     const tree = await PurchaseOrderDetail({ params: { id: "PO-100" }, searchParams: {} });
     expect(collectText(tree as ReactNode).join("")).not.toContain(warning);
+  });
+});
+
+describe("purchase order supplier name display", () => {
+  beforeEach(() => {
+    findById.mockReset();
+    findAll.mockReset();
+    findAll.mockResolvedValue([]);
+    fetchPurchaseOrderCancelCheck.mockReset();
+    fetchPurchaseOrderCancelCheck.mockResolvedValue({ blocked: [], assets: [] });
+    getServerSession.mockResolvedValue({ user: { role: "ADMIN" } });
+  });
+
+  it("shows the supplier's name looked up from loaded suppliers", async () => {
+    findById.mockResolvedValue({
+      id: "PO-1",
+      supplier_id: "SUP-1",
+      status: "COMPLETED",
+      created_at: "2026-09-15T00:00:00Z",
+    });
+    findAll.mockImplementation(async (table: string) => {
+      if (table === "Suppliers") return [{ id: "SUP-1", name: "Công ty Cà Phê" }];
+      return [];
+    });
+
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-1" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join(" ");
+    expect(text).toContain("Nhà cung cấp");
+    expect(text).toContain("Công ty Cà Phê");
+  });
+
+  it("shows Không rõ when supplier is not found", async () => {
+    findById.mockResolvedValue({
+      id: "PO-1",
+      supplier_id: "SUP-UNKNOWN",
+      status: "COMPLETED",
+      created_at: "2026-09-15T00:00:00Z",
+    });
+
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-1" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join(" ");
+    expect(text).toContain("Nhà cung cấp");
+    expect(text).toContain("Không rõ");
+  });
+});
+
+describe("purchase order stocktake lock (BR-INV-018)", () => {
+  beforeEach(() => {
+    findById.mockReset();
+    findAll.mockReset();
+    findAll.mockResolvedValue([]);
+    fetchPurchaseOrderCancelCheck.mockReset();
+    fetchPurchaseOrderCancelCheck.mockResolvedValue({ blocked: [], assets: [] });
+    getServerSession.mockResolvedValue({ user: { role: "ADMIN" } });
+  });
+
+  it("hides Sửa phiếu and Huỷ phiếu when locked by stocktake, shows Alert with blocker wording, and keeps Nhân bản", async () => {
+    findById.mockResolvedValue({
+      id: "PO-100",
+      status: "COMPLETED",
+      created_at: "2026-08-05T00:00:00Z",
+      transaction_date: "2026-08-05",
+    });
+    fetchPurchaseOrderCancelCheck.mockResolvedValue({
+      blocked: [
+        {
+          code: "STOCKTAKE",
+          stocktakeId: "STK-001",
+          confirmedAt: "2026-08-09T00:00:00Z",
+          orderAt: "2026-08-05T00:00:00Z",
+        },
+      ],
+      assets: [],
+    });
+
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-100" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join(" ");
+
+    expect(text).not.toContain("Sửa phiếu");
+    expect(text).not.toContain("Huỷ phiếu");
+    expect(text).toContain("Nhân bản");
+    expect(text).toContain("nằm trước lần kiểm kê STK-001");
+    expect(text).toContain("nên không huỷ được: lần kiểm kê đã đếm lại hàng trên kệ.");
   });
 });

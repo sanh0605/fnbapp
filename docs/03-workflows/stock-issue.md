@@ -1,11 +1,13 @@
 # Stock issue flow
 
 ```flow-decl
-routes: /admin/inventory/issue-slips, /admin/inventory/issue-slips/new, /admin/inventory/issue-slips/[id]
+routes: /admin/inventory/issue-slips, /admin/inventory/issue-slips/new, /admin/inventory/issue-slips/[id], /admin/inventory/issue-slips/[id]/cancel
 files: lib/stock/manual-issue-transaction.ts
 tables: issue_slips, stock_issues
 brCodes: BR-COGS-005
 ```
+
+**Behaviour change — 2026-10-15 (Kho đợt 1, K3, `BR-DATA-007`):** Huỷ phiếu is its own page, `/admin/inventory/issue-slips/[id]/cancel`, with a required reason; it calls the same `cancelIssueSlip`. A slip already cancelled, or locked by a later stocktake, shows "Phiếu này không huỷ được" and no form. The slip page keeps one yes/no, "Phiếu không còn dòng", whose Có opens the cancel page.
 
 **Reviewed — 2026-09-28:** the stock adjustment screen, its three server actions,
 the adjustment transaction module and the `stock_adjustments` table are

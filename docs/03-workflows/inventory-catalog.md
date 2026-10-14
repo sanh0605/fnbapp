@@ -7,6 +7,8 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004
 ```
 
+**Behaviour change — 2026-10-15 (Kho đợt 1, K2):** an item that already has issue rows cannot move into or out of costing (a category of another kind, or the non-inventory flag), and a category whose items have issue rows cannot change kind. Giá vốn reads each item's current classification, so such a move would rewrite past months (`docs/02-rules/business-rules/cogs.md`). The conversion rate must be above 0. Category errors come back in Vietnamese instead of raw database text.
+
 **Behaviour change — 2026-10-14 (audit A5):** changing a conversion's purchase unit (`updateConversion`) or an item's unit (`updatePurchasedItem`) no longer rewrites the unit label on old purchase-order lines; `update_history` is no longer read, and the "cập nhật lịch sử" box is gone from both forms. Old lines keep the unit they were bought in.
 
 **Behaviour change — 2026-10-14 (audit A6):** `updatePurchasedItem` (`app/admin/inventory/items/actions.ts`) now runs every refusal, including "conversion already used", before its first write, so a refused save writes nothing. The writes still span four tables outside one Postgres function; a failure part-way through the writes themselves can still leave a partial save.

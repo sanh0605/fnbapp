@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { MoneySummary } from "@/components/ui/MoneySummary";
 import { FieldList } from "@/components/ui/detail/FieldList";
+import { Alert } from "@/components/ui/Alert";
+import { fetchPurchaseOrderCancelCheck } from "@/lib/purchasing/purchase-order-cancel-transaction";
+import { describeCancelBlocker } from "@/lib/purchasing/purchase-order-cancel";
 import {
   Table,
   TableHead,
@@ -76,11 +79,26 @@ export default async function PurchaseOrderDetail({
     isDraft,
   });
 
-  const canEditOrder = po.status === "COMPLETED" && isAdmin && !showForm;
+  let stocktakeBlockerMessage: string | null = null;
+  if (!isCancelled) {
+    try {
+      const cancelCheck = await fetchPurchaseOrderCancelCheck(params.id);
+      const stocktakeBlocker = cancelCheck.blocked.find((b) => b.code === "STOCKTAKE");
+      if (stocktakeBlocker) {
+        stocktakeBlockerMessage = describeCancelBlocker(stocktakeBlocker);
+      }
+    } catch {
+      // Ignored if check fails or migration not applied
+    }
+  }
+
+  const isLockedByStocktake = Boolean(stocktakeBlockerMessage);
+  const canEditOrder = po.status === "COMPLETED" && isAdmin && !showForm && !isLockedByStocktake;
   const canCancel =
     (role === "ADMIN" || role === "MANAGER") &&
     !isCancelled &&
-    ((po.status === "COMPLETED" && !showForm) || isDraft);
+    ((po.status === "COMPLETED" && !showForm) || isDraft) &&
+    !isLockedByStocktake;
   const canClone = (role === "ADMIN" || role === "MANAGER") && !showForm;
 
   const actions = (
@@ -131,7 +149,7 @@ export default async function PurchaseOrderDetail({
   );
 
   const subtitle = `Ngày tạo: ${formatDateTimeFull(po.created_at)} | Ngày giao dịch: ${
-    po.transaction_date ? formatDateTimeFull(po.transaction_date) : "N/A"
+    po.transaction_date ? formatDateTimeFull(po.transaction_date) : "—"
   }`;
 
   return (
@@ -152,6 +170,10 @@ export default async function PurchaseOrderDetail({
         badge={badge}
         actions={actions}
       />
+
+      {stocktakeBlockerMessage && (
+        <Alert variant="warning">{stocktakeBlockerMessage}</Alert>
+      )}
 
       {isCancelled && (
         <div className="p-4 rounded-xl border border-border bg-surface-secondary/50 text-text-secondary text-sm">
@@ -296,6 +318,12 @@ export default async function PurchaseOrderDetail({
               <h3 className="text-base font-semibold text-text-primary">Thông tin chứng từ</h3>
               <FieldList
                 fields={[
+                  {
+                    label: "Nhà cung cấp",
+                    value:
+                      allSuppliers.find((s: any) => s.id === po.supplier_id)?.name ||
+                      "Không rõ",
+                  },
                   {
                     label: "Mã hoá đơn",
                     value: po.supplier_invoice_code || "Không có",

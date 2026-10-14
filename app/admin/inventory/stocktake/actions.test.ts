@@ -68,9 +68,27 @@ describe("stocktake confirmation actions", () => {
 
   it("refuses confirmation without a preview hash before calling the RPC", async () => {
     await expect(stocktakeActions.confirmStocktakeSession("STK-001", "")).resolves.toEqual({
-      error: "Stocktake preview is required before confirmation",
+      error: "Cần xem trước rồi mới xác nhận được. Bấm Xem trước lại.",
     });
     expect(mocks.applyStocktakeSessionAtomic).not.toHaveBeenCalled();
+  });
+
+  it("shows a changed plan in Vietnamese, not the database's English", async () => {
+    mocks.applyStocktakeSessionAtomic.mockRejectedValue(
+      new Error("apply_stocktake_session_atomic: Stocktake plan changed; request a new preview before applying"),
+    );
+    await expect(stocktakeActions.confirmStocktakeSession("STK-001", "abc")).resolves.toEqual({
+      error: "Số liệu vừa thay đổi. Bấm Xem trước lại rồi xác nhận.",
+    });
+  });
+
+  it("shows 'a session is already open' in Vietnamese", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "SPM-001", name: "Sữa tươi TH", item_category_id: "NHH-001", status: "ACTIVE" }]);
+    mocks.openStocktakeSessionAtomic.mockRejectedValue(
+      new Error("open_stocktake_session_atomic: A stocktake session is already open (session_id=STK-002)"),
+    );
+    const result = await stocktakeActions.startStocktakeSession();
+    expect(result.error).toBe("Đang có một phiếu kiểm kê mở. Xong hoặc huỷ phiếu đó rồi mới mở phiếu mới được.");
   });
 });
 

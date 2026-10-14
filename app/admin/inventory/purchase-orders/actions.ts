@@ -4,6 +4,7 @@ import { findAll, findById, insert, generateNewId, getCacheTag } from "@/lib/db/
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
+import { findDuplicateActiveName } from "@/lib/shared/duplicate-name-guard";
 import { parsePurchaseOrderPayment } from "@/lib/purchasing/purchase-order-payment";
 import type { DBBankAccount, DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DBItemCategory } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchasing/purchase-order-write-plan";
@@ -506,15 +507,19 @@ export async function addPurchaseSource(name: string): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
-  if (!name) return fail("Vui lòng nhập tên nguồn");
+  const trimmed = name.trim();
+  if (!trimmed) return fail("Vui lòng nhập tên nguồn");
   try {
+    const existing = findDuplicateActiveName((await findAll("Purchase_Sources")) as DBPurchaseSource[], trimmed);
+    if (existing) return ok({ data: { id: existing.id, name: existing.name } });
+
     const id = await generateNewId("Purchase_Sources", "SRC");
     await insert("Purchase_Sources", {
       id,
-      name,
+      name: trimmed,
       created_at: new Date().toISOString()
     });
-    return ok({ id });
+    return ok({ data: { id, name: trimmed } });
   } catch (error: unknown) {
     return describeActionError(error);
   }
