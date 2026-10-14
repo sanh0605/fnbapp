@@ -28,6 +28,7 @@ hoạt động. Nên C3, C4, F2, F1, B8 chưa làm sai đơn nào — sửa đ�
 | E1 | Doanh số gửi mã băm mật khẩu của mọi tài khoản xuống trình duyệt | `4965976d` |
 | E5 | Hàm thay đơn hàng là cổng công khai không hỏi đăng nhập; thêm phép canh `lib/` | `4965976d` |
 | A9 | Thẻ kiểm kê và trang phiếu kiểm kê không có đơn vị | `3f99d821` |
+| E3, E4, E7, E8, E10–E12, C13 | Nhóm bảo mật đợt 1 (xem bảng dưới) | lần lưu sau `720fe5c7` |
 
 ## Đợt 1 — lỗi kỹ thuật, không cần chủ quán quyết (làm ngay, theo thứ tự)
 
@@ -102,7 +103,7 @@ dõi tồn" (A13); dòng đơn ở danh sách và chi tiết dùng chung (C14).
 
 | # | Mã | Câu hỏi | Ảnh hưởng hôm nay |
 |---|---|---|---|
-| 1 | C5 | Máy bán mở cả ngày, chủ quán đổi giá lúc trưa: thu giá cũ mà sổ ghi giá mới. Lấy giá máy bán hiện, hay từ chối đơn và bắt tải lại? | Xảy ra mỗi lần đổi giá |
+| 1 | C5 | Máy bán mở cả ngày, chủ quán đổi giá lúc trưa: thu giá cũ mà sổ ghi giá mới. Lấy giá máy bán hiện, hay từ chối đơn và bắt tải lại? | **Đã chốt 14/10: từ chối, bắt tải lại** (`BR-SALE-008`) |
 | 2 | A2 | Phiếu xuất nhập trễ (ngày trước lúc đếm) bị tính hai lần khi xác nhận kiểm kê. Từ chối và đếm lại, hay tự tính lại? | Mỗi lần nhập trễ trong lúc đang kiểm |
 | 3 | E2 | Quản lý tự nâng mình thành chủ quán hoặc đổi mật khẩu chủ quán được. Chỉ chủ quán đụng tài khoản ADMIN? | Bất kỳ lúc nào |
 | 4 | A3b | Sửa phiếu nhập của tháng đã kiểm kê: có cho không? | Bất kỳ lúc nào |

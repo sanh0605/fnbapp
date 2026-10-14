@@ -340,6 +340,14 @@ function buildLine(
     );
   }
 
+  // The cart comes from the browser: refuse numbers that would make a negative line.
+  if (!Number.isInteger(item.qty) || item.qty < 1) {
+    throw new InvariantError("Số lượng món phải là số nguyên dương");
+  }
+  if (!(item.manual_item_discount.value >= 0)) {
+    throw new InvariantError("Giảm giá món không được âm");
+  }
+
   const category = ref.categories.find(c => c.id === product.category_id) || null;
 
   const productSnap = buildProductSnapshot(product, category);

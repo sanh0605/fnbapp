@@ -54,10 +54,10 @@ async function main(): Promise<void> {
   }
 
   if (totalSkipped > 0) {
-    console.log(`\n*** ${totalSkipped} row(s) could not be restored -- printed below with their exact error. ***`);
+    console.log(`\n*** ${totalSkipped} row(s) could not be restored -- printed below (table, id, error). ***`);
     for (const r of results) {
       for (const s of r.skipped) {
-        console.log(`  ${r.table} / ${JSON.stringify(s.row).slice(0, 200)}: ${s.error}`);
+        console.log(`  ${r.table} / ${String((s.row as { id?: unknown }).id ?? "?")}: ${s.error}`);
       }
     }
   }

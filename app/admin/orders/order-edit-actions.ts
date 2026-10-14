@@ -38,6 +38,10 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
       return { success: false, error: "Lý do chỉnh sửa là bắt buộc" };
     }
 
+    // CODE-22: require ADMIN before touching any order data.
+    const auth = await requireAdmin();
+    if (!auth.ok) return { success: false, error: auth.error };
+
     // 1. Load old order + lines
     const [oldOrder, oldLines] = await Promise.all([
       findById("Orders_V2", input.orderId),
@@ -50,9 +54,6 @@ export async function editOrderV2(input: EditOrderV2Input): Promise<EditOrderV2R
     const oldOrderV2 = normalizeOrderV2(oldOrder);
     const oldLinesV2 = oldLines.map(normalizeLineV2);
 
-    // 2. Resolve actor (Claude code — CODE-22: require ADMIN)
-    const auth = await requireAdmin();
-    if (!auth.ok) return { success: false, error: auth.error };
     const actor = { id: auth.actor.id, name: auth.actor.name };
     const oldPayments = await findAllWhere<{
       method: string;

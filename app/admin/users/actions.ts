@@ -10,6 +10,7 @@ import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 
 const SHEET = "Users";
 const PATH = "/admin/users";
+const ROLES = ["STAFF", "MANAGER", "ADMIN"];
 
 type DBUserRow = DBUser & Record<string, unknown>;
 
@@ -21,6 +22,14 @@ function toClientUser(user: DBUserRow): DBUser {
     status: user.status,
     created_at: user.created_at,
   };
+}
+
+// True when this account is an ADMIN and no other ACTIVE ADMIN exists: nobody could open
+// owner-only screens again. A stopped ADMIN cannot sign in (lib/auth/auth.ts), so it does not count.
+function isLastAdmin(users: DBUserRow[], id: string): boolean {
+  const target = users.find(candidate => candidate.id === id);
+  if (target?.role !== "ADMIN") return false;
+  return !users.some(candidate => candidate.id !== id && candidate.role === "ADMIN" && candidate.status === "ACTIVE");
 }
 
 export async function getUsers(): Promise<DBUser[]> {
@@ -64,6 +73,7 @@ export async function addUser(formData: FormData): Promise<ActionResponse> {
   const password = formData.get("password") as string;
 
   if (!username || !role || !password) return fail("Vui lòng điền đủ thông tin");
+  if (!ROLES.includes(role)) return fail("Vai trò không hợp lệ");
 
   try {
     const users = await findAll(SHEET);
@@ -96,16 +106,8 @@ export async function deleteUserAction(formData: FormData): Promise<ActionRespon
   if (auth.actor.id === id) return fail("Không thể xoá tài khoản đang đăng nhập.");
 
   try {
-    // Never remove the last active ADMIN: nobody could open owner-only screens
-    // again. A stopped ADMIN cannot sign in (lib/auth/auth.ts), so it does not count.
     const users = await findAll(SHEET) as DBUserRow[];
-    const target = users.find(candidate => candidate.id === id);
-    if (target?.role === "ADMIN") {
-      const otherActiveAdmins = users.filter(
-        candidate => candidate.id !== id && candidate.role === "ADMIN" && candidate.status === "ACTIVE",
-      ).length;
-      if (otherActiveAdmins === 0) return fail("Không thể xoá tài khoản chủ quán cuối cùng.");
-    }
+    if (isLastAdmin(users, id)) return fail("Không thể xoá tài khoản chủ quán cuối cùng.");
 
     await remove(SHEET, id);
     revalidatePath(PATH);
@@ -125,8 +127,12 @@ export async function updateUser(formData: FormData): Promise<ActionResponse> {
   const password = formData.get("password") as string;
 
   if (!id || !role) return fail("Thiếu thông tin bắt buộc");
+  if (!ROLES.includes(role)) return fail("Vai trò không hợp lệ");
 
   try {
+    if (role !== "ADMIN" && isLastAdmin(await findAll(SHEET) as DBUserRow[], id)) {
+      return fail("Không thể hạ vai tài khoản chủ quán cuối cùng.");
+    }
     const dataToUpdate: Record<string, string> = { role };
 
     if (password && password.trim() !== "") {

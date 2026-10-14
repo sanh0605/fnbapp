@@ -66,3 +66,12 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 - **One column per food dish** chosen in Cài đặt Tổng quan. Each shows the quantity sold.
 - **Nothing is stored.** The table is worked out each time the page opens. Changing a group's Loại món recomputes all seven days with the new type.
 - Re-runnable check: `scripts/verify-dashboard-seven-days.ts` gives 0 differences on 36 cells (08/10–13/10) against the confirmed example.
+
+### BR-SALE-008 — A price changed while the till is open: the server refuses the order and the till reloads
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C5. He was shown this example: the till opens in the morning, Bạc xỉu goes from 29,000 to 32,000 at noon, the till still shows 29,000, the cashier takes 29,000, the book records 32,000, and the drawer is 3,000 short. He chose *"Từ chối, bắt tải lại"* over saving the price the till showed. Not built yet.
+
+- The till sends the total it showed the customer. The server works the total out again from the prices in force. If the two differ, the order is not saved and the till says the price has changed and to reload the page. After the reload the cashier charges the new price.
+- The till can never set a price. That is why he did not choose "save what the till showed".
+- The cost: the order that hits the change has to be rung up again once. Until the till is reloaded, every order containing a changed dish is refused.
+- An order taken before the change and sent later (sync delay) is checked against the price in force when it was taken, not when it arrived. Otherwise a correct order would be refused.

@@ -614,3 +614,27 @@ describe("buildOrderFromCart client_captured_at", () => {
     expect(result.order.migration_notes).toBe("");
   });
 });
+
+describe("buildOrderFromCart browser-supplied numbers (C13)", () => {
+  const cart = (qty: number, discount: number) => ({
+    brand_id: "BR-002",
+    outlet_id: "OUT-002",
+    items: [{
+      product_id: "PROD-017",
+      variant_id: "VAR-024",
+      qty,
+      modifiers: [],
+      manual_item_discount: { value: discount, type: "VND" as const },
+    }],
+    payment_method: "CASH" as const,
+    actor: { id: "U1", name: "Test" },
+  });
+
+  it.each([0, -1, 1.5, Number.NaN])("refuses quantity %s", qty => {
+    expect(() => buildOrderFromCart(cart(qty, 0), REF)).toThrow("Số lượng món phải là số nguyên dương");
+  });
+
+  it("refuses a negative per-item discount", () => {
+    expect(() => buildOrderFromCart(cart(1, -5000), REF)).toThrow("Giảm giá món không được âm");
+  });
+});

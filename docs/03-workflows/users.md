@@ -7,6 +7,8 @@ tables: users, Users
 brCodes: BR-ACCESS-001, BR-ACCESS-002, BR-U-003
 ```
 
+**Behaviour change — 2026-10-14 (audit E3, E4):** `addUser` and `updateUser` accept only `STAFF`, `MANAGER` or `ADMIN` ("Vai trò không hợp lệ"). `updateUser` refuses to demote an `ADMIN` when no other `ACTIVE` `ADMIN` remains ("Không thể hạ vai tài khoản chủ quán cuối cùng."), the same check as delete (`isLastAdmin`). `resolveActor` (`lib/auth/auth.ts`) re-reads `role` and `status` from `users` on every call, so a deleted, stopped or demoted account loses access on its next action rather than when its 30-day token runs out.
+
 **Behaviour change — 2026-10-14 (gap G4):** `deleteUserAction` refuses the signed-in account ("Không thể xoá tài khoản đang đăng nhập.") and an `ADMIN` when no other `ACTIVE` `ADMIN` remains ("Không thể xoá tài khoản chủ quán cuối cùng."); a stopped `ADMIN` cannot sign in, so it does not count.
 
 **Behaviour change — 2026-10-03 (list/detail template, wave 7):** the list is on
@@ -55,9 +57,8 @@ see SYSTEM-OVERVIEW for the naming trap.
    `/admin/users/[id]/edit` saves a changed role and,
    optionally, a new password. `/settings/password` offers a single
    change-password action for the signed-in person's own account. Delete is a
-   hard delete with no self-protection guard — an admin can remove any account,
-   including the last one, so this button warrants care rather than being hidden
-   for that reason.
+   hard delete; the server refuses the signed-in account and the last active
+   `ADMIN`.
 
 3. **What each list contains, and what is excluded.** `/admin/users` lists every
    account row in the `Users` table, one row per account. It shows the code, username,
@@ -68,8 +69,8 @@ see SYSTEM-OVERVIEW for the naming trap.
 
 4. **Valid inputs, and what happens outside the range.** Creating an account
    requires a username, a role, and a password; any blank field is rejected before
-   writing, and a duplicate username is rejected. Editing requires an id and a
-   role; the password field is optional on edit and is applied only when non-blank,
+   writing, a duplicate username is rejected, and a role other than `STAFF`,
+   `MANAGER` or `ADMIN` is rejected. Editing requires an id and a role; the password field is optional on edit and is applied only when non-blank,
    so leaving it empty keeps the existing password. Changing your own password
    requires the correct current password (checked with bcrypt) before the new one
    is accepted; a wrong current password is rejected and nothing is written.

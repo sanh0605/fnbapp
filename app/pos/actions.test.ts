@@ -88,3 +88,9 @@ describe("POS order COGS calculation", () => {
     expect(pageSource).not.toContain("getRealtimeStock");
   });
 });
+
+describe("submitOrderV2 -- a price changed while the till was open (BR-SALE-008)", () => {
+  it.todo(
+    "Máy bán gửi tổng tiền đang hiện; máy chủ tính lại theo giá đang áp dụng lúc nhận đơn, lệch thì từ chối và báo tải lại trang (chủ quán chốt 14/10/2026)",
+  );
+});
