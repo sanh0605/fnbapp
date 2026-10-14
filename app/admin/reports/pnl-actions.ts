@@ -6,8 +6,8 @@ import type { OrderV2, OrderLineV2 } from "@/lib/sales/order-types";
 import { breakdownRevenueByProduct } from "@/lib/reports/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
 import { displayMoney } from "@/lib/reports/display-rounding";
-import { computePeriodIssuedValue, computePeriodIssuedValueSplit } from "@/lib/costing/issue-costing";
-import { buildIssueCostingPurchases, buildIssueCostingIssues, buildClassifiedIssues, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
+import { computePeriodIssuedValues } from "@/lib/costing/issue-costing";
+import { buildIssueCostingPurchases, buildClassifiedIssues, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
 import { buildStandaloneToppingProductLinks } from "@/lib/products/standalone-topping-links";
 import { requireAdmin } from "@/lib/auth/auth";
 import {
@@ -158,26 +158,20 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // (already counted on the Nguyên liệu mua dùng ngay line) -- either way
     // counting it here too would charge its money twice.
     const costedIssues = selectCostedIssues(stockIssues as any[], purchasedItems as any[], itemCategories as any[]);
-    const allIssues = buildIssueCostingIssues(costedIssues);
-    const totalCOGS = computePeriodIssuedValue(
-      purchases,
-      allIssues,
-      dateRange?.startUtc ?? null,
-      dateRange?.endUtc ?? null,
-    );
-
     // BR-COGS-007. One combined chronological replay, tagged --
     // never a subset replay of just the STOCKTAKE rows, which would shift
     // the weighted-average pool for every later event and answer a
     // different question (see lib/costing/issue-costing.ts). totalCOGS
-    // above stays the combined figure; this is the additive split.
+    // stays the combined figure; issuedValueSplit is the additive split of
+    // the same two replays.
     const classifiedIssues = buildClassifiedIssues(costedIssues, stocktakeSessions as any[]);
-    const issuedValueSplit = computePeriodIssuedValueSplit(
+    const issuedValueSplit = computePeriodIssuedValues(
       purchases,
       classifiedIssues,
       dateRange?.startUtc ?? null,
       dateRange?.endUtc ?? null,
     );
+    const totalCOGS = issuedValueSplit.total;
 
     // Task 4, BR-COGS-007's own precondition guard: distinct MANUAL issue
     // slips within the period -- a STOCKTAKE session is not a slip of

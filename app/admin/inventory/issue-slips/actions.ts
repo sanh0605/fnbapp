@@ -56,7 +56,7 @@ function groupPackageLines(
 
 // Reads the tables the slip screens share and prices every issue line with the
 // same costing engine as the Hàng đã xuất report (no second cost definition).
-async function loadIssueSlipContext() {
+async function loadIssueSlipContext(withLineValues = true) {
   const [slips, issues, sessions, purchaseOrders, purchaseOrderLines, purchasedItems, itemCategories] = await Promise.all([
     findAllNoCache("Issue_Slips"),
     findAllNoCache("Stock_Issues"),
@@ -75,7 +75,8 @@ async function loadIssueSlipContext() {
     base_quantity: Number(r.base_quantity) || 0,
     source: r.source as "STOCKTAKE" | "MANUAL",
   }));
-  const lineValues = computeIssueLineValues(purchases, costedIssues);
+  // The price preview below never reads line values, so it skips pricing every slip line.
+  const lineValues = withLineValues ? computeIssueLineValues(purchases, costedIssues) : new Map<string, number>();
   return {
     slips: slips as IssueSlipRecord[],
     issues: issues as IssueRowRecord[],
@@ -275,7 +276,7 @@ export async function getIssueUnitCostsAt(
   if (Number.isNaN(issuedAt.getTime())) return { error: "Thời điểm xuất không hợp lệ" };
 
   try {
-    const [offered, ctx] = await Promise.all([getIssueSlipFormData(), loadIssueSlipContext()]);
+    const [offered, ctx] = await Promise.all([getIssueSlipFormData(), loadIssueSlipContext(false)]);
     const unitCostByItem = Object.fromEntries(
       computeUnitCostsAt(ctx.purchases, ctx.costedIssues, issuedAt.toISOString(), offered.map(o => o.id)),
     );

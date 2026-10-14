@@ -32,6 +32,7 @@ hoạt động. Nên C3, C4, F2, F1, B8 chưa làm sai đơn nào — sửa đ�
 | A1, A3a, A3b, A6 (một phần), A7, A8, E2, F1–F3, F6–F8, B1, B2, B4, B5, C2, C6, C7 | Đợt 1 phần còn lại; migration 0111, 0112, 0114 đã chạy trên máy chủ 14/10 (chủ quán duyệt "Chạy cả 3"); A6 chưa gộp một hàm Postgres | `6041c021` |
 | A2, A3b (đơn mới), A4, A5, E9, B10–B12 | Kiểm kê tính lại sổ theo giờ đếm; chặn phiếu nhập mới trước kiểm kê; khung khấu hao lưu cả bảng; bỏ ô "cập nhật lịch sử"; gỡ quyền thừa; Doanh số đọc Loại món, chữ Việt. Migration 0115–0118 đã chạy trên máy chủ 14/10 (chủ quán duyệt "Chạy cả 4") | `e730c9be`, `3b9a68ca` |
 | B3, B9 (câu 7) | Lọc Nhóm SP ở Doanh số tạm ẩn khối tiền cả đơn (chủ quán "Tạm ẩn khi lọc"); Luỹ kế cộng từ tháng đầu khoảng đang xem (chủ quán, máy vốn đã làm vậy, chỉ sửa luật) | `7eb7c030` |
+| B6, A11, A12 (đợt 2) | Phiếu xuất, Giá trị hàng đã xuất, Lãi lỗ tính lại giá vốn nhanh hơn (1.095 phiếu giả lập: 802 → 76 ms); Lãi lỗ chạy 2 vòng thay vì 4. Đo trên máy chủ 14/10: 0 lệch trên 102 phiếu, 234 dòng, 8 tháng; `verify-cogs` qua, `verify-pnl-monthly` 0 lệch trên 8 tháng; người soát độc lập so 420.000 phép tính cũ/mới, 0 lệch | (lưu này) |
 
 ## Đợt 1 — lỗi kỹ thuật, không cần chủ quán quyết (làm ngay, theo thứ tự)
 
@@ -101,6 +102,7 @@ Một hàm tính giá giỏ hàng dùng chung cho máy bán, giỏ, trang sửa 
 bán hiện = số máy chủ lưu" (C10; làm sau khi chủ quán chốt C3, C4, C5, C9). Một `safeReturnTo` thay 16
 bản chép (F9). 19 trang danh sách dùng chung `useFilterForm` (F10, theo đợt). Một hàm "hàng không theo
 dõi tồn" (A13); dòng đơn ở danh sách và chi tiết dùng chung (C14).
+34 hộp báo lỗi tự vẽ chuyển sang `Alert` dùng chung, có dấu ✕, `Alert` loại lỗi thêm `role="alert"` (F13, chủ quán chốt 14/10).
 
 ## Cần chủ quán quyết (hỏi từng câu một, theo thứ tự)
 
@@ -114,7 +116,7 @@ dõi tồn" (A13); dòng đơn ở danh sách và chi tiết dùng chung (C14).
 | 6 | C3, C4 | Khuyến mãi giảm cả hoá đơn cộng dồn với giảm tay không; máy chủ có tự áp khuyến mãi khi máy bán không áp? | **C3 đã chốt 14/10: cộng dồn** (`BR-SALE-010`); C4 đã chốt: tự áp loại không mã, ô "Dùng chung" (`BR-SALE-011`) |
 | 7 | B3, B9 | Doanh số lọc nhóm món: ẩn khối cả đơn hay ghi chú; "Luỹ kế" Lãi lỗ tính lại từ tháng 1 hay từ đầu khoảng | **Đã chốt 14/10: tạm ẩn khi lọc** (`BR-SALE-012`); **Luỹ kế từ tháng đầu khoảng đang xem** |
 | 8 | C1 | Bán khi mất mạng (`BR-U-001`): bật lại ba nút thanh toán khi máy biết đang mất mạng — gộp với phần 7 máy bán hàng | Mỗi lần mất mạng |
-| 9 | F4b, F5, F13, C12 | Nhóm của topping bán riêng; bảng "Nhóm tuỳ chọn" tự sửa; hộp báo lỗi có biểu tượng; hiện từng phần của đơn trả hai cách | **F4b đã chốt 14/10: mặc định Topping, sửa được** (đã làm cùng F4a); **F5 đã chốt: trang riêng "Nhóm tuỳ chọn"**, cần thiết kế trước; F13, C12 còn hỏi |
+| 9 | F4b, F5, F13, C12 | Nhóm của topping bán riêng; bảng "Nhóm tuỳ chọn" tự sửa; hộp báo lỗi có biểu tượng; hiện từng phần của đơn trả hai cách | **F4b đã chốt 14/10: mặc định Topping, sửa được** (đã làm cùng F4a); **F5 đã chốt: trang riêng "Nhóm tuỳ chọn"**, cần thiết kế trước; **F13 đã chốt: dấu ✕ ở mọi trang** (làm ở đợt 3); **C12 đã chốt: giữ nút, Đơn hàng hiện từng phần** (`BR-SALE-013`) |
 | 10 | E6, D12, D16 | Việc chủ quán tự làm (E9 đã xong bằng migration 0117): luật giới hạn đăng nhập trên Vercel; tắt đăng ký Supabase Auth; gỡ hàm `user-admin` trên máy chủ; sửa `.claude/settings.json` và `.claude/rules/ui-devices.md` | — |
 
 ## Chưa xem

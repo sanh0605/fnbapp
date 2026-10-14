@@ -420,9 +420,9 @@ describe("computeIssueCosting -- BR-INV-009, reversing a mistaken issue slip", (
 });
 
 // BR-COGS-007.
-// New, additive functions -- computeIssueCosting and computePeriodIssuedValue
-// are deliberately untouched (lib/reports/issued-value-report.ts's second,
-// unified caller must not inherit this split). isShrinkage is decided by the
+// computeIssueCosting and computePeriodIssuedValue now delegate to the same
+// replay (audit A11, 2026-10-14); their combined figures are summed as before,
+// never cost + shrinkage added afterwards. isShrinkage is decided by the
 // caller (source === 'STOCKTAKE' AND the issue's stocktake session is
 // flagged shrinkage) -- these functions only replay and bucket, they never
 // read Issue.source themselves.
