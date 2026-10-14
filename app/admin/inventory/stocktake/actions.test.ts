@@ -561,10 +561,16 @@ describe("editing a confirmed stocktake (BR-INV-012)", () => {
     });
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Purchased_Items") return Promise.resolve([
-        { id: "SPM-004", name: "Bột cà phê truyền thống Phin Đậm", default_unit_id: "U-1" },
-        { id: "SPM-007", name: "Bột milkfoam muối biển", default_unit_id: "U-1" },
+        // Live data: default_unit_id is null on every row; the unit comes from the ACTIVE conversion.
+        { id: "SPM-004", name: "Bột cà phê truyền thống Phin Đậm", default_unit_id: null },
+        { id: "SPM-007", name: "Bột milkfoam muối biển", default_unit_id: null },
       ]);
-      if (sheet === "Units") return Promise.resolve([{ id: "U-1", name: "g" }]);
+      if (sheet === "UOM_Conversions") return Promise.resolve([
+        { purchased_item_id: "SPM-004", base_unit: "U-2", status: "INACTIVE" },
+        { purchased_item_id: "SPM-004", base_unit: "U-1", status: "ACTIVE" },
+        { purchased_item_id: "SPM-007", base_unit: "U-1", status: "ACTIVE" },
+      ]);
+      if (sheet === "Units") return Promise.resolve([{ id: "U-1", name: "g" }, { id: "U-2", name: "kg" }]);
       return Promise.resolve([]);
     });
   }

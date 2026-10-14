@@ -66,17 +66,24 @@ async function loadItemNameMaps() {
   // semi_products dropped 2026-09-28 (migration 0105): the count list never
   // offered SEMI_PRODUCT lines (see actions.test.ts), so this map no longer
   // needs to read that table at all.
-  const [purchasedItems, units, itemCategories] = await Promise.all([
+  const [purchasedItems, units, itemCategories, conversions] = await Promise.all([
     findAll("Purchased_Items"),
     findAll("Units"),
     findAll("Item_Categories"),
+    findAll("UOM_Conversions"),
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
+  // purchased_items.default_unit_id is null on every row; the unit is the
+  // ACTIVE conversion's base unit, as on Phiếu xuất (lib/stock/item-stock-display.ts).
+  const baseUnitIdByItem = new Map<string, string>();
+  for (const c of conversions as any[]) {
+    if (c.status === "ACTIVE") baseUnitIdByItem.set(c.purchased_item_id, c.base_unit);
+  }
   const nameById = new Map<string, string>();
   const unitNameByItemId = new Map<string, string>();
   for (const item of purchasedItems as any[]) {
     nameById.set(item.id, item.name);
-    unitNameByItemId.set(item.id, unitNameById.get(item.default_unit_id) ?? item.default_unit_id ?? "");
+    unitNameByItemId.set(item.id, unitNameById.get(baseUnitIdByItem.get(item.id) ?? "") ?? "");
   }
   return {
     nameById,
