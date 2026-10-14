@@ -105,7 +105,7 @@ export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormP
                 className="p-3 rounded-lg border border-border bg-surface-card flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-text-primary truncate">{line.name}</p>
+                  <p className="font-medium text-text-primary break-words">{line.name}</p>
                   <p className="text-xs text-text-muted">{line.quantityText}</p>
                 </div>
                 <div className="text-right font-medium text-text-primary whitespace-nowrap">

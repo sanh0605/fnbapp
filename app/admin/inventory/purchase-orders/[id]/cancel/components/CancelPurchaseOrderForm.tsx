@@ -106,7 +106,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                     className="p-3 rounded-lg border border-border bg-surface-card flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-text-primary truncate">{line.itemName}</p>
+                      <p className="font-medium text-text-primary break-words">{line.itemName}</p>
                       <p className="text-xs text-text-muted">
                         {formatDecimal(Number(line.quantity), { maxDigits: 3 })} · {line.unitName} · {formatNumber(line.unitPrice)}
                       </p>

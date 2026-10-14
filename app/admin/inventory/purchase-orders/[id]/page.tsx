@@ -11,7 +11,6 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { MoneySummary } from "@/components/ui/MoneySummary";
-import { FieldList } from "@/components/ui/detail/FieldList";
 import { Alert } from "@/components/ui/Alert";
 import { fetchPurchaseOrderCancelCheck } from "@/lib/purchasing/purchase-order-cancel-transaction";
 import { describeCancelBlocker } from "@/lib/purchasing/purchase-order-cancel";
@@ -316,8 +315,8 @@ export default async function PurchaseOrderDetail({
 
             <div className="space-y-2">
               <h3 className="text-base font-semibold text-text-primary">Thông tin chứng từ</h3>
-              <FieldList
-                fields={[
+              <div className="bg-surface-card border border-border rounded-card p-4 space-y-2">
+                {[
                   {
                     label: "Nhà cung cấp",
                     value:
@@ -335,8 +334,13 @@ export default async function PurchaseOrderDetail({
                       po.source_id ||
                       "Không xác định",
                   },
-                ]}
-              />
+                ].map((field) => (
+                  <div key={field.label} className="flex justify-between items-start gap-2">
+                    <span className="text-sm text-text-secondary shrink-0">{field.label}</span>
+                    <span className="text-sm text-text-primary text-right break-words min-w-0">{field.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-2">
