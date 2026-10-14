@@ -71,6 +71,12 @@ export async function loadProductRows() {
     modifiers.filter(m => m.status === "ACTIVE" && m.product_id).map(m => m.product_id as string),
   );
 
+  // Any modifier row (even DELETED) pointing at a product blocks erasing it
+  // (RESTRICT, migration 0097).
+  const modifierLinkedProductIds = new Set<string>(
+    modifiers.filter(m => m.product_id).map(m => m.product_id as string),
+  );
+
   // Build the rich data for the form
   const enhancedProducts = visibleProducts.map(p => {
     const productVariants = activeVariants.filter(v => v.product_id === p.id);
@@ -95,6 +101,7 @@ export async function loadProductRows() {
       neverSold: !soldProductIds.has(p.id),
       hasNoSellableVariant,
       isLinkedTopping: linkedToppingProductIds.has(p.id),
+      hasModifierLink: modifierLinkedProductIds.has(p.id),
     };
   });
 

@@ -1217,6 +1217,24 @@ describe("getSalesDataV2", () => {
     });
   });
 
+  // B1 (2026-10-14 audit): one rule everywhere -- an empty method is cash.
+  it("counts an order with an empty payment method and no payment rows as CASH, not UNKNOWN", async () => {
+    const fixture = makeSuaDauStandaloneOrder();
+    const order = { ...fixture.order, payment_method: "" };
+    (findAllWhere as any).mockResolvedValue([order]);
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => (
+      sheet === "Order_Lines_V2" ? fixture.lines : []
+    ));
+    (findAllNoCache as any).mockResolvedValue([]);
+    (findAll as any).mockResolvedValue([]);
+
+    const result = await getSalesDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
+
+    expect(result.paymentBreakdown).toEqual([
+      { method: "CASH", orderCount: 1, revenue: order.net_total },
+    ]);
+  });
+
   // section 6b:
   // the check that can fail is the sum, and orders with no outlet_id must
   // land in an explicit bucket rather than being dropped silently.
@@ -1402,6 +1420,39 @@ describe("getHourlyHeatmapV2", () => {
     expect(cell("T3", 6)).toMatchObject({ revenue: 50000, orderCount: 1 });
     expect(cell("T3", 8)).toMatchObject({ revenue: 30000, orderCount: 1 });
     expect(result.reduce((n, c) => n + c.orderCount, 0)).toBe(2);
+  });
+
+  // B4 (2026-10-14 audit): the heatmap used to ignore the staff and dish-group
+  // filters the rest of Doanh số applies.
+  it("applies the staff filter like the rest of Doanh số", async () => {
+    (findAllNoCache as any).mockResolvedValue([
+      { id: "O-1", status: "COMPLETED", created_at: "2026-09-15T01:15:00Z", net_total: "50000", created_by_name: "Lan" },
+      { id: "O-2", status: "COMPLETED", created_at: "2026-09-15T01:20:00Z", net_total: "30000", created_by_name: "Minh" },
+    ]);
+
+    const result = await getHourlyHeatmapV2({ startDate: "2026-09-15", endDate: "2026-09-15", staffName: "Lan" });
+
+    expect(result.reduce((n, c) => n + c.orderCount, 0)).toBe(1);
+    expect(result.reduce((n, c) => n + c.revenue, 0)).toBe(50000);
+  });
+
+  it("applies the dish-group filter: only orders with a line of that group, valued by those lines", async () => {
+    (findAllNoCache as any).mockResolvedValue([
+      { id: "O-1", status: "COMPLETED", created_at: "2026-09-15T01:15:00Z", net_total: "50000" },
+      { id: "O-2", status: "COMPLETED", created_at: "2026-09-15T01:20:00Z", net_total: "30000" },
+    ]);
+    const line = (order_id: string, category_id: string, net: number) => ({
+      order_id, net_line_total: net, qty: 1, unit_price: net,
+      product_snapshot_json: JSON.stringify({ category_id }),
+    });
+    (findAllWhereInBatches as any).mockResolvedValue([
+      line("O-1", "CAT-A", 20000), line("O-1", "CAT-B", 30000), line("O-2", "CAT-B", 30000),
+    ]);
+
+    const result = await getHourlyHeatmapV2({ startDate: "2026-09-15", endDate: "2026-09-15", categoryId: "CAT-A" });
+
+    expect(result.reduce((n, c) => n + c.orderCount, 0)).toBe(1);
+    expect(result.reduce((n, c) => n + c.revenue, 0)).toBe(20000);
   });
 
   // section 5, the other required test -- "pushes the completed-status..."

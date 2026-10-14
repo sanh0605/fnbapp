@@ -13,7 +13,7 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { Badge } from "@/components/ui/Badge";
-import { formatDateTime } from "@/lib/shared/datetime";
+import { formatDate, formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { deletePromotionAction } from "@/app/admin/promotions/actions";
 import type {
@@ -62,6 +62,12 @@ function isExpired(endDate: string | null | undefined): boolean {
   if (!endDate) return false;
   const t = new Date(endDate).getTime();
   return !Number.isNaN(t) && t < Date.now();
+}
+
+function formatPromotionDate(val: string | null | undefined): string {
+  if (!val) return "—";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return formatDate(val);
+  return formatDateTimeFull(val);
 }
 
 function formatDiscountText(promo: DBPromotion): string {
@@ -243,7 +249,7 @@ export default function PromotionsClient({
         sortValue: (p) => p.start_date || "",
         render: (p) => (
           <span className="text-text-secondary text-sm">
-            {p.start_date ? formatDateTime(p.start_date) : "—"}
+            {formatPromotionDate(p.start_date)}
           </span>
         ),
       },
@@ -253,7 +259,7 @@ export default function PromotionsClient({
         sortValue: (p) => p.end_date || "",
         render: (p) => (
           <span className="text-text-secondary text-sm">
-            {p.end_date ? formatDateTime(p.end_date) : "—"}
+            {formatPromotionDate(p.end_date)}
           </span>
         ),
       },
@@ -378,8 +384,8 @@ export default function PromotionsClient({
           </div>
           {(promo.start_date || promo.end_date) && (
             <div className="text-[11px] text-text-muted">
-              {promo.start_date ? formatDateTime(promo.start_date) : "—"} &rarr;{" "}
-              {promo.end_date ? formatDateTime(promo.end_date) : "—"}
+              {formatPromotionDate(promo.start_date)} &rarr;{" "}
+              {formatPromotionDate(promo.end_date)}
             </div>
           )}
         </div>

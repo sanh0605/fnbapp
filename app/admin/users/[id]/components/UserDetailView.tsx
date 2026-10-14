@@ -15,15 +15,18 @@ export interface UserDetailViewProps {
   user: DBUser;
   returnTo: string;
   canDelete: boolean;
+  canGrantAdmin?: boolean;
 }
 
 export function UserDetailView({
   user,
   returnTo,
   canDelete,
+  canGrantAdmin = true,
 }: UserDetailViewProps): JSX.Element {
   const currentDetailUrl = `/admin/users/${encodeURIComponent(user.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/users/${encodeURIComponent(user.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
+  const canEdit = canGrantAdmin || user.role !== "ADMIN";
 
   const fields: Field[] = [
     { label: "Mã NV", value: user.id },
@@ -34,9 +37,11 @@ export function UserDetailView({
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Button href={editHref} variant="secondary">
-        Chỉnh sửa
-      </Button>
+      {canEdit && (
+        <Button href={editHref} variant="secondary">
+          Chỉnh sửa
+        </Button>
+      )}
       {canDelete && user.username !== "admin" && (
         <RemoveRecordButton
           verb="Xoá"

@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useId, Suspense } from "react";
-import { getOutlets } from "@/app/admin/outlets/actions";
+import { getActiveOutlets } from "@/app/admin/outlets/actions";
 import { getSaigonNowHHMM } from "@/lib/catalog/outlet-hours";
 import { PosOutletPicker } from "@/app/admin/components/PosOutletPicker";
 import { AdminRouteMemory } from "@/components/ui/AdminRouteMemory";
@@ -85,7 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setOutletsLoading(true);
     setOutletsError(null);
     try {
-      const fetchedOutlets = await getOutlets();
+      const fetchedOutlets = await getActiveOutlets();
       setOutlets(fetchedOutlets);
       setNowHHMM(getSaigonNowHHMM());
     } catch {

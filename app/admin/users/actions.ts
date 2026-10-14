@@ -12,7 +12,11 @@ const SHEET = "Users";
 const PATH = "/admin/users";
 const ROLES = ["STAFF", "MANAGER", "ADMIN"];
 
-type DBUserRow = DBUser & Record<string, unknown>;
+// BR-ACCESS-004: same set requireOwner() accepts; requireAdmin() also lets MANAGER in.
+const isOwnerRole = (role: string) => role === "ADMIN" || role === "SYSTEM";
+const GRANT_ADMIN_DENIED = "Chỉ chủ quán mới cấp được vai Chủ quán.";
+
+type DBUserRow =DBUser & Record<string, unknown>;
 
 function toClientUser(user: DBUserRow): DBUser {
   return {
@@ -74,6 +78,7 @@ export async function addUser(formData: FormData): Promise<ActionResponse> {
 
   if (!username || !role || !password) return fail("Vui lòng điền đủ thông tin");
   if (!ROLES.includes(role)) return fail("Vai trò không hợp lệ");
+  if (role === "ADMIN" && !isOwnerRole(auth.actor.role)) return fail(GRANT_ADMIN_DENIED);
 
   try {
     const users = await findAll(SHEET);
@@ -128,9 +133,15 @@ export async function updateUser(formData: FormData): Promise<ActionResponse> {
 
   if (!id || !role) return fail("Thiếu thông tin bắt buộc");
   if (!ROLES.includes(role)) return fail("Vai trò không hợp lệ");
+  const isOwner = isOwnerRole(auth.actor.role);
 
   try {
-    if (role !== "ADMIN" && isLastAdmin(await findAll(SHEET) as DBUserRow[], id)) {
+    const users = await findAll(SHEET) as DBUserRow[];
+    if (!isOwner && users.find(candidate => candidate.id === id)?.role === "ADMIN") {
+      return fail("Chỉ chủ quán mới sửa được tài khoản chủ quán.");
+    }
+    if (role === "ADMIN" && !isOwner) return fail(GRANT_ADMIN_DENIED);
+    if (role !== "ADMIN" && isLastAdmin(users, id)) {
       return fail("Không thể hạ vai tài khoản chủ quán cuối cùng.");
     }
     const dataToUpdate: Record<string, string> = { role };

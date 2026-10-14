@@ -10,6 +10,7 @@ import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Select } from "@/components/ui/Select";
 import { TextInput } from "@/components/ui/TextInput";
 import { safeReturnTo } from "./return-to";
+import { saigonToday } from "@/lib/shared/datetime";
 import type { DBBankAccount, DBCashCategory, DBCashEntry, DBMonthlyExpenseItem } from "@/types/db";
 
 interface CashEntryFormProps {
@@ -19,6 +20,7 @@ interface CashEntryFormProps {
   accounts: DBBankAccount[];
   monthlyItems?: DBMonthlyExpenseItem[];
   initialMonthlyItemId?: string;
+  month?: string;
   // M7: today in Asia/Saigon, the same value the page already computes for
   // DateRangeButton -- only used to default the add form's date. The edit
   // form always keeps the entry's own date.
@@ -32,6 +34,7 @@ export function CashEntryForm({
   accounts,
   monthlyItems,
   initialMonthlyItemId,
+  month,
   today,
   returnTo: rawReturnTo,
 }: CashEntryFormProps) {
@@ -43,7 +46,20 @@ export function CashEntryForm({
   const [loading, setLoading] = useState(false);
   const savingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
-  const [day, setDay] = useState(entry?.entry_date ?? today ?? "");
+  const [day, setDay] = useState(() => {
+    if (entry?.entry_date) return entry.entry_date;
+    const currentToday = today ?? saigonToday();
+    if (initialMonthlyItemId && month) {
+      const currentMonth = currentToday.slice(0, 7);
+      if (month !== currentMonth) {
+        const [y, m] = month.split("-").map(Number);
+        const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+        return `${month}-${String(lastDay).padStart(2, "0")}`;
+      }
+      return currentToday;
+    }
+    return entry?.entry_date ?? today ?? "";
+  });
   const [dayError, setDayError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER">(
     entry?.payment_method ?? "CASH",

@@ -7,6 +7,8 @@ tables: users, Users
 brCodes: BR-ACCESS-001, BR-ACCESS-002, BR-U-003
 ```
 
+**Behaviour change — 2026-10-14 (`BR-ACCESS-004`, audit E2):** a `MANAGER` cannot give the `ADMIN` role or edit an `ADMIN` account, password included ("Chỉ chủ quán mới cấp được vai Chủ quán.", "Chỉ chủ quán mới sửa được tài khoản chủ quán."); the role list offers a manager only Nhân viên and Quản lý, an `ADMIN` row shows a manager no edit button, and `/admin/users/[id]/edit` of an `ADMIN` account is not found for a manager.
+
 **Behaviour change — 2026-10-14 (audit E3, E4):** `addUser` and `updateUser` accept only `STAFF`, `MANAGER` or `ADMIN` ("Vai trò không hợp lệ"). `updateUser` refuses to demote an `ADMIN` when no other `ACTIVE` `ADMIN` remains ("Không thể hạ vai tài khoản chủ quán cuối cùng."), the same check as delete (`isLastAdmin`). `resolveActor` (`lib/auth/auth.ts`) re-reads `role` and `status` from `users` on every call, so a deleted, stopped or demoted account loses access on its next action rather than when its 30-day token runs out.
 
 **Behaviour change — 2026-10-14 (gap G4):** `deleteUserAction` refuses the signed-in account ("Không thể xoá tài khoản đang đăng nhập.") and an `ADMIN` when no other `ACTIVE` `ADMIN` remains ("Không thể xoá tài khoản chủ quán cuối cùng."); a stopped `ADMIN` cannot sign in, so it does not count.

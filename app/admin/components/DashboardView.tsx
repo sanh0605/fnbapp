@@ -98,7 +98,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
                   Chưa nhập {reminder.itemName} tháng {formatMonth(reminder.month)}
                 </span>
                 <Button
-                  href={`/admin/finance/new?monthlyItem=${encodeURIComponent(reminder.itemId)}&returnTo=%2Fadmin`}
+                  href={`/admin/finance/new?monthlyItem=${encodeURIComponent(reminder.itemId)}&month=${encodeURIComponent(reminder.month)}&returnTo=%2Fadmin`}
                   className="shrink-0 ml-3"
                 >
                   Nhập

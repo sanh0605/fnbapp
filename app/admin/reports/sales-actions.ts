@@ -1,5 +1,6 @@
 "use server";
 
+import { effectivePaymentRows } from "@/lib/sales/payment-method";
 import { findAll, findAllWhereInBatches } from "@/lib/db/tables";
 import { coerceOrderV2, coerceLineV2 } from "@/lib/sales/order-types";
 import type { OrderV2, OrderLineV2 } from "@/lib/sales/order-types";
@@ -142,12 +143,8 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     const paymentMap = new Map<string, { orderCount: number; revenue: number }>();
     const methodsSeenPerOrder = new Set<string>();
     for (const o of ordersForBreakdown) {
-      const rows = paymentsByOrder.get(o.id);
-      const effectiveRows = rows && rows.length > 0
-        ? rows
-        : [{ method: o.payment_method || "UNKNOWN", amount: o.net_total }];
-      for (const row of effectiveRows) {
-        const method = row.method || "UNKNOWN";
+      for (const row of effectivePaymentRows(o, paymentsByOrder.get(o.id) || [])) {
+        const method = row.method;
         if (!paymentMap.has(method)) paymentMap.set(method, { orderCount: 0, revenue: 0 });
         const bucket = paymentMap.get(method)!;
         bucket.revenue += Number(row.amount) || 0;

@@ -13,9 +13,14 @@ import type { DBUser } from "@/types/db";
 interface EditUserFormProps {
   user: DBUser;
   returnTo?: string;
+  canGrantAdmin?: boolean;
 }
 
-export default function EditUserForm({ user, returnTo: rawReturnTo }: EditUserFormProps) {
+export default function EditUserForm({
+  user,
+  returnTo: rawReturnTo,
+  canGrantAdmin = true,
+}: EditUserFormProps) {
   const returnTo = safeReturnTo(rawReturnTo);
   const formId = useId();
   const router = useRouter();
@@ -82,7 +87,7 @@ export default function EditUserForm({ user, returnTo: rawReturnTo }: EditUserFo
             >
               <option value="STAFF">Nhân viên</option>
               <option value="MANAGER">Quản lý</option>
-              <option value="ADMIN">Quản trị viên</option>
+              {canGrantAdmin && <option value="ADMIN">Quản trị viên</option>}
             </Select>
           </Field>
         </div>

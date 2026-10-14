@@ -48,3 +48,13 @@ Code: `deleteUserAction` in `app/admin/users/actions.ts`.
 **Why:** the owner replaced the earlier per-table exception with one system-wide
 rule so that "who can erase history" has a single answer instead of one answer
 per screen.
+
+### BR-ACCESS-004 — Only the owner touches the owner role
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item E2, chose *"Chỉ chủ quán đụng vai Chủ quán"*. Not built yet.
+
+**Why.** A manager could open Nhân sự, raise their own account to `ADMIN` or reset the owner's password, and then do everything kept for the owner: delete for good, undo or edit a stocktake. They could edit the very count that checks them.
+
+- A `MANAGER` keeps Nhân sự: adding and editing `STAFF` and `MANAGER` accounts, including resetting their passwords.
+- Only an `ADMIN` may give the `ADMIN` role (create or change), and only an `ADMIN` may edit an account that is already `ADMIN` (role or password). Checked on the server with `requireOwner()`, not by hiding buttons.
+- For a manager the role list offers only Nhân viên and Quản lý, and an `ADMIN` account shows no edit button.

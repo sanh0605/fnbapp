@@ -15,7 +15,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/Table";
-import { formatDateTime } from "@/lib/shared/datetime";
+import { formatDate, formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { deletePromotionAction } from "@/app/admin/promotions/actions";
 import type { DBPromotion } from "@/types/db";
@@ -39,6 +39,12 @@ function isExpired(endDate: string | null | undefined): boolean {
   if (!endDate) return false;
   const t = new Date(endDate).getTime();
   return !Number.isNaN(t) && t < Date.now();
+}
+
+function formatPromotionDate(val: string | null | undefined): string {
+  if (!val) return "—";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return formatDate(val);
+  return formatDateTimeFull(val);
 }
 
 export function PromotionDetailView({
@@ -88,11 +94,11 @@ export function PromotionDetailView({
     },
     {
       label: "Bắt đầu",
-      value: promo.start_date ? formatDateTime(promo.start_date) : "—",
+      value: formatPromotionDate(promo.start_date),
     },
     {
       label: "Kết thúc",
-      value: promo.end_date ? formatDateTime(promo.end_date) : "—",
+      value: formatPromotionDate(promo.end_date),
     },
     { label: "Trạng thái", value: statusBadge },
   ];

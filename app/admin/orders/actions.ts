@@ -8,7 +8,8 @@ import { requireAdmin } from "@/lib/auth/auth";
 import { getSupabaseClient } from "@/lib/db/supabase";
 import { displayMoney } from "@/lib/reports/display-rounding";
 
-import { ORDER_STATUS } from "@/lib/sales/order-types";
+import { ORDER_STATUS, PAYMENT_METHOD } from "@/lib/sales/order-types";
+import { normalizePaymentMethod } from "@/lib/sales/payment-method";
 import type { OrderLineV2 } from "@/lib/sales/order-types";
 import { parseObject } from "./order-helpers";
 
@@ -71,8 +72,11 @@ const ORDERS_ITEMS_PER_PAGE = 20;
 
 // The one place the orders-list filter is written: the page of rows and the
 // money total both read through it, so they can never disagree (BR-UI-004).
+// `paymentOrderIds` are the orders that have an order_payments row of the
+// wanted method (see paymentFilterOrderIds), so an order paid two ways shows
+// under both filters (B1, lib/sales/payment-method.ts).
 function applyOrderFilters<Q extends { eq: any; neq: any; gte: any; lte: any; ilike: any; or: any }>(
-  query: Q, filters: OrdersV2Filters,
+  query: Q, filters: OrdersV2Filters, paymentOrderIds: string[] = [],
 ): Q {
   let q: any = query
     .eq("status", ORDER_STATUS.COMPLETED)
@@ -80,10 +84,29 @@ function applyOrderFilters<Q extends { eq: any; neq: any; gte: any; lte: any; il
   if (filters.q) q = q.ilike("order_no", `%${filters.q}%`);
   if (filters.from) q = q.gte("created_at", filters.from);
   if (filters.to) q = q.lte("created_at", filters.to);
-  if (filters.payment === "Chuyen khoan") q = q.eq("payment_method", "BANK_TRANSFER");
-  else if (filters.payment === "Tien mat") q = q.neq("payment_method", "BANK_TRANSFER");
+  const idClause = paymentOrderIds.length > 0 ? `,id.in.(${paymentOrderIds.join(",")})` : "";
+  if (filters.payment === "Chuyen khoan") {
+    q = q.or(`payment_method.eq.${PAYMENT_METHOD.BANK_TRANSFER}${idClause}`);
+  } else if (filters.payment === "Tien mat") {
+    // neq drops NULL in SQL, so a null method (empty = cash) is named too.
+    q = q.or(`payment_method.neq.${PAYMENT_METHOD.BANK_TRANSFER},payment_method.is.null${idClause}`);
+  }
   if (filters.brand) q = q.eq("brand_id", filters.brand);
   return q;
+}
+
+// Orders with an order_payments row of the wanted method: the split orders
+// the single payment_method column cannot see. Empty method means cash.
+async function paymentFilterOrderIds(
+  supabase: ReturnType<typeof getSupabaseClient>, filters: OrdersV2Filters,
+): Promise<string[]> {
+  if (filters.payment !== "Chuyen khoan" && filters.payment !== "Tien mat") return [];
+  const methods = filters.payment === "Chuyen khoan"
+    ? [PAYMENT_METHOD.BANK_TRANSFER]
+    : [PAYMENT_METHOD.CASH, ""];
+  const { data, error } = await supabase.from("order_payments").select("order_id").in("method", methods);
+  if (error) throw new Error(error.message);
+  return Array.from(new Set((data || []).map((r: any) => String(r.order_id))));
 }
 
 // Sums net_total over every matched order, reading the database in chunks of
@@ -91,12 +114,12 @@ function applyOrderFilters<Q extends { eq: any; neq: any; gte: any; lte: any; il
 // (BR-DATA-005).
 const TOTALS_CHUNK = 1000;
 async function sumFilteredOrders(
-  supabase: ReturnType<typeof getSupabaseClient>, filters: OrdersV2Filters,
+  supabase: ReturnType<typeof getSupabaseClient>, filters: OrdersV2Filters, paymentOrderIds: string[],
 ): Promise<{ count: number; netTotal: number }> {
   let count = 0;
   let sum = 0;
   for (let from = 0; ; from += TOTALS_CHUNK) {
-    const { data, error } = await applyOrderFilters(supabase.from("orders_v2").select("net_total"), filters)
+    const { data, error } = await applyOrderFilters(supabase.from("orders_v2").select("net_total"), filters, paymentOrderIds)
       .order("created_at", { ascending: false })
       .order("id", { ascending: false })
       .range(from, from + TOTALS_CHUNK - 1);
@@ -121,14 +144,15 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
     // Latest versions only: status=COMPLETED AND superseded_by empty/null --
     // filtered, counted, and paginated at the database level instead of
     // fetching the whole (1600+ rows and growing) table on every load.
+    const paymentOrderIds = await paymentFilterOrderIds(supabase, filters);
     const ordersQuery = applyOrderFilters(
-      supabase.from("orders_v2").select("*", { count: "exact" }), filters)
+      supabase.from("orders_v2").select("*", { count: "exact" }), filters, paymentOrderIds)
       .order("created_at", { ascending: false })
       .range(offset, offset + ORDERS_ITEMS_PER_PAGE - 1);
 
     const [{ data: pageOrders, count, error: ordersError }, totals] = await Promise.all([
       ordersQuery,
-      sumFilteredOrders(supabase, filters),
+      sumFilteredOrders(supabase, filters, paymentOrderIds),
     ]);
     if (ordersError) throw new Error(ordersError.message);
 
@@ -195,7 +219,7 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
         manual_item_discount_total: Number(order.manual_item_discount_total) || 0,
         manual_order_discount: Number(order.manual_order_discount) || 0,
         net_total: Number(order.net_total) || 0,
-        method: order.payment_method === "BANK_TRANSFER" ? "Chuyen khoan" : "Tien mat",
+        method: normalizePaymentMethod(order.payment_method) === PAYMENT_METHOD.BANK_TRANSFER ? "Chuyen khoan" : "Tien mat",
         created_by_name: order.created_by_name || "",
         created_at: order.created_at,
         lines: mappedLines,

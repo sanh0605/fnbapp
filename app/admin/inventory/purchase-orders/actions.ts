@@ -1,17 +1,17 @@
 "use server";
 
-import { findAll, findById, insert, update, generateNewId } from "@/lib/db/tables";
+import { findAll, findById, insert, generateNewId, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { parsePurchaseOrderPayment } from "@/lib/purchasing/purchase-order-payment";
 import type { DBBankAccount, DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DBItemCategory } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchasing/purchase-order-write-plan";
-import { savePurchaseOrderAtomic } from "@/lib/purchasing/purchase-order-transaction";
-import { requireAdmin } from "@/lib/auth/auth";
+import { savePurchaseOrderAtomic, type PurchaseOrderAssetsInput } from "@/lib/purchasing/purchase-order-transaction";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { listPurchaseOrdersPage, paymentLabelOf, type PurchaseOrderListFilters, type PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
 import type { RawPurchaseOrderLine } from "@/lib/purchasing/item-purchase-history";
-import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine, type NewAssetPlan } from "@/lib/assets/asset-purchase-allocation";
+import { planAssetsFromCompletedOrder, type EquipmentPurchaseLine } from "@/lib/assets/asset-purchase-allocation";
 import { assetReconcileRefusalMessage, planAssetReconcile, type AssetReconcilePlan } from "@/lib/assets/asset-purchase-reconcile";
 import { toSaigonIsoString, formatDateTimeFull } from "@/lib/shared/datetime";
 import {
@@ -162,6 +162,13 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       // BR-INV-015: a cancelled order is never edited. Refused before any
       // write, asset or trail row (works before migration 0108 runs too).
       if (previousPo?.status === "CANCELLED") return fail("Phiếu đã huỷ, không sửa được");
+      // Audit A8: requireAdmin lets MANAGER in; replacing a completed order
+      // changes stock, cost and assets, so only the owner may do it. The page
+      // already hides the edit button from MANAGER; this is the server check.
+      if (previousPo?.status === "COMPLETED") {
+        const owner = await requireOwner();
+        if (!owner.ok) return fail(owner.error);
+      }
       // BR-INV-015: a draft is not counted, so saving a completed order back as
       // a draft would be a cancel without the cancel's checks.
       if (previousPo?.status === "COMPLETED" && status === "DRAFT") {
@@ -243,21 +250,6 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     // directly reads the UTC calendar day, one day early for a purchase
     // recorded at Saigon midnight. toSaigonIsoString converts first.
     const acquiredDate = toSaigonIsoString(new Date(effectiveDate)).slice(0, 10);
-    const insertAssetFromPlan = async (plan: NewAssetPlan) => {
-      const assetId = await generateNewId("assets", "TS");
-      await insert("assets", {
-        id: assetId,
-        purchased_item_id: plan.purchased_item_id,
-        purchase_order_line_id: plan.purchase_order_line_id,
-        name_snapshot: plan.name_snapshot,
-        acquired_date: acquiredDate,
-        unit_cost: plan.unit_cost,
-        total_cost: plan.total_cost,
-        quantity: plan.quantity,
-        term_months: plan.term_months,
-      });
-    };
-
     // BR-COGS-008: an edit of a completed order is planned before anything is
     // written. A disposal on an asset the edit would change refuses it.
     let reconcilePlan: Extract<AssetReconcilePlan, { kind: "apply" }> | null = null;
@@ -291,65 +283,59 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       reconcilePlan = result;
     }
 
-    const saved = await savePurchaseOrderAtomic({
-      order: writePlan.order,
-      lines: writePlan.lines,
-      replaceExisting: Boolean(id),
-    });
-    const po_id = saved.purchaseOrderId;
-
-    // Batch 3, section 3.2 + BR-COGS-008: assets follow the purchase.
+    // Batch 3, section 3.2 + BR-COGS-008: assets follow the purchase, and (audit
+    // A7) are written by the same database function as the order, so the two
+    // commit or fail together.
     // - First completion (new order, or DRAFT -> COMPLETED): one asset per
     //   EQUIPMENT line.
     // - Edit of an already COMPLETED order (owner 2026-10-08, "1b"): the
     //   assets it created are retired / patched / added by planAssetReconcile,
-    //   planned BEFORE the atomic save (a disposal refuses the edit with
-    //   nothing written) and applied after it, like the create path.
+    //   planned above BEFORE the save (a disposal refuses the edit with
+    //   nothing written).
     // An id with no stored order found is skipped (status unknown, avoid
     // duplicate assets).
     const becomesCompletedNow =
       status === "COMPLETED" && (!id || (previousPo !== null && previousPo.status !== "COMPLETED"));
-    let assetWarning: string | undefined;
+    let assets: PurchaseOrderAssetsInput | undefined;
     if (becomesCompletedNow) {
-      try {
-        const equipmentLines = buildEquipmentLines();
-        if (equipmentLines.length > 0) {
-          const bands = (await findAll("asset_depreciation_bands")) as unknown as Band[];
-          const assetPlans = planAssetsFromCompletedOrder({
-            allLines: writePlan.lines.map((line: any) => ({ lineId: line.id as string, subtotal: Number(line.subtotal) })),
-            equipmentLines,
-            additions: shipping_fee + tax_amount,
-            subtractions: voucher_amount + discount_amount,
-            bands,
-          });
-          for (const plan of assetPlans) await insertAssetFromPlan(plan);
-          revalidatePath("/admin/inventory/assets");
-        }
-      } catch (assetError: unknown) {
-        // The PO itself already committed -- do not report the whole save
-        // as failed for this (same reasoning as the edit-trail write
-        // below). Surfaced as a warning instead of swallowed silently,
-        // since an un-created asset means real equipment goes untracked.
-        console.error("Asset creation failed (purchase order already saved):", assetError);
-        assetWarning = assetError instanceof Error
-          ? assetError.message
-          : "Không tạo được tài sản cho dụng cụ trong đơn này";
+      const equipmentLines = buildEquipmentLines();
+      if (equipmentLines.length > 0) {
+        const bands = (await findAll("asset_depreciation_bands")) as unknown as Band[];
+        // Throws (and so refuses the whole save) when an equipment line has no
+        // usable quantity or no depreciation band for its price.
+        const assetPlans = planAssetsFromCompletedOrder({
+          allLines: writePlan.lines.map((line: any) => ({ lineId: line.id as string, subtotal: Number(line.subtotal) })),
+          equipmentLines,
+          additions: shipping_fee + tax_amount,
+          subtractions: voucher_amount + discount_amount,
+          bands,
+        });
+        assets = { create: assetPlans.map(plan => ({ ...plan, acquired_date: acquiredDate })), update: [], retire: [] };
       }
     }
     if (reconcilePlan) {
-      try {
-        for (const assetId of reconcilePlan.retire) await update("assets", assetId, { status: "INACTIVE" });
-        for (const change of reconcilePlan.update) await update("assets", change.id, change.patch);
-        for (const plan of reconcilePlan.create) await insertAssetFromPlan(plan);
-        if (reconcilePlan.retire.length + reconcilePlan.update.length + reconcilePlan.create.length > 0) {
-          revalidatePath("/admin/inventory/assets");
-        }
-      } catch (assetError: unknown) {
-        console.error("Asset update failed (purchase order already saved):", assetError);
-        assetWarning = assetError instanceof Error
-          ? assetError.message
-          : "Không cập nhật được tài sản sinh từ phiếu này";
+      const plan: Extract<AssetReconcilePlan, { kind: "apply" }> = reconcilePlan;
+      if (plan.retire.length + plan.update.length + plan.create.length > 0) {
+        assets = {
+          create: plan.create.map(p => ({ ...p, acquired_date: acquiredDate })),
+          update: plan.update,
+          retire: plan.retire,
+        };
       }
+    }
+
+    const saved = await savePurchaseOrderAtomic({
+      order: writePlan.order,
+      lines: writePlan.lines,
+      replaceExisting: Boolean(id),
+      ...(assets ? { assets } : {}),
+    });
+    const po_id = saved.purchaseOrderId;
+    if (assets) {
+      // The SQL write bypasses the insert()/update() helpers that used to drop
+      // this 2-minute cache; without it the next edit plans from stale assets.
+      revalidateTag(getCacheTag("assets"));
+      revalidatePath("/admin/inventory/assets");
     }
 
     if (id && previousPo) {
@@ -379,7 +365,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     revalidateTag("sheets-Purchase_Order_Lines");
     revalidatePath("/admin/inventory/purchase-orders");
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
-    return ok({ po_id, ...(assetWarning ? { assetWarning } : {}) });
+    return ok({ po_id });
   } catch (error: unknown) {
     return describeActionError(error);
   }

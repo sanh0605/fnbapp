@@ -89,7 +89,7 @@ describe("DashboardView alerts (owner 2026-10-14: alerts first)", () => {
     render(<DashboardView data={BUSY} />);
     expect(screen.getByText("Chưa nhập Tiền điện tháng 10/2026")).toBeInTheDocument();
     const enter = screen.getByRole("link", { name: "Nhập" });
-    expect(enter.getAttribute("href")).toBe("/admin/finance/new?monthlyItem=KCT-001&returnTo=%2Fadmin");
+    expect(enter.getAttribute("href")).toBe("/admin/finance/new?monthlyItem=KCT-001&month=2026-10&returnTo=%2Fadmin");
   });
 
   it("puts alerts above the 7-day table", () => {

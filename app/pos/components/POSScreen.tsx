@@ -23,6 +23,39 @@ import {
 } from "@/lib/pos/pos-offline-queue";
 import { reportPosSyncFailure } from "@/app/pos/actions";
 
+function parseApplicableVariants(applicableData: any): {
+  variantsList: string[];
+  variantsMap: Record<string, number>;
+  isMap: boolean;
+} {
+  let variantsList: string[] = [];
+  let variantsMap: Record<string, number> = {};
+  let isMap = false;
+
+  if (!applicableData) {
+    return { variantsList, variantsMap, isMap };
+  }
+
+  let parsed = applicableData;
+  if (typeof applicableData === "string") {
+    try {
+      parsed = JSON.parse(applicableData);
+    } catch {
+      return { variantsList, variantsMap, isMap };
+    }
+  }
+
+  if (Array.isArray(parsed)) {
+    variantsList = parsed.map(String);
+  } else if (parsed && typeof parsed === "object") {
+    variantsMap = parsed;
+    variantsList = Object.keys(parsed);
+    isMap = true;
+  }
+
+  return { variantsList, variantsMap, isMap };
+}
+
 export default function POSScreen({
   brandId,
   outletId,
@@ -60,6 +93,8 @@ export default function POSScreen({
   // fresh timestamp on every retry would change the fingerprint fed into
   // resolvePosCheckoutAttempt below and defeat its token-reuse guarantee.
   const clientCapturedAtRef = useRef<string | null>(null);
+  const [pendingCount, setPendingCount] = useState<number>(0);
+  const isSyncingRef = useRef<boolean>(false);
 
   const [isOnline, setIsOnline] = useState(true);
   const [processingOrder, setProcessingOrder] = useState<any | null>(null);
@@ -143,8 +178,12 @@ export default function POSScreen({
     refreshDrafts();
   }, [outletId]);
 
-  const saveDraft = (cartToSave: any[], clearCartAfter: boolean = false) => {
-    if (cartToSave.length === 0) return;
+  const saveDraft = async (
+    cartToSave: any[],
+    clearCartAfter: boolean = false,
+    silent: boolean = false
+  ): Promise<boolean> => {
+    if (cartToSave.length === 0) return false;
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('vi-VN', {
       day: '2-digit',
@@ -157,25 +196,35 @@ export default function POSScreen({
     const firstItemName = cartToSave[0]?.product_name || "Trống";
     const draftName = `${formattedDate} - ${firstItemName}`;
 
-    savePOSDraft({
-      id: activeDraftId || undefined,
-      name: draftName,
-      cart_json: JSON.stringify(cartToSave),
-      brand_id: brandId || "",
-      outlet_id: outletId || "",
-    }).then(async res => {
-      if (res.success && res.draft) {
-        refreshDrafts();
+    try {
+      const res = await savePOSDraft({
+        id: activeDraftId || undefined,
+        name: draftName,
+        cart_json: JSON.stringify(cartToSave),
+        brand_id: brandId || "",
+        outlet_id: outletId || "",
+      });
+      if (res?.success && res.draft) {
+        await refreshDrafts();
         if (clearCartAfter) {
           setCart([]);
           setActiveDraftId(null);
         } else {
           setActiveDraftId(res.draft.id);
         }
+        return true;
       } else {
-        await alert({ title: "Lỗi", message: "Lỗi lưu đơn nháp: " + (res as any).error, variant: "danger" });
+        if (!silent) {
+          await alert({ title: "Lỗi", message: "Lỗi lưu đơn nháp: " + (res as any)?.error, variant: "danger" });
+        }
+        return false;
       }
-    });
+    } catch (err: any) {
+      if (!silent) {
+        await alert({ title: "Lỗi", message: "Lỗi lưu đơn nháp: " + (err?.message || String(err)), variant: "danger" });
+      }
+      return false;
+    }
   };
 
   const loadDraft = async (draftId: string) => {
@@ -184,7 +233,11 @@ export default function POSScreen({
     
     if (cart.length > 0) {
       if (await confirm({ title: "Xác nhận", message: "Bạn đang có món trong giỏ. Lưu giỏ hiện tại thành nháp mới trước khi mở nháp này?", variant: "warning" })) {
-        saveDraft(cart, false);
+        const saved = await saveDraft(cart, false, true);
+        if (!saved) {
+          addToast("error", "Không lưu được giỏ hiện tại, chưa mở đơn nháp");
+          return;
+        }
       }
     }
     
@@ -253,21 +306,11 @@ export default function POSScreen({
       if (!isDateValid) return;
       if (p.brand_id && p.brand_id !== brandId) return;
 
-      let applicableVariantsList: string[] = [];
-      let applicableVariantsMap: Record<string, number> = {};
-      let isMap = false;
-      try {
-        if (p.applicable_products_json) {
-          const parsed = JSON.parse(p.applicable_products_json);
-          if (Array.isArray(parsed)) {
-            applicableVariantsList = parsed;
-          } else if (parsed && typeof parsed === "object") {
-            applicableVariantsMap = parsed;
-            applicableVariantsList = Object.keys(parsed);
-            isMap = true;
-          }
-        }
-      } catch (e) {}
+      const {
+        variantsList: applicableVariantsList,
+        variantsMap: applicableVariantsMap,
+        isMap,
+      } = parseApplicableVariants(p.applicable_products_json);
       
       applicableVariantsList.forEach(vId => {
         const variant = variants.find((v: any) => v.id === vId);
@@ -408,22 +451,11 @@ export default function POSScreen({
         if (subtotal < Number(p.min_order_value || 0)) return 0;
 
         let totalProdDiscount = 0;
-        let applicableVariantsMap: Record<string, number> = {};
-        let applicableVariantsList: string[] = [];
-        let isMap = false;
-
-        try {
-          if (p.applicable_products_json) {
-            const parsed = JSON.parse(p.applicable_products_json);
-            if (Array.isArray(parsed)) {
-              applicableVariantsList = parsed;
-            } else if (parsed && typeof parsed === "object") {
-              applicableVariantsMap = parsed;
-              applicableVariantsList = Object.keys(parsed);
-              isMap = true;
-            }
-          }
-        } catch (e) {}
+        const {
+          variantsList: applicableVariantsList,
+          variantsMap: applicableVariantsMap,
+          isMap,
+        } = parseApplicableVariants(p.applicable_products_json);
 
         if (applicableVariantsList.length === 0) return 0;
 
@@ -489,21 +521,11 @@ export default function POSScreen({
   const itemPromoDiscounts = useMemo(() => {
     const discounts: number[] = new Array(cart.length).fill(0);
     if (appliedPromo?.type === "PRODUCT_DISCOUNT") {
-      let isMap = false;
-      let applicableVariantsMap: Record<string, number> = {};
-      let applicableVariantsList: string[] = [];
-      try {
-        if (appliedPromo.applicable_products_json) {
-          const parsed = JSON.parse(appliedPromo.applicable_products_json);
-          if (Array.isArray(parsed)) {
-            applicableVariantsList = parsed;
-          } else if (parsed && typeof parsed === "object") {
-            applicableVariantsMap = parsed;
-            applicableVariantsList = Object.keys(parsed);
-            isMap = true;
-          }
-        }
-      } catch(e) {}
+      const {
+        variantsList: applicableVariantsList,
+        variantsMap: applicableVariantsMap,
+        isMap,
+      } = parseApplicableVariants(appliedPromo.applicable_products_json);
 
       cart.forEach((item, idx) => {
         if (applicableVariantsList.includes(item.variant_id)) {
@@ -571,12 +593,9 @@ export default function POSScreen({
     }
 
     if (matchedPromo.type === "PRODUCT_DISCOUNT") {
-      let applicableVariants: string[] = [];
-      try {
-        if (matchedPromo.applicable_products_json) {
-          applicableVariants = JSON.parse(matchedPromo.applicable_products_json);
-        }
-      } catch (e) {}
+      const { variantsList: applicableVariants } = parseApplicableVariants(
+        matchedPromo.applicable_products_json
+      );
 
       const hasMatchingProduct = cart.some((item) =>
         applicableVariants.includes(item.variant_id)
@@ -626,8 +645,11 @@ export default function POSScreen({
 
 
   const syncPendingOrders = async () => {
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
     try {
       const pending = await listPendingOrders();
+      setPendingCount(pending.length);
       for (const record of pending) {
         try {
           const res = await submitOrderV2(record.cartInput, record.requestToken);
@@ -658,6 +680,12 @@ export default function POSScreen({
     } catch {
       // listPendingOrders() itself failed (IndexedDB error, etc.)
       // Self-heals on next mount or online event
+    } finally {
+      isSyncingRef.current = false;
+      try {
+        const remaining = await listPendingOrders();
+        setPendingCount(remaining.length);
+      } catch {}
     }
   };
 
@@ -669,6 +697,15 @@ export default function POSScreen({
     window.addEventListener("online", syncPendingOrders);
     return () => {
       window.removeEventListener("online", syncPendingOrders);
+    };
+  }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      syncPendingOrders();
+    }, 60000);
+    return () => {
+      clearInterval(intervalId);
     };
   }, []);
 
@@ -798,6 +835,7 @@ export default function POSScreen({
             }
           });
         }
+        syncPendingOrders();
       } else {
         // Rollback states
         setCart(cartBackup);
@@ -845,6 +883,10 @@ export default function POSScreen({
             if (delRes.success) refreshDrafts();
           });
         }
+        try {
+          const pending = await listPendingOrders();
+          setPendingCount(pending.length);
+        } catch {}
       } catch (queueErr) {
         // IndexedDB itself failed (extremely rare -- private browsing mode
         // with storage disabled, or storage quota exceeded). Only now fall
@@ -976,13 +1018,14 @@ export default function POSScreen({
       </div>
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header className="h-14 bg-surface-card/80 border-b border-border/50 backdrop-blur-md flex items-center justify-between px-4 shrink-0 shadow-sm relative z-10">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-text-muted hover:text-primary transition-colors">
+        <header className="h-14 bg-surface-card/80 border-b border-border/50 backdrop-blur-md flex items-center justify-between px-3 sm:px-4 shrink-0 shadow-sm relative z-10">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0">
+            <Link href="/admin" className="text-text-muted hover:text-primary transition-colors shrink-0">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </Link>
-            <h1 className="font-extrabold text-xl text-text-primary tracking-tight flex items-center gap-2">
-              <span className="text-primary">POS</span> Đơn Mới
+            <h1 className="font-extrabold text-lg sm:text-xl text-text-primary tracking-tight flex items-center gap-1 sm:gap-2 shrink-0">
+              <span className="text-primary">POS</span>
+              <span className="hidden sm:inline"> Đơn Mới</span>
             </h1>
             {isOnline ? (
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-success/10 text-success border border-success/20 shadow-sm shrink-0">
@@ -995,18 +1038,24 @@ export default function POSScreen({
                 Ngoại tuyến
               </span>
             )}
+            {pendingCount > 0 && (
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-warning/10 text-warning border border-warning/20 shadow-sm shrink-0 whitespace-nowrap">
+                <span className="w-2 h-2 rounded-full bg-warning animate-pulse"></span>
+                {pendingCount} đơn chờ gửi
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button 
               onClick={() => {
                 refreshDrafts();
                 setIsDraftModalOpen(true);
               }}
-              className="text-sm font-bold text-primary bg-primary-soft px-3 py-1.5 rounded-full hover:bg-primary-soft transition flex items-center gap-1.5"
+              className="text-xs sm:text-sm font-bold text-primary bg-primary-soft px-2.5 sm:px-3 py-1.5 rounded-full hover:bg-primary-soft transition flex items-center gap-1.5 shrink-0"
             >
               📝 Nháp <span className="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
             </button>
-            <div className="text-sm font-medium text-text-secondary bg-surface-secondary px-3 py-1.5 rounded-full">
+            <div className="hidden sm:block text-sm font-medium text-text-secondary bg-surface-secondary px-3 py-1.5 rounded-full shrink-0">
               {formatDate(new Date())}
             </div>
           </div>

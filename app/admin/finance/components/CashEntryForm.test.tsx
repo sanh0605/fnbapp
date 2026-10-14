@@ -193,4 +193,34 @@ describe("CashEntryForm monthly expense item", () => {
     render(<CashEntryForm entry={entry} categories={CATS} accounts={[]} monthlyItems={ITEMS} today="2026-10-14" />);
     expect(itemBox()!.value).toBe("KCT-003");
   });
+
+  it("prefills the date as the last day of that month when creating from a monthly item with a past month", () => {
+    render(
+      <CashEntryForm
+        categories={CATS}
+        accounts={[]}
+        monthlyItems={ITEMS}
+        initialMonthlyItemId="KCT-001"
+        month="2026-09"
+        today="2026-10-14"
+      />
+    );
+    const dateInput = document.querySelector('input[name="entry_date"]') as HTMLInputElement;
+    expect(dateInput.value).toBe("2026-09-30");
+  });
+
+  it("keeps today when creating from a monthly item with the current Saigon month", () => {
+    render(
+      <CashEntryForm
+        categories={CATS}
+        accounts={[]}
+        monthlyItems={ITEMS}
+        initialMonthlyItemId="KCT-001"
+        month="2026-10"
+        today="2026-10-14"
+      />
+    );
+    const dateInput = document.querySelector('input[name="entry_date"]') as HTMLInputElement;
+    expect(dateInput.value).toBe("2026-10-14");
+  });
 });

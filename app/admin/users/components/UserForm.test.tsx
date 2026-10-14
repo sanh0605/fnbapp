@@ -86,6 +86,18 @@ describe("UserForm", () => {
     expect(screen.queryByText(/ADMIN/)).toBeNull();
   });
 
+  it("with canGrantAdmin false, the ADMIN option is absent and only STAFF and MANAGER are present", () => {
+    render(<UserForm returnTo="/admin/users" canGrantAdmin={false} />);
+    expect(screen.getByRole("option", { name: "Nhân viên" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Quản lý" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Quản trị viên" })).toBeNull();
+  });
+
+  it("with canGrantAdmin true, the ADMIN option is present", () => {
+    render(<UserForm returnTo="/admin/users" canGrantAdmin={true} />);
+    expect(screen.getByRole("option", { name: "Quản trị viên" })).toBeInTheDocument();
+  });
+
   it("after a successful add, goes to returnTo and refreshes", async () => {
     mocks.addUser.mockResolvedValue({});
     render(<UserForm returnTo="/admin/users?role=STAFF" />);

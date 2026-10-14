@@ -40,6 +40,32 @@ describe("savePurchaseOrderAtomic", () => {
     expect(result.purchaseOrderId).toBe("PO-050");
   });
 
+  it("sends the asset plan in the same RPC call, so order and assets commit together (audit A7)", async () => {
+    mocks.rpc.mockResolvedValue({ data: { purchase_order_id: "PO-051", line_count: 1 }, error: null });
+    const assets = {
+      create: [{
+        purchased_item_id: "SPM-200", purchase_order_line_id: "POL-002", name_snapshot: "Bình nhựa",
+        unit_cost: 95_150, total_cost: 761_200, quantity: 8, term_months: 12, acquired_date: "2026-08-20",
+      }],
+      update: [{ id: "TS-018", patch: { quantity: 3 } }],
+      retire: ["TS-019"],
+    };
+
+    await savePurchaseOrderAtomic({
+      order: { id: "PO-051" },
+      lines: [{ id: "POL-002" }],
+      replaceExisting: true,
+      assets,
+    });
+
+    expect(mocks.rpc).toHaveBeenCalledWith("save_purchase_order_atomic", {
+      p_order: { id: "PO-051" },
+      p_lines: [{ id: "POL-002" }],
+      p_replace_existing: true,
+      p_assets: assets,
+    });
+  });
+
   it("surfaces RPC errors without attempting client-side cleanup", async () => {
     mocks.rpc.mockResolvedValue({
       data: null,

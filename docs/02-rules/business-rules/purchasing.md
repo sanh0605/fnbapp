@@ -36,3 +36,13 @@ Asked the same day, after `BR-INV-015`: *"anh có thể duplicate từ phiếu �
 - **Transaction time** (owner, *"2 các phiếu huỷ thì lấy đúng thời điểm giao dịch của phiếu đó. Còn lại thì để trống"*): copying a cancelled order keeps its exact transaction time; copying any other order leaves the time blank, to be chosen. He was offered "always blank", "always the source's" and "today".
 - **What else is copied** (owner 2026-10-06, *"1a 2a 3a"*): shipping fee, tax, voucher and discount are copied as they are (`PO-147`'s voucher 35.000 comes across with its Vòi rót rượu line); the payment method and bank account are copied as they are; the supplier's invoice code follows the date rule: kept from a cancelled order, blank from any other (a new purchase has a new invoice). He was offered "zero" for the extra costs, "always"/"never" for the invoice code, and "blank" for the payment.
 - **A copy of a live order saved with no date is dated the moment it is saved**, as any new order is (`savePurchaseOrder`). He was told this before choosing.
+
+### BR-INV-018 — An order dated on or before the last confirmed stocktake cannot have its stock or cost changed by an edit
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item A3b, chose *"Chặn sửa như Huỷ"*. Built 2026-10-14 on the branch feat/no-popups, not yet pushed; migration 0112 not yet run on the server.
+
+**The example he was shown.** The Trứng gà order of 05/08 says 30 eggs, and the stocktake of 09/08 is confirmed. Editing the order down to 20 today would leave the book 10 eggs off the shelf and August's cost of goods wrong, because the count was worked out from 30.
+
+- The same limit as cancelling (`BR-INV-015`): an edit of a completed order dated on or before the last confirmed stocktake (the order's `transaction_date`, else `created_at`, against the stocktake's `confirmed_at` as a moment) is refused if it changes anything that moves stock or cost: lines, quantities, amounts, extra costs, or the date. The refusal names the stocktake. Notes, invoice code and payment details stay editable.
+- To change such an order, undo the stocktakes from the newest back first, as for editing a stocktake (`BR-INV-012`).
+- **Measured 2026-10-14 (read only):** 151 of 203 completed orders are dated on or before `STK-001` (confirmed 09/08/2026 22:02 Saigon), the only confirmed stocktake, so their stock and cost fields are locked; 52 are not.

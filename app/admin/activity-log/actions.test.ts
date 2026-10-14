@@ -57,14 +57,21 @@ describe("getActivityLogEvents", () => {
       count: 41,
       error: null,
     });
+    // B5 (2026-10-14 audit): the picker comes from the Users table, id and
+    // name only, not from a capped, unordered scan of the log.
     const actors = query({
-      data: [{ actor_name: "Admin" }, { actor_name: "Admin" }, { actor_name: "Cashier" }],
+      data: [
+        { id: "u2", name: "Cashier" },
+        { id: "u1", name: "Admin" },
+        { id: "u3", name: "Admin" },
+        { id: "u4", name: null },
+      ],
       error: null,
     });
-    let eventQueryCount = 0;
     const from = vi.fn((table: string) => {
       if (table === "orders_v2") return orderSearch;
-      if (table === "order_events") return eventQueryCount++ === 0 ? events : actors;
+      if (table === "order_events") return events;
+      if (table === "users") return actors;
       throw new Error(`Unexpected table ${table}`);
     });
     mocks.getSupabaseClient.mockReturnValue({ from });
@@ -101,5 +108,6 @@ describe("getActivityLogEvents", () => {
     expect(result.totalCount).toBe(41);
     expect(result.itemsPerPage).toBe(20);
     expect(result.actors).toEqual(["Admin", "Cashier"]);
+    expect(actors.select).toHaveBeenCalledWith("id, name");
   });
 });

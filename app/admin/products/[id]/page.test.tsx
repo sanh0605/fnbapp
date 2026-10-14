@@ -24,6 +24,18 @@ const { mockProducts, mockCategories, resolveActorMock } = vi.hoisted(() => ({ r
     isLinkedTopping: false,
   },
   {
+    id: "PROD-TOP",
+    name: "Trân châu",
+    category_id: "CAT-001",
+    status: "ACTIVE",
+    variants: [],
+    priceHistory: [],
+    neverSold: true,
+    hasNoSellableVariant: false,
+    isLinkedTopping: true,
+    hasModifierLink: true,
+  },
+  {
     id: "PROD-099",
     name: "Món đã xoá",
     category_id: "CAT-001",
@@ -99,5 +111,12 @@ describe("ProductDetailPage", () => {
     resolveActorMock.mockResolvedValue({ ok: true, actor: { role: "MANAGER" } });
     const asManager: any = await ProductDetailPage({ params: { id: "PROD-099" }, searchParams: {} });
     expect(asManager.props.canDelete).toBe(false);
+  });
+
+  // F3 (2026-10-14 audit): a never-sold dish linked to a topping cannot be
+  // erased (modifiers.product_id is RESTRICT), so the button is not offered.
+  it("passes canDelete false for a never-sold dish that is linked to a topping, even for ADMIN", async () => {
+    const element: any = await ProductDetailPage({ params: { id: "PROD-TOP" }, searchParams: {} });
+    expect(element.props.canDelete).toBe(false);
   });
 });

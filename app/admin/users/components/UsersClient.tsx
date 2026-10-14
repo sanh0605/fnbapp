@@ -20,6 +20,7 @@ import type { DBUser } from "@/types/db";
 export interface UsersClientProps {
   users: DBUser[];
   canDelete: boolean;
+  canGrantAdmin?: boolean;
   initialSearch?: string;
   initialRole?: string;
   initialPage?: string;
@@ -54,6 +55,7 @@ function listUrl(
 export default function UsersClient({
   users,
   canDelete,
+  canGrantAdmin = true,
   initialSearch,
   initialRole,
   initialPage,

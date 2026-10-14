@@ -34,7 +34,7 @@ describe("POSPage does not offer a paused (INACTIVE) product", () => {
     mocks.getPOSBestSellerProductIds.mockResolvedValue([]);
     mocks.findAll.mockImplementation(async (sheet: string) => {
       if (sheet === "Outlets") {
-        return [{ id: "OUT-001", brand_id: "BR-001" }];
+        return [{ id: "OUT-001", brand_id: "BR-001", status: "ACTIVE" }, { id: "OUT-STOP", brand_id: "BR-001", status: "INACTIVE" }];
       }
       if (sheet === "Product_Categories") {
         return [{ id: "CAT-001", name: "Đồ uống", status: "ACTIVE" }];
@@ -92,7 +92,7 @@ describe("POSPage does not offer a product with no ACTIVE variant left", () => {
     mocks.getPOSBestSellerProductIds.mockResolvedValue([]);
     mocks.findAll.mockImplementation(async (sheet: string) => {
       if (sheet === "Outlets") {
-        return [{ id: "OUT-001", brand_id: "BR-001" }];
+        return [{ id: "OUT-001", brand_id: "BR-001", status: "ACTIVE" }, { id: "OUT-STOP", brand_id: "BR-001", status: "INACTIVE" }];
       }
       if (sheet === "Product_Categories") {
         return [{ id: "CAT-001", name: "Đồ uống", status: "ACTIVE" }];
@@ -124,5 +124,34 @@ describe("POSPage does not offer a product with no ACTIVE variant left", () => {
     const productIds = element.props.products.map((p: any) => p.id);
     expect(productIds).not.toContain("PROD-EMPTY");
     expect(productIds).toContain("PROD-SELLABLE");
+  });
+});
+
+// F1 (2026-10-14 audit): a stopped outlet must not open the till, though the
+// stop-confirmation text promises it. Wrong value before the fix: the page
+// rendered POSScreen for any outlet that existed.
+describe("POSPage refuses a stopped outlet", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getServerSession.mockResolvedValue({ user: { name: "Cashier" } });
+    mocks.getPOSBestSellerProductIds.mockResolvedValue([]);
+    mocks.redirect.mockImplementation((url: string) => {
+      throw new Error(`NEXT_REDIRECT ${url}`);
+    });
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Outlets"
+        ? [{ id: "OUT-001", brand_id: "BR-001", status: "ACTIVE" }, { id: "OUT-STOP", brand_id: "BR-001", status: "INACTIVE" }]
+        : [],
+    );
+  });
+
+  it("sends a non-ACTIVE outlet back to the picker", async () => {
+    await expect(POSPage({ params: {}, searchParams: { outletId: "OUT-STOP" } } as any)).rejects.toThrow("NEXT_REDIRECT /admin");
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin");
+  });
+
+  it("still opens an ACTIVE outlet", async () => {
+    const element: any = await POSPage({ params: {}, searchParams: { outletId: "OUT-001" } } as any);
+    expect(element.props.outletId).toBe("OUT-001");
   });
 });

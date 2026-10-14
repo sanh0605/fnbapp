@@ -194,9 +194,11 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
                 <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
                 Các size
               </h3>
+              {!priceReadOnly && (
               <Button variant="secondary" type="button" onClick={addVariant} className="min-h-[44px] md:min-h-[40px]">
                 <Plus className="w-4 h-4 mr-1"/> Thêm size
               </Button>
+              )}
             </div>
 
             <div className="space-y-4">

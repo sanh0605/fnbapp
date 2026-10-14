@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { resolveActor } from "@/lib/auth/auth";
 import { getUserById } from "@/app/admin/users/actions";
 import EditUserForm from "@/app/admin/users/components/EditUserForm";
 import { safeReturnTo } from "@/app/admin/users/components/return-to";
@@ -17,9 +18,20 @@ export default async function EditUserPage({
   const rawReturnTo = safeReturnTo(
     typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined
   );
-  const user = await getUserById(params.id);
+  const [user, auth] = await Promise.all([
+    getUserById(params.id),
+    resolveActor(),
+  ]);
 
   if (!user) {
+    notFound();
+  }
+
+  const canGrantAdmin = Boolean(
+    auth.ok && (auth.actor.role === "ADMIN" || auth.actor.role === "SYSTEM")
+  );
+
+  if (!canGrantAdmin && user.role === "ADMIN") {
     notFound();
   }
 
@@ -47,7 +59,7 @@ export default async function EditUserPage({
         title="Chỉnh sửa"
         subtitle={user.username}
       />
-      <EditUserForm user={user} returnTo={detailHref} />
+      <EditUserForm user={user} returnTo={detailHref} canGrantAdmin={canGrantAdmin} />
     </DetailFrame>
   );
 }

@@ -25,7 +25,7 @@ When a rule changes, preserve the old decision in Git/audit evidence and record 
 | [`docs/02-rules/business-rules/cogs.md`](cogs.md) | COGS and reporting rules | `BR-COGS-*` |
 | [`docs/02-rules/business-rules/inventory.md`](inventory.md) | Inventory, issue slips, production rules | `BR-INV-*` |
 | [`docs/02-rules/business-rules/stocktake.md`](stocktake.md) | Stocktake: blank lines, cancelling, editing, confirming | `BR-INV-010`, `BR-INV-011`, `BR-INV-012`, `BR-INV-017` |
-| [`docs/02-rules/business-rules/purchasing.md`](purchasing.md) | Purchase orders: atomic writes, cancelling | `BR-INV-002`, `BR-INV-015` |
+| [`docs/02-rules/business-rules/purchasing.md`](purchasing.md) | Purchase orders: atomic writes, cancelling, copying, editing after a stocktake | `BR-INV-002`, `BR-INV-015`, `BR-INV-016`, `BR-INV-018` |
 | [`docs/02-rules/business-rules/catalog.md`](catalog.md) | Catalogue rules | `BR-CATALOG-*` |
 | [`docs/02-rules/business-rules/cash-book.md`](cash-book.md) | Cash book (sổ thu chi) rules | `BR-CASH-*` |
 | [`docs/02-rules/business-rules/profit-and-loss.md`](profit-and-loss.md) | Monthly profit and loss rules | `BR-PNL-*` |

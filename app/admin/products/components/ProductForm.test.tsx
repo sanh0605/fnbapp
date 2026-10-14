@@ -114,6 +114,22 @@ describe("ProductForm -- price field for a topping linked to an ACTIVE modifier"
 
     expect(priceInput.readOnly || priceInput.disabled).toBe(false);
   });
+
+  // F6 (2026-10-14 audit): a linked topping has one price, so no second size.
+  it("hides 'Thêm size' for a linked topping and shows it for an ordinary dish", async () => {
+    await openEditForm({
+      id: "PROD-030", name: "Kem muối", category_id: "CAT-007", status: "ACTIVE",
+      neverSold: false, variants: [{ id: "VAR-030", size_name: "Mặc định", price: 4000 }],
+      isLinkedTopping: true,
+    });
+    expect(document.body.textContent).not.toContain("Thêm size");
+    await openEditForm({
+      id: "PROD-001", name: "Cà phê đá", category_id: "CAT-001", status: "ACTIVE",
+      neverSold: false, variants: [{ id: "VAR-001", size_name: "Mặc định", price: 25000 }],
+      isLinkedTopping: false,
+    });
+    expect(document.body.textContent).toContain("Thêm size");
+  });
 });
 
 describe("ProductForm -- buttons (BR-UI-005, spec 2.1)", () => {

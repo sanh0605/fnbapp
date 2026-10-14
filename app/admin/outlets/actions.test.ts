@@ -17,9 +17,23 @@ vi.mock("@/lib/db/tables", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { getOutlets, addOutlet, editOutlet, retireOutlet } from "./actions";
+import { getOutlets, getActiveOutlets, addOutlet, editOutlet, retireOutlet } from "./actions";
 
 const ADMIN = { ok: true as const, actor: { id: "admin-1", name: "Admin" } };
+
+describe("getActiveOutlets", () => {
+  it("lists only ACTIVE outlets, for the till picker (F1, 2026-10-14 audit)", async () => {
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([
+      { id: "OUT-001", name: "Điểm bán 1", status: "ACTIVE" },
+      { id: "OUT-002", name: "Điểm bán 2", status: "INACTIVE" },
+    ]);
+
+    const result = await getActiveOutlets();
+
+    expect(result.map((o: any) => o.id)).toEqual(["OUT-001"]);
+  });
+});
 
 describe("getOutlets", () => {
   beforeEach(() => {

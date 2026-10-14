@@ -1,6 +1,6 @@
 # Inventory and production rules
 
-Purchase-order rules (`BR-INV-002`, `BR-INV-015`, `BR-INV-016`) are in `docs/02-rules/business-rules/purchasing.md`; stocktake rules (`BR-INV-010`, `BR-INV-011`, `BR-INV-012`, `BR-INV-017`) are in `docs/02-rules/business-rules/stocktake.md`.
+Purchase-order rules (`BR-INV-002`, `BR-INV-015`, `BR-INV-016`, `BR-INV-018`) are in `docs/02-rules/business-rules/purchasing.md`; stocktake rules (`BR-INV-010`, `BR-INV-011`, `BR-INV-012`, `BR-INV-017`) are in `docs/02-rules/business-rules/stocktake.md`.
 
 ### BR-INV-001 — Quantity movement belongs in the stock ledger
 

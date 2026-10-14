@@ -69,7 +69,21 @@ describe("PromotionDetailView", () => {
     expect(screen.getAllByText("Giảm 10,000đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("GIAM10K").length).toBeGreaterThan(0);
     expect(screen.getAllByText("50,000đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/15\/07\/2026 12:59/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/15\/07\/2026 12:59:00/).length).toBeGreaterThan(0);
+  });
+
+  it("leaves a plain date start_date as a plain date without seconds", () => {
+    render(
+      <PromotionDetailView
+        promo={{ ...samplePromo, start_date: "2026-07-01" }}
+        brandName="Uchako"
+        applicableItems={sampleItems}
+        canDelete={false}
+        returnTo="/admin/promotions"
+      />,
+    );
+    expect(screen.getAllByText("01/07/2026").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/01\/07\/2026 00:00/)).toBeNull();
   });
 
   it("renders 'Món áp dụng (N)' section for PRODUCT_DISCOUNT", () => {

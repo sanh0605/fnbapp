@@ -11,9 +11,10 @@ import { safeReturnTo } from "./return-to";
 
 interface UserFormProps {
   returnTo?: string;
+  canGrantAdmin?: boolean;
 }
 
-export function UserForm({ returnTo: rawReturnTo }: UserFormProps = {}) {
+export function UserForm({ returnTo: rawReturnTo, canGrantAdmin = true }: UserFormProps = {}) {
   const returnTo = safeReturnTo(rawReturnTo);
   const formId = useId();
   const router = useRouter();
@@ -72,7 +73,7 @@ export function UserForm({ returnTo: rawReturnTo }: UserFormProps = {}) {
             >
               <option value="STAFF">Nhân viên</option>
               <option value="MANAGER">Quản lý</option>
-              <option value="ADMIN">Quản trị viên</option>
+              {canGrantAdmin && <option value="ADMIN">Quản trị viên</option>}
             </Select>
           </Field>
         </div>

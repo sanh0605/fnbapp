@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   savePurchaseOrderAtomic: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireAdmin })); // a completed-order edit asks for the owner; this test acts as one
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   findById: mocks.findById,

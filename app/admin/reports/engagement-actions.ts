@@ -1,10 +1,10 @@
 "use server";
 
-import { findAll } from "@/lib/db/tables";
-import { ORDER_STATUS } from "@/lib/sales/order-types";
+import { findAll, findAllWhereInBatches } from "@/lib/db/tables";
+import { ORDER_STATUS, coerceLineV2 } from "@/lib/sales/order-types";
 import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
 import { requireAdmin } from "@/lib/auth/auth";
-import { findCompletedOrders, type PnLReportFilters } from "./report-helpers";
+import { findCompletedOrders, selectSalesOrders, filterLinesByCategory, type PnLReportFilters } from "./report-helpers";
 
 export interface HeatmapCell {
   dayOfWeek: string;
@@ -18,26 +18,27 @@ export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promis
   if (!auth.ok) throw new Error(auth.error);
 
   try {
+    // B4: the same filtered order selection as the rest of Doanh số
+    // (date, outlet-brand, staff), and the dish-group filter below.
     const orders = await findCompletedOrders(
       toSaigonUtcRange(filters.startDate, filters.endDate),
+      filters,
     );
-    const { startDate, endDate, brandId } = filters;
-    // Claude code — Phase 5.3: Asia/Saigon date bounds.
-    const dateRange = toSaigonUtcRange(startDate, endDate);
+    const filteredOrders = selectSalesOrders(orders, filters);
 
-    const filteredOrders = (orders as any[]).filter(o => {
-      if (o.status !== ORDER_STATUS.COMPLETED) return false;
-      if (o.superseded_by && o.superseded_by !== "") return false;
-      if (!o.created_at) return false;
-
-      if (dateRange) {
-        const d = new Date(o.created_at);
-        if (d < dateRange.startUtc || d > dateRange.endUtc) return false;
+    // With a dish group, an order counts only if it has a line of that group,
+    // worth those lines (same rule as computeSalesTotals).
+    let valueOf = (o: any) => Number(o.net_total) || 0;
+    let ordersToPlace = filteredOrders;
+    if (filters.categoryId) {
+      const lines = await findAllWhereInBatches("Order_Lines_V2", "order_id", filteredOrders.map(o => o.id));
+      const revenueByOrder = new Map<string, number>();
+      for (const l of filterLinesByCategory((lines as any[]).map(coerceLineV2), filters.categoryId)) {
+        revenueByOrder.set(l.order_id, (revenueByOrder.get(l.order_id) || 0) + l.net_line_total);
       }
-      if (brandId && o.brand_id !== brandId) return false;
-
-      return true;
-    });
+      ordersToPlace = filteredOrders.filter(o => revenueByOrder.has(o.id));
+      valueOf = (o: any) => revenueByOrder.get(o.id) || 0;
+    }
 
     const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
     const cellsMap = new Map<string, HeatmapCell>();
@@ -49,7 +50,7 @@ export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promis
       }
     }
 
-    for (const o of filteredOrders) {
+    for (const o of ordersToPlace) {
       // Saigon weekday and hour, never the runtime's own zone (Vercel is UTC).
       const { dowLabel: day, hourKey } = saigonBucketKeys(o.created_at);
       const hour = Number(hourKey.slice(0, 2));
@@ -57,7 +58,7 @@ export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promis
       
       const cell = cellsMap.get(key);
       if (cell) {
-        cell.revenue += Number(o.net_total) || 0;
+        cell.revenue += valueOf(o);
         cell.orderCount += 1;
       }
     }

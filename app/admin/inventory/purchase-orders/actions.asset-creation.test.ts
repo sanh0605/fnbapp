@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   findById: vi.fn(),
   insert: vi.fn(),
@@ -13,13 +14,14 @@ const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   findById: mocks.findById,
   insert: mocks.insert,
   update: mocks.update,
   generateNewId: mocks.generateNewId,
+  getCacheTag: (sheet: string) => `sheets-${sheet}`,
 }));
 vi.mock("@/lib/purchasing/purchase-order-write-plan", () => ({
   buildPurchaseOrderWritePlan: mocks.buildPurchaseOrderWritePlan,
@@ -83,6 +85,17 @@ function mockFindAll(overrides: Record<string, any[]> = {}) {
   });
 }
 
+// Audit A7: the asset rows travel with the order to the one database function; nothing is
+// written to assets from here any more.
+function assetsSentToSave(): any {
+  expect(mocks.savePurchaseOrderAtomic).toHaveBeenCalledTimes(1);
+  return mocks.savePurchaseOrderAtomic.mock.calls[0][0].assets;
+}
+function expectNoAssetWrite() {
+  expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+  expect(mocks.update).not.toHaveBeenCalled();
+}
+
 // An unchanged re-save of a completed order: its stored line and the asset on it
 // exist, so the edit has nothing to create (BR-COGS-008).
 function mockStoredAssetOnLine(lineId: string) {
@@ -104,6 +117,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findById.mockResolvedValue(null);
     mockFindAll();
     mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-001" });
@@ -139,9 +153,9 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     const res = await savePurchaseOrder(buildFormData());
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "assets",
-      expect.objectContaining({
+    // The exact asset row, pinned field by field (audit A7); the id is made by the database function.
+    expect(assetsSentToSave()).toEqual({
+      create: [{
         purchased_item_id: "SPM-200",
         purchase_order_line_id: "POL-002",
         name_snapshot: "Bình nhựa có bơm 1000ml",
@@ -150,8 +164,31 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
         quantity: 8,
         term_months: 12, // under 200k
         acquired_date: "2026-08-20",
-      }),
-    );
+      }],
+      update: [],
+      retire: [],
+    });
+    expectNoAssetWrite();
+  });
+
+  // The old insert()/update() helpers dropped the 2-minute "assets" cache; the SQL write does not,
+  // so the action must, or the next edit plans from stale assets and duplicates one.
+  it("drops the assets cache after a save that sent assets, and not after one that did not", async () => {
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({
+      order: {},
+      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
+      ledgerRows: [],
+    });
+    await savePurchaseOrder(buildFormData());
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-assets");
+
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findById.mockResolvedValue(null);
+    mockFindAll();
+    mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-001" });
+    await savePurchaseOrder(buildFormData("DRAFT"));
+    expect(mocks.revalidateTag).not.toHaveBeenCalledWith("sheets-assets");
   });
 
   it("creates no asset for a RAW-only order", async () => {
@@ -164,7 +201,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     const res = await savePurchaseOrder(buildFormData());
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    expect(assetsSentToSave()).toBeUndefined();
   });
 
   it("creates no asset for a DRAFT order, even with an equipment line", async () => {
@@ -176,7 +213,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
 
     await savePurchaseOrder(buildFormData("DRAFT"));
 
-    expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    expect(assetsSentToSave()).toBeUndefined();
   });
 
   it("creates no asset when re-saving an unchanged completed order that already has its asset", async () => {
@@ -190,7 +227,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
 
     await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
 
-    expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    expect(assetsSentToSave()).toBeUndefined();
   });
 
   describe("an existing order saved again", () => {
@@ -208,9 +245,9 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
       const res = await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
 
       expect(res.error).toBeUndefined();
-      const assetInserts = mocks.insert.mock.calls.filter(c => c[0] === "assets");
-      expect(assetInserts).toHaveLength(1);
-      expect(assetInserts[0][1]).toEqual(
+      const sent = assetsSentToSave();
+      expect(sent.create).toHaveLength(1);
+      expect(sent.create[0]).toEqual(
         expect.objectContaining({
           purchase_order_line_id: "POL-NEW",
           purchased_item_id: "SPM-200",
@@ -218,6 +255,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
           quantity: 8,
         }),
       );
+      expectNoAssetWrite();
     });
 
     it("COMPLETED -> COMPLETED creates no asset for a line that already has one", async () => {
@@ -227,7 +265,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
 
       await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
 
-      expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+      expect(assetsSentToSave()).toBeUndefined();
     });
 
     it("DRAFT -> DRAFT creates no asset", async () => {
@@ -236,7 +274,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
 
       await savePurchaseOrder(buildFormData("DRAFT", "PO-001"));
 
-      expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+      expect(assetsSentToSave()).toBeUndefined();
     });
   });
 
@@ -263,8 +301,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     const res = await savePurchaseOrder(buildFormData());
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "assets",
+    expect(assetsSentToSave().create).toEqual([
       expect.objectContaining({
         purchased_item_id: "SPM-201",
         purchase_order_line_id: "POL-003",
@@ -274,7 +311,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
         quantity: 10,
         term_months: 12,
       }),
-    );
+    ]);
   });
 
   // (OPEN-ITEMS 64): acquired_date is sliced from effectiveDate, a UTC
@@ -299,13 +336,13 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     const res = await savePurchaseOrder(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "assets",
-      expect.objectContaining({ acquired_date: "2026-06-01" }),
-    );
+    expect(assetsSentToSave().create).toEqual([expect.objectContaining({ acquired_date: "2026-06-01" })]);
   });
 
-  it("reports the order as saved (not failed) even if asset creation errors, with a warning attached", async () => {
+  // Audit A7: the order and its assets are one write. An asset that cannot be planned
+  // (no depreciation band for the price) now refuses the save instead of saving the order
+  // without its asset and showing a warning.
+  it("refuses the save, writing nothing, when an asset cannot be planned", async () => {
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
       order: {},
       lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 100, quantity: 1, base_quantity: 1 }],
@@ -316,8 +353,24 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
 
     const res = await savePurchaseOrder(buildFormData());
 
-    expect(res.success).toBe(true);
-    expect(res.assetWarning).toBeTruthy();
+    expect(res.error).toBe("Bình nhựa có bơm 1000ml: không tìm thấy khung khấu hao cho đơn giá 100đ");
+    expect(res.assetWarning).toBeUndefined();
+    expect(mocks.savePurchaseOrderAtomic).not.toHaveBeenCalled();
+  });
+
+  it("a failing database save (order and assets are one transaction) is reported as failed", async () => {
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({
+      order: {},
+      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
+      ledgerRows: [],
+    });
+    mocks.savePurchaseOrderAtomic.mockRejectedValue(new Error("save_purchase_order_atomic: Không sửa được phiếu PO-064: Trứng gà sẽ âm kho"));
+
+    const res = await savePurchaseOrder(buildFormData());
+
+    expect(res.success).toBeUndefined();
+    expect(res.error).toContain("Trứng gà sẽ âm kho");
+    expectNoAssetWrite();
   });
 });
 
@@ -340,6 +393,7 @@ describe("savePurchaseOrder -- editing a completed order updates its assets", ()
   function setup(disposals: any[] = []) {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED", subtotal_amount: 170_000 });
     mocks.findAll.mockImplementation((sheet: string) => {
       if (sheet === "Purchased_Items") return Promise.resolve(PURCHASED_ITEMS);
@@ -374,12 +428,11 @@ describe("savePurchaseOrder -- editing a completed order updates its assets", ()
     const res = await savePurchaseOrder(formData());
 
     expect(res.error).toBeUndefined();
-    expect(mocks.update).toHaveBeenCalledWith(
-      "assets",
-      "TS-018",
-      expect.objectContaining({ quantity: 3, total_cost: 255_000 }),
-    );
-    expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    const sent = assetsSentToSave();
+    expect(sent.update).toEqual([{ id: "TS-018", patch: expect.objectContaining({ quantity: 3, total_cost: 255_000 }) }]);
+    expect(sent.create).toEqual([]);
+    expect(sent.retire).toEqual([]);
+    expectNoAssetWrite();
   });
 
   it("refuses the edit, writing nothing, when it changes an asset that has a disposal", async () => {
@@ -405,21 +458,22 @@ describe("savePurchaseOrder -- editing a completed order updates its assets", ()
     const res = await savePurchaseOrder(formData());
 
     expect(res.error).toBeUndefined();
-    expect(mocks.update).toHaveBeenCalledWith("assets", "TS-018", { status: "INACTIVE" });
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "assets",
-      expect.objectContaining({ id: "TS-099", purchase_order_line_id: "POL-NEW", quantity: 3 }),
-    );
+    const sent = assetsSentToSave();
+    expect(sent.retire).toEqual(["TS-018"]);
+    expect(sent.create).toEqual([expect.objectContaining({ purchase_order_line_id: "POL-NEW", quantity: 3 })]);
+    expect(sent.create[0]).not.toHaveProperty("id");
+    expectNoAssetWrite();
   });
 
-  it("an error while updating assets is a warning, the saved order is still reported saved", async () => {
+  it("a failure while saving the order and its assets is reported as failed, never as saved with a warning", async () => {
     setup();
-    mocks.update.mockRejectedValue(new Error("boom"));
+    mocks.savePurchaseOrderAtomic.mockRejectedValue(new Error("boom"));
 
     const res = await savePurchaseOrder(formData());
 
-    expect(res.success).toBe(true);
-    expect(res.assetWarning).toBe("boom");
+    expect(res.success).toBeUndefined();
+    expect(res.assetWarning).toBeUndefined();
+    expect(res.error).toBeTruthy();
   });
 });
 
@@ -430,6 +484,7 @@ describe("savePurchaseOrder -- a completed order is never saved back as a draft"
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mockFindAll();
     mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-100" });
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({

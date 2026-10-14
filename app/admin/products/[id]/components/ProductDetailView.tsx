@@ -11,7 +11,7 @@ import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
-import { formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { confirm } from "@/lib/shared/dialog";
 import { pauseProduct, resumeProduct, eraseProduct } from "@/app/admin/products/actions";
 
@@ -321,7 +321,7 @@ export function ProductDetailView({
                         ? "—"
                         : formatNumber(entry.old_price);
                     const dateText =
-                      formatDateTime(entry.effective_at || entry.created_at) || "—";
+                      formatDateTimeFull(entry.effective_at || entry.created_at) || "—";
                     const reasonText = entry.reason || entry.note || "—";
 
                     return (
@@ -362,7 +362,7 @@ export function ProductDetailView({
                     ? "—"
                     : formatNumber(entry.old_price);
                 const dateText =
-                  formatDateTime(entry.effective_at || entry.created_at) || "—";
+                  formatDateTimeFull(entry.effective_at || entry.created_at) || "—";
                 const reasonText = entry.reason || entry.note || "—";
 
                 return (

@@ -75,3 +75,33 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 - The till can never set a price. That is why he did not choose "save what the till showed".
 - The cost: the order that hits the change has to be rung up again once. Until the till is reloaded, every order containing a changed dish is refused.
 - An order taken before the change and sent later (sync delay) is checked against the price in force when it was taken, not when it arrived. Otherwise a correct order would be refused.
+
+### BR-SALE-009 — A percent discount on the whole order is taken after the dish discounts
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C9, chose *"Sau giảm từng món"*. Not built yet: today the till already works this way, the server does not.
+
+**The example he was shown.** Bạc xỉu 29,000 and Cà phê sữa 25,000 come to 54,000. The cashier takes 4,000 off Bạc xỉu, leaving 50,000, then 10% off the whole order. The till takes 10% of 50,000, so 5,000, and the customer pays 45,000. The server takes 10% of 54,000, so 5,400, and books 44,600: the book and the drawer are 400 apart.
+
+- The base for a percent order discount is the order total after every dish discount (manual and promotion). In the example: 5,000 off, 45,000 paid and booked.
+- The server is changed to match the till; the till keeps what the cashier sees today.
+
+### BR-SALE-010 — A whole-order promotion and the cashier's whole-order discount stack
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C3, chose *"Cộng dồn"* over locking the cashier's discount. Not built yet. Measured 2026-10-14: no running promotion is a whole-order one (both are per dish), so no order has been affected.
+
+**The example he was shown.** A "Giảm 10% hóa đơn" promotion takes a 100,000 order to 90,000; the cashier then takes another 5,000 off for a regular. The customer pays 85,000.
+
+- Order of steps: dish discounts first, then the whole-order promotion, then the cashier's whole-order discount. A percent cashier discount is taken on what is left after the promotion (`BR-SALE-009`).
+- Today the till applies such a promotion but the server ignores it, so the book would say 100,000 against 90,000 collected. The server is changed to apply it the same way.
+
+### BR-SALE-011 — Promotions without a code apply themselves; a "Dùng chung" box on each promotion decides whether two stack
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C4. He first answered *"máy chủ tự áp, nhưng đúng điều kiện"* for promotions without a code only, with the customer choosing when a code promotion meets another; he then confirmed the worked example below (*"Đúng vậy"*). Not built yet.
+
+**The example he confirmed.** "Giảm 10.000 Bạc xỉu" needs no code. The customer also hands over the code KHAITRUONG, 15% off the order.
+
+- **Without a code.** A promotion that needs no code applies itself when the order meets its conditions, minimum order value included. The till shows it before the money is taken. The server never applies a promotion that needs a code unless the till sent that code, and never one whose conditions the order misses (today it does both).
+- **"Dùng chung với khuyến mãi khác"** is a new yes/no box on each promotion, set by the owner on the promotion screen. Existing promotions start at "không".
+- **Both "có":** both apply. Order of steps as in `BR-SALE-010`.
+- **Either "không":** the till lists both with the money each takes off, the cashier asks the customer, and picks one. The server books the one picked.
+- The server books exactly the promotions the till sent, after checking each one's conditions; any mismatch is refused like a changed price (`BR-SALE-008`).

@@ -322,6 +322,54 @@ describe("updatePurchasedItem -- the unit lock (2026-08-29, no database backstop
   });
 });
 
+// Audit A6: the refusal for a conversion already used on a purchase line used to sit inside
+// the write loop, after the item, the assets and earlier conversions were already saved.
+describe("updatePurchasedItem -- every refusal comes before the first write (audit A6)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    const conversions = [
+      { id: "QD-1", purchased_item_id: "SPM-1", purchased_unit: "Thùng", conversion_rate: "24", base_unit: "U-G" },
+      { id: "QD-2", purchased_item_id: "SPM-1", purchased_unit: "Bao", conversion_rate: "25", base_unit: "U-G" },
+    ];
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "UOM_Conversions") return Promise.resolve(conversions);
+      // QD-2 is used by a purchase line; QD-1 is not.
+      if (sheet === "Purchase_Order_Lines") {
+        return Promise.resolve([{ id: "POL-1", purchased_item_id: "SPM-1", conversion_id: "QD-2", unit: "Bao" }]);
+      }
+      return Promise.resolve([]);
+    });
+    mocks.findAllWhere.mockImplementation((sheet: string) => {
+      if (sheet === "UOM_Conversions") return Promise.resolve(conversions);
+      if (sheet === "Purchase_Order_Lines") return Promise.resolve([{ id: "POL-1" }]);
+      return Promise.resolve([]);
+    });
+  });
+
+  it("a used conversion that changes refuses the whole save, even when an earlier row could have been saved", async () => {
+    const fd = new FormData();
+    fd.set("id", "SPM-1");
+    fd.set("name", "Bột cà phê");
+    fd.set("item_category_id", "NHH-001");
+    fd.set("base_unit", "U-G");
+    fd.set("update_history", "true");
+    fd.set("units_json", JSON.stringify([
+      { id: "QD-1", name: "Thùng", conversion_rate: "30" }, // not used anywhere: changeable
+      { id: "QD-2", name: "Bao", conversion_rate: "50" }, // used on POL-1: refused
+    ]));
+
+    const res = await actions.updatePurchasedItem(fd);
+
+    expect(res.error).toBe("Một quy đổi đã được dùng trong phiếu nhập lịch sử. Hãy tạo quy đổi mới thay vì sửa trực tiếp.");
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+});
+
 // Batch 1 follow-up, level 2 (section A3b, BR-CATALOG-001), wired into
 // Purchased_Items the same way as Base_Ingredients.
 describe("addPurchasedItem -- level 2, diacritic-stripped warning (Batch 1 follow-up)", () => {

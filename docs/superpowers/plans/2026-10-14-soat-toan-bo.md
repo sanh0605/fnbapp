@@ -28,7 +28,8 @@ hoạt động. Nên C3, C4, F2, F1, B8 chưa làm sai đơn nào — sửa đ�
 | E1 | Doanh số gửi mã băm mật khẩu của mọi tài khoản xuống trình duyệt | `4965976d` |
 | E5 | Hàm thay đơn hàng là cổng công khai không hỏi đăng nhập; thêm phép canh `lib/` | `4965976d` |
 | A9 | Thẻ kiểm kê và trang phiếu kiểm kê không có đơn vị | `3f99d821` |
-| E3, E4, E7, E8, E10–E12, C13 | Nhóm bảo mật đợt 1 (xem bảng dưới) | lần lưu sau `720fe5c7` |
+| E3, E4, E7, E8, E10–E12, C13 | Nhóm bảo mật đợt 1 (xem bảng dưới) | `d1565186` |
+| A1, A3a, A3b, A6 (một phần), A7, A8, E2, F1–F3, F6–F8, B1, B2, B4, B5, C2, C6, C7 | Đợt 1 phần còn lại; migration 0111, 0112, 0114 chưa chạy trên máy chủ; A6 chưa gộp một hàm Postgres | lần lưu sau `7c5fac10` |
 
 ## Đợt 1 — lỗi kỹ thuật, không cần chủ quán quyết (làm ngay, theo thứ tự)
 
@@ -105,10 +106,10 @@ dõi tồn" (A13); dòng đơn ở danh sách và chi tiết dùng chung (C14).
 |---|---|---|---|
 | 1 | C5 | Máy bán mở cả ngày, chủ quán đổi giá lúc trưa: thu giá cũ mà sổ ghi giá mới. Lấy giá máy bán hiện, hay từ chối đơn và bắt tải lại? | **Đã chốt 14/10: từ chối, bắt tải lại** (`BR-SALE-008`) |
 | 2 | A2 | Phiếu xuất nhập trễ (ngày trước lúc đếm) bị tính hai lần khi xác nhận kiểm kê. Từ chối và đếm lại, hay tự tính lại? | **Đã chốt 14/10: tự tính lại lúc xác nhận** (`BR-INV-017`) |
-| 3 | E2 | Quản lý tự nâng mình thành chủ quán hoặc đổi mật khẩu chủ quán được. Chỉ chủ quán đụng tài khoản ADMIN? | Bất kỳ lúc nào |
-| 4 | A3b | Sửa phiếu nhập của tháng đã kiểm kê: có cho không? | Bất kỳ lúc nào |
-| 5 | C9 | Giảm % cả đơn tính trên tổng trước hay sau giảm từng món? | Đơn có cả hai kiểu giảm |
-| 6 | C3, C4 | Khuyến mãi giảm cả hoá đơn cộng dồn với giảm tay không; máy chủ có tự áp khuyến mãi khi máy bán không áp? | 0 đơn (chưa có loại này) |
+| 3 | E2 | Quản lý tự nâng mình thành chủ quán hoặc đổi mật khẩu chủ quán được. Chỉ chủ quán đụng tài khoản ADMIN? | **Đã chốt 14/10: chỉ chủ quán đụng vai Chủ quán** (`BR-ACCESS-004`) |
+| 4 | A3b | Sửa phiếu nhập của tháng đã kiểm kê: có cho không? | **Đã chốt 14/10: chặn sửa như Huỷ** (`BR-INV-018`) |
+| 5 | C9 | Giảm % cả đơn tính trên tổng trước hay sau giảm từng món? | **Đã chốt 14/10: sau giảm từng món** (`BR-SALE-009`) |
+| 6 | C3, C4 | Khuyến mãi giảm cả hoá đơn cộng dồn với giảm tay không; máy chủ có tự áp khuyến mãi khi máy bán không áp? | **C3 đã chốt 14/10: cộng dồn** (`BR-SALE-010`); C4 đã chốt: tự áp loại không mã, ô "Dùng chung" (`BR-SALE-011`) |
 | 7 | B3, B9 | Doanh số lọc nhóm món: ẩn khối cả đơn hay ghi chú; "Luỹ kế" Lãi lỗ tính lại từ tháng 1 hay từ đầu khoảng | Khi lọc / từ 01/2027 |
 | 8 | C1 | Bán khi mất mạng (`BR-U-001`): bật lại ba nút thanh toán khi máy biết đang mất mạng — gộp với phần 7 máy bán hàng | Mỗi lần mất mạng |
 | 9 | F4b, F5, F13, C12 | Nhóm của topping bán riêng; bảng "Nhóm tuỳ chọn" tự sửa; hộp báo lỗi có biểu tượng; hiện từng phần của đơn trả hai cách | Thấp |

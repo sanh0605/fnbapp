@@ -7,6 +7,8 @@ tables: Pos_Sync_Failures, Outlets, Brands, Dashboard_Settings
 brCodes: BR-SALE-006, BR-SALE-007, BR-CASH-009
 ```
 
+**Behaviour change — 2026-10-14 (audit F1):** `getActiveOutlets` (`app/admin/outlets/actions.ts`) feeds "Chọn điểm bán" in the admin layout, so a stopped outlet no longer appears; `/pos` redirects to `/admin` for a non-`ACTIVE` outlet and `submitOrderV2` refuses it ("Điểm bán này đã ngừng hoạt động"). A till already open at an outlet that is then stopped gets its next orders refused. Tổng quan's "Nhập" on a monthly-expense reminder now sends the reminder's month (audit B2): the new cash-book entry is dated the last day of that month when it is not the current month, and saving returns to Tổng quan.
+
 **Behaviour change — 2026-10-14 (Cài đặt Tổng quan, migration `0109`):** a new page `/admin/dashboard-settings` under Cài đặt edits the single `dashboard_settings` row. It holds:
 - the days before "lâu chưa kiểm kê" fires (30) and before an open stock count is flagged (2), each 1–365;
 - the reminder start day for monthly expenses (25, 1–28);

@@ -29,7 +29,8 @@ export default async function POSPage({
   const outlets = await findAll("Outlets");
   const outlet = outlets.find((o: any) => o.id === outletId);
 
-  if (!outlet) {
+  // A stopped outlet is not in the picker; refuse a typed or bookmarked link too.
+  if (!outlet || outlet.status !== "ACTIVE") {
     redirect("/admin");
   }
 

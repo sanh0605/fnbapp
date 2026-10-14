@@ -168,6 +168,63 @@ describe("admin user client payloads", () => {
     });
   });
 
+  describe("BR-ACCESS-004 only the owner touches the owner role", () => {
+    const form = (fields: Record<string, string>) => {
+      const fd = new FormData();
+      for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+      return fd;
+    };
+    const owner = { id: "USR-001", username: "owner", role: "ADMIN", status: "ACTIVE" };
+    const manager = { id: "USR-002", username: "manager", role: "MANAGER", status: "ACTIVE" };
+    const staff = { id: "USR-004", username: "staff", role: "STAFF", status: "ACTIVE" };
+    const asManager = () =>
+      requireAdminMock.mockResolvedValue({ ok: true, actor: { id: "USR-002", name: "Quản lý", role: "MANAGER" } });
+    const grantMsg = "Chỉ chủ quán mới cấp được vai Chủ quán.";
+    const editMsg = "Chỉ chủ quán mới sửa được tài khoản chủ quán.";
+
+    it("a MANAGER cannot create an ADMIN account", async () => {
+      const { addUser } = await import("./actions");
+      asManager();
+      findAllMock.mockResolvedValue([owner, manager]);
+      expect(await addUser(form({ username: "x", role: "ADMIN", password: "secret1" }))).toEqual({ error: grantMsg });
+      expect(insertMock).not.toHaveBeenCalled();
+    });
+
+    it("a MANAGER cannot raise an account to ADMIN", async () => {
+      const { updateUser } = await import("./actions");
+      asManager();
+      findAllMock.mockResolvedValue([owner, manager]);
+      expect(await updateUser(form({ id: "USR-002", role: "ADMIN", password: "" }))).toEqual({ error: grantMsg });
+      expect(updateMock).not.toHaveBeenCalled();
+    });
+
+    it("a MANAGER cannot edit or reset the password of an ADMIN account", async () => {
+      const { updateUser } = await import("./actions");
+      asManager();
+      findAllMock.mockResolvedValue([owner, manager]);
+      expect(await updateUser(form({ id: "USR-001", role: "ADMIN", password: "newpass1" }))).toEqual({ error: editMsg });
+      expect(await updateUser(form({ id: "USR-001", role: "STAFF", password: "" }))).toEqual({ error: editMsg });
+      expect(updateMock).not.toHaveBeenCalled();
+    });
+
+    it("a MANAGER still adds STAFF/MANAGER and edits them, password included", async () => {
+      const { addUser, updateUser } = await import("./actions");
+      asManager();
+      findAllMock.mockResolvedValue([owner, manager, staff]);
+      expect(await addUser(form({ username: "newbie", role: "STAFF", password: "secret1" }))).toEqual({ success: true });
+      expect(await updateUser(form({ id: "USR-004", role: "MANAGER", password: "newpass1" }))).toEqual({ success: true });
+      expect(updateMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("an ADMIN can still grant ADMIN and edit an ADMIN account", async () => {
+      const { addUser, updateUser } = await import("./actions");
+      findAllMock.mockResolvedValue([owner, staff]);
+      expect(await addUser(form({ username: "o2", role: "ADMIN", password: "secret1" }))).toEqual({ success: true });
+      expect(await updateUser(form({ id: "USR-004", role: "ADMIN", password: "" }))).toEqual({ success: true });
+      expect(await updateUser(form({ id: "USR-001", role: "ADMIN", password: "newpass1" }))).toEqual({ success: true });
+    });
+  });
+
   describe("deleteUserAction safety checks", () => {
     const form = (id: string) => {
       const fd = new FormData();

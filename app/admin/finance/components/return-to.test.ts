@@ -70,4 +70,10 @@ describe("safeReturnTo", () => {
     expect(safeReturnTo("/admin/finance/CE-001/edit", "/admin/finance")).toBe("/admin/finance");
     expect(safeReturnTo("/admin/finance/CE@001", "/admin/finance")).toBe("/admin/finance");
   });
+
+  it("accepts exactly /admin as a return path and refuses other paths outside finance", () => {
+    expect(safeReturnTo("/admin", "/admin/finance")).toBe("/admin");
+    expect(safeReturnTo("/admin/users", "/admin/finance")).toBe("/admin/finance");
+    expect(safeReturnTo("/admin?x=1", "/admin/finance")).toBe("/admin/finance");
+  });
 });

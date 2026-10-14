@@ -2,10 +2,12 @@
 
 ```flow-decl
 routes: /admin/products, /admin/products/new, /admin/products/[id], /admin/products/[id]/edit, /admin/products/[id]/history, /admin/products/categories, /admin/products/categories/new, /admin/products/categories/[id], /admin/products/categories/[id]/edit, /admin/products/types, /admin/products/types/new, /admin/products/types/[id], /admin/products/types/[id]/edit, /admin/products/modifiers, /admin/products/modifiers/new, /admin/products/modifiers/[id], /admin/products/modifiers/[id]/edit, /admin/products/toppings
-files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/types/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
-tables: Products, products, Product_Variants, product_variants, product_price_history, Product_Categories, Product_Types, Modifiers
+files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-status-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/types/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
+tables: Products, products, product_variants, product_price_history, Product_Categories, Product_Types, Modifiers
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003, BR-SALE-007
 ```
+
+**Behaviour change — 2026-10-14 (audit F2, F3, F6, F7; migration `0114`, not yet run on the server):** editing a dish keeps its picture; "Xoá vĩnh viễn" is not offered on a dish linked to any topping, and the server names the topping when it refuses; a dish linked to an active topping cannot get a second size ("Thêm size" hidden, server refuses); Ngừng bán and Bán lại write the dish and its sizes in one Postgres function, `set_product_status_atomic`. Dates with a time show seconds (`BR-DATA-006`).
 
 **Behaviour change — 2026-10-14 (Loại món, migration `0109`):** a new list `/admin/products/types` sits under Bán hàng, after Nhóm món.
 - Each type has a name and a "Là thức uống (tính là ly)" mark.

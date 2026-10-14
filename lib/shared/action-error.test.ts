@@ -51,6 +51,7 @@ describe("describeActionError", () => {
     ["reverse_manual_issue_atomic", "reverse_manual_issue_atomic: Phiếu ISS-00001 đã được đảo bởi ISS-00002 trước đó, không đảo hai lần"],
     ["cancel_issue_slip_atomic (U11)", "cancel_issue_slip_atomic: Phiếu ISL-00003 không còn dòng nào để huỷ -- có thể đã được đảo toàn bộ trước đó"],
     ["reverse_stocktake_session_atomic (U2-U4, post-0063 wording)", "Đang có một phiên kiểm kê đang mở -- xử lý xong phiên đó trước khi huỷ phiên đã áp dụng"],
+    ["reverse_stocktake_session_atomic (0111 below-zero refusal)", "reverse_stocktake_session_atomic: Không huỷ được phiên kiểm kê STK-001: Trứng gà sẽ âm kho (còn -19 quả) vì số hàng tìm thấy lúc kiểm đã được xuất hoặc dùng. Xử lý phần đã xuất trước."],
   ])("relays %s's own refusal verbatim", (_label, message) => {
     const result = describeActionError(new Error(message));
     expect(result.error).toBe(message);

@@ -24,7 +24,9 @@ export default async function ProductDetailPage({
     notFound();
   }
 
-  const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
+  // A dish still linked to a topping cannot be erased (RESTRICT), so the
+  // button is not offered; eraseProduct says why if it is called anyway.
+  const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN" && !product.hasModifierLink);
 
   const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/products");
   const returnTo = rawReturnTo.startsWith("/admin/products/")

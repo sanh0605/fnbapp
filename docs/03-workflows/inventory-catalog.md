@@ -7,6 +7,8 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004
 ```
 
+**Behaviour change — 2026-10-14 (audit A6):** `updatePurchasedItem` (`app/admin/inventory/items/actions.ts`) now runs every refusal, including "conversion already used", before its first write, so a refused save writes nothing. The writes still span four tables outside one Postgres function; a failure part-way through the writes themselves can still leave a partial save.
+
 **Reviewed, no behaviour change — 2026-10-14:** `app/admin/inventory/items/actions.ts` comment spelling only (hàng hoá, `BR-UI-001`); no logic changed.
 
 **Behaviour change — 2026-10-05 (current stock, `BR-CATALOG-004`):** the Hàng hoá list gains a

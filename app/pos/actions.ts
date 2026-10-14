@@ -67,6 +67,10 @@ export async function submitOrderV2(
     if (!outlet) {
       return { success: false, error: "Điểm bán không tồn tại" };
     }
+    // F1: a stopped outlet must not take orders (the stop dialog promises it).
+    if (outlet.status !== "ACTIVE") {
+      return { success: false, error: "Điểm bán này đã ngừng hoạt động" };
+    }
     const resolvedInput = { ...input, brand_id: outlet.brand_id };
 
     // 4. Build order + lines + snapshots (pure function, internally asserts invariants)
