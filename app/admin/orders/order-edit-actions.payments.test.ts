@@ -80,3 +80,9 @@ describe("editOrderV2 payment parts (BR-SALE-013)", () => {
     expect(mocks.supersede).not.toHaveBeenCalled();
   });
 });
+
+describe("Đổi cách trả replaces Sửa đơn (BR-SALE-014)", () => {
+  it.todo(
+    "Sửa đơn chỉ đổi cách trả; món, giá, tên, người bán và khuyến mãi giữ nguyên như lúc bán; nhầm món thì huỷ đơn rồi bấm lại ở máy bán (chủ quán chốt 15/10/2026)",
+  );
+});

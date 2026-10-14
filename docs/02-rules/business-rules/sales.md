@@ -123,5 +123,23 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 
 - The till keeps the button.
 - The order list shows "Tiền mặt + Chuyển khoản" for such an order; the order page shows each part with its amount. A one-way order shows as before.
-- **Sửa đơn edits each part** — owner 2026-10-14, chose *"Sửa được từng phần"* over merging into one method and over locking the method. Until then the page showed one "Phương thức" box and, for an order paid two ways, silently kept the old parts whatever was chosen. Now the page lists the parts it holds (method and amount); the owner may change a part's method or amount, add the other method, or remove a part down to one. One part always takes the order's whole new total. With two parts, their sum must equal the order's new total or the save is refused with both figures shown; this also lets a split order's total change, which was refused before. Example: 18,000 as 9,000 cash + 9,000 transfer can become 10,000 + 8,000, or 18,000 cash.
+- **Sửa đơn edits each part** — owner 2026-10-14, chose *"Sửa được từng phần"* over merging into one method and over locking the method. Until then the page showed one "Phương thức" box and, for an order paid two ways, silently kept the old parts whatever was chosen. Now the page lists the parts it holds (method and amount); the owner may change a part's method or amount, add the other method, or remove a part down to one. One part always takes the order's whole new total. With two parts, their sum must equal the order's new total or the save is refused with both figures shown; this also lets a split order's total change, which was refused before. Example: 18,000 as 9,000 cash + 9,000 transfer can become 10,000 + 8,000, or 18,000 cash. Since `BR-SALE-014` (2026-10-15) the total itself no longer changes on this page.
 
+
+### BR-SALE-014 — Sửa đơn changes only how the order was paid
+
+**Status:** `APPROVED` — owner 2026-10-15, Bán hàng area audit, chose *"Chỉ đổi cách trả"* over keeping full editing with old values pinned, and over line refunds. Not built yet.
+
+**What he was shown.** In four months Sửa đơn was used 25 times:
+- 18 changed only cash ↔ transfer;
+- 5 were tests;
+- 2 changed the dishes.
+
+Every edit rebuilt the order from today's catalog. The new version credited the sale to whoever edited it: 6 orders sold by tuyen2612 now read "admin". It dropped the order's promotion: 3 orders. It could take today's price and dish name: 0 times so far.
+
+- Sửa đơn becomes "Đổi cách trả".
+  - It edits only the payment parts, as `BR-SALE-013` describes. The parts must add up to the order's unchanged total.
+  - Every line keeps its dish, size, price, toppings and names as sold.
+  - The order keeps its promotion and its seller. Who changed it goes in the order's history.
+- A wrong dish, quantity or discount is fixed by Huỷ đơn with a reason, then ringing the order again at the till. The new order carries the time it is rung.
+- The 6 seller names and the 3 promotion links lost to earlier edits are restored by a separate data write that the owner approves.
