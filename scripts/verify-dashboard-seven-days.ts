@@ -4,7 +4,7 @@ process.env.CLI_MODE = "true";
 
 /**
  * Read-only check of lib/dashboard/seven-day-table.ts against the table the
- * owner confirmed (plan 2026-10-14-tong-quan-moi.md, section "Vi du tinh san").
+ * owner confirmed (spec docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md, section 3).
  * Reads live orders and lines, builds 2026-10-08..2026-10-13, compares every
  * cell. No writes.
  *

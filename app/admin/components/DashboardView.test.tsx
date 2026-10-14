@@ -13,7 +13,7 @@ vi.mock("next/link", () => ({
 
 afterEach(() => cleanup());
 
-// Plan docs/superpowers/plans/2026-10-14-tong-quan-moi.md, example section:
+// Spec docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md, section 3 (real example):
 // 08/10 and 13/10 real figures, food columns Trứng luộc / Khoai lang.
 function row(day: string, revenue: number, avg: number, cups: number, egg: number, potato: number, topping: number | null = 0) {
   return { day, revenue, cups, cupMoney: avg * cups, avgPerCup: avg, foodQty: { "PROD-028": egg, "PROD-027": potato }, toppingQty: topping };
