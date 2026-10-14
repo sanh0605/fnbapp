@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Image as ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
 import { ListPagination } from "@/components/ui/list/ListPagination";
@@ -56,7 +59,7 @@ type ProductStatus = typeof VALID_STATUSES[number];
 const STATUS_LABELS: Record<string, string> = {
   ACTIVE: "Đang bán",
   INACTIVE: "Ngừng bán",
-  DELETED: "Đã xóa",
+  DELETED: "Đã xoá",
 };
 
 function parseStatus(raw: string | null | undefined): ProductStatus {
@@ -148,7 +151,7 @@ export default function ProductsClient({
         header: "Mã",
         sortValue: (product) => product.id,
         render: (product) => (
-          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-primary">
             {product.id}
           </span>
         ),
@@ -176,7 +179,7 @@ export default function ProductsClient({
         header: "Tên",
         sortValue: (product) => product.name,
         render: (product) => (
-          <div className="font-bold text-text-primary">{product.name}</div>
+          <div className="text-text-primary">{product.name}</div>
         ),
       },
       {
@@ -184,7 +187,7 @@ export default function ProductsClient({
         header: "Nhóm",
         sortValue: (product) => categoryMap[product.category_id] || "Chưa phân loại",
         render: (product) => (
-          <span className="text-text-secondary font-medium">
+          <span className="text-text-secondary">
             {categoryMap[product.category_id] || "Chưa phân loại"}
           </span>
         ),
@@ -208,7 +211,7 @@ export default function ProductsClient({
           return (
             <div className="flex flex-col gap-1 items-start">
               {text ? (
-                <span className="text-text-primary text-xs font-medium">{text}</span>
+                <span className="text-text-primary text-xs">{text}</span>
               ) : (
                 <span className="text-text-muted text-xs">—</span>
               )}
@@ -230,7 +233,7 @@ export default function ProductsClient({
           if (product.status === "INACTIVE") {
             return <Badge variant="warning">Ngừng bán</Badge>;
           }
-          return <Badge variant="neutral">Đã xóa</Badge>;
+          return <Badge variant="neutral">Đã xoá</Badge>;
         },
       },
     ],
@@ -316,15 +319,15 @@ export default function ProductsClient({
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
           <div>
-            <div className="font-bold text-text-primary text-base leading-tight">
+            <div className="text-text-primary text-base leading-tight">
               {product.name}
             </div>
-            <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+            <div className="font-mono text-xs text-primary mt-0.5">
               {product.id}
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-secondary text-text-secondary border border-border">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-surface-secondary text-text-secondary border border-border">
               {catName}
             </span>
             {product.status === "ACTIVE" ? (
@@ -332,7 +335,7 @@ export default function ProductsClient({
             ) : product.status === "INACTIVE" ? (
               <Badge variant="warning">Ngừng bán</Badge>
             ) : (
-              <Badge variant="neutral">Đã xóa</Badge>
+              <Badge variant="neutral">Đã xoá</Badge>
             )}
           </div>
         </div>
@@ -372,12 +375,13 @@ export default function ProductsClient({
         group="Món"
         title="Món"
         action={
-          <Link
+          <Button
             href={`/admin/products/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            variant="primary"
+            className="w-full md:w-auto"
           >
             Tạo
-          </Link>
+          </Button>
         }
       />
 
@@ -386,60 +390,44 @@ export default function ProductsClient({
         onClear={handleClearFilter}
         showClear={Boolean(search || (category && category !== "ALL") || status !== "ACTIVE")}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="products-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm món
-          </label>
-          <input
-            id="products-search"
-            type="text"
-            placeholder="Tên hoặc mã món..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+        <div className="shrink-0 w-full md:w-64">
+          <Field label="Tìm món" htmlFor="products-search">
+            <TextInput
+              id="products-search"
+              placeholder="Ví dụ: Cà phê sữa đá"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
-          <label
-            htmlFor="products-category"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Nhóm món
-          </label>
-          <select
-            id="products-category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ALL">Tất cả nhóm</option>
-            {activeCategories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+        <div className="shrink-0 w-full md:w-48">
+          <Field label="Nhóm món" htmlFor="products-category">
+            <Select
+              id="products-category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="ALL">Tất cả nhóm</option>
+              {activeCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
-          <label
-            htmlFor="products-status"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Trạng thái
-          </label>
-          <select
-            id="products-status"
-            value={status}
-            onChange={(e) => setStatus(parseStatus(e.target.value))}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ACTIVE">Đang bán</option>
-            <option value="INACTIVE">Ngừng bán</option>
-            <option value="DELETED">Đã xóa</option>
-          </select>
+        <div className="shrink-0 w-full md:w-48">
+          <Field label="Trạng thái" htmlFor="products-status">
+            <Select
+              id="products-status"
+              value={status}
+              onChange={(e) => setStatus(parseStatus(e.target.value))}
+            >
+              <option value="ACTIVE">Đang bán</option>
+              <option value="INACTIVE">Ngừng bán</option>
+              <option value="DELETED">Đã xoá</option>
+            </Select>
+          </Field>
         </div>
       </FilterCard>
 
@@ -476,7 +464,7 @@ export default function ProductsClient({
                       { scroll: false },
                     );
                   }}
-                  className="text-primary hover:text-primary-hover font-medium underline text-sm min-h-[44px] inline-flex items-center"
+                  className="text-primary hover:text-primary-hover font-medium underline text-sm min-h-[44px] md:min-h-[40px] inline-flex items-center"
                 >
                   Xem &ldquo;{STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}&rdquo;
                 </button>
@@ -491,7 +479,7 @@ export default function ProductsClient({
                 <button
                   type="button"
                   onClick={handleClearFilter}
-                  className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
+                  className="text-danger hover:underline font-medium text-sm min-h-[44px] md:min-h-[40px] inline-flex items-center"
                 >
                   Xoá lọc
                 </button>

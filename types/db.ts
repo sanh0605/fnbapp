@@ -67,6 +67,42 @@ export interface DBProductCategory {
   id: string;
   name: string;
   status: string;
+  // product_types.id; NOT NULL in the database since migration 0109.
+  type_id: string;
+}
+
+export interface DBProductType {
+  id: string;
+  name: string;
+  // Lines of categories whose type has this flag count as cups.
+  is_drink: boolean;
+  created_at: string;
+}
+
+export interface DBMonthlyExpenseItem {
+  id: string;
+  name: string;
+  cash_category_id: string;
+  status: "ACTIVE" | "INACTIVE";
+  created_at: string;
+  created_by_id: string | null;
+  created_by_name: string | null;
+  updated_at: string;
+  updated_by_id: string | null;
+  updated_by_name: string | null;
+}
+
+// Single row, id = 1.
+export interface DBDashboardSettings {
+  id: 1;
+  stale_stocktake_days: number;
+  open_stocktake_days: number;
+  reminder_start_day: number;
+  food_product_ids: string[];
+  topping_type_id: string | null;
+  updated_at: string;
+  updated_by_id: string | null;
+  updated_by_name: string | null;
 }
 
 export interface DBBrand {
@@ -105,6 +141,27 @@ export interface DBModifier {
   // product it also sells standalone, if one exists. Nullable -- a
   // modifier may have no standalone counterpart (e.g. MOD-009).
   product_id: string | null;
+  // Nhóm tuỳ chọn (migration 0119). group_id is null only until migration B.
+  group_id: string | null;
+  is_default: boolean;
+  max_qty: number | null;
+}
+
+export interface DBModifierGroup {
+  id: string;
+  name: string;
+  selection_mode: "ONE" | "MANY";
+  max_total: number | null;
+  allow_standalone: boolean;
+  sort_order: number;
+  status: "ACTIVE" | "INACTIVE";
+}
+
+// `id` is a plain text column set by the save functions (group_id:product_id) so findAll can page the table.
+export interface DBModifierGroupProduct {
+  id: string;
+  group_id: string;
+  product_id: string;
 }
 
 export interface DBSupplier {
@@ -314,6 +371,8 @@ export interface DBCashEntry {
   amount: number;
   payment_method: "CASH" | "BANK_TRANSFER";
   bank_account_id: string | null;
+  // monthly_expense_items.id this row settles; null for an ordinary row.
+  monthly_item_id: string | null;
   payer: string | null;
   note: string | null;
   status: "ACTIVE" | "CANCELLED";

@@ -16,8 +16,10 @@ export async function toggleToppingStandalone(
   const products = await findAll("Products");
   const product = (products as any[]).find(p => p.id === productId);
   if (!product) return fail(`Không tìm thấy sản phẩm ${productId}`);
-  if (product.category_id !== "CAT-007") {
-    return fail(`Sản phẩm ${productId} không thuộc category topping standalone.`);
+  // A standalone topping is identified by its modifier link (migration 0097), not by its dish group.
+  const modifiers = (await findAll("Modifiers")) as any[];
+  if (!modifiers.some(m => m.status !== "DELETED" && m.product_id === productId)) {
+    return fail(`Món "${product.name || productId}" không gắn với topping nào nên không bật/tắt bán độc lập được.`);
   }
 
   const newStatus = enabled ? "ACTIVE" : "INACTIVE";

@@ -91,7 +91,7 @@ export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
                 key={group.name}
                 href={group.href}
                 title={group.name}
-                className={`flex items-center gap-3 w-full box-border min-h-[44px] px-3 py-2.5 border-0 rounded-lg text-[15px] font-semibold cursor-pointer text-left no-underline ${
+                className={`flex items-center gap-3 w-full box-border min-h-[44px] md:min-h-[40px] px-3 py-2.5 border-0 rounded-lg text-[15px] font-semibold cursor-pointer text-left no-underline ${
                   collapsed ? "justify-center" : ""
                 } ${
                   isActive
@@ -111,7 +111,7 @@ export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
                 type="button"
                 title={group.name}
                 onClick={() => handleGroupClick(group.name)}
-                className={`flex items-center gap-3 w-full box-border min-h-[44px] px-3 py-2.5 border-0 rounded-lg text-[15px] font-semibold cursor-pointer text-left no-underline ${
+                className={`flex items-center gap-3 w-full box-border min-h-[44px] md:min-h-[40px] px-3 py-2.5 border-0 rounded-lg text-[15px] font-semibold cursor-pointer text-left no-underline ${
                   collapsed ? "justify-center" : ""
                 } ${
                   collapsed && isGroupActive

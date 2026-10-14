@@ -71,10 +71,21 @@ export interface SaigonBucketKeys {
   hourKey: string;  // "06:00"
 }
 
+// Built once: constructing an Intl.DateTimeFormat per call is the slow part
+// when bucketing thousands of orders.
+const SAIGON_BUCKET_FORMAT = new Intl.DateTimeFormat("en-CA", {
+  timeZone: SAIGON_TZ,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  hour12: false,
+});
+
 /**
  * Derives the Saigon calendar date/month/day-of-week/hour a timestamp falls
  * on, for chart bucketing. Sales-chart timezone fix, 2026-08-26:
- * app/admin/reports/actions.ts previously bucketed with
+ * the sales report actions previously bucketed with
  * toISOString() (UTC) and getDay()/getHours() (the runtime's local zone,
  * UTC on Vercel) -- both wrong by the same 7-hour Saigon offset. One
  * helper for all four series, so they cannot drift apart from each other
@@ -82,14 +93,7 @@ export interface SaigonBucketKeys {
  */
 export function saigonBucketKeys(iso: string): SaigonBucketKeys {
   const d = new Date(iso);
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: SAIGON_TZ,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    hour12: false,
-  }).formatToParts(d);
+  const parts = SAIGON_BUCKET_FORMAT.formatToParts(d);
   const get = (type: string) => parts.find(p => p.type === type)?.value || "00";
 
   const year = Number(get("year"));

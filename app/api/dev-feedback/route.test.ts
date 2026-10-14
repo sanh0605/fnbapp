@@ -10,7 +10,18 @@ vi.mock("node:fs/promises", () => ({
   writeFile: mocks.writeFile,
 }));
 
-import { DELETE, GET, POST } from "./route";
+import { DELETE, GET, PATCH, POST } from "./route";
+
+function patchRequest(body: unknown) {
+  return new Request("https://fnb.example/api/dev-feedback", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  });
+}
+
+const TWO_ENTRIES =
+  '# Góp ý giao diện\n\n## [2026-08-26T10:00:00.000Z] id-keep01\n- Route: /pos\n- Viewport: 390px\n\nGhi chú: giữ lại\n\n---\n\n## [2026-08-26T11:00:00.000Z] id-edit01\n- Route: /pos\n- Viewport: 390px\n\nGhi chú: cũ\n\n---\n';
 
 const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
 
@@ -65,6 +76,53 @@ describe("dev-feedback API route", () => {
       const res = await DELETE(deleteRequest("abc"));
       expect(res.status).toBe(404);
       expect(mocks.writeFile).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("PATCH", () => {
+    it("returns 404 in production and never writes", async () => {
+      setNodeEnv("production");
+      const res = await PATCH(patchRequest({ id: "edit01", note: "mới" }));
+      expect(res.status).toBe(404);
+      expect(mocks.writeFile).not.toHaveBeenCalled();
+    });
+
+    it("rejects invalid JSON", async () => {
+      const res = await PATCH(patchRequest("{not json"));
+      expect(res.status).toBe(400);
+    });
+
+    it("requires an id", async () => {
+      const res = await PATCH(patchRequest({ note: "mới" }));
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "id is required" });
+    });
+
+    it("requires a non-empty note after trim", async () => {
+      mocks.readFile.mockResolvedValue(TWO_ENTRIES);
+      const res = await PATCH(patchRequest({ id: "edit01", note: "   " }));
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "note is required" });
+      expect(mocks.writeFile).not.toHaveBeenCalled();
+    });
+
+    it("returns 404 for an unknown id", async () => {
+      mocks.readFile.mockResolvedValue(TWO_ENTRIES);
+      const res = await PATCH(patchRequest({ id: "zzz", note: "mới" }));
+      expect(res.status).toBe(404);
+      expect(await res.json()).toEqual({ error: "not found" });
+      expect(mocks.writeFile).not.toHaveBeenCalled();
+    });
+
+    it("updates only the named note, trimmed, and returns the entry", async () => {
+      mocks.readFile.mockResolvedValue(TWO_ENTRIES);
+      const res = await PATCH(patchRequest({ id: "edit01", note: "  mới  " }));
+      expect(res.status).toBe(200);
+      expect((await res.json()).entry.note).toBe("mới");
+      const [, written] = mocks.writeFile.mock.calls[0];
+      expect(written).toContain("Ghi chú: giữ lại");
+      expect(written).toContain("Ghi chú: mới");
+      expect(written).not.toContain("Ghi chú: cũ");
     });
   });
 

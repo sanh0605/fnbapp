@@ -176,6 +176,16 @@ function gocText(): string | undefined {
 
 const CATEGORY = { id: "CAT1", name: "Cà phê" };
 
+const DEFAULT_OPTION_GROUP = {
+  id: "MG-1",
+  name: "Topping",
+  selection_mode: "MANY" as const,
+  max_total: null,
+  allow_standalone: true,
+  sort_order: 1,
+  status: "ACTIVE",
+};
+
 function makeProduct(id: string, name: string) {
   return { id, name, category_id: CATEGORY.id };
 }
@@ -210,7 +220,7 @@ describe("POSScreen item-configuration modal", () => {
   it("a modifier with a price adds it, the counter tracks repeats, and minus is disabled at zero", async () => {
     const product = makeProduct("P1", "Trà đào");
     const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 20000 }];
-    const modifiers = [{ id: "M1", group_name: "Topping", name: "Trân châu", price: 5000 }];
+    const modifiers = [{ id: "M1", group_id: "MG-1", group_name: "Topping", name: "Trân châu", price: 5000, status: "ACTIVE" }];
 
     await renderTracked(
       <POSScreen
@@ -218,6 +228,8 @@ describe("POSScreen item-configuration modal", () => {
         products={[product]}
         variants={variants}
         modifiers={modifiers}
+        optionGroups={[DEFAULT_OPTION_GROUP]}
+        optionGroupLinks={[{ group_id: "MG-1", product_id: product.id }]}
         bestSellers={[product.id]}
       />,
     );
@@ -255,7 +267,7 @@ describe("POSScreen item-configuration modal", () => {
   it("quantity multiplies base price plus modifiers, and the minus button floors at 1", async () => {
     const product = makeProduct("P1", "Cà phê đen");
     const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 18000 }];
-    const modifiers = [{ id: "M1", group_name: "Topping", name: "Sữa", price: 2000 }];
+    const modifiers = [{ id: "M1", group_id: "MG-1", group_name: "Topping", name: "Sữa", price: 2000, status: "ACTIVE" }];
 
     await renderTracked(
       <POSScreen
@@ -263,6 +275,8 @@ describe("POSScreen item-configuration modal", () => {
         products={[product]}
         variants={variants}
         modifiers={modifiers}
+        optionGroups={[DEFAULT_OPTION_GROUP]}
+        optionGroupLinks={[{ group_id: "MG-1", product_id: product.id }]}
         bestSellers={[product.id]}
       />,
     );
@@ -510,7 +524,7 @@ describe("POSScreen item-configuration modal", () => {
       { id: "V1", product_id: "P1", size_name: "Nhỏ", price: 25000 },
       { id: "V2", product_id: "P1", size_name: "Lớn", price: 35000 },
     ];
-    const modifiers = [{ id: "M1", group_name: "Topping", name: "Đá", price: 1000 }];
+    const modifiers = [{ id: "M1", group_id: "MG-1", group_name: "Topping", name: "Đá", price: 1000, status: "ACTIVE" }];
 
     await renderTracked(
       <POSScreen
@@ -518,6 +532,8 @@ describe("POSScreen item-configuration modal", () => {
         products={[product]}
         variants={variants}
         modifiers={modifiers}
+        optionGroups={[DEFAULT_OPTION_GROUP]}
+        optionGroupLinks={[{ group_id: "MG-1", product_id: product.id }]}
         bestSellers={[product.id]}
       />,
     );
@@ -551,8 +567,8 @@ describe("POSScreen item-configuration modal", () => {
     const product = makeProduct("P1", "Bạc xỉu");
     const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 20000 }];
     const modifiers = [
-      { id: "M1", group_name: "Topping", name: "Trân châu", price: 3000 },
-      { id: "M2", group_name: "Topping", name: "Thạch", price: 2000 },
+      { id: "M1", group_id: "MG-1", group_name: "Topping", name: "Trân châu", price: 3000, status: "ACTIVE" },
+      { id: "M2", group_id: "MG-1", group_name: "Topping", name: "Thạch", price: 2000, status: "ACTIVE" },
     ];
     const promotions = [
       {
@@ -573,6 +589,8 @@ describe("POSScreen item-configuration modal", () => {
         products={[product]}
         variants={variants}
         modifiers={modifiers}
+        optionGroups={[DEFAULT_OPTION_GROUP]}
+        optionGroupLinks={[{ group_id: "MG-1", product_id: product.id }]}
         promotions={promotions}
         bestSellers={[product.id]}
       />,

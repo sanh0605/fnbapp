@@ -50,6 +50,9 @@ export function PnlChart({ table }: { table: PnlTable }) {
   const zeroY = y(0);
   const lastIndex = points.length - 1;
 
+  const firstMonthTitle = table.months[0]?.title ?? "";
+  const lastMonthTitle = table.months[table.months.length - 1]?.title ?? "";
+
   return (
     <section className="hidden rounded-xl border border-border bg-surface-card shadow-panel md:block">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-[18px] pb-[6px] pt-4">
@@ -70,7 +73,7 @@ export function PnlChart({ table }: { table: PnlTable }) {
         viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
         className="h-auto w-full px-2 pb-3"
         role="img"
-        aria-label={`Lợi nhuận ròng từng tháng năm ${table.year} và luỹ kế`}
+        aria-label={`Lợi nhuận ròng từng tháng từ ${firstMonthTitle} đến ${lastMonthTitle} và luỹ kế`}
       >
         {ticks.map(tick => (
           <g key={tick}>

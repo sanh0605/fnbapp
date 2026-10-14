@@ -11,6 +11,8 @@ vi.mock("@/lib/db/tables", () => ({
 import { findAll, findAllNoCache, findAllWhere } from "@/lib/db/tables";
 import { getProfitAndLossReport } from "./actions";
 
+const THIS_YEAR = { preset: "THIS_YEAR", start: "2026-01", end: "2026-09" } as const;
+
 beforeEach(() => {
   vi.clearAllMocks();
   vi.useFakeTimers();
@@ -27,35 +29,46 @@ afterEach(() => {
 describe("getProfitAndLossReport", () => {
   it("refuses before loading any data when not signed in as ADMIN or MANAGER", async () => {
     requireAdminMock.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
-    await expect(getProfitAndLossReport()).rejects.toThrow("Yêu cầu đăng nhập");
+    await expect(getProfitAndLossReport(THIS_YEAR)).rejects.toThrow("Yêu cầu đăng nhập");
     expect(findAll).not.toHaveBeenCalled();
     expect(findAllNoCache).not.toHaveBeenCalled();
     expect(findAllWhere).not.toHaveBeenCalled();
   });
 
-  it("loads only the chosen year's completed orders, bounded in Saigon time", async () => {
+  it("loads only the chosen months' completed orders, bounded in Saigon time", async () => {
     (findAllNoCache as any).mockImplementation(async (sheet: string) =>
       sheet === "assets"
         ? [{ id: "TS-001", name_snapshot: "Máy xay", acquired_date: "2025-11-01", total_cost: 1_200_000, quantity: 1, term_months: 12, status: "ACTIVE" }]
         : []);
 
-    const report = await getProfitAndLossReport(2025);
+    const report = await getProfitAndLossReport({ preset: "LAST_YEAR", start: "2025-01", end: "2025-12" });
 
     expect(report.availableYears).toEqual([2026, 2025]);
-    expect(report.figures.year).toBe(2025);
+    expect(report.figures.fromMonth).toBe("2025-01");
+    expect(report.figures.toMonth).toBe("2025-12");
     expect(findAllWhere).toHaveBeenCalledWith("Orders_V2", {
       eq: { status: "COMPLETED" },
       gte: { created_at: new Date("2024-12-31T17:00:00.000Z") },
       lte: { created_at: new Date("2025-12-31T16:59:59.999Z") },
     });
-    expect(report.table.year).toBe(2025);
-    expect(report.table.periodLabel).toBe("cả năm");
+    expect(report.table.rangeName).toBe("năm trước");
     expect(report.table.months.map(m => m.month)).toEqual(["2025-11", "2025-12"]);
   });
 
-  it("falls back to the newest year when the asked-for year has no data", async () => {
-    const report = await getProfitAndLossReport(1999);
-    expect(report.figures.year).toBe(2026);
+  // BR-UI-007 (owner 2026-10-09): any span of whole months, across a year if asked.
+  it("a span across the new year reads orders from 01/11/2025 to the end of 28/02/2026 Saigon", async () => {
+    const report = await getProfitAndLossReport({ preset: "CUSTOM", start: "2025-11", end: "2026-02" });
+    expect(findAllWhere).toHaveBeenCalledWith("Orders_V2", {
+      eq: { status: "COMPLETED" },
+      gte: { created_at: new Date("2025-10-31T17:00:00.000Z") },
+      lte: { created_at: new Date("2026-02-28T16:59:59.999Z") },
+    });
+    expect(report.table.rangeName).toBe("trong khoảng đã chọn");
+  });
+
+  it("names a ready range in lower case", async () => {
+    const report = await getProfitAndLossReport(THIS_YEAR);
+    expect(report.table.rangeName).toBe("năm nay");
   });
 
   it("lets an engine error through instead of showing a table of zeros", async () => {
@@ -64,7 +77,7 @@ describe("getProfitAndLossReport", () => {
       if (sheet === "Cash_Entries") return [{ id: "CE-777", entry_date: "2026-08-02", category_id: "CFC-404", amount: 1, note: null, status: "ACTIVE" }];
       return [];
     });
-    await expect(getProfitAndLossReport(2026)).rejects.toThrow("CE-777");
+    await expect(getProfitAndLossReport(THIS_YEAR)).rejects.toThrow("CE-777");
   });
 
   it("returns the brand names for the header, ordered by code", async () => {
@@ -76,7 +89,7 @@ describe("getProfitAndLossReport", () => {
           ]
         : []);
 
-    const report = await getProfitAndLossReport(2026);
+    const report = await getProfitAndLossReport(THIS_YEAR);
 
     expect(report.brandNames).toEqual(["Phin Đi", "Uchako"]);
   });

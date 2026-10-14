@@ -26,7 +26,7 @@ vi.mock("@/app/admin/inventory/purchase-orders/actions", () => ({
     pageCount: 1,
     firstIndex: 0,
     lastIndex: 0,
-    rangeError: false,
+    rangeError: false, daySpan: null,
   }),
 }));
 

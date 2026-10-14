@@ -19,16 +19,18 @@ follows groups the same relations by area for human reading only.
 ```relations
 app/actions/auth.ts -> users (write)
 app/admin/brands/actions.ts -> Brands (write)
+app/admin/dashboard-settings/actions.ts -> Dashboard_Settings (write)
 app/admin/finance/actions.ts -> Cash_Entries (write)
 app/admin/finance/bank-accounts/actions.ts -> Bank_Accounts (write)
 app/admin/finance/categories/actions.ts -> Cash_Categories (write)
+app/admin/finance/monthly-items/actions.ts -> Monthly_Expense_Items (write)
 app/admin/finance/transfers/actions.ts -> Cash_Transfers (write)
 app/admin/inventory/actions.ts -> Item_Categories (write)
 app/admin/inventory/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/actions.ts -> Purchased_Items (write)
 app/admin/inventory/actions.ts -> Units (write)
 app/admin/inventory/actions.ts -> UOM_Conversions (write)
-app/admin/inventory/asset-bands/actions.ts -> asset_depreciation_bands (write)
+lib/assets/asset-bands-transaction.ts -> asset_depreciation_bands (write)
 app/admin/inventory/assets/actions.ts -> asset_disposals (write)
 app/admin/inventory/conversions/actions.ts -> Purchase_Order_Lines (write)
 app/admin/inventory/conversions/actions.ts -> UOM_Conversions (write)
@@ -42,10 +44,10 @@ app/admin/inventory/purchase-orders/actions.ts -> Purchase_Orders (write)
 app/admin/inventory/purchase-orders/actions.ts -> Purchase_Sources (write)
 app/admin/outlets/actions.ts -> Outlets (write)
 app/admin/pos-sync/actions.ts -> Pos_Sync_Failures (write)
-app/admin/products/actions.ts -> Product_Variants (write)
 app/admin/products/actions.ts -> Products (write)
 app/admin/products/categories/actions.ts -> Product_Categories (write)
 app/admin/products/modifiers/actions.ts -> Modifiers (write)
+app/admin/products/types/actions.ts -> Product_Types (write)
 app/admin/products/toppings/actions.ts -> Products (write)
 app/admin/promotions/actions.ts -> Promotions (write)
 app/admin/suppliers/actions.ts -> Suppliers (write)
@@ -60,15 +62,21 @@ lib/products/product-erase-transaction.ts -> products (write)
 lib/products/product-save-transaction.ts -> product_price_history (write)
 lib/products/product-save-transaction.ts -> product_variants (write)
 lib/products/product-save-transaction.ts -> products (write)
-lib/products/topping-price-sync.ts -> modifiers (write)
-lib/products/topping-price-sync.ts -> product_price_history (write)
-lib/products/topping-price-sync.ts -> product_variants (write)
+lib/products/product-status-transaction.ts -> product_variants (write)
+lib/products/product-status-transaction.ts -> products (write)
+lib/products/modifier-save-transaction.ts -> modifiers (write)
+lib/products/modifier-group-transaction.ts -> modifier_group_products (write)
+lib/products/modifier-group-transaction.ts -> modifier_groups (write)
+lib/products/modifier-group-transaction.ts -> modifiers (write)
+lib/products/product-save-transaction.ts -> modifier_group_products (write)
+app/admin/products/modifier-groups/actions.ts -> Modifier_Groups (write)
 lib/products/create-standalone-topping.ts -> modifiers (write)
 lib/products/create-standalone-topping.ts -> product_price_history (write)
 lib/products/create-standalone-topping.ts -> product_variants (write)
 lib/products/create-standalone-topping.ts -> products (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_order_lines (write)
 lib/purchasing/purchase-order-transaction.ts -> purchase_orders (write)
+lib/purchasing/purchase-order-transaction.ts -> assets (write)
 lib/stock/stocktake-transaction.ts -> stock_issues (write)
 lib/stock/stocktake-transaction.ts -> stocktake_lines (write)
 lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
@@ -83,12 +91,7 @@ POS device sync writes the completed sale itself). `lib/sales/void-order-transac
 writes `orders_v2` and `order_events`. `app/admin/promotions/actions.ts` writes
 `Promotions`.
 
-**Purchasing.** `lib/purchasing/purchase-order-transaction.ts` writes `purchase_orders` and
-`purchase_order_lines`. `app/admin/inventory/purchase-orders/actions.ts`
-writes `assets`, `purchase_order_edits`, and `Purchase_Sources`, and
-`Purchase_Orders` directly for one thing only: changing "Hình thức thanh toán" on a
-completed order (`setPurchaseOrderPayment`, the two payment columns).
-`app/admin/suppliers/actions.ts` writes `Suppliers`.
+**Purchasing.** `lib/purchasing/purchase-order-transaction.ts` writes `purchase_orders`, `purchase_order_lines` and, since migration `0112`, the order's `assets` in the same save. `app/admin/inventory/purchase-orders/actions.ts` writes `assets`, `purchase_order_edits`, and `Purchase_Sources`; it never writes `Purchase_Orders` directly — even "Hình thức thanh toán" on a completed order changes only through the edit form's atomic save (owner 2026-10-14). `app/admin/suppliers/actions.ts` writes `Suppliers`.
 
 **Stock issue.** `lib/stock/manual-issue-transaction.ts` writes
 `issue_slips` and `stock_issues`.
@@ -97,16 +100,13 @@ completed order (`setPurchaseOrderPayment`, the two payment columns).
 `stocktake_lines`, and `stock_issues` (a closed count books its shortfall as an
 issue).
 
-**Products.** `app/admin/products/actions.ts` writes `Products` and
-`Product_Variants`. `lib/products/product-save-transaction.ts` writes `products`,
-`product_variants`, and `product_price_history`.
+**Products.** `app/admin/products/actions.ts` writes `Products`. `lib/products/product-save-transaction.ts` writes `products`, `product_variants`, and `product_price_history`; `lib/products/product-status-transaction.ts` (Ngừng bán / Bán lại, migration `0114`) writes `products` and `product_variants`.
 `lib/products/product-erase-transaction.ts` writes `products`, `product_variants`, and
 `product_price_history`. `app/admin/products/categories/actions.ts` writes
 `Product_Categories`; `app/admin/products/modifiers/actions.ts` writes
 `Modifiers`; `app/admin/products/toppings/actions.ts` writes `Products`.
-`lib/products/topping-price-sync.ts` writes `modifiers`, `product_variants`,
-and `product_price_history` (a topping's price, synced to its linked
-product in one transaction, `BR-CATALOG-003`).
+`lib/products/modifier-save-transaction.ts` writes `modifiers`, and via `sync_topping_price_atomic` `product_variants` and `product_price_history` (`BR-CATALOG-003`).
+`lib/products/modifier-group-transaction.ts` writes `modifier_groups`, `modifier_group_products` and `modifiers`; `lib/products/product-save-transaction.ts` also writes `modifier_group_products` (dish ticks, `BR-CATALOG-005`).
 `lib/products/create-standalone-topping.ts` writes `products`,
 `product_variants`, `product_price_history`, and `modifiers` (the first
 link: mints the standalone product, its launch-price history row, and the
@@ -121,7 +121,7 @@ item's assets `INACTIVE` when it leaves the equipment category, BR-COGS-008).
 `Purchase_Order_Lines`.
 
 **Assets.** `app/admin/inventory/assets/actions.ts` writes `asset_disposals`;
-`app/admin/inventory/asset-bands/actions.ts` writes `asset_depreciation_bands`.
+`lib/assets/asset-bands-transaction.ts` writes `asset_depreciation_bands`, the whole table in one save (migration `0118`).
 (`assets` rows are created via purchasing, and marked `INACTIVE` from the
 item edit page.)
 

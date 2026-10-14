@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
+import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDate } from "@/lib/shared/datetime";
 import { getPriceTrend, type ItemPurchaseHistoryRow } from "@/lib/purchasing/item-purchase-history";
@@ -29,44 +30,46 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
       )}
 
       {/* Desktop: Table layout */}
-      <div className="bg-surface-card rounded-2xl border border-border overflow-hidden hidden md:block shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-                <th className="px-4 py-3 font-bold">Ngày</th>
-                <th className="px-4 py-3 font-bold">Nhà cung cấp</th>
-                <th className="px-4 py-3 font-bold text-right">Số lượng</th>
-                <th className="px-4 py-3 font-bold text-right">Đơn giá</th>
-                <th className="px-4 py-3 font-bold text-right">Thành tiền</th>
-                <th className="px-4 py-3 font-bold text-right">Đơn nhập</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {rows.map((row, idx) => (
-                <tr key={`${row.poId}-${idx}`} className="hover:bg-page transition-colors">
-                  <td className="px-4 py-3 text-text-secondary whitespace-nowrap">
+      <div className="hidden md:block">
+        <Table>
+          <TableHead>
+            <TableHeaderCell>Ngày</TableHeaderCell>
+            <TableHeaderCell>Nhà cung cấp</TableHeaderCell>
+            <TableHeaderCell>Số lượng</TableHeaderCell>
+            <TableHeaderCell>Đơn giá</TableHeaderCell>
+            <TableHeaderCell>Thành tiền</TableHeaderCell>
+            <TableHeaderCell>Đơn nhập</TableHeaderCell>
+          </TableHead>
+          <TableBody>
+            {rows.map((row, idx) => (
+              <TableRow key={`${row.poId}-${idx}`}>
+                <TableCell>
+                  <span className="whitespace-nowrap text-text-secondary">
                     {row.date ? formatDate(row.date) : "---"}
-                  </td>
-                  <td className="px-4 py-3 font-medium text-text-primary">{row.supplierName}</td>
-                  <td className="px-4 py-3 text-right text-text-primary">
-                    {formatNumber(row.quantity)} {row.unitLabel}
-                  </td>
-                  <td className="px-4 py-3 text-right text-text-muted">{formatNumber(row.unitCost)}</td>
-                  <td className="px-4 py-3 text-right font-bold text-text-primary">{formatNumber(row.lineTotal)}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/inventory/purchase-orders/${row.poId}`}
-                      className="text-primary hover:text-primary-hover font-mono text-[11px]"
-                    >
-                      {row.poId}
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </span>
+                </TableCell>
+                <TableCell>{row.supplierName}</TableCell>
+                <TableCell align="right">
+                  {formatNumber(row.quantity)} {row.unitLabel}
+                </TableCell>
+                <TableCell align="right">
+                  <span className="text-text-muted">{formatNumber(row.unitCost)}</span>
+                </TableCell>
+                <TableCell align="right">
+                  {formatNumber(row.lineTotal)}
+                </TableCell>
+                <TableCell align="right">
+                  <Link
+                    href={`/admin/inventory/purchase-orders/${row.poId}`}
+                    className="text-primary hover:text-primary-hover font-mono text-xs"
+                  >
+                    {row.poId}
+                  </Link>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Mobile: Card layout (< 768px) */}
@@ -79,26 +82,26 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
               </span>
               <Link
                 href={`/admin/inventory/purchase-orders/${row.poId}`}
-                className="text-primary hover:text-primary-hover font-mono text-xs font-semibold"
+                className="text-primary hover:text-primary-hover font-mono text-xs"
               >
                 {row.poId}
               </Link>
             </div>
-            <div className="font-medium text-text-primary">{row.supplierName}</div>
+            <div className="text-text-primary">{row.supplierName}</div>
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border text-xs">
               <div>
-                <div className="text-text-muted uppercase text-[10px]">Số lượng</div>
-                <div className="text-text-primary font-medium mt-0.5">
+                <div className="text-text-muted text-xs">Số lượng</div>
+                <div className="text-text-primary tabular-nums mt-0.5">
                   {formatNumber(row.quantity)} {row.unitLabel}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-text-muted uppercase text-[10px]">Đơn giá</div>
-                <div className="text-text-muted mt-0.5">{formatNumber(row.unitCost)}</div>
+                <div className="text-text-muted text-xs">Đơn giá</div>
+                <div className="text-text-muted tabular-nums mt-0.5">{formatNumber(row.unitCost)}</div>
               </div>
               <div className="text-right">
-                <div className="text-text-muted uppercase text-[10px]">Thành tiền</div>
-                <div className="text-text-primary font-bold mt-0.5">{formatNumber(row.lineTotal)}</div>
+                <div className="text-text-muted text-xs">Thành tiền</div>
+                <div className="text-text-primary tabular-nums mt-0.5">{formatNumber(row.lineTotal)}</div>
               </div>
             </div>
           </div>

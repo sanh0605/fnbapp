@@ -105,4 +105,45 @@ describe("UserDetailView", () => {
 
     expect(screen.getByRole("button", { name: "Xoá" })).toBeInTheDocument();
   });
+
+  it("with canGrantAdmin false, the edit link is absent for an ADMIN user", () => {
+    render(
+      <UserDetailView
+        user={userAdmin}
+        returnTo="/admin/users"
+        canDelete={false}
+        canGrantAdmin={false}
+      />
+    );
+
+    expect(screen.queryByRole("link", { name: "Chỉnh sửa" })).toBeNull();
+  });
+
+  it("with canGrantAdmin true, the edit link is present for an ADMIN user", () => {
+    render(
+      <UserDetailView
+        user={userAdmin}
+        returnTo="/admin/users"
+        canDelete={true}
+        canGrantAdmin={true}
+      />
+    );
+
+    const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
+    expect(editLink).toBeInTheDocument();
+    expect(editLink.getAttribute("href")).toContain("/admin/users/USR-001/edit?returnTo=");
+  });
+
+  it("with canGrantAdmin false, the edit link is still present for a non-ADMIN user", () => {
+    render(
+      <UserDetailView
+        user={userTuyen}
+        returnTo="/admin/users"
+        canDelete={false}
+        canGrantAdmin={false}
+      />
+    );
+
+    expect(screen.getByRole("link", { name: "Chỉnh sửa" })).toBeInTheDocument();
+  });
 });

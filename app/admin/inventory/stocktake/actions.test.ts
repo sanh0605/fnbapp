@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   cancelStocktakeSessionAtomic: vi.fn(),
   applyStocktakeSessionAtomic: vi.fn(),
   reverseStocktakeSessionAtomic: vi.fn(),
+  editConfirmedStocktakeAtomic: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
@@ -27,6 +28,7 @@ vi.mock("@/lib/stock/stocktake-transaction", () => ({
   cancelStocktakeSessionAtomic: mocks.cancelStocktakeSessionAtomic,
   applyStocktakeSessionAtomic: mocks.applyStocktakeSessionAtomic,
   reverseStocktakeSessionAtomic: mocks.reverseStocktakeSessionAtomic,
+  editConfirmedStocktakeAtomic: mocks.editConfirmedStocktakeAtomic,
 }));
 
 import * as stocktakeActions from "./actions";
@@ -536,5 +538,163 @@ describe("getLastConfirmedStocktakeSession (Plan D D14)", () => {
       notes: "",
       hasOpenSessionBlocking: true,
     });
+  });
+});
+
+describe("editing a confirmed stocktake (BR-INV-012)", () => {
+  const ADMIN = { ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } };
+  const MANAGER = { ok: true, actor: { id: "mgr-1", name: "Quản lý", role: "MANAGER" } };
+  const session = (id: string, status: string, confirmedAt: string | null) => ({
+    id, status, created_by_name: "Admin", created_at: "2026-08-09T14:00:00Z", notes: "",
+    confirmed_by_name: confirmedAt ? "Admin" : null, confirmed_at: confirmedAt, reversed_at: null,
+  });
+  const lines = [
+    { id: "SKL-00007", session_id: "STK-001", item_reference: "SPM-007", item_type: "PURCHASED_ITEM", counted_qty: 1.5, theoretical_at_count: 2 },
+    { id: "SKL-00004", session_id: "STK-001", item_reference: "SPM-004", item_type: "PURCHASED_ITEM", counted_qty: 4, theoretical_at_count: 6 },
+  ];
+
+  // findAllWhere ignores filters in the shared mock; honour `eq` here.
+  function seed(sessions: ReturnType<typeof session>[]) {
+    mocks.findAllWhere.mockImplementation((table: string, filters: { eq?: Record<string, string> }) => {
+      const rows: any[] = table === "stocktake_sessions" ? sessions : table === "stocktake_lines" ? lines : [];
+      return Promise.resolve(rows.filter(r => Object.entries(filters.eq ?? {}).every(([k, v]) => r[k] === v)));
+    });
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") return Promise.resolve([
+        // Live data: default_unit_id is null on every row; the unit comes from the ACTIVE conversion.
+        { id: "SPM-004", name: "Bột cà phê truyền thống Phin Đậm", default_unit_id: null },
+        { id: "SPM-007", name: "Bột milkfoam muối biển", default_unit_id: null },
+      ]);
+      if (sheet === "UOM_Conversions") return Promise.resolve([
+        { purchased_item_id: "SPM-004", base_unit: "U-2", status: "INACTIVE" },
+        { purchased_item_id: "SPM-004", base_unit: "U-1", status: "ACTIVE" },
+        { purchased_item_id: "SPM-007", base_unit: "U-1", status: "ACTIVE" },
+      ]);
+      if (sheet === "Units") return Promise.resolve([{ id: "U-1", name: "g" }, { id: "U-2", name: "kg" }]);
+      return Promise.resolve([]);
+    });
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.requireOwner.mockResolvedValue(ADMIN);
+  });
+
+  it("an owner opening the only confirmed session may edit; lines are sorted by name", async () => {
+    seed([session("STK-001", "CONFIRMED", "2026-08-09T15:02:24Z")]);
+    const view = await stocktakeActions.getStocktakeDetail("STK-001");
+    expect(view?.editBlock).toBeNull();
+    expect(view?.lines.map(l => l.itemName)).toEqual(["Bột cà phê truyền thống Phin Đậm", "Bột milkfoam muối biển"]);
+    expect(view?.lines[0]).toMatchObject({ id: "SKL-00004", unitName: "g", countedQty: 4, theoreticalAtCount: 6 });
+  });
+
+  it("a manager sees the session but cannot edit it", async () => {
+    mocks.requireAdmin.mockResolvedValue(MANAGER);
+    seed([session("STK-001", "CONFIRMED", "2026-08-09T15:02:24Z")]);
+    expect((await stocktakeActions.getStocktakeDetail("STK-001"))?.editBlock).toBe("NOT_OWNER");
+  });
+
+  it("an older confirmed session is NOT_LATEST", async () => {
+    seed([session("STK-001", "CONFIRMED", "2026-08-09T15:02:24Z"), session("STK-002", "CONFIRMED", "2026-09-09T15:02:24Z")]);
+    expect((await stocktakeActions.getStocktakeDetail("STK-001"))?.editBlock).toBe("NOT_LATEST");
+  });
+
+  it("an open session elsewhere blocks with OPEN_SESSION", async () => {
+    seed([session("STK-001", "CONFIRMED", "2026-08-09T15:02:24Z"), session("STK-002", "OPEN", null)]);
+    expect((await stocktakeActions.getStocktakeDetail("STK-001"))?.editBlock).toBe("OPEN_SESSION");
+  });
+
+  it("a reversed session is NOT_CONFIRMED", async () => {
+    seed([session("STK-001", "REVERSED", "2026-08-09T15:02:24Z")]);
+    expect((await stocktakeActions.getStocktakeDetail("STK-001"))?.editBlock).toBe("NOT_CONFIRMED");
+  });
+
+  it("checks run in order: owner, confirmed, latest, open", async () => {
+    mocks.requireAdmin.mockResolvedValue(MANAGER);
+    seed([session("STK-001", "REVERSED", "2026-08-09T15:02:24Z"), session("STK-002", "OPEN", null)]);
+    expect((await stocktakeActions.getStocktakeDetail("STK-001"))?.editBlock).toBe("NOT_OWNER");
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    expect((await stocktakeActions.getStocktakeDetail("STK-001"))?.editBlock).toBe("NOT_CONFIRMED");
+    seed([
+      session("STK-001", "CONFIRMED", "2026-08-09T15:02:24Z"),
+      session("STK-002", "CONFIRMED", "2026-09-09T15:02:24Z"),
+      session("STK-003", "OPEN", null),
+    ]);
+    expect((await stocktakeActions.getStocktakeDetail("STK-001"))?.editBlock).toBe("NOT_LATEST");
+  });
+
+  it("returns null for an unknown id, and an OPEN session as NOT_CONFIRMED", async () => {
+    seed([session("STK-002", "OPEN", null)]);
+    expect(await stocktakeActions.getStocktakeDetail("STK-999")).toBeNull();
+    expect(await stocktakeActions.getStocktakeDetail("STK-002")).toMatchObject({ status: "OPEN", editBlock: "NOT_CONFIRMED" });
+  });
+
+  it("refuses a non-owner before ever calling the RPC", async () => {
+    mocks.requireOwner.mockResolvedValue({ ok: false, error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" });
+    const result = await stocktakeActions.editConfirmedStocktake("STK-001", [{ lineId: "SKL-00004", countedQty: 5000 }]);
+    expect(result).toEqual({ error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" });
+    expect(mocks.editConfirmedStocktakeAtomic).not.toHaveBeenCalled();
+  });
+
+  it("calls the RPC as the owner, returns changedCount and revalidates the three screens", async () => {
+    mocks.editConfirmedStocktakeAtomic.mockResolvedValue({ sessionId: "STK-001", changedCount: 1, issueIds: ["ISS-00004"] });
+    const result = await stocktakeActions.editConfirmedStocktake("STK-001", [{ lineId: "SKL-00004", countedQty: 5000 }]);
+    expect(mocks.editConfirmedStocktakeAtomic).toHaveBeenCalledWith({
+      sessionId: "STK-001", lines: [{ lineId: "SKL-00004", countedQty: 5000 }],
+    });
+    expect(result).toEqual({ success: true, changedCount: 1 });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/stocktake");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/stocktake/STK-001");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/inventory/issue-slips");
+  });
+
+  it("refuses a negative or non-finite count and an empty list without calling the RPC", async () => {
+    for (const lines of [
+      [{ lineId: "SKL-00004", countedQty: -1 }],
+      [{ lineId: "SKL-00004", countedQty: Number.NaN }],
+      [{ lineId: "SKL-00004", countedQty: Infinity }],
+      [],
+    ]) {
+      const result = await stocktakeActions.editConfirmedStocktake("STK-001", lines);
+      expect(result.error).toMatch(/[ạăâêôơưđ]/i);
+    }
+    expect(mocks.editConfirmedStocktakeAtomic).not.toHaveBeenCalled();
+  });
+
+  it("returns the database refusal through describeActionError, Vietnamese text intact", async () => {
+    mocks.editConfirmedStocktakeAtomic.mockRejectedValue(
+      new Error("Chỉ sửa được phiếu kiểm kê mới nhất (STK-002), không phải STK-001"),
+    );
+    const result = await stocktakeActions.editConfirmedStocktake("STK-001", [{ lineId: "SKL-00004", countedQty: 5000 }]);
+    expect(result.error).toContain("Chỉ sửa được phiếu kiểm kê mới nhất");
+  });
+});
+
+describe("confirming a stocktake after a late slip (BR-INV-017)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+  });
+
+  it("Khi xác nhận kiểm kê, máy tính lại số trên sổ tại giờ đếm, kể cả phiếu nhập trễ ghi ngày trước giờ đếm, nên không trừ hai lần (chủ quán chốt 14/10/2026)", async () => {
+    // Sữa tươi counted 8 at 15:00, frozen book 10; a slip of 2 dated 14:00 entered afterwards:
+    // the database recomputes 10 -> 8, writes nothing, and says which line changed.
+    const applied = {
+      sessionId: "STK-001", status: "CONFIRMED", dryRun: false, ledgerCount: 0, issueCount: 0,
+      rows: [], skippedIngredients: [], planHash: "h1", issueIds: [],
+      recomputedLines: [{ lineId: "SKL-00001", itemReference: "SPM-001", frozenQty: 10, recomputedQty: 8 }],
+    };
+    mocks.applyStocktakeSessionAtomic.mockResolvedValue(applied);
+
+    const result = await stocktakeActions.confirmStocktakeSession("STK-001", "h1");
+
+    expect(mocks.applyStocktakeSessionAtomic).toHaveBeenCalledWith(expect.objectContaining({
+      sessionId: "STK-001", dryRun: false, expectedPlanHash: "h1",
+    }));
+    expect(result.result?.rows).toEqual([]);
+    expect(result.result?.recomputedLines).toEqual([
+      { lineId: "SKL-00001", itemReference: "SPM-001", frozenQty: 10, recomputedQty: 8 },
+    ]);
   });
 });

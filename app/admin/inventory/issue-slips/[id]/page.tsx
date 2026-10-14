@@ -2,10 +2,14 @@ import { notFound } from "next/navigation";
 import { getIssueSlipDetail, getIssueSlipFormData } from "../actions";
 import IssueSlipDetailClient from "../components/IssueSlipDetailClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function IssueSlipDetailPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams?: { returnTo?: string };
 }) {
   const detail = await getIssueSlipDetail(params.id);
   if (!detail) {
@@ -14,5 +18,19 @@ export default async function IssueSlipDetailPage({
 
   const items = await getIssueSlipFormData();
 
-  return <IssueSlipDetailClient detail={detail} items={items} />;
+  const rawReturnTo = searchParams?.returnTo;
+  const returnTo =
+    typeof rawReturnTo === "string" &&
+    (rawReturnTo === "/admin/inventory/issue-slips" ||
+      rawReturnTo.startsWith("/admin/inventory/issue-slips?"))
+      ? rawReturnTo
+      : "/admin/inventory/issue-slips";
+
+  return (
+    <IssueSlipDetailClient
+      detail={detail}
+      items={items}
+      returnTo={returnTo}
+    />
+  );
 }

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PurchaseOrderForm from "./PurchaseOrderForm";
 import type { DBBankAccount, DBPurchaseOrder, DBPurchasedItem, DBSupplier, DBPurchaseSource, DBUOMConversion, DBUnit, DBPurchaseOrderLine } from "@/types/db";
@@ -437,6 +437,53 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
     expect(formData.get("status")).toBe("DRAFT");
   });
 
+  // Owner 2026-10-14: on a slow connection a second tap must not save a second slip.
+  it("after a successful save the buttons stay switched off until the page moves on, so a second tap saves nothing", async () => {
+    mockSavePurchaseOrder.mockResolvedValue({ success: true });
+
+    render(
+      <PurchaseOrderForm
+        suppliers={seedSuppliers}
+        sources={sampleSources}
+        items={seedItems}
+        conversions={seedConversions}
+        units={seedUnits}
+        bankAccounts={sampleAccounts}
+        copySeed={po147Seed}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Lưu nháp/i }));
+    await waitFor(() => expect(router.push).toHaveBeenCalledTimes(1));
+
+    const draftBtn = screen.getByRole("button", { name: /Lưu nháp/i });
+    expect(draftBtn).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeDisabled();
+    fireEvent.click(draftBtn);
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
+    expect(mockSavePurchaseOrder).toHaveBeenCalledTimes(1);
+  });
+
+  it("after a failed save the buttons work again", async () => {
+    mockSavePurchaseOrder.mockResolvedValue({ success: false, error: "Mất kết nối" });
+
+    render(
+      <PurchaseOrderForm
+        suppliers={seedSuppliers}
+        sources={sampleSources}
+        items={seedItems}
+        conversions={seedConversions}
+        units={seedUnits}
+        bankAccounts={sampleAccounts}
+        copySeed={po147Seed}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Lưu nháp/i }));
+    await waitFor(() => expect(mockSavePurchaseOrder).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Lưu nháp/i })).not.toBeDisabled());
+  });
+
   it("with ?draft=1 and a stored draft whose supplierId differs, the draft's supplier wins", async () => {
     mockSearchParams = new URLSearchParams("draft=1");
     mockSavePurchaseOrder.mockResolvedValueOnce({ success: true });
@@ -501,7 +548,9 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
       expect(screen.queryByText("Trả bằng")).toBeNull();
     });
 
-    it("renders Thành tiền with plain input classes matching Số lượng, and Đơn giá without background box", () => {
+    // Wave K3: both boxes are now the shared NumberInput (BR-UI-005), so the
+    // test checks they are the same kind of box rather than a pinned class string.
+    it("renders Thành tiền and Số lượng as the same shared number box, and Đơn giá without background box", () => {
       render(
         <PurchaseOrderForm
           suppliers={sampleSuppliers}
@@ -518,8 +567,9 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
       const subtotalInput = screen.getByLabelText("Thành tiền (đ)");
       const quantityInput = screen.getByLabelText("Số lượng");
 
-      expect(subtotalInput.className).toBe("w-full border border-border rounded-lg px-3 py-2 text-sm");
-      expect(quantityInput.className).toBe("w-full border border-border rounded-lg px-3 py-2 text-sm");
+      expect((subtotalInput as HTMLInputElement).type).toBe("text");
+      expect((quantityInput as HTMLInputElement).type).toBe("text");
+      expect(subtotalInput.className).toBe(quantityInput.className);
       expect(subtotalInput.className).not.toContain("bg-success");
 
       const unitPriceLabel = screen.getByText("Đơn giá");
@@ -544,5 +594,73 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
       expect(screen.getByRole("button", { name: "Lưu nháp" })).toBeTruthy();
       expect(screen.queryByText(/Draft/i)).toBeNull();
     });
+  });
+});
+
+
+// Owner 2026-10-10: a create/edit form looks like the slip's detail page —
+// on a computer the lines take the left two thirds and the slip-wide boxes
+// stack in the right third; on a phone the same blocks run top to bottom in
+// their source order (shared boxes, lines, then money and buttons).
+function expectBefore(a: Element, b: Element) {
+  expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+}
+
+describe("PurchaseOrderForm two columns (owner 2026-10-10)", () => {
+  function renderForm() {
+    return render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+  }
+
+  it("on a computer: lines on the left two thirds, shared boxes then money on the right third", () => {
+    renderForm();
+    const layout = screen.getByTestId("form-layout");
+    expect(layout.className).toMatch(/\bgrid\b/);
+    expect(layout.className).toContain("lg:grid-cols-3");
+    const lines = screen.getByTestId("form-lines");
+    const shared = screen.getByTestId("form-shared");
+    const money = screen.getByTestId("form-money");
+    expect(lines.className).toContain("lg:col-span-2");
+    expect(lines.className).toContain("lg:col-start-1");
+    expect(shared.className).toContain("lg:col-start-3");
+    expect(money.className).toContain("lg:col-start-3");
+    for (const block of [lines, shared, money]) expect(layout.contains(block)).toBe(true);
+  });
+
+  it("each box sits in its block", () => {
+    renderForm();
+    const shared = screen.getByTestId("form-shared");
+    const lines = screen.getByTestId("form-lines");
+    const money = screen.getByTestId("form-money");
+    expect(within(shared).getByText("Nhà cung cấp")).toBeInTheDocument();
+    expect(within(shared).getByText("Mã hoá đơn")).toBeInTheDocument();
+    expect(within(shared).getByText("Ghi chú")).toBeInTheDocument();
+    expect(within(lines).getByText("Chi tiết nhập hàng")).toBeInTheDocument();
+    expect(within(money).getByText(/Tổng tiền hàng/)).toBeInTheDocument();
+    expect(within(money).getByRole("button", { name: "Lưu nháp" })).toBeInTheDocument();
+    expect(within(money).getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+  });
+
+  it("on a phone the blocks run shared, lines, money", () => {
+    renderForm();
+    expectBefore(screen.getByTestId("form-shared"), screen.getByTestId("form-lines"));
+    expectBefore(screen.getByTestId("form-lines"), screen.getByTestId("form-money"));
+  });
+
+  it("no white frame around the whole form (no frame inside a frame on a phone)", () => {
+    const { container } = renderForm();
+    let el: HTMLElement | null = screen.getByTestId("form-layout");
+    while (el && el !== container) {
+      expect(el.className).not.toContain("bg-surface-card");
+      el = el.parentElement;
+    }
   });
 });

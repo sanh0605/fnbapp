@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   findById: vi.fn(),
   insert: vi.fn(),
+  update: vi.fn(),
   generateNewId: vi.fn(),
   buildPurchaseOrderWritePlan: vi.fn(),
   savePurchaseOrderAtomic: vi.fn(),
@@ -12,12 +14,14 @@ const mocks = vi.hoisted(() => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   findById: mocks.findById,
   insert: mocks.insert,
+  update: mocks.update,
   generateNewId: mocks.generateNewId,
+  getCacheTag: (sheet: string) => `sheets-${sheet}`,
 }));
 vi.mock("@/lib/purchasing/purchase-order-write-plan", () => ({
   buildPurchaseOrderWritePlan: mocks.buildPurchaseOrderWritePlan,
@@ -64,7 +68,7 @@ function buildFormData(status = "COMPLETED", id = ""): FormData {
   formData.set("status", status);
   // Migration 0107: a completed order must say how it was paid.
   formData.set("payment_method", "CASH");
-  formData.set("lines_json", JSON.stringify([{ subtotal: 761_200 }]));
+  formData.set("lines_json", JSON.stringify([{ subtotal: 761_200, quantity: 8 }]));
   formData.set("subtotal_amount", "761200");
   if (id) formData.set("id", id);
   return formData;
@@ -76,7 +80,32 @@ function mockFindAll(overrides: Record<string, any[]> = {}) {
     if (sheet === "Item_Categories") return Promise.resolve(overrides.Item_Categories ?? ITEM_CATEGORIES);
     if (sheet === "UOM_Conversions") return Promise.resolve([]);
     if (sheet === "asset_depreciation_bands") return Promise.resolve(overrides.asset_depreciation_bands ?? BANDS);
+    if (overrides[sheet]) return Promise.resolve(overrides[sheet]);
     return Promise.resolve([]);
+  });
+}
+
+// Audit A7: the asset rows travel with the order to the one database function; nothing is
+// written to assets from here any more.
+function assetsSentToSave(): any {
+  expect(mocks.savePurchaseOrderAtomic).toHaveBeenCalledTimes(1);
+  return mocks.savePurchaseOrderAtomic.mock.calls[0][0].assets;
+}
+function expectNoAssetWrite() {
+  expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+  expect(mocks.update).not.toHaveBeenCalled();
+}
+
+// An unchanged re-save of a completed order: its stored line and the asset on it
+// exist, so the edit has nothing to create (BR-COGS-008).
+function mockStoredAssetOnLine(lineId: string) {
+  mockFindAll({
+    Purchase_Order_Lines: [{ id: lineId, po_id: "PO-001", purchased_item_id: "SPM-200" }],
+    assets: [{
+      id: "TS-001", purchase_order_line_id: lineId, purchased_item_id: "SPM-200",
+      name_snapshot: "Bình nhựa có bơm 1000ml", quantity: 8, unit_cost: 95_150,
+      total_cost: 761_200, term_months: 12, acquired_date: "2026-08-20", status: "ACTIVE",
+    }],
   });
 }
 
@@ -88,11 +117,29 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
     mocks.findById.mockResolvedValue(null);
     mockFindAll();
     mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-001" });
     mocks.generateNewId.mockResolvedValue("TS-001");
   });
+
+  it.each([[""], ["0"]])(
+    "refuses to complete an order whose line has quantity %j, before any write",
+    async quantity => {
+      const formData = buildFormData();
+      formData.set("lines_json", JSON.stringify([
+        { purchased_item_id: "SPM-100", quantity: "2", subtotal: 100_000 },
+        { purchased_item_id: "SPM-200", quantity, subtotal: 661_200 },
+      ]));
+
+      const res = await savePurchaseOrder(formData);
+
+      expect(res.error).toBe("Dòng 2: Vui lòng nhập số lượng");
+      expect(mocks.buildPurchaseOrderWritePlan).not.toHaveBeenCalled();
+      expect(mocks.savePurchaseOrderAtomic).not.toHaveBeenCalled();
+    },
+  );
 
   it("creates an assets row for an EQUIPMENT line, banded by its own unit price", async () => {
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
@@ -106,9 +153,9 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     const res = await savePurchaseOrder(buildFormData());
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "assets",
-      expect.objectContaining({
+    // The exact asset row, pinned field by field (audit A7); the id is made by the database function.
+    expect(assetsSentToSave()).toEqual({
+      create: [{
         purchased_item_id: "SPM-200",
         purchase_order_line_id: "POL-002",
         name_snapshot: "Bình nhựa có bơm 1000ml",
@@ -117,8 +164,31 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
         quantity: 8,
         term_months: 12, // under 200k
         acquired_date: "2026-08-20",
-      }),
-    );
+      }],
+      update: [],
+      retire: [],
+    });
+    expectNoAssetWrite();
+  });
+
+  // The old insert()/update() helpers dropped the 2-minute "assets" cache; the SQL write does not,
+  // so the action must, or the next edit plans from stale assets and duplicates one.
+  it("drops the assets cache after a save that sent assets, and not after one that did not", async () => {
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({
+      order: {},
+      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
+      ledgerRows: [],
+    });
+    await savePurchaseOrder(buildFormData());
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-assets");
+
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findById.mockResolvedValue(null);
+    mockFindAll();
+    mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-001" });
+    await savePurchaseOrder(buildFormData("DRAFT"));
+    expect(mocks.revalidateTag).not.toHaveBeenCalledWith("sheets-assets");
   });
 
   it("creates no asset for a RAW-only order", async () => {
@@ -131,7 +201,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     const res = await savePurchaseOrder(buildFormData());
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    expect(assetsSentToSave()).toBeUndefined();
   });
 
   it("creates no asset for a DRAFT order, even with an equipment line", async () => {
@@ -143,10 +213,11 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
 
     await savePurchaseOrder(buildFormData("DRAFT"));
 
-    expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    expect(assetsSentToSave()).toBeUndefined();
   });
 
-  it("creates no asset when EDITING an existing order, even with an equipment line -- known limitation, documented not guessed at", async () => {
+  it("creates no asset when re-saving an unchanged completed order that already has its asset", async () => {
+    mockStoredAssetOnLine("POL-002");
     mocks.findById.mockResolvedValue({ status: "COMPLETED", subtotal_amount: 761_200 });
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
       order: {},
@@ -156,7 +227,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
 
     await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
 
-    expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+    expect(assetsSentToSave()).toBeUndefined();
   });
 
   describe("an existing order saved again", () => {
@@ -174,9 +245,9 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
       const res = await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
 
       expect(res.error).toBeUndefined();
-      const assetInserts = mocks.insert.mock.calls.filter(c => c[0] === "assets");
-      expect(assetInserts).toHaveLength(1);
-      expect(assetInserts[0][1]).toEqual(
+      const sent = assetsSentToSave();
+      expect(sent.create).toHaveLength(1);
+      expect(sent.create[0]).toEqual(
         expect.objectContaining({
           purchase_order_line_id: "POL-NEW",
           purchased_item_id: "SPM-200",
@@ -184,15 +255,17 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
           quantity: 8,
         }),
       );
+      expectNoAssetWrite();
     });
 
-    it("COMPLETED -> COMPLETED creates no asset", async () => {
+    it("COMPLETED -> COMPLETED creates no asset for a line that already has one", async () => {
+      mockStoredAssetOnLine("POL-NEW");
       mocks.findById.mockResolvedValue({ status: "COMPLETED", subtotal_amount: 761_200 });
       mocks.buildPurchaseOrderWritePlan.mockReturnValue(equipmentPlan());
 
       await savePurchaseOrder(buildFormData("COMPLETED", "PO-001"));
 
-      expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+      expect(assetsSentToSave()).toBeUndefined();
     });
 
     it("DRAFT -> DRAFT creates no asset", async () => {
@@ -201,7 +274,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
 
       await savePurchaseOrder(buildFormData("DRAFT", "PO-001"));
 
-      expect(mocks.insert).not.toHaveBeenCalledWith("assets", expect.anything());
+      expect(assetsSentToSave()).toBeUndefined();
     });
   });
 
@@ -228,8 +301,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     const res = await savePurchaseOrder(buildFormData());
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "assets",
+    expect(assetsSentToSave().create).toEqual([
       expect.objectContaining({
         purchased_item_id: "SPM-201",
         purchase_order_line_id: "POL-003",
@@ -239,7 +311,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
         quantity: 10,
         term_months: 12,
       }),
-    );
+    ]);
   });
 
   // (OPEN-ITEMS 64): acquired_date is sliced from effectiveDate, a UTC
@@ -264,13 +336,13 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     const res = await savePurchaseOrder(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "assets",
-      expect.objectContaining({ acquired_date: "2026-06-01" }),
-    );
+    expect(assetsSentToSave().create).toEqual([expect.objectContaining({ acquired_date: "2026-06-01" })]);
   });
 
-  it("reports the order as saved (not failed) even if asset creation errors, with a warning attached", async () => {
+  // Audit A7: the order and its assets are one write. An asset that cannot be planned
+  // (no depreciation band for the price) now refuses the save instead of saving the order
+  // without its asset and showing a warning.
+  it("refuses the save, writing nothing, when an asset cannot be planned", async () => {
     mocks.buildPurchaseOrderWritePlan.mockReturnValue({
       order: {},
       lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 100, quantity: 1, base_quantity: 1 }],
@@ -281,7 +353,162 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
 
     const res = await savePurchaseOrder(buildFormData());
 
-    expect(res.success).toBe(true);
-    expect(res.assetWarning).toBeTruthy();
+    expect(res.error).toBe("Bình nhựa có bơm 1000ml: không tìm thấy khung khấu hao cho đơn giá 100đ");
+    expect(res.assetWarning).toBeUndefined();
+    expect(mocks.savePurchaseOrderAtomic).not.toHaveBeenCalled();
+  });
+
+  it("a failing database save (order and assets are one transaction) is reported as failed", async () => {
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({
+      order: {},
+      lines: [{ id: "POL-002", purchased_item_id: "SPM-200", subtotal: 761_200, quantity: 8, base_quantity: 8 }],
+      ledgerRows: [],
+    });
+    mocks.savePurchaseOrderAtomic.mockRejectedValue(new Error("save_purchase_order_atomic: Không sửa được phiếu PO-064: Trứng gà sẽ âm kho"));
+
+    const res = await savePurchaseOrder(buildFormData());
+
+    expect(res.success).toBeUndefined();
+    expect(res.error).toContain("Trứng gà sẽ âm kho");
+    expectNoAssetWrite();
+  });
+});
+
+// BR-COGS-008 (owner 2026-10-08, "1b"): editing a completed order updates its
+// assets; an asset with a disposal refuses the edit.
+describe("savePurchaseOrder -- editing a completed order updates its assets", () => {
+  const apronAsset = {
+    id: "TS-018",
+    purchase_order_line_id: "POL-A",
+    purchased_item_id: "SPM-200",
+    name_snapshot: "Tạp dề",
+    quantity: 2,
+    unit_cost: 85_000,
+    total_cost: 170_000,
+    term_months: 12,
+    acquired_date: "2026-08-20",
+    status: "ACTIVE",
+  };
+
+  function setup(disposals: any[] = []) {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED", subtotal_amount: 170_000 });
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") return Promise.resolve(PURCHASED_ITEMS);
+      if (sheet === "Item_Categories") return Promise.resolve(ITEM_CATEGORIES);
+      if (sheet === "Purchase_Order_Lines") {
+        return Promise.resolve([{ id: "POL-A", po_id: "PO-100", purchased_item_id: "SPM-200" }]);
+      }
+      if (sheet === "assets") return Promise.resolve([apronAsset]);
+      if (sheet === "asset_disposals") return Promise.resolve(disposals);
+      if (sheet === "asset_depreciation_bands") return Promise.resolve(BANDS);
+      return Promise.resolve([]);
+    });
+    mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-100" });
+    mocks.generateNewId.mockResolvedValue("TS-099");
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({
+      order: {},
+      lines: [{ id: "POL-A", purchased_item_id: "SPM-200", subtotal: 255_000, quantity: 3, base_quantity: 3 }],
+      ledgerRows: [],
+    });
+  }
+
+  function formData() {
+    const fd = buildFormData("COMPLETED", "PO-100");
+    fd.set("lines_json", JSON.stringify([{ subtotal: 255_000, quantity: 3 }]));
+    fd.set("subtotal_amount", "255000");
+    return fd;
+  }
+
+  it("editing PO-100 Tạp dề from 2 to 3 updates the asset quantity and inserts no asset", async () => {
+    setup();
+
+    const res = await savePurchaseOrder(formData());
+
+    expect(res.error).toBeUndefined();
+    const sent = assetsSentToSave();
+    expect(sent.update).toEqual([{ id: "TS-018", patch: expect.objectContaining({ quantity: 3, total_cost: 255_000 }) }]);
+    expect(sent.create).toEqual([]);
+    expect(sent.retire).toEqual([]);
+    expectNoAssetWrite();
+  });
+
+  it("refuses the edit, writing nothing, when it changes an asset that has a disposal", async () => {
+    setup([{ id: "TL-1", asset_id: "TS-018" }]);
+
+    const res = await savePurchaseOrder(formData());
+
+    expect(res.error).toBe(
+      "Không sửa được phiếu: tài sản TS-018 Tạp dề sinh từ phiếu này đã có lần thanh lý, mà lần sửa này làm đổi tài sản đó.",
+    );
+    expect(mocks.savePurchaseOrderAtomic).not.toHaveBeenCalled();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("a deleted line retires its asset and a new equipment line gets a new asset", async () => {
+    setup();
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({
+      order: {},
+      lines: [{ id: "POL-NEW", purchased_item_id: "SPM-200", subtotal: 255_000, quantity: 3, base_quantity: 3 }],
+      ledgerRows: [],
+    });
+
+    const res = await savePurchaseOrder(formData());
+
+    expect(res.error).toBeUndefined();
+    const sent = assetsSentToSave();
+    expect(sent.retire).toEqual(["TS-018"]);
+    expect(sent.create).toEqual([expect.objectContaining({ purchase_order_line_id: "POL-NEW", quantity: 3 })]);
+    expect(sent.create[0]).not.toHaveProperty("id");
+    expectNoAssetWrite();
+  });
+
+  it("a failure while saving the order and its assets is reported as failed, never as saved with a warning", async () => {
+    setup();
+    mocks.savePurchaseOrderAtomic.mockRejectedValue(new Error("boom"));
+
+    const res = await savePurchaseOrder(formData());
+
+    expect(res.success).toBeUndefined();
+    expect(res.assetWarning).toBeUndefined();
+    expect(res.error).toBeTruthy();
+  });
+});
+
+// BR-INV-015 (owner 2026-10-08, "a"): a completed order is never saved back as
+// a draft; a draft is not counted, so that save worked as a cancel with none of
+// the cancel's checks. "Huỷ phiếu" is the way out.
+describe("savePurchaseOrder -- a completed order is never saved back as a draft", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mockFindAll();
+    mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-100" });
+    mocks.buildPurchaseOrderWritePlan.mockReturnValue({
+      order: {},
+      lines: [{ id: "POL-1", purchased_item_id: "SPM-100", subtotal: 761_200, quantity: 10, base_quantity: 10 }],
+      ledgerRows: [],
+    });
+  });
+
+  it("refuses a draft save of PO-100 (completed) and writes nothing", async () => {
+    mocks.findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED" });
+
+    const res = await savePurchaseOrder(buildFormData("DRAFT", "PO-100"));
+
+    expect(res.error).toBe("Phiếu đã hoàn thành không lưu nháp được. Muốn rút phiếu ra, dùng Huỷ phiếu.");
+    expect(mocks.savePurchaseOrderAtomic).not.toHaveBeenCalled();
+  });
+
+  it("still saves a draft that was a draft", async () => {
+    mocks.findById.mockResolvedValue({ id: "PO-201", status: "DRAFT" });
+
+    const res = await savePurchaseOrder(buildFormData("DRAFT", "PO-201"));
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.savePurchaseOrderAtomic).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,8 +1,12 @@
 "use client";
 
-import { useId, useState, useEffect } from "react";
+import { useId, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { NumberInput } from "@/components/ui/NumberInput";
+import { DayInput } from "@/components/ui/DayInput";
+import { TextInput } from "@/components/ui/TextInput";
+import { Field } from "@/components/ui/Field";
 import { formatNumber } from "@/lib/shared/format";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
@@ -35,8 +39,11 @@ export function DisposeAssetForm({
   const selectedLot = lots.find((l) => l.id === selectedLotId) ?? lots[0];
 
   const [loading, setLoading] = useState(false);
+  const savingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState("1");
+  const [dateError, setDateError] = useState("");
+  const [quantityError, setQuantityError] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [disposedDate, setDisposedDate] = useState(() =>
     toSaigonIsoString(new Date()).slice(0, 10),
   );
@@ -51,7 +58,14 @@ export function DisposeAssetForm({
       setError(null);
       setPreview(null);
       const qty = Number(quantity);
-      if (!Number.isFinite(qty) || qty <= 0 || !disposedDate) return;
+      if (
+        !Number.isFinite(qty) ||
+        qty <= 0 ||
+        !disposedDate ||
+        disposedDate === "invalid"
+      ) {
+        return;
+      }
       setPreviewLoading(true);
       const result = await previewDisposalCharge(selectedLot.id, qty, disposedDate);
       if (cancelled) return;
@@ -70,18 +84,35 @@ export function DisposeAssetForm({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (savingRef.current) return;
     if (!selectedLot) return;
+    if (quantity === "") {
+      setQuantityError("Cần nhập số.");
+      return;
+    }
+    if (!disposedDate || disposedDate === "invalid") {
+      setDateError("Ngày không hợp lệ");
+      return;
+    }
     const formData = new FormData(e.currentTarget);
+    savingRef.current = true;
     setLoading(true);
     setError(null);
     formData.set("asset_id", selectedLot.id);
-    const res = await disposeAsset(formData);
-    setLoading(false);
-    if (res.error) {
-      setError(res.error);
-    } else {
-      router.push(returnTo);
-      router.refresh();
+    try {
+      const res = await disposeAsset(formData);
+      if (res.error) {
+        savingRef.current = false;
+        setLoading(false);
+        setError(res.error);
+      } else {
+        router.push(returnTo);
+        router.refresh();
+      }
+    } catch {
+      savingRef.current = false;
+      setLoading(false);
+      setError("Không lưu được. Kiểm tra mạng rồi bấm lại.");
     }
   }
 
@@ -114,7 +145,7 @@ export function DisposeAssetForm({
                 return (
                   <label
                     key={lot.id}
-                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition min-h-[44px] ${
+                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition min-h-[44px] md:min-h-[40px] ${
                       isSelected
                         ? "border-primary bg-primary-soft/30 text-text-primary"
                         : "border-border bg-surface-card hover:bg-surface-secondary/50 text-text-secondary"
@@ -127,7 +158,7 @@ export function DisposeAssetForm({
                       checked={isSelected}
                       onChange={() => {
                         setSelectedLotId(lot.id);
-                        if (Number(quantity) > lot.remainingQuantity) {
+                        if (quantity !== "" && Number(quantity) > lot.remainingQuantity) {
                           setQuantity(String(lot.remainingQuantity));
                         }
                       }}
@@ -151,63 +182,52 @@ export function DisposeAssetForm({
           Còn lại: <strong>{selectedLot.remainingQuantity}</strong> cái
         </p>
 
-        <div>
-          <label
-            htmlFor={`${formId}-quantity`}
-            className="block text-sm font-medium text-text-secondary mb-1"
-          >
-            Số lượng thanh lý
-          </label>
-          <input
+        <Field label="Số lượng thanh lý" htmlFor={`${formId}-quantity`}>
+          <NumberInput
             id={`${formId}-quantity`}
             name="quantity"
-            type="number"
-            inputMode="numeric"
-            min="1"
+            decimals={0}
+            min={1}
             max={selectedLot.remainingQuantity}
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card min-h-[44px]"
+            example="1"
+            error={quantityError}
+            value={quantity === "" ? null : Number(quantity)}
+            onValueChange={(v) => {
+              setQuantity(v === null ? "" : String(v));
+              setQuantityError("");
+            }}
           />
-        </div>
+        </Field>
 
         <div>
-          <label
-            htmlFor={`${formId}-date`}
-            className="block text-sm font-medium text-text-secondary mb-1"
-          >
-            Ngày thanh lý
-          </label>
-          <input
-            id={`${formId}-date`}
-            name="disposed_date"
-            type="date"
+          <DayInput
+            label="Ngày thanh lý"
             value={disposedDate}
-            onChange={(e) => setDisposedDate(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card min-h-[44px]"
+            onChange={(val) => {
+              setDisposedDate(val);
+              setDateError("");
+            }}
+            error={dateError}
           />
+          <input type="hidden" name="disposed_date" value={disposedDate} />
         </div>
 
-        <div>
-          <label
-            htmlFor={`${formId}-reason`}
-            className="block text-sm font-medium text-text-secondary mb-1"
-          >
-            Lý do
-          </label>
-          <input
+        <Field
+          label="Lý do"
+          htmlFor={`${formId}-reason`}
+        >
+          <TextInput
             id={`${formId}-reason`}
             name="reason"
             type="text"
+            example="Vỡ, hỏng, mất"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="VD: Vỡ, hỏng, mất"
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card min-h-[44px]"
           />
-        </div>
+        </Field>
 
         <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
-          <div className="text-[10px] font-bold text-warning-active uppercase tracking-wider mb-1">
+          <div className="text-xs text-warning-active mb-1">
             Sẽ ghi nhận chi phí tháng này
           </div>
           <div className="text-lg font-bold text-warning-active">
@@ -220,21 +240,22 @@ export function DisposeAssetForm({
         </div>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu..."
-            className="w-full sm:w-auto min-h-[44px]"
+            className="w-full sm:w-auto"
           >
-            Xác nhận
-          </LoadingButton>
+            {loading ? "Đang lưu..." : "Xác nhận"}
+          </Button>
         </div>
       </form>
     </div>

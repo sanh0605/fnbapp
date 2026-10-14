@@ -2,10 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { Select } from "@/components/ui/Select";
+import { NumberInput } from "@/components/ui/NumberInput";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/Table";
 import { confirm } from "@/lib/shared/dialog";
 import { computeAffectedMonths } from "@/lib/stock/issue-slip-warnings";
 import { formatConvertedOnHand } from "@/lib/stock/issue-slip-onhand-display";
@@ -13,7 +22,7 @@ import { createIssueSlip, getIssueUnitCostsAt, type IssueSlipItemView } from "..
 import { buildIssueUnitOptions, toBaseQuantity, type IssueUnitOption } from "@/lib/stock/issue-unit-options";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
-import { normalizeNumberText, numberTextToValue } from "@/lib/shared/money-digits";
+import { numberTextToValue } from "@/lib/shared/money-digits";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
 
@@ -61,7 +70,7 @@ function getConvertedQuantityText(
   return `${qtyFormatted} ${item.unitName}`;
 }
 
-export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
+export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.Element {
   const router = useRouter();
   const [lines, setLines] = useState<DraftLine[]>([emptyLine()]);
   const [issuedAtLocal, setIssuedAtLocal] = useState(() => toSaigonIsoString(new Date()).slice(0, 16));
@@ -69,6 +78,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
   const [error, setError] = useState<string | null>(null);
   const [unitCosts, setUnitCosts] = useState<Record<string, number>>({});
   const costRequestIdRef = useRef(0);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     if (!issuedAtLocal) return;
@@ -157,6 +167,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
   }
 
   async function handleSubmit() {
+    if (savingRef.current) return;
     setError(null);
 
     if (lines.length === 0) {
@@ -201,18 +212,26 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
       if (!approved) return;
     }
 
+    savingRef.current = true;
     setSubmitting(true);
-    const res = await createIssueSlip({
-      issuedAtIso: issuedAt.toISOString(),
-      note: "",
-      lines: payloadLines,
-    });
-    setSubmitting(false);
-    if (res.error || !res.result) {
-      setError(res.error || "Không thể ghi phiếu xuất");
-      return;
+    try {
+      const res = await createIssueSlip({
+        issuedAtIso: issuedAt.toISOString(),
+        note: "",
+        lines: payloadLines,
+      });
+      if (res.error || !res.result) {
+        savingRef.current = false;
+        setSubmitting(false);
+        setError(res.error || "Không thể ghi phiếu xuất");
+        return;
+      }
+      router.push("/admin/inventory/issue-slips/" + res.result.slipId);
+    } catch {
+      savingRef.current = false;
+      setSubmitting(false);
+      setError("Không lưu được. Kiểm tra mạng rồi bấm lại.");
     }
-    router.push("/admin/inventory/issue-slips/" + res.result.slipId);
   }
 
   return (
@@ -220,45 +239,54 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
       {error && <Alert variant="danger">{error}</Alert>}
 
       {/* Desktop view (md and up) */}
-      <div className="hidden md:block space-y-6">
-        {/* Top card: Thời điểm xuất (left) & Đã điền đủ (right) */}
-        <div className="bg-surface-card rounded-card border border-border p-4 flex flex-row items-center justify-between gap-4 shadow-sm">
-          <div>
-            <label className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">
-              Thời điểm xuất (áp dụng cho cả phiếu)
-            </label>
-            <SaigonDateTimeInput
-              value={issuedAtLocal}
-              onChange={setIssuedAtLocal}
-              className="w-full max-w-xs border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
-            />
-            {affectedMonths.length > 0 && (
-              <p className="mt-1.5 text-xs text-warning">
-                Ghi lùi ngày -- sẽ đổi giá vốn của: {affectedMonths.join(", ")}.
-              </p>
-            )}
+      <div className="hidden md:block">
+        <div
+          data-testid="form-layout"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start lg:grid-rows-[auto_1fr]"
+        >
+          {/* form-shared: slip-wide boxes */}
+          <div
+            data-testid="form-shared"
+            className="bg-surface-card rounded-card border border-border p-4 shadow-sm space-y-3 lg:col-start-3 lg:row-start-1"
+          >
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">
+                Thời điểm xuất (áp dụng cho cả phiếu)
+              </label>
+              <SaigonDateTimeInput
+                value={issuedAtLocal}
+                onChange={setIssuedAtLocal}
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
+              />
+              {affectedMonths.length > 0 && (
+                <p className="mt-1.5 text-xs text-warning">
+                  Ghi lùi ngày -- sẽ đổi giá vốn của: {affectedMonths.join(", ")}.
+                </p>
+              )}
+            </div>
+            <div className="text-sm font-medium text-text-secondary pt-1 border-t border-border">
+              Đã điền đủ: {filledLineCount}/{lines.length} dòng
+            </div>
           </div>
-          <div className="text-sm font-medium text-text-secondary text-right shrink-0">
-            Đã điền đủ: {filledLineCount}/{lines.length} dòng
-          </div>
-        </div>
 
-        {/* Real Table */}
-        <div className="bg-surface-card border border-border rounded-card overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="bg-surface-secondary text-text-secondary text-xs uppercase tracking-wider">
-                  <th className="p-3 font-bold min-w-[200px]">Mặt hàng</th>
-                  <th className="p-3 font-bold w-36">Tồn hiện tại</th>
-                  <th className="p-3 font-bold w-32">Đơn vị</th>
-                  <th className="p-3 font-bold text-right w-24">Số lượng</th>
-                  <th className="p-3 font-bold text-right w-28">Quy ra</th>
-                  <th className="p-3 font-bold text-right w-36">Giá trị xuất</th>
-                  <th className="p-3 w-12 text-center" aria-label="Xoá dòng"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
+          {/* form-lines: lines table */}
+          <div
+            data-testid="form-lines"
+            className="lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:row-span-2 space-y-6"
+          >
+            <Table>
+              <TableHead>
+                <TableHeaderCell>Mặt hàng</TableHeaderCell>
+                <TableHeaderCell>Tồn hiện tại</TableHeaderCell>
+                <TableHeaderCell>Đơn vị</TableHeaderCell>
+                <TableHeaderCell>Số lượng</TableHeaderCell>
+                <TableHeaderCell>Quy ra</TableHeaderCell>
+                <TableHeaderCell>Giá trị xuất</TableHeaderCell>
+                <TableHeaderCell>
+                  <span className="sr-only" aria-label="Xoá dòng">Xoá dòng</span>
+                </TableHeaderCell>
+              </TableHead>
+              <TableBody>
                 {lines.map((line, index) => {
                   const computed = computedLines[index];
                   const item = computed?.item;
@@ -268,114 +296,114 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                   const lineValueDisplay = computed?.lineValueDisplay ?? "—";
 
                   return (
-                    <tr key={index} className="hover:bg-surface-secondary/40 transition-colors">
-                      <td className="p-3 font-medium">
+                    <TableRow key={index}>
+                      <TableCell>
                         <SearchableSelect
                           value={line.purchasedItemId}
                           onChange={val => handleItemChange(index, val)}
                           options={itemOptions}
                           placeholder="-- Chọn hàng --"
                         />
-                      </td>
-                      <td className="p-3 text-sm text-text-secondary tabular-nums">
-                        {onHandDisplay}
-                      </td>
-                      <td className="p-3">
-                        <select
+                      </TableCell>
+                      <TableCell>
+                        <span className="tabular-nums text-text-secondary">{onHandDisplay}</span>
+                      </TableCell>
+                      <TableCell>
+                        <Select
                           aria-label="Đơn vị"
                           value={line.unitKey}
                           onChange={e => updateLine(index, { unitKey: e.target.value })}
                           disabled={!item}
-                          className="w-full border border-border rounded-lg px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card disabled:opacity-50"
                         >
                           <option value="">-- Chọn --</option>
                           {options.map(o => (
                             <option key={o.key} value={o.key}>{o.label}</option>
                           ))}
-                        </select>
-                      </td>
-                      <td className="p-3 text-right">
-                        <input
-                          type="text"
-                          inputMode="decimal"
+                        </Select>
+                      </TableCell>
+                      <TableCell align="right">
+                        <NumberInput
+                          id={`issue-qty-${index}`}
+                          decimals={3}
+                          min={0}
                           aria-label="Số lượng"
-                          value={line.packageQty}
-                          onChange={e => {
-                            const next = normalizeNumberText(e.target.value, 3);
-                            if (next === null) return; // a 4th decimal or a 16th digit: keep what was there
-                            updateLine(index, { packageQty: next });
-                          }}
-                          placeholder="0"
-                          className="w-full border border-border rounded-lg px-2.5 py-1.5 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card disabled:opacity-50"
+                          value={line.packageQty === "" ? null : Number(line.packageQty)}
+                          onValueChange={v => updateLine(index, { packageQty: v === null ? "" : String(v) })}
                         />
-                      </td>
-                      <td className="p-3 text-right tabular-nums text-text-primary text-sm font-medium">
+                      </TableCell>
+                      <TableCell align="right">
                         {convertedDisplay}
-                      </td>
-                      <td className="p-3 text-right tabular-nums text-text-primary text-sm font-medium">
+                      </TableCell>
+                      <TableCell align="right">
                         {lineValueDisplay}
-                      </td>
-                      <td className="p-3 text-center">
+                      </TableCell>
+                      <TableCell>
                         {lines.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeLine(index)}
-                            className="text-text-muted hover:text-danger p-2 transition-colors inline-flex items-center justify-center rounded-lg min-h-[44px] min-w-[44px]"
+                            className="text-text-muted hover:text-danger p-2 transition-colors inline-flex items-center justify-center rounded-lg min-h-[44px] md:min-h-[40px] min-w-[44px]"
                             aria-label="Xoá dòng"
                           >
                             ✕
                           </button>
                         )}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-                <tr className="bg-surface-secondary/40 border-t border-border font-semibold">
-                  <td colSpan={5} className="p-3 text-right text-text-secondary">
-                    Tổng giá trị xuất
-                  </td>
-                  <td className="p-3 text-right tabular-nums text-text-primary text-sm font-bold">
-                    <div>{formatNumber(displayMoney(exactTotal))}đ</div>
-                    {filledLinesWithoutCostCount > 0 && (
-                      <div className="text-xs font-normal text-text-muted mt-0.5">
-                        chưa tính {filledLinesWithoutCostCount} dòng chưa có giá
-                      </div>
-                    )}
-                  </td>
-                  <td className="p-3"></td>
-                </tr>
-                <tr className="border-t border-border">
-                  <td colSpan={7} className="p-3">
+                <TableRow>
+                  <TableCell colSpan={7}>
                     <button
                       type="button"
                       onClick={addLine}
-                      className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px]"
+                      className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px] md:min-h-[40px]"
                     >
                       + Thêm mặt hàng
                     </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
-        </div>
 
-        {/* Bottom action row, right-aligned */}
-        <div className="flex items-center justify-end gap-3 pt-2">
-          <Link
-            href="/admin/inventory/issue-slips"
-            className="inline-flex items-center justify-center font-medium rounded-button transition-colors bg-surface-secondary text-text-primary hover:bg-border active:bg-border text-sm px-4 py-2 min-h-[44px]"
+          {/* form-money: totals and action buttons */}
+          <div
+            data-testid="form-money"
+            className="bg-surface-card rounded-card border border-border p-4 shadow-sm space-y-4 lg:col-start-3 lg:row-start-2"
           >
-            Quay lại
-          </Link>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            loading={submitting}
-            className="min-h-[44px] px-6"
-          >
-            Ghi phiếu xuất ({lines.length} dòng)
-          </Button>
+            <div className="flex justify-between items-start">
+              <span className="text-sm font-semibold text-text-secondary">Tổng giá trị xuất</span>
+              <div className="text-right">
+                <span className="text-base font-bold text-text-primary tabular-nums">
+                  {formatNumber(displayMoney(exactTotal))}đ
+                </span>
+                {filledLinesWithoutCostCount > 0 && (
+                  <p className="text-xs font-normal text-text-muted mt-0.5">
+                    chưa tính {filledLinesWithoutCostCount} dòng chưa có giá
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <Button
+                variant="primary"
+                onClick={handleSubmit}
+                loading={submitting}
+                className="w-full min-h-[44px] md:min-h-[40px]"
+              >
+                Ghi phiếu xuất ({lines.length} dòng)
+              </Button>
+              <Button
+                href="/admin/inventory/issue-slips"
+                variant="secondary"
+                className="w-full"
+              >
+                Quay lại
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -384,13 +412,13 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         {/* Time card first */}
         <div className="bg-surface-card rounded-card shadow-sm border border-border p-4 space-y-3">
           <div>
-            <label className="block text-xs font-bold uppercase text-text-muted mb-1.5 tracking-wider">
+            <label className="block text-sm font-medium text-text-primary mb-1.5">
               Thời điểm xuất (áp dụng cho cả phiếu)
             </label>
             <SaigonDateTimeInput
               value={issuedAtLocal}
               onChange={setIssuedAtLocal}
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px]"
+              className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px] md:min-h-[40px]"
             />
             {affectedMonths.length > 0 && (
               <p className="mt-1.5 text-xs text-warning">
@@ -419,7 +447,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                   <button
                     type="button"
                     onClick={() => removeLine(index)}
-                    className="absolute top-2 right-2 text-text-muted hover:text-danger p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    className="absolute top-2 right-2 text-text-muted hover:text-danger p-2 min-h-[44px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
                     aria-label="Xoá dòng"
                   >
                     ✕
@@ -442,33 +470,27 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                 <div className="flex gap-3 mt-3">
                   <div className="flex-1 min-w-0">
                     <label className="block text-xs font-medium text-text-muted mb-1">Quy cách</label>
-                    <select
+                    <Select
                       aria-label="Đơn vị"
                       value={line.unitKey}
                       onChange={e => updateLine(index, { unitKey: e.target.value })}
                       disabled={!item}
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px]"
                     >
                       <option value="">-- Chọn --</option>
                       {options.map(o => (
                         <option key={o.key} value={o.key}>{o.label}</option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
                   <div className="w-24 shrink-0">
                     <label className="block text-xs font-medium text-text-muted mb-1">Số lượng</label>
-                    <input
-                      type="text"
-                      inputMode="decimal"
+                    <NumberInput
+                      id={`issue-qty-m-${index}`}
+                      decimals={3}
+                      min={0}
                       aria-label="Số lượng"
-                      value={line.packageQty}
-                      onChange={e => {
-                        const next = normalizeNumberText(e.target.value, 3);
-                        if (next === null) return; // a 4th decimal or a 16th digit: keep what was there
-                        updateLine(index, { packageQty: next });
-                      }}
-                      placeholder="0"
-                      className="w-full border border-border rounded-lg px-3 py-2 text-sm text-right outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px]"
+                      value={line.packageQty === "" ? null : Number(line.packageQty)}
+                      onValueChange={v => updateLine(index, { packageQty: v === null ? "" : String(v) })}
                     />
                   </div>
                 </div>
@@ -504,7 +526,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         <button
           type="button"
           onClick={addLine}
-          className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px]"
+          className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px] md:min-h-[40px]"
         >
           + Thêm mặt hàng
         </button>
@@ -515,16 +537,17 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
             variant="primary"
             onClick={handleSubmit}
             loading={submitting}
-            className="w-full min-h-[44px]"
+            className="w-full min-h-[44px] md:min-h-[40px]"
           >
             Ghi phiếu xuất ({lines.length} dòng)
           </Button>
-          <Link
+          <Button
             href="/admin/inventory/issue-slips"
-            className="w-full inline-flex items-center justify-center font-medium rounded-button transition-colors bg-surface-secondary text-text-primary hover:bg-border active:bg-border text-sm px-4 py-2 min-h-[44px]"
+            variant="secondary"
+            className="w-full"
           >
             Quay lại
-          </Link>
+          </Button>
         </div>
       </div>
     </div>

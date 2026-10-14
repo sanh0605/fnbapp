@@ -41,7 +41,7 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the conversions list -- legitimately unlinked",
   },
   {
-    route: "/admin/inventory/asset-bands/new",
+    route: "/admin/inventory/asset-bands/edit",
     reason: "reached from the asset-bands list -- legitimately unlinked",
   },
   {
@@ -61,6 +61,14 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the categories list -- legitimately unlinked",
   },
   {
+    route: "/admin/finance/monthly-items/new",
+    reason: "reached from the monthly-items list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/products/types/new",
+    reason: "reached from the product-types list -- legitimately unlinked",
+  },
+  {
     route: "/admin/finance/bank-accounts/new",
     reason: "reached from the bank-accounts list -- legitimately unlinked",
   },
@@ -75,6 +83,10 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
   {
     route: "/admin/products/modifiers/new",
     reason: "reached from the modifiers list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/products/modifier-groups/new",
+    reason: "reached from the option-groups list -- legitimately unlinked",
   },
   {
     route: "/admin/promotions/new",

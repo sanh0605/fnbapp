@@ -1,5 +1,6 @@
 import type { DBPurchaseOrder } from "@/types/db";
-import { formatDateTimeFull } from "@/lib/shared/datetime";
+import { displayMoney } from "@/lib/reports/display-rounding";
+import { formatDateTimeFull, saigonToday } from "@/lib/shared/datetime";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
 
 // Spec 2026-09-29-menu-va-khuon-trang-design.md section 3.5: the shared
@@ -25,6 +26,13 @@ export interface PurchaseOrderListRow {
 export interface PurchaseOrderListPage {
   rows: PurchaseOrderListRow[]; total: number; page: number; pageCount: number;
   firstIndex: number; lastIndex: number; rangeError: boolean;
+  // Saigon days (yyyy-mm-dd) of the oldest and newest matched slip over every
+  // page; null when nothing matches.
+  daySpan: { first: string; last: string } | null;
+  // BR-UI-004: money total over every matched slip (all pages). Only COMPLETED
+  // slips count: a cancelled slip is out of every total (BR-ACCESS-003) and a
+  // draft is not a real purchase yet.
+  totals: { count: number; totalAmount: number };
 }
 
 export function paymentLabelOf(method: DBPurchaseOrder["payment_method"]): string {
@@ -92,6 +100,11 @@ export function listPurchaseOrdersPage(input: {
     slipTime(b) - slipTime(a) || createdTime(b) - createdTime(a) || b.id.localeCompare(a.id));
 
   const total = matched.length;
+  const counted = matched.filter(po => po.status === "COMPLETED");
+  const totals = {
+    count: counted.length,
+    totalAmount: displayMoney(counted.reduce((sum, po) => sum + (Number(po.total_amount) || 0), 0)),
+  };
   const pageCount = Math.max(1, Math.ceil(total / PURCHASE_ORDERS_PER_PAGE));
   const asked = Number(filters.page);
   const page = Number.isInteger(asked) && asked >= 1 ? Math.min(asked, pageCount) : 1;
@@ -114,5 +127,10 @@ export function listPurchaseOrdersPage(input: {
     firstIndex: total === 0 ? 0 : start + 1,
     lastIndex: start + slice.length,
     rangeError,
+    totals,
+    daySpan: total === 0 ? null : {
+      first: saigonToday(new Date(slipTime(matched[total - 1]))),
+      last: saigonToday(new Date(slipTime(matched[0]))),
+    },
   };
 }

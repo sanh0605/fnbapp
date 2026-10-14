@@ -29,6 +29,13 @@ export async function getOutlets() {
   }
 }
 
+// The till picker lists only outlets that can still take orders.
+export async function getActiveOutlets() {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+  return (await findAll(SHEET)).filter((o: any) => o.status === "ACTIVE");
+}
+
 // A time field arrives as "" from a cleared <input type="time"> and as
 // undefined when the key is absent -- both mean "not set", never a claim
 // that the outlet opens at midnight.

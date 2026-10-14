@@ -3,6 +3,9 @@
 import { useState, useMemo } from "react";
 import { formatNumber } from "@/lib/shared/format";
 import { Button } from "@/components/ui/Button";
+import { NumberInput } from "@/components/ui/NumberInput";
+import { OptionGroupPicker } from "@/components/ui/OptionGroupPicker";
+import type { ProductOptionGroup } from "@/lib/sales/option-groups";
 
 export interface EditItem {
   product_id: string;
@@ -38,7 +41,7 @@ interface LineItemEditorProps {
   idx: number;
   isEditing: boolean;
   variants: any[];
-  groupedModifiers: Record<string, any[]>;
+  groups?: ProductOptionGroup[];
   onStartEdit: (idx: number) => void;
   onCancelEdit: () => void;
   onSaveEdit: (idx: number, updatedFields: Partial<EditItem>) => void;
@@ -50,7 +53,7 @@ export function LineItemEditor({
   idx,
   isEditing,
   variants,
-  groupedModifiers,
+  groups = [],
   onStartEdit,
   onCancelEdit,
   onSaveEdit,
@@ -79,17 +82,6 @@ export function LineItemEditor({
   const editVariants = useMemo(() => {
     return variants.filter((v: any) => v.product_id === item.product_id);
   }, [variants, item.product_id]);
-
-  const addModifierToEdit = (mod: any) => {
-    setEditModifiers([...editModifiers, { id: mod.id, name: mod.name, price: Number(mod.price || 0) }]);
-  };
-
-  const removeModifierFromEdit = (mod: any) => {
-    const idxMod = editModifiers.findIndex((m: any) => m.id === mod.id);
-    if (idxMod !== -1) {
-      setEditModifiers(editModifiers.filter((_, i) => i !== idxMod));
-    }
-  };
 
   const editTotals = useMemo(() => {
     const variant = editVariants.find((v: any) => v.id === editVariantId) || editVariants[0];
@@ -166,51 +158,12 @@ export function LineItemEditor({
           </div>
         )}
 
-        {/* Topping editing */}
-        <div>
-          <div className="text-xs font-medium text-text-muted mb-1.5">Topping</div>
-          <div className="space-y-2">
-            {Object.entries(groupedModifiers).map(([groupName, mods]) => (
-              <div key={groupName}>
-                <div className="text-[11px] text-text-muted mb-1">{groupName}</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {mods.map((mod: any) => {
-                    const count = editModifiers.filter((m: any) => m.id === mod.id).length;
-                    return (
-                      <div
-                        key={mod.id}
-                        className={`flex items-center gap-1 rounded-lg border text-xs ${
-                          count > 0 ? "border-primary bg-primary-soft" : "border-border bg-surface-card"
-                        }`}
-                      >
-                        {count > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => removeModifierFromEdit(mod)}
-                            className="px-1.5 py-1 text-primary hover:text-danger font-bold"
-                          >
-                            -
-                          </button>
-                        )}
-                        <span className="px-1 py-1 text-text-primary">
-                          {mod.name} <span className="text-text-muted">+{formatNumber(mod.price)}</span>
-                        </span>
-                        {count > 0 && <span className="px-1 py-1 font-bold text-primary">{count}x</span>}
-                        <button
-                          type="button"
-                          onClick={() => addModifierToEdit(mod)}
-                          className="px-1.5 py-1 text-text-muted hover:text-primary font-bold"
-                        >
-                          +
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Option groups editing */}
+        <OptionGroupPicker
+          groups={groups}
+          picks={editModifiers}
+          onChange={setEditModifiers}
+        />
 
         {/* Qty & Discount */}
         <div className="flex gap-4">
@@ -256,14 +209,19 @@ export function LineItemEditor({
                 %
               </button>
             </div>
-            <input
-              aria-label="Số tiền giảm giá món hàng"
-              type="number"
-              min="0"
-              value={editDiscount || ""}
-              onChange={(e) => setEditDiscount(Number(e.target.value))}
-              className="flex-1 px-2 py-1 border border-border rounded-lg text-sm text-right bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring"
-            />
+            <div className="flex-1">
+              <NumberInput
+                id={`line-discount-${idx}`}
+                aria-label="Số tiền giảm giá món hàng"
+                decimals={editDiscountType === "PERCENT" ? 2 : 0}
+                unit={editDiscountType === "PERCENT" ? "%" : "đ"}
+                max={editDiscountType === "PERCENT" ? 100 : undefined}
+                example={editDiscountType === "PERCENT" ? "10" : "10,000"}
+                min={0}
+                value={editDiscount ? editDiscount : null}
+                onValueChange={(v) => setEditDiscount(v ?? 0)}
+              />
+            </div>
           </div>
         </div>
 
@@ -307,13 +265,15 @@ export function LineItemEditor({
 
         <div className="flex gap-2 pt-1">
           <Button
+            type="button"
             variant="secondary"
             onClick={onCancelEdit}
             className="flex-1"
           >
-            Hủy
+            Huỷ
           </Button>
           <Button
+            type="button"
             variant="primary"
             onClick={handleSave}
             className="flex-1"
@@ -379,7 +339,7 @@ export function LineItemEditor({
           onClick={() => onRemove(idx)}
           className="text-xs font-medium text-danger px-2 py-1 bg-danger/20 rounded hover:bg-danger/30"
         >
-          Xóa
+          Xoá
         </button>
       </div>
     </div>

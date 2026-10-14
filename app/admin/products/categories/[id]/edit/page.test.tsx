@@ -23,6 +23,12 @@ vi.mock("@/app/admin/products/categories/actions", () => ({
   saveCategory: vi.fn(),
 }));
 
+vi.mock("@/app/admin/products/types/actions", () => ({
+  getProductTypes: vi.fn().mockResolvedValue([
+    { type: { id: "PT-001", name: "Thức uống", is_drink: true, created_at: "2026-10-14T09:00:00Z" }, categoryCount: 1, categoryNames: ["Cà phê"] },
+  ]),
+}));
+
 vi.mock("@/app/admin/products/categories/components/ProductCategoryForm", () => ({
   ProductCategoryForm: (props: any) => <div data-testid="product-category-form" {...props} />,
 }));

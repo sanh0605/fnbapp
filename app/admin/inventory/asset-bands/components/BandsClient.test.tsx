@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import BandsClient from "./BandsClient";
 import type { DBAssetDepreciationBand } from "@/types/db";
-import { deleteAssetBand } from "../actions";
-import { confirm } from "@/lib/shared/dialog";
 
 const { replace, refresh, push, router } = vi.hoisted(() => {
   const replaceFn = vi.fn();
@@ -30,18 +28,6 @@ vi.mock("next/link", () => ({
       {children}
     </a>
   ),
-}));
-
-vi.mock("../actions", () => ({
-  deleteAssetBand: vi.fn(),
-}));
-
-vi.mock("@/app/admin/inventory/asset-bands/actions", () => ({
-  deleteAssetBand: vi.fn(),
-}));
-
-vi.mock("@/lib/shared/dialog", () => ({
-  confirm: vi.fn(),
 }));
 
 const BANDS: DBAssetDepreciationBand[] = [
@@ -124,65 +110,18 @@ describe("BandsClient", () => {
     ).toBe(true);
   });
 
-  it("does not render any 'Sửa' link", () => {
+  it("links 'Sửa khung' to edit page with returnTo", () => {
     render(<BandsClient bands={BANDS} canDelete={false} />);
 
-    expect(screen.queryByRole("link", { name: "Sửa" })).toBeNull();
-    expect(screen.queryByText("Sửa")).toBeNull();
+    const editLink = screen.getByRole("link", { name: "Sửa khung" });
+    expect(editLink.getAttribute("href")).toContain("/admin/inventory/asset-bands/edit?returnTo=");
   });
 
-  it("links 'Tạo' to new page with returnTo", () => {
-    render(<BandsClient bands={BANDS} canDelete={false} />);
-
-    const addLink = screen.getByRole("link", { name: "Tạo" });
-    expect(addLink.getAttribute("href")).toContain("/admin/inventory/asset-bands/new?returnTo=");
-  });
-
-  it("non-ADMIN (canDelete=false) renders no checkboxes and no removal bin", () => {
-    render(<BandsClient bands={BANDS} canDelete={false} />);
+  it("renders no checkboxes and no removal bin even when canDelete is true", () => {
+    render(<BandsClient bands={BANDS} canDelete={true} />);
 
     expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
     expect(screen.queryByRole("button", { name: /Xoá/ })).toBeNull();
-  });
-
-  it("ADMIN (canDelete=true) sees bin and checkboxes", () => {
-    render(<BandsClient bands={BANDS} canDelete={true} />);
-
-    expect(screen.queryAllByRole("checkbox").length).toBeGreaterThan(0);
-    expect(screen.queryAllByRole("button", { name: /Xoá/ }).length).toBeGreaterThan(0);
-  });
-
-  it("calls deleteAssetBand when deleting a band", async () => {
-    vi.mocked(confirm).mockResolvedValue(true);
-    vi.mocked(deleteAssetBand).mockResolvedValue({ ok: true });
-
-    render(<BandsClient bands={BANDS} canDelete={true} />);
-
-    const deleteBtn = screen.getAllByRole("button", { name: /Xoá/ })[0];
-    fireEvent.click(deleteBtn);
-
-    await waitFor(() => {
-      expect(deleteAssetBand).toHaveBeenCalled();
-    });
-  });
-
-  it("shows refusal message when deleting a band fails", async () => {
-    vi.mocked(confirm).mockResolvedValue(true);
-    const refusalMessage = "Không thể xoá: Phải có ít nhất một khung khấu hao";
-    vi.mocked(deleteAssetBand).mockResolvedValue({ error: refusalMessage });
-
-    render(<BandsClient bands={BANDS} canDelete={true} />);
-
-    const deleteBtn = screen.getAllByRole("button", { name: /Xoá/ })[0];
-    fireEvent.click(deleteBtn);
-
-    await waitFor(() => {
-      expect(deleteAssetBand).toHaveBeenCalled();
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(refusalMessage)).toBeInTheDocument();
-    });
   });
 
   it("renders empty state when bands list is empty", () => {

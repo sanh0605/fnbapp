@@ -1,21 +1,31 @@
-# Reports flow (dashboard and four reports)
+# Reports flow (dashboard and three reports)
 
 ```flow-decl
-routes: /admin, /admin/reports/daily, /admin/reports/sales, /admin/reports/issued, /admin/reports/pnl
+routes: /admin, /admin/reports/sales, /admin/reports/issued, /admin/reports/pnl
 files:
 tables:
-brCodes: BR-COGS-005, BR-COGS-007, BR-PNL-001, BR-PNL-002, BR-PNL-003, BR-PNL-004
+brCodes: BR-COGS-005, BR-COGS-007, BR-PNL-001, BR-PNL-002, BR-PNL-003, BR-PNL-004, BR-SALE-007, BR-CASH-009
 ```
 
-This flow is **read-only**: the dashboard and the four reports display figures
+**Behaviour change — 2026-10-14 (new Tổng quan, `BR-UI-007`):** `/admin` no longer has figure boxes, a date filter, comparison lines, the bar chart or Top 5.
+- **Top of the page: "Cần xử lý".** It lists:
+  - orders the till failed to resend;
+  - items with negative stock;
+  - too long since the last confirmed stock count;
+  - a stock count left open too long;
+  - monthly expenses not yet entered (`BR-CASH-009`), each with a "Nhập" link.
+- **Below: the 7-day table** (`BR-SALE-007`). Columns: Ngày, Doanh thu, TB mỗi ly, Số ly, one column per chosen food dish, and Topping mua riêng. It is a table on a computer and one card per day on a phone.
+- **Data.** Loaded by `lib/dashboard/dashboard-data.ts`. The page still writes nothing. Its thresholds and columns come from Cài đặt Tổng quan (see `docs/03-workflows/operations.md`).
+
+This flow is **read-only**: the dashboard and the three reports display figures
 derived from data other flows already wrote. Nothing here writes to the database,
 so the `flow-decl` block declares no `files` and no `tables` — the empty value
 lists are intentional, not an omission. Because no file is declared, this flow
-contributes nothing to the map-drift check; it is verified only by its five routes
+contributes nothing to the map-drift check; it is verified only by its four routes
 existing.
 
 The screens are the dashboard at `/admin` (a revenue and orders summary), the
-daily report at `/admin/reports/daily`, the sales report at `/admin/reports/sales`,
+sales report at `/admin/reports/sales`,
 the issued-goods (cost) report at `/admin/reports/issued`, and the monthly
 profit and loss at `/admin/reports/pnl`.
 
@@ -28,9 +38,14 @@ profit and loss at `/admin/reports/pnl`.
    slips shows updated figures, because it re-reads the source each time. There is
    no draft, no saved report, and no approval step.
 
-2. **Buttons per screen, and when to hide them.** Each report screen offers a date
-   range or period picker to choose what to show, and read-only controls to sort
-   or expand rows. There is no create, edit, delete, or export-that-writes button
+2. **Buttons per screen, and when to hide them.** The dashboard, the sales report
+   and the profit and loss each carry the shared time filter (`BR-UI-007`): one
+   button naming the range, opening on Tháng này (Lãi lỗ: Năm nay, whole months
+   only). The dashboard and the sales report put one compare line per earlier
+   period under each figure card — the same days of the period before, and for a
+   single day both the day before and the same weekday a week earlier. The
+   issued-goods report keeps its own tabs. Each screen also offers read-only
+   controls to sort or expand rows. There is no create, edit, delete, or export-that-writes button
    anywhere in this flow, because the flow writes nothing; any such button would be
    out of place and should never appear. The dashboard at `/admin` presents its
    revenue and orders summary directly, with links through to the detailed reports.
@@ -46,9 +61,7 @@ profit and loss at `/admin/reports/pnl`.
    which is the single path cost is measured on (`BR-COGS-005`): cost is booked when
    goods physically leave stock, not at the moment of sale. Its rows are split by
    the `source` column — `MANUAL` (goods left stock via an issue slip) versus
-   `STOCKTAKE` (a shortfall booked when a count period was closed). The **daily
-   report** (`/admin/reports/daily`) contains the per-day roll-up of the same
-   completed-order revenue.
+   `STOCKTAKE` (a shortfall booked when a count period was closed).
 
 4. **Valid inputs, and what happens outside the range.** The only inputs are the
    date range and period selectors. A range with no matching data shows an empty or
@@ -75,7 +88,7 @@ counted as loss if it had issue slips to measure against).
 
 ## The profit and loss page
 
-`/admin/reports/pnl` shows one year of monthly profit and loss for the whole
+`/admin/reports/pnl` shows a span of whole months of profit and loss for the whole
 shop (`BR-PNL-001`), months as columns (`BR-PNL-002`), for `ADMIN` and
 `MANAGER` (`BR-PNL-004`). Design:
 `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md`.
@@ -85,14 +98,17 @@ shop (`BR-PNL-001`), months as columns (`BR-PNL-002`), for `ADMIN` and
   figure on every open (`lib/reports/profit-and-loss.ts`);
   `lib/reports/profit-and-loss-table.ts` rounds for display (`BR-DATA-005`).
   Nothing is stored and no month is locked.
-- **One control: the year**, as `?year=YYYY`. A malformed year, or a year with
-  no data, falls back to the newest year with data, without an error.
+- **One control: the shared time filter in whole months** (`BR-UI-007`), as
+  `?range=` with `from`/`to` months for Tuỳ chọn; it opens on Năm nay. An old
+  `?year=YYYY` link opens that year. A span with no data says "Từ MM/YYYY đến
+  MM/YYYY chưa có số liệu nào." instead of jumping to another year. Months after
+  this month are not shown.
 - **Cells open their sources.** On a computer, clicking a month cell lists the
   rows behind it under the table: POS order count and hand-recorded revenue
   (`BR-PNL-003`), cash-book rows, purchase lines, stocktakes and issue slips,
   assets; a profit cell shows its sum. The Tổng column does not open. On a
-  phone there is no wide table: a year card, then one card per month, newest
-  first.
+  phone there is no wide table: a card for the range, then one card per month,
+  newest first.
 - **Checked against the older report.** `scripts/verify-pnl-monthly.ts`
   confirms that every month's POS revenue, and Giá vốn plus Hao hụt, equal
   `getPnLDataV2` for the same month, and that every line's sources add up to

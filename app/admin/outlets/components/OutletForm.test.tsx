@@ -122,6 +122,49 @@ describe("OutletForm edit mode", () => {
   });
 });
 
+// Wave K6 (plan Review Focus 1): the two hour boxes move to the shared
+// TextInput; Postgres "HH:MM:SS" still shows as HH:MM and is posted as HH:MM.
+describe("OutletForm hour boxes (wave K6)", () => {
+  it("07:00:00 and 22:30:00 show as 07:00 and 22:30 and are sent as open_time=07:00, close_time=22:30", async () => {
+    mocks.editOutlet.mockResolvedValue({});
+    render(
+      <OutletForm
+        initialData={{ ...OUTLET, open_time: "07:00:00", close_time: "22:30:00" }}
+        brands={BRANDS}
+        outlets={[OUTLET]}
+        returnTo="/admin/outlets"
+      />,
+    );
+    const open = screen.getByLabelText(/^Giờ mở cửa/) as HTMLInputElement;
+    const close = screen.getByLabelText(/^Giờ đóng cửa/) as HTMLInputElement;
+    expect(open.type).toBe("time");
+    expect(open.value).toBe("07:00");
+    expect(close.value).toBe("22:30");
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
+    const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
+    expect(formData.get("open_time")).toBe("07:00");
+    expect(formData.get("close_time")).toBe("22:30");
+  });
+
+  it("blank hours are sent blank", async () => {
+    mocks.editOutlet.mockResolvedValue({});
+    render(
+      <OutletForm
+        initialData={{ ...OUTLET, open_time: null, close_time: null } as unknown as DBOutlet}
+        brands={BRANDS}
+        outlets={[OUTLET]}
+        returnTo="/admin/outlets"
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
+    const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
+    expect(formData.get("open_time")).toBe("");
+    expect(formData.get("close_time")).toBe("");
+  });
+});
+
 describe("OutletForm add mode", () => {
   it("also shows brand, address, start date and both hour fields", () => {
     render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
@@ -194,6 +237,31 @@ describe("OutletForm add mode", () => {
       expect(addFormData.get("start_date")).toBeNull();
     } finally {
       vi.useRealTimers();
+    }
+  });
+});
+
+// Owner 2026-10-11 trial (BR-UI-012): a form with few boxes uses the whole
+// 1,280 px page frame and lays its boxes in two columns on a computer, rather
+// than a 672 px box on the left; a phone keeps one column.
+describe("OutletForm in two columns on a computer (owner 2026-10-11 trial)", () => {
+  it("the card keeps no width of its own", () => {
+    render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
+    const form = document.querySelector("form") as HTMLElement;
+    let el: HTMLElement | null = form;
+    while (el && el !== document.body) {
+      expect(el.className).not.toMatch(/\bmax-w-/);
+      el = el.parentElement;
+    }
+  });
+
+  it("name, brand, address and start date sit in one two-column grid", () => {
+    render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
+    const grid = screen.getByTestId("form-fields");
+    expect(grid.className).toMatch(/\bgrid-cols-1\b/);
+    expect(grid.className).toMatch(/\bmd:grid-cols-2\b/);
+    for (const name of ["name", "brand_id", "address", "open_time", "close_time"]) {
+      expect(grid.querySelector(`[name="${name}"]`)).not.toBeNull();
     }
   });
 });

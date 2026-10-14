@@ -129,7 +129,7 @@ describe("ConversionsClient", () => {
       />,
     );
 
-    const input = screen.getByPlaceholderText("Tên hàng hóa...");
+    const input = screen.getByPlaceholderText("Ví dụ: Trứng gà");
     fireEvent.change(input, { target: { value: "sữa" } });
     expect(replace).toHaveBeenCalledWith("/admin/inventory/conversions?q=s%E1%BB%AFa", { scroll: false });
   });

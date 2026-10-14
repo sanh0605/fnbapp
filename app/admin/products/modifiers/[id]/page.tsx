@@ -3,7 +3,7 @@ import { findAll } from "@/lib/db/tables";
 import { getModifiersData } from "@/app/admin/products/modifiers/actions";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import { ModifierDetailView } from "./components/ModifierDetailView";
-import type { DBProduct } from "@/types/db";
+import type { DBModifierGroup, DBProduct } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -14,15 +14,18 @@ export default async function ModifierDetailPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const [{ modifiers }, allProducts] = await Promise.all([
+  const [{ modifiers }, allProducts, groups] = await Promise.all([
     getModifiersData(),
     findAll("Products") as Promise<DBProduct[]>,
+    findAll("Modifier_Groups") as Promise<DBModifierGroup[]>,
   ]);
 
   const modifier = modifiers.find((m) => m.id === params.id);
   if (!modifier) {
     notFound();
   }
+
+  const group = groups.find((g) => g.id === modifier.group_id);
 
   const linkedProduct = modifier.product_id
     ? allProducts.find((p) => p.id === modifier.product_id)
@@ -48,6 +51,8 @@ export default async function ModifierDetailPage({
     <ModifierDetailView
       modifier={modifier}
       product={product}
+      groupName={group?.name ?? ""}
+      allowStandalone={Boolean(group?.allow_standalone)}
       returnTo={returnTo}
     />
   );

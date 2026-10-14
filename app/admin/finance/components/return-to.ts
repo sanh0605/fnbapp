@@ -10,6 +10,7 @@ export type FinanceList =
 // For list = "/admin/finance", also refuses "categories" and "bank-accounts".
 export function safeReturnTo(raw: string | undefined | null, list: FinanceList): string {
   if (!raw) return list;
+  if (raw === "/admin") return "/admin";
   if (raw === list || raw.startsWith(`${list}?`)) return raw;
 
   if (raw.startsWith(`${list}/`)) {

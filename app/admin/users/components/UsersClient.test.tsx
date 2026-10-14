@@ -156,4 +156,18 @@ describe("UsersClient", () => {
       "/admin/users/new?returnTo=" + encodeURIComponent("/admin/users")
     );
   });
+
+  it("with canGrantAdmin false, edit link is absent on all rows including ADMIN", () => {
+    render(<UsersClient users={mockUsers} canDelete={false} canGrantAdmin={false} />);
+    expect(screen.queryByRole("link", { name: /Sửa/ })).toBeNull();
+    const allLinks = screen.getAllByRole("link");
+    expect(allLinks.some((l) => l.getAttribute("href")?.includes("/edit"))).toBe(false);
+  });
+
+  it("with canGrantAdmin true, edit link remains absent (rows open detail page, not direct edit)", () => {
+    render(<UsersClient users={mockUsers} canDelete={true} canGrantAdmin={true} />);
+    expect(screen.queryByRole("link", { name: /Sửa/ })).toBeNull();
+    const allLinks = screen.getAllByRole("link");
+    expect(allLinks.some((l) => l.getAttribute("href")?.includes("/edit"))).toBe(false);
+  });
 });

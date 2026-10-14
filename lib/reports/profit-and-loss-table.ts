@@ -61,9 +61,10 @@ export interface PnlFootnote {
 }
 
 export interface PnlTable {
-  year: number;
+  fromMonth: string;
+  toMonth: string;
   months: PnlMonthColumn[];
-  periodLabel: "từ đầu năm" | "cả năm";
+  rangeName: string;     // lower-case name of the chosen range, e.g. "năm nay"
   rows: PnlRow[];
   summary: {
     revenue: number;
@@ -118,7 +119,7 @@ function toCellSource(s: PnlSource): PnlCellSource {
   return { kind: s.kind, id: s.id, date: dateLabel(s.date), label: s.label, ref: s.ref, amount: displayMoney(s.amountExact) };
 }
 
-export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
+export function buildPnlTable(figures: PnlFigures, today: string, rangeName: string): PnlTable {
   const months = figures.months;
   const currentMonth = today.slice(0, 7);
 
@@ -132,8 +133,8 @@ export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
   });
   let running = 0;
   const cumulative = exact.map(e => (running += e.net));
-  const yearRevenue = sum(exact.map(e => e.revenue));
-  const yearNet = sum(exact.map(e => e.net));
+  const rangeRevenue = sum(exact.map(e => e.revenue));
+  const rangeNet = sum(exact.map(e => e.net));
   const hasRevenue = (x: number) => Math.abs(x) > NEAR_ZERO;
 
   function moneyRow(
@@ -149,7 +150,7 @@ export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
       key, label, kind, unit: "money",
       cells: months.map((m, i) => ({ month: m.month, value: displayMoney(exactValues[i]), sources: sourcesOf(i), formula: formulaOf(i) })),
       total: displayMoney(exactTotal),
-      shareOfRevenue: hasRevenue(yearRevenue) ? roundPercent((exactTotal / yearRevenue) * 100) : null,
+      shareOfRevenue: hasRevenue(rangeRevenue) ? roundPercent((exactTotal / rangeRevenue) * 100) : null,
     };
   }
   const noSources = () => [];
@@ -208,7 +209,7 @@ export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
           formula: `Lợi nhuận ròng ${money(exact[i].net)} ÷ doanh thu ${money(exact[i].revenue)}`,
         }
       : { month: m.month, value: null, sources: [], formula: "Tháng này chưa có doanh thu, nên không tính được biên lợi nhuận." }),
-    total: hasRevenue(yearRevenue) ? roundPercent((yearNet / yearRevenue) * 100) : null,
+    total: hasRevenue(rangeRevenue) ? roundPercent((rangeNet / rangeRevenue) * 100) : null,
     shareOfRevenue: null,
   });
   rows.push({
@@ -282,7 +283,8 @@ export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
     x ? { month: x.month, label: x.label, netProfit: displayMoney(x.exact) } : null;
 
   return {
-    year: figures.year,
+    fromMonth: figures.fromMonth,
+    toMonth: figures.toMonth,
     months: months.map(m => {
       const until = m.month === currentMonth ? `${today.slice(8, 10)}/${today.slice(5, 7)}` : null;
       return {
@@ -295,12 +297,12 @@ export function buildPnlTable(figures: PnlFigures, today: string): PnlTable {
         notes: footnotes.filter(f => f.months.includes(m.month)).map(f => f.number),
       };
     }),
-    periodLabel: figures.year < Number(today.slice(0, 4)) ? "cả năm" : "từ đầu năm",
+    rangeName,
     rows,
     summary: {
-      revenue: displayMoney(yearRevenue),
-      netProfit: displayMoney(yearNet),
-      margin: hasRevenue(yearRevenue) ? roundPercent((yearNet / yearRevenue) * 100) : null,
+      revenue: displayMoney(rangeRevenue),
+      netProfit: displayMoney(rangeNet),
+      margin: hasRevenue(rangeRevenue) ? roundPercent((rangeNet / rangeRevenue) * 100) : null,
       bestMonth: summaryMonth(best),
       worstMonth: summaryMonth(worst),
     },

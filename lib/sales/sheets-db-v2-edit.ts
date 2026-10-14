@@ -6,8 +6,6 @@
  * PostgreSQL transaction.
  */
 
-"use server";
-
 import { supersedeOrderAtomic } from "@/lib/sales/order-edit-transaction";
 import type { OrderEditPaymentInput } from "@/lib/sales/order-edit-transaction";
 import type { OrderEvent, OrderLineV2, OrderV2 } from "@/lib/sales/order-types";

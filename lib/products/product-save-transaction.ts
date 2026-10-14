@@ -8,6 +8,8 @@ export async function saveProductAtomic(
     removedVariantIds: string[];
     effectiveAt: string;
     expectedPriceHistoryCount: number;
+    // Nhóm tuỳ chọn ticks; undefined leaves them alone.
+    optionGroupIds?: string[];
   },
 ): Promise<{
   productId: string;
@@ -21,6 +23,7 @@ export async function saveProductAtomic(
     p_variants: input.variants,
     p_removed_variant_ids: input.removedVariantIds,
     p_effective_at: input.effectiveAt,
+    p_option_group_ids: input.optionGroupIds ?? null,
   });
   if (error) {
     throw new Error(`save_product_atomic: ${error.message}`);

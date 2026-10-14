@@ -84,14 +84,10 @@ export async function getActivityLogEvents(
     .order("event_at", { ascending: false })
     .range(offset, offset + ACTIVITY_LOG_ITEMS_PER_PAGE - 1);
 
-  // A narrow actor-name scan is acceptable at the current scale. If this
-  // becomes material, replace it with a distinct view/RPC rather than loading
-  // complete event rows again.
-  const actorsQuery = supabase
-    .from("order_events")
-    .select("actor_name")
-    .not("actor_name", "is", null)
-    .limit(5_000);
+  // B5: the person picker lists the Users table (id and name only -- never
+  // password_hash), so a newer person is never missing the way they were from
+  // an unordered, row-capped scan of the log.
+  const actorsQuery = supabase.from("users").select("id, name");
 
   const [eventResult, actorResult] = await Promise.all([eventsQuery, actorsQuery]);
   if (eventResult.error) throw new Error(`Activity-log events: ${eventResult.error.message}`);
@@ -124,7 +120,7 @@ export async function getActivityLogEvents(
     itemsPerPage: ACTIVITY_LOG_ITEMS_PER_PAGE,
     actors: Array.from(new Set(
       (actorResult.data || [])
-        .map((row: any) => String(row.actor_name || "").trim())
+        .map((row: any) => String(row.name || "").trim())
         .filter(Boolean),
     )).sort((left, right) => left.localeCompare(right)),
   };

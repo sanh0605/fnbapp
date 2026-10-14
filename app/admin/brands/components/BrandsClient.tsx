@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
@@ -10,6 +9,9 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { formatDate } from "@/lib/shared/datetime";
+import { Button } from "@/components/ui/Button";
+import { TextInput } from "@/components/ui/TextInput";
+import { Field } from "@/components/ui/Field";
 import { deleteBrand } from "@/app/admin/brands/actions";
 import type { DBBrand } from "@/types/db";
 
@@ -73,7 +75,7 @@ export default function BrandsClient({
         header: "Mã",
         sortValue: (b) => b.id,
         render: (b) => (
-          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-primary transition-colors">
             {b.id}
           </span>
         ),
@@ -83,7 +85,7 @@ export default function BrandsClient({
         header: "Tên thương hiệu",
         sortValue: (b) => b.name,
         render: (b) => (
-          <div className="font-bold text-text-primary">{b.name}</div>
+          <div className="text-text-primary">{b.name}</div>
         ),
       },
       {
@@ -91,7 +93,7 @@ export default function BrandsClient({
         header: "Mã đơn hàng",
         sortValue: (b) => b.code || "",
         render: (b) => (
-          <span className="font-mono text-primary font-bold">
+          <span className="font-mono text-text-secondary">
             {b.code || "—"}
           </span>
         ),
@@ -158,15 +160,15 @@ export default function BrandsClient({
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-start gap-2">
         <div>
-          <div className="font-bold text-text-primary text-base leading-tight">
+          <div className="text-sm text-text-primary">
             {brand.name}
           </div>
-          <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+          <div className="font-mono text-[11px] text-text-muted mt-0.5">
             {brand.id}
           </div>
         </div>
         {brand.code && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary-soft text-primary border border-primary/20 font-mono">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-primary-soft text-text-primary border border-primary/20 font-mono">
             {brand.code}
           </span>
         )}
@@ -202,12 +204,13 @@ export default function BrandsClient({
         group="Bán hàng"
         title="Thương hiệu"
         action={
-          <Link
+          <Button
             href={`/admin/brands/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            variant="primary"
+            className="w-full md:w-auto"
           >
             Tạo
-          </Link>
+          </Button>
         }
       />
 
@@ -216,21 +219,15 @@ export default function BrandsClient({
         onClear={handleClearFilter}
         showClear={Boolean(search)}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="brands-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm thương hiệu
-          </label>
-          <input
-            id="brands-search"
-            type="text"
-            placeholder="Tên, mã đơn hàng hoặc mã..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+        <div className="shrink-0 w-full md:w-64">
+          <Field label="Tìm thương hiệu" htmlFor="brands-search">
+            <TextInput
+              id="brands-search"
+              placeholder="Ví dụ: Phin Di"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
         </div>
       </FilterCard>
 
@@ -254,15 +251,17 @@ export default function BrandsClient({
             <div className="text-text-secondary text-sm">
               Không có thương hiệu nào khớp bộ lọc
             </div>
-            <div>
-              <button
-                type="button"
-                onClick={handleClearFilter}
-                className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
-              >
-                Xoá lọc
-              </button>
-            </div>
+            {Boolean(search) && (
+              <div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleClearFilter}
+                >
+                  Xoá lọc
+                </Button>
+              </div>
+            )}
           </div>
         }
       />

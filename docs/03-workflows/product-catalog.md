@@ -1,11 +1,30 @@
 # Product catalogue flow
 
 ```flow-decl
-routes: /admin/products, /admin/products/new, /admin/products/[id], /admin/products/[id]/edit, /admin/products/[id]/history, /admin/products/categories, /admin/products/categories/new, /admin/products/categories/[id], /admin/products/categories/[id]/edit, /admin/products/modifiers, /admin/products/modifiers/new, /admin/products/modifiers/[id], /admin/products/modifiers/[id]/edit, /admin/products/toppings
-files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
-tables: Products, products, Product_Variants, product_variants, product_price_history, Product_Categories, Modifiers
-brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003
+routes: /admin/products, /admin/products/new, /admin/products/[id], /admin/products/[id]/edit, /admin/products/[id]/history, /admin/products/categories, /admin/products/categories/new, /admin/products/categories/[id], /admin/products/categories/[id]/edit, /admin/products/types, /admin/products/types/new, /admin/products/types/[id], /admin/products/types/[id]/edit, /admin/products/modifiers, /admin/products/modifiers/new, /admin/products/modifiers/[id], /admin/products/modifiers/[id]/edit, /admin/products/toppings, /admin/products/modifier-groups, /admin/products/modifier-groups/new, /admin/products/modifier-groups/[id], /admin/products/modifier-groups/[id]/edit
+files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-status-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/types/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/modifier-save-transaction.ts, lib/products/modifier-group-transaction.ts, app/admin/products/modifier-groups/actions.ts, lib/products/create-standalone-topping.ts
+tables: Products, products, product_variants, product_price_history, Product_Categories, Product_Types, Modifiers, modifier_groups, modifier_group_products
+brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-007
 ```
+
+**Behaviour change — 2026-10-14 (audit F5, owner "Dùng khung chuẩn"; migration `0119`, ran on the server 2026-10-15 with the owner's approval: 0 of 9 options without a group, 35 drink dishes ticked, 0 food or Topping dishes):** a new list `/admin/products/modifier-groups` "Nhóm tuỳ chọn" sits under Bán hàng next to Topping & Tuỳ chọn (`BR-CATALOG-005`).
+- Each group is Chọn một or Chọn nhiều, with a display order, an optional cap on portions (Chọn nhiều), a "Cho bán riêng" box (Chọn nhiều), and the dishes it applies to. Dishes can also be ticked on Sửa món; both save through one Postgres function.
+- The option form picks its group from that table, and has "Có sẵn" (Chọn một) and "Tối đa mỗi món" (Chọn nhiều); `save_modifier_atomic` clears the group's other default and syncs a linked topping's price in one transaction. The old one-purpose price-sync module is gone.
+- The till and Sửa đơn show only the groups ticked for the dish, in order, with the default lit and "+" greyed at a cap (`components/ui/OptionGroupPicker.tsx`). A sale still stores only the picks that differ from the defaults.
+- The Bán độc lập check reads the group's "Cho bán riêng" box instead of the name "Thêm Topping".
+
+**Behaviour change — 2026-10-14 (audit F4, owner "Mặc định Topping, sửa được"):** the *Bán độc lập* switch on Topping & tuỳ chọn follows the topping's link (`modifiers.product_id`), not the dish group, so a standalone topping moved to another group from Sửa món keeps its switch; a product no topping links to is refused with a Vietnamese message naming the dish. A new standalone món still starts in "Topping" (`BR-CATALOG-003`).
+
+**Behaviour change — 2026-10-14 (audit F2, F3, F6, F7; migration `0114`, ran on the server 2026-10-14 with the owner's approval):** editing a dish keeps its picture; "Xoá vĩnh viễn" is not offered on a dish linked to any topping, and the server names the topping when it refuses; a dish linked to an active topping cannot get a second size ("Thêm size" hidden, server refuses); Ngừng bán and Bán lại write the dish and its sizes in one Postgres function, `set_product_status_atomic`. Dates with a time show seconds (`BR-DATA-006`).
+
+**Behaviour change — 2026-10-14 (Loại món, migration `0109`):** a new list `/admin/products/types` sits under Bán hàng, after Nhóm món.
+- Each type has a name and a "Là thức uống (tính là ly)" mark.
+- It starts with three types: Thức uống (marked), Thức ăn and Topping.
+- Every Nhóm món now has a required "Loại món". The migration set Cà phê, Giải trí, Cacao, Trà and Yogurt to Thức uống, Thức ăn to Thức ăn, and Topping to Topping.
+- A type can be deleted only by the owner (`requireOwner()`), and only while no group uses it. A refusal names the groups, for example "Loại món đang được dùng ở nhóm: Cà phê, Trà.".
+- Tổng quan counts a cup by this mark (`BR-SALE-007`).
+
+**Reviewed, no behaviour change — 2026-10-14:** `app/admin/products/modifiers/actions.ts` one message spelled "Thiếu mã tuỳ chọn" instead of "tùy" (`BR-UI-001`); no logic changed.
 
 **Behaviour change — 2026-10-03 (list/detail template, wave 4):** on screen only; no server action, table or figure changes. A dish row opens `/admin/products/[id]`: its fields, its sizes and prices, and its price history as recorded, one row per change with the size named (the old timeline worked out "Đến" and "Đang áp dụng" across sizes, so a dish with three sizes showed one of them as current). "Chỉnh sửa", "Ngừng bán" or "Bán lại", and the ADMIN-only "Xoá vĩnh viễn" live on that page. The list keeps a "Ngừng bán" bin and multi-select, shown only while the filter is "Đang bán". `/admin/products/[id]/history` now redirects to the detail page. Nhóm món and Topping & tuỳ chọn rows open their own `[id]` pages, with "Chỉnh sửa" and "Xoá" there and a "Xoá" bin on the list. The "Bán độc lập" switch moved from the option list to the option detail page; the list shows "Có" or "Không".
 
@@ -69,7 +88,7 @@ ways — as an add-on (`modifiers.price`) and, if linked, standalone as a
 `CAT-007` product's own variant (`product_variants.price`). Editing the
 price on the Topping & Tuỳ chọn screen now writes both, plus a
 `product_price_history` row, in one transaction
-(`lib/products/topping-price-sync.ts` calling `sync_topping_price_atomic`) —
+(`sync_topping_price_atomic`, since 0119 called by `save_modifier_atomic`) —
 the owner can no longer forget the second screen. A modifier with no linked
 product (`MOD-009` today) updates only itself.
 
@@ -139,9 +158,10 @@ Per the generated map, the eight declared files write: `Products` and
 (`app/admin/products/modifiers/actions.ts`, when creating or deleting a
 modifier); `Products` (`app/admin/products/toppings/actions.ts`);
 `modifiers`, `product_variants`, `product_price_history`
-(`lib/products/topping-price-sync.ts`, called by
-`app/admin/products/modifiers/actions.ts` on an edit — the price sync
-described above); and `products`, `product_variants`, `product_price_history`,
+(`lib/products/modifier-save-transaction.ts`, called by
+`app/admin/products/modifiers/actions.ts` on every save — the price sync
+described above); `modifier_groups`, `modifier_group_products`
+(`lib/products/modifier-group-transaction.ts`); and `products`, `product_variants`, `product_price_history`,
 `modifiers` (`lib/products/create-standalone-topping.ts`, called by the same
 file's new `createStandaloneToppingAction` — the first-link RPC described
 above).

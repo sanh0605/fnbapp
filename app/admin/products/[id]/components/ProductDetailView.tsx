@@ -3,13 +3,15 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
+import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
-import { formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { confirm } from "@/lib/shared/dialog";
 import { pauseProduct, resumeProduct, eraseProduct } from "@/app/admin/products/actions";
 
@@ -49,7 +51,7 @@ export function ProductDetailView({
       ? "Đang bán"
       : product.status === "INACTIVE"
       ? "Ngừng bán"
-      : "Đã xóa";
+      : "Đã xoá";
 
   const fields: Field[] = [
     { label: "Mã", value: product.id },
@@ -123,30 +125,27 @@ export function ProductDetailView({
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
-        href={editHref}
-        className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
-      >
+      <Button href={editHref} variant="secondary">
         Chỉnh sửa
-      </Link>
+      </Button>
       {product.status === "ACTIVE" ? (
-        <button
+        <Button
           type="button"
+          variant="delete"
           disabled={isPending}
           onClick={handlePause}
-          className="px-4 py-2 text-sm font-medium text-warning border border-warning/30 rounded-lg hover:bg-warning/10 transition min-h-[44px] flex items-center justify-center disabled:opacity-50"
         >
-          {isPending ? "Đang xử lý..." : "Ngừng bán"}
-        </button>
+          Ngừng bán
+        </Button>
       ) : (
-        <button
+        <Button
           type="button"
+          variant="secondary"
           disabled={isPending}
           onClick={handleResume}
-          className="px-4 py-2 text-sm font-medium text-success border border-success/30 rounded-lg hover:bg-success/10 transition min-h-[44px] flex items-center justify-center disabled:opacity-50"
         >
-          {isPending ? "Đang xử lý..." : "Bán lại"}
-        </button>
+          Bán lại
+        </Button>
       )}
       {product.neverSold && canDelete && (
         <RemoveRecordButton
@@ -190,7 +189,7 @@ export function ProductDetailView({
             </span>
           ) : product.status === "DELETED" ? (
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-surface-secondary text-text-secondary border border-border">
-              Đã xóa
+              Đã xoá
             </span>
           ) : undefined
         }
@@ -224,49 +223,40 @@ export function ProductDetailView({
             Chưa có size nào.
           </div>
         ) : (
-          <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col">
+          <div>
             {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-                    <th className="px-6 py-4 font-bold">Size</th>
-                    <th className="px-6 py-4 font-bold">Giá bán</th>
-                    <th className="px-6 py-4 font-bold">Trạng thái</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
+            <div className="hidden md:block">
+              <Table>
+                <TableHead>
+                  <TableHeaderCell>Size</TableHeaderCell>
+                  <TableHeaderCell>Giá bán</TableHeaderCell>
+                  <TableHeaderCell>Trạng thái</TableHeaderCell>
+                </TableHead>
+                <TableBody>
                   {variants.map((v: any, idx: number) => (
-                    <tr
-                      key={v.id || idx}
-                      className="hover:bg-surface-secondary/50 transition-colors"
-                    >
-                      <td className="px-6 py-4 font-medium text-text-primary">
-                        {v.size_name}
-                      </td>
-                      <td className="px-6 py-4 font-bold text-text-primary">
-                        {formatNumber(v.price)}
-                      </td>
-                      <td className="px-6 py-4">
+                    <TableRow key={v.id || idx}>
+                      <TableCell>{v.size_name}</TableCell>
+                      <TableCell align="right">{formatNumber(v.price)}</TableCell>
+                      <TableCell>
                         <Badge variant={v.status === "ACTIVE" ? "success" : "warning"}>
                           {v.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
                         </Badge>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-border">
+            <div className="md:hidden bg-surface-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
               {variants.map((v: any, idx: number) => (
                 <div key={v.id || idx} className="p-4 flex items-center justify-between">
                   <div>
-                    <div className="font-bold text-text-primary text-sm">
+                    <div className="text-text-primary text-sm">
                       {v.size_name}
                     </div>
-                    <div className="text-sm font-bold text-primary">
+                    <div className="text-sm text-primary tabular-nums">
                       {formatNumber(v.price)}
                     </div>
                   </div>
@@ -288,7 +278,7 @@ export function ProductDetailView({
                   ? `/admin/products/modifiers/${encodeURIComponent(linkedModifierId)}`
                   : "/admin/products/modifiers"
               }
-              className="text-primary hover:underline font-medium inline-flex items-center gap-1"
+              className="text-primary hover:underline inline-flex items-center gap-1"
             >
               Mở tuỳ chọn &rarr;
             </Link>
@@ -307,20 +297,18 @@ export function ProductDetailView({
             Chưa có lịch sử giá.
           </div>
         ) : (
-          <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col">
+          <div>
             {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-                    <th className="px-6 py-4 font-bold">Ngày áp dụng</th>
-                    <th className="px-6 py-4 font-bold">Size</th>
-                    <th className="px-6 py-4 font-bold">Giá cũ</th>
-                    <th className="px-6 py-4 font-bold">Giá mới</th>
-                    <th className="px-6 py-4 font-bold">Lý do</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
+            <div className="hidden md:block">
+              <Table>
+                <TableHead>
+                  <TableHeaderCell>Ngày áp dụng</TableHeaderCell>
+                  <TableHeaderCell>Size</TableHeaderCell>
+                  <TableHeaderCell>Giá cũ</TableHeaderCell>
+                  <TableHeaderCell>Giá mới</TableHeaderCell>
+                  <TableHeaderCell>Lý do</TableHeaderCell>
+                </TableHead>
+                <TableBody>
                   {sortedHistory.map((entry: any, idx: number) => {
                     const variant = (product.variants || []).find(
                       (v: any) => v.id === entry.variant_id,
@@ -333,36 +321,35 @@ export function ProductDetailView({
                         ? "—"
                         : formatNumber(entry.old_price);
                     const dateText =
-                      formatDateTime(entry.effective_at || entry.created_at) || "—";
+                      formatDateTimeFull(entry.effective_at || entry.created_at) || "—";
                     const reasonText = entry.reason || entry.note || "—";
 
                     return (
-                      <tr
-                        key={entry.id || idx}
-                        className="hover:bg-surface-secondary/50 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-text-secondary font-mono text-xs">
-                          {dateText}
-                        </td>
-                        <td className="px-6 py-4 font-medium text-text-primary">
-                          {sizeName}
-                        </td>
-                        <td className="px-6 py-4 text-text-muted">{oldPriceText}</td>
-                        <td className="px-6 py-4 font-bold text-text-primary">
+                      <TableRow key={entry.id || idx}>
+                        <TableCell>
+                          <span className="text-text-secondary font-mono text-xs">
+                            {dateText}
+                          </span>
+                        </TableCell>
+                        <TableCell>{sizeName}</TableCell>
+                        <TableCell align="right">
+                          <span className="text-text-muted">{oldPriceText}</span>
+                        </TableCell>
+                        <TableCell align="right">
                           {formatNumber(entry.new_price)}
-                        </td>
-                        <td className="px-6 py-4 text-text-secondary">
-                          {reasonText}
-                        </td>
-                      </tr>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-text-secondary">{reasonText}</span>
+                        </TableCell>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-border">
+            <div className="md:hidden bg-surface-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
               {sortedHistory.map((entry: any, idx: number) => {
                 const variant = (product.variants || []).find(
                   (v: any) => v.id === entry.variant_id,
@@ -375,19 +362,19 @@ export function ProductDetailView({
                     ? "—"
                     : formatNumber(entry.old_price);
                 const dateText =
-                  formatDateTime(entry.effective_at || entry.created_at) || "—";
+                  formatDateTimeFull(entry.effective_at || entry.created_at) || "—";
                 const reasonText = entry.reason || entry.note || "—";
 
                 return (
                   <div key={entry.id || idx} className="p-4 space-y-1">
                     <div className="flex justify-between items-start text-xs text-text-muted">
                       <span className="font-mono">{dateText}</span>
-                      <span className="font-medium text-text-primary">{sizeName}</span>
+                      <span className="text-text-primary">{sizeName}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-text-muted">{oldPriceText}</span>
                       <span className="text-text-muted">&rarr;</span>
-                      <span className="font-bold text-text-primary">
+                      <span className="text-text-primary tabular-nums">
                         {formatNumber(entry.new_price)}
                       </span>
                     </div>

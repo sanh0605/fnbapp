@@ -9,7 +9,6 @@ const HARD_DELETE_ACTIONS: Array<[string, string]> = [
   ["app/admin/inventory/actions.ts", "deletePurchasedItem"],
   ["app/admin/inventory/actions.ts", "deleteConversion"],
   ["app/admin/inventory/actions.ts", "deleteUnit"],
-  ["app/admin/inventory/asset-bands/actions.ts", "deleteAssetBand"],
   ["app/admin/inventory/conversions/actions.ts", "deleteConversionAction"],
   ["app/admin/inventory/items/actions.ts", "deletePurchasedItemAction"],
   ["app/admin/promotions/actions.ts", "deletePromotionAction"],
@@ -26,6 +25,11 @@ const HARD_DELETE_ACTIONS: Array<[string, string]> = [
   ["app/admin/finance/bank-accounts/actions.ts", "deleteBankAccount"],
   ["app/admin/finance/actions.ts", "deleteCashEntry"],
   ["app/admin/finance/transfers/actions.ts", "deleteCashTransfer"],
+  // Tổng quan plan Task 5: both are guarded by requireOwner() and refused up front when still referenced.
+  ["app/admin/finance/monthly-items/actions.ts", "deleteMonthlyItem"],
+  ["app/admin/products/types/actions.ts", "deleteProductType"],
+  // Nhóm tuỳ chọn: an empty group is erased for good, owner only, refused while any option points at it.
+  ["app/admin/products/modifier-groups/actions.ts", "deleteModifierGroup"],
   // I2 (final-fix-brief.md): a never-sold product is erased for good,
   // history and all -- CLAUDE.md's "Món chưa bán lần nào được xoá hẳn kèm
   // lịch sử giá … chỉ vai ADMIN xoá, chặn bằng requireOwner()". This was

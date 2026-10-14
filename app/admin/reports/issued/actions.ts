@@ -39,7 +39,7 @@ export interface IssuedValueReport {
 // Plan G: a read-only monitoring page for the value of goods issued so far.
 // Reuses lib/costing/issue-costing.ts, the buildIssueCosting* input builders (Plan G
 // G1), and lib/reports/issued-value-report.ts's per-event derivation -- the same
-// functions app/admin/reports/actions.ts uses for totalCOGS. No second cost
+// functions app/admin/reports/pnl-actions.ts uses for totalCOGS. No second cost
 // definition lives here; this file only fetches, names, and rounds for
 // display.
 export async function getIssuedValueReport(): Promise<IssuedValueReport> {
@@ -58,7 +58,7 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
 
   const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
   // section 3.2, widened by BR-COGS-007 (2026-09-11): same exclusion as
-  // getPnLDataV2 (app/admin/reports/actions.ts) -- this report reuses the
+  // getPnLDataV2 (app/admin/reports/pnl-actions.ts) -- this report reuses the
   // same issue-costing engine, so it inherited the same gap and gets the
   // same fix, from the one shared function.
   const costedIssues = selectCostedIssues(stockIssues as any[], purchasedItems as any[], itemCategories as any[]);

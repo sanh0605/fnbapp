@@ -188,6 +188,41 @@ describe("buildPurchaseOrderWritePlan", () => {
       }),
     ).toThrow("SPM-001");
   });
+  it.each([["", "empty"], [0, "zero"]])(
+    "saves a draft line with %s quantity (%s) with base quantity 0 and no throw",
+    (quantity: string | number, _label: string) => {
+      const plan = buildPurchaseOrderWritePlan({
+        order: { ...order, status: "DRAFT" },
+        lines: [
+          {
+            purchased_item_id: "SPM-001",
+            unit: "box",
+            quantity,
+            subtotal: "150000",
+            conversion_id: "QD-001",
+            base_unit: "U-ML",
+          },
+        ],
+        purchasedItems: [{ id: "SPM-001" }],
+        conversions: [
+          { id: "QD-001", purchased_item_id: "SPM-001", purchased_unit: "box", conversion_rate: 5 },
+        ],
+        createdAt: "2026-07-01T04:00:00.000Z",
+        idFactory: () => "uuid",
+      });
+
+      expect(plan.lines).toEqual([
+        expect.objectContaining({
+          quantity: 0,
+          unit_price: 0,
+          subtotal: 150000,
+          base_quantity: 0,
+          conversion_id: "QD-001",
+        }),
+      ]);
+    },
+  );
+
   describe("line ids on an edit", () => {
     const eggLine = { purchased_item_id: "SPM-EGG", unit: "box", quantity: 2, subtotal: 196, conversion_id: "QD-EGG", base_unit: "U-PCS" };
     const milkLine = { purchased_item_id: "SPM-MILK", unit: "box", quantity: 2, subtotal: 196, conversion_id: "QD-MILK", base_unit: "U-ML" };

@@ -189,3 +189,113 @@ input[type="button"],
 .animate-fade-in-quick {
   animation: fadeIn 0.15s ease-out forwards;
 }
+
+/* ============================================================
+   DateRangeButton calendar theme (range-calendar). Selectors start with
+   .react-datepicker.range-calendar so they outrank the library's own
+   :not()/:hover rules whatever order the two stylesheets load in.
+   ============================================================ */
+
+.range-calendar.react-datepicker {
+  font-family: inherit;
+  border-color: var(--color-border);
+  border-radius: 0.75rem;
+  background-color: var(--color-surface-card);
+}
+
+.react-datepicker.range-calendar .react-datepicker__header {
+  background-color: var(--color-surface-card);
+  border-bottom-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__current-month,
+.react-datepicker.range-calendar .react-datepicker-year-header {
+  color: var(--color-text-primary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__day-name {
+  color: var(--color-text-secondary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__day {
+  color: var(--color-text-primary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__month-text {
+  color: var(--color-text-primary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__day--in-range,
+.react-datepicker.range-calendar .react-datepicker__day--selected,
+.react-datepicker.range-calendar .react-datepicker__day--range-start,
+.react-datepicker.range-calendar .react-datepicker__day--range-end {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__day--in-selecting-range,
+.react-datepicker.range-calendar .react-datepicker__day--keyboard-selected {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__day:hover {
+  background-color: var(--color-primary-soft);
+}
+
+.react-datepicker.range-calendar .react-datepicker__day--in-range:hover,
+.react-datepicker.range-calendar .react-datepicker__day--selected:hover,
+.react-datepicker.range-calendar .react-datepicker__day--range-start:hover,
+.react-datepicker.range-calendar .react-datepicker__day--range-end:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.react-datepicker.range-calendar .react-datepicker__day--in-selecting-range:hover,
+.react-datepicker.range-calendar .react-datepicker__day--keyboard-selected:hover {
+  background-color: var(--color-primary-soft);
+}
+
+.react-datepicker.range-calendar .react-datepicker__month-text--in-range,
+.react-datepicker.range-calendar .react-datepicker__month-text--selected,
+.react-datepicker.range-calendar .react-datepicker__month-text--range-start,
+.react-datepicker.range-calendar .react-datepicker__month-text--range-end {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__month-text--in-selecting-range,
+.react-datepicker.range-calendar .react-datepicker__month-text--keyboard-selected {
+  background-color: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__month-text:hover {
+  background-color: var(--color-primary-soft);
+}
+
+.react-datepicker.range-calendar .react-datepicker__month-text--in-range:hover,
+.react-datepicker.range-calendar .react-datepicker__month-text--selected:hover,
+.react-datepicker.range-calendar .react-datepicker__month-text--range-start:hover,
+.react-datepicker.range-calendar .react-datepicker__month-text--range-end:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.react-datepicker.range-calendar .react-datepicker__month-text--in-selecting-range:hover,
+.react-datepicker.range-calendar .react-datepicker__month-text--keyboard-selected:hover {
+  background-color: var(--color-primary-soft);
+}
+
+.react-datepicker.range-calendar .react-datepicker__navigation-icon::before {
+  border-color: var(--color-text-secondary);
+}
+
+.react-datepicker.range-calendar .react-datepicker__day--today {
+  font-weight: bold;
+}
+
+.react-datepicker.range-calendar .react-datepicker__day--outside-month {
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+}
+

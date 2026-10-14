@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCategoriesWithCounts } from "@/app/admin/products/categories/actions";
+import { getProductTypes } from "@/app/admin/products/types/actions";
 import { ProductCategoryForm } from "@/app/admin/products/categories/components/ProductCategoryForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
@@ -19,12 +20,17 @@ export default async function EditProductCategoryPage({
     "/admin/products/categories",
   );
 
-  const { categories } = await getCategoriesWithCounts();
+  const [{ categories }, typeRows] = await Promise.all([
+    getCategoriesWithCounts(),
+    getProductTypes(),
+  ]);
 
   const category = categories.find((c) => c.id === params.id);
   if (!category) {
     notFound();
   }
+
+  const types = typeRows.map((r) => r.type);
 
   const ownDetailPath = `/admin/products/categories/${encodeURIComponent(category.id)}`;
   const ownDetailPathRaw = `/admin/products/categories/${category.id}`;
@@ -52,6 +58,7 @@ export default async function EditProductCategoryPage({
       />
       <ProductCategoryForm
         initialData={category}
+        types={types}
         returnTo={detailHref}
       />
     </DetailFrame>

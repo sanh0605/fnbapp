@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
@@ -10,6 +9,10 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { Field } from "@/components/ui/Field";
 import { setCashCategoryStatus } from "@/app/admin/finance/categories/actions";
 import type { DBCashCategory } from "@/types/db";
 
@@ -107,7 +110,7 @@ export default function CategoriesClient({
         header: "Mã",
         sortValue: (c) => c.id,
         render: (c) => (
-          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-primary transition-colors">
             {c.id}
           </span>
         ),
@@ -117,7 +120,7 @@ export default function CategoriesClient({
         header: "Tên",
         sortValue: (c) => c.name,
         render: (c) => (
-          <div className="font-bold text-text-primary">{c.name}</div>
+          <div className="text-text-primary">{c.name}</div>
         ),
       },
       {
@@ -209,7 +212,7 @@ export default function CategoriesClient({
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-start gap-2">
         <div>
-          <div className="font-bold text-text-primary text-base leading-tight">
+          <div className="text-sm text-text-primary">
             {category.name}
           </div>
           <div className="text-[11px] text-text-muted mt-0.5 font-mono">
@@ -262,12 +265,13 @@ export default function CategoriesClient({
         group="Thu chi"
         title="Nhóm thu chi"
         action={
-          <Link
+          <Button
             href={`/admin/finance/categories/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            variant="primary"
+            className="w-full md:w-auto"
           >
             Tạo
-          </Link>
+          </Button>
         }
       />
 
@@ -276,39 +280,28 @@ export default function CategoriesClient({
         onClear={handleClearFilter}
         showClear={Boolean(search || status !== "ACTIVE")}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="categories-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm nhóm
-          </label>
-          <input
-            id="categories-search"
-            type="text"
-            placeholder="Tên hoặc mã..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+        <div className="shrink-0 w-full md:w-64">
+          <Field label="Tìm nhóm" htmlFor="categories-search">
+            <TextInput
+              id="categories-search"
+              placeholder="Ví dụ: Vận hành"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-48">
-          <label
-            htmlFor="categories-status"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Trạng thái
-          </label>
-          <select
-            id="categories-status"
-            value={status}
-            onChange={(e) => setStatus(parseStatus(e.target.value))}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ACTIVE">Đang dùng</option>
-            <option value="INACTIVE">Ngừng dùng</option>
-            <option value="ALL">Tất cả</option>
-          </select>
+        <div className="shrink-0 w-full md:w-48">
+          <Field label="Trạng thái" htmlFor="categories-status">
+            <Select
+              id="categories-status"
+              value={status}
+              onChange={(e) => setStatus(parseStatus(e.target.value))}
+            >
+              <option value="ACTIVE">Đang dùng</option>
+              <option value="INACTIVE">Ngừng dùng</option>
+              <option value="ALL">Tất cả</option>
+            </Select>
+          </Field>
         </div>
       </FilterCard>
 
@@ -334,13 +327,13 @@ export default function CategoriesClient({
             </div>
             {Boolean(search || status !== "ACTIVE") && (
               <div>
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={handleClearFilter}
-                  className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
                 >
                   Xoá lọc
-                </button>
+                </Button>
               </div>
             )}
           </div>

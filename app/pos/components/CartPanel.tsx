@@ -364,7 +364,7 @@ export function CartPanel({
                 <input
                   aria-label="Mã giảm giá"
                   type="text"
-                  placeholder="Nhập mã giảm giá..."
+                  placeholder="Ví dụ: GIAM10"
                   value={promoCodeInput}
                   onChange={(e) => {
                     setPromoCodeInput(e.target.value);
@@ -443,7 +443,7 @@ export function CartPanel({
                     aria-label="Giảm giá tùy chỉnh"
                     type="number"
                     min="0"
-                    placeholder="Nhập giảm giá..."
+                    placeholder="Ví dụ: 10,000"
                     value={userCustomDiscount === 0 || userCustomDiscount === null ? "" : userCustomDiscount}
                     onChange={(e) => {
                       const val = e.target.value === "" ? null : Number(e.target.value);
@@ -649,7 +649,7 @@ export function CartPanel({
                 </select>
                 <input
                   type="number"
-                  placeholder="Số tiền"
+                  placeholder="Ví dụ: 100,000"
                   value={splitAmountInput}
                   onChange={(e) => setSplitAmountInput(e.target.value)}
                   className="border border-border rounded-lg px-3 py-2 text-sm bg-page"
@@ -660,7 +660,8 @@ export function CartPanel({
               {splitMethodInput === "BANK_TRANSFER" && (
                 <input
                   type="text"
-                  placeholder="Mã giao dịch (không bắt buộc)"
+                  aria-label="Mã giao dịch (không bắt buộc)"
+                  placeholder="Ví dụ: FT26281123456"
                   value={splitReferenceInput}
                   onChange={(e) => setSplitReferenceInput(e.target.value)}
                   className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-page"

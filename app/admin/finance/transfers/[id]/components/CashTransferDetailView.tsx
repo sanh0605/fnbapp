@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
@@ -107,22 +107,19 @@ export function CashTransferDetailView({
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
         {!isCancelled && (
-          <Link
-            href={editHref}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
-          >
+          <Button href={editHref} variant="secondary">
             Chỉnh sửa
-          </Link>
+          </Button>
         )}
         {!isCancelled && (
-          <button
+          <Button
             type="button"
+            variant="delete"
             onClick={handleCancel}
-            disabled={cancelLoading}
-            className="px-4 py-2 text-sm font-medium text-text-secondary border border-border rounded-lg hover:bg-surface-secondary transition min-h-[44px] flex items-center justify-center disabled:opacity-50"
+            loading={cancelLoading}
           >
-            {cancelLoading ? "Đang xử lý..." : "Huỷ"}
-          </button>
+            Huỷ
+          </Button>
         )}
         {canDelete && (
           <RemoveRecordButton

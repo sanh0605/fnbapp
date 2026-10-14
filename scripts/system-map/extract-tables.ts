@@ -1,7 +1,8 @@
 export type TableInfo = { name: string; columns: string[]; statusValues: string[] };
 
 const CREATE = /create table (?:if not exists )?(?:public\.)?(\w+)\s*\(([\s\S]*?)\)\s*;/gi;
-const ALTER = /alter table (?:if exists )?(?:public\.)?(\w+)\s+add column\s+(?:if not exists\s+)?(\w+)/gi;
+const ALTER = /alter table (?:if exists )?(?:public\.)?(\w+)\s+(add column[^;]*)/gi;
+const ADD_COLUMN = /add column\s+(?:if not exists\s+)?(\w+)/gi;
 const DROP = /drop table (?:if exists )?(?:public\.)?(\w+)/gi;
 const STATUS_ENUM = /status\s+in\s*\(([^)]*)\)/i;
 const COLUMN_HEAD = /^([a-z_][a-z0-9_]*)\s+/i;
@@ -11,7 +12,7 @@ const NON_COLUMN = new Set(["primary", "foreign", "unique", "check", "constraint
 
 type TableEvent =
   | { kind: "create"; name: string; body: string; pos: number }
-  | { kind: "alter"; name: string; column: string; pos: number }
+  | { kind: "alter"; name: string; columns: string[]; pos: number }
   | { kind: "drop"; name: string; pos: number };
 
 export function extractTables(sqlSources: string[]): TableInfo[] {
@@ -25,7 +26,7 @@ export function extractTables(sqlSources: string[]): TableInfo[] {
     // the same name (after a DROP) starts from a clean slate.
     const events: TableEvent[] = [];
     for (const m of sql.matchAll(CREATE)) events.push({ kind: "create", name: m[1], body: m[2], pos: m.index! });
-    for (const m of sql.matchAll(ALTER)) events.push({ kind: "alter", name: m[1], column: m[2], pos: m.index! });
+    for (const m of sql.matchAll(ALTER)) events.push({ kind: "alter", name: m[1], columns: [...m[2].matchAll(ADD_COLUMN)].map(c => c[1]), pos: m.index! });
     for (const m of sql.matchAll(DROP)) events.push({ kind: "drop", name: m[1], pos: m.index! });
     events.sort((a, b) => a.pos - b.pos);
 
@@ -49,7 +50,7 @@ export function extractTables(sqlSources: string[]): TableInfo[] {
         continue;
       }
       const table = get(event.name);
-      if (!table.columns.includes(event.column)) table.columns.push(event.column);
+      for (const column of event.columns) if (!table.columns.includes(column)) table.columns.push(column);
     }
   }
   return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));

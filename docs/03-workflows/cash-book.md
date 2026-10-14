@@ -1,11 +1,21 @@
 # Cash book flow (sổ thu chi)
 
 ```flow-decl
-routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance, /admin/finance/new, /admin/finance/[id], /admin/finance/[id]/edit, /admin/finance/categories/new, /admin/finance/categories/[id], /admin/finance/categories/[id]/edit, /admin/finance/bank-accounts/new, /admin/finance/bank-accounts/[id], /admin/finance/bank-accounts/[id]/edit, /admin/finance/transfers/new, /admin/finance/transfers/[id], /admin/finance/transfers/[id]/edit
-files: app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, app/admin/finance/transfers/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts, lib/finance/cash-transfer-rules.ts, lib/finance/cash-flow.ts, lib/finance/cash-book-daily.ts, lib/finance/cash-book-rows.ts
-tables: Cash_Categories, Bank_Accounts, Cash_Entries, Cash_Transfers
-brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006, BR-CASH-007, BR-CASH-008
+routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance, /admin/finance/new, /admin/finance/[id], /admin/finance/[id]/edit, /admin/finance/categories/new, /admin/finance/categories/[id], /admin/finance/categories/[id]/edit, /admin/finance/bank-accounts/new, /admin/finance/bank-accounts/[id], /admin/finance/bank-accounts/[id]/edit, /admin/finance/transfers/new, /admin/finance/transfers/[id], /admin/finance/transfers/[id]/edit, /admin/finance/monthly-items, /admin/finance/monthly-items/new, /admin/finance/monthly-items/[id], /admin/finance/monthly-items/[id]/edit
+files: app/admin/finance/monthly-items/actions.ts, app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, app/admin/finance/transfers/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts, lib/finance/cash-transfer-rules.ts, lib/finance/cash-flow.ts, lib/finance/cash-book-daily.ts, lib/finance/cash-book-rows.ts
+tables: Cash_Categories, Bank_Accounts, Cash_Entries, Cash_Transfers, Monthly_Expense_Items
+brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006, BR-CASH-007, BR-CASH-008, BR-CASH-009
 ```
+
+**Behaviour change — 2026-10-14 (Khoản chi hằng tháng, migration `0109`, `BR-CASH-009`):**
+- **The list.** A new list `/admin/finance/monthly-items` under Thu chi holds the owner's recurring expenses, such as Tiền điện. Each belongs to one active expense group.
+- **The entry form.** The Sổ thu chi entry form gains an optional "Khoản chi hằng tháng" box. It shows only for an expense group, and lists that group's items in use.
+  - The server refuses an item that is stopped ("Khoản chi hằng tháng không còn dùng") or belongs to another group ("Khoản chi hằng tháng thuộc nhóm khác").
+  - An older entry may keep a link to an item stopped since.
+- **The Tổng quan link.** "Nhập" on a Tổng quan reminder opens `/admin/finance/new?monthlyItem=…`, with the item and its group already filled.
+- **Stopping and deleting.** An item with entries can only be stopped. One without entries can be deleted, by the owner only.
+
+**Behaviour change — 2026-10-14 (`BR-UI-004`):** the Sổ thu chi list shows a total row under the column titles, "Tổng (không tính huỷ, chuyển tiền)" with "Thu … · Chi …", from `cashBookRowTotals` in `lib/finance/cash-book-rows.ts` over the rows the filter keeps; cancelled rows and transfers are left out (`BR-ACCESS-003`). Same day, one spelling in messages (huỷ, hoá, xoá, tuỳ, khoá; `BR-UI-001`).
 
 **Reviewed — 2026-10-07 (`BR-UI-008`):** `parseAmountVn` in `lib/finance/cash-entry-rules.ts` now reads `150,000` (comma thousands) and refuses `150.000`, because a dot marks decimals and money is whole đồng. The amount box posts plain digits, so nothing a user types changes; only the server backstop's accepted shape and its message do.
 
@@ -33,7 +43,7 @@ now shows every movement of money, not only the hand-typed rows
   counting from zero. Cuối kỳ tổng = Đầu kỳ tổng + Tổng thu − Tổng chi.
 - **"Hình thức thanh toán" on purchase orders.** Tiền mặt or Chuyển khoản (with an
   account); required to complete an order, chosen by hand on every new order;
-  editable afterwards on a completed order's page (`setPurchaseOrderPayment`).
+  changed afterwards only in Sửa phiếu, the order's edit form (owner 2026-10-14).
   Orders that existed when `0107` ran count as cash.
 - **"Loại" filter** on the ledger: Tất cả, Bán hàng, Nhập hàng, Ghi tay,
   Chuyển tiền. Under "Đã huỷ" no day row shows.
@@ -96,10 +106,11 @@ the two settings screens where they still apply.
    on `entry_date`), then narrows the table by status — Đang dùng by
    default, Đã huỷ, or Tất cả; a cancelled row keeps its badge and drops out
    of the totals, which always cover the whole range — newest `entry_date`
-   first, then newest id, 20 rows a page. A hand-edited range in the URL that is
-   not two real calendar dates written `YYYY-MM-DD`, in order, falls back to
-   "Tháng này" (`app/admin/finance/resolve-date-range.ts`; `2026-02-30` counts
-   as not real). The two
+   first, then newest id, 20 rows a page. The range is picked with the shared
+   time filter button (`BR-UI-007`) and written on the URL as `range`, plus
+   `from`/`to` for Tuỳ chọn. A hand-edited range that is not two real calendar
+   dates written `YYYY-MM-DD`, in order, falls back to "Tháng này"
+   (`lib/shared/date-range-params.ts`; `2026-02-30` counts as not real). The two
    settings screens show their own table filtered by status (Đang dùng by
    default, Ngừng dùng, Tất cả) and by a name-or-code search, newest code first;
    only the ledger's own add/edit form narrows their pickers to `ACTIVE`

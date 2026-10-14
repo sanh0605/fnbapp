@@ -1,15 +1,27 @@
 import { findAll } from "@/lib/db/tables";
-import { getSalesDataV2, getHourlyHeatmapV2 } from "../actions";
+import { getSalesDataV2, getSalesTotalsV2 } from "../sales-actions";
+import { getHourlyHeatmapV2 } from "../engagement-actions";
 import SalesFilter from "@/app/admin/reports/components/SalesFilter";
 import SalesCharts from "@/app/admin/reports/components/SalesCharts";
 import CategoryPieChart from "@/app/admin/reports/components/CategoryPieChart";
 import { formatNumber } from "@/lib/shared/format";
 import { formatCompact } from "@/lib/reports/compact-money";
 import { saigonToday } from "@/lib/shared/datetime";
-import { resolvePreset } from "@/lib/shared/date-range-presets";
+import { readRangeParams } from "@/lib/shared/date-range-params";
+import { comparePeriods, compareLabel, percentChange } from "@/lib/reports/compare-periods";
+import { CompareLine } from "@/app/admin/reports/components/CompareLine";
 
 import ProductTable from "@/app/admin/reports/components/ProductTable";
 import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableTotalRow,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/Table";
 import { OutletBreakdownSection } from "./OutletBreakdownSection";
 import { ChevronDown, AlertCircle } from "lucide-react";
 
@@ -18,44 +30,49 @@ export const dynamic = 'force-dynamic';
 export default async function SalesReportPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const [brands, users, categories] = await Promise.all([
+  const [brands, users, categories, productTypes] = await Promise.all([
     findAll("Brands"),
     findAll("Users"),
-    findAll("Product_Categories")
+    findAll("Product_Categories"),
+    findAll("Product_Types"),
   ]);
 
-  const startParam = Array.isArray(searchParams?.start) ? searchParams.start[0] : searchParams?.start;
-  const endParam = Array.isArray(searchParams?.end) ? searchParams.end[0] : searchParams?.end;
+  const today = saigonToday();
+  const range = readRangeParams(searchParams ?? {}, today, "THIS_MONTH");
+  const { current, previous } = comparePeriods(range, today);
+
   const brandId = Array.isArray(searchParams?.brandId) ? searchParams.brandId[0] : searchParams?.brandId;
   const staffName = Array.isArray(searchParams?.staffName) ? searchParams.staffName[0] : searchParams?.staffName;
   const categoryId = Array.isArray(searchParams?.categoryId) ? searchParams.categoryId[0] : searchParams?.categoryId;
 
   // Build filters for V2
-  const filters: any = {};
+  const filters: any = {
+    startDate: range.start,
+    endDate: range.end,
+  };
   if (brandId) filters.brandId = brandId;
   if (staffName) filters.staffName = staffName;
   if (categoryId) filters.categoryId = categoryId;
 
-  // Claude code — fix 2026-06-26: pass date-only strings through to
-  // toSaigonUtcRange. Previously pre-converted via new Date("YYYY-MM-DD")
-  // which JS interprets as UTC midnight, causing Sales report to miss the
-  // first 7 hours of the Saigon day (00:00-06:59). P&L page already does
-  // this correctly by passing date-only directly.
-  if (startParam && endParam) {
-    filters.startDate = startParam;
-    filters.endDate = endParam;
-  } else {
-    // Default range: first of the Saigon month to the Saigon today.
-    const range = resolvePreset("MONTH_TO_DATE", saigonToday());
-    filters.startDate = range.start;
-    filters.endDate = range.end;
-  }
-
-  const [data, heatmapData] = await Promise.all([
+  const [data, heatmapData, previousTotals] = await Promise.all([
     getSalesDataV2(filters),
-    getHourlyHeatmapV2(filters)
+    getHourlyHeatmapV2(filters),
+    current
+      ? Promise.all(
+          previous.map((p) => {
+            const prevFilters: any = {
+              startDate: p.start,
+              endDate: p.end,
+            };
+            if (brandId) prevFilters.brandId = brandId;
+            if (staffName) prevFilters.staffName = staffName;
+            if (categoryId) prevFilters.categoryId = categoryId;
+            return getSalesTotalsV2(prevFilters);
+          })
+        )
+      : Promise.resolve([]),
   ]);
 
   // Re-build category chart data
@@ -104,14 +121,20 @@ export default async function SalesReportPage({
     outletBreakdown,
   } = data;
 
+  const categoryTypeId = new Map<string, string>();
+  for (const c of categories) categoryTypeId.set(c.id, c.type_id);
+  const drinkTypeIds = new Set(productTypes.filter(t => t.is_drink).map(t => t.id));
+
   const bestDrinks = bestSellers.filter(item => {
     const p = (products as any[]).find(x => x.id === item.product_id);
-    return p?.category_id !== "CAT-006"; // CAT-006 is Food
+    const typeId = p?.category_id ? categoryTypeId.get(p.category_id) : undefined;
+    return Boolean(typeId && drinkTypeIds.has(typeId));
   });
 
   const bestFoods = bestSellers.filter(item => {
     const p = (products as any[]).find(x => x.id === item.product_id);
-    return p?.category_id === "CAT-006";
+    const typeId = p?.category_id ? categoryTypeId.get(p.category_id) : undefined;
+    return !Boolean(typeId && drinkTypeIds.has(typeId));
   });
 
   const totalToppingQty = bestToppings.reduce((s, t) => s + t.qty, 0);
@@ -121,8 +144,11 @@ export default async function SalesReportPage({
     <div className="space-y-6">
       <SalesFilter
         brands={brands}
-        users={users}
+        // A client component: pass only what the staff filter reads, never password_hash (BR-ACCESS-002).
+        users={(users as any[]).map(({ id, name, username, status }) => ({ id, name, username, status }))}
         categories={categories}
+        range={range}
+        today={today}
         title="Doanh số"
         subtitle="Phân tích hiệu quả kinh doanh theo thời gian (V2)."
       />
@@ -143,87 +169,127 @@ export default async function SalesReportPage({
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
           <div className="text-sm font-medium text-text-secondary mb-1">Tổng doanh thu thuần</div>
           <div className="text-3xl font-bold text-text-primary">{formatNumber(totalRevenue)}</div>
-          <div className="text-xs text-text-muted mt-2">
-            Gross: {formatNumber(grossRevenue)}
-            {" • "}
-            Giảm giá: {formatNumber(totalDiscount)}
-          </div>
+          {current && previous.map((p, i) => (
+            <div key={i} className="mt-1">
+              <CompareLine
+                change={percentChange(totalRevenue, previousTotals[i].totalRevenue)}
+                label={compareLabel(p, current, today)}
+              />
+            </div>
+          ))}
+          {!categoryId && (
+            <div className="text-xs text-text-muted mt-2">
+              Trước giảm giá: {formatNumber(grossRevenue)}
+              {" • "}
+              Giảm giá: {formatNumber(totalDiscount)}
+            </div>
+          )}
         </div>
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <div className="text-sm font-medium text-text-secondary mb-1">Tổng Số Đơn</div>
+          <div className="text-sm font-medium text-text-secondary mb-1">Tổng số đơn</div>
           <div className="text-3xl font-bold text-text-primary">{totalOrders} <span className="text-sm font-normal text-text-secondary">đơn</span></div>
-          <div className="text-xs text-text-muted mt-2">
-            {paymentBreakdown.map(p => `${p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}: ${p.orderCount}`).join(" • ")}
-          </div>
+          {current && previous.map((p, i) => (
+            <div key={i} className="mt-1">
+              <CompareLine
+                change={percentChange(totalOrders, previousTotals[i].totalOrders)}
+                label={compareLabel(p, current, today)}
+              />
+            </div>
+          ))}
+          {!categoryId && (
+            <div className="text-xs text-text-muted mt-2">
+              {paymentBreakdown.map(p => `${p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}: ${p.orderCount}`).join(" • ")}
+            </div>
+          )}
         </div>
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <div className="text-sm font-medium text-text-secondary mb-1">Doanh Thu Trung Bình / Đơn</div>
+          <div className="text-sm font-medium text-text-secondary mb-1">Doanh thu trung bình / đơn</div>
           <div className="text-3xl font-bold text-text-primary">{formatNumber(Math.round(avgOrderValue))}</div>
-          <div className="text-xs text-text-muted mt-2">
-            Khuyến mãi hệ thống: {formatNumber(systemPromotionDiscount)}
-          </div>
+          {current && previous.map((p, i) => (
+            <div key={i} className="mt-1">
+              <CompareLine
+                change={percentChange(avgOrderValue, previousTotals[i].avgOrderValue)}
+                label={compareLabel(p, current, today)}
+              />
+            </div>
+          ))}
+          {!categoryId && (
+            <div className="text-xs text-text-muted mt-2">
+              Khuyến mãi hệ thống: {formatNumber(systemPromotionDiscount)}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Discount + Payment breakdown (Claude code — Phase 5.2) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {categoryId ? (
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <h3 className="font-bold text-text-primary text-base mb-3">Chi tiết Giảm giá</h3>
-          <dl className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Khuyến mãi hệ thống</dt>
-              <dd className="font-medium text-text-primary">{formatNumber(systemPromotionDiscount)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Giảm giá theo dòng</dt>
-              <dd className="font-medium text-text-primary">{formatNumber(manualItemDiscount)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Giảm giá trên toàn đơn</dt>
-              <dd className="font-medium text-text-primary">{formatNumber(manualOrderDiscount)}</dd>
-            </div>
-            <div className="flex justify-between border-t border-border pt-2">
-              <dt className="font-semibold text-text-primary">Tổng Giảm giá</dt>
-              <dd className="font-bold text-danger">{formatNumber(totalDiscount)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Doanh thu Gross</dt>
-              <dd className="font-medium text-text-primary">{formatNumber(grossRevenue)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Doanh thu Net</dt>
-              <dd className="font-bold text-success">{formatNumber(totalRevenue)}</dd>
-            </div>
-          </dl>
+          <p className="text-sm text-text-muted">
+            Đang lọc theo nhóm món: giảm giá và tiền mặt / chuyển khoản tính theo cả đơn nên tạm ẩn. Bỏ lọc nhóm món để xem.
+          </p>
         </div>
-        <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <h3 className="font-bold text-text-primary text-base mb-3">Doanh thu theo PT Thanh toán</h3>
-          <table className="w-full text-sm">
-            <thead className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-              <tr>
-                <th scope="col" className="px-6 py-4 font-bold text-left">Phương thức</th>
-                <th scope="col" className="px-6 py-4 font-bold text-right">Số đơn</th>
-                <th scope="col" className="px-6 py-4 font-bold text-right">Doanh thu</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {paymentBreakdown.length === 0 ? (
-                <tr><td colSpan={3} className="text-center py-4 text-text-muted">Không có dữ liệu</td></tr>
-              ) : (
-                paymentBreakdown.map(p => (
-                  <tr key={p.method} className="hover:bg-page transition-colors">
-                    <td className="px-6 py-4 font-medium text-text-primary">
-                      {p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}
-                    </td>
-                    <td className="px-6 py-4 text-right text-text-secondary">{p.orderCount}</td>
-                    <td className="px-6 py-4 text-right text-success font-medium">{formatNumber(p.revenue)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
+            <h3 className="font-bold text-text-primary text-base mb-3">Chi tiết giảm giá</h3>
+            <dl className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Khuyến mãi hệ thống</dt>
+                <dd className="font-medium text-text-primary">{formatNumber(systemPromotionDiscount)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Giảm giá theo dòng</dt>
+                <dd className="font-medium text-text-primary">{formatNumber(manualItemDiscount)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Giảm giá trên toàn đơn</dt>
+                <dd className="font-medium text-text-primary">{formatNumber(manualOrderDiscount)}</dd>
+              </div>
+              <div className="flex justify-between border-t border-border pt-2">
+                <dt className="font-semibold text-text-primary">Tổng giảm giá</dt>
+                <dd className="font-bold text-danger">{formatNumber(totalDiscount)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Doanh thu trước giảm giá</dt>
+                <dd className="font-medium text-text-primary">{formatNumber(grossRevenue)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Doanh thu thuần</dt>
+                <dd className="font-bold text-success">{formatNumber(totalRevenue)}</dd>
+              </div>
+            </dl>
+          </div>
+          <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
+            <h3 className="font-bold text-text-primary text-base mb-3">Doanh thu theo phương thức thanh toán</h3>
+            <Table>
+              <TableHead>
+                <TableHeaderCell>Phương thức</TableHeaderCell>
+                <TableHeaderCell>Số đơn</TableHeaderCell>
+                <TableHeaderCell>Doanh thu</TableHeaderCell>
+              </TableHead>
+              <TableBody>
+                {paymentBreakdown.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      <div className="text-center py-4 text-text-muted">Không có dữ liệu</div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paymentBreakdown.map(p => (
+                    <TableRow key={p.method}>
+                      <TableCell>
+                        {p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}
+                      </TableCell>
+                      <TableCell align="right">{p.orderCount}</TableCell>
+                      <TableCell align="right">{formatNumber(p.revenue)}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
-      </div>
+      )}
 
  {/* Outlet breakdown (
           section 6b). One dataset, two shapes -- cards below md, a table
@@ -258,12 +324,12 @@ export default async function SalesReportPage({
                     .filter(c => c.dayOfWeek === day && c.revenue > 0)
                     .sort((a, b) => a.hour - b.hour);
                   if (dayCells.length === 0) return null;
-                  const dayLabel = day === "CN" ? "Chủ Nhật" : `Thứ ${day.replace("T", "")}`;
+                  const dayLabel = day === "CN" ? "Chủ nhật" : `Thứ ${day.replace("T", "")}`;
                   const dayTotalRevenue = dayCells.reduce((s, c) => s + c.revenue, 0);
                   const dayTotalOrders = dayCells.reduce((s, c) => s + c.orderCount, 0);
                   return (
                     <details key={day} className="rounded-xl border border-border bg-page overflow-hidden group">
-                      <summary className="flex items-center justify-between p-3 cursor-pointer list-none min-h-[44px] [&::-webkit-details-marker]:hidden">
+                      <summary className="flex items-center justify-between p-3 cursor-pointer list-none min-h-[44px] md:min-h-[40px] [&::-webkit-details-marker]:hidden">
                         <div className="flex items-center gap-3">
                           <div className="w-11 h-11 shrink-0 rounded-lg bg-primary-soft text-primary flex items-center justify-center font-bold text-sm">
                             {day === "CN" ? "CN" : day}
@@ -276,7 +342,7 @@ export default async function SalesReportPage({
                         <div className="text-right">
                           <div className="font-bold text-success">{formatNumber(dayTotalRevenue)}</div>
                           <div className="text-[10px] text-text-muted flex items-center justify-end gap-1">
-                            tap để mở/đóng
+                            bấm để mở/đóng
                             <ChevronDown className="w-3 h-3 transition-transform group-open:rotate-180" />
                           </div>
                         </div>
@@ -302,7 +368,7 @@ export default async function SalesReportPage({
 
         {/* Desktop Grid View (>= 768px) */}
         <div className="hidden md:block overflow-x-auto table-mobile-scroll pb-2">
-          <div className="min-w-[1120px] space-y-1">
+          <div className="min-w-[960px] space-y-1">
             {/* Header: Hours */}
             <div className="flex items-center">
               <div className="w-16 shrink-0 text-xs text-text-muted font-bold text-center">Thứ</div>
@@ -321,7 +387,7 @@ export default async function SalesReportPage({
               return (
                 <div key={day} className="flex items-center h-11">
                   <div className="w-16 shrink-0 text-sm font-semibold text-text-secondary">
-                    {day === "CN" ? "Chủ Nhật" : `Thứ ${day.replace("T", "")}`}
+                    {day === "CN" ? "Chủ nhật" : `Thứ ${day.replace("T", "")}`}
                   </div>
                   <div className="flex-1 gap-1 h-full" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
                     {Array.from({ length: 24 }, (_, i) => i).map(hour => {
@@ -392,43 +458,52 @@ export default async function SalesReportPage({
         {/* Toppings Table */}
         <div className="xl:col-span-1 bg-surface-card rounded-card shadow-sm border border-border overflow-hidden flex flex-col">
           <div className="p-5 border-b border-border bg-page flex justify-between items-center">
-            <h3 className="font-bold text-text-primary">Top Topping Bán Chạy</h3>
+            <h3 className="font-bold text-text-primary">Top topping bán chạy</h3>
           </div>
-          <div className="hidden md:block overflow-x-auto max-h-[528px] overflow-y-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-page text-text-secondary text-[11px] uppercase tracking-wider border-b border-border sticky top-0 z-10">
-                <tr>
-                  <th scope="col" className="px-6 py-4 font-bold">Topping</th>
-                  <th scope="col" className="px-6 py-4 font-bold text-right">Số lượng</th>
-                  <th scope="col" className="px-6 py-4 font-bold text-right">Doanh thu</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
+          <div className="hidden md:block">
+            <Table pinHead>
+              <TableHead>
+                <TableHeaderCell>Topping</TableHeaderCell>
+                <TableHeaderCell>Số lượng</TableHeaderCell>
+                <TableHeaderCell>Doanh thu</TableHeaderCell>
+              </TableHead>
+              {bestToppings.length > 0 && (
+                <TableTotalRow>
+                  <TableCell>Tổng cộng</TableCell>
+                  <TableCell align="right">{formatNumber(totalToppingQty)}</TableCell>
+                  <TableCell align="right">{formatNumber(Math.round(totalToppingRevenue))}</TableCell>
+                </TableTotalRow>
+              )}
+              <TableBody>
                 {bestToppings.length === 0 ? (
-                  <tr><td colSpan={3} className="text-center py-8 text-text-muted">Không có topping nào</td></tr>
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      <div className="text-center py-8 text-text-muted">Không có topping nào</div>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   bestToppings.map((item, i) => (
-                    <tr key={i} className="hover:bg-page transition-colors">
-                      <td className="px-6 py-4 font-medium text-text-primary">{item.name}</td>
-                      <td className="px-6 py-4 text-right font-bold text-text-secondary">{item.qty}</td>
-                      <td className="px-6 py-4 text-right text-success font-medium">{formatNumber(Math.round(item.revenue))}</td>
-                    </tr>
+                    <TableRow key={i}>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell align="right">{item.qty}</TableCell>
+                      <TableCell align="right">{formatNumber(Math.round(item.revenue))}</TableCell>
+                    </TableRow>
                   ))
                 )}
-              </tbody>
-              {bestToppings.length > 0 && (
-                <tfoot className="bg-page border-t-2 border-border sticky bottom-0 z-10 font-bold text-text-primary shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
-                  <tr className="bg-page">
-                    <td className="px-6 py-4 font-bold">Tổng cộng</td>
-                    <td className="px-6 py-4 text-right font-bold">{formatNumber(totalToppingQty)}</td>
-                    <td className="px-6 py-4 text-right text-success font-bold">{formatNumber(Math.round(totalToppingRevenue))}</td>
-                  </tr>
-                </tfoot>
-              )}
-            </table>
+              </TableBody>
+            </Table>
           </div>
           {/* Mobile Card Layout (< 768px) */}
           <div className="md:hidden flex flex-col gap-3 p-4 overflow-y-auto max-h-[528px] bg-page/50">
+            {bestToppings.length > 0 && (
+              <div className="pb-3 border-b border-border flex justify-between items-center font-bold text-text-primary">
+                <div className="flex items-center gap-2">
+                  <span>Tổng:</span>
+                  <span>{formatNumber(totalToppingQty)}</span>
+                </div>
+                <div className="text-text-primary">{formatNumber(Math.round(totalToppingRevenue))}</div>
+              </div>
+            )}
             {bestToppings.length === 0 ? (
               <div className="text-center py-8 text-text-muted">Không có topping nào</div>
             ) : (
@@ -436,7 +511,7 @@ export default async function SalesReportPage({
                 <div key={i} className="bg-surface-card rounded-xl p-4 shadow-sm border border-border flex flex-col gap-2">
                   <div className="flex justify-between items-start gap-2">
                     <div className="font-bold text-text-primary">{item.name}</div>
-                    <div className="font-bold text-success shrink-0">{formatNumber(Math.round(item.revenue))}</div>
+                    <div className="font-bold text-text-primary shrink-0">{formatNumber(Math.round(item.revenue))}</div>
                   </div>
                   <div className="text-sm text-text-secondary flex items-center gap-2">
                     <span className="text-text-muted">Số lượng:</span>
@@ -444,15 +519,6 @@ export default async function SalesReportPage({
                   </div>
                 </div>
               ))
-            )}
-            {bestToppings.length > 0 && (
-              <div className="mt-2 pt-3 border-t border-border flex justify-between items-center font-bold text-text-primary">
-                <div className="flex items-center gap-2">
-                  <span>Tổng:</span>
-                  <span>{formatNumber(totalToppingQty)}</span>
-                </div>
-                <div className="text-success">{formatNumber(Math.round(totalToppingRevenue))}</div>
-              </div>
             )}
           </div>
         </div>

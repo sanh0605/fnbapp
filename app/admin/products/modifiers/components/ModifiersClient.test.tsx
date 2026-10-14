@@ -57,6 +57,9 @@ const sampleModifiers: DBModifier[] = [
     price: "5000",
     status: "ACTIVE",
     product_id: "PROD-035",
+    group_id: "MG-001",
+    is_default: false,
+    max_qty: null,
   },
   {
     id: "MOD-002",
@@ -65,6 +68,9 @@ const sampleModifiers: DBModifier[] = [
     price: "10000",
     status: "ACTIVE",
     product_id: null,
+    group_id: "MG-001",
+    is_default: false,
+    max_qty: null,
   },
 ];
 
@@ -157,7 +163,7 @@ describe("ModifiersClient", () => {
       />,
     );
 
-    const searchInput = screen.getByPlaceholderText(/Tên, nhóm hoặc mã/i);
+    const searchInput = screen.getByPlaceholderText("Ví dụ: Trân châu trắng");
     fireEvent.change(searchInput, { target: { value: "Chọn Size" } });
 
     expect(screen.getAllByText("Size L").length).toBeGreaterThan(0);

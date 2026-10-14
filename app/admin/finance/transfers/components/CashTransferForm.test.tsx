@@ -63,13 +63,13 @@ describe("CashTransferForm", () => {
     render(<CashTransferForm accounts={ACCOUNTS} today="2026-10-04" />);
 
     // Select CASH for both
-    const fromSelect = screen.getByLabelText("Từ") as HTMLSelectElement;
-    const toSelect = screen.getByLabelText("Đến") as HTMLSelectElement;
+    const fromSelect = screen.getByLabelText(/^Từ( \*)?$/) as HTMLSelectElement;
+    const toSelect = screen.getByLabelText(/^Đến( \*)?$/) as HTMLSelectElement;
     fireEvent.change(fromSelect, { target: { value: "CASH" } });
     fireEvent.change(toSelect, { target: { value: "CASH" } });
 
     // Fill amount
-    const visibleAmount = screen.getByPlaceholderText("VD: 500,000");
+    const visibleAmount = screen.getByPlaceholderText("Ví dụ: 500,000");
     fireEvent.change(visibleAmount, { target: { value: "500000" } });
 
     // Submit form
@@ -91,12 +91,12 @@ describe("CashTransferForm", () => {
       />,
     );
 
-    const fromSelect = screen.getByLabelText("Từ");
-    const toSelect = screen.getByLabelText("Đến");
+    const fromSelect = screen.getByLabelText(/^Từ( \*)?$/);
+    const toSelect = screen.getByLabelText(/^Đến( \*)?$/);
     fireEvent.change(fromSelect, { target: { value: "CASH" } });
     fireEvent.change(toSelect, { target: { value: "BA-001" } });
 
-    const visibleAmount = screen.getByPlaceholderText("VD: 500,000");
+    const visibleAmount = screen.getByPlaceholderText("Ví dụ: 500,000");
     fireEvent.change(visibleAmount, { target: { value: "500000" } });
 
     const submitBtn = screen.getByRole("button", { name: "Lưu" });
@@ -106,6 +106,24 @@ describe("CashTransferForm", () => {
       expect(addCashTransferMock).toHaveBeenCalledTimes(1);
     });
     expect(push).toHaveBeenCalledWith("/admin/finance?preset=THIS_MONTH");
+  });
+
+  // Owner 2026-10-14: on a slow connection a second tap must not save a second transfer.
+  it("after a successful save Lưu stays switched off until the page moves on, so a second tap saves nothing", async () => {
+    const { container } = render(
+      <CashTransferForm accounts={ACCOUNTS} today="2026-10-04" returnTo="/admin/finance" />,
+    );
+    fireEvent.change(screen.getByLabelText(/^Từ( \*)?$/), { target: { value: "CASH" } });
+    fireEvent.change(screen.getByLabelText(/^Đến( \*)?$/), { target: { value: "BA-001" } });
+    fireEvent.change(screen.getByPlaceholderText("Ví dụ: 500,000"), { target: { value: "500000" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/finance"));
+
+    expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
+    fireEvent.submit(container.querySelector("form")!);
+    await Promise.resolve();
+    expect(addCashTransferMock).toHaveBeenCalledTimes(1);
   });
 
   it("defaults date to today for new and keeps transfer date for edit", () => {
@@ -151,6 +169,22 @@ describe("CashTransferForm", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
     expect(push).toHaveBeenCalledWith("/admin/finance");
+    expect(addCashTransferMock).not.toHaveBeenCalled();
+  });
+});
+
+// Wave K5: the day box moves to the shared DayInput. transfer_date still
+// reaches the server as yyyy-mm-dd; a day that is not a date is said under the
+// box and nothing is sent.
+describe("CashTransferForm day box (wave K5)", () => {
+  const dayBox = () => screen.getByLabelText(/^Ngày( \*)?$/) as HTMLInputElement;
+
+  it("says a day that is not a date and sends nothing", async () => {
+    const { container } = render(<CashTransferForm accounts={ACCOUNTS} today="2026-10-08" />);
+    fireEvent.change(dayBox(), { target: { value: "32/13/2026" } });
+    fireEvent.blur(dayBox());
+    fireEvent.submit(container.querySelector("form")!);
+    expect(await screen.findByText("Ngày không hợp lệ")).toBeInTheDocument();
     expect(addCashTransferMock).not.toHaveBeenCalled();
   });
 });

@@ -2,9 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
 import EditUserPage from "./page";
 
-const { notFoundMock } = vi.hoisted(() => ({
+const { notFoundMock, resolveActorMock } = vi.hoisted(() => ({
   notFoundMock: vi.fn(() => {
     throw new Error("NEXT_NOT_FOUND");
+  }),
+  resolveActorMock: vi.fn().mockResolvedValue({
+    ok: true,
+    actor: { id: "USR-001", name: "admin", role: "ADMIN" },
   }),
 }));
 
@@ -12,8 +16,21 @@ vi.mock("next/navigation", () => ({
   notFound: notFoundMock,
 }));
 
+vi.mock("@/lib/auth/auth", () => ({
+  resolveActor: resolveActorMock,
+}));
+
 vi.mock("@/app/admin/users/actions", () => ({
   getUserById: vi.fn().mockImplementation(async (id: string) => {
+    if (id === "USR-001") {
+      return {
+        id: "USR-001",
+        username: "admin",
+        role: "ADMIN",
+        status: "ACTIVE",
+        created_at: "2026-06-28T08:00:00.000Z",
+      };
+    }
     if (id === "USR-002") {
       return {
         id: "USR-002",
@@ -69,5 +86,37 @@ describe("EditUserPage", () => {
     expect(formChild.props.returnTo).toBe(
       "/admin/users/USR-002?returnTo=" + encodeURIComponent("/admin/users?q=1"),
     );
+  });
+
+  it("calls notFound when a manager opens an ADMIN account", async () => {
+    resolveActorMock.mockResolvedValueOnce({
+      ok: true,
+      actor: { id: "USR-002", name: "tuyen2612", role: "MANAGER" },
+    });
+
+    await expect(
+      EditUserPage({
+        params: { id: "USR-001" },
+        searchParams: {},
+      }),
+    ).rejects.toThrow("NEXT_NOT_FOUND");
+    expect(notFoundMock).toHaveBeenCalled();
+  });
+
+  it("allows an admin to open an ADMIN account and passes canGrantAdmin true to form", async () => {
+    resolveActorMock.mockResolvedValueOnce({
+      ok: true,
+      actor: { id: "USR-001", name: "admin", role: "ADMIN" },
+    });
+
+    const element = await EditUserPage({
+      params: { id: "USR-001" },
+      searchParams: {},
+    });
+
+    const children = React.Children.toArray(element.props.children);
+    const formChild: any = children.find((c: any) => c.props?.user?.id === "USR-001");
+    expect(formChild).toBeDefined();
+    expect(formChild.props.canGrantAdmin).toBe(true);
   });
 });

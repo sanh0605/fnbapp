@@ -1,18 +1,37 @@
 "use client";
 
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  formatRangeButtonText,
+  writeRangeParams,
+  type RangeValue,
+} from "@/lib/shared/date-range-params";
 import type { ActivityLogEvent as OrderEvent } from "../actions";
 
-interface ActivityLogClientProps {
+function formatEmptyRangePart(range: RangeValue): string {
+  const text = formatRangeButtonText(range);
+  const [preset, ...rest] = text.split(" · ");
+  return `${preset} (${rest.join(" · ")})`;
+}
+
+export interface ActivityLogClientProps {
   initialEvents: OrderEvent[];
   actors: string[];
   totalCount: number;
   itemsPerPage: number;
+  range: RangeValue;
+  today: string;
+  searching?: boolean;
 }
 
 export default function ActivityLogClient({
@@ -20,16 +39,19 @@ export default function ActivityLogClient({
   actors,
   totalCount,
   itemsPerPage,
+  range,
+  today,
+  searching = false,
 }: ActivityLogClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+
+
   const [search, setSearch] = useState(() => searchParams.get("q") || "");
   const [eventType, setEventType] = useState(() => searchParams.get("type") || "ALL");
   const [actorFilter, setActorFilter] = useState(() => searchParams.get("actor") || "ALL");
-  const [startDate, setStartDate] = useState(() => searchParams.get("from") || "");
-  const [endDate, setEndDate] = useState(() => searchParams.get("to") || "");
   const [currentPage, setCurrentPage] = useState(() => {
     const page = Number(searchParams.get("page"));
     return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
@@ -39,8 +61,6 @@ export default function ActivityLogClient({
     setSearch(searchParams.get("q") || "");
     setEventType(searchParams.get("type") || "ALL");
     setActorFilter(searchParams.get("actor") || "ALL");
-    setStartDate(searchParams.get("from") || "");
-    setEndDate(searchParams.get("to") || "");
     const page = Number(searchParams.get("page"));
     setCurrentPage(Number.isFinite(page) && page > 0 ? Math.floor(page) : 1);
   }, [searchParams]);
@@ -50,18 +70,16 @@ export default function ActivityLogClient({
     q?: string;
     type?: string;
     actor?: string;
-    from?: string;
-    to?: string;
   }) => {
     const params = new URLSearchParams(searchParams.toString());
-    for (const key of ["q", "type", "actor", "from", "to"] as const) {
+    for (const key of ["q", "type", "actor"] as const) {
       const value = updates[key];
       if (value === undefined) continue;
       if (value && value !== "ALL") params.set(key, value);
       else params.delete(key);
     }
 
-    const isFilterChange = ["q", "type", "actor", "from", "to"]
+    const isFilterChange = ["q", "type", "actor"]
       .some(key => updates[key as keyof typeof updates] !== undefined);
     const targetPage = updates.page ?? (isFilterChange ? 1 : currentPage);
     if (targetPage > 1) params.set("page", String(targetPage));
@@ -74,6 +92,39 @@ export default function ActivityLogClient({
       else router.push(href, { scroll: false });
     });
   };
+
+  const handleDateRangeChange = (nextRange: RangeValue) => {
+    const params = new URLSearchParams(searchParams.toString());
+    writeRangeParams(params, nextRange);
+    params.delete("page");
+    setCurrentPage(1);
+    const href = params.size > 0 ? `${pathname}?${params.toString()}` : pathname;
+    startTransition(() => {
+      router.push(href, { scroll: false });
+    });
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    setEventType("ALL");
+    setActorFilter("ALL");
+    setCurrentPage(1);
+    startTransition(() => {
+      router.push(pathname, { scroll: false });
+    });
+  };
+
+  const hasAnyFilter = Boolean(
+    search ||
+      (eventType && eventType !== "ALL") ||
+      (actorFilter && actorFilter !== "ALL") ||
+      searchParams.get("q") ||
+      (searchParams.get("type") && searchParams.get("type") !== "ALL") ||
+      (searchParams.get("actor") && searchParams.get("actor") !== "ALL") ||
+      (searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
+      searchParams.get("from") ||
+      searchParams.get("to")
+  );
 
   const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
 
@@ -137,7 +188,7 @@ export default function ActivityLogClient({
         };
       case "VOIDED":
         return {
-          label: "Hủy đơn",
+          label: "Huỷ đơn",
           classes: "bg-danger/10 text-danger-active border-danger/30",
           dotColor: "bg-danger ring-danger/20",
         };
@@ -166,102 +217,89 @@ export default function ActivityLogClient({
     <div className="space-y-6">
       <PageHeader
         title="Nhật ký hoạt động"
-        subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, hủy đơn, và các sự kiện trong hệ thống."
+        subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, huỷ đơn, và các sự kiện trong hệ thống."
       />
       <div className="flex flex-wrap items-end gap-3 mb-6">
-
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Tìm kiếm
-          </label>
-          <input
-            type="text"
-            placeholder="Tìm mã đơn, người tạo, lý do..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") updateUrl({ q: search });
-            }}
-            className="w-full md:w-56 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
+        <div className="w-full md:w-auto shrink-0">
+          <DateRangeButton
+            value={range}
+            today={today}
+            onChange={handleDateRangeChange}
+            disabled={searching}
+            disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
           />
         </div>
-        <button
+        <div className="shrink-0 w-full md:w-56">
+          <Field label="Tìm kiếm" htmlFor="filter-search">
+            <TextInput
+              id="filter-search"
+              placeholder="Ví dụ: PHD000001"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") updateUrl({ q: search });
+              }}
+            />
+          </Field>
+        </div>
+        <Button
           type="button"
+          variant="primary"
           onClick={() => updateUrl({ q: search })}
-          disabled={isPending}
-          className="min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary disabled:opacity-60"
+          loading={isPending}
+          className="w-full md:w-auto"
         >
           Lọc
-        </button>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Loại Sự Kiện
-          </label>
-          <select
-            value={eventType}
-            onChange={(e) => {
-              setEventType(e.target.value);
-              updateUrl({ type: e.target.value });
-            }}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
+        </Button>
+        {hasAnyFilter && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClear}
+            disabled={isPending}
+            className="w-full md:w-auto"
           >
-            <option value="ALL">Tất cả</option>
-            <option value="CREATED">Tạo mới</option>
-            <option value="EDITED">Chỉnh sửa</option>
-            <option value="VOIDED">Hủy đơn</option>
-            <option value="REOPENED">Mở lại</option>
-            <option value="MIGRATED">Di trú</option>
-          </select>
+            Xoá lọc
+          </Button>
+        )}
+        <div className="shrink-0 w-full md:w-40">
+          <Field label="Loại sự kiện" htmlFor="filter-event-type">
+            <Select
+              id="filter-event-type"
+              value={eventType}
+              onChange={(e) => {
+                setEventType(e.target.value);
+                updateUrl({ type: e.target.value });
+              }}
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="CREATED">Tạo mới</option>
+              <option value="EDITED">Chỉnh sửa</option>
+              <option value="VOIDED">Huỷ đơn</option>
+              <option value="REOPENED">Mở lại</option>
+              <option value="MIGRATED">Di trú</option>
+            </Select>
+          </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Tài Khoản
-          </label>
-          <select
-            value={actorFilter}
-            onChange={(e) => {
-              setActorFilter(e.target.value);
-              updateUrl({ actor: e.target.value });
-            }}
-            className="w-full md:w-40 border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring bg-surface-card shadow-sm"
-          >
-            <option value="ALL">Tất cả tài khoản</option>
-            {actors.map((actor) => (
-              <option key={actor} value={actor}>
-                {actor}
-              </option>
-            ))}
-          </select>
+        <div className="shrink-0 w-full md:w-40">
+          <Field label="Tài khoản" htmlFor="filter-actor">
+            <Select
+              id="filter-actor"
+              value={actorFilter}
+              onChange={(e) => {
+                setActorFilter(e.target.value);
+                updateUrl({ actor: e.target.value });
+              }}
+            >
+              <option value="ALL">Tất cả tài khoản</option>
+              {actors.map((actor) => (
+                <option key={actor} value={actor}>
+                  {actor}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Từ ngày
-          </label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => {
-              setStartDate(e.target.value);
-              updateUrl({ from: e.target.value });
-            }}
-            className="w-full md:w-auto border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
-          />
-        </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
-            Đến ngày
-          </label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => {
-              setEndDate(e.target.value);
-              updateUrl({ to: e.target.value });
-            }}
-            className="w-full md:w-auto border border-border rounded-lg px-3 py-2 min-h-[44px] text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card shadow-sm"
-          />
-        </div>
-      
       </div>
 
       <div className={`relative pl-6 md:pl-10 ${isPending ? "opacity-60" : ""}`}>
@@ -272,8 +310,20 @@ export default function ActivityLogClient({
           {initialEvents.length === 0 ? (
             <EmptyState 
               icon="🕒" 
-              title="Chưa có nhật ký hoạt động" 
-              description="Hệ thống sẽ ghi nhận lịch sử các thao tác thay đổi ở đây."
+              title={
+                searching
+                  ? "Không tìm thấy nhật ký nào trên mọi ngày"
+                  : `Không có nhật ký nào trong ${formatEmptyRangePart(range)}`
+              }
+              description={
+                searching || hasAnyFilter
+                  ? undefined
+                  : "Hệ thống sẽ ghi nhận lịch sử các thao tác thay đổi ở đây."
+              }
+              action={{
+                label: "Xoá lọc",
+                onClick: handleClear,
+              }}
             />
           ) : (
             initialEvents.map((evt) => {
@@ -354,25 +404,25 @@ export default function ActivityLogClient({
           {initialEvents.length} / {totalCount} sự kiện
         </span>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             disabled={currentPage <= 1 || isPending}
             onClick={() => updateUrl({ page: currentPage - 1 })}
-            className="min-h-[40px] rounded-lg border border-border bg-surface-card px-4 text-sm font-bold text-text-secondary disabled:opacity-40"
           >
             Trước
-          </button>
+          </Button>
           <span className="min-w-20 text-center text-xs font-bold text-text-secondary">
             {currentPage} / {totalPages}
           </span>
-          <button
+          <Button
             type="button"
+            variant="secondary"
             disabled={currentPage >= totalPages || isPending}
             onClick={() => updateUrl({ page: currentPage + 1 })}
-            className="min-h-[40px] rounded-lg border border-border bg-surface-card px-4 text-sm font-bold text-text-secondary disabled:opacity-40"
           >
             Sau
-          </button>
+          </Button>
         </div>
       </div>
     </div>

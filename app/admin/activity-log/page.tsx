@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { getActivityLogEvents } from "./actions";
 import ActivityLogClient from "./components/ActivityLogClient";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
+import { saigonToday } from "@/lib/shared/datetime";
+import { readRangeParams } from "@/lib/shared/date-range-params";
 
 export const dynamic = "force-dynamic";
 
@@ -17,23 +19,27 @@ function toEndOfDayIso(dateOnly: string): string {
 export default async function ActivityLogPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const getParam = (key: string) => {
     const value = searchParams?.[key];
     return typeof value === "string" ? value : Array.isArray(value) ? value[0] : undefined;
   };
+
+  const today = saigonToday();
+  const range = readRangeParams(searchParams ?? {}, today, "THIS_MONTH");
+  const q = getParam("q");
+  const searching = Boolean(q?.trim());
+
   const page = parseInt(getParam("page") || "1", 10) || 1;
-  const from = getParam("from");
-  const to = getParam("to");
 
   const result = await getActivityLogEvents({
     page,
-    q: getParam("q"),
+    q,
     type: getParam("type"),
     actor: getParam("actor"),
-    from: from ? toStartOfDayIso(from) : undefined,
-    to: to ? toEndOfDayIso(to) : undefined,
+    from: searching ? undefined : toStartOfDayIso(range.start),
+    to: searching ? undefined : toEndOfDayIso(range.end),
   });
 
   return (
@@ -43,6 +49,9 @@ export default async function ActivityLogPage({
         actors={result.actors}
         totalCount={result.totalCount}
         itemsPerPage={result.itemsPerPage}
+        range={range}
+        today={today}
+        searching={searching}
       />
     </Suspense>
   );

@@ -3,7 +3,11 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addPurchasedItem, updatePurchasedItem } from "../actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { NumberInput } from "@/components/ui/NumberInput";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { confirm } from "@/lib/shared/dialog";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
@@ -143,8 +147,6 @@ export function PurchasedItemForm({
       : [{ name: "", conversion_rate: "" }]
   );
 
-  const [updateHistory, setUpdateHistory] = useState(true);
-
   // 2026-08-21:
   // the discriminator is BR-INV-007 -- does a sealed pack of it sit on the
   // shelf to be counted -- not the category itself, so this is offered for
@@ -253,7 +255,6 @@ export function PurchasedItemForm({
     const submitFn = isEdit ? updatePurchasedItem : addPurchasedItem;
     if (isEdit) {
       formData.append("id", initialData!.id);
-      formData.append("update_history", String(updateHistory));
     }
     let res = await submitFn(formData);
     // Batch 1 follow-up, level 2 (BR-CATALOG-001): a near-match warning,
@@ -313,40 +314,35 @@ export function PurchasedItemForm({
           </div>
         )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">Tên Hàng Hóa</label>
-              <input
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Tên hàng hoá" htmlFor={`${formId}-name`} required>
+              <TextInput
                 id={`${formId}-name`}
-                type="text"
                 name="name"
                 required
                 defaultValue={initialData?.name}
-                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
-                placeholder="VD: Cà phê hạt Robusta 500g"
+                placeholder="Ví dụ: Cà phê hạt Robusta 500g"
               />
-            </div>
-            <div>
-              <label htmlFor={`${formId}-categoryId`} className="block text-sm font-medium text-text-secondary mb-1">Phân Loại</label>
-              <select
+            </Field>
+            <Field label="Phân loại" htmlFor={`${formId}-categoryId`} required>
+              <Select
                 id={`${formId}-categoryId`}
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
-                className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
                 required
               >
                 <option value="">Chọn phân loại...</option>
                 {itemCategories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
-              </select>
-            </div>
+              </Select>
+            </Field>
           </div>
 
           {isRaw && (
             <div className="pt-4 border-t border-border space-y-4">
               <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
-                Đây là nhóm <strong>Hàng Hóa Chế Biến</strong>.
+                Đây là nhóm <strong>Hàng hoá chế biến</strong>.
               </div>
 
  {/* 
@@ -372,8 +368,6 @@ export function PurchasedItemForm({
                   updateUnitRow={updateUnitRow}
                   removeUnitRow={removeUnitRow}
                   isEdit={isEdit}
-                  updateHistory={updateHistory}
-                  setUpdateHistory={setUpdateHistory}
                 />
               )}
             </div>
@@ -410,8 +404,6 @@ export function PurchasedItemForm({
                   updateUnitRow={updateUnitRow}
                   removeUnitRow={removeUnitRow}
                   isEdit={isEdit}
-                  updateHistory={updateHistory}
-                  setUpdateHistory={setUpdateHistory}
                 />
               )}
             </div>
@@ -443,7 +435,7 @@ export function PurchasedItemForm({
           {(isConsumable || isRaw) && (
             <label
               htmlFor={`${formId}-isNonInventory`}
-              className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px]"
+              className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px] md:min-h-[40px]"
             >
               <input
                 type="checkbox"
@@ -460,21 +452,22 @@ export function PurchasedItemForm({
           )}
 
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => router.push(returnTo)}
-              className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+              className="w-full sm:w-auto"
             >
               Bỏ
-            </button>
-            <LoadingButton
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
               loading={loading}
-              loadingText="Đang lưu..."
               className="w-full sm:w-auto"
             >
               {isEdit ? "Cập nhật" : "Lưu"}
-            </LoadingButton>
+            </Button>
           </div>
         </form>
       </div>
@@ -502,20 +495,22 @@ function BaseUnitSelector({
   isUnitLocked: boolean;
 }) {
   return (
-    <div>
-      <label htmlFor={`${formId}-baseUnitId`} className="block text-sm font-medium text-text-secondary mb-1">Đơn vị gốc</label>
+    <Field
+      label="Đơn vị gốc"
+      htmlFor={`${formId}-baseUnitId`}
+      hint={
+        isUnitLocked
+          ? "Không thể đổi đơn vị gốc vì mặt hàng này đã có phiếu nhập hàng hoặc phiếu xuất kho ghi số lượng theo đơn vị này."
+          : undefined
+      }
+    >
       {isUnitLocked ? (
-        <>
-          <div
-            id={`${formId}-baseUnitId`}
-            className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-surface-secondary text-text-secondary"
-          >
-            {selectedBaseUnitName || "—"}
-          </div>
-          <p className="text-xs text-text-muted mt-1">
-            Không thể đổi đơn vị gốc vì mặt hàng này đã có phiếu nhập hàng hoặc phiếu xuất kho ghi số lượng theo đơn vị này.
-          </p>
-        </>
+        <div
+          id={`${formId}-baseUnitId`}
+          className="w-full min-h-[44px] md:min-h-[40px] flex items-center border border-border rounded-button px-3 text-sm bg-surface-secondary text-text-secondary"
+        >
+          {selectedBaseUnitName || "—"}
+        </div>
       ) : (
         <SearchableSelect
           id={`${formId}-baseUnitId`}
@@ -525,7 +520,7 @@ function BaseUnitSelector({
           placeholder="Chọn đơn vị gốc..."
         />
       )}
-    </div>
+    </Field>
   );
 }
 
@@ -542,8 +537,6 @@ function ConversionRowsSection({
   updateUnitRow,
   removeUnitRow,
   isEdit,
-  updateHistory,
-  setUpdateHistory,
 }: {
   formId: string;
   unitsState: Array<{ id?: string; name: string; conversion_rate: string }>;
@@ -553,80 +546,72 @@ function ConversionRowsSection({
   updateUnitRow: (index: number, field: "name" | "conversion_rate", value: string) => void;
   removeUnitRow: (index: number) => void;
   isEdit: boolean;
-  updateHistory: boolean;
-  setUpdateHistory: (value: boolean) => void;
 }) {
   return (
     <div className="bg-page p-4 rounded-xl border border-border">
       <div className="flex justify-between items-center mb-3">
         <h4 className="text-sm font-bold text-text-primary">Quy đổi đơn vị mua</h4>
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={addUnitRow}
-          className="text-xs font-bold text-primary hover:text-primary-hover"
+          className="w-full sm:w-auto"
         >
           + Thêm đơn vị mua
-        </button>
+        </Button>
       </div>
 
       <div className="space-y-3">
         {unitsState.map((u, idx) => {
           const unitRowId = `${formId}-unit-${idx}`;
           return (
-            <div key={idx} className="flex gap-2 items-end">
-              <div className="flex-1">
-                <label htmlFor={`${unitRowId}-name`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Đơn vị mua</label>
-                <SearchableSelect
-                  id={`${unitRowId}-name`}
-                  options={unitOptions}
-                  value={u.name}
-                  onChange={(val) => updateUnitRow(idx, "name", val)}
-                  placeholder="VD: Bao 10kg"
-                />
+            <div key={idx} className="flex flex-wrap sm:flex-nowrap gap-2 items-end">
+              <div className="flex-1 min-w-[140px]">
+                <Field label="Đơn vị mua" htmlFor={`${unitRowId}-name`}>
+                  <SearchableSelect
+                    id={`${unitRowId}-name`}
+                    options={unitOptions}
+                    value={u.name}
+                    onChange={(val) => updateUnitRow(idx, "name", val)}
+                    placeholder="VD: Bao 10kg"
+                  />
+                </Field>
               </div>
-              <div className="px-2 pb-2 text-text-muted font-bold">=</div>
-              <div className="w-24 relative">
-                <label htmlFor={`${unitRowId}-conversion_rate`} className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Hệ số</label>
-                <input
-                  id={`${unitRowId}-conversion_rate`}
-                  type="number"
-                  step="any"
-                  value={u.conversion_rate}
-                  onChange={(e) => updateUnitRow(idx, "conversion_rate", e.target.value)}
-                  className="w-full border border-border rounded-lg pl-3 pr-8 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
-                />
+              <div className="pb-3 text-text-muted font-bold">=</div>
+              <div className="w-28 sm:w-32">
+                <Field label="Hệ số" htmlFor={`${unitRowId}-conversion_rate`}>
+                  <NumberInput
+                    id={`${unitRowId}-conversion_rate`}
+                    decimals={6}
+                    min={0}
+                    minExclusive
+                    example="1,000"
+                    value={u.conversion_rate === "" ? null : Number(u.conversion_rate)}
+                    onValueChange={(v) =>
+                      updateUnitRow(idx, "conversion_rate", v === null ? "" : String(v))
+                    }
+                  />
+                </Field>
               </div>
-              <div className="px-2 pb-2 text-sm text-text-secondary font-medium">
+              <div className="pb-3 text-sm text-text-secondary font-medium whitespace-nowrap">
                 {baseUnitName || "cơ bản"}
               </div>
               {unitsState.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeUnitRow(idx)}
-                  className="pb-2 px-2 text-text-muted hover:text-danger"
-                >
-                  ✕
-                </button>
+                <div className="pb-0.5">
+                  <Button
+                    type="button"
+                    variant="delete"
+                    onClick={() => removeUnitRow(idx)}
+                    aria-label="Xoá đơn vị mua"
+                  >
+                    ✕
+                  </Button>
+                </div>
               )}
             </div>
           );
         })}
       </div>
-
-      {isEdit && (
-        <div className="mt-4 flex items-start gap-2 p-2 bg-warning/10 rounded-lg border border-warning/20">
-          <input
-            type="checkbox"
-            id={`${formId}-update_history`}
-            checked={updateHistory}
-            onChange={(e) => setUpdateHistory(e.target.checked)}
-            className="mt-1 w-4 h-4 rounded border-border text-warning focus:ring-warning"
-          />
-          <label htmlFor={`${formId}-update_history`} className="text-xs text-warning-active leading-tight">
-            Cập nhật lại đơn vị mua cho các đơn đặt hàng cũ của mặt hàng này nếu đơn vị mua bị thay đổi.
-          </label>
-        </div>
-      )}
     </div>
   );
 }

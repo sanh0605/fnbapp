@@ -7,6 +7,10 @@ tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
+**Behaviour change — 2026-10-14 (audit B1, B4, C2, C6, C7, C13, E12):** an order's payment method follows one rule everywhere (`lib/sales/payment-method.ts`): empty is cash, and an order paid two ways is found under both methods through `order_payments` (Doanh số no longer shows "UNKNOWN"). Doanh số's hour map applies the staff and dish-group filters. The till resends waiting orders every 60 seconds and after each checkout, never two sends at once, and shows "N đơn chờ gửi"; a per-dish promotion code applies; loading a draft first waits for the current cart to save and stops with a message if it cannot. The server refuses a zero, negative or fractional quantity and a negative dish discount. Sửa đơn checks `ADMIN` before reading the order.
+
+**Behaviour change — 2026-10-14 (`BR-UI-004`):** the Đơn hàng list shows a total row under the column titles, "Tổng (không tính huỷ)", the net total of every order the filter keeps, not only the page shown (`sumFilteredOrders` in `app/admin/orders/actions.ts`); cancelled orders are left out (`BR-ACCESS-003`). The order actions are split into `order-detail-actions.ts`, `order-edit-actions.ts`, `order-void-actions.ts` and `order-helpers.ts` with no logic change. `app/pos/actions.ts` comment only: it now points at `app/admin/reports/pnl-actions.ts`.
+
 **Behaviour change — 2026-10-03 (list/detail template, wave 5):** `/admin/promotions` is a
 table on desktop (cards before) and cards on phone; each row opens
 `/admin/promotions/[id]`, which lists the dishes and sizes a dish discount applies to, and

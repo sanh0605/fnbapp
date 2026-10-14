@@ -3,6 +3,7 @@ import { getModifiersData } from "@/app/admin/products/modifiers/actions";
 import { findAll } from "@/lib/db/tables";
 import { ModifierForm } from "@/app/admin/products/modifiers/components/ModifierForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import type { DBModifierGroup } from "@/types/db";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
@@ -20,9 +21,10 @@ export default async function EditModifierPage({
     "/admin/products/modifiers",
   );
 
-  const [{ modifiers }, products] = await Promise.all([
+  const [{ modifiers }, products, groups] = await Promise.all([
     getModifiersData(),
     findAll("Products") as Promise<any[]>,
+    findAll("Modifier_Groups") as Promise<DBModifierGroup[]>,
   ]);
 
   const modifier = modifiers.find((m) => m.id === params.id);
@@ -61,6 +63,7 @@ export default async function EditModifierPage({
       />
       <ModifierForm
         initialData={modifier}
+        groups={groups}
         productStatus={productStatus}
         returnTo={detailHref}
       />

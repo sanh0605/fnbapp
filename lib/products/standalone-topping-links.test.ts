@@ -3,7 +3,7 @@ import { buildStandaloneToppingProductLinks } from "./standalone-topping-links";
 
 // BR-CATALOG-003 (owner decision 2026-09-08, "The link is the join, not the
 // name"). One helper decides which product ids are linked standalone
-// toppings so app/admin/reports/actions.ts (buildStandaloneToppingMap) and
+// toppings so app/admin/reports/pnl-actions.ts (buildStandaloneToppingMap) and
 // app/pos/actions.ts (getPOSBestSellerProductIds) read the same join instead
 // of two copies of the same regex-on-a-dead-column logic.
 describe("buildStandaloneToppingProductLinks", () => {

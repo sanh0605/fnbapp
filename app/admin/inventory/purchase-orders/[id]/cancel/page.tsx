@@ -41,7 +41,7 @@ export default async function CancelPurchaseOrderPage({
         <div>
           <Link
             href={detailHref}
-            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium bg-surface-secondary text-text-primary hover:bg-surface-secondary/80 border border-border min-h-[44px]"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium bg-surface-secondary text-text-primary hover:bg-surface-secondary/80 border border-border min-h-[44px] md:min-h-[40px]"
           >
             Quay lại
           </Link>

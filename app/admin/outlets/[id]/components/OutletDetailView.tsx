@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
@@ -98,21 +99,18 @@ export function OutletDetailView({
   const headerActions = (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <Link
-          href={editHref}
-          className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
-        >
+        <Button href={editHref} variant="secondary">
           Chỉnh sửa
-        </Link>
+        </Button>
         {outlet.status === "ACTIVE" && (
-          <button
+          <Button
             type="button"
+            variant="delete"
             onClick={handleRetire}
-            disabled={retireLoading}
-            className="px-4 py-2 text-sm font-medium text-danger border border-danger/30 rounded-lg hover:bg-danger/10 transition min-h-[44px] flex items-center justify-center disabled:opacity-50"
+            loading={retireLoading}
           >
-            {retireLoading ? "Đang xử lý..." : "Ngừng hoạt động"}
-          </button>
+            Ngừng hoạt động
+          </Button>
         )}
       </div>
       {retireError && (

@@ -173,7 +173,6 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
   const rawConversionRate = readConversionText(formData, "conversion_rate");
   const base_unit = readConversionText(formData, "base_unit");
   const purchase_only = readConversionText(formData, "purchase_only") === "true";
-  const update_history = formData.get("update_history") === "true";
 
   if (!id || !purchased_item_id || !purchased_unit || !rawConversionRate || !base_unit) {
     return fail("Thiếu thông tin");
@@ -206,17 +205,6 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
 
     if (isReferenced && coreFieldsChanged) {
       return fail("Quy đổi này đã được dùng trong phiếu nhập lịch sử. Hãy tạo quy đổi mới thay vì sửa trực tiếp.");
-    }
-
-    // Preserve update_history logic for unused conversions only.
-    if (update_history) {
-      if (oldConv && oldConv.purchased_unit !== purchased_unit) {
-        for (const line of poLines) {
-          if (line.purchased_item_id === purchased_item_id && line.unit === oldConv.purchased_unit) {
-            await update("Purchase_Order_Lines", line.id, { ...line, unit: purchased_unit });
-          }
-        }
-      }
     }
 
     await update(SHEET, id, { purchased_item_id, purchased_unit, conversion_rate, base_unit, purchase_only });

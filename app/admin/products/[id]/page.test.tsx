@@ -24,6 +24,18 @@ const { mockProducts, mockCategories, resolveActorMock } = vi.hoisted(() => ({ r
     isLinkedTopping: false,
   },
   {
+    id: "PROD-TOP",
+    name: "Trân châu",
+    category_id: "CAT-001",
+    status: "ACTIVE",
+    variants: [],
+    priceHistory: [],
+    neverSold: true,
+    hasNoSellableVariant: false,
+    isLinkedTopping: true,
+    hasModifierLink: true,
+  },
+  {
     id: "PROD-099",
     name: "Món đã xoá",
     category_id: "CAT-001",
@@ -41,11 +53,7 @@ mockCategories: [
 ] }));
 
 vi.mock("@/app/admin/products/load-product-rows", () => ({
-  loadProductRows: vi.fn().mockResolvedValue({
-    enhancedProducts: mockProducts,
-    activeCategories: mockCategories,
-    canDelete: true,
-  }),
+  loadProductRow: vi.fn(async (id: string) => mockProducts.find(p => p.id === id) ?? null),
 }));
 
 vi.mock("@/lib/auth/auth", () => ({
@@ -53,7 +61,9 @@ vi.mock("@/lib/auth/auth", () => ({
 }));
 
 vi.mock("@/lib/db/tables", () => ({
-  findAll: vi.fn().mockResolvedValue([]),
+  findAllWhere: vi.fn(async (name: string, f: any) =>
+    name === "Product_Categories" ? mockCategories.filter(c => c.id === f.eq.id) : [],
+  ),
 }));
 
 describe("ProductDetailPage", () => {
@@ -80,6 +90,14 @@ describe("ProductDetailPage", () => {
     expect(element.props.product.status).toBe("DELETED");
   });
 
+  it("shows the category name, and the fallback when the category is missing", async () => {
+    const ok: any = await ProductDetailPage({ params: { id: "PROD-005" }, searchParams: {} });
+    expect(ok.props.categoryName).toBe("Giải trí");
+    mockProducts.push({ ...mockProducts[0], id: "PROD-X", category_id: "CAT-GONE" });
+    const gone: any = await ProductDetailPage({ params: { id: "PROD-X" }, searchParams: {} });
+    expect(gone.props.categoryName).toBe("Chưa phân loại");
+  });
+
   it("does not pass function props to Client Component", async () => {
     const element = await ProductDetailPage({
       params: { id: "PROD-005" },
@@ -99,5 +117,12 @@ describe("ProductDetailPage", () => {
     resolveActorMock.mockResolvedValue({ ok: true, actor: { role: "MANAGER" } });
     const asManager: any = await ProductDetailPage({ params: { id: "PROD-099" }, searchParams: {} });
     expect(asManager.props.canDelete).toBe(false);
+  });
+
+  // F3 (2026-10-14 audit): a never-sold dish linked to a topping cannot be
+  // erased (modifiers.product_id is RESTRICT), so the button is not offered.
+  it("passes canDelete false for a never-sold dish that is linked to a topping, even for ADMIN", async () => {
+    const element: any = await ProductDetailPage({ params: { id: "PROD-TOP" }, searchParams: {} });
+    expect(element.props.canDelete).toBe(false);
   });
 });

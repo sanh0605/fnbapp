@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup, within } from "@testing-library/react";
+import { render, screen, cleanup, within, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import React from "react";
 import CashBookClient from "./CashBookClient";
@@ -281,6 +281,24 @@ const defaultProps = {
 };
 
 describe("CashBookClient", () => {
+  it("wears the shared time filter button (BR-UI-007)", () => {
+    render(<CashBookClient {...defaultProps} />);
+    expect(screen.getByTestId("range-button")).toHaveTextContent("Tháng này · 01/09/2026 – 30/09/2026");
+  });
+
+  it("choosing Tháng trước writes range=LAST_MONTH, no old preset/start/end, back to page 1", () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    mockSearchParams = new URLSearchParams("page=3");
+    render(<CashBookClient {...defaultProps} />);
+    fireEvent.click(screen.getByTestId("range-button"));
+    fireEvent.click(within(screen.getByTestId("range-panel-desktop")).getByRole("button", { name: "Tháng trước" }));
+    expect(replace).toHaveBeenCalledTimes(1);
+    const url = new URL(replace.mock.calls[0][0], "http://x");
+    expect(url.searchParams.get("range")).toBe("LAST_MONTH");
+    for (const old of ["preset", "start", "end", "from", "to"]) expect(url.searchParams.has(old)).toBe(false);
+    expect(url.searchParams.get("page") ?? "1").toBe("1");
+  });
+
   it(
     "renders no 'Sửa' or '/edit' link",
     () => {

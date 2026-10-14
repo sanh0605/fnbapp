@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { saveProduct } from "@/app/admin/products/actions";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { NumberInput } from "@/components/ui/NumberInput";
 import { Plus } from "lucide-react";
 import { alert, confirm } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
@@ -14,9 +18,17 @@ interface ProductFormProps {
   initialData?: any;
   returnTo?: string;
   canDelete?: boolean;
+  optionGroups?: Array<{ id: string; name: string; status?: string }>;
+  selectedOptionGroupIds?: string[];
 }
 
-export default function ProductForm({ categories, initialData, returnTo: rawReturnTo }: ProductFormProps) {
+export default function ProductForm({
+  categories,
+  initialData,
+  returnTo: rawReturnTo,
+  optionGroups,
+  selectedOptionGroupIds: selectedOptionGroupIdsProp,
+}: ProductFormProps) {
   const returnTo = safeReturnTo(rawReturnTo, "/admin/products");
   const router = useRouter();
   const isEdit = !!initialData;
@@ -29,11 +41,15 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
 
   const [categoryId, setCategoryId] = useState(initialData?.category_id || "");
   const [name, setName] = useState(initialData?.name || "");
-
-  // variants format: { id?: string, size_name: string, price: number }
-  const [variants, setVariants] = useState<any[]>(
-    initialData?.variants || [{ size_name: "Mặc định", price: 0 }]
+  const [selectedOptionGroupIds, setSelectedOptionGroupIds] = useState<string[]>(
+    () => selectedOptionGroupIdsProp || []
   );
+
+  // variants format: { id?: string, size_name: string, price: number | string }
+  const [variants, setVariants] = useState<any[]>(
+    initialData?.variants || [{ size_name: "Mặc định", price: "" }]
+  );
+  const [priceErrors, setPriceErrors] = useState<Record<number, string>>({});
   const [effectiveDate, setEffectiveDate] = useState<Date | null>(
     initialData?.effective_date ? new Date(initialData.effective_date) : null
   );
@@ -47,12 +63,29 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
       return await alert({ title: "Thiếu thông tin", message: "Phải có ít nhất 1 size.", variant: "warning" });
     }
 
+    const newPriceErrors: Record<number, string> = {};
+    let hasPriceError = false;
+    variants.forEach((v, idx) => {
+      if (v.price === "" || v.price === null || v.price === undefined) {
+        newPriceErrors[idx] = "Cần nhập số.";
+        hasPriceError = true;
+      }
+    });
+    if (hasPriceError) {
+      setPriceErrors(newPriceErrors);
+      return;
+    }
+
     setLoading(true);
     const formData = new FormData();
     if (isEdit) formData.append("id", initialData.id);
     formData.append("category_id", categoryId);
     formData.append("name", name);
     formData.append("variants_json", JSON.stringify(variants));
+    formData.append("option_group_ids_sent", "1");
+    selectedOptionGroupIds.forEach((gid) => {
+      formData.append("option_group_ids", gid);
+    });
 
     const effectiveDateStr = effectiveDate ? effectiveDate.toISOString() : "";
     formData.append("effective_date", effectiveDateStr);
@@ -90,149 +123,211 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
 
   // --- HANDLERS FOR VARIANTS ---
   const addVariant = () => {
-    setVariants([...variants, { size_name: "", price: 0 }]);
+    setVariants([...variants, { size_name: "", price: "" }]);
   };
   const updateVariant = (vIndex: number, field: string, value: any) => {
     const newVars = [...variants];
     newVars[vIndex][field] = value;
     setVariants(newVars);
+    if (field === "price") {
+      setPriceErrors((prev) => {
+        if (!prev[vIndex]) return prev;
+        const next = { ...prev };
+        delete next[vIndex];
+        return next;
+      });
+    }
   };
   const removeVariant = (vIndex: number) => {
     setVariants(variants.filter((_, i) => i !== vIndex));
+    setPriceErrors((prev) => {
+      const next: Record<number, string> = {};
+      Object.entries(prev).forEach(([idxStr, err]) => {
+        const idx = Number(idxStr);
+        if (idx < vIndex) next[idx] = err;
+        else if (idx > vIndex) next[idx - 1] = err;
+      });
+      return next;
+    });
   };
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-4xl shadow-sm">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form id={isEdit ? `editProd-${initialData.id}` : "addProd"} onSubmit={handleSubmit} className="space-y-6">
-        {/* THÔNG TIN CHUNG */}
-        <div className="bg-page p-5 rounded-xl border border-border">
-          <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-            <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
-            Thông Tin Cơ Bản
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor={`${formId}-name`} className="block text-sm font-bold text-text-primary mb-1">Tên món *</label>
-              <input
-                id={`${formId}-name`}
-                type="text"
-                required
-                value={name}
-                onChange={e => setName(e.target.value)}
-                className="w-full border border-border rounded-lg px-4 py-2.5 min-h-[44px] focus:ring-focus-ring bg-surface-card text-text-primary"
-                placeholder="VD: Cà phê sữa đá..."
-              />
-            </div>
-            <div>
-              <label htmlFor={`${formId}-category-id`} className="block text-sm font-bold text-text-primary mb-1">Nhóm món *</label>
-              <select
-                id={`${formId}-category-id`}
-                required
-                value={categoryId}
-                onChange={e => setCategoryId(e.target.value)}
-                className="w-full border border-border rounded-lg px-4 py-2.5 min-h-[44px] focus:ring-focus-ring bg-surface-card text-text-primary"
-              >
-                <option value="">-- Chọn nhóm --</option>
-                {categories.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-border">
-            <label htmlFor={`${formId}-effective-date`} className="block text-sm font-bold text-text-primary mb-1">Ngày áp dụng giá (Tuỳ chọn)</label>
-            <p className="text-xs text-text-secondary mb-2">Bỏ trống hệ thống sẽ lấy thời gian hiện tại. Dành cho việc cập nhật lịch sử bán hàng cũ.</p>
-            <div className="w-full md:w-1/2">
-              <CustomDatePicker
-                id={`${formId}-effective-date`}
-                name="effective_date"
-                selected={effectiveDate}
-                onChange={(date) => setEffectiveDate(date)}
-                placeholderText="dd/mm/yyyy hh:mm:ss"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* VARIANTS */}
-        <div className="bg-page p-5 rounded-xl border border-border">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-              <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
-              Các Size
+        <div data-testid="form-layout" className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:items-start">
+          {/* THÔNG TIN CHUNG */}
+          <div className="bg-page p-5 rounded-xl border border-border">
+            <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
+              <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
+              Thông tin cơ bản
             </h3>
-            <Button variant="secondary" size="sm" type="button" onClick={addVariant} className="min-h-[44px]">
-              <Plus className="w-4 h-4 mr-1"/> Thêm Size
-            </Button>
+            <div className="grid grid-cols-1 gap-4">
+              <Field label="Tên món" htmlFor={`${formId}-name`} required>
+                <TextInput
+                  id={`${formId}-name`}
+                  required
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  example="Cà phê sữa đá"
+                />
+              </Field>
+              <Field label="Nhóm món" htmlFor={`${formId}-category-id`} required>
+                <Select
+                  id={`${formId}-category-id`}
+                  required
+                  value={categoryId}
+                  onChange={e => setCategoryId(e.target.value)}
+                >
+                  <option value="">-- Chọn nhóm --</option>
+                  {categories.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <div className="mt-4 pt-4 border-t border-border">
+              <Field
+                label="Ngày áp dụng giá (không bắt buộc)"
+                htmlFor={`${formId}-effective-date`}
+                hint="Bỏ trống hệ thống sẽ lấy thời gian hiện tại. Dành cho việc cập nhật lịch sử bán hàng cũ."
+              >
+                <CustomDatePicker
+                  id={`${formId}-effective-date`}
+                  name="effective_date"
+                  selected={effectiveDate}
+                  onChange={(date) => setEffectiveDate(date)}
+                  placeholderText="dd/mm/yyyy hh:mm:ss"
+                />
+              </Field>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            {variants.map((variant, vIdx) => {
-              const variantRowId = `${formId}-variant-${vIdx}`;
-              return (
-                <div key={vIdx} className="bg-surface-card p-4 border border-border rounded-xl flex flex-col sm:flex-row gap-4 sm:items-end">
-                  <div className="flex-1">
-                    <label htmlFor={`${variantRowId}-size-name`} className="block text-xs font-bold text-text-secondary uppercase mb-1">Tên Size</label>
-                    <input
-                      id={`${variantRowId}-size-name`}
-                      type="text"
-                      required
-                      value={variant.size_name}
-                      onChange={e => updateVariant(vIdx, "size_name", e.target.value)}
-                      className="w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm font-bold focus:ring-focus-ring bg-surface-card text-text-primary"
-                      placeholder="VD: Mặc định, Size M..."
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label htmlFor={`${variantRowId}-price`} className="block text-xs font-bold text-text-secondary uppercase mb-1">Giá bán (VNĐ)</label>
-                    <input
-                      id={`${variantRowId}-price`}
-                      type="number"
-                      inputMode="numeric"
-                      required
-                      min="0"
-                      value={variant.price}
-                      readOnly={priceReadOnly}
-                      onChange={e => updateVariant(vIdx, "price", e.target.value === "" ? "" : e.target.value)}
-                      className={`w-full border border-border rounded-md px-3 py-2 min-h-[44px] text-sm font-bold text-primary focus:ring-focus-ring ${priceReadOnly ? "bg-surface-secondary cursor-not-allowed" : "bg-surface-card"}`}
-                    />
-                    {priceReadOnly && (
-                      <p className="text-xs text-text-secondary mt-1">Giá này đặt ở màn hình Topping &amp; Tuỳ chọn.</p>
+          {/* VARIANTS */}
+          <div className="bg-page p-5 rounded-xl border border-border">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
+                Các size
+              </h3>
+              {!priceReadOnly && (
+              <Button variant="secondary" type="button" onClick={addVariant} className="min-h-[44px] md:min-h-[40px]">
+                <Plus className="w-4 h-4 mr-1"/> Thêm size
+              </Button>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              {variants.map((variant, vIdx) => {
+                const variantRowId = `${formId}-variant-${vIdx}`;
+                return (
+                  <div key={vIdx} className="bg-surface-card p-4 border border-border rounded-xl flex flex-col sm:flex-row gap-4 sm:items-end">
+                    <div className="flex-1">
+                      <Field label="Tên size" htmlFor={`${variantRowId}-size-name`} required>
+                        <TextInput
+                          id={`${variantRowId}-size-name`}
+                          required
+                          value={variant.size_name}
+                          onChange={e => updateVariant(vIdx, "size_name", e.target.value)}
+                          example="Size M"
+                        />
+                      </Field>
+                    </div>
+                    <div className="flex-1">
+                      <Field label="Giá bán" htmlFor={`${variantRowId}-price`}>
+                        <NumberInput
+                          id={`${variantRowId}-price`}
+                          decimals={0}
+                          unit="đ"
+                          min={0}
+                          required
+                          example="25,000"
+                          disabled={priceReadOnly}
+                          hint={priceReadOnly ? "Giá này đặt ở màn hình Topping & Tuỳ chọn." : undefined}
+                          error={priceErrors[vIdx]}
+                          value={
+                            variant.price === "" || variant.price === null || variant.price === undefined
+                              ? null
+                              : Number(variant.price)
+                          }
+                          onValueChange={v => updateVariant(vIdx, "price", v === null ? "" : v)}
+                        />
+                      </Field>
+                    </div>
+                    {variants.length > 1 && (
+                      <Button
+                        variant="delete"
+                        type="button"
+                        className="self-end sm:self-auto"
+                        onClick={() => removeVariant(vIdx)}
+                      >
+                        Xoá size
+                      </Button>
                     )}
                   </div>
-                  {variants.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      type="button"
-                      className="!text-danger hover:!bg-danger/10 min-h-[44px] self-end sm:self-auto"
-                      onClick={() => removeVariant(vIdx)}
-                    >
-                      Xoá Size
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
+
+        {/* NHÓM TUỲ CHỌN */}
+        {optionGroups && optionGroups.length > 0 && (
+          <div className="bg-page p-5 rounded-xl border border-border">
+            <h3 className="text-lg font-bold text-text-primary mb-2 flex items-center gap-2">
+              <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">3</span>
+              Nhóm tuỳ chọn
+            </h3>
+            <p className="text-xs text-text-muted mb-4">
+              Chọn các nhóm tuỳ chọn áp dụng cho món này (đường, đá, topping...).
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {optionGroups
+                .filter((g) => g.status !== "INACTIVE")
+                .map((group) => {
+                  const checked = selectedOptionGroupIds.includes(group.id);
+                  return (
+                    <label
+                      key={group.id}
+                      className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[44px] md:min-h-[40px] p-2.5 rounded-xl border border-border bg-surface-card hover:bg-surface-secondary/50 transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        value={group.id}
+                        checked={checked}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedOptionGroupIds((prev) => [...prev, group.id]);
+                          } else {
+                            setSelectedOptionGroupIds((prev) => prev.filter((id) => id !== group.id));
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                      />
+                      <span>{group.name}</span>
+                    </label>
+                  );
+                })}
+            </div>
+          </div>
+        )}
 
         {/* Buttons */}
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
+          </Button>
           <Button
             variant="primary"
             type="submit"
             loading={loading}
-            className="w-full sm:w-auto min-h-[44px]"
+            className="w-full sm:w-auto min-h-[44px] md:min-h-[40px]"
           >
-            Lưu Menu
+            Lưu món
           </Button>
         </div>
       </form>

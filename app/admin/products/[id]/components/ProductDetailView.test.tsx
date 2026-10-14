@@ -154,4 +154,20 @@ describe("ProductDetailView", () => {
     expect(screen.queryByRole("button", { name: "Ngừng bán" })).toBeNull();
     expect(screen.getAllByText("Ngừng bán").length).toBeGreaterThan(0);
   });
+
+  it("displays price history timestamp with seconds (BR-DATA-006)", () => {
+    render(
+      <ProductDetailView
+        product={matchaLatteProduct}
+        categoryName="Giải trí"
+        returnTo="/admin/products"
+        canDelete={false}
+      />,
+    );
+
+    const historySection = document.getElementById("lich-su-gia");
+    expect(historySection).toBeInTheDocument();
+    // 2026-06-28T16:27:49.637Z UTC -> 28/06/2026 23:27:49 Asia/Saigon
+    expect(within(historySection!).getAllByText("28/06/2026 23:27:49").length).toBeGreaterThan(0);
+  });
 });

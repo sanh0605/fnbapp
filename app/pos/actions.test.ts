@@ -88,3 +88,27 @@ describe("POS order COGS calculation", () => {
     expect(pageSource).not.toContain("getRealtimeStock");
   });
 });
+
+describe("submitOrderV2 -- a price changed while the till was open (BR-SALE-008)", () => {
+  it.todo(
+    "Máy bán gửi tổng tiền đang hiện; máy chủ tính lại theo giá đang áp dụng lúc nhận đơn, lệch thì từ chối và báo tải lại trang (chủ quán chốt 14/10/2026)",
+  );
+});
+
+describe("submitOrderV2 -- percent order discount base (BR-SALE-009)", () => {
+  it.todo(
+    "Giảm % cả đơn tính trên tổng sau giảm từng món, máy chủ ra đúng số máy bán hiện (chủ quán chốt 14/10/2026)",
+  );
+});
+
+describe("submitOrderV2 -- whole-order promotion stacks with the cashier discount (BR-SALE-010)", () => {
+  it.todo(
+    "Khuyến mãi giảm cả hoá đơn áp trước, giảm tay cả đơn áp sau, máy chủ ra đúng số máy bán hiện (chủ quán chốt 14/10/2026)",
+  );
+});
+
+describe("submitOrderV2 -- promotions without a code and the Dùng chung box (BR-SALE-011)", () => {
+  it.todo(
+    "Khuyến mãi không mã tự áp khi đủ điều kiện; hai khuyến mãi chỉ cộng khi cả hai đặt Dùng chung, không thì thu ngân chọn một; máy chủ không tự áp loại cần mã (chủ quán chốt 14/10/2026)",
+  );
+});

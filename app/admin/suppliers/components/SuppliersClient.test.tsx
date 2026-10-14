@@ -75,7 +75,7 @@ describe("SuppliersClient", () => {
 
   it("typing in search writes q to the URL with replace", () => {
     render(<SuppliersClient suppliers={[]} canDelete={false} initialSearch="" />);
-    fireEvent.change(screen.getByPlaceholderText("Tên, SĐT, địa chỉ..."), { target: { value: "Cà phê" } });
+    fireEvent.change(screen.getByPlaceholderText("Ví dụ: Thế Kỷ Xanh"), { target: { value: "Cà phê" } });
     expect(replace).toHaveBeenLastCalledWith("/admin/suppliers?q=C%C3%A0+ph%C3%AA", { scroll: false });
   });
 

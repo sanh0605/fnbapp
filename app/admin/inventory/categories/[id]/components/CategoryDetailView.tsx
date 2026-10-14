@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
@@ -59,12 +60,9 @@ export function CategoryDetailView({
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
-        href={editHref}
-        className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
-      >
+      <Button href={editHref} variant="secondary">
         Chỉnh sửa
-      </Link>
+      </Button>
       {canDelete && (
         <RemoveRecordButton
           verb="Xoá"

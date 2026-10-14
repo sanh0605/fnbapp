@@ -1,16 +1,37 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import React from "react";
 import ActivityLogClient from "./ActivityLogClient";
 
-const { replace, refresh, router } = vi.hoisted(() => {
+// BR-UI-007: the list now takes its range from the page.
+const TEST_TODAY = "2026-10-09";
+const TEST_RANGE = { preset: "THIS_MONTH", start: "2026-10-01", end: "2026-10-31" } as const;
+
+// DayInput asks matchMedia whether it is on a phone.
+if (typeof window.matchMedia !== "function") {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+}
+
+// push added in wave K6: the day boxes push the new filter onto the address.
+const { replace, refresh, push, router } = vi.hoisted(() => {
   const replaceFn = vi.fn();
   const refreshFn = vi.fn();
+  const pushFn = vi.fn();
   return {
     replace: replaceFn,
     refresh: refreshFn,
-    router: { replace: replaceFn, refresh: refreshFn },
+    push: pushFn,
+    router: { replace: replaceFn, refresh: refreshFn, push: pushFn },
   };
 });
 
@@ -35,7 +56,7 @@ beforeEach(() => {
 describe("ActivityLogClient", () => {
   it("renders event type options with Vietnamese-only labels (no English)", () => {
     render(
-      <ActivityLogClient
+      <ActivityLogClient range={TEST_RANGE} today={TEST_TODAY}
         initialEvents={[]}
         actors={["admin"]}
         totalCount={0}
@@ -45,7 +66,7 @@ describe("ActivityLogClient", () => {
 
     expect(screen.getByRole("option", { name: "Tạo mới" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Chỉnh sửa" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Hủy đơn" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Huỷ đơn" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Mở lại" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Di trú" })).toBeInTheDocument();
 
@@ -57,3 +78,4 @@ describe("ActivityLogClient", () => {
     expect(screen.queryByText(/MIGRATED/)).toBeNull();
   });
 });
+

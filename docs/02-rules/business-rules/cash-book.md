@@ -9,7 +9,8 @@ Flow: `docs/03-workflows/cash-book.md`.
 ### BR-CASH-001 — Sale and purchase money shows in the cash book but is never typed into it, with one dated exception
 
 **Status:** `APPROVED` — owner decision 2026-09-08; exception 2026-09-11;
-changed 2026-10-04 and built the same day (migration `0107`).
+changed 2026-10-04 and built the same day (migration `0107`); changed 2026-10-14
+(payment changes only in Sửa phiếu), built on the branch `feat/no-popups` that day.
 
 **Changed 2026-10-04.** Owner: *"lưu tất cả các lần ảnh hưởng đến dòng tiền
 vào, tức là bao gồm cả tiền thanh toán đơn nhập hàng và tiền bán hàng."* The
@@ -32,6 +33,11 @@ order nothing is chosen in advance: whoever enters it must pick "Tiền mặt" o
 · 482.000đ". Purchases, the same day: *"Anh nghĩ nhập hàng em cũng làm giống đơn
 bán hàng đi, cho nó gọn"*. A day with no cash sale has no cash row. Opening a
 row lists that day's orders, or purchase orders, paid that way.
+
+**Changed 2026-10-14.** Owner, on the completed order PO-203: *"Chỉ được
+đổi trong trang sửa phiếu"*. A completed order's page only shows how it was
+paid. The payment changes in Sửa phiếu, the order's edit form, like every other
+field; Sửa phiếu is ADMIN only, so a manager can no longer change it.
 
 What still holds from 2026-09-08: sales live in the POS, purchases in
 purchase orders, and nobody types a sale or a purchase into the cash book by
@@ -164,3 +170,24 @@ transfer (cash account 111 to bank account 112), not money the shop earned or
 spent; recording it as an expense row plus an income row would inflate both
 totals. The owner had asked whether two rows matched accounting better; he was
 told this, and chose the single row.
+
+### BR-CASH-009 — Monthly expense items remind until the month has an entry
+
+**Status:** `APPROVED` — owner 2026-09-28 (overhaul spec 5.7–5.11), detailed in `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md`. Built on the branch `feat/no-popups` 2026-10-14, not yet pushed (table `monthly_expense_items`, migration `0109`; code `lib/dashboard/monthly-reminders.ts`).
+
+The owner keeps his own list of "Khoản chi hằng tháng", such as Tiền điện or Tiền nhà. Each item belongs to one active expense group.
+
+**When a reminder shows.** Tổng quan reminds of item X for month M when all of these hold:
+- X is in use;
+- M is not before the month X was created;
+- today is on or after the reminder start day of M (set in Cài đặt Tổng quan, default 25, 1–28). Any earlier month always qualifies.
+- M has no entry linked to X that is not cancelled.
+
+**What clears it.** The owner links an entry to X by choosing it in the entry form's "Khoản chi hằng tháng" box, or by pressing "Nhập" on the reminder. The entry's day may be any day in M. An entry for X's group without the link does not clear it.
+
+**Missed months carry over.** A month never entered keeps its reminder, naming the month ("Chưa nhập Tiền điện tháng 10/2026"). This is still true in November, alongside November's own reminder.
+
+**Stopping and deleting.**
+- An item with entries can only be stopped ("Ngừng dùng"), not deleted.
+- An item with no entries can be deleted by the owner only (`requireOwner()`).
+- A stopped item no longer reminds. Old entries keep their link.

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
@@ -12,11 +14,12 @@ import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { formatNumber } from "@/lib/shared/format";
 import { deleteModifierAction } from "@/app/admin/products/modifiers/actions";
-import type { DBModifier } from "@/types/db";
+import type { DBModifier, DBModifierGroup } from "@/types/db";
 
 interface ModifiersClientProps {
   modifiers: DBModifier[];
   toppings: any[];
+  groups?: DBModifierGroup[];
   initialSearch?: string;
   initialPage?: string;
 }
@@ -40,6 +43,7 @@ function listUrl(
 export default function ModifiersClient({
   modifiers,
   toppings,
+  groups,
   initialSearch = "",
   initialPage,
 }: ModifiersClientProps) {
@@ -66,6 +70,18 @@ export default function ModifiersClient({
       setPage(searchParams?.get("page") || undefined);
   }, [initialPage, searchParams]);
 
+  const groupsById = useMemo(
+    () => new Map((groups || []).map((g) => [g.id, g])),
+    [groups],
+  );
+
+  const getGroupName = (m: DBModifier): string => {
+    if (m.group_id && groupsById.has(m.group_id)) {
+      return groupsById.get(m.group_id)!.name;
+    }
+    return m.group_name || "—";
+  };
+
   const toppingById = useMemo(
     () => new Map(toppings.map((t: any) => [t.id, t])),
     [toppings],
@@ -84,7 +100,7 @@ export default function ModifiersClient({
         header: "Mã",
         sortValue: (m) => m.id,
         render: (m) => (
-          <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-primary">
             {m.id}
           </span>
         ),
@@ -92,10 +108,10 @@ export default function ModifiersClient({
       {
         key: "group",
         header: "Nhóm",
-        sortValue: (m) => m.group_name,
+        sortValue: (m) => getGroupName(m),
         render: (m) => (
-          <span className="text-text-secondary text-sm font-medium">
-            {m.group_name}
+          <span className="text-text-secondary text-sm">
+            {getGroupName(m)}
           </span>
         ),
       },
@@ -104,7 +120,7 @@ export default function ModifiersClient({
         header: "Tên tuỳ chọn",
         sortValue: (m) => m.name,
         render: (m) => (
-          <div className="font-bold text-text-primary">{m.name}</div>
+          <div className="text-text-primary">{m.name}</div>
         ),
       },
       {
@@ -113,7 +129,7 @@ export default function ModifiersClient({
         align: "right",
         sortValue: (m) => Number(m.price) || 0,
         render: (m) => (
-          <span className="text-text-primary text-sm font-medium">
+          <span className="text-text-primary text-sm tabular-nums">
             {formatNumber(m.price)}
           </span>
         ),
@@ -123,7 +139,7 @@ export default function ModifiersClient({
         header: "Bán độc lập",
         sortValue: (m) => (isStandaloneModifier(m) ? "Có" : "Không"),
         render: (m) => (
-          <span className="text-text-secondary text-sm font-medium">
+          <span className="text-text-secondary text-sm">
             {isStandaloneModifier(m) ? "Có" : "Không"}
           </span>
         ),
@@ -142,11 +158,11 @@ export default function ModifiersClient({
     return modifiers.filter((m) => {
       if (!q) return true;
       const matchName = (m.name || "").toLocaleLowerCase("vi").includes(q);
-      const matchGroup = (m.group_name || "").toLocaleLowerCase("vi").includes(q);
+      const matchGroup = getGroupName(m).toLocaleLowerCase("vi").includes(q);
       const matchId = (m.id || "").toLocaleLowerCase("vi").includes(q);
       return matchName || matchGroup || matchId;
     });
-  }, [modifiers, search]);
+  }, [modifiers, search, getGroupName]);
 
   const sortedModifiers = useMemo(() => {
     const col = columns.find((c) => c.key === sortKey);
@@ -182,20 +198,20 @@ export default function ModifiersClient({
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
           <div>
-            <div className="font-bold text-text-primary text-base leading-tight">
+            <div className="text-text-primary text-base leading-tight">
               {m.name}
             </div>
-            <div className="font-mono text-[11px] text-text-muted mt-0.5 font-bold">
+            <div className="font-mono text-xs text-primary mt-0.5">
               {m.id}
             </div>
           </div>
-          <div className="text-warning font-bold shrink-0 text-sm">
+          <div className="text-primary shrink-0 text-sm tabular-nums">
             {formatNumber(m.price)}
           </div>
         </div>
         <div className="flex items-center justify-between text-xs text-text-secondary pt-1 border-t border-border/50">
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-surface-secondary text-text-secondary uppercase">
-            {m.group_name}
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-surface-secondary text-text-secondary">
+            {getGroupName(m)}
           </span>
           <span>Bán độc lập: {standalone}</span>
         </div>
@@ -223,12 +239,13 @@ export default function ModifiersClient({
         group="Món"
         title="Topping & tuỳ chọn"
         action={
-          <Link
+          <Button
             href={`/admin/products/modifiers/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            variant="primary"
+            className="w-full md:w-auto"
           >
             Tạo
-          </Link>
+          </Button>
         }
       />
 
@@ -237,21 +254,15 @@ export default function ModifiersClient({
         onClear={handleClearFilter}
         showClear={Boolean(search)}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="modifiers-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm tuỳ chọn
-          </label>
-          <input
-            id="modifiers-search"
-            type="text"
-            placeholder="Tên, nhóm hoặc mã..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+        <div className="shrink-0 w-full md:w-64">
+          <Field label="Tìm tuỳ chọn" htmlFor="modifiers-search">
+            <TextInput
+              id="modifiers-search"
+              placeholder="Ví dụ: Trân châu trắng"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
         </div>
       </FilterCard>
 

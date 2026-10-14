@@ -1,15 +1,13 @@
-import { computeIssueCosting, type Issue, type Purchase } from "@/lib/costing/issue-costing";
+import { computeIssueCostingSplit, type ClassifiedIssue, type Issue, type Purchase } from "@/lib/costing/issue-costing";
 
 export type IdentifiedIssue = Issue & { id: string };
 
-// computeIssueCosting returns one cumulative total per item, not a value per
-// issue row. A row's value is the change in its item's total when the row is
-// added to that item's replay -- the same prefix-subtraction idea as
-// computeIssuedEventFigures (lib/reports/issued-value-report.ts), done per
-// item so no second cost definition exists. Items are independent in the
-// engine, so replaying one item's purchases and issues alone is exact.
-// Order within an item matches the engine: time, then input order.
-// Cost is O(k^2) per item; the busiest item has well under 50 rows.
+// A row's value is the change in its item's running issued total across that
+// row, read from one replay of the item (items are independent in the engine,
+// so replaying one item's purchases and issues alone is exact). Identical to
+// replaying every prefix and subtracting, since a row only depends on what
+// came before it. Order within an item matches the engine: time, then input
+// order.
 export function computeIssueLineValues(purchases: Purchase[], issues: IdentifiedIssue[]): Map<string, number> {
   const purchasesByItem = new Map<string, Purchase[]>();
   for (const p of purchases) {
@@ -28,14 +26,15 @@ export function computeIssueLineValues(purchases: Purchase[], issues: Identified
   for (const [itemId, list] of issuesByItem) {
     list.sort((a, b) => new Date(a.issue.at).getTime() - new Date(b.issue.at).getTime() || a.seq - b.seq);
     const itemPurchases = purchasesByItem.get(itemId) ?? [];
-    const prefix: Issue[] = [];
+    const sorted: ClassifiedIssue[] = list.map(({ issue }) => ({
+      purchased_item_id: issue.purchased_item_id, at: issue.at, base_quantity: issue.base_quantity, source: issue.source, isShrinkage: false,
+    }));
     let previous = 0;
-    for (const { issue } of list) {
-      prefix.push({ purchased_item_id: issue.purchased_item_id, at: issue.at, base_quantity: issue.base_quantity, source: issue.source });
-      const total = computeIssueCosting(itemPurchases, prefix).reduce((s, r) => s + r.issued_value, 0);
-      values.set(issue.id, total - previous);
+    // Event seq = purchases first, then the issues in the order given.
+    computeIssueCostingSplit(itemPurchases, sorted, (seq, total) => {
+      values.set(list[seq - itemPurchases.length].issue.id, total - previous);
       previous = total;
-    }
+    });
   }
   return values;
 }

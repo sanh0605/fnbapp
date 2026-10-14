@@ -20,7 +20,7 @@ export default async function AssetsPage({
         action={
           <Link
             href="/admin/inventory/asset-bands"
-            className="border border-border bg-surface-card text-text-primary px-4 py-2 rounded-lg font-medium hover:bg-surface-secondary transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm text-sm"
+            className="border border-border bg-surface-card text-text-primary px-4 py-2 rounded-lg font-medium hover:bg-surface-secondary transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] md:min-h-[40px] shadow-sm text-sm"
           >
             Thời hạn khấu hao
           </Link>

@@ -3,12 +3,13 @@
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useId, Suspense } from "react";
-import { getOutlets } from "@/app/admin/outlets/actions";
+import { getActiveOutlets } from "@/app/admin/outlets/actions";
 import { getSaigonNowHHMM } from "@/lib/catalog/outlet-hours";
 import { PosOutletPicker } from "@/app/admin/components/PosOutletPicker";
 import { AdminRouteMemory } from "@/components/ui/AdminRouteMemory";
 import { AdminSidebar } from "./components/AdminSidebar";
 import { PhoneNavBar } from "./components/PhoneNavBar";
+import { Button } from "@/components/ui/Button";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -84,7 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setOutletsLoading(true);
     setOutletsError(null);
     try {
-      const fetchedOutlets = await getOutlets();
+      const fetchedOutlets = await getActiveOutlets();
       setOutlets(fetchedOutlets);
       setNowHHMM(getSaigonNowHHMM());
     } catch {
@@ -117,7 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-surface-card/50 relative">
         {/* Content Scroll */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <div className="max-w-[1920px] mx-auto w-full pb-24 md:pb-0">
+          <div className="max-w-screen-xl mx-auto w-full pb-24 md:pb-0">
             {children}
           </div>
         </div>
@@ -170,12 +171,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {outletsError ? (
                 <div className="text-center py-4 space-y-3">
                   <p className="text-sm text-danger">{outletsError}</p>
-                  <button
+                  <Button
+                    variant="primary"
                     onClick={() => void loadOutletsForPosModal()}
-                    className="px-4 py-2 text-sm font-medium text-on-primary bg-primary rounded-button hover:bg-primary-hover transition-colors"
                   >
                     Thử lại
-                  </button>
+                  </Button>
                 </div>
               ) : outletsLoading || outlets.length === 0 ? (
                 <div className="text-center text-text-muted py-4 animate-pulse">Đang tải danh sách…</div>

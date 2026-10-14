@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { MoneyInput } from "./MoneyInput";
 
 afterEach(cleanup);
@@ -246,16 +248,20 @@ describe("BR-CASH-005 fix round 2", () => {
 });
 
 describe("BR-CASH-005 rollout to other screens", () => {
-  // Deferred until after the financial-reports project (owner decision,
-  // 2026-09-11). Candidate call sites for a future round, each its own
-  // click-through:
-  // - app/admin/products/components/ProductForm.tsx (variant price)
-  // - app/admin/products/modifiers/components/ModifierForm.tsx
-  // - app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx (money fields only, not quantities)
-  // - app/admin/promotions/components/PromotionForm.tsx (fixed-amount fields only, not percentages)
-  // - app/admin/inventory/assets/components/DisposeAssetForm.tsx
+  // Owner 2026-10-07: price boxes group thousands as typed. Phiếu nhập moved in
+  // wave K3; giá món, giá tuỳ chọn món and khuyến mãi in wave K4 (2026-10-08).
+  // Each screen's own test types into its box; this one keeps the list whole.
   // POS (app/pos/) is out of scope.
-  it.todo(
-    "Gắn ô tiền tự thêm dấu phẩy hàng nghìn vào các màn khác: giá món, giá tuỳ chọn món, đơn nhập hàng, khuyến mãi, thanh lý tài sản — làm trong đợt khuôn mẫu, không đợi báo cáo tài chính (chủ quán chốt 07/10/2026)",
-  );
+  const PRICE_SCREENS = [
+    "app/admin/products/components/ProductForm.tsx",
+    "app/admin/products/modifiers/components/ModifierForm.tsx",
+    "app/admin/promotions/components/PromotionForm.tsx",
+  ];
+
+  it.each(PRICE_SCREENS)("%s types prices in a grouped đ box", (file) => {
+    const source = readFileSync(join(process.cwd(), file), "utf8");
+    expect(source).toMatch(/<NumberInput\b/);
+    expect(source).toMatch(/unit=(?:"đ"|\{[^}]*"đ")/);
+    expect(source).not.toMatch(/type="number"/);
+  });
 });

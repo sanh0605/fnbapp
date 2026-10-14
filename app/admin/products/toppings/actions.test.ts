@@ -38,9 +38,11 @@ describe("toggleToppingStandalone -- revalidates sheets-Products, not just the p
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
-    mocks.findAll.mockResolvedValue([
-      { id: "PROD-TOP-001", category_id: "CAT-007", status: "ACTIVE" },
-    ]);
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Modifiers"
+        ? [{ id: "MOD-TOP-001", product_id: "PROD-TOP-001", status: "ACTIVE" }]
+        : [{ id: "PROD-TOP-001", category_id: "CAT-007", status: "ACTIVE" }]
+    );
   });
 
   it("enabling a standalone topping revalidates sheets-Products", async () => {
@@ -59,13 +61,40 @@ describe("toggleToppingStandalone -- revalidates sheets-Products, not just the p
     expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Products"));
   });
 
-  it("refuses a product outside category CAT-007 and never revalidates anything", async () => {
-    mocks.findAll.mockResolvedValue([{ id: "PROD-OTHER", category_id: "CAT-001", status: "ACTIVE" }]);
+  it("refuses a product no topping links to, in Vietnamese, and never revalidates anything", async () => {
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Modifiers"
+        ? [{ id: "MOD-TOP-001", product_id: "PROD-TOP-001", status: "ACTIVE" }]
+        : [{ id: "PROD-OTHER", category_id: "CAT-007", status: "ACTIVE" }]
+    );
 
     const res = await toggleToppingStandalone("PROD-OTHER", true);
 
     expect(res.error).toBeTruthy();
+    expect(res.error).not.toMatch(/category/i);
     expect(mocks.update).not.toHaveBeenCalled();
     expect(mocks.revalidateTag).not.toHaveBeenCalled();
+  });
+});
+
+// Audit F4, owner 2026-10-14 "Mặc định Topping, sửa được": a standalone
+// topping may be moved to another dish group from Sửa món; the switch follows
+// the modifier link (modifiers.product_id), not the group.
+describe("toggleToppingStandalone -- follows the topping link, not the dish group", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Modifiers"
+        ? [{ id: "MOD-009", product_id: "PROD-049", status: "ACTIVE" }]
+        : [{ id: "PROD-049", name: "Hộp sữa chua", category_id: "CAT-006", status: "ACTIVE" }]
+    );
+  });
+
+  it("toggles Hộp sữa chua after it was moved to Thức ăn", async () => {
+    const res = await toggleToppingStandalone("PROD-049", false);
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalledWith("Products", "PROD-049", { status: "INACTIVE" });
   });
 });

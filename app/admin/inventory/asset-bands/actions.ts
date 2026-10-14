@@ -1,11 +1,12 @@
 "use server";
 
-import { findAll, update, insert, remove, generateNewId } from "@/lib/db/tables";
+import { findAll } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { validateBands, type Band } from "@/lib/assets/asset-depreciation";
+import { replaceAssetBands, type BandInput } from "@/lib/assets/asset-bands-transaction";
 import type { DBAssetDepreciationBand } from "@/types/db";
 
 const SHEET = "asset_depreciation_bands";
@@ -25,112 +26,77 @@ export async function getAssetBands(): Promise<DBAssetDepreciationBand[]> {
   }
 }
 
-function parseBandFields(
-  formData: FormData,
-): { ok: true; fields: Band } | { ok: false; error: string } {
-  const min_unit_price = Number(formData.get("min_unit_price"));
-  const max_unit_price_raw = formData.get("max_unit_price") as string;
-  const max_unit_price = max_unit_price_raw === "" ? null : Number(max_unit_price_raw);
-  const term_months = Number(formData.get("term_months"));
+function parseBandInputs(raw: unknown): { ok: true; bands: BandInput[] } | { ok: false; error: string } {
+  if (typeof raw !== "string") return { ok: false, error: "Thiếu danh sách khung" };
+  let list: unknown;
+  try {
+    list = JSON.parse(raw);
+  } catch {
+    return { ok: false, error: "Danh sách khung không đọc được" };
+  }
+  if (!Array.isArray(list) || list.length === 0) return { ok: false, error: "Phải có ít nhất một khung khấu hao" };
 
-  if (!Number.isFinite(min_unit_price) || min_unit_price < 0) return { ok: false, error: "Giá thấp nhất không hợp lệ" };
-  if (max_unit_price !== null && !Number.isFinite(max_unit_price)) return { ok: false, error: "Giá cao nhất không hợp lệ" };
-  if (!Number.isFinite(term_months) || term_months <= 0) return { ok: false, error: "Số tháng khấu hao không hợp lệ" };
+  const bands: BandInput[] = [];
+  for (const item of list) {
+    const { id, min_unit_price, term_months } = (item ?? {}) as Record<string, unknown>;
+    if (!Number.isInteger(min_unit_price) || (min_unit_price as number) < 0) {
+      return { ok: false, error: "Giá bắt đầu của khung phải là số nguyên đồng, từ 0 trở lên" };
+    }
+    if (!Number.isInteger(term_months) || (term_months as number) < 1) {
+      return { ok: false, error: "Số tháng khấu hao phải là số nguyên từ 1 trở lên" };
+    }
+    if (id != null && (typeof id !== "string" || id === "")) return { ok: false, error: "Mã khung không hợp lệ" };
+    bands.push({ id: (id as string | null | undefined) ?? null, min_unit_price: min_unit_price as number, term_months: term_months as number });
+  }
 
-  return { ok: true, fields: { min_unit_price, max_unit_price, term_months } };
+  bands.sort((a, b) => a.min_unit_price - b.min_unit_price);
+  if (bands[0].min_unit_price !== 0) return { ok: false, error: "Khung đầu tiên phải bắt đầu từ 0đ" };
+  for (let i = 1; i < bands.length; i++) {
+    if (bands[i].min_unit_price === bands[i - 1].min_unit_price) {
+      return { ok: false, error: "Hai khung không được bắt đầu cùng một mức giá" };
+    }
+  }
+  const ids = bands.map((b) => b.id).filter((id) => id !== null);
+  if (new Set(ids).size !== ids.length) return { ok: false, error: "Một khung xuất hiện hai lần" };
+  return { ok: true, bands };
 }
 
-function toBand(b: DBAssetDepreciationBand): Band {
-  return { min_unit_price: b.min_unit_price, max_unit_price: b.max_unit_price, term_months: b.term_months };
-}
+// 2026-10-14 audit A4: the whole table is saved in one go (migration 0118).
+// "Đến dưới" is never typed; it is the next band's start, so the price line
+// cannot get a gap or an overlap. Dropping an existing band is a permanent
+// delete, so it needs the owner (BR-ACCESS-003); anything else needs admin.
+export async function saveAssetBands(formData: FormData): Promise<ActionResponse> {
+  const admin = await requireAdmin();
+  if (!admin.ok) return fail(admin.error);
 
-// Batch 3, section 3.1, extended 2026-08-23 (section 1): bands are edited
-// in place -- the three seeded bands cover 0 to unbounded with no gap, and
-// any edit must keep that property. Editing one band's boundaries changes
-// what its neighbour's boundary must be too, so the whole table (with this
-// one band's new values substituted in) is what gets validated, not the
-// edited row alone.
-export async function updateAssetBand(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return fail(auth.error);
-
-  const id = formData.get("id") as string;
-  if (!id) return fail("ID không hợp lệ");
-
-  const parsed = parseBandFields(formData);
+  const parsed = parseBandInputs(formData.get("bands"));
   if (!parsed.ok) return fail(parsed.error);
 
   try {
-    const existingBands = await findAll(SHEET) as DBAssetDepreciationBand[];
-    const candidateBands: Band[] = existingBands.map(b => (b.id === id ? parsed.fields : toBand(b)));
+    const existing = (await findAll(SHEET)) as DBAssetDepreciationBand[];
+    const existingIds = new Set(existing.map((b) => b.id));
+    const submittedIds = new Set(parsed.bands.map((b) => b.id));
+    if (parsed.bands.some((b) => b.id !== null && !existingIds.has(b.id))) {
+      return fail("Không tìm thấy khung khấu hao đang sửa");
+    }
+    if ([...existingIds].some((id) => !submittedIds.has(id))) {
+      const owner = await requireOwner();
+      if (!owner.ok) return fail(owner.error);
+    }
 
-    const validation = validateBands(candidateBands);
+    // Second net: the same check the old per-band actions ran.
+    const validation = validateBands(
+      parsed.bands.map((b, i, all) => ({
+        min_unit_price: b.min_unit_price,
+        max_unit_price: all[i + 1]?.min_unit_price ?? null,
+        term_months: b.term_months,
+      })),
+    );
     if (!validation.ok) return fail(validation.error);
 
-    await update(SHEET, id, parsed.fields);
+    const ids = await replaceAssetBands(parsed.bands);
     revalidatePath(PATH);
-    return ok();
-  } catch (error: unknown) {
-    return describeActionError(error);
-  }
-}
-
-// 2026-08-23, section 2: "A table the owner cannot add a row to is not the
-// settings screen CLAUDE.md "Viết code" requires; it is a constant with an
-// edit box." Validated against the FULL resulting set (existing bands plus
-// this one), same as update -- a new band that overlaps or gaps another is
-// refused before it is ever written.
-export async function createAssetBand(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return fail(auth.error);
-
-  const parsed = parseBandFields(formData);
-  if (!parsed.ok) return fail(parsed.error);
-
-  try {
-    const existingBands = await findAll(SHEET) as DBAssetDepreciationBand[];
-    const candidateBands: Band[] = [...existingBands.map(toBand), parsed.fields];
-
-    const validation = validateBands(candidateBands);
-    if (!validation.ok) return fail(validation.error);
-
-    const id = await generateNewId(SHEET, "KH");
-    await insert(SHEET, { id, ...parsed.fields });
-    revalidatePath(PATH);
-    return ok({ id });
-  } catch (error: unknown) {
-    return describeActionError(error);
-  }
-}
-
-// 2026-08-23, section 2 (mislabeled "section 3" in the plan's own intro --
-// the claim is stated here, in section 2). Hard delete, not soft:
-// assets.term_months is frozen at creation (section 9.1) and carries no
-// reference back to the band that produced it -- checked directly, no
-// foreign key exists from assets to this table -- so nothing depends on
-// this row continuing to exist. Refused via validateBands run against the
-// RESULTING set (existing bands minus this one); combined with
-// validateBands' own 2026-08-23 coverage requirement, this also refuses
-// deleting the band that would leave the lowest or highest price
-// uncovered, not only a gap in the middle.
-export async function deleteAssetBand(formData: FormData): Promise<ActionResponse> {
-  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
-  const auth = await requireOwner();
-  if (!auth.ok) return fail(auth.error);
-
-  const id = formData.get("id") as string;
-  if (!id) return fail("ID không hợp lệ");
-
-  try {
-    const existingBands = await findAll(SHEET) as DBAssetDepreciationBand[];
-    const remainingBands: Band[] = existingBands.filter(b => b.id !== id).map(toBand);
-
-    const validation = validateBands(remainingBands);
-    if (!validation.ok) return fail(`Không thể xoá: ${validation.error}`);
-
-    await remove(SHEET, id);
-    revalidatePath(PATH);
-    return ok();
+    return ok({ ids });
   } catch (error: unknown) {
     return describeActionError(error);
   }

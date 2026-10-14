@@ -60,6 +60,7 @@ Mọi kế hoạch mở đầu bằng mục hiện trạng, năm câu đánh s�
 5. Phục vụ loại dữ liệu nào, cố ý không phục vụ loại nào?
 
 - Năm câu là sàn, không phải trần: tự nghĩ thêm bộ câu hỏi riêng cho đúng việc đó; chủ quán không nhớ giùm.
+- Không bám code sẵn có 100%. Trước khi thiết kế lại hay sửa một trang, tra cách các hệ thống lớn cùng ngành làm. Thấy cách tốt hơn thì đề xuất cho chủ quán chọn, kèm nguồn đã tra. Chủ quán chốt 2026-10-14: *"còn các trang nào em nghĩ cần đề xuất làm lại cho tốt hơn thì cũng phải đề xuất thay vì chỉ bám vào code 100%"*.
 - Trước khi viết kế hoạch, xác nhận ý chủ quán tới ~95% bằng một ví dụ cụ thể, không diễn đạt lại trừu tượng.
 - Ghi rõ chỗ chưa xem: "đã xem A, B. Chưa xem C, D."
 - Kế hoạch đụng dữ liệu thật phải kèm một ví dụ tính sẵn bằng số thật, có tên món và mã dòng đơn.
@@ -146,6 +147,17 @@ Model chủ quán chốt 2026-10-01 (thay bản 2026-09-29): *"giao cho model m�
 - Thấy code chết không liên quan thì nói, không tự xoá.
 - Phép kiểm mới phải chạy đỏ trên bản chưa sửa trước, và nói rõ đỏ vì giá trị sai hay vì thiếu hàm.
 - Deploy xong phải có người mở trang sau khi đăng nhập; `curl` trả 307 không chứng minh gì.
+
+## Tiện ích ponytail
+
+Ponytail (cài cho cả máy) đặt cách viết code mặc định. Khi trái nhau, file này thắng. Chủ quán duyệt 2026-10-14.
+
+- Mức `full` là mặc định. Không dùng `ultra` khi đang bàn ý tưởng hay viết kế hoạch.
+- Là luật dự án, không chỉ là tiện ích cài trên máy. Chủ quán chốt 2026-10-14: *"nhớ dùng skill ponytail để không viết thừa code và anh nghĩ đây nên là một luật của dự án này"*. Mọi phiếu giao việc cho Sonnet và Gemini phải dặn viết theo ponytail: không viết thừa code. Opus soát lại có tìm cả chỗ thừa.
+- Không cài Lodash; dùng JavaScript sẵn có, không thêm thư viện này.
+- Việc ghi vào hai bảng trở lên chạy trong một hàm Postgres (gọi qua rpc) để cùng thành hoặc cùng không; đây là phần bắt buộc, không phải "code thừa".
+- Bốn bước đặc tả → thiết kế → kế hoạch → code, viết test trước, và năm lệnh kiểm không bao giờ bị bỏ cho gọn.
+- Không viết comment `shortcut:` trong code; chỗ nào làm tắt thì nêu trong câu trả lời cuối lượt.
 
 ## Cấu trúc và đường dẫn
 

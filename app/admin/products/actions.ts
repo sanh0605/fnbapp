@@ -2,6 +2,7 @@
 
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { saveProductAtomic } from "@/lib/products/product-save-transaction";
+import { setProductStatusAtomic } from "@/lib/products/product-status-transaction";
 import { eraseProductAtomic } from "@/lib/products/product-erase-transaction";
 import { fail, ok, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
@@ -16,6 +17,7 @@ import {
 
 const PRODUCT_SHEET = "Products";
 const VARIANT_SHEET = "Product_Variants";
+const MODIFIER_SHEET = "Modifiers";
 const PATH = "/admin/products";
 
 type VariantFormInput = {
@@ -46,10 +48,23 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     }
     const variants = parsedVariants as VariantFormInput[];
     const isEdit = Boolean(id);
-    const [allVariants, allProducts] = await Promise.all([
+    const [allVariants, allProducts, allModifiers] = await Promise.all([
       isEdit ? findAll(VARIANT_SHEET) : Promise.resolve([]),
       findAll(PRODUCT_SHEET),
+      isEdit ? findAll(MODIFIER_SHEET) : Promise.resolve([]),
     ]);
+
+    // F6: a dish linked to an ACTIVE topping has one price, synced by
+    // sync_topping_price_atomic (migration 0098), which needs exactly one
+    // ACTIVE size -- refuse a second size here instead of failing later.
+    const linkedTopping = isEdit
+      ? (allModifiers as any[]).find((m) => m.status === "ACTIVE" && m.product_id === id)
+      : null;
+    if (linkedTopping && variants.some((v) => !(typeof v.id === "string" && v.id))) {
+      return fail(
+        `Món này đang là topping "${linkedTopping.name}" nên chỉ được có một size. Giá đặt ở trang Topping & tuỳ chọn.`,
+      );
+    }
 
     const duplicateName = findDuplicateActiveName(allProducts as any[], name, isEdit ? id : undefined);
     if (duplicateName) return fail(duplicateNameErrorMessage(duplicateName));
@@ -112,7 +127,10 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
         ...(isEdit ? { id } : {}),
         category_id: categoryId,
         name,
-        image_url: imageUrl,
+        // F2: the form sends no picture; keep the stored one on edit.
+        image_url: imageUrl || (isEdit
+          ? String((allProducts as any[]).find((p) => p.id === id)?.image_url || "")
+          : ""),
         status: "ACTIVE",
         created_at: new Date().toISOString(),
       },
@@ -120,6 +138,10 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       removedVariantIds,
       effectiveAt,
       expectedPriceHistoryCount,
+      // Undefined (no marker) leaves the ticks alone: a form open since before the deploy has no tick list.
+      optionGroupIds: formData.get("option_group_ids_sent") === "1"
+        ? formData.getAll("option_group_ids").map(String).filter(Boolean)
+        : undefined,
     });
 
     // A separate, small write rather than plumbing this through the atomic
@@ -144,6 +166,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     // this makes that automatic on the write, not a new mechanism.
     revalidateTag("sheets-Products");
     revalidateTag("sheets-Product_Variants");
+    revalidateTag("sheets-Modifier_Group_Products");
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -160,74 +183,29 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
 // RESTRICT foreign keys to products that have never been sold -- see
 // supabase/migrations/0075_erase_never_sold_product.sql.
 //
-// pauseProduct's cascade only touches ACTIVE variants (-> INACTIVE), never
-// a DELETED one -- pausing a product must not resurrect a size the owner
-// individually discontinued beforehand.
-//
-// resumeProduct's cascade is asymmetric, fixed 2026-08-29 after the owner
-// hit it in production: Test1 (PROD-048) has one variant, DELETED, so
-// resuming it under the old INACTIVE-only rule set the product back to
-// ACTIVE with nothing sellable -- "Đang bán" with zero size to add, a
-// silent trap (OPEN-ITEMS 73/74). Measured 2026-08-29: 43 products have
-// every variant ACTIVE, 4 have none ACTIVE, 0 are mixed -- so "restore
-// every non-ACTIVE variant when none is ACTIVE" is safe today, but the
-// mixed case is the one this rule exists to protect and is tested even
-// though nothing currently exercises it live.
+// The cascade rules (pause touches only ACTIVE sizes; resume restores only
+// INACTIVE sizes unless none is ACTIVE, then every non-ACTIVE one -- Test1,
+// PROD-048, 2026-08-29) now live in set_product_status_atomic (migration
+// 0114) so the dish and its sizes change in one transaction.
 export async function pauseProduct(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
-
-  const id = String(formData.get("id") || "");
-  if (!id) return fail("ID không hợp lệ");
-  try {
-    await update(PRODUCT_SHEET, id, { status: "INACTIVE" });
-    const variants = await findAll(VARIANT_SHEET);
-    for (const variant of variants) {
-      if (variant.product_id === id && variant.status === "ACTIVE") {
-        await update(VARIANT_SHEET, variant.id, { status: "INACTIVE" });
-      }
-    }
-    // section 2:
-    // same fix as saveProduct above -- POS reads these two tables through a
-    // cache tag, not this screen's path.
-    revalidateTag("sheets-Products");
-    revalidateTag("sheets-Product_Variants");
-    revalidatePath(PATH);
-    return ok();
-  } catch (error: unknown) {
-    return describeActionError(error);
-  }
+  return setStatus(formData, "INACTIVE");
 }
 
 export async function resumeProduct(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
+  return setStatus(formData, "ACTIVE");
+}
 
+async function setStatus(formData: FormData, status: "ACTIVE" | "INACTIVE"): Promise<ActionResponse> {
   const id = String(formData.get("id") || "");
   if (!id) return fail("ID không hợp lệ");
   try {
-    await update(PRODUCT_SHEET, id, { status: "ACTIVE" });
-    const allVariants = await findAll(VARIANT_SHEET);
-    const productVariants = allVariants.filter((v: any) => v.product_id === id);
-    const hasActiveVariant = productVariants.some((v: any) => v.status === "ACTIVE");
-    for (const variant of productVariants) {
-      if (hasActiveVariant) {
-        // At least one size is already live -- someone curated sizes
-        // individually, so only undo this specific pause; a DELETED size
-        // must not come back just because the product resumed.
-        if (variant.status === "INACTIVE") {
-          await update(VARIANT_SHEET, variant.id, { status: "ACTIVE" });
-        }
-      } else if (variant.status !== "ACTIVE") {
-        // No size is live at all -- there is no curated selection left to
-        // protect. Restoring only INACTIVE ones here would resume the
-        // product with nothing sellable (Test1's shape in production).
-        await update(VARIANT_SHEET, variant.id, { status: "ACTIVE" });
-      }
-    }
-    // section 2:
-    // this is the exact case the owner hit -- resumeProduct fixed the data
-    // at 02:24:58, POS at 02:25 still read the pre-resume cache.
+    await setProductStatusAtomic(id, status);
+    // POS reads these two tables through a cache tag, not this screen's path
+    // (the owner hit a stale POS right after a resume, 2026-08-31).
     revalidateTag("sheets-Products");
     revalidateTag("sheets-Product_Variants");
     revalidatePath(PATH);
@@ -246,6 +224,16 @@ export async function eraseProduct(formData: FormData): Promise<ActionResponse> 
   const id = String(formData.get("id") || "");
   if (!id) return fail("ID không hợp lệ");
   try {
+    // F3: modifiers.product_id is RESTRICT (migration 0097) whatever the
+    // modifier's status, so the database would refuse with the misleading
+    // "đã có đơn hàng". Say the real reason first.
+    const modifiers = await findAll(MODIFIER_SHEET);
+    const link = (modifiers as any[]).find((m) => m.product_id === id);
+    if (link) {
+      return fail(
+        `Món này đang gắn với topping "${link.name}" nên không xoá vĩnh viễn được. Dùng "Ngừng bán" để ẩn khỏi máy bán hàng.`,
+      );
+    }
     await eraseProductAtomic(id);
     // section 2:
     // same fix as the other three actions above -- an erased (never-sold)

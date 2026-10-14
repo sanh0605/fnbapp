@@ -183,7 +183,7 @@ export interface MonthlyTotal {
 }
 
 // Section 1's per-month table, Asia/Saigon boundaries -- same helper
-// app/admin/reports/actions.ts uses for its own date filters, no hand-rolled
+// app/admin/reports/sales-actions.ts uses for its own date filters, no hand-rolled
 // timezone arithmetic.
 export function computeMonthlyTotal(
   orders: readonly RevenueOrder[],

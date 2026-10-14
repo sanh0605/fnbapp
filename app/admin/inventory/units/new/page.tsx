@@ -17,7 +17,7 @@ export default function NewUnitPage({
       <DetailHeader
         backHref={returnTo}
         backLabel="Đơn vị tính"
-        title="Thêm Đơn Vị Mới"
+        title="Tạo đơn vị tính"
         subtitle="Quản lý danh sách các đơn vị tính hợp lệ (kg, lít, hộp...)"
       />
       <UnitForm returnTo={returnTo} />

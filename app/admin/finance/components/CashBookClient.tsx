@@ -8,15 +8,18 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { Badge } from "@/components/ui/Badge";
-import { DateRangeFilter, type DateRangeValue } from "@/components/ui/DateRangeFilter";
+import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
+import { Field } from "@/components/ui/Field";
+import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { formatDate, formatVnDay } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { cancelCashEntry } from "@/app/admin/finance/actions";
 import { cancelCashTransfer } from "@/app/admin/finance/transfers/actions";
 import type { DBBankAccount, DBCashCategory } from "@/types/db";
-import type { CashBookRow } from "@/lib/finance/cash-book-rows";
+import { cashBookRowTotals, type CashBookRow } from "@/lib/finance/cash-book-rows";
 import type { CashBookSummary, Balance } from "@/lib/finance/cash-flow";
-import type { DateRangePresetKey } from "@/lib/shared/date-range-presets";
+import { writeRangeParams, type RangeValue } from "@/lib/shared/date-range-params";
 
 export interface CashBookClientProps {
   rows: CashBookRow[];
@@ -25,11 +28,7 @@ export interface CashBookClientProps {
   accounts: DBBankAccount[];
   canDelete: boolean;
   today: string;
-  resolvedRange: {
-    preset: DateRangePresetKey;
-    start: string;
-    end: string;
-  };
+  resolvedRange: RangeValue;
   initialKind?: string;
   initialStatus?: string;
   initialPage?: string;
@@ -67,7 +66,7 @@ function money(value: number): string {
 }
 
 function listUrl(
-  range: DateRangeValue,
+  range: RangeValue,
   kind: CashBookKindFilter,
   status: CashEntryStatusFilter,
   page: number = 1,
@@ -75,11 +74,7 @@ function listUrl(
   dir?: string,
 ): string {
   const p = new URLSearchParams();
-  if (range.preset) p.set("preset", range.preset);
-  if (range.preset === "CUSTOM") {
-    if (range.start) p.set("start", range.start);
-    if (range.end) p.set("end", range.end);
-  }
+  writeRangeParams(p, range);
   if (kind && kind !== "ALL") p.set("kind", kind);
   if (status && status !== "ACTIVE") p.set("status", status);
   if (page > 1) p.set("page", String(page));
@@ -155,11 +150,7 @@ export default function CashBookClient({
   const rawSort = searchParams?.get("sort");
   const rawDir = searchParams?.get("dir");
 
-  const [range, setRange] = useState<DateRangeValue>(() => ({
-    preset: resolvedRange.preset,
-    start: resolvedRange.start,
-    end: resolvedRange.end,
-  }));
+  const [range, setRange] = useState<RangeValue>(() => resolvedRange);
 
   const [kind, setKind] = useState<CashBookKindFilter>(() =>
     parseKind(initialKind ?? searchParams?.get("kind")),
@@ -174,11 +165,7 @@ export default function CashBookClient({
   );
 
   useEffect(() => {
-    setRange({
-      preset: resolvedRange.preset,
-      start: resolvedRange.start,
-      end: resolvedRange.end,
-    });
+    setRange(resolvedRange);
   }, [resolvedRange.preset, resolvedRange.start, resolvedRange.end]);
 
   useEffect(() => {
@@ -207,7 +194,7 @@ export default function CashBookClient({
         sortValue: (r) => r.id ?? "",
         render: (r) =>
           r.id ? (
-            <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
+            <span className="font-mono text-xs text-primary transition-colors">
               {r.id}
             </span>
           ) : (
@@ -227,7 +214,7 @@ export default function CashBookClient({
         header: "Nhóm",
         sortValue: (r) => r.groupLabel,
         render: (r) => (
-          <span className="font-medium text-text-primary">
+          <span className="text-text-primary">
             {r.groupLabel}
           </span>
         ),
@@ -248,7 +235,7 @@ export default function CashBookClient({
         align: "right",
         sortValue: (r) => r.amount,
         render: (r) => (
-          <span className="font-semibold text-text-primary">
+          <span className="tabular-nums text-text-primary">
             {money(r.amount)}
           </span>
         ),
@@ -334,6 +321,8 @@ export default function CashBookClient({
     });
   }, [rows, kind, status]);
 
+  const rowTotals = useMemo(() => cashBookRowTotals(filteredRows), [filteredRows]);
+
   const sortedRows = useMemo(() => {
     const col = columns.find((c) => c.key === sortKey);
     return col?.sortValue
@@ -354,7 +343,7 @@ export default function CashBookClient({
     dirParam,
   );
 
-  const handleDateRangeChange = (nextRange: DateRangeValue) => {
+  const handleDateRangeChange = (nextRange: RangeValue) => {
     setRange(nextRange);
     setPage(1);
     router.replace(listUrl(nextRange, kind, status, 1, sortParam, dirParam), {
@@ -394,7 +383,7 @@ export default function CashBookClient({
       <div className={`flex flex-col gap-2 ${isCancelled ? "opacity-60" : ""}`}>
         <div className="flex justify-between items-start gap-2">
           <div>
-            <div className="font-bold text-text-primary text-base leading-tight">
+            <div className="text-sm text-text-primary">
               {row.groupLabel}
             </div>
             <div className="text-[11px] text-text-muted mt-0.5 font-mono">
@@ -403,7 +392,7 @@ export default function CashBookClient({
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="font-bold text-text-primary">
+            <span className="text-text-primary">
               {money(row.amount)}
             </span>
             {!isDayRow &&
@@ -488,61 +477,51 @@ export default function CashBookClient({
         onClear={handleClearFilter}
         showClear={status !== "ACTIVE" || kind !== "ALL"}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-auto">
-          <label className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">
+        <div className="shrink-0 w-full md:w-auto">
+          <label className="block text-[13px] font-medium text-text-primary mb-1">
             Thời gian
           </label>
-          <DateRangeFilter
+          <DateRangeButton
             value={range}
             today={today}
             onChange={handleDateRangeChange}
           />
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
-          <label
-            htmlFor="cashbook-kind"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Loại
-          </label>
-          <select
-            id="cashbook-kind"
-            value={kind}
-            onChange={(e) => {
-              const nextKind = parseKind(e.target.value);
-              setKind(nextKind);
-              setPage(1);
-            }}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ALL">Tất cả</option>
-            <option value="SALE">Bán hàng</option>
-            <option value="PURCHASE">Nhập hàng</option>
-            <option value="HAND">Ghi tay</option>
-            <option value="TRANSFER">Chuyển tiền</option>
-          </select>
+        <div className="shrink-0 w-full md:w-44">
+          <Field label="Loại" htmlFor="cashbook-kind">
+            <Select
+              id="cashbook-kind"
+              value={kind}
+              onChange={(e) => {
+                const nextKind = parseKind(e.target.value);
+                setKind(nextKind);
+                setPage(1);
+              }}
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="SALE">Bán hàng</option>
+              <option value="PURCHASE">Nhập hàng</option>
+              <option value="HAND">Ghi tay</option>
+              <option value="TRANSFER">Chuyển tiền</option>
+            </Select>
+          </Field>
         </div>
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-44">
-          <label
-            htmlFor="cashbook-status"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Trạng thái
-          </label>
-          <select
-            id="cashbook-status"
-            value={status}
-            onChange={(e) => {
-              const nextStatus = parseStatus(e.target.value);
-              setStatus(nextStatus);
-              setPage(1);
-            }}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          >
-            <option value="ACTIVE">Đang dùng</option>
-            <option value="CANCELLED">Đã huỷ</option>
-            <option value="ALL">Tất cả</option>
-          </select>
+        <div className="shrink-0 w-full md:w-44">
+          <Field label="Trạng thái" htmlFor="cashbook-status">
+            <Select
+              id="cashbook-status"
+              value={status}
+              onChange={(e) => {
+                const nextStatus = parseStatus(e.target.value);
+                setStatus(nextStatus);
+                setPage(1);
+              }}
+            >
+              <option value="ACTIVE">Đang dùng</option>
+              <option value="CANCELLED">Đã huỷ</option>
+              <option value="ALL">Tất cả</option>
+            </Select>
+          </Field>
         </div>
       </FilterCard>
 
@@ -628,6 +607,12 @@ export default function CashBookClient({
         getHref={getRowHref}
         columns={columns}
         renderCard={renderCard}
+        totals={{
+          label: "Tổng (không tính huỷ, chuyển tiền)",
+          values: {
+            amount: `Thu ${formatNumber(rowTotals.income)} · Chi ${formatNumber(rowTotals.expense)}`,
+          },
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,
@@ -641,13 +626,13 @@ export default function CashBookClient({
             </div>
             {(status !== "ACTIVE" || kind !== "ALL") && (
               <div>
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={handleClearFilter}
-                  className="text-danger hover:underline font-medium text-sm min-h-[44px] inline-flex items-center"
                 >
                   Xoá lọc
-                </button>
+                </Button>
               </div>
             )}
           </div>

@@ -149,7 +149,7 @@ describe("AssetsClient", () => {
 
     render(<AssetsClient items={[item1, item2, item3]} />);
 
-    const rows = screen.getAllByRole("row").slice(1);
+    const rows = screen.getAllByRole("row").slice(1).filter(row => !row.textContent?.includes("Tổng ("));
     expect(rows).toHaveLength(3);
     expect(rows[0]).toHaveTextContent("SPM-101");
     expect(rows[1]).toHaveTextContent("SPM-10");
@@ -164,7 +164,7 @@ describe("AssetsClient", () => {
 
     render(<AssetsClient items={[item1, item2, item3]} />);
 
-    const rows = screen.getAllByRole("row").slice(1);
+    const rows = screen.getAllByRole("row").slice(1).filter(row => !row.textContent?.includes("Tổng ("));
     expect(rows).toHaveLength(3);
     expect(rows[0]).toHaveTextContent("SPM-9");
     expect(rows[1]).toHaveTextContent("SPM-10");

@@ -124,4 +124,18 @@ describe("PosOutletPicker", () => {
     expect(buttons[1].textContent).toContain("Ngoài giờ mở cửa");
     expect(buttons[2].textContent).not.toContain("giờ mở cửa");
   });
+
+  // Wave K6 (spec 2.1, plan Review Focus 4): one brown button per screen, so
+  // the outlet choices are the shared secondary button, full width.
+  it("no outlet button is brown; each spans the box", async () => {
+    const container = await renderTracked(
+      <PosOutletPicker outlets={[OPEN_NOW, CLOSED_NOW, NO_STATED_HOURS]} nowHHMM="15:00" onOpenTill={vi.fn()} />,
+    );
+    const buttons = Array.from(container.querySelectorAll("button"));
+    expect(buttons).toHaveLength(3);
+    for (const b of buttons) {
+      expect(b.className).not.toMatch(/\bbg-primary\b/);
+      expect(b.className).toContain("w-full");
+    }
+  });
 });

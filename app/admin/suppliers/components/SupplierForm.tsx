@@ -3,7 +3,9 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addSupplier, editSupplier } from "../actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { confirm } from "@/lib/shared/dialog";
 import { safeReturnTo, safePoReturnTo } from "./return-to";
 import type { DBSupplier } from "@/types/db";
@@ -72,130 +74,88 @@ export function SupplierForm({
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border overflow-hidden">
-      <form onSubmit={handleSubmit} className="divide-y divide-border">
+    <div className="bg-surface-card rounded-2xl border border-border p-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div
             role="alert"
             aria-live="polite"
-            className="p-4 bg-danger/10 text-danger text-sm font-medium"
+            className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20 font-medium"
           >
             {error}
           </div>
         )}
-        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-center">
-          <label
-            htmlFor={`${formId}-name`}
-            className="text-text-muted font-medium md:text-text-secondary"
-          >
-            Tên Nhà Cung Cấp
-          </label>
-          <div>
-            <input
-              id={`${formId}-name`}
-              type="text"
-              name="name"
-              required
-              maxLength={120}
-              defaultValue={initialData?.name ?? initialName}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
-              placeholder="VD: Cửa hàng ABC"
-            />
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-center">
-          <label
-            htmlFor={`${formId}-phone`}
-            className="text-text-muted font-medium md:text-text-secondary"
-          >
-            Số Điện Thoại
-          </label>
-          <div>
-            <input
-              id={`${formId}-phone`}
-              type="tel"
-              name="phone"
-              defaultValue={initialData?.phone}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
-              placeholder="VD: 0901234567"
-            />
-          </div>
-        </div>
+        <Field label="Tên nhà cung cấp" htmlFor={`${formId}-name`} required>
+          <TextInput
+            id={`${formId}-name`}
+            type="text"
+            name="name"
+            required
+            maxLength={120}
+            defaultValue={initialData?.name ?? initialName}
+            example="Cửa hàng ABC"
+          />
+        </Field>
 
-        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-center">
-          <label
-            htmlFor={`${formId}-tax-id`}
-            className="text-text-muted font-medium md:text-text-secondary"
-          >
-            Mã Số Thuế
-          </label>
-          <div>
-            <input
-              id={`${formId}-tax-id`}
-              type="text"
-              name="tax_id"
-              defaultValue={initialData?.tax_id}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
-              placeholder="VD: 0123456789"
-            />
-          </div>
-        </div>
+        <Field label="Số điện thoại" htmlFor={`${formId}-phone`}>
+          <TextInput
+            id={`${formId}-phone`}
+            type="tel"
+            name="phone"
+            defaultValue={initialData?.phone}
+            example="0901234567"
+          />
+        </Field>
 
-        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-center">
-          <label
-            htmlFor={`${formId}-address`}
-            className="text-text-muted font-medium md:text-text-secondary"
-          >
-            Địa Chỉ
-          </label>
-          <div>
-            <input
-              id={`${formId}-address`}
-              type="text"
-              name="address"
-              defaultValue={initialData?.address}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
-              placeholder="VD: 123 Đường ABC, Quận XYZ"
-            />
-          </div>
-        </div>
+        <Field label="Mã số thuế" htmlFor={`${formId}-tax-id`}>
+          <TextInput
+            id={`${formId}-tax-id`}
+            type="text"
+            name="tax_id"
+            defaultValue={initialData?.tax_id}
+            example="0123456789"
+          />
+        </Field>
 
-        <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4 text-sm items-start">
-          <label
-            htmlFor={`${formId}-links`}
-            className="text-text-muted font-medium md:text-text-secondary pt-2"
-          >
-            Ghi chú / Links
-          </label>
-          <div>
-            <textarea
-              id={`${formId}-links`}
-              name="links"
-              rows={3}
-              defaultValue={initialData?.links}
-              className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary bg-surface-card"
-              placeholder="Các liên kết hoặc ghi chú thêm..."
-            />
-          </div>
-        </div>
+        <Field label="Địa chỉ" htmlFor={`${formId}-address`}>
+          <TextInput
+            id={`${formId}-address`}
+            type="text"
+            name="address"
+            defaultValue={initialData?.address}
+            example="123 Đường ABC, Quận XYZ"
+          />
+        </Field>
 
-        <div className="p-4 bg-surface-secondary/50 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-          <button
+        <Field label="Ghi chú / links" htmlFor={`${formId}-links`}>
+          <textarea
+            id={`${formId}-links`}
+            name="links"
+            rows={3}
+            defaultValue={initialData?.links}
+            className="w-full rounded-button bg-surface-card border border-border px-3 py-2 text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50"
+            placeholder="Ví dụ: https://facebook.com/nhacungcap"
+          />
+        </Field>
+
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px] flex items-center justify-center border border-border"
+            className="w-full sm:w-auto"
           >
             {isEdit ? "Bỏ thay đổi" : "Bỏ"}
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu..."
-            className="w-full sm:w-auto min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             {isEdit ? "Lưu thay đổi" : "Lưu nhà cung cấp"}
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

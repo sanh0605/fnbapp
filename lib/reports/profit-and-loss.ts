@@ -51,14 +51,16 @@ export interface PnlMonthFigures {
 }
 
 export interface PnlFigures {
-  year: number;
+  fromMonth: string;                 // "YYYY-MM", as asked for
+  toMonth: string;                   // "YYYY-MM", as asked for
   months: PnlMonthFigures[];
   expenseCategories: Array<{ id: string; name: string }>;
   firstPaymentDate: string | null;   // "YYYY-MM-DD" Saigon
 }
 
 export interface PnlInput {
-  year: number;
+  fromMonth: string;                 // "YYYY-MM"
+  toMonth: string;                   // "YYYY-MM"
   today: string;                     // "YYYY-MM-DD" Saigon
   orders: any[];
   cashEntries: any[];
@@ -82,13 +84,19 @@ function lastDayOfMonth(month: string): string {
   return `${month}-${String(day).padStart(2, "0")}`;
 }
 
-// January of `year` through the current month (this year) or December (a
-// past year). A future year has no months.
-function candidateMonths(year: number, today: string): string[] {
-  const currentYear = Number(today.slice(0, 4));
-  if (year > currentYear) return [];
-  const last = year === currentYear ? Number(today.slice(5, 7)) : 12;
-  return Array.from({ length: last }, (_, i) => `${year}-${String(i + 1).padStart(2, "0")}`);
+// Every month from `fromMonth` to the earlier of `toMonth` and the current
+// month. A range starting after the current month has no months.
+function candidateMonths(fromMonth: string, toMonth: string, today: string): string[] {
+  const last = toMonth < today.slice(0, 7) ? toMonth : today.slice(0, 7);
+  const months: string[] = [];
+  let [y, m] = fromMonth.split("-").map(Number);
+  for (let key = fromMonth; key <= last; ) {
+    months.push(key);
+    m += 1;
+    if (m > 12) { m = 1; y += 1; }
+    key = `${y}-${String(m).padStart(2, "0")}`;
+  }
+  return months;
 }
 
 function emptyMonth(month: string): PnlMonthFigures {
@@ -114,10 +122,10 @@ const byDateThenId = (a: PnlSource, b: PnlSource) =>
 const byAmountDesc = (a: PnlSource, b: PnlSource) => b.amountExact - a.amountExact || a.id.localeCompare(b.id);
 
 export function computeProfitAndLoss(input: PnlInput): PnlFigures {
-  const months = candidateMonths(input.year, input.today);
+  const months = candidateMonths(input.fromMonth, input.toMonth, input.today);
   const byMonth = new Map(months.map(m => [m, emptyMonth(m)]));
 
-  // 1. POS revenue: exactly getPnLDataV2's filter (app/admin/reports/actions.ts).
+  // 1. POS revenue: exactly getPnLDataV2's filter (app/admin/reports/pnl-actions.ts).
   const firstPaymentMs = input.firstPaymentAt ? new Date(input.firstPaymentAt).getTime() : null;
   for (const o of input.orders) {
     if (o.status !== ORDER_STATUS.COMPLETED) continue;
@@ -286,7 +294,7 @@ export function computeProfitAndLoss(input: PnlInput): PnlFigures {
     m.sources.depreciation.sort(byAmountDesc);
   }
 
-  // 7. Expense groups shown: counting in P&L, and in use or with a figure this year.
+  // 7. Expense groups shown: counting in P&L, and in use or with a figure in the range.
   const expenseCategories = input.cashCategories
     .filter(c => c.kind === "EXPENSE" && c.affects_pnl)
     .filter(c => c.status === "ACTIVE" || shown.some(m => Math.abs(m.expenseByCategory[c.id] ?? 0) > NEAR_ZERO))
@@ -294,7 +302,8 @@ export function computeProfitAndLoss(input: PnlInput): PnlFigures {
     .map(c => ({ id: c.id, name: c.name }));
 
   return {
-    year: input.year,
+    fromMonth: input.fromMonth,
+    toMonth: input.toMonth,
     months: shown,
     expenseCategories,
     firstPaymentDate: input.firstPaymentAt ? saigonBucketKeys(input.firstPaymentAt).dateKey : null,

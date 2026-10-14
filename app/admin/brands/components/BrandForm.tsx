@@ -3,10 +3,11 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addBrand, editBrand } from "@/app/admin/brands/actions";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
-import { LoadingButton } from "@/components/ui/LoadingButton";
-import { alert } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
 import type { DBBrand } from "@/types/db";
 
@@ -56,72 +57,66 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl shadow-sm">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
             {error}
           </div>
         )}
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên Thương Hiệu
-          </label>
-          <input
-            id={`${formId}-name`}
-            type="text"
-            name="name"
-            required
-            defaultValue={initialData?.name}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Phin Di"
-          />
+
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên thương hiệu" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              defaultValue={initialData?.name}
+              placeholder="Ví dụ: Phin Di"
+            />
+          </Field>
+
+          <Field label="Mã đơn hàng (3 ký tự)" htmlFor={`${formId}-code`} required>
+            <TextInput
+              id={`${formId}-code`}
+              name="code"
+              maxLength={3}
+              required
+              defaultValue={initialData?.code}
+              placeholder="Ví dụ: PHD"
+            />
+          </Field>
+
+          <Field label="Ngày bắt đầu hoạt động" htmlFor={`${formId}-start-date`}>
+            <CustomDatePicker
+              id={`${formId}-start-date`}
+              selected={selectedDate}
+              onChange={(date: Date | null) => setSelectedDate(date)}
+              dateFormat="dd/MM/yyyy"
+              showTimeSelect={false}
+              placeholderText="DD/MM/YYYY"
+              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] md:min-h-[40px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+            />
+          </Field>
         </div>
-        <div>
-          <label htmlFor={`${formId}-code`} className="block text-sm font-medium text-text-secondary mb-1">
-            Mã Đơn Hàng (3 ký tự)
-          </label>
-          <input
-            id={`${formId}-code`}
-            type="text"
-            name="code"
-            maxLength={3}
-            required
-            defaultValue={initialData?.code}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring uppercase text-text-primary"
-            placeholder="VD: PHD"
-          />
-        </div>
-        <div>
-          <label htmlFor={`${formId}-start-date`} className="block text-sm font-medium text-text-secondary mb-1">
-            Ngày bắt đầu hoạt động
-          </label>
-          <CustomDatePicker
-            id={`${formId}-start-date`}
-            selected={selectedDate}
-            onChange={(date: Date | null) => setSelectedDate(date)}
-            dateFormat="dd/MM/yyyy"
-            showTimeSelect={false}
-            placeholderText="DD/MM/YYYY"
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-          />
-        </div>
+
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu…"
-            className="w-full sm:w-auto min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             {isEdit ? "Cập nhật" : "Lưu Thương Hiệu"}
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllWhere, insert, update, updateMany, remove, generateNewId, getCacheTag } from "@/lib/db/tables";
+import { findAll, findAllWhere, insert, update, remove, generateNewId, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
@@ -65,7 +65,7 @@ export async function getItemsData(): Promise<{
   } catch (error) {
     // this is the exact defect the plan was written to fix -- returning []
     // here is how the owner's real 145-row catalogue rendered as "Chưa có
-    // hàng hóa" in production. Rethrow instead; app/error.tsx handles it.
+    // hàng hoá" in production. Rethrow instead; app/error.tsx handles it.
     console.error("Loi getItemsData:", error);
     throw error;
   }
@@ -199,7 +199,6 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
   const item_category_id = formData.get("item_category_id") as string;
   const unitsJson = formData.get("units_json") as string;
   const base_unit = formData.get("base_unit") as string;
-  const update_history = formData.get("update_history") === "true";
   const is_non_inventory = formData.get("is_non_inventory") === "true";
   const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
   const assetRemovalConfirmed = formData.get("asset_removal_confirmed") === "true";
@@ -269,6 +268,37 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       }
     }
 
+    // Audit A6: the conversion refusal is decided here, before the first write,
+    // so a refusal never leaves the item, its assets or some conversions saved
+    // and the rest not. The write loop below only reads what is prepared here.
+    let newUnits: Array<{ id?: string; name?: string; conversion_rate?: string | number }> = [];
+    let existingConversions: any[] = [];
+    let poLines: any[] = [];
+    let referencedConversionIds = new Set<string>();
+    if (unitsJson && base_unit) {
+      newUnits = JSON.parse(unitsJson);
+      const allConversions = await findAll("UOM_Conversions");
+      poLines = await findAll("Purchase_Order_Lines");
+      existingConversions = allConversions.filter((c: any) => c.purchased_item_id === id);
+      referencedConversionIds = new Set(
+        poLines
+          .filter((line: any) => line.conversion_id)
+          .map((line: any) => line.conversion_id)
+      );
+      for (const u of newUnits) {
+        if (!u.name || !u.conversion_rate || !u.id) continue;
+        const oldConv = existingConversions.find((c: any) => c.id === u.id);
+        const coreFieldsChanged = oldConv && (
+          oldConv.purchased_unit !== u.name ||
+          String(oldConv.conversion_rate) !== String(u.conversion_rate) ||
+          oldConv.base_unit !== base_unit
+        );
+        if (referencedConversionIds.has(u.id) && coreFieldsChanged) {
+          return fail("Một quy đổi đã được dùng trong phiếu nhập lịch sử. Hãy tạo quy đổi mới thay vì sửa trực tiếp.");
+        }
+      }
+    }
+
     // base_ingredient_id is intentionally not written here. The tier-2
     // group link field was removed from the form 2026-09-01
     // (section 2.2) but the column itself is untouched this batch (section
@@ -296,44 +326,11 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
     // Batch 1, item B, gate 4 of 4 (section B1): same relaxation as the
     // create path above.
     if (unitsJson && base_unit) {
-      const newUnits = JSON.parse(unitsJson);
-
-      const allConversions = await findAll("UOM_Conversions");
-      const poLines = await findAll("Purchase_Order_Lines");
-      const existingConversions = allConversions.filter((c: any) => c.purchased_item_id === id);
-      const referencedConversionIds = new Set(
-        poLines
-          .filter((line: any) => line.conversion_id)
-          .map((line: any) => line.conversion_id)
-      );
-      
       const newUnitIds: string[] = [];
       for (const u of newUnits) {
         if (!u.name || !u.conversion_rate) continue;
         
         if (u.id) {
-          const oldConv = existingConversions.find((c: any) => c.id === u.id);
-          const isReferenced = referencedConversionIds.has(u.id);
-          const coreFieldsChanged = oldConv && (
-            oldConv.purchased_unit !== u.name ||
-            String(oldConv.conversion_rate) !== String(u.conversion_rate) ||
-            oldConv.base_unit !== base_unit
-          );
-
-          if (isReferenced && coreFieldsChanged) {
-            return fail("Một quy đổi đã được dùng trong phiếu nhập lịch sử. Hãy tạo quy đổi mới thay vì sửa trực tiếp.");
-          }
-
-          if (update_history) {
-            if (oldConv && oldConv.purchased_unit !== u.name) {
-              const linesToUpdate = poLines
-                .filter((p: any) => p.purchased_item_id === id && p.unit === oldConv.purchased_unit)
-                .map((line: any) => ({ id: line.id, unit: u.name }));
-              if (linesToUpdate.length > 0) {
-                await updateMany("Purchase_Order_Lines", linesToUpdate);
-              }
-            }
-          }
           // Cập nhật record cũ
           await update("UOM_Conversions", u.id, {
             purchased_item_id: id,

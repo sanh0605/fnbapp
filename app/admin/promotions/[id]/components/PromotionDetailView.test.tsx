@@ -69,7 +69,21 @@ describe("PromotionDetailView", () => {
     expect(screen.getAllByText("Giảm 10,000đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("GIAM10K").length).toBeGreaterThan(0);
     expect(screen.getAllByText("50,000đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/15\/07\/2026 12:59/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/15\/07\/2026 12:59:00/).length).toBeGreaterThan(0);
+  });
+
+  it("leaves a plain date start_date as a plain date without seconds", () => {
+    render(
+      <PromotionDetailView
+        promo={{ ...samplePromo, start_date: "2026-07-01" }}
+        brandName="Uchako"
+        applicableItems={sampleItems}
+        canDelete={false}
+        returnTo="/admin/promotions"
+      />,
+    );
+    expect(screen.getAllByText("01/07/2026").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/01\/07\/2026 00:00/)).toBeNull();
   });
 
   it("renders 'Món áp dụng (N)' section for PRODUCT_DISCOUNT", () => {
@@ -88,6 +102,22 @@ describe("PromotionDetailView", () => {
     expect(screen.getAllByText("Trà đào").length).toBe(4);
     expect(screen.getAllByText("Size M").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Size L").length).toBeGreaterThan(0);
+  });
+
+  it("draws the computer table's titles in a single header row (not a row inside a row)", () => {
+    const { container } = render(
+      <PromotionDetailView
+        promo={samplePromo}
+        brandName="Uchako"
+        applicableItems={sampleItems}
+        canDelete={true}
+        returnTo="/admin/promotions"
+      />,
+    );
+
+    expect(container.querySelectorAll("tr tr")).toHaveLength(0);
+    const headRow = container.querySelector("thead > tr")!;
+    expect([...headRow.children].map((c) => c.textContent)).toEqual(["Món", "Size", "Giá áp dụng"]);
   });
 
   it("shows Xoá button only when canDelete is true", () => {

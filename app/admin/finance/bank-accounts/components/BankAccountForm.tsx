@@ -3,7 +3,9 @@
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addBankAccount, updateBankAccount } from "../actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { safeReturnTo } from "../../components/return-to";
 import type { DBBankAccount } from "@/types/db";
 
@@ -40,7 +42,7 @@ export function BankAccountForm({ account, returnTo: rawReturnTo }: BankAccountF
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
@@ -48,66 +50,54 @@ export function BankAccountForm({ account, returnTo: rawReturnTo }: BankAccountF
           </div>
         )}
 
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên gợi nhớ
-          </label>
-          <input
-            id={`${formId}-name`}
-            type="text"
-            name="name"
-            required
-            defaultValue={account?.name}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Vietcombank Sanh"
-          />
-        </div>
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên gợi nhớ" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              defaultValue={account?.name}
+              placeholder="Ví dụ: Vietcombank Sanh"
+            />
+          </Field>
 
-        <div>
-          <label htmlFor={`${formId}-bank_name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Ngân hàng
-          </label>
-          <input
-            id={`${formId}-bank_name`}
-            type="text"
-            name="bank_name"
-            defaultValue={account?.bank_name ?? ""}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Vietcombank"
-          />
-        </div>
+          <Field label="Ngân hàng" htmlFor={`${formId}-bank_name`}>
+            <TextInput
+              id={`${formId}-bank_name`}
+              name="bank_name"
+              defaultValue={account?.bank_name ?? ""}
+              placeholder="Ví dụ: Vietcombank"
+            />
+          </Field>
 
-        <div>
-          <label htmlFor={`${formId}-account_number`} className="block text-sm font-medium text-text-secondary mb-1">
-            Số tài khoản
-          </label>
-          <input
-            id={`${formId}-account_number`}
-            type="text"
-            inputMode="numeric"
-            name="account_number"
-            defaultValue={account?.account_number ?? ""}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: 0071001234567"
-          />
+          <Field label="Số tài khoản" htmlFor={`${formId}-account_number`}>
+            <TextInput
+              id={`${formId}-account_number`}
+              name="account_number"
+              keypad="digits"
+              defaultValue={account?.account_number ?? ""}
+              placeholder="Ví dụ: 0071001234567"
+            />
+          </Field>
         </div>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu…"
             className="w-full sm:w-auto"
           >
             {isEdit ? "Cập nhật" : "Lưu tài khoản"}
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

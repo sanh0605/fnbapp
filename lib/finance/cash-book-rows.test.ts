@@ -6,7 +6,7 @@ import type {
   DBCashEntry,
   DBCashTransfer,
 } from "@/types/db";
-import { buildCashBookRows } from "./cash-book-rows";
+import { buildCashBookRows, cashBookRowTotals, type CashBookRow } from "./cash-book-rows";
 
 const ACCOUNTS: DBBankAccount[] = [
   {
@@ -37,7 +37,7 @@ const DAY_ROWS: DBCashBookDailyRow[] = [
 
 const ENTRY: DBCashEntry = {
   id: "CE-040", entry_date: "2026-09-02", category_id: "CFC-005", amount: 2443400,
-  payment_method: "CASH", bank_account_id: null, payer: null, note: "Vốn góp thêm", status: "ACTIVE",
+  payment_method: "CASH", bank_account_id: null, monthly_item_id: null, payer: null, note: "Vốn góp thêm", status: "ACTIVE",
   created_at: "", created_by_id: "u1", created_by_name: "Chủ quán",
   updated_at: "", updated_by_id: null, updated_by_name: null,
 };
@@ -63,19 +63,19 @@ describe("buildCashBookRows", () => {
         key: "SALE:2026-09-15:CASH", kind: "SALE", id: null, date: "2026-09-15",
         groupLabel: "Bán hàng", sideLabel: "Thu", amount: 522000, methodLabel: "Tiền mặt",
         accountLabel: "—", note: "23 đơn", creator: "—", status: "ACTIVE",
-        href: "/admin/orders?from=2026-09-15&to=2026-09-15&payment=Tien%20mat",
+        href: "/admin/orders?range=CUSTOM&from=2026-09-15&to=2026-09-15&payment=Tien%20mat",
       },
       {
         key: "SALE:2026-09-15:BANK_TRANSFER", kind: "SALE", id: null, date: "2026-09-15",
         groupLabel: "Bán hàng", sideLabel: "Thu", amount: 482000, methodLabel: "Chuyển khoản",
         accountLabel: "—", note: "11 đơn", creator: "—", status: "ACTIVE",
-        href: "/admin/orders?from=2026-09-15&to=2026-09-15&payment=Chuyen%20khoan",
+        href: "/admin/orders?range=CUSTOM&from=2026-09-15&to=2026-09-15&payment=Chuyen%20khoan",
       },
       {
         key: "PURCHASE:2026-09-15:CASH:-", kind: "PURCHASE", id: null, date: "2026-09-15",
         groupLabel: "Nhập hàng", sideLabel: "Chi", amount: 536023, methodLabel: "Tiền mặt",
         accountLabel: "—", note: "2 đơn nhập", creator: "—", status: "ACTIVE",
-        href: "/admin/inventory/purchase-orders?from=2026-09-15&to=2026-09-15&pay=CASH",
+        href: "/admin/inventory/purchase-orders?range=CUSTOM&from=2026-09-15&to=2026-09-15&pay=CASH",
       },
     ]);
   });
@@ -90,7 +90,7 @@ describe("buildCashBookRows", () => {
     const known = rows.find((r) => r.key.endsWith("BA-001"))!;
     expect(known.accountLabel).toBe("ACB - Phin Di");
     expect(known.methodLabel).toBe("Chuyển khoản");
-    expect(known.href).toBe("/admin/inventory/purchase-orders?from=2026-09-16&to=2026-09-16&pay=BANK_TRANSFER");
+    expect(known.href).toBe("/admin/inventory/purchase-orders?range=CUSTOM&from=2026-09-16&to=2026-09-16&pay=BANK_TRANSFER");
     // An account no longer in the list still shows its id rather than a blank.
     expect(rows.find((r) => r.key.endsWith("BA-009"))!.accountLabel).toBe("BA-009");
   });
@@ -140,5 +140,28 @@ describe("buildCashBookRows", () => {
 
   it("never gives a day row a delete id", () => {
     for (const r of build().filter((x) => x.kind === "SALE" || x.kind === "PURCHASE")) expect(r.id).toBeNull();
+  });
+});
+
+describe("cashBookRowTotals (BR-UI-004)", () => {
+  const row = (over: Partial<CashBookRow>): CashBookRow => ({
+    key: "k", kind: "HAND", id: null, date: "2026-09-15", groupLabel: "x", sideLabel: "Thu", amount: 0,
+    methodLabel: "Tiền mặt", accountLabel: "—", note: "", creator: "—", status: "ACTIVE", href: "", ...over,
+  });
+  // 2 income + 1 expense counted; a cancelled line, a transfer: never counted.
+  const rows = [
+    row({ key: "a", kind: "SALE", sideLabel: "Thu", amount: 500000 }),
+    row({ key: "b", kind: "HAND", sideLabel: "Thu", amount: 200000 }),
+    row({ key: "c", kind: "PURCHASE", sideLabel: "Chi", amount: 120000 }),
+    row({ key: "d", kind: "HAND", sideLabel: "Chi", amount: 999999, status: "CANCELLED" }),
+    row({ key: "e", kind: "TRANSFER", sideLabel: "Chuyển", amount: 300000 }),
+  ];
+
+  it("splits money in from money out over every given row and leaves cancelled rows and transfers out", () => {
+    expect(cashBookRowTotals(rows)).toEqual({ count: 3, income: 700000, expense: 120000, net: 580000 });
+  });
+
+  it("is all zero for no rows", () => {
+    expect(cashBookRowTotals([])).toEqual({ count: 0, income: 0, expense: 0, net: 0 });
   });
 });

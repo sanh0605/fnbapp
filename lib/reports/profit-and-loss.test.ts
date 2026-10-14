@@ -3,7 +3,8 @@ import { computeProfitAndLoss, listAvailableYears, type PnlFigures, type PnlInpu
 
 function input(overrides: Partial<PnlInput> = {}): PnlInput {
   return {
-    year: 2026,
+    fromMonth: "2026-01",
+    toMonth: "2026-12",
     today: "2026-09-11",
     orders: [], cashEntries: [], cashCategories: [], purchaseOrders: [], purchaseOrderLines: [],
     purchasedItems: [], itemCategories: [], stockIssues: [], stocktakeSessions: [], assets: [], assetDisposals: [],
@@ -79,7 +80,7 @@ describe("cash book", () => {
     expect(f.months[0].month).toBe("2026-04");
   });
 
-  it("shows an expense group while it is in use, or when the year has a figure for it", () => {
+  it("shows an expense group while it is in use, or when the range has a figure for it", () => {
     const f = computeProfitAndLoss(input({ cashCategories: categories, cashEntries: entries }));
     expect(f.expenseCategories).toEqual([{ id: "CFC-001", name: "Vận hành" }]);
     const withOld = computeProfitAndLoss(input({
@@ -206,14 +207,32 @@ describe("depreciation", () => {
 });
 
 describe("which months", () => {
+  const asset = { id: "TS-001", name_snapshot: "Máy xay", acquired_date: "2025-11-01", total_cost: 1_200_000, quantity: 1, term_months: 12, status: "ACTIVE" };
+
   it("a past year runs to December; a future year has none", () => {
-    const asset = { id: "TS-001", name_snapshot: "Máy xay", acquired_date: "2025-11-01", total_cost: 1_200_000, quantity: 1, term_months: 12, status: "ACTIVE" };
-    expect(computeProfitAndLoss(input({ year: 2025, assets: [asset] })).months.map(m => m.month)).toEqual(["2025-11", "2025-12"]);
-    expect(computeProfitAndLoss(input({ year: 2027, assets: [asset] })).months).toEqual([]);
+    expect(computeProfitAndLoss(input({ fromMonth: "2025-01", toMonth: "2025-12", assets: [asset] })).months.map(m => m.month)).toEqual(["2025-11", "2025-12"]);
+    expect(computeProfitAndLoss(input({ fromMonth: "2027-01", toMonth: "2027-12", assets: [asset] })).months).toEqual([]);
   });
 
   it("a year with nothing in it has no months", () => {
     expect(computeProfitAndLoss(input()).months).toEqual([]);
+  });
+
+  // BR-UI-007 (owner 2026-10-09): Lãi lỗ takes any span of whole months.
+  it("a span across the new year runs month by month through it", () => {
+    const f = computeProfitAndLoss(input({ fromMonth: "2025-11", toMonth: "2026-02", today: "2026-10-09", assets: [asset] }));
+    expect(f.months.map(m => m.month)).toEqual(["2025-11", "2025-12", "2026-01", "2026-02"]);
+    expect(f.fromMonth).toBe("2025-11");
+    expect(f.toMonth).toBe("2026-02");
+  });
+
+  it("a span reaching past this month stops at this month", () => {
+    const f = computeProfitAndLoss(input({ fromMonth: "2026-09", toMonth: "2026-12", today: "2026-10-09", assets: [asset] }));
+    expect(f.months.map(m => m.month)).toEqual(["2026-09", "2026-10"]);
+  });
+
+  it("a span wholly after this month has none", () => {
+    expect(computeProfitAndLoss(input({ fromMonth: "2026-11", toMonth: "2026-12", today: "2026-10-09", assets: [asset] })).months).toEqual([]);
   });
 });
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { NumberInput } from "@/components/ui/NumberInput";
+
 interface DiscountEditorProps {
   orderDiscount: number;
   orderDiscountType: string;
@@ -13,6 +15,8 @@ export function DiscountEditor({
   setOrderDiscount,
   setOrderDiscountType,
 }: DiscountEditorProps) {
+  const isPercent = orderDiscountType === "PERCENT";
+
   return (
     <div className="flex items-center gap-3">
       <span className="text-sm font-medium text-text-secondary w-28">Giảm giá đơn:</span>
@@ -37,14 +41,19 @@ export function DiscountEditor({
             %
           </button>
         </div>
-        <input
-          aria-label="Số tiền giảm giá đơn hàng"
-          type="number"
-          min="0"
-          value={orderDiscount || ""}
-          onChange={(e) => setOrderDiscount(Number(e.target.value))}
-          className="flex-1 px-2 py-1 border border-border rounded-lg text-sm text-right outline-none focus:ring-1 focus:ring-focus-ring bg-surface-card text-text-primary"
-        />
+        <div className="flex-1">
+          <NumberInput
+            id="order-discount"
+            aria-label="Số tiền giảm giá đơn hàng"
+            decimals={isPercent ? 2 : 0}
+            unit={isPercent ? "%" : "đ"}
+            max={isPercent ? 100 : undefined}
+            example={isPercent ? "10" : "10,000"}
+            min={0}
+            value={orderDiscount ? orderDiscount : null}
+            onValueChange={(v) => setOrderDiscount(v ?? 0)}
+          />
+        </div>
       </div>
     </div>
   );

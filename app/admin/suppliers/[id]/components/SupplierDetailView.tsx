@@ -2,6 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
@@ -21,31 +24,15 @@ export interface SupplierDetailViewProps {
 
 function renderPoStatusBadge(status: string) {
   if (status === "COMPLETED") {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-primary-soft text-primary border border-primary/30">
-        Hoàn thành
-      </span>
-    );
+    return <Badge variant="processing">Hoàn thành</Badge>;
   }
   if (status === "CANCELLED") {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-surface-secondary text-text-muted border border-border">
-        Đã huỷ
-      </span>
-    );
+    return <Badge variant="neutral">Đã huỷ</Badge>;
   }
   if (status === "DRAFT") {
-    return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-surface-secondary text-text-secondary border border-border">
-        Nháp
-      </span>
-    );
+    return <Badge variant="neutral">Nháp</Badge>;
   }
-  return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-surface-secondary text-text-secondary border border-border">
-      {status}
-    </span>
-  );
+  return <Badge variant="neutral">{status}</Badge>;
 }
 
 export function SupplierDetailView({
@@ -73,14 +60,24 @@ export function SupplierDetailView({
 
   const editHref = `/admin/suppliers/${encodeURIComponent(supplier.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`;
 
+  const purchaseOrdersParams = new URLSearchParams();
+  purchaseOrdersParams.set("supplier", supplier.id);
+  purchaseOrdersParams.set("status", "ALL");
+  if (orders.daySpan) {
+    purchaseOrdersParams.set("range", "CUSTOM");
+    purchaseOrdersParams.set("from", orders.daySpan.first);
+    purchaseOrdersParams.set("to", orders.daySpan.last);
+  }
+  const purchaseOrdersHref = `/admin/inventory/purchase-orders?${purchaseOrdersParams.toString()}`;
+
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
+      <Button
         href={editHref}
-        className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
+        variant="secondary"
       >
         Chỉnh sửa
-      </Link>
+      </Button>
       {canDelete && (
         <RemoveRecordButton
           verb="Xoá"
@@ -110,9 +107,9 @@ export function SupplierDetailView({
         subtitle={supplier.id}
         badge={
           supplier.status === "INACTIVE" ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-surface-secondary text-text-secondary border border-border">
+            <Badge variant="neutral">
               Ngừng hợp tác
-            </span>
+            </Badge>
           ) : undefined
         }
         actions={headerActions}
@@ -126,8 +123,8 @@ export function SupplierDetailView({
             Phiếu nhập ({orders.total})
           </h2>
           <Link
-            href={`/admin/inventory/purchase-orders?supplier=${encodeURIComponent(supplier.id)}`}
-            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] inline-flex items-center"
+            href={purchaseOrdersHref}
+            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] md:min-h-[40px] inline-flex items-center"
           >
             Xem trong Phiếu nhập &rarr;
           </Link>
@@ -138,67 +135,63 @@ export function SupplierDetailView({
             Chưa có phiếu nhập nào.
           </div>
         ) : (
-          <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col">
+          <div className="space-y-4">
             {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-                    <th className="px-6 py-4 font-bold">Mã phiếu</th>
-                    <th className="px-6 py-4 font-bold">Ngày nhập</th>
-                    <th className="px-6 py-4 font-bold">Nguồn</th>
-                    <th className="px-6 py-4 font-bold">Trạng thái</th>
-                    <th className="px-6 py-4 font-bold text-right">Tổng tiền</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
+            <div className="hidden md:block">
+              <Table>
+                <TableHead>
+                  <TableHeaderCell>Mã phiếu</TableHeaderCell>
+                  <TableHeaderCell>Ngày nhập</TableHeaderCell>
+                  <TableHeaderCell>Nguồn</TableHeaderCell>
+                  <TableHeaderCell>Trạng thái</TableHeaderCell>
+                  <TableHeaderCell>Tổng tiền</TableHeaderCell>
+                </TableHead>
+                <TableBody>
                   {orders.rows.map((po) => (
-                    <tr
-                      key={po.id}
-                      className="hover:bg-surface-secondary/50 transition-colors group relative"
-                    >
-                      <td className="px-6 py-4">
+                    <TableRow key={po.id}>
+                      <TableCell>
                         <Link
                           href={`/admin/inventory/purchase-orders/${encodeURIComponent(po.id)}`}
-                          className="absolute inset-0 z-10 focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none"
+                          className="text-primary hover:text-primary-hover font-mono text-xs"
                         >
-                          <span className="sr-only">Xem chi tiết {po.id}</span>
-                        </Link>
-                        <span className="font-mono text-[11px] text-text-muted font-bold group-hover:text-primary transition-colors">
                           {po.id}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <span className="whitespace-nowrap tabular-nums text-text-primary">
+                          {po.dateText}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap tabular-nums text-text-primary">
-                        {po.dateText}
-                      </td>
-                      <td className="px-6 py-4 text-text-primary">
-                        {po.sourceName}
-                      </td>
-                      <td className="px-6 py-4">
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-text-primary">{po.sourceName}</span>
+                      </TableCell>
+                      <TableCell>
                         {renderPoStatusBadge(po.status)}
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold text-text-primary">
-                        {formatNumber(po.totalAmount)}đ
-                      </td>
-                    </tr>
+                      </TableCell>
+                      <TableCell align="right">
+                        <span className="tabular-nums text-text-primary">
+                          {formatNumber(po.totalAmount)}đ
+                        </span>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {/* Phone Cards */}
-            <div className="md:hidden flex flex-col divide-y divide-border">
+            <div className="md:hidden flex flex-col divide-y divide-border bg-surface-card rounded-card border border-border">
               {orders.rows.map((po) => (
                 <Link
                   key={po.id}
                   href={`/admin/inventory/purchase-orders/${encodeURIComponent(po.id)}`}
-                  className="block p-4 hover:bg-surface-secondary/50 transition-colors focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px]"
+                  className="block p-4 hover:bg-surface-secondary/50 transition-colors focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px] md:min-h-[40px]"
                 >
                   <div className="flex justify-between items-start gap-2 mb-1">
-                    <span className="font-mono text-[11px] text-text-muted font-bold">
+                    <span className="font-mono text-xs text-text-muted">
                       {po.id}
                     </span>
-                    <span className="font-bold text-text-primary text-base">
+                    <span className="text-text-primary text-base tabular-nums">
                       {formatNumber(po.totalAmount)}đ
                     </span>
                   </div>
@@ -213,17 +206,19 @@ export function SupplierDetailView({
             </div>
 
             {/* Pagination Footer */}
-            <ListPagination
-              slice={{
-                page: orders.page,
-                pageCount: orders.pageCount,
-                firstIndex: orders.firstIndex,
-                lastIndex: orders.lastIndex,
-                total: orders.total,
-              }}
-              unit="phiếu"
-              pageHref={poPageHref}
-            />
+            <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
+              <ListPagination
+                slice={{
+                  page: orders.page,
+                  pageCount: orders.pageCount,
+                  firstIndex: orders.firstIndex,
+                  lastIndex: orders.lastIndex,
+                  total: orders.total,
+                }}
+                unit="phiếu"
+                pageHref={poPageHref}
+              />
+            </div>
           </div>
         )}
       </div>

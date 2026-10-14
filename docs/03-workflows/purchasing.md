@@ -7,6 +7,10 @@ tables: purchase_orders, purchase_order_lines, purchase_order_edits, Purchase_So
 brCodes: BR-INV-002, BR-INV-015, BR-INV-016
 ```
 
+**Behaviour change — 2026-10-14 (audit A3a, A7, A8; `BR-INV-018`; migration `0112`, ran on the server 2026-10-14 with the owner's approval):** editing a COMPLETED order now takes the same stock lock as cancelling and is refused when it would leave an item below zero and lower than before; an edit of an order dated on or before the last confirmed stocktake is refused when it changes lines, quantities, amounts, extra costs or the date (compared to the second), naming the stocktake, while notes, invoice code and payment stay editable. Only `ADMIN` may edit a COMPLETED order (`requireOwner()`), drafts and new orders stay `requireAdmin()`. The order's asset rows are written inside `save_purchase_order_atomic` (new argument `p_assets`), so an order and its assets save together; an equipment line with no depreciation band now refuses the whole save instead of saving with a warning.
+
+**Behaviour change — 2026-10-08 (editing a completed order, `BR-COGS-008` "1b", `BR-INV-015` "a"):** editing a completed order now updates the assets it created (`lib/assets/asset-purchase-reconcile.ts`): a deleted line, or a line whose item changed, retires its asset (`INACTIVE`); a changed quantity, price, shipping/voucher/discount or date patches quantity, cost and `acquired_date`; the term follows today's bands only when the unit cost moves; a new equipment line gets a new asset. It is planned before the save: if any asset it would change has a disposal, the whole edit is refused with nothing written. It is applied after the save, as asset creation is. If writing the assets fails, the order stays saved and the form opens the order's page with `?assetWarning=1`, which says the assets were not written; nothing retries it, because a later edit treats that line as an old line and never creates assets for old lines. A completed order is never saved back as a draft: its edit form has no "Lưu nháp" and `savePurchaseOrder` refuses it. A draft's form shows "Huỷ phiếu" (ADMIN, MANAGER). The screens moved to the shared templates (`BR-UI-005`, wave K3): number boxes with comma thousands, the list on `DataList` with the active filter carried back by `returnTo`.
+
 **Behaviour change — 2026-10-06 (owner's screen notes, wave 8a-2):** the order form shows "Hình thức thanh toán" (was "Trả bằng") under the totals box instead of above the lines; the list, the order's page and the cancel page use the same name. "Thành tiền" looks like every other input and "Đơn giá" like computed text. The list's create button reads "Tạo" (`BR-UI-002`). The back arrow returns to the list as last seen, filters kept, and never steps back through history, so detail → cancel → detail no longer loops. What is saved is unchanged.
 
 **Behaviour change — 2026-10-06 (cancel page shows the whole order):** `getPurchaseOrderCancelView` now also reads the order's lines, items, units and source, so `/admin/inventory/purchase-orders/[id]/cancel` lays out like the order's own page: lines and the assets that would stop on the left, the money box (goods, shipping, tax, voucher/discount, total, payment, invoice code, source, notes) and the reason box on the right; on a phone one column, money first. A refused cancel still shows the lines and money. What a cancel checks and writes is unchanged.
@@ -28,7 +32,7 @@ brCodes: BR-INV-002, BR-INV-015, BR-INV-016
 - **Editing.** A cancelled order is never edited: the action refuses it, and so does `save_purchase_order_atomic`.
 - **Line ids.** From this change an edit keeps each line's id, matched by item in order, so assets made from a line stay linked to it. Before, every save minted new line ids.
 
-**Behaviour change — 2026-10-04 (cash book money flow, migration `0107`):** a purchase order gains "Hình thức thanh toán": Tiền mặt, or Chuyển khoản with a bank account (`purchase_orders.payment_method`, `bank_account_id`). Nothing is pre-selected on a new order; completing an order without a choice is refused ("Chọn cách trả tiền"), a draft may stay undecided (`BR-CASH-001`, answer 1a). Orders that existed when `0107` ran count as cash (answer 3a). A completed order's page lets ADMIN or MANAGER change only these two fields (`setPurchaseOrderPayment`); lines, amounts and stock are untouched. The list gains a "Trả bằng" column and filter (`pay`). The money shows in the cash book as one "Nhập hàng" row per day and method (`docs/03-workflows/cash-book.md`).
+**Behaviour change — 2026-10-04 (cash book money flow, migration `0107`):** a purchase order gains "Hình thức thanh toán": Tiền mặt, or Chuyển khoản with a bank account (`purchase_orders.payment_method`, `bank_account_id`). Nothing is pre-selected on a new order; completing an order without a choice is refused ("Chọn cách trả tiền"), a draft may stay undecided (`BR-CASH-001`, answer 1a). Orders that existed when `0107` ran count as cash (answer 3a). A completed order's page let ADMIN or MANAGER change only these two fields; lines, amounts and stock were untouched. **Changed 2026-10-14** (owner, on PO-203: *"Chỉ được đổi trong trang sửa phiếu"*): the order's page only shows how it was paid; the payment changes in Sửa phiếu like every other field, so only ADMIN can change it, and the separate server action was removed. The list gains a "Trả bằng" column and filter (`pay`). The money shows in the cash book as one "Nhập hàng" row per day and method (`docs/03-workflows/cash-book.md`).
 **Reviewed — 2026-10-08 (`BR-UI-008`):** the supplier form's links-limit message in `app/admin/suppliers/actions.ts` now writes `2,000 ký tự` (comma thousands); the limit itself is unchanged.
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 10):** a declared source file's import path only -- cross-cutting lib/ helpers (action-error, datetime, dialog, duplicate-name-guard, use-filter-form, nav-completeness, client-error-report, report-time) moved to `lib/shared/`, rewritten by the move helper; no logic changed.
@@ -60,8 +64,8 @@ goods later leave stock is driven by these purchase prices.
 order is completed, its equipment lines are turned into asset records: the action
 plans the assets (`lib/assets/asset-purchase-allocation.ts`) and inserts one `assets`
 row per durable tool. This happens the first time an order becomes completed:
-saved straight as completed, or saved as a draft and completed later. It does not
-happen when an already-completed order is edited — see question 5.
+saved straight as completed, or saved as a draft and completed later. Editing an
+already-completed order updates those assets instead (2026-10-08, see the top).
 
 **Behaviour change — 2026-10-03:** a draft order completed later now creates its
 assets too. Before, only an order saved straight as completed did, so a draft
@@ -119,12 +123,10 @@ affected.
    is reported as an error rather than silently accepted.
 5. **Which data it serves, and which it deliberately does not.** This flow serves
    purchases into the shared warehouse and the supplier and source records those
-   purchases reference. It deliberately does **not** re-derive assets on an
-   **edit**: assets are created only when an order first becomes completed, so editing an
-   already-completed order does not create, overwrite, or remove the asset rows
-   that its original completion produced. It also does not manage what happens to
-   an already-created asset when its source order is later edited — that is out of
-   scope here and handled (if at all) by the assets flow, not this one.
+   purchases reference. On an edit of a completed order it re-derives the assets
+   that order created (2026-10-08), but never creates an asset for an old line
+   whose item became equipment after the purchase, and never touches an asset
+   with a disposal: such an edit is refused.
 
 ## Where it writes
 

@@ -50,15 +50,35 @@ function endOfMonthOf(year: number, monthIndex: number): string {
   return fmt(new Date(Date.UTC(year, monthIndex + 1, 0)));
 }
 
-function endOfMonth(iso: string): string {
+export function endOfMonth(iso: string): string {
   const d = toUtc(iso);
   return endOfMonthOf(d.getUTCFullYear(), d.getUTCMonth());
 }
 
 // Monday-first, matching how the shop reads a week.
-function startOfWeek(iso: string): string {
+export function startOfWeek(iso: string): string {
   const shift = (toUtc(iso).getUTCDay() + 6) % 7;
   return addDays(iso, -shift);
+}
+
+// Shifts by whole months and clamps to the last day of the target month
+// (31 Oct - 1 month = 30 Sep, 29 Feb - 12 months = 28 Feb).
+export function addMonths(iso: string, months: number): string {
+  const d = toUtc(iso);
+  const first = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + months, 1));
+  const lastDay = Number(endOfMonthOf(first.getUTCFullYear(), first.getUTCMonth()).slice(8, 10));
+  return fmt(new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth(), Math.min(d.getUTCDate(), lastDay))));
+}
+
+const ISO_DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+// The shape check alone lets 2026-02-30 through, so the parts are rebuilt with
+// Date.UTC and must round-trip to the same year, month and day.
+export function isValidIsoDay(value: string): boolean {
+  if (!ISO_DAY_PATTERN.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const d = new Date(Date.UTC(year, month - 1, day));
+  return d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day;
 }
 
 export function resolvePreset(key: DateRangePresetKey, today: string): DateRange {
@@ -115,4 +135,18 @@ const vn = (iso: string) => {
 export function formatRangeLabel(start: string, end: string): string {
   if (!start || !end) return "";
   return start === end ? vn(start) : `${vn(start)} – ${vn(end)}`;
+}
+
+// Buttons shown on the phone, in the owner's order.
+export const PHONE_PRESET_KEYS: readonly DateRangePresetKey[] = [
+  "TODAY", "YESTERDAY", "THIS_WEEK", "LAST_WEEK", "THIS_MONTH", "LAST_MONTH", "THIS_QUARTER", "THIS_YEAR", "CUSTOM",
+];
+
+// Whole-month ranges only (Lãi lỗ).
+export const MONTH_PRESET_KEYS: readonly DateRangePresetKey[] = [
+  "THIS_MONTH", "LAST_MONTH", "THIS_QUARTER", "LAST_QUARTER", "THIS_YEAR", "LAST_YEAR", "YEAR_TO_DATE", "CUSTOM",
+];
+
+export function presetLabel(key: DateRangePresetKey): string {
+  return DATE_RANGE_PRESETS.find(p => p.key === key)?.label ?? "";
 }

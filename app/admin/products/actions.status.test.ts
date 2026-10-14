@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   findAll: vi.fn(),
   update: vi.fn(),
   eraseProductAtomic: vi.fn(),
+  setProductStatusAtomic: vi.fn(),
   revalidatePath: vi.fn(),
   revalidateTag: vi.fn(),
 }));
@@ -18,6 +19,9 @@ vi.mock("@/lib/db/tables", () => ({
 vi.mock("@/lib/products/product-erase-transaction", () => ({
   eraseProductAtomic: mocks.eraseProductAtomic,
 }));
+vi.mock("@/lib/products/product-status-transaction", () => ({
+  setProductStatusAtomic: mocks.setProductStatusAtomic,
+}));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
 import { pauseProduct, resumeProduct, eraseProduct } from "./actions";
@@ -28,92 +32,49 @@ function formDataWithId(id: string): FormData {
   return fd;
 }
 
-describe("pauseProduct / resumeProduct -- section 5.1", () => {
+// 2026-10-14 audit F7: both writes now happen in one Postgres function
+// (migration 0114, pinned in tests/migrations/product-status-migration.test.ts,
+// which also carries the size-cascade rules these tests used to check one
+// update() call at a time). Here: the action calls it once and revalidates.
+describe("pauseProduct / resumeProduct -- one atomic call", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({
       ok: true,
       actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
     });
+    mocks.setProductStatusAtomic.mockResolvedValue({ productId: "PROD-1", variantsChanged: 2 });
   });
 
-  it("pausing sets INACTIVE on the product and its ACTIVE variants only", async () => {
-    mocks.findAll.mockResolvedValue([
-      { id: "VAR-A", product_id: "PROD-1", status: "ACTIVE" },
-      { id: "VAR-B", product_id: "PROD-1", status: "ACTIVE" },
-      { id: "VAR-DELETED", product_id: "PROD-1", status: "DELETED" },
-      { id: "VAR-OTHER", product_id: "PROD-2", status: "ACTIVE" },
-    ]);
-
+  it("pausing makes one call and no separate row writes", async () => {
     const res = await pauseProduct(formDataWithId("PROD-1"));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.update).toHaveBeenCalledWith("Products", "PROD-1", { status: "INACTIVE" });
-    expect(mocks.update).toHaveBeenCalledWith("Product_Variants", "VAR-A", { status: "INACTIVE" });
-    expect(mocks.update).toHaveBeenCalledWith("Product_Variants", "VAR-B", { status: "INACTIVE" });
-    // A variant already DELETED (individually discontinued before this
-    // pause) must not be resurrected into INACTIVE -- it stays DELETED.
-    expect(mocks.update).not.toHaveBeenCalledWith("Product_Variants", "VAR-DELETED", expect.anything());
-    // A different product's variant must not be touched.
-    expect(mocks.update).not.toHaveBeenCalledWith("Product_Variants", "VAR-OTHER", expect.anything());
-    // section 3:
-    // all four actions, not just resumeProduct -- pauseProduct fails
-    // identically (POS keeps offering a just-paused product for up to the
-    // cache TTL), the owner has just never hit this direction of it yet.
+    expect(mocks.setProductStatusAtomic).toHaveBeenCalledTimes(1);
+    expect(mocks.setProductStatusAtomic).toHaveBeenCalledWith("PROD-1", "INACTIVE");
+    expect(mocks.update).not.toHaveBeenCalled();
+    // POS reads these two tables through a cache tag, not this screen's path.
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
   });
 
-  // Fixed 2026-08-29 after the owner hit it in production: Test1 (PROD-048)
-  // has exactly this shape -- one variant, DELETED, no ACTIVE variant at
-  // all. Under the old INACTIVE-only rule, resuming it set the product back
-  // to ACTIVE with nothing sellable ("Đang bán" but zero size to add).
-  it("resuming a product with no ACTIVE variant at all restores every non-ACTIVE variant, including a DELETED one -- Test1's real shape in production", async () => {
-    mocks.findAll.mockResolvedValue([
-      { id: "VAR-A", product_id: "PROD-1", status: "INACTIVE" },
-      { id: "VAR-DELETED", product_id: "PROD-1", status: "DELETED" },
-    ]);
-
+  it("resuming makes one call and no separate row writes", async () => {
     const res = await resumeProduct(formDataWithId("PROD-1"));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.update).toHaveBeenCalledWith("Products", "PROD-1", { status: "ACTIVE" });
-    expect(mocks.update).toHaveBeenCalledWith("Product_Variants", "VAR-A", { status: "ACTIVE" });
-    // No curated size exists to protect -- there is nothing sellable to
-    // leave the product without, so this DELETED size comes back too.
-    expect(mocks.update).toHaveBeenCalledWith("Product_Variants", "VAR-DELETED", { status: "ACTIVE" });
-    // section
-    // 3: this is the exact case the owner hit in production (Test1,
-    // 2026-08-31 02:24:58/02:25) -- the data was already correct, POS was
-    // still serving the pre-resume cache.
+    expect(mocks.setProductStatusAtomic).toHaveBeenCalledWith("PROD-1", "ACTIVE");
+    expect(mocks.update).not.toHaveBeenCalled();
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
   });
 
-  // The mixed case: at least one size already ACTIVE, alongside an
-  // INACTIVE one and a DELETED one. Measured live 2026-08-29: 43 products
-  // have every variant ACTIVE, 4 have none ACTIVE, 0 are mixed -- so no
-  // production data exercises this branch today. It is exactly the branch
-  // the asymmetric rule exists to protect (someone curated sizes
-  // individually; resuming the product must not resurrect one they
-  // deliberately discontinued), so it is tested here regardless.
-  it("resuming a product where at least one size is already ACTIVE restores only the INACTIVE ones, leaving a DELETED one untouched (the mixed case, not exercised by any product today)", async () => {
-    mocks.findAll.mockResolvedValue([
-      { id: "VAR-ACTIVE", product_id: "PROD-1", status: "ACTIVE" },
-      { id: "VAR-INACTIVE", product_id: "PROD-1", status: "INACTIVE" },
-      { id: "VAR-DELETED", product_id: "PROD-1", status: "DELETED" },
-    ]);
+  it("a failed call reports the error and does not pretend to succeed", async () => {
+    mocks.setProductStatusAtomic.mockRejectedValue(new Error("Không tìm thấy món"));
 
-    const res = await resumeProduct(formDataWithId("PROD-1"));
+    const res = await pauseProduct(formDataWithId("PROD-1"));
 
-    expect(res.error).toBeUndefined();
-    expect(mocks.update).toHaveBeenCalledWith("Products", "PROD-1", { status: "ACTIVE" });
-    expect(mocks.update).toHaveBeenCalledWith("Product_Variants", "VAR-INACTIVE", { status: "ACTIVE" });
-    // Already ACTIVE -- no redundant write.
-    expect(mocks.update).not.toHaveBeenCalledWith("Product_Variants", "VAR-ACTIVE", expect.anything());
-    // A size individually discontinued before this pause/resume cycle must
-    // not be resurrected just because a sibling size is already live.
-    expect(mocks.update).not.toHaveBeenCalledWith("Product_Variants", "VAR-DELETED", expect.anything());
+    expect(res.error).toBe("Không tìm thấy món");
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 
   it("refuses without admin auth", async () => {
@@ -122,7 +83,7 @@ describe("pauseProduct / resumeProduct -- section 5.1", () => {
     const res = await pauseProduct(formDataWithId("PROD-1"));
 
     expect(res.error).toBe("Không có quyền");
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.setProductStatusAtomic).not.toHaveBeenCalled();
   });
 });
 
@@ -136,6 +97,7 @@ describe("eraseProduct -- section 5.3/3, refusal tested with the Test1 fixture s
       ok: true,
       actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
     });
+    mocks.findAll.mockResolvedValue([]);
   });
 
   it("erases a never-sold product", async () => {

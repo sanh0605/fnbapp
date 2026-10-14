@@ -82,7 +82,7 @@ describe("BrandForm", () => {
   it("renders on the page and immediately shows the brand name input and Bỏ button", () => {
     render(<BrandForm returnTo="/admin/brands" />);
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.getByLabelText("Tên Thương Hiệu")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Tên thương hiệu( \*)?$/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
   });
 
@@ -93,15 +93,15 @@ describe("BrandForm", () => {
         returnTo="/admin/brands"
       />
     );
-    expect(screen.getByLabelText("Tên Thương Hiệu")).toHaveValue("Uchako");
-    expect(screen.getByLabelText("Mã Đơn Hàng (3 ký tự)")).toHaveValue("UCK");
+    expect(screen.getByLabelText(/^Tên thương hiệu( \*)?$/)).toHaveValue("Uchako");
+    expect(screen.getByLabelText(/^Mã đơn hàng \(3 ký tự\)( \*)?$/)).toHaveValue("UCK");
   });
 
   it("after a successful add, goes to returnTo and refreshes", async () => {
     mocks.addBrand.mockResolvedValue({});
     render(<BrandForm returnTo="/admin/brands" />);
-    fireEvent.change(screen.getByLabelText("Tên Thương Hiệu"), { target: { value: "Trà Sữa Mới" } });
-    fireEvent.change(screen.getByLabelText("Mã Đơn Hàng (3 ký tự)"), { target: { value: "TSM" } });
+    fireEvent.change(screen.getByLabelText(/^Tên thương hiệu( \*)?$/), { target: { value: "Trà Sữa Mới" } });
+    fireEvent.change(screen.getByLabelText(/^Mã đơn hàng \(3 ký tự\)( \*)?$/), { target: { value: "TSM" } });
     fireEvent.click(screen.getByRole("button", { name: "Lưu Thương Hiệu" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/brands"));
     expect(refresh).toHaveBeenCalled();
@@ -110,12 +110,12 @@ describe("BrandForm", () => {
   it("on error stays on page, shows red alert, keeps typed name", async () => {
     mocks.addBrand.mockResolvedValue({ error: "Ten thuong hieu da ton tai" });
     render(<BrandForm returnTo="/admin/brands" />);
-    fireEvent.change(screen.getByLabelText("Tên Thương Hiệu"), { target: { value: "Phin Đi" } });
-    fireEvent.change(screen.getByLabelText("Mã Đơn Hàng (3 ký tự)"), { target: { value: "PHD" } });
+    fireEvent.change(screen.getByLabelText(/^Tên thương hiệu( \*)?$/), { target: { value: "Phin Đi" } });
+    fireEvent.change(screen.getByLabelText(/^Mã đơn hàng \(3 ký tự\)( \*)?$/), { target: { value: "PHD" } });
     fireEvent.click(screen.getByRole("button", { name: "Lưu Thương Hiệu" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Ten thuong hieu da ton tai"));
     expect(push).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("Tên Thương Hiệu")).toHaveValue("Phin Đi");
+    expect(screen.getByLabelText(/^Tên thương hiệu( \*)?$/)).toHaveValue("Phin Đi");
   });
 
   it("Bỏ goes to returnTo without calling server action", () => {

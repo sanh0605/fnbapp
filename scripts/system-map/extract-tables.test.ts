@@ -21,6 +21,15 @@ describe("extractTables", () => {
     expect(extractTables([create, alter])[0].columns).toEqual(["id", "note"]);
   });
 
+  it("takes every add column clause of one alter table", () => {
+    const create = `create table public.modifiers ( id text primary key );`;
+    const alter = `alter table public.modifiers
+      add column if not exists group_id text,
+      add column if not exists is_default boolean not null default false,
+      add column if not exists max_qty int;`;
+    expect(extractTables([create, alter])[0].columns).toEqual(["id", "group_id", "is_default", "max_qty"]);
+  });
+
   it("drops a table removed by a later DROP TABLE", () => {
     const sources = [
       "create table public.a (id text);",

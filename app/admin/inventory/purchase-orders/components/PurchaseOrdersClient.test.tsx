@@ -1,8 +1,12 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import PurchaseOrdersClient from "./PurchaseOrdersClient";
 import type { PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
+
+// BR-UI-007: the list now takes its range from the page.
+const TEST_TODAY = "2026-10-09";
+const TEST_RANGE = { preset: "THIS_MONTH", start: "2026-10-01", end: "2026-10-31" } as const;
 
 if (typeof window.matchMedia !== "function") {
   window.matchMedia = ((query: string) => ({
@@ -44,7 +48,7 @@ const pageData: PurchaseOrderListPage & { suppliers: { id: string; name: string 
   pageCount: 1,
   firstIndex: 0,
   lastIndex: 0,
-  rangeError: false,
+  rangeError: false, daySpan: null, totals: { count: 0, totalAmount: 0 },
   suppliers: [
     { id: 'SUP-1', name: 'Nhà cung cấp A' },
     { id: 'SUP-2', name: 'Nhà cung cấp B' }
@@ -52,52 +56,8 @@ const pageData: PurchaseOrderListPage & { suppliers: { id: string; name: string 
 };
 
 describe("PurchaseOrdersClient", () => {
-  it("T1: Type invalid date and press Enter", async () => {
-    render(<PurchaseOrdersClient pageData={pageData} />);
-    const fromInput = screen.getByLabelText("Từ ngày");
-    fireEvent.change(fromInput, { target: { value: "31/02/2026" } });
-    fireEvent.keyDown(fromInput, { key: "Enter", code: "Enter", charCode: 13 });
-    
-    await waitFor(() => {
-      expect(screen.getByText("Ngày không hợp lệ")).toBeTruthy();
-    });
-    expect(replace).not.toHaveBeenCalled();
-  });
-
-  it("T2: Start date after end date", async () => {
-    render(<PurchaseOrdersClient pageData={pageData} />);
-    const fromInput = screen.getByLabelText("Từ ngày");
-    const toInput = screen.getByLabelText("Đến ngày");
-    
-    fireEvent.change(fromInput, { target: { value: "25/09/2026" } });
-    fireEvent.blur(fromInput);
-    
-    fireEvent.change(toInput, { target: { value: "20/09/2026" } });
-    fireEvent.blur(toInput);
-    
-    const filterBtn = screen.getByRole("button", { name: "Lọc" });
-    fireEvent.click(filterBtn);
-    
-    await waitFor(() => {
-      expect(screen.getAllByText("Ngày bắt đầu phải trước ngày kết thúc").length).toBe(1);
-    });
-    expect(replace).not.toHaveBeenCalled();
-  });
-
-  it("T3: Stale Enter in day box applies filter", async () => {
-    render(<PurchaseOrdersClient pageData={pageData} />);
-    const fromInput = screen.getByLabelText("Từ ngày");
-    fireEvent.change(fromInput, { target: { value: "23/09/2026" } });
-    fireEvent.keyDown(fromInput, { key: "Enter", code: "Enter", charCode: 13, bubbles: true });
-    
-    await waitFor(() => {
-      expect(replace).toHaveBeenCalledTimes(1);
-    });
-    expect(replace).toHaveBeenCalledWith(expect.stringContaining("from=2026-09-23"), expect.anything());
-  });
-
   it("T4: Enter in search box applies filter", async () => {
-    render(<PurchaseOrdersClient pageData={pageData} />);
+    render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={pageData} />);
     const searchInput = screen.getByLabelText("Tìm kiếm");
     fireEvent.change(searchInput, { target: { value: "PO-19" } });
     fireEvent.keyDown(searchInput, { key: "Enter", code: "Enter", charCode: 13, bubbles: true });
@@ -109,7 +69,7 @@ describe("PurchaseOrdersClient", () => {
   });
 
   it("T5: Clear filter button visibility", async () => {
-    render(<PurchaseOrdersClient pageData={pageData} />);
+    render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={pageData} />);
     expect(screen.queryByRole("button", { name: "Xoá lọc" })).toBeNull();
     
     const searchInput = screen.getByLabelText("Tìm kiếm");
@@ -137,7 +97,7 @@ describe("PurchaseOrdersClient", () => {
       ],
     };
 
-    render(<PurchaseOrdersClient pageData={dataWithRow} />);
+    render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={dataWithRow} />);
     expect(screen.getByRole("columnheader", { name: "Hình thức thanh toán" })).toBeTruthy();
     // Tiền mặt appears in both desktop table and phone card
     const labels = screen.getAllByText("Tiền mặt");
@@ -145,7 +105,7 @@ describe("PurchaseOrdersClient", () => {
   });
 
   it("T7: Filter by Hình thức thanh toán", async () => {
-    render(<PurchaseOrdersClient pageData={pageData} />);
+    render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={pageData} />);
     const paySelect = screen.getByLabelText("Hình thức thanh toán");
     fireEvent.change(paySelect, { target: { value: "BANK_TRANSFER" } });
 
@@ -159,14 +119,14 @@ describe("PurchaseOrdersClient", () => {
   });
 
   it("Create button on list page reads exactly 'Tạo'", () => {
-    render(<PurchaseOrdersClient pageData={pageData} />);
+    render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={pageData} />);
     const createLink = screen.getByRole("link", { name: "Tạo" });
     expect(createLink).toBeTruthy();
     expect(createLink.getAttribute("href")).toBe("/admin/inventory/purchase-orders/new");
   });
 
   it("T8: Status select default value is ACTIVE, has options Chưa huỷ and Đã huỷ", () => {
-    render(<PurchaseOrdersClient pageData={pageData} />);
+    render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={pageData} />);
     const statusSelect = screen.getByLabelText("Trạng thái") as HTMLSelectElement;
     expect(statusSelect.value).toBe("ACTIVE");
 
@@ -196,8 +156,83 @@ describe("PurchaseOrdersClient", () => {
       ],
     };
 
-    render(<PurchaseOrdersClient pageData={cancelledData} />);
+    render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={cancelledData} />);
     const badges = screen.getAllByText("Đã huỷ");
     expect(badges.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // BR-UI-003 / BR-UI-005 and Review Focus 4 (wave K3).
+  describe("shared list (wave K3)", () => {
+    const rows: typeof pageData = {
+      ...pageData,
+      total: 2,
+      firstIndex: 1,
+      lastIndex: 2,
+      rows: [
+        { id: "PO-181", dateText: "15/09/2026 10:00:00", supplierName: "Thế Kỷ Xanh", sourceName: "Shopee", status: "COMPLETED", totalAmount: 506023, paymentLabel: "Tiền mặt" },
+        { id: "PO-065", dateText: "12/08/2026 10:00:00", supplierName: "Trứng Ba Huân", sourceName: "Shopee", status: "CANCELLED", totalAmount: 180000, paymentLabel: "Tiền mặt" },
+      ],
+    };
+
+    afterEach(() => {
+      for (const k of Array.from(searchParams.keys())) searchParams.delete(k);
+    });
+
+    it("header cells are plain text, not capitals", () => {
+      render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
+      for (const th of within(screen.getByRole("table")).getAllByRole("columnheader")) {
+        // The capitals can come from the cell or from its header row.
+        expect(th.closest(".uppercase")).toBeNull();
+      }
+    });
+
+    it("filter labels are plain text, not capitals", () => {
+      render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
+      for (const label of ["Tìm kiếm", "Trạng thái", "Hình thức thanh toán", "Nhà cung cấp"]) {
+        const el = screen.getByLabelText(label);
+        const tag = document.querySelector(`label[for="${el.id}"]`)!;
+        expect(tag.closest(".uppercase")).toBeNull();
+      }
+    });
+
+    it("a row opens with returnTo carrying the active filter", () => {
+      searchParams.set("status", "CANCELLED");
+      searchParams.set("page", "2");
+      render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
+      const href = within(screen.getByRole("table")).getByRole("link", { name: "Xem chi tiết PO-065" }).getAttribute("href")!;
+      const url = new URL(href, "http://x");
+      expect(url.pathname).toBe("/admin/inventory/purchase-orders/PO-065");
+      expect(url.searchParams.get("returnTo")).toBe("/admin/inventory/purchase-orders?status=CANCELLED&page=2");
+    });
+
+    it("with no filter the row still carries returnTo to the bare list", () => {
+      render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
+      const href = within(screen.getByRole("table")).getByRole("link", { name: "Xem chi tiết PO-181" }).getAttribute("href")!;
+      expect(new URL(href, "http://x").searchParams.get("returnTo")).toBe("/admin/inventory/purchase-orders");
+    });
+
+    it("the phone list is cards, one per row, with no table", () => {
+      const { container } = render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
+      const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+      expect(phone).toBeTruthy();
+      expect(phone.querySelector("table")).toBeNull();
+      expect(phone.textContent).toContain("PO-181");
+      expect(phone.textContent).toContain("Trứng Ba Huân");
+      expect(phone.textContent).toContain("506,023");
+    });
+  });
+
+  // BR-UI-004 (owner 2026-10-06): the money column shows the total of every
+  // slip the filter matches, cancelled and draft slips left out.
+  it("shows the filter's total under the Tổng tiền header", () => {
+    const withTotals: typeof pageData = {
+      ...pageData,
+      total: 1, firstIndex: 1, lastIndex: 1,
+      rows: [{ id: "PO-181", dateText: "15/09/2026 10:00:00", supplierName: "Thế Kỷ Xanh", sourceName: "Shopee", status: "COMPLETED", totalAmount: 506023, paymentLabel: "Tiền mặt" }],
+      totals: { count: 21, totalAmount: 12345678 },
+    };
+    render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={withTotals} />);
+    expect(screen.getAllByText("Tổng (không tính huỷ, nháp)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("12,345,678").length).toBeGreaterThan(0);
   });
 });

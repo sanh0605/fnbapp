@@ -24,7 +24,7 @@ export default async function NewPromotionPage({
       <BackLink href={returnTo} label="Khuyến mãi" />
       <PageHeader
         title="Tạo khuyến mãi"
-        subtitle="Tạo mới mã giảm giá, chiết khấu hóa đơn hoặc khuyến mãi theo sản phẩm."
+        subtitle="Tạo mới mã giảm giá, chiết khấu hoá đơn hoặc khuyến mãi theo sản phẩm."
       />
       <PromotionForm
         brands={activeBrands}

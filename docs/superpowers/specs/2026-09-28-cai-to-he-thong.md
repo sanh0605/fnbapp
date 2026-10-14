@@ -113,7 +113,7 @@ ngoài bán/mua → xem báo cáo → cài đặt một lần.
 | **Nhập hàng** | Phiếu nhập, Nhà cung cấp | Đồng ý tách như anh đề xuất: là việc làm nhiều nhất hằng tuần, có đối tác riêng |
 | **Kho** | Tồn kho, Phiếu xuất, Kiểm kê, Hàng hoá, Tài sản | Mọi thứ đang nằm trong quán |
 | **Thu chi** | Sổ thu chi | Là chỗ **ghi** tiền. Báo cáo chỉ để **xem** — để một trang nhập liệu trong Báo cáo thì nhóm Báo cáo mất nghĩa |
-| **Báo cáo** | Tổng kết ngày, Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | Chỉ xem, không nhập |
+| **Báo cáo** | Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | Chỉ xem, không nhập. Tổng kết ngày bỏ 2026-10-09: Doanh số lọc Hôm nay thay (`BR-UI-007`) |
 | **Cài đặt** | Thương hiệu & điểm bán, Nhân viên & quyền, Đơn vị tính, Phân loại hàng, Nhóm thu chi, Tài khoản ngân hàng, Thời hạn khấu hao, Nhật ký | Thứ đặt một lần rồi ít đụng. Thương hiệu, điểm bán thuộc loại này, nên bỏ nhóm "Vận hành" |
 
 Bảy nhóm, không nhóm nào vừa để nhập vừa để xem.
@@ -164,7 +164,7 @@ nhóm dưới đây là bản chốt; chỉ còn nội dung trang Tổng quan (Q
 | Nhập hàng | Phiếu nhập, Nhà cung cấp | |
 | Kho | Tồn kho, Phiếu xuất, Kiểm kê, Hàng hoá, Tài sản, Thời hạn khấu hao, Đơn vị tính, Phân loại hàng | |
 | Thu chi | Sổ thu chi, Nhóm thu chi, Tài khoản ngân hàng | |
-| Báo cáo | Tổng kết ngày, Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | |
+| Báo cáo | Doanh số, Hàng đã xuất, Lãi lỗ, Lưu chuyển tiền tệ | |
 | Cài đặt | Nhân viên & quyền, Nhật ký hoạt động | |
 
 Tên mục theo mục 5.3; anh chưa phản đối cách đặt tên.
@@ -506,7 +506,7 @@ Có, bằng hai đường:
 | Q2g | Loại món: 3 loại cố định (Thức uống, Thức ăn, Topping), đặt trên nhóm món (mục 5.10) | chốt 2026-09-28: loại do anh tự quản, có ô "là thức uống" (mục 5.11) |
 | Q2d | Ngưỡng "lâu chưa kiểm kê" | chốt 2026-09-28: 30 ngày, anh đổi được |
 | Q3 | Thứ tự các phần (mục 6) | chốt 2026-09-29: 7 bước như mục 6 |
-| Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chờ, hỏi khi làm phần C |
+| Q4 | Sửa phiếu kiểm kê khi đã có phiếu kiểm sau nó (xem `BR-INV-012`) | chốt 2026-10-14: chỉ sửa được phiếu kiểm kê mới nhất |
 | Q5 | Màn hình tồn kho cần hiện gì: số lượng, giá trị, cảnh báo sắp hết | chờ |
 | Q6 | Báo cáo lưu chuyển tiền tệ theo mẫu nào | chờ, xem `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md` trước |
 | Q7 | Trên điện thoại, những trang nào anh thật sự dùng (chọn 4 trang cho thanh dưới đáy, mục 5.12) | chốt 2026-09-28 (mục 5.13) |

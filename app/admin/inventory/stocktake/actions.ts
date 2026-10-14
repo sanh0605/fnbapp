@@ -11,6 +11,7 @@ import {
   cancelStocktakeSessionAtomic,
   applyStocktakeSessionAtomic,
   reverseStocktakeSessionAtomic,
+  editConfirmedStocktakeAtomic,
   type StocktakeItemType,
   type StocktakeApplyResult,
   type StocktakeReversalResult,
@@ -65,17 +66,24 @@ async function loadItemNameMaps() {
   // semi_products dropped 2026-09-28 (migration 0105): the count list never
   // offered SEMI_PRODUCT lines (see actions.test.ts), so this map no longer
   // needs to read that table at all.
-  const [purchasedItems, units, itemCategories] = await Promise.all([
+  const [purchasedItems, units, itemCategories, conversions] = await Promise.all([
     findAll("Purchased_Items"),
     findAll("Units"),
     findAll("Item_Categories"),
+    findAll("UOM_Conversions"),
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
+  // purchased_items.default_unit_id is null on every row; the unit is the
+  // ACTIVE conversion's base unit, as on Phiếu xuất (lib/stock/item-stock-display.ts).
+  const baseUnitIdByItem = new Map<string, string>();
+  for (const c of conversions as any[]) {
+    if (c.status === "ACTIVE") baseUnitIdByItem.set(c.purchased_item_id, c.base_unit);
+  }
   const nameById = new Map<string, string>();
   const unitNameByItemId = new Map<string, string>();
   for (const item of purchasedItems as any[]) {
     nameById.set(item.id, item.name);
-    unitNameByItemId.set(item.id, unitNameById.get(item.default_unit_id) ?? item.default_unit_id ?? "");
+    unitNameByItemId.set(item.id, unitNameById.get(baseUnitIdByItem.get(item.id) ?? "") ?? "");
   }
   return {
     nameById,
@@ -152,6 +160,81 @@ export async function getLastConfirmedStocktakeSession(): Promise<RecentConfirme
     confirmedAt: session.confirmed_at,
     notes: session.notes ?? "",
     hasOpenSessionBlocking: openSessions.length > 0,
+  };
+}
+
+// BR-INV-012: why the edit button is not offered. Checked in this order.
+export type StocktakeEditBlock = "NOT_OWNER" | "NOT_CONFIRMED" | "NOT_LATEST" | "OPEN_SESSION";
+
+export interface StocktakeDetailLine {
+  id: string;
+  itemReference: string;
+  itemName: string;
+  unitName: string;
+  countedQty: number | null;
+  theoreticalAtCount: number | null;
+}
+
+export interface StocktakeDetailView {
+  id: string;
+  status: "OPEN" | "CONFIRMED" | "REVERSED"; // the page redirects OPEN to /admin/inventory/stocktake
+  createdByName: string;
+  confirmedAt: string | null;
+  confirmedByName: string | null;
+  reversedAt: string | null;
+  notes: string;
+  lines: StocktakeDetailLine[]; // sorted by itemName, "vi"
+  editBlock: StocktakeEditBlock | null;
+}
+
+// One session with all its lines, for the read-only page and the owner's edit
+// page. null only when the id is unknown.
+export async function getStocktakeDetail(id: string): Promise<StocktakeDetailView | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const [found, confirmed, open, lines, { nameById, unitNameByItemId }] = await Promise.all([
+    findAllWhere<any>("stocktake_sessions", { eq: { id }, limit: 1 }),
+    findAllWhere<any>("stocktake_sessions", { eq: { status: "CONFIRMED" } }),
+    findAllWhere<any>("stocktake_sessions", { eq: { status: "OPEN" }, limit: 1 }),
+    findAllWhere<any>("stocktake_lines", { eq: { session_id: id } }),
+    loadItemNameMaps(),
+  ]);
+  const session = found[0];
+  if (!session) return null;
+
+  // findAllWhere cannot order by confirmed_at, so pick the latest here.
+  const latestId = confirmed.reduce<any>(
+    (best, s) => (!best || String(s.confirmed_at) > String(best.confirmed_at) ? s : best),
+    null,
+  )?.id;
+  // Same owner rule as requireOwner(): ADMIN (or SYSTEM).
+  const isOwner = auth.actor.role === "ADMIN" || auth.actor.role === "SYSTEM";
+  const editBlock: StocktakeEditBlock | null = !isOwner ? "NOT_OWNER"
+    : session.status !== "CONFIRMED" ? "NOT_CONFIRMED"
+    : latestId !== session.id ? "NOT_LATEST"
+    : open.length > 0 ? "OPEN_SESSION"
+    : null;
+
+  return {
+    id: session.id,
+    status: session.status,
+    createdByName: session.created_by_name,
+    confirmedAt: session.confirmed_at ?? null,
+    confirmedByName: session.confirmed_by_name ?? null,
+    reversedAt: session.reversed_at ?? null,
+    notes: session.notes ?? "",
+    lines: lines
+      .map(line => ({
+        id: line.id,
+        itemReference: line.item_reference,
+        itemName: nameById.get(line.item_reference) ?? line.item_reference,
+        unitName: unitNameByItemId.get(line.item_reference) ?? "",
+        countedQty: line.counted_qty !== null ? Number(line.counted_qty) : null,
+        theoreticalAtCount: line.theoretical_at_count !== null ? Number(line.theoretical_at_count) : null,
+      }))
+      .sort((a, b) => a.itemName.localeCompare(b.itemName, "vi")),
+    editBlock,
   };
 }
 
@@ -321,6 +404,30 @@ export async function confirmStocktakeSession(
     }
     revalidatePath(PATH);
     return ok({ result });
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
+
+// BR-INV-012: owner edits counted quantities of the most recent confirmed
+// stocktake. Lines with unchanged numbers may be sent; the database skips them.
+export async function editConfirmedStocktake(
+  sessionId: string,
+  lines: Array<{ lineId: string; countedQty: number }>,
+): Promise<ActionResponse & { changedCount?: number }> {
+  const auth = await requireOwner();
+  if (!auth.ok) return fail(auth.error);
+  if (lines.length === 0) return fail("Không có dòng nào để sửa");
+  if (lines.some(l => !Number.isFinite(l.countedQty) || l.countedQty < 0)) {
+    return fail("Số đếm phải là số không âm");
+  }
+
+  try {
+    const result = await editConfirmedStocktakeAtomic({ sessionId, lines });
+    revalidatePath(PATH);
+    revalidatePath(`${PATH}/${sessionId}`);
+    revalidatePath("/admin/inventory/issue-slips");
+    return ok({ changedCount: result.changedCount });
   } catch (error: unknown) {
     return describeActionError(error);
   }

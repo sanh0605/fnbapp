@@ -1,0 +1,61 @@
+import { saigonToday } from "@/lib/shared/datetime";
+
+export interface StocktakeAlerts {
+  stale: { lastConfirmedDay: string | null; daysSince: number | null } | null; // null = no alert
+  openTooLong: Array<{ id: string; openedDay: string; daysOpen: number }>;
+}
+
+function saigonDay(iso: string): string {
+  return saigonToday(new Date(iso));
+}
+
+/** Whole calendar days from `from` to `to`, both "YYYY-MM-DD". */
+function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+}
+
+export function computeStocktakeAlerts(input: {
+  today: string;
+  staleDays: number;
+  openDays: number;
+  sessions: Array<{ id: string; status: string; created_at: string; confirmed_at: string | null; reversed_at: string | null }>;
+}): StocktakeAlerts {
+  const { today, staleDays, openDays, sessions } = input;
+
+  let lastConfirmedDay: string | null = null;
+  for (const s of sessions) {
+    if (s.status !== "CONFIRMED" || s.reversed_at || !s.confirmed_at) continue;
+    const day = saigonDay(s.confirmed_at);
+    if (lastConfirmedDay === null || day > lastConfirmedDay) lastConfirmedDay = day;
+  }
+
+  let stale: StocktakeAlerts["stale"] = null;
+  if (lastConfirmedDay === null) {
+    stale = { lastConfirmedDay: null, daysSince: null };
+  } else {
+    const daysSince = daysBetween(lastConfirmedDay, today);
+    if (daysSince > staleDays) stale = { lastConfirmedDay, daysSince };
+  }
+
+  const openTooLong = sessions
+    .filter((s) => s.status === "OPEN")
+    .map((s) => {
+      const openedDay = saigonDay(s.created_at);
+      return { id: s.id, openedDay, daysOpen: daysBetween(openedDay, today) };
+    })
+    .filter((s) => s.daysOpen > openDays)
+    .sort((a, b) => a.openedDay.localeCompare(b.openedDay) || a.id.localeCompare(b.id));
+
+  return { stale, openTooLong };
+}
+
+export function negativeStockItems(
+  onHand: Map<string, number>,
+  names: Map<string, string>,
+): Array<{ id: string; name: string; qty: number }> {
+  const out: Array<{ id: string; name: string; qty: number }> = [];
+  for (const [id, qty] of onHand) {
+    if (qty < 0) out.push({ id, name: names.get(id) ?? id, qty });
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name, "vi"));
+}

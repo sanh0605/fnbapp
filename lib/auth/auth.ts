@@ -20,7 +20,8 @@ export type AuthResult =
  * Claude code — CODE-22: centralize auth check so server actions can guard.
  */
 export async function resolveActor(): Promise<AuthResult> {
-  if (process.env.CLI_MODE === "true") {
+  // Never honoured inside the web server (Next sets NEXT_RUNTIME), so a stray env var cannot switch login off.
+  if (process.env.CLI_MODE === "true" && !process.env.NEXT_RUNTIME) {
     return { ok: true, actor: { id: "system", name: "Hệ thống", role: "SYSTEM" } };
   }
   const { getServerSession } = await import("next-auth/next");
@@ -28,14 +29,23 @@ export async function resolveActor(): Promise<AuthResult> {
   if (!session?.user) {
     return { ok: false, error: "Yêu cầu đăng nhập" };
   }
-  const role = (session.user as any).role as AuthActor["role"] | undefined;
+  const id = (session.user as any).id as string | undefined;
+  if (!id) return { ok: false, error: "Yêu cầu đăng nhập" };
+  // The token lives up to 30 days; the Users row is the truth for role and status.
+  const { data: row } = await getSupabaseClient()
+    .from("users")
+    .select("role, status")
+    .eq("id", id)
+    .maybeSingle();
+  if (!row || row.status !== "ACTIVE") return { ok: false, error: "Yêu cầu đăng nhập" };
+  const role = row.role as AuthActor["role"] | undefined;
   if (!role) {
     return { ok: false, error: "Phiên đăng nhập không có role" };
   }
   return {
     ok: true,
     actor: {
-      id: (session.user as any).id || "unknown",
+      id,
       name: session.user.name || "Unknown",
       role,
     },
@@ -114,11 +124,11 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
           if (!user) {
-            console.log("User not found:", credentials.username);
+            console.log("Login failed: user not found");
             return null;
           }
           if (user.status !== "ACTIVE") {
-            console.log("User inactive:", credentials.username);
+            console.log("Login failed: user inactive");
             return null;
           }
 

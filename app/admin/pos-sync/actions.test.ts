@@ -47,6 +47,21 @@ describe("getPosSyncAttentionItems", () => {
     expect(mocks.findAllNoCache).not.toHaveBeenCalledWith("Orders_V2");
   });
 
+  it("reads only orders synced in the last 30 days (C16)", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-14T00:00:00.000Z"));
+    try {
+      mocks.findAllWhere.mockResolvedValue([]);
+      mocks.findAllNoCache.mockResolvedValue([]);
+      await getPosSyncAttentionItems();
+      expect(mocks.findAllWhere).toHaveBeenCalledWith("Orders_V2", {
+        gte: { synced_at: "2026-09-14T00:00:00.000Z" },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("flags orders synced more than 5 minutes after their sale time", async () => {
     mocks.findAllWhere.mockImplementation(async (sheet: string) => {
       if (sheet === "Orders_V2") {

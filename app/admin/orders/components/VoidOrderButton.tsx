@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { AlertCircle, X } from "lucide-react";
-import { voidOrderV2 } from "@/app/admin/orders/actions";
+import { voidOrderV2 } from "@/app/admin/orders/order-void-actions";
 
 interface VoidOrderButtonProps {
   orderId: string;
   orderNo: string;
   disabled?: boolean;
   onVoided?: () => void;
-  variant?: "ghost" | "secondary" | "primary";
+  variant?: "secondary" | "primary" | "delete" | "danger";
   className?: string;
 }
 
@@ -19,7 +19,7 @@ export function VoidOrderButton({
   orderNo,
   disabled,
   onVoided,
-  variant = "ghost",
+  variant = "delete",
   className = "",
 }: VoidOrderButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -45,7 +45,7 @@ export function VoidOrderButton({
     const res = await voidOrderV2(orderId, voidReason.trim());
     setIsSubmitting(false);
     if (!res.success) {
-      setVoidError("Lỗi hủy đơn: " + res.error);
+      setVoidError("Lỗi huỷ đơn: " + res.error);
       return;
     }
     setIsOpen(false);
@@ -58,12 +58,11 @@ export function VoidOrderButton({
       <Button
         type="button"
         variant={variant}
-        size="sm"
-        className={`!text-danger hover:!bg-danger/10 min-h-[44px] ${className}`}
+        className={`${className}`.trim()}
         onClick={handleOpen}
         disabled={disabled}
       >
-        Hủy đơn
+        Huỷ đơn
       </Button>
 
       {isOpen && (
@@ -77,7 +76,7 @@ export function VoidOrderButton({
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-danger">Hủy đơn hàng</h3>
+                <h3 className="font-bold text-danger">Huỷ đơn hàng</h3>
                 <p className="text-sm text-danger font-medium">{orderNo}</p>
               </div>
             </div>
@@ -99,8 +98,8 @@ export function VoidOrderButton({
                 </div>
               )}
               <textarea
-                aria-label="Lý do hủy đơn"
-                placeholder="Lý do hủy đơn (bắt buộc)"
+                aria-label="Lý do huỷ đơn"
+                placeholder="Ví dụ: nhập trùng phiếu"
                 value={voidReason}
                 onChange={(e) => setVoidReason(e.target.value)}
                 rows={3}
@@ -111,20 +110,20 @@ export function VoidOrderButton({
               <Button
                 type="button"
                 variant="secondary"
-                className="flex-1 min-h-[44px]"
+                className="flex-1 min-h-[44px] md:min-h-[40px]"
                 onClick={handleClose}
                 disabled={isSubmitting}
               >
-                Hủy bỏ
+                Huỷ bỏ
               </Button>
               <Button
                 type="button"
                 variant="primary"
-                className="flex-1 !bg-danger hover:!bg-danger/90 min-h-[44px]"
+                className="flex-1 !bg-danger hover:!bg-danger/90 min-h-[44px] md:min-h-[40px]"
                 onClick={confirmVoid}
                 disabled={!voidReason.trim() || isSubmitting}
               >
-                {isSubmitting ? "Đang hủy..." : "Đồng ý hủy"}
+                {isSubmitting ? "Đang huỷ..." : "Đồng ý huỷ"}
               </Button>
             </div>
           </div>

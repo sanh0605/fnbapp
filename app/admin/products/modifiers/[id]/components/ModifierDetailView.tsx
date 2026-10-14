@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
@@ -20,25 +21,28 @@ export interface LinkedProduct {
 export interface ModifierDetailViewProps {
   modifier: DBModifier;
   product: LinkedProduct | null;
+  groupName: string;
+  allowStandalone: boolean;
   returnTo: string;
 }
 
 export function ModifierDetailView({
   modifier,
   product,
+  groupName,
+  allowStandalone,
   returnTo,
 }: ModifierDetailViewProps): JSX.Element {
   const currentDetailUrl = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
 
+  const displayGroupName = groupName || "—";
+
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
-        href={editHref}
-        className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
-      >
+      <Button href={editHref} variant="secondary">
         Chỉnh sửa
-      </Link>
+      </Button>
       <RemoveRecordButton
         verb="Xoá"
         name={modifier.name}
@@ -59,7 +63,7 @@ export function ModifierDetailView({
 
   const fields: Field[] = [
     { label: "Mã", value: modifier.id },
-    { label: "Nhóm", value: modifier.group_name },
+    { label: "Nhóm", value: displayGroupName },
     { label: "Tên tuỳ chọn", value: modifier.name },
     { label: "Giá thêm", value: formatNumber(modifier.price) },
     {
@@ -68,10 +72,10 @@ export function ModifierDetailView({
         <StandaloneToppingSwitch
           modifierId={modifier.id}
           modifierName={modifier.name}
-          groupName={modifier.group_name}
           price={modifier.price}
           productId={modifier.product_id ?? null}
           productStatus={product?.status}
+          allowStandalone={allowStandalone}
         />
       ),
     },
@@ -80,7 +84,7 @@ export function ModifierDetailView({
       value: product ? (
         <Link
           href={`/admin/products/${encodeURIComponent(product.id)}`}
-          className="text-primary hover:underline font-medium"
+          className="text-primary hover:underline"
         >
           {product.name}
         </Link>

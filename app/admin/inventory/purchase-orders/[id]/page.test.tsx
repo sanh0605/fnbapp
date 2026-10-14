@@ -17,7 +17,10 @@ vi.mock("next/link", () => ({
 vi.mock("../components/PurchaseOrderForm", () => ({
   default: () => ({ props: { children: "MOCK_PURCHASE_ORDER_FORM" } }),
 }));
-vi.mock("@/components/ui/BackLink", () => ({ BackLink: () => null }));
+// The back link is drawn as a plain link so its target can be read (returnTo, wave K3).
+vi.mock("@/components/ui/BackLink", () => ({
+  BackLink: ({ href, label }: { href: string; label: string }) => ({ type: "a", props: { href, children: label } }),
+}));
 vi.mock("./components/PurchasePaymentBlock", () => ({
   default: ({ paymentMethod }: { paymentMethod?: string }) => ({
     props: {
@@ -63,6 +66,15 @@ function collectText(node: ReactNode, out: string[] = []): string[] {
 function findLink(node: ReactNode, text: string): { href?: string } | null {
   if (node === null || node === undefined || typeof node === "boolean") return null;
   const el = node as { type?: any; props?: { href?: string; children?: ReactNode } };
+  if (el?.props?.href && collectText(el.props.children).join("").includes(text)) return { href: el.props.href };
+  // Template components (DetailHeader, Button) carry links in props other than children.
+  if (typeof el?.type === "function") {
+    try {
+      return findLink(el.type(el.props), text);
+    } catch {
+      return null;
+    }
+  }
   if (el?.props) {
     const collected = collectText(el.props.children).join("");
     if (collected.includes(text) && el.props.href) {
@@ -160,7 +172,10 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
     expect(text).not.toContain("Huỷ phiếu");
   });
 
-  it("A MANAGER on a draft sees no Huỷ phiếu while the form shows", async () => {
+  // Owner 2026-10-08 "A": a draft always opens as the form, which had no way
+  // out; its form now shows Huỷ phiếu to the same cancel page (BR-INV-015).
+  // This test used to pin the opposite.
+  it("A MANAGER on a draft sees Huỷ phiếu beside the form, linking to the cancel page", async () => {
     getServerSession.mockResolvedValueOnce({ user: { role: "MANAGER" } });
     findById.mockResolvedValue({
       id: "PO-147",
@@ -169,6 +184,27 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
     });
 
     const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join(" ");
+
+    expect(text).toContain("MOCK_PURCHASE_ORDER_FORM");
+    expect(findLink(tree as ReactNode, "Huỷ phiếu")?.href).toBe("/admin/inventory/purchase-orders/PO-147/cancel");
+  });
+
+  it("A STAFF user on a draft sees the form but no Huỷ phiếu", async () => {
+    getServerSession.mockResolvedValueOnce({ user: { role: "STAFF" } });
+    findById.mockResolvedValue({ id: "PO-147", status: "DRAFT", created_at: "2026-10-01T00:00:00Z" });
+
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const text = collectText(tree as ReactNode).join(" ");
+
+    expect(text).toContain("MOCK_PURCHASE_ORDER_FORM");
+    expect(text).not.toContain("Huỷ phiếu");
+  });
+
+  it("An ADMIN editing a completed order (?edit=1) sees no Huỷ phiếu while the form shows", async () => {
+    findById.mockResolvedValue({ id: "PO-147", status: "COMPLETED", created_at: "2026-10-01T00:00:00Z" });
+
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: { edit: "1" } });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).toContain("MOCK_PURCHASE_ORDER_FORM");
@@ -267,5 +303,57 @@ describe("purchase order clone link (BR-INV-016)", () => {
     expect(text).not.toContain("Nhân bản");
     const link = findLink(tree as ReactNode, "Nhân bản");
     expect(link).toBeNull();
+  });
+});
+
+// Review Focus 4 (wave K3): an order opened from a filtered list goes back to that list.
+describe("purchase order back link (returnTo)", () => {
+  beforeEach(() => {
+    findById.mockReset();
+    getServerSession.mockResolvedValue({ user: { role: "ADMIN" } });
+    findById.mockResolvedValue({ id: "PO-065", status: "CANCELLED", created_at: "2026-10-01T00:00:00Z" });
+  });
+
+  it("follows a returnTo inside the purchase-order list", async () => {
+    const tree = await PurchaseOrderDetail({
+      params: { id: "PO-065" },
+      searchParams: { returnTo: "/admin/inventory/purchase-orders?status=CANCELLED&page=2" },
+    });
+    expect(findLink(tree as ReactNode, "Phiếu nhập")?.href).toBe("/admin/inventory/purchase-orders?status=CANCELLED&page=2");
+  });
+
+  it("ignores a returnTo that leaves the purchase-order list", async () => {
+    for (const bad of ["https://evil.example/x", "//evil.example", "/admin/users", "/admin/inventory/purchase-orders-x"]) {
+      const tree = await PurchaseOrderDetail({ params: { id: "PO-065" }, searchParams: { returnTo: bad } });
+      expect(findLink(tree as ReactNode, "Phiếu nhập")?.href).toBe("/admin/inventory/purchase-orders");
+    }
+  });
+
+  it("with no returnTo goes back to the bare list", async () => {
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-065" }, searchParams: {} });
+    expect(findLink(tree as ReactNode, "Phiếu nhập")?.href).toBe("/admin/inventory/purchase-orders");
+  });
+});
+
+// K3 review finding 3: when the order saved but its assets did not, the form
+// lands on the order's page with ?assetWarning=1 and the page says so.
+describe("purchase order asset warning (BR-COGS-008)", () => {
+  beforeEach(() => {
+    findById.mockReset();
+    getServerSession.mockResolvedValue({ user: { role: "ADMIN" } });
+  });
+
+  const warning = "Phiếu đã lưu, nhưng tài sản sinh từ phiếu này chưa ghi được.";
+
+  it("?assetWarning=1 shows that the assets were not written", async () => {
+    findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED", created_at: "2026-09-20T00:00:00Z" });
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-100" }, searchParams: { assetWarning: "1" } as any });
+    expect(collectText(tree as ReactNode).join("")).toContain(warning);
+  });
+
+  it("without it the page says nothing about assets", async () => {
+    findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED", created_at: "2026-09-20T00:00:00Z" });
+    const tree = await PurchaseOrderDetail({ params: { id: "PO-100" }, searchParams: {} });
+    expect(collectText(tree as ReactNode).join("")).not.toContain(warning);
   });
 });

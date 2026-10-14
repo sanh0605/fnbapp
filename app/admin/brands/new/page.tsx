@@ -14,7 +14,7 @@ export default function NewBrandPage({
   return (
     <div className="space-y-6">
       <BackLink href={returnTo} label="Thương hiệu" />
-      <PageHeader title="Thêm thương hiệu" subtitle="Quản lý thương hiệu F&B trên hệ thống." />
+      <PageHeader title="Tạo thương hiệu" subtitle="Quản lý thương hiệu F&B trên hệ thống." />
       <BrandForm returnTo={returnTo} />
     </div>
   );

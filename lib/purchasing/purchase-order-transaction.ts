@@ -1,9 +1,21 @@
 import { getSupabaseClient } from "@/lib/db/supabase";
+import type { NewAssetPlan } from "@/lib/assets/asset-purchase-allocation";
+import type { AssetPatch } from "@/lib/assets/asset-purchase-reconcile";
+
+// The assets that follow an order, written by the same database function as
+// the order itself (audit A7). Omitted for a draft and for an edit that
+// changes no asset.
+export type PurchaseOrderAssetsInput = {
+  create: Array<NewAssetPlan & { acquired_date: string }>;
+  update: Array<{ id: string; patch: AssetPatch }>;
+  retire: string[];
+};
 
 export type PurchaseOrderAtomicInput = {
   order: Record<string, unknown>;
   lines: Array<Record<string, unknown>>;
   replaceExisting: boolean;
+  assets?: PurchaseOrderAssetsInput;
 };
 
 type PurchaseOrderAtomicResult = {
@@ -22,6 +34,8 @@ export async function savePurchaseOrderAtomic(
     p_order: input.order,
     p_lines: input.lines,
     p_replace_existing: input.replaceExisting,
+    // Left out when absent, so an order without assets also saves before migration 0112 runs.
+    ...(input.assets ? { p_assets: input.assets } : {}),
   });
   if (error) {
     throw new Error(`save_purchase_order_atomic: ${error.message}`);

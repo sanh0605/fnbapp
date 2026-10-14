@@ -54,4 +54,13 @@ describe("UserDetailPage", () => {
     const props = element.props;
     expect(Object.values(props).every((v) => typeof v !== "function")).toBe(true);
   });
+
+  it("passes canGrantAdmin to UserDetailView", async () => {
+    const element = await UserDetailPage({
+      params: { id: "USR-001" },
+      searchParams: { returnTo: "/admin/users" },
+    });
+
+    expect(element.props.canGrantAdmin).toBe(true);
+  });
 });

@@ -6,48 +6,30 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { draftKey, saveDraft, takeDraft, type PoDraftState } from "./po-draft";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
-import { formatNumber } from "@/lib/shared/format";
 import type { DBSupplier, DBPurchaseSource, DBPurchasedItem, DBUOMConversion, DBUnit, DBPurchaseOrder, DBPurchaseOrderLine, DBBankAccount } from "@/types/db";
 import type { PurchaseOrderCopySeed } from "@/lib/purchasing/purchase-order-copy";
-import { alert, confirm } from "@/lib/shared/dialog";
+import { alert } from "@/lib/shared/dialog";
+import { PurchaseOrderLines } from "./PurchaseOrderLines";
+import { PurchaseOrderTotals } from "./PurchaseOrderTotals";
 
-// Batch 3 fix, 2026-08-22 (found while critiquing section 6's reconciliation, which needs equipment
-// purchase orders to be completable at all): a Dụng cụ (EQUIPMENT) item
-// structurally has no UOM_Conversions row (batch 1 item B section B3 --
-// equipment gets no conversion-rows UI, unlike RAW/CONSUMABLE, which are
-// validated at entry to always carry at least one). Requiring conversion_id
-// unconditionally meant no EQUIPMENT line could ever be completed: the
-// dropdown had nothing to offer, so conversion_id could never become
-// truthy. The server (lib/costing/purchase-ledger-rebuild.ts's buildPurchaseReceipt)
-// already handles a missing conversion correctly for any non-RAW item --
-// this only relaxes the requirement, and only when the item has zero
-// conversions to choose from in the first place; RAW/CONSUMABLE items,
-// which always have at least one, are completely unaffected. Extracted as
-// a pure function (matching PurchasedItemForm.tsx's buildConversionSubmission)
-// rather than tested through this large component's render tree.
 export function validatePurchaseOrderLine(
-  line: { purchased_item_id?: string; unit?: string; conversion_id?: string },
+  line: { purchased_item_id?: string; unit?: string; conversion_id?: string; quantity?: string | number },
   conversions: Array<{ purchased_item_id?: string; status?: string }>,
 ): string | null {
   if (!line.purchased_item_id) return "Vui lòng chọn hàng hoá";
   if (!line.unit) return "Vui lòng nhập hoặc chọn đơn vị";
-  const availableUnitsForLine = conversions.filter(
+  if (!(Number(line.quantity) > 0)) return "Vui lòng nhập số lượng";
+  const available = conversions.filter(
     c => c.purchased_item_id === line.purchased_item_id && c.status !== "INACTIVE",
   );
-  if (availableUnitsForLine.length > 0 && !line.conversion_id) return "Vui lòng chọn đơn vị";
+  if (available.length > 0 && !line.conversion_id) return "Vui lòng chọn đơn vị";
   return null;
 }
 
-// section 3:
-// source_id was read into state and appended to the payload but never
-// checked here -- an empty source reached the server and failed
-// downstream, far from the cause, and the owner was shown the raw
-// technical text of whatever failed instead of an instruction he could
-// follow. Extracted as a pure function, same reasoning as
-// validatePurchaseOrderLine above: this large component's render tree is
-// not what should have to be mounted to prove a validation order.
 export function validatePurchaseOrderHeader(input: {
   supplierId: string;
   sourceId: string;
@@ -59,33 +41,26 @@ export function validatePurchaseOrderHeader(input: {
   return null;
 }
 
-function formatLinesWithConversions(
-  rawLines: any[],
-  conversions: DBUOMConversion[],
-) {
+function formatLinesWithConversions(rawLines: any[], conversions: DBUOMConversion[]) {
   return rawLines.map((line: any) => {
-    // Bước 1: Tìm conversion record
-    // Ưu tiên dùng conversion_id đã lưu trong DB (sau khi fix actions.ts)
-    // Fallback: tìm theo purchased_item_id + purchased_unit (với dữ liệu cũ chưa có conversion_id)
     let matchedConv = conversions.find(
       (c: any) => c.id === line.conversion_id && c.purchased_item_id === line.purchased_item_id
     );
     if (!matchedConv && line.purchased_item_id && line.unit) {
-      const fallbackCandidates = conversions.filter(
+      const candidates = conversions.filter(
         (c: any) =>
           c.purchased_item_id === line.purchased_item_id &&
           String(c.purchased_unit).trim() === String(line.unit).trim()
       );
-      matchedConv = fallbackCandidates.length === 1 ? fallbackCandidates[0] : undefined;
+      matchedConv = candidates.length === 1 ? candidates[0] : undefined;
     }
 
     return {
       purchased_item_id: line.purchased_item_id || "",
       unit: line.unit || "",
-      quantity: line.quantity || 1,
+      quantity: Number(line.quantity) > 0 ? String(line.quantity) : "",
       subtotal: line.subtotal || 0,
       is_new_unit: false,
-      // Restore từ conversion record
       conversion_id: matchedConv?.id || "",
       conversion_rate: matchedConv?.conversion_rate || "",
     };
@@ -126,51 +101,35 @@ export default function PurchaseOrderForm({
   const initialLines = initialData?.lines;
 
   const [loading, setLoading] = useState(false);
-  const [supplierId, setSupplierId] = useState(
-    initialData ? (po.supplier_id || "") : (copySeed ? (copySeed.supplier_id || "") : "")
-  );
-  const [sourceId, setSourceId] = useState(
-    initialData ? (po.source_id || "") : (copySeed ? (copySeed.source_id || "") : "")
-  );
+  const savingRef = useRef(false);
+  const [supplierId, setSupplierId] = useState(initialData?.po?.supplier_id || copySeed?.supplier_id || "");
+  const [sourceId, setSourceId] = useState(initialData?.po?.source_id || copySeed?.source_id || "");
   const [supplierInvoiceCode, setSupplierInvoiceCode] = useState(
-    initialData ? (po.supplier_invoice_code || "") : (copySeed ? (copySeed.supplier_invoice_code || "") : "")
+    initialData?.po?.supplier_invoice_code || copySeed?.supplier_invoice_code || ""
   );
   const [transactionDate, setTransactionDate] = useState<Date | null>(
-    initialData
-      ? (po.transaction_date ? new Date(po.transaction_date) : null)
-      : (copySeed ? (copySeed.transaction_date ? new Date(copySeed.transaction_date) : null) : null)
+    initialData?.po?.transaction_date
+      ? new Date(initialData.po.transaction_date)
+      : copySeed?.transaction_date
+      ? new Date(copySeed.transaction_date)
+      : null
   );
-  const [notes, setNotes] = useState(
-    initialData ? (po.notes || "") : (copySeed ? (copySeed.notes || "") : "")
-  );
+  const [notes, setNotes] = useState(initialData?.po?.notes || copySeed?.notes || "");
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER" | "">(
-    initialData
-      ? ((po.payment_method as "CASH" | "BANK_TRANSFER") || "")
-      : (copySeed ? ((copySeed.payment_method as "CASH" | "BANK_TRANSFER") || "") : "")
+    (initialData?.po?.payment_method as any) || (copySeed?.payment_method as any) || ""
   );
-  const [bankAccountId, setBankAccountId] = useState<string>(
-    initialData ? (po.bank_account_id || "") : (copySeed ? (copySeed.bank_account_id || "") : "")
+  const [bankAccountId, setBankAccountId] = useState(
+    initialData?.po?.bank_account_id || copySeed?.bank_account_id || ""
   );
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const rawLines = initialLines ?? (copySeed ? copySeed.lines : []);
-  const formattedInitialLines = formatLinesWithConversions(rawLines, conversions);
+  const [lines, setLines] = useState<any[]>(formatLinesWithConversions(rawLines, conversions));
 
-  const [lines, setLines] = useState<any[]>(formattedInitialLines);
-
-  // Extra costs
-  const [shippingFee, setShippingFee] = useState(
-    initialData ? Number(po.shipping_fee || 0) : (copySeed ? Number(copySeed.shipping_fee || 0) : 0)
-  );
-  const [taxAmount, setTaxAmount] = useState(
-    initialData ? Number(po.tax_amount || 0) : (copySeed ? Number(copySeed.tax_amount || 0) : 0)
-  );
-  const [voucherAmount, setVoucherAmount] = useState<number>(
-    initialData ? Number(po?.voucher_amount || 0) : (copySeed ? Number(copySeed.voucher_amount || 0) : 0)
-  );
-  const [discountAmount, setDiscountAmount] = useState<number>(
-    initialData ? Number(po?.discount_amount || 0) : (copySeed ? Number(copySeed.discount_amount || 0) : 0)
-  );
+  const [shippingFee, setShippingFee] = useState(Number(initialData?.po?.shipping_fee || copySeed?.shipping_fee || 0));
+  const [taxAmount, setTaxAmount] = useState(Number(initialData?.po?.tax_amount || copySeed?.tax_amount || 0));
+  const [voucherAmount, setVoucherAmount] = useState(Number(initialData?.po?.voucher_amount || copySeed?.voucher_amount || 0));
+  const [discountAmount, setDiscountAmount] = useState(Number(initialData?.po?.discount_amount || copySeed?.discount_amount || 0));
 
   const [restoreFailed, setRestoreFailed] = useState(false);
 
@@ -192,11 +151,7 @@ export default function PurchaseOrderForm({
       if (draft.supplierId !== undefined) setSupplierId(draft.supplierId);
       if (draft.sourceId !== undefined) setSourceId(draft.sourceId);
       if (draft.supplierInvoiceCode !== undefined) setSupplierInvoiceCode(draft.supplierInvoiceCode);
-      if (draft.transactionDate) {
-        setTransactionDate(new Date(draft.transactionDate));
-      } else {
-        setTransactionDate(null);
-      }
+      setTransactionDate(draft.transactionDate ? new Date(draft.transactionDate) : null);
       if (draft.notes !== undefined) setNotes(draft.notes);
       if (Array.isArray(draft.lines)) setLines(draft.lines);
       if (draft.shippingFee !== undefined) setShippingFee(Number(draft.shippingFee));
@@ -210,9 +165,7 @@ export default function PurchaseOrderForm({
             : ""
         );
       }
-      if (draft.bankAccountId !== undefined) {
-        setBankAccountId(draft.bankAccountId || "");
-      }
+      if (draft.bankAccountId !== undefined) setBankAccountId(draft.bankAccountId || "");
     } else {
       setRestoreFailed(true);
     }
@@ -226,15 +179,14 @@ export default function PurchaseOrderForm({
     nextParams.delete("newSupplier");
     const nextQuery = nextParams.toString();
     const currentPath = pathname || (isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders/new");
-    const nextUrl = nextQuery ? `${currentPath}?${nextQuery}` : currentPath;
-    router.replace(nextUrl);
+    router.replace(nextQuery ? `${currentPath}?${nextQuery}` : currentPath);
   }, []);
 
   const addLine = () => {
     setLines([...lines, {
       purchased_item_id: "",
       unit: "",
-      quantity: 1,
+      quantity: "",
       subtotal: 0,
       is_new_unit: false,
       conversion_rate: "",
@@ -249,9 +201,7 @@ export default function PurchaseOrderForm({
     const newLines = [...lines];
     newLines[index][field] = value;
 
-    // Auto-fill logic when item changes
     if (field === "purchased_item_id") {
-      // Reset unit selection
       newLines[index].unit = "";
       newLines[index].is_new_unit = false;
       newLines[index].conversion_id = "";
@@ -260,15 +210,9 @@ export default function PurchaseOrderForm({
 
     if (field === "conversion_id") {
       const conv = conversions.find((c: any) => c.id === value);
-      if (conv) {
-        newLines[index].unit = conv.purchased_unit;
-        newLines[index].conversion_rate = conv.conversion_rate;
-        newLines[index].conversion_id = value;
-      } else {
-        newLines[index].unit = "";
-        newLines[index].conversion_rate = "";
-        newLines[index].conversion_id = "";
-      }
+      newLines[index].unit = conv ? conv.purchased_unit : "";
+      newLines[index].conversion_rate = conv ? conv.conversion_rate : "";
+      newLines[index].conversion_id = conv ? value : "";
     }
 
     setLines(newLines);
@@ -278,59 +222,72 @@ export default function PurchaseOrderForm({
   const totalAmount = subtotalAmount + Number(shippingFee) + Number(taxAmount) - Number(voucherAmount) - Number(discountAmount);
 
   const handleSubmit = async (status: string) => {
+    if (savingRef.current) return;
+
     if (status === "COMPLETED") {
       const headerError = validatePurchaseOrderHeader({ supplierId, sourceId, lineCount: lines.length });
       if (headerError) return await alert({ title: "Thiếu thông tin", message: headerError, variant: "warning" });
 
-      // Validation
       for (let i = 0; i < lines.length; i++) {
         const lineError = validatePurchaseOrderLine(lines[i], conversions);
         if (lineError) return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: ${lineError}`, variant: "warning" });
       }
     }
 
+    savingRef.current = true;
     setLoading(true);
     setPaymentError(null);
     const formData = new FormData();
     if (isEdit) formData.append("id", po.id!);
     formData.append("supplier_id", supplierId);
-    // Claude code — UI-9: send Saigon-local ISO so server interprets date correctly regardless of deploy TZ.
     if (transactionDate) formData.append("transaction_date", toSaigonIsoString(transactionDate));
     formData.append("notes", notes);
     formData.append("source_id", sourceId);
     formData.append("supplier_invoice_code", supplierInvoiceCode);
     formData.append("status", status);
     formData.append("lines_json", JSON.stringify(lines));
-    formData.append("subtotal_amount", subtotalAmount.toString());
-    formData.append("shipping_fee", shippingFee.toString());
-    formData.append("tax_amount", taxAmount.toString());
-    formData.append("voucher_amount", voucherAmount.toString());
-    formData.append("discount_amount", discountAmount.toString());
+    formData.append("subtotal_amount", String(subtotalAmount));
+    formData.append("shipping_fee", String(shippingFee));
+    formData.append("tax_amount", String(taxAmount));
+    formData.append("voucher_amount", String(voucherAmount));
+    formData.append("discount_amount", String(discountAmount));
     formData.append("payment_method", paymentMethod);
     formData.append("bank_account_id", paymentMethod === "BANK_TRANSFER" ? bankAccountId : "");
-    // Claude code — UI-20: removed hardcoded `created_by=ADMIN`; server uses authenticated actor (see CODE-22).
 
-    const res = await savePurchaseOrder(formData);
-    setLoading(false);
+    try {
+      const res = await savePurchaseOrder(formData);
 
-    if (res.success) {
-      router.push("/admin/inventory/purchase-orders");
-      router.refresh();
-    } else {
-      if (
-        res.error === "Chọn cách trả tiền" ||
-        res.error === "Chọn tài khoản nhận chuyển khoản" ||
-        res.error === "Tài khoản không còn dùng"
-      ) {
-        setPaymentError(res.error);
+      if (res.success) {
+        const assetWarning = (res as { assetWarning?: string }).assetWarning;
+        const poId = (res as { po_id?: string }).po_id;
+        if (assetWarning) {
+          router.push(`/admin/inventory/purchase-orders/${poId}?assetWarning=1`);
+        } else {
+          router.push("/admin/inventory/purchase-orders");
+        }
+        router.refresh();
       } else {
-        await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+        savingRef.current = false;
+        setLoading(false);
+        if (
+          res.error === "Chọn cách trả tiền" ||
+          res.error === "Chọn tài khoản nhận chuyển khoản" ||
+          res.error === "Tài khoản không còn dùng"
+        ) {
+          setPaymentError(res.error);
+        } else {
+          await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+        }
       }
+    } catch {
+      savingRef.current = false;
+      setLoading(false);
+      await alert({ title: "Lỗi", message: "Không lưu được. Kiểm tra mạng rồi bấm lại.", variant: "danger" });
     }
   };
 
   return (
-    <div className="bg-surface-card rounded-xl shadow-sm border border-border p-6">
+    <>
       {restoreFailed && (
         <div
           role="status"
@@ -339,374 +296,183 @@ export default function PurchaseOrderForm({
           Không khôi phục được phiếu đang nhập dở
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-surface-card p-6 rounded-2xl shadow-sm border border-border mb-6">
-        <div>
-          <label htmlFor={`${formId}-supplierId`} className="block text-sm font-semibold text-text-secondary mb-2">Nhà Cung Cấp *</label>
-          <SearchableSelect
-            id={`${formId}-supplierId`}
-            value={supplierId}
-            onChange={(val) => setSupplierId(val)}
-            options={suppliers.map((s: any) => ({ id: s.id, label: s.name }))}
-            placeholder="Chọn nhà cung cấp..."
-            onCreateNew={(searchTerm) => {
-              const currentParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
-              currentParams.delete("newSupplier");
-              currentParams.set("draft", "1");
-              const currentPath = pathname || (isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders/new");
-              const returnTo = `${currentPath}?${currentParams.toString()}`;
-
-              const storage = typeof window !== "undefined" ? window.localStorage : null;
-              const draftState: PoDraftState = {
-                supplierId,
-                sourceId,
-                supplierInvoiceCode,
-                transactionDate: transactionDate ? transactionDate.toISOString() : null,
-                notes,
-                lines,
-                shippingFee,
-                taxAmount,
-                voucherAmount,
-                discountAmount,
-                paymentMethod: paymentMethod || null,
-                bankAccountId: bankAccountId || null,
-              };
-              saveDraft(storage, draftKey(po.id), draftState, Date.now());
-
-              router.push(
-                `/admin/suppliers/new?from=po&name=${encodeURIComponent(searchTerm)}&returnTo=${encodeURIComponent(returnTo)}`
-              );
-            }}
-          />
-        </div>
-        <div>
-          <label htmlFor={`${formId}-transactionDate`} className="block text-sm font-semibold text-text-secondary mb-2">Ngày nhập hàng thực tế</label>
-          <CustomDatePicker
-            id={`${formId}-transactionDate`}
-            name="transaction_date"
-            selected={transactionDate}
-            onChange={(date) => setTransactionDate(date)}
-            placeholderText="Chọn ngày nhập hàng (ngày/tháng/năm)"
-          />
-          <p className="text-xs text-text-muted mt-1">Để trống hệ thống sẽ lấy thời điểm hiện tại.</p>
-        </div>
-        <div>
-          <label htmlFor={`${formId}-sourceId`} className="block text-sm font-semibold text-text-secondary mb-2">Nguồn nhập hàng</label>
-          <div className="flex gap-2">
-            <div className="flex-1">
+      <div
+        data-testid="form-layout"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start lg:grid-rows-[auto_1fr]"
+      >
+        <div
+          data-testid="form-shared"
+          className="bg-surface-card rounded-xl shadow-sm border border-border p-6 lg:col-start-3 lg:row-start-1 space-y-4"
+        >
+          <div>
+            <Field label="Nhà cung cấp" htmlFor={`${formId}-supplierId`} required>
               <SearchableSelect
-                id={`${formId}-sourceId`}
-                value={sourceId}
-                onChange={(val) => setSourceId(val)}
-                options={sources.map((s: any) => ({ id: s.id, label: s.name }))}
-                placeholder="Ví dụ: Shopee, Lazada..."
+                id={`${formId}-supplierId`}
+                value={supplierId}
+                onChange={(val) => setSupplierId(val)}
+                options={suppliers.map((s: any) => ({ id: s.id, label: s.name }))}
+                placeholder="Chọn nhà cung cấp..."
+                onCreateNew={(searchTerm) => {
+                  const currentParams = new URLSearchParams(searchParams ? searchParams.toString() : "");
+                  currentParams.delete("newSupplier");
+                  currentParams.set("draft", "1");
+                  const currentPath = pathname || (isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders/new");
+                  const returnTo = `${currentPath}?${currentParams.toString()}`;
+
+                  const storage = typeof window !== "undefined" ? window.localStorage : null;
+                  const draftState: PoDraftState = {
+                    supplierId,
+                    sourceId,
+                    supplierInvoiceCode,
+                    transactionDate: transactionDate ? transactionDate.toISOString() : null,
+                    notes,
+                    lines,
+                    shippingFee,
+                    taxAmount,
+                    voucherAmount,
+                    discountAmount,
+                    paymentMethod: paymentMethod || null,
+                    bankAccountId: bankAccountId || null,
+                  };
+                  saveDraft(storage, draftKey(po.id), draftState, Date.now());
+                  router.push(`/admin/suppliers/new?from=po&name=${encodeURIComponent(searchTerm)}&returnTo=${encodeURIComponent(returnTo)}`);
+                }}
               />
-            </div>
-            <button
-              type="button"
-              onClick={async () => {
-                const name = window.prompt("Nhập tên nguồn mới (VD: Tiktok Shop):");
-                if (name && name.trim()) {
-                  const res = await addPurchaseSource(name.trim());
-                  if (res.success) {
-                    await alert({ title: "Thiếu thông tin", message: "Đã thêm nguồn thành công! Vui lòng tải lại trang để cập nhật danh sách.", variant: "warning" });
-                  } else {
-                    await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
-                  }
-                }
-              }}
-              className="px-3 py-2 bg-primary-soft/50 text-primary-active rounded-lg text-sm font-medium hover:bg-primary-soft border border-primary/20 whitespace-nowrap"
-            >
-              + Thêm
-            </button>
+            </Field>
           </div>
-        </div>
-        <div>
-          <label htmlFor={`${formId}-supplierInvoiceCode`} className="block text-sm font-semibold text-text-secondary mb-2">Mã hoá đơn</label>
-          <input
-            id={`${formId}-supplierInvoiceCode`}
-            type="text"
-            value={supplierInvoiceCode}
-            onChange={(e) => setSupplierInvoiceCode(e.target.value)}
-            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring text-sm"
-            placeholder="VD: INV-20231201"
-          />
-        </div>
-        <div className="md:col-span-2">
-          <label htmlFor={`${formId}-notes`} className="block text-sm font-semibold text-text-secondary mb-2">Ghi chú</label>
-          <input
-            id={`${formId}-notes`}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Ghi chú thêm..."
-            className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring"
-          />
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <div className="flex justify-between items-end mb-4">
-          <h3 className="text-lg font-bold text-text-primary">Chi Tiết Nhập Hàng</h3>
-        </div>
-
-        {lines.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-border rounded-xl bg-surface-secondary flex flex-col items-center justify-center">
-            <p className="text-text-muted mb-4">Chưa có mặt hàng nào.</p>
-            <button
-              type="button"
-              onClick={addLine}
-              className="text-primary-active bg-primary-soft/50 hover:bg-primary-soft px-6 py-2.5 rounded-lg text-sm font-medium transition"
+          <div>
+            <Field
+              label="Ngày nhập hàng thực tế"
+              htmlFor={`${formId}-transactionDate`}
+              hint="Để trống hệ thống sẽ lấy thời điểm hiện tại."
             >
-              + Thêm Mặt Hàng Đầu Tiên
-            </button>
+              <CustomDatePicker
+                id={`${formId}-transactionDate`}
+                name="transaction_date"
+                selected={transactionDate}
+                onChange={(date) => setTransactionDate(date)}
+                placeholderText="Chọn ngày nhập hàng (ngày/tháng/năm)"
+              />
+            </Field>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {lines.map((line, index) => {
-              const itemRowId = `${formId}-item-${index}`;
-              const availableUnits = conversions.filter(
-                (c: any) => c.purchased_item_id === line.purchased_item_id && c.status !== "INACTIVE"
-              );
-              const unitPrice = Number(line.quantity) > 0 ? Number(line.subtotal) / Number(line.quantity) : 0;
-
-              return (
-                <div key={index} className="p-4 border border-border rounded-xl relative bg-surface-secondary/50">
-                  <button
-                    onClick={() => removeLine(index)}
-                    className="absolute top-4 right-4 text-text-muted hover:text-danger"
-                  >
-                    ✕
-                  </button>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div className="md:col-span-3">
-                      <label htmlFor={`${itemRowId}-purchased_item_id`} className="block text-xs font-medium text-text-muted mb-1">Mặt hàng</label>
-                      <SearchableSelect
-                        id={`${itemRowId}-purchased_item_id`}
-                        value={line.purchased_item_id}
-                        onChange={(val) => updateLine(index, "purchased_item_id", val)}
-                        options={items.map((i: any) => ({ id: i.id, label: i.name }))}
-                        placeholder="-- Chọn Hàng --"
-                      />
-                    </div>
-
-                    <div className="md:col-span-3">
-                      <label htmlFor={`${itemRowId}-conversion_id`} className="block text-xs font-medium text-text-muted mb-1">Đơn vị nhập</label>
-                      <div className="space-y-2">
-                        <select
-                          id={`${itemRowId}-conversion_id`}
-                          value={line.conversion_id || ""}
-                          onChange={(e) => updateLine(index, "conversion_id", e.target.value)}
-                          className="w-full border border-border rounded-lg px-3 py-2 text-sm"
-                          disabled={!line.purchased_item_id}
-                        >
-                          <option value="">-- Chọn --</option>
-                          {availableUnits.map((u: any) => {
-                            const pUnit = String(u.purchased_unit).trim();
-                            const bUnit = String(u.base_unit).trim();
-                            const unitName = units.find((x:any)=>x.id===pUnit || x.name===pUnit)?.name || pUnit;
-                            const baseUnitName = units.find((x:any)=>x.id===bUnit || x.name===bUnit)?.name || bUnit;
-                            return (
-                              <option key={u.id} value={u.id}>
-                                {unitName} {u.conversion_rate}{baseUnitName}
-                              </option>
-                            );
-                          })}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label htmlFor={`${itemRowId}-quantity`} className="block text-xs font-medium text-text-muted mb-1">Số lượng</label>
-                      <input
-                        id={`${itemRowId}-quantity`}
-                        type="number"
-                        min="1"
-                        value={line.quantity}
-                        onChange={(e) => updateLine(index, "quantity", e.target.value)}
-                        className="w-full border border-border rounded-lg px-3 py-2 text-sm"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label htmlFor={`${itemRowId}-subtotal`} className="block text-xs font-medium text-text-muted mb-1">Thành tiền (đ)</label>
-                      <input
-                        id={`${itemRowId}-subtotal`}
-                        type="number"
-                        min="0"
-                        value={line.subtotal}
-                        onChange={(e) => updateLine(index, "subtotal", e.target.value)}
-                        className="w-full border border-border rounded-lg px-3 py-2 text-sm"
-                      />
-                    </div>
-                    
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-text-muted mb-1">Đơn giá</label>
-                      <div className="py-2 text-sm text-text-secondary">
-                        {formatNumber(unitPrice)}
-                      </div>
-                    </div>
-                  </div>
+          <div>
+            <Field label="Nguồn nhập hàng" htmlFor={`${formId}-sourceId`}>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <SearchableSelect
+                    id={`${formId}-sourceId`}
+                    value={sourceId}
+                    onChange={(val) => setSourceId(val)}
+                    options={sources.map((s: any) => ({ id: s.id, label: s.name }))}
+                    placeholder="Ví dụ: Shopee, Lazada..."
+                  />
                 </div>
-              );
-            })}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={async () => {
+                    const name = window.prompt("Nhập tên nguồn mới (VD: Tiktok Shop):");
+                    if (name && name.trim()) {
+                      const res = await addPurchaseSource(name.trim());
+                      if (res.success) {
+                        await alert({ title: "Thiếu thông tin", message: "Đã thêm nguồn thành công! Vui lòng tải lại trang để cập nhật danh sách.", variant: "warning" });
+                      } else {
+                        await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+                      }
+                    }
+                  }}
+                >
+                  + Thêm
+                </Button>
+              </div>
+            </Field>
+          </div>
+          <div>
+            <Field label="Mã hoá đơn" htmlFor={`${formId}-supplierInvoiceCode`}>
+              <TextInput
+                id={`${formId}-supplierInvoiceCode`}
+                type="text"
+                value={supplierInvoiceCode}
+                onChange={(e) => setSupplierInvoiceCode(e.target.value)}
+                placeholder="Ví dụ: INV-20231201"
+              />
+            </Field>
+          </div>
+          <div>
+            <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
+              <TextInput
+                id={`${formId}-notes`}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Ví dụ: giao buổi sáng"
+              />
+            </Field>
+          </div>
+        </div>
 
-            <button
+        <div
+          data-testid="form-lines"
+          className="bg-surface-card rounded-xl shadow-sm border border-border p-6 lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:row-span-2"
+        >
+          <PurchaseOrderLines
+            lines={lines}
+            items={items}
+            conversions={conversions}
+            units={units}
+            formId={formId}
+            addLine={addLine}
+            removeLine={removeLine}
+            updateLine={updateLine}
+          />
+        </div>
+
+        <div
+          data-testid="form-money"
+          className="lg:col-start-3 lg:row-start-2"
+        >
+          <PurchaseOrderTotals
+            formId={formId}
+            subtotalAmount={subtotalAmount}
+            totalAmount={totalAmount}
+            shippingFee={shippingFee}
+            setShippingFee={setShippingFee}
+            taxAmount={taxAmount}
+            setTaxAmount={setTaxAmount}
+            voucherAmount={voucherAmount}
+            setVoucherAmount={setVoucherAmount}
+            discountAmount={discountAmount}
+            setDiscountAmount={setDiscountAmount}
+            paymentMethod={paymentMethod}
+            setPaymentMethod={setPaymentMethod}
+            bankAccountId={bankAccountId}
+            setBankAccountId={setBankAccountId}
+            bankAccounts={bankAccounts}
+            paymentError={paymentError}
+            setPaymentError={setPaymentError}
+          />
+
+          <div className="flex flex-col gap-3">
+            <Button
               type="button"
-              onClick={addLine}
-              className="mt-4 w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition"
+              variant="primary"
+              loading={loading}
+              onClick={() => handleSubmit("COMPLETED")}
+              className="w-full min-h-[44px] md:min-h-[40px]"
             >
-              + Thêm Mặt Hàng
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col items-end pt-6 border-t border-border">
-        <div className="w-full max-w-md mb-6 space-y-3 bg-surface-card rounded-xl shadow-sm border border-border p-5">
-           <div className="flex justify-between items-center text-sm text-text-secondary">
-              <span className="font-medium">Tổng tiền hàng:</span>
-              <span className="font-semibold text-text-primary">{formatNumber(subtotalAmount)}</span>
-           </div>
-           
-           <div className="space-y-2 pt-2 border-t border-border/60">
-             <div className="flex justify-between items-center text-sm">
-                <span className="text-text-secondary">Phí vận chuyển (+):</span>
-                <input 
-                   type="number" 
-                   aria-label="Phí vận chuyển"
-                   value={shippingFee || ''}
-                   onChange={(e) => setShippingFee(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-focus-ring"
-                   placeholder="0"
-                 />
-             </div>
-             <div className="flex justify-between items-center text-sm">
-                <span className="text-text-secondary">Thuế (+):</span>
-                <input 
-                   type="number" 
-                   aria-label="Thuế"
-                   value={taxAmount || ''}
-                   onChange={(e) => setTaxAmount(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-border rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-focus-ring"
-                   placeholder="0"
-                 />
-             </div>
-             <div className="flex justify-between items-center text-sm">
-                <span className="text-text-secondary">Voucher (-):</span>
-                <input 
-                   type="number" 
-                   aria-label="Voucher"
-                   value={voucherAmount || ''}
-                   onChange={(e) => setVoucherAmount(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-danger/30 bg-danger/10 text-danger rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-danger font-medium"
-                   placeholder="0"
-                 />
-             </div>
-             <div className="flex justify-between items-center text-sm">
-                <span className="text-text-secondary">Chiết khấu (-):</span>
-                <input 
-                   type="number" 
-                   aria-label="Chiết khấu"
-                   value={discountAmount || ''}
-                   onChange={(e) => setDiscountAmount(Number(e.target.value))}
-                   className="w-28 md:w-32 text-right border border-danger/30 bg-danger/10 text-danger rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-danger font-medium"
-                   placeholder="0"
-                 />
-             </div>
-           </div>
-
-           <div className="flex justify-between items-center pt-4 border-t border-border">
-              <span className="text-base font-bold text-text-primary">Cần Thanh Toán:</span>
-              <span className="text-2xl font-bold text-success">{formatNumber(totalAmount)}</span>
-           </div>
-        </div>
-
-        <div className="w-full max-w-md mb-6">
-          <span className="block text-sm font-semibold text-text-secondary mb-2">Hình thức thanh toán</span>
-          <div className="flex items-center gap-6 min-h-[44px]">
-            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
-              <input
-                type="radio"
-                name="payment_method_radio"
-                value="CASH"
-                checked={paymentMethod === "CASH"}
-                onChange={() => {
-                  setPaymentMethod("CASH");
-                  setBankAccountId("");
-                  setPaymentError(null);
-                }}
-                className="w-4 h-4 text-primary focus:ring-focus-ring"
-              />
-              <span>Tiền mặt</span>
-            </label>
-            <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
-              <input
-                type="radio"
-                name="payment_method_radio"
-                value="BANK_TRANSFER"
-                checked={paymentMethod === "BANK_TRANSFER"}
-                onChange={() => {
-                  setPaymentMethod("BANK_TRANSFER");
-                  setPaymentError(null);
-                  if (!bankAccountId && bankAccounts.length === 1) {
-                    setBankAccountId(bankAccounts[0].id);
-                  }
-                }}
-                className="w-4 h-4 text-primary focus:ring-focus-ring"
-              />
-              <span>Chuyển khoản</span>
-            </label>
-          </div>
-
-          {paymentMethod === "BANK_TRANSFER" && (
-            <div className="mt-3">
-              <label htmlFor={`${formId}-bankAccountId`} className="block text-xs font-semibold text-text-secondary mb-1">
-                Tài khoản
-              </label>
-              <select
-                id={`${formId}-bankAccountId`}
-                value={bankAccountId}
-                onChange={(e) => {
-                  setBankAccountId(e.target.value);
-                  setPaymentError(null);
-                }}
-                className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
+              {isEdit ? "Cập nhật & Hoàn thành" : "Tạo"}
+            </Button>
+            {!(isEdit && po.status === "COMPLETED") && (
+              <Button
+                type="button"
+                variant="secondary"
+                loading={loading}
+                onClick={() => handleSubmit("DRAFT")}
+                className="w-full min-h-[44px] md:min-h-[40px]"
               >
-                <option value="">-- Chọn tài khoản --</option>
-                {bankAccounts.map((a: any) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name}
-                  </option>
-                ))}
-                {bankAccountId && !bankAccounts.some((a: any) => a.id === bankAccountId) && (
-                  <option value={bankAccountId}>{bankAccountId} (không còn dùng)</option>
-                )}
-              </select>
-            </div>
-          )}
-
-          {paymentError && (
-            <div role="alert" className="text-sm font-medium text-danger mt-2">
-              {paymentError}
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-4">
-          <LoadingButton
-            loading={loading}
-            onClick={() => handleSubmit("DRAFT")}
-            variant="secondary"
-          >
-            Lưu nháp
-          </LoadingButton>
-          <LoadingButton
-            loading={loading}
-            onClick={() => handleSubmit("COMPLETED")}
-            variant="primary"
-          >
-            {isEdit ? "Cập nhật & Hoàn thành" : "Tạo"}
-          </LoadingButton>
+                Lưu nháp
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -715,6 +481,6 @@ export default function PurchaseOrderForm({
           <option key={u.id} value={u.name} />
         ))}
       </datalist>
-    </div>
+    </>
   );
 }

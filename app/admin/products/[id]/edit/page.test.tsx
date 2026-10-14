@@ -28,6 +28,19 @@ vi.mock("@/app/admin/products/load-product-rows", () => ({
   }),
 }));
 
+vi.mock("@/lib/db/tables", () => ({
+  findAll: vi.fn(async (sheet: string) =>
+    sheet === "Modifier_Group_Products"
+      ? [
+          { group_id: "MG-001", product_id: "PROD-005" },
+          { group_id: "MG-002", product_id: "PROD-999" },
+        ]
+      : sheet === "Modifier_Groups"
+        ? [{ id: "MG-001" }, { id: "MG-002" }]
+        : [],
+  ),
+}));
+
 vi.mock("@/app/admin/products/components/ProductForm", () => ({
   default: (props: any) => <div data-testid="product-form" {...props} />,
 }));
@@ -42,6 +55,14 @@ describe("EditProductPage", () => {
       EditProductPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
+  });
+
+  it("hands the form the groups and only this dish's ticked ones", async () => {
+    const element = await EditProductPage({ params: { id: "PROD-005" }, searchParams: {} });
+    const children = React.Children.toArray(element.props.children);
+    const formChild: any = children.find((c: any) => c.props?.selectedOptionGroupIds !== undefined);
+    expect(formChild.props.optionGroups).toHaveLength(2);
+    expect(formChild.props.selectedOptionGroupIds).toEqual(["MG-001"]);
   });
 
   it("passes returnTo unchanged to form when returnTo is this record's own detail path", async () => {

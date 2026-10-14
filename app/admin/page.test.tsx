@@ -1,19 +1,34 @@
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { DashboardData } from "@/lib/dashboard/dashboard-data";
 
-vi.mock("@/lib/db/tables", () => ({
-  findAll: vi.fn().mockResolvedValue([]),
-  findAllNoCache: vi.fn().mockResolvedValue([]),
-  findAllWhere: vi.fn().mockResolvedValue([]),
+// vi.mock is hoisted above plain consts, so the data must be hoisted too.
+const { MOCK_DATA } = vi.hoisted(() => ({
+  MOCK_DATA: {
+    posSyncFailureCount: 0,
+    negativeStock: [],
+    stocktake: { stale: null, openTooLong: [] },
+    reminders: [],
+    table: [],
+    foodColumns: [],
+    toppingColumnName: null,
+  } as DashboardData,
 }));
-vi.mock("@/lib/db/supabase", () => ({
-  getSupabaseClient: () => ({
-    from: () => ({ select: () => ({ eq: () => Promise.resolve({ count: 0 }) }) }),
-  }),
+
+vi.mock("@/lib/dashboard/dashboard-data", () => ({
+  getDashboardData: vi.fn().mockResolvedValue(MOCK_DATA),
 }));
-vi.mock("next/link", () => ({ default: () => null }));
+
+vi.mock("next/link", () => ({
+  default: ({ href, children, ...rest }: { href: string; children?: React.ReactNode }) => (
+    <a href={href} {...rest}>{children}</a>
+  ),
+}));
 
 import AdminDashboard from "./page";
+import { DateRangeUrlButton } from "@/components/ui/DateRangeUrlButton";
+import { CompareLine } from "@/app/admin/reports/components/CompareLine";
+import { DashboardView } from "@/app/admin/components/DashboardView";
 
 function collectText(node: ReactNode, out: string[] = []): string[] {
   if (node === null || node === undefined || typeof node === "boolean") return out;
@@ -25,8 +40,25 @@ function collectText(node: ReactNode, out: string[] = []): string[] {
     node.forEach(n => collectText(n, out));
     return out;
   }
-  const el = node as { props?: { children?: ReactNode } };
-  if (el.props) collectText(el.props.children, out);
+  const el = node as { props?: { children?: ReactNode; title?: ReactNode; subtitle?: ReactNode; actions?: ReactNode } };
+  if (el.props) {
+    collectText(el.props.title, out);
+    collectText(el.props.subtitle, out);
+    collectText(el.props.actions, out);
+    collectText(el.props.children, out);
+  }
+  return out;
+}
+
+function elementsOf(node: unknown, type: unknown, out: Array<{ props: any }> = []): Array<{ props: any }> {
+  if (!node || typeof node !== "object") return out;
+  if (Array.isArray(node)) {
+    node.forEach(n => elementsOf(n, type, out));
+    return out;
+  }
+  const el = node as { type?: unknown; props?: Record<string, unknown> };
+  if (el.type === type) out.push(el as { props: any });
+  if (el.props) Object.values(el.props).forEach(v => elementsOf(v, type, out));
   return out;
 }
 
@@ -43,17 +75,27 @@ describe("admin dashboard clock (A6)", () => {
     const text = collectText(tree as ReactNode).join("");
     expect(text).toContain("Cập nhật lúc: 06:30:00");
   });
+});
 
-  it("the 7-day chart ends on the Saigon day, 15/09", async () => {
+describe("admin dashboard drops old controls (BR-UI-007)", () => {
+  it("renders no DateRangeUrlButton or CompareLine", async () => {
     const tree = await AdminDashboard({ searchParams: {} });
-    const text = collectText(tree as ReactNode).join("|");
-    expect(text).toContain("15/09");
+    expect(elementsOf(tree, DateRangeUrlButton)).toHaveLength(0);
+    expect(elementsOf(tree, CompareLine)).toHaveLength(0);
   });
 
-  it("shows 'TB đơn' without '(AOV)' in KPI card", async () => {
+  it("renders PageHeader with title and link to dashboard settings", async () => {
     const tree = await AdminDashboard({ searchParams: {} });
     const text = collectText(tree as ReactNode).join("|");
-    expect(text).toContain("TB đơn");
-    expect(text).not.toContain("(AOV)");
+    expect(text).toContain("Tổng quan");
+    expect(text).toContain("Việc cần xử lý và bán hàng 7 ngày qua.");
+    expect(text).toContain("Cài đặt Tổng quan");
+  });
+
+  it("renders DashboardView with loaded data", async () => {
+    const tree = await AdminDashboard({ searchParams: {} });
+    const views = elementsOf(tree, DashboardView);
+    expect(views).toHaveLength(1);
+    expect(views[0].props.data).toEqual(MOCK_DATA);
   });
 });

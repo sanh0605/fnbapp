@@ -52,6 +52,16 @@ export type StocktakeApplyResult = {
   skippedIngredients: StocktakeSkippedIngredient[];
   planHash: string;
   issueIds: string[];
+  // BR-INV-017: counted lines whose book figure changed between the count and
+  // the confirmation (a slip or order dated before the count, entered after it).
+  recomputedLines: StocktakeRecomputedLine[];
+};
+
+export type StocktakeRecomputedLine = {
+  lineId: string;
+  itemReference: string;
+  frozenQty: number;
+  recomputedQty: number;
 };
 
 export async function openStocktakeSessionAtomic(input: {
@@ -95,6 +105,26 @@ export async function cancelStocktakeSessionAtomic(sessionId: string): Promise<{
     throw new Error(`cancel_stocktake_session_atomic: ${error.message}`);
   }
   return data as { id: string; deleted: true };
+}
+
+// BR-INV-012: owner edits the most recent confirmed stocktake; the change
+// lands on the count's own date (see 0110_edit_confirmed_stocktake.sql).
+export async function editConfirmedStocktakeAtomic(input: {
+  sessionId: string;
+  lines: Array<{ lineId: string; countedQty: number }>;
+}): Promise<{ sessionId: string; changedCount: number; issueIds: string[] }> {
+  const { data, error } = await getSupabaseClient().rpc("edit_confirmed_stocktake_atomic", {
+    p_session_id: input.sessionId,
+    p_lines: input.lines.map(l => ({ line_id: l.lineId, counted_qty: l.countedQty })),
+  });
+  if (error) {
+    throw new Error(error.message); // shown to the owner as is: the function raises Vietnamese text
+  }
+  const result = data as { session_id?: string; changed_count?: number; issue_ids?: string[] } | null;
+  if (!result?.session_id) {
+    throw new Error("edit_confirmed_stocktake_atomic returned an invalid result");
+  }
+  return { sessionId: result.session_id, changedCount: Number(result.changed_count) || 0, issueIds: result.issue_ids ?? [] };
 }
 
 export type StocktakeReversalResult = {
@@ -202,6 +232,7 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     }>;
     issue_ids?: string[];
     skipped_ingredients?: Array<{ ingredient_id?: string; reason?: string }>;
+    recomputed_lines?: Array<{ line_id?: string; item_reference?: string; frozen_qty?: number; recomputed_qty?: number }>;
     plan_hash?: string;
   } | null;
   if (!result?.session_id || (result.status !== "OPEN" && result.status !== "CONFIRMED")) {
@@ -235,6 +266,13 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     reason: s.reason || "",
   }));
 
+  const recomputedLines = (result.recomputed_lines || []).map(l => ({
+    lineId: l.line_id || "",
+    itemReference: l.item_reference || "",
+    frozenQty: Number(l.frozen_qty) || 0,
+    recomputedQty: Number(l.recomputed_qty) || 0,
+  }));
+
   return {
     sessionId: result.session_id,
     status: result.status,
@@ -245,5 +283,6 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     skippedIngredients,
     planHash: result.plan_hash,
     issueIds: result.issue_ids || [],
+    recomputedLines,
   };
 }

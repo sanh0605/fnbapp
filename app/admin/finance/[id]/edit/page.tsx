@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { findById } from "@/lib/db/tables";
 import { getCashCategories } from "@/app/admin/finance/categories/actions";
 import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
+import { getMonthlyItems } from "@/app/admin/finance/monthly-items/actions";
 import { CashEntryForm } from "@/app/admin/finance/components/CashEntryForm";
 import { safeReturnTo } from "@/app/admin/finance/components/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
@@ -20,10 +21,11 @@ export default async function EditCashEntryPage({
 }) {
   const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance");
 
-  const [entry, categories, accounts] = await Promise.all([
+  const [entry, categories, accounts, monthlyItemRows] = await Promise.all([
     findById("Cash_Entries", params.id) as Promise<DBCashEntry | null>,
     getCashCategories(),
     getBankAccounts(),
+    getMonthlyItems(),
   ]);
 
   if (!entry || entry.status === "CANCELLED") {
@@ -63,6 +65,7 @@ export default async function EditCashEntryPage({
         entry={entry}
         categories={categories}
         accounts={accounts}
+        monthlyItems={monthlyItemRows.map((r) => r.item)}
         returnTo={detailHref}
       />
     </DetailFrame>

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -18,7 +18,12 @@ import { describe, expect, it } from "vitest";
 // swapped; only a source check (or real browser/visual testing, out of
 // scope here) can. This is bucket (b) from the task's own classification --
 // a claim a render test genuinely cannot express -- not an oversight.
-const source = readFileSync(resolve(__dirname, "StocktakeClient.tsx"), "utf8");
+// The screen is split across this folder's components (master plan part 6),
+// so the claims hold for the screen's source as a whole.
+const source = readdirSync(__dirname)
+  .filter(name => name.endsWith(".tsx") && !name.endsWith(".test.tsx"))
+  .map(name => readFileSync(resolve(__dirname, name), "utf8"))
+  .join("\n");
 
 describe("StocktakeClient Plan D D10 -- mobile (M1/M4), CSS-only claims a render test cannot see", () => {
   it("M1: the confirm-preview table has a stacked-card alternative for phones, not just overflow-x-auto", () => {

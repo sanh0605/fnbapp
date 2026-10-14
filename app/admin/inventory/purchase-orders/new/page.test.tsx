@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findAll = vi.hoisted(() => vi.fn().mockResolvedValue([]));
@@ -128,6 +128,12 @@ describe("NewPurchaseOrderPage copyFrom (BR-INV-016)", () => {
     expect(mockPurchaseOrderForm).toHaveBeenCalledWith(
       expect.objectContaining({ copySeed: undefined })
     );
+  });
+
+  it("the page fills the admin frame like the slip's detail page, for the two-column form (owner 2026-10-10, BR-UI-012)", async () => {
+    const tree = (await NewPurchaseOrderPage({})) as ReactElement<{ className?: string }>;
+    expect(tree.props.className).toContain("w-full");
+    expect(tree.props.className).not.toContain("max-w-");
   });
 
   it("without copyFrom parameter it renders normal form with no notices", async () => {

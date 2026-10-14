@@ -56,7 +56,7 @@ export function DialogHost() {
             {cancelText}
           </Button>
         )}
-        <Button variant={variant === "warning" ? "warning" : variant === "danger" ? "danger" : "primary"} onClick={handleOk}>
+        <Button variant={variant === "warning" || variant === "danger" ? "danger" : "primary"} onClick={handleOk}>
           {okText}
         </Button>
       </div>

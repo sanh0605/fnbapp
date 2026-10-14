@@ -201,3 +201,32 @@ describe("computeIssuedEventFigures: labels", () => {
     expect(figures.some(f => f.label.includes("Không có ghi chú"))).toBe(false);
   });
 });
+
+// Performance rewrite guard (audit B6): replaying only the items a group touches must equal the original
+// "replay everything after each group, subtract" to the last bit.
+describe("computeIssuedEventFigures: per-item replay equals the full replay per group", () => {
+  it("matches the brute-force prefix replay exactly on interleaved items and slips", () => {
+    const purchases: Purchase[] = ["A", "B", "C"].flatMap((id, n) => [
+      { purchased_item_id: id, at: "2026-08-01T00:00:00Z", base_quantity: 100 + n, subtotal: 1000 * (n + 1) + 0.37 },
+      { purchased_item_id: id, at: "2026-08-10T00:00:00Z", base_quantity: 50, subtotal: 777.77 * (n + 1) },
+    ]);
+    const rows: any[] = [];
+    for (let i = 0; i < 30; i++) {
+      for (const id of i % 2 ? ["A", "C"] : ["B", "A"]) {
+        rows.push({ id: `R${i}-${id}`, purchased_item_id: id, issued_at: `2026-08-${String(2 + (i % 20)).padStart(2, "0")}T0${i % 9}:00:00Z`, base_quantity: 0.7 + (i % 3), source: "MANUAL", issue_slip_id: `S${i}` });
+      }
+    }
+    const got = computeIssuedEventFigures(rows, purchases).reverse();
+
+    let previous = 0;
+    const cumulative: Issue[] = [];
+    const expected = got.map(f => {
+      cumulative.push(...buildIssueCostingIssues(rows.filter(r => `M:${r.issue_slip_id}` === f.key)));
+      const total = computeIssuedItemFigures(purchases, cumulative).reduce((s, x) => s + x.issuedValueExact, 0);
+      const delta = total - previous;
+      previous = total;
+      return delta;
+    });
+    expect(got.map(f => f.valueExact)).toEqual(expected);
+  });
+});

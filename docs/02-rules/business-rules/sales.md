@@ -53,3 +53,75 @@ The system records payments in `order_payments`, and **that table begins 2026-07
 `orders_v2.brand_id` is derived server-side from `orders_v2.outlet_id` at the moment of sale, **never accepted from the client.** The till (`/pos`) opens by picking an outlet, not a brand; a `brandId` present in the URL is ignored by both the page and `submitOrderV2`. `outlet_id` itself is frozen at sale time the same way `created_at` is — an order edit preserves the original outlet, not the editor's own.
 
 This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `brand_id` per outlet, no time-windowed brand slots, no staff-to-outlet assignment, manual outlet picker only. See `docs/04-operations/OPEN-ITEMS.md` item 5.
+
+### BR-SALE-007 — Tổng quan's 7-day table: a cup is a drink-type line, 0đ orders count
+
+**Status:** `APPROVED` — owner 2026-10-14. He confirmed the worked example in `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md` section 5. He asked for a separate column for toppings sold on their own (*"nếu có topping mua riêng thì có thêm 1 cột riêng"*), and kept 0đ orders in the count (*"1c"*). Built on the branch `feat/no-popups` 2026-10-14, not yet pushed. Code: `lib/dashboard/seven-day-table.ts`.
+
+- **Which days and orders.** The table covers today and the six days before it, by the Saigon day of the order's `created_at`. It counts `COMPLETED` orders that have not been replaced by an edit: `superseded_by` is empty, which on live data means either null or `""`.
+- **0đ orders count.** These are mostly a staff member's daily Cà phê đá + Trứng luộc + Khoai lang. He was shown that they lower the average: 08/10 is 20,889 with them and 21,692 without.
+- **A cup** is any line whose dish group, read from the line's snapshot, belongs to a Loại món marked "là thức uống". The owner manages Loại món himself.
+- **Average per cup** is the money on the cup lines divided by the number of cups, rounded with `displayMoney`. It includes toppings ordered with that cup, because they are already in the line's money. Example: Cacao latte 23,000 + Kem muối 4,000 is one cup at 27,000.
+- **Topping mua riêng** counts portions of dishes whose group belongs to the Loại món chosen in Cài đặt Tổng quan. When none is chosen, the column is not shown.
+- **One column per food dish** chosen in Cài đặt Tổng quan. Each shows the quantity sold.
+- **Nothing is stored.** The table is worked out each time the page opens. Changing a group's Loại món recomputes all seven days with the new type.
+- Re-runnable check: `scripts/verify-dashboard-seven-days.ts` gives 0 differences on 36 cells (08/10–13/10) against the confirmed example.
+
+### BR-SALE-008 — A price changed while the till is open: the server refuses the order and the till reloads
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C5. He was shown this example: the till opens in the morning, Bạc xỉu goes from 29,000 to 32,000 at noon, the till still shows 29,000, the cashier takes 29,000, the book records 32,000, and the drawer is 3,000 short. He chose *"Từ chối, bắt tải lại"* over saving the price the till showed. Not built yet.
+
+- The till sends the total it showed the customer. The server works the total out again from the prices in force. If the two differ, the order is not saved and the till says the price has changed and to reload the page. After the reload the cashier charges the new price.
+- The till can never set a price. That is why he did not choose "save what the till showed".
+- The cost: the order that hits the change has to be rung up again once. Until the till is reloaded, every order containing a changed dish is refused.
+- An order taken before the change and sent later (sync delay) is checked against the price in force when it was taken, not when it arrived. Otherwise a correct order would be refused.
+
+### BR-SALE-009 — A percent discount on the whole order is taken after the dish discounts
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C9, chose *"Sau giảm từng món"*. Not built yet: today the till already works this way, the server does not.
+
+**The example he was shown.** Bạc xỉu 29,000 and Cà phê sữa 25,000 come to 54,000. The cashier takes 4,000 off Bạc xỉu, leaving 50,000, then 10% off the whole order. The till takes 10% of 50,000, so 5,000, and the customer pays 45,000. The server takes 10% of 54,000, so 5,400, and books 44,600: the book and the drawer are 400 apart.
+
+- The base for a percent order discount is the order total after every dish discount (manual and promotion). In the example: 5,000 off, 45,000 paid and booked.
+- The server is changed to match the till; the till keeps what the cashier sees today.
+
+### BR-SALE-010 — A whole-order promotion and the cashier's whole-order discount stack
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C3, chose *"Cộng dồn"* over locking the cashier's discount. Not built yet. Measured 2026-10-14: no running promotion is a whole-order one (both are per dish), so no order has been affected.
+
+**The example he was shown.** A "Giảm 10% hóa đơn" promotion takes a 100,000 order to 90,000; the cashier then takes another 5,000 off for a regular. The customer pays 85,000.
+
+- Order of steps: dish discounts first, then the whole-order promotion, then the cashier's whole-order discount. A percent cashier discount is taken on what is left after the promotion (`BR-SALE-009`).
+- Today the till applies such a promotion but the server ignores it, so the book would say 100,000 against 90,000 collected. The server is changed to apply it the same way.
+
+### BR-SALE-011 — Promotions without a code apply themselves; a "Dùng chung" box on each promotion decides whether two stack
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C4. He first answered *"máy chủ tự áp, nhưng đúng điều kiện"* for promotions without a code only, with the customer choosing when a code promotion meets another; he then confirmed the worked example below (*"Đúng vậy"*). Not built yet.
+
+**The example he confirmed.** "Giảm 10.000 Bạc xỉu" needs no code. The customer also hands over the code KHAITRUONG, 15% off the order.
+
+- **Without a code.** A promotion that needs no code applies itself when the order meets its conditions, minimum order value included. The till shows it before the money is taken. The server never applies a promotion that needs a code unless the till sent that code, and never one whose conditions the order misses (today it does both).
+- **"Dùng chung với khuyến mãi khác"** is a new yes/no box on each promotion, set by the owner on the promotion screen. Existing promotions start at "không".
+- **Both "có":** both apply. Order of steps as in `BR-SALE-010`.
+- **Either "không":** the till lists both with the money each takes off, the cashier asks the customer, and picks one. The server books the one picked.
+- The server books exactly the promotions the till sent, after checking each one's conditions; any mismatch is refused like a changed price (`BR-SALE-008`).
+
+### BR-SALE-012 — Doanh số filtered by a dish group hides the whole-order money
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item B3, chose *"Tạm ẩn khi lọc"* over showing the whole-order figures with a note and over splitting them by each group's share. Built 2026-10-14 on the branch feat/no-popups, not yet pushed.
+
+**The example he was shown.** On 09/10 an order was Cà phê đá 36,000 + Cà phê sữa đá 20,000 + Trứng luộc 5,000, paid 61,000 in cash. Filtered to Nhóm SP = Cà phê, "Tổng doanh thu thuần" said 56,000 while the discount box and the payment-method box said 61,000, because a payment is made once for the whole order and cannot be split by dish.
+
+- With Nhóm SP chosen, Doanh số shows only figures that belong to that group's lines. "Chi tiết giảm giá", "Doanh thu theo phương thức thanh toán" and the small "Trước giảm giá", payment-count and "Khuyến mãi hệ thống" lines under the three figure boxes are hidden, replaced by one line telling him to clear the group filter to see them.
+- Without the group filter the page is unchanged.
+
+### BR-SALE-013 — An order paid two ways shows each part on the order screens
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item C12, chose *"Giữ nút, Đơn hàng hiện từng phần"* over removing the till's "Thanh toán nhiều hình thức" button and over leaving the screens as they were.
+
+**The example he was shown.** Order 261006002002 on 06/10, one Trà sữa truyền thống 18,000, was booked as 9,000 cash + 9,000 transfer; the order list and the order page said only "Tiền mặt". He first took the split for a fault; it is not: the till never splits by itself, the cashier types each part. Measured 2026-10-14: 2 such orders ever, both by the account tuyen2612 at Điểm bán 2 around 19:42 (27/07, 72,000 as 36,000 + 36,000; 06/10). Whether those customers really paid that way is his to check with the cashier or the bank statement.
+
+- The till keeps the button.
+- The order list shows "Tiền mặt + Chuyển khoản" for such an order; the order page shows each part with its amount. A one-way order shows as before.
+- **Sửa đơn edits each part** — owner 2026-10-14, chose *"Sửa được từng phần"* over merging into one method and over locking the method. Until then the page showed one "Phương thức" box and, for an order paid two ways, silently kept the old parts whatever was chosen. Now the page lists the parts it holds (method and amount); the owner may change a part's method or amount, add the other method, or remove a part down to one. One part always takes the order's whole new total. With two parts, their sum must equal the order's new total or the save is refused with both figures shown; this also lets a split order's total change, which was refused before. Example: 18,000 as 9,000 cash + 9,000 transfer can become 10,000 + 8,000, or 18,000 cash.
+

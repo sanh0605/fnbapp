@@ -675,3 +675,115 @@ describe("DataList", () => {
 });
 
 
+
+// BR-UI-005 / BR-UI-003, spec 2.4: plain grey headers, even rows, a place for
+// the totals row right under the header (what gets totalled is BR-UI-004).
+describe("DataList wears the table template", () => {
+  function renderList(extra: Partial<React.ComponentProps<typeof DataList<SampleSupplier>>> = {}) {
+    return render(
+      <DataList
+        rows={suppliers}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        empty={<div>Trống</div>}
+        {...extra}
+      />
+    );
+  }
+
+  it("headers are plain grey text, not capitals", () => {
+    renderList();
+    for (const th of screen.getAllByRole("columnheader")) {
+      expect(th.className).not.toMatch(/\buppercase\b|\btracking-/);
+      expect((th.closest("tr") as HTMLElement).className).not.toMatch(/\buppercase\b|\btracking-/);
+    }
+  });
+
+  it("titles are bold and on the left, an amount column's too; its figures stay right (BR-UI-011)", () => {
+    renderList({
+      columns: [
+        ...columns,
+        { key: "debt", header: "Công nợ", align: "right", render: () => "120,000đ" },
+      ],
+    });
+    for (const th of screen.getAllByRole("columnheader")) {
+      expect(th.className).toMatch(/\bfont-(semibold|bold)\b/);
+      expect(th.className).not.toMatch(/\bfont-medium\b/);
+      expect(th.className).not.toContain("text-right");
+    }
+    expect(screen.getAllByText("120,000đ")[0].closest("td")!.className).toContain("text-right");
+  });
+
+  it("a sortable amount column's title link sits on the left too (BR-UI-011)", () => {
+    renderList({
+      columns: [
+        ...columns,
+        { key: "debt", header: "Công nợ", align: "right", render: () => "120,000đ", sortValue: () => 1 },
+      ],
+      sort: { key: "id", dir: "asc", href: (k, d) => `?sort=${k}&dir=${d}` },
+    });
+    const link = screen.getByRole("link", { name: /Công nợ/ });
+    expect(link.className).not.toContain("justify-end");
+  });
+
+  it("a computer row is about 45px tall, with or without its delete button (owner 2026-10-11 trial)", () => {
+    renderList({
+      removal: { verb: "Xoá", confirmMessage: (n: number) => `Xoá ${n}?`, remove: vi.fn() },
+    });
+    const row = screen.getAllByText("Vinamilk")[0].closest("tr") as HTMLElement;
+    for (const td of Array.from(row.querySelectorAll("td"))) {
+      expect(td.className).not.toMatch(/\bpy-4\b/);
+    }
+    expect(screen.getAllByText("Vinamilk")[0].closest("td")!.className).toMatch(/\bpy-3\b/);
+    const del = screen.getAllByRole("button", { name: "Xoá Vinamilk" }).find(b => b.closest("td"))!;
+    expect(del.className).toContain("min-h-[32px]");
+    expect(del.className).not.toContain("min-h-[36px]");
+    expect((del.closest("td") as HTMLElement).className).toMatch(/\bpy-1\.5\b/);
+  });
+
+  it("no row cell is bold", () => {
+    renderList();
+    for (const td of screen.getAllByRole("cell")) {
+      expect(td.className).not.toMatch(/\bfont-(bold|semibold|medium)\b/);
+    }
+  });
+
+  it("no totals row unless the page gives totals", () => {
+    renderList();
+    expect(screen.queryByText("Tổng")).not.toBeInTheDocument();
+  });
+
+  it("with totals: a soft brown row right under the header, and a first card on the phone", () => {
+    renderList({ totals: { label: "Tổng", values: { name: "3 nhà cung cấp" } } });
+    const rows = screen.getAllByRole("row");
+    expect(rows[1].className).toContain("bg-primary-soft");
+    expect(rows[1]).toHaveTextContent("Tổng");
+    expect(rows[1]).toHaveTextContent("3 nhà cung cấp");
+
+    // The phone card list comes after the desktop table in the page; its
+    // totals card must come before its first row card.
+    const totals = screen.getAllByText("3 nhà cung cấp");
+    expect(totals).toHaveLength(2);
+    const phoneTotal = totals[1];
+    const vinamilks = screen.getAllByText("Vinamilk");
+    const phoneFirstCard = vinamilks[vinamilks.length - 1];
+    expect(phoneTotal.compareDocumentPosition(phoneFirstCard) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("the bulk delete button is a red outline, since a yes/no question follows it", () => {
+    renderList({
+      removal: {
+        verb: "Xoá",
+        confirmMessage: (count: number) => `Xoá ${count} nhà cung cấp đã chọn?`,
+        remove: vi.fn(),
+      },
+    });
+    fireEvent.click(screen.getByRole("checkbox", { name: "Chọn tất cả" }));
+    const cls = screen.getByRole("button", { name: "Xoá 3 dòng đã chọn" }).className.split(/\s+/);
+    expect(cls).toContain("border-danger");
+    expect(cls).not.toContain("bg-danger");
+  });
+});

@@ -298,6 +298,25 @@ describe("IssueSlipClient -- package-size counting produces the base quantity se
     expect(call.lines).toEqual([{ purchasedItemId: "SPM-001", baseQuantity: 36 }]);
   });
 
+  // Owner 2026-10-14: on a slow connection a second tap must not record a second slip.
+  it("after a successful save a second tap sends nothing until the page moves on", async () => {
+    mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
+    const theItem = item({
+      packageLines: [pkg({ conversionId: "QD-002", sizeLabel: "Hộp lẻ", conversionRate: 1, purchasedUnitName: "Hộp" })],
+    });
+    const container = await renderTracked(<IssueSlipClient items={[theItem]} />);
+    const block = getLineBlocks(container)[0];
+
+    await selectItemInBlock(block, "Sữa tươi Vinamilk");
+    await selectPackage(block, "Hộp lẻ");
+    await setInputValue(findQtyInput(block), "3");
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+    expect(mocks.routerPush).toHaveBeenCalledTimes(1);
+
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+    expect(mocks.createIssueSlip).toHaveBeenCalledTimes(1);
+  });
+
   // BR-UI-008 (owner 2026-10-07): the dot is the decimal mark typed into the
   // box. Before, the box dropped the dot, so "1.5" Thùng became 15 Thùng.
   it("typing 1.5 Thùng 12 hộp sends 18 hộp, not 180", async () => {
@@ -333,8 +352,40 @@ describe("IssueSlipClient -- package-size counting produces the base quantity se
     await setInputValue(findQtyInput(block), "1.2345");
     expect(findQtyInput(block).value).toBe("1.234");
 
+    // Wave K3: the shared number box shows thousands with a comma, so a typed
+    // "1,250" reads back as "1,250" (one thousand two hundred fifty).
     await setInputValue(findQtyInput(block), "1,250");
-    expect(findQtyInput(block).value).toBe("1250");
+    expect(findQtyInput(block).value).toBe("1,250");
+  });
+});
+
+// BR-UI-005 / BR-UI-008 (wave K3): the quantity box is the shared number box.
+describe("IssueSlipClient -- shared number box (wave K3)", () => {
+  it("shows the example 'Ví dụ: 1,250.5' in the empty quantity box", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    expect(findQtyInput(getLineBlocks(container)[0]).placeholder).toBe("Ví dụ: 1,250.5");
+  });
+
+  it("typing 1,5 shows 15 and says the decimal mark is a dot", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const block = getLineBlocks(container)[0];
+    await setInputValue(findQtyInput(block), "1,5");
+    expect(findQtyInput(block).value).toBe("15");
+    expect(block.textContent).toContain("Số lẻ dùng dấu chấm, ví dụ 1.5");
+  });
+
+  it("typing 1250.5 shows 1,250.5 and sends 1250.5 × 12", async () => {
+    mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const block = getLineBlocks(container)[0];
+    await selectItemInBlock(block, "Sữa tươi Vinamilk");
+    await selectPackage(block, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(block), "1250.5");
+    expect(findQtyInput(block).value).toBe("1,250.5");
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+    expect(mocks.createIssueSlip.mock.calls[0][0].lines).toEqual([
+      { purchasedItemId: "SPM-001", baseQuantity: 15006 },
+    ]);
   });
 });
 
@@ -916,3 +967,40 @@ describe("IssueSlipClient -- Row 3 Giá trị xuất", () => {
 });
 
 
+
+
+// Owner 2026-10-10: a create/edit form looks like the slip's detail page —
+// on a computer the lines take the left two thirds and the slip-wide boxes
+// stack in the right third; on a phone the same blocks run top to bottom in
+// their source order (shared boxes, lines, then money and buttons).
+function expectBefore(a: Element, b: Element) {
+  expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+}
+
+describe("IssueSlipClient two columns on a computer (owner 2026-10-10)", () => {
+  it("lines on the left two thirds, the issue time then the total and buttons on the right third", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[itemWithRealUnit]} />);
+    const q = (id: string) => container.querySelectorAll(`[data-testid="${id}"]`);
+    // One of each: the phone view keeps its own layout, without these marks.
+    for (const id of ["form-layout", "form-lines", "form-shared", "form-money"]) expect(q(id)).toHaveLength(1);
+    const layout = q("form-layout")[0] as HTMLElement;
+    const lines = q("form-lines")[0] as HTMLElement;
+    const shared = q("form-shared")[0] as HTMLElement;
+    const money = q("form-money")[0] as HTMLElement;
+    expect(layout.className).toContain("lg:grid-cols-3");
+    expect(lines.className).toContain("lg:col-span-2");
+    expect(lines.className).toContain("lg:col-start-1");
+    expect(shared.className).toContain("lg:col-start-3");
+    expect(money.className).toContain("lg:col-start-3");
+    expect(layout.closest(".md\\:hidden")).toBeNull();
+
+    expect(shared.textContent).toContain("Thời điểm xuất");
+    expect(shared.textContent).toContain("Đã điền đủ");
+    expect(lines.querySelector("table")).not.toBeNull();
+    expect(money.textContent).toContain("Tổng giá trị xuất");
+    expect(money.textContent).toContain("Ghi phiếu xuất");
+    expect(money.textContent).toContain("Quay lại");
+    expectBefore(shared, lines);
+    expectBefore(lines, money);
+  });
+});

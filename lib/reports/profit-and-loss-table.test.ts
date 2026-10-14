@@ -16,7 +16,7 @@ function monthFigures(month: string, overrides: Partial<PnlMonthFigures> = {}): 
   };
 }
 function figures(months: PnlMonthFigures[], extra: Partial<PnlFigures> = {}): PnlFigures {
-  return { year: 2026, months, expenseCategories: [], firstPaymentDate: "2026-07-20", ...extra };
+  return { fromMonth: "2026-01", toMonth: "2026-12", months, expenseCategories: [], firstPaymentDate: "2026-07-20", ...extra };
 }
 function row(t: PnlTable, key: string): PnlRow {
   const found = t.rows.find(r => r.key === key);
@@ -64,7 +64,7 @@ function august(): PnlMonthFigures {
     },
   });
 }
-const augustTable = () => buildPnlTable(figures([august()], { expenseCategories: CATEGORIES }), "2026-09-11");
+const augustTable = () => buildPnlTable(figures([august()], { expenseCategories: CATEGORIES }), "2026-09-11", "năm nay");
 
 describe("August 2026, real figures", () => {
   it("rounds each cell from its own exact value and computes profit from exact values", () => {
@@ -138,12 +138,13 @@ describe("August 2026, real figures", () => {
   });
 
   it("adds the Luỹ kế tail sentence only when the stocktake month is not the table's first month", () => {
-    const first = buildPnlTable(figures([august()], { expenseCategories: CATEGORIES }), "2026-09-11");
+    const first = buildPnlTable(figures([august()], { expenseCategories: CATEGORIES }), "2026-09-11", "năm nay");
     expect(first.footnotes[0].text).not.toContain("Luỹ kế mới thấy đúng bức tranh");
 
     const second = buildPnlTable(
       figures([monthFigures("2026-07", { posRevenue: 1 }), august()], { expenseCategories: CATEGORIES }),
       "2026-09-11",
+      "năm nay",
     );
     const stocktakeNote = second.footnotes.find(f => f.key === "stocktake-STK-001-2026-08")!;
     expect(stocktakeNote.text).toBe(
@@ -155,7 +156,7 @@ describe("August 2026, real figures", () => {
 describe("rounding (BR-DATA-005)", () => {
   it("three months of 100,4 show 100 each and a total of 301, and the page says why", () => {
     const months = ["2025-01", "2025-02", "2025-03"].map(m => monthFigures(m, { depreciationExact: 100.4 }));
-    const t = buildPnlTable(figures(months, { year: 2025 }), "2026-09-11");
+    const t = buildPnlTable(figures(months, { fromMonth: "2025-01", toMonth: "2025-12" }), "2026-09-11", "năm nay");
     expect(values(t, "depreciation")).toEqual([100, 100, 100]);
     expect(row(t, "depreciation").total).toBe(301);
     expect(values(t, "netProfit")).toEqual([-100, -100, -100]);
@@ -196,7 +197,7 @@ describe("which rows show", () => {
         ],
       } as PnlMonthFigures["sources"],
     });
-    const t = buildPnlTable(figures([april]), "2026-09-11");
+    const t = buildPnlTable(figures([april]), "2026-09-11", "năm nay");
     expect(t.rows.map(r => r.key)).toEqual([
       "revenue", "revenueManual", "cogs", "nonInventory", "shrinkage", "grossProfit",
       "depreciation", "otherIncome", "netProfit", "margin", "cumulative",
@@ -225,16 +226,29 @@ describe("which rows show", () => {
 describe("month labels", () => {
   it("marks the month still running with the day the figures reach", () => {
     const september = monthFigures("2026-09", { posRevenue: 5_054_000, posOrderCount: 213 });
-    const t = buildPnlTable(figures([august(), september], { expenseCategories: CATEGORIES }), "2026-09-11");
+    const t = buildPnlTable(figures([august(), september], { expenseCategories: CATEGORIES }), "2026-09-11", "năm nay");
     expect(t.months.map(m => m.label)).toEqual(["08/2026", "09/2026 (đến 11/09)"]);
     const currentMonth = t.months.find(m => m.month === "2026-09")!;
     expect(currentMonth.title).toBe("09/2026");
     expect(currentMonth.head).toBe("09/26");
     expect(currentMonth.until).toBe("11/09");
     expect(t.months.find(m => m.month === "2026-08")!.until).toBeNull();
-    expect(t.periodLabel).toBe("từ đầu năm");
-    const past = buildPnlTable(figures([monthFigures("2025-12", { depreciationExact: 1 })], { year: 2025 }), "2026-09-11");
-    expect(past.periodLabel).toBe("cả năm");
+  });
+});
+
+// BR-UI-007 (owner 2026-10-09): Lãi lỗ takes any span of whole months.
+describe("range of months", () => {
+  it("the range's name passes through as given", () => {
+    const t = buildPnlTable(figures([august()], { expenseCategories: CATEGORIES }), "2026-09-11", "quý trước");
+    expect(t.rangeName).toBe("quý trước");
+    expect(t.fromMonth).toBe("2026-01");
+    expect(t.toMonth).toBe("2026-12");
+  });
+
+  it("a span across the new year titles each month with its own year", () => {
+    const months = ["2025-11", "2025-12", "2026-01", "2026-02"].map(m => monthFigures(m, { depreciationExact: 1 }));
+    const t = buildPnlTable(figures(months, { fromMonth: "2025-11", toMonth: "2026-02" }), "2026-10-09", "trong khoảng đã chọn");
+    expect(t.months.map(m => m.title)).toEqual(["11/2025", "12/2025", "01/2026", "02/2026"]);
   });
 });
 
@@ -244,7 +258,7 @@ describe("summary and chart", () => {
       monthFigures("2026-05", { posRevenue: 7_675_000, posOrderCount: 302 }),
       august(),
       monthFigures("2026-09", { posRevenue: 5_054_000, posOrderCount: 213 }),
-    ], { expenseCategories: CATEGORIES }), "2026-09-11");
+    ], { expenseCategories: CATEGORIES }), "2026-09-11", "năm nay");
     expect(t.summary.revenue).toBe(30_411_000);
     // 7.675.000 − 32.372.963,84 + 5.054.000
     expect(t.summary.netProfit).toBe(-19_643_964);
@@ -258,12 +272,12 @@ describe("summary and chart", () => {
   });
 
   it("has no worst month when no month lost money", () => {
-    const t = buildPnlTable(figures([monthFigures("2026-05", { posRevenue: 7_675_000, posOrderCount: 302 })]), "2026-09-11");
+    const t = buildPnlTable(figures([monthFigures("2026-05", { posRevenue: 7_675_000, posOrderCount: 302 })]), "2026-09-11", "năm nay");
     expect(t.summary.worstMonth).toBeNull();
   });
 
   it("leaves margin empty for a month with no revenue", () => {
-    const t = buildPnlTable(figures([monthFigures("2026-03", { depreciationExact: 49_225.708333333336 })]), "2026-09-11");
+    const t = buildPnlTable(figures([monthFigures("2026-03", { depreciationExact: 49_225.708333333336 })]), "2026-09-11", "năm nay");
     expect(values(t, "margin")).toEqual([null]);
     expect(row(t, "margin").cells[0].formula).toBe("Tháng này chưa có doanh thu, nên không tính được biên lợi nhuận.");
     expect(row(t, "margin").total).toBeNull();
@@ -272,7 +286,7 @@ describe("summary and chart", () => {
   });
 
   it("an empty year gives an empty table", () => {
-    const t = buildPnlTable(figures([]), "2026-09-11");
+    const t = buildPnlTable(figures([]), "2026-09-11", "năm nay");
     expect(t.months).toEqual([]);
     expect(t.chart).toEqual([]);
     expect(t.footnotes).toEqual([]);
@@ -286,7 +300,7 @@ describe("BR-SALE-005 footnote", () => {
       monthFigures("2026-06", { posRevenue: 22_157_000, posOrderCount: 793, posRevenueBeforePayments: 22_157_000 }),
       monthFigures("2026-07", { posRevenue: 18_661_000, posOrderCount: 664, posRevenueBeforePayments: 12_215_000 }),
       monthFigures("2026-08", { posRevenue: 17_682_000, posOrderCount: 644 }),
-    ]), "2026-09-11");
+    ]), "2026-09-11", "năm nay");
     expect(t.footnotes).toContainEqual({
       key: "before-payments",
       number: 1,

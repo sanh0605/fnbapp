@@ -1,6 +1,6 @@
 # Profit and loss rules
 
-The monthly profit-and-loss page is `/admin/reports/pnl`, named **Báo cáo tài chính** (menu Báo cáo → Báo cáo tài chính; owner decision 2026-09-12, renamed from Lãi lỗ; the route keeps its old name). Design:
+The monthly profit-and-loss page is `/admin/reports/pnl`, named **Lãi lỗ** (menu Báo cáo → Lãi lỗ, and the page title; read from `app/admin/nav-items.ts` 2026-10-14. The 2026-09-12 name "Báo cáo tài chính" is no longer used on screen). Design:
 `docs/superpowers/specs/2026-09-11-bao-cao-lai-lo-design.md`. The rules below
 are the owner's decisions for it; how each line is computed is in the design
 and in `BR-COGS-007`, `BR-COGS-008`, `BR-CASH-001` and `BR-CASH-003`.
@@ -12,7 +12,7 @@ can therefore miss its total by a đồng or two; when it does, the page says so
 under the table. Percentages show two decimals (`PERCENT_DECIMALS`, owner
 decision 2026-09-11).
 
-**How the page shows it** (the sample the owner approved on 2026-09-11, and his notes of the same evening). A cost line — cost of goods, items bought for immediate use, shrinkage, each expense group, depreciation — shows its value with a minus, so the table reads as a sum from top to bottom; that minus is not red, red is kept for a result below zero. A money cell that is exactly zero shows "–". The running total since January is called "Luỹ kế" (owner, 2026-09-11). Notes under the table are numbered, and a month carries the numbers of the notes about it. The chart shortens money as `BR-DATA-005` says.
+**How the page shows it** (the sample the owner approved on 2026-09-11, and his notes of the same evening). A cost line — cost of goods, items bought for immediate use, shrinkage, each expense group, depreciation — shows its value with a minus, so the table reads as a sum from top to bottom; that minus is not red, red is kept for a result below zero. A money cell that is exactly zero shows "–". The running total is called "Luỹ kế" (owner, 2026-09-11). It adds up from the first month of the range being viewed, not from January (owner 2026-10-14, audit B9, chose *"Từ tháng đầu khoảng đang xem"* over January of each year and over since opening): viewing July to September, September's Luỹ kế is July + August + September. This is what the page already did; only this line changed. Notes under the table are numbered, and a month carries the numbers of the notes about it. The chart shortens money as `BR-DATA-005` says.
 
 ### BR-PNL-001 — One profit and loss for the whole shop
 
@@ -28,8 +28,10 @@ report.
 
 **Status:** `APPROVED` — owner decision 2026-09-11.
 
-One year per view. Each month is a column, followed by the year's total and
-the share of revenue; each line (revenue, cost of goods, each expense group,
+One span of whole months per view: one year until 2026-10-09; since then any
+range the shared time filter offers in whole months, opening on Năm nay
+(`BR-UI-007`, owner 2026-10-09). Each month is a column, followed by the
+range's total and the share of revenue; each line (revenue, cost of goods, each expense group,
 profit) is a row. The owner compared this against his own sheet's layout
 (months as rows) on a clickable sample with real figures and chose columns:
 "Tháng theo cột". On a phone there is no wide table: one card per month,

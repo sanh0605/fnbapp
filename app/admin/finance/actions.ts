@@ -13,7 +13,7 @@ import { getCashTransfers } from "./transfers/actions";
 import { readCashBookDaily } from "@/lib/finance/cash-book-daily";
 import { buildCashBookRows, type CashBookRow } from "@/lib/finance/cash-book-rows";
 import { summariseCashBook, type CashBookSummary } from "@/lib/finance/cash-flow";
-import type { DBCashEntry, DBCashCategory, DBBankAccount } from "@/types/db";
+import type { DBCashEntry, DBCashCategory, DBBankAccount, DBMonthlyExpenseItem } from "@/types/db";
 
 const SHEET = "Cash_Entries";
 const PATH = "/admin/finance";
@@ -27,6 +27,25 @@ function readCashEntryInput(formData: FormData): CashEntryInput {
     bank_account_id: (formData.get("bank_account_id") as string) || "",
     note: (formData.get("note") as string) || "",
   };
+}
+
+// Empty -> null. A set item must be ACTIVE (unless the row already carried it)
+// and belong to the entry's own category, or the reminder it settles is wrong.
+async function checkMonthlyItem(
+  formData: FormData,
+  categoryId: string,
+  alreadyLinked: string | null,
+): Promise<{ ok: true; id: string | null } | { ok: false; error: string }> {
+  const id = ((formData.get("monthly_item_id") as string) || "").trim();
+  if (!id) return { ok: true, id: null };
+  const item = (await findById("Monthly_Expense_Items", id)) as DBMonthlyExpenseItem | null;
+  if (!item || (item.status !== "ACTIVE" && id !== alreadyLinked)) {
+    return { ok: false, error: "Khoản chi hằng tháng không còn dùng" };
+  }
+  if (item.cash_category_id !== categoryId) {
+    return { ok: false, error: "Khoản chi hằng tháng thuộc nhóm khác" };
+  }
+  return { ok: true, id };
 }
 
 // entry_date is a Postgres `date` column, no time and no zone, so the filter
@@ -88,9 +107,12 @@ export async function addCashEntry(formData: FormData): Promise<ActionResponse> 
   if (r.ok === false) return fail(r.error);
 
   try {
+    const monthly = await checkMonthlyItem(formData, r.value.category_id, null);
+    if (monthly.ok === false) return fail(monthly.error);
+
     const id = await generateNewId(SHEET, "CE");
     await insert(SHEET, {
-      id, ...r.value, status: "ACTIVE", ...creationAudit(auth.actor),
+      id, ...r.value, monthly_item_id: monthly.id, status: "ACTIVE", ...creationAudit(auth.actor),
     });
     revalidatePath(PATH);
     return ok();
@@ -114,7 +136,10 @@ export async function updateCashEntry(formData: FormData): Promise<ActionRespons
     const r = parseCashEntry(readCashEntryInput(formData));
     if (r.ok === false) return fail(r.error);
 
-    await update(SHEET, id, { ...r.value, ...updateAudit(auth.actor) });
+    const monthly = await checkMonthlyItem(formData, r.value.category_id, existing.monthly_item_id ?? null);
+    if (monthly.ok === false) return fail(monthly.error);
+
+    await update(SHEET, id, { ...r.value, monthly_item_id: monthly.id, ...updateAudit(auth.actor) });
     revalidatePath(PATH);
     return ok();
   } catch (error) {

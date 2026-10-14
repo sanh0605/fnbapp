@@ -33,6 +33,16 @@ describe("CategoryForm on-page behaviour", () => {
     expect(screen.getByLabelText(/Tên Phân Loại/i)).toBeInTheDocument();
   });
 
+  // BR-UI-001: no English twin in brackets; spec 2.6: sentence case; spec 2.3:
+  // the example sits under the box as a hint.
+  it("labels are Vietnamese in sentence case, the example under the name box", () => {
+    render(<CategoryForm returnTo="/admin/inventory/categories" />);
+    expect(screen.queryByText(/System Type/)).toBeNull();
+    expect(screen.getByLabelText(/^Đặc tính/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Tên phân loại/)).toBeInTheDocument();
+    expect(screen.getByText("Ví dụ: Nguyên liệu khô, Bao bì")).toBeInTheDocument();
+  });
+
   it("Bỏ navigates to returnTo without saving", () => {
     render(<CategoryForm returnTo="/admin/inventory/categories" />);
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));

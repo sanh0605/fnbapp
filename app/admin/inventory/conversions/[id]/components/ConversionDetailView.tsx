@@ -2,6 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
@@ -51,7 +53,7 @@ export function ConversionDetailView({
       value: (
         <Link
           href={`/admin/inventory/items/${encodeURIComponent(item?.id || conversion.purchased_item_id)}`}
-          className="text-primary hover:text-primary-hover font-medium underline"
+          className="text-primary hover:text-primary-hover underline"
         >
           {item?.name || conversion.purchased_item_id}
         </Link>
@@ -76,12 +78,12 @@ export function ConversionDetailView({
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
+      <Button
         href={editHref}
-        className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
+        variant="secondary"
       >
         Chỉnh sửa
-      </Link>
+      </Button>
       {canDelete && conversion.status !== "INACTIVE" && (
         <RemoveRecordButton
           verb={verb}
@@ -111,9 +113,9 @@ export function ConversionDetailView({
         subtitle={conversion.id}
         badge={
           conversion.status === "INACTIVE" ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-surface-secondary text-text-secondary border border-border">
+            <Badge variant="neutral">
               Ngừng dùng
-            </span>
+            </Badge>
           ) : undefined
         }
         actions={headerActions}

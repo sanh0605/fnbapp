@@ -2,7 +2,10 @@
 
 import { useState, useId } from "react";
 import { updateUser } from "@/app/admin/users/actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
 import { useRouter } from "next/navigation";
 import { safeReturnTo } from "./return-to";
 import type { DBUser } from "@/types/db";
@@ -10,9 +13,14 @@ import type { DBUser } from "@/types/db";
 interface EditUserFormProps {
   user: DBUser;
   returnTo?: string;
+  canGrantAdmin?: boolean;
 }
 
-export default function EditUserForm({ user, returnTo: rawReturnTo }: EditUserFormProps) {
+export default function EditUserForm({
+  user,
+  returnTo: rawReturnTo,
+  canGrantAdmin = true,
+}: EditUserFormProps) {
   const returnTo = safeReturnTo(rawReturnTo);
   const formId = useId();
   const router = useRouter();
@@ -36,74 +44,71 @@ export default function EditUserForm({ user, returnTo: rawReturnTo }: EditUserFo
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl shadow-sm border border-border p-6 max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
             {error}
           </div>
         )}
-        
-        <div>
-          <label htmlFor={`${formId}-username`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên đăng nhập
-          </label>
-          <input
-            id={`${formId}-username`}
-            type="text"
-            disabled
-            value={user.username}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] bg-surface-secondary text-text-muted outline-none"
-          />
-          <p className="text-[10px] text-text-muted mt-1">Tên đăng nhập không thể thay đổi.</p>
-        </div>
 
-        <div>
-          <label htmlFor={`${formId}-password`} className="block text-sm font-medium text-text-secondary mb-1">
-            Mật khẩu mới (Để trống nếu không muốn đổi)
-          </label>
-          <input
-            id={`${formId}-password`}
-            type="password"
-            name="password"
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="******"
-          />
-        </div>
-
-        <div>
-          <label htmlFor={`${formId}-role`} className="block text-sm font-medium text-text-secondary mb-1">
-            Quyền hạn
-          </label>
-          <select
-            id={`${formId}-role`}
-            name="role"
-            required
-            defaultValue={user.role}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field
+            label="Tên đăng nhập"
+            htmlFor={`${formId}-username`}
+            hint="Tên đăng nhập không thể thay đổi."
           >
-            <option value="STAFF">Nhân viên</option>
-            <option value="MANAGER">Quản lý</option>
-            <option value="ADMIN">Quản trị viên</option>
-          </select>
+            <TextInput
+              id={`${formId}-username`}
+              disabled
+              value={user.username}
+            />
+          </Field>
+
+          <Field
+            label="Mật khẩu mới"
+            htmlFor={`${formId}-password`}
+            hint="Để trống nếu không muốn đổi."
+          >
+            <TextInput
+              id={`${formId}-password`}
+              type="password"
+              name="password"
+              placeholder="******"
+            />
+          </Field>
+
+          <Field label="Quyền hạn" htmlFor={`${formId}-role`} required>
+            <Select
+              id={`${formId}-role`}
+              name="role"
+              required
+              defaultValue={user.role}
+            >
+              <option value="STAFF">Nhân viên</option>
+              <option value="MANAGER">Quản lý</option>
+              {canGrantAdmin && <option value="ADMIN">Quản trị viên</option>}
+            </Select>
+          </Field>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <button
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang cập nhật..."
-            className="min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Cập nhật nhân sự
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

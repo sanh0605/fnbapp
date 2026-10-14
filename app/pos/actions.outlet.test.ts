@@ -33,11 +33,12 @@ vi.mock("next/cache", () => ({
 
 import { submitOrderV2 } from "./actions";
 
-const OUTLET_1 = { id: "OUT-001", code: "001", name: "Điểm bán 1", brand_id: "BR-001" };
-const OUTLET_2 = { id: "OUT-002", code: "002", name: "Điểm bán 2", brand_id: "BR-002" };
+const OUTLET_1 = { id: "OUT-001", code: "001", name: "Điểm bán 1", brand_id: "BR-001", status: "ACTIVE" };
+const OUTLET_2 = { id: "OUT-002", code: "002", name: "Điểm bán 2", brand_id: "BR-002", status: "ACTIVE" };
+const OUTLET_STOPPED = { id: "OUT-003", code: "003", name: "Điểm bán 3", brand_id: "BR-001", status: "INACTIVE" };
 
 const REF_TABLES: Record<string, any[]> = {
-  Outlets: [OUTLET_1, OUTLET_2],
+  Outlets: [OUTLET_1, OUTLET_2, OUTLET_STOPPED],
   Brands: [{ id: "BR-001", code: "PHD" }, { id: "BR-002", code: "UCK" }],
   Products: [{ id: "PROD-001", name: "Cà phê đá", category_id: "CAT-001", status: "ACTIVE" }],
   Product_Variants: [{ id: "VAR-001", product_id: "PROD-001", size_name: "500ml", price: "18000", status: "ACTIVE" }],
@@ -87,6 +88,13 @@ describe("submitOrderV2 outlet resolution", () => {
     const result = await submitOrderV2({ ...baseCart, outlet_id: "OUT-DOES-NOT-EXIST" } as any);
 
     expect(result).toEqual({ success: false, error: "Điểm bán không tồn tại" });
+    expect(mocks.savePosOrderAtomic).not.toHaveBeenCalled();
+  });
+
+  it("rejects an outlet that was stopped (F1, 2026-10-14 audit) before any write", async () => {
+    const result = await submitOrderV2({ ...baseCart, outlet_id: OUTLET_STOPPED.id } as any);
+
+    expect(result).toEqual({ success: false, error: "Điểm bán này đã ngừng hoạt động" });
     expect(mocks.savePosOrderAtomic).not.toHaveBeenCalled();
   });
 

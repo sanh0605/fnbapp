@@ -1,5 +1,14 @@
 import { formatNumber } from "@/lib/shared/format";
 import { avgPerOrder, percentOfTotal, formatPercent } from "@/lib/reports/outlet-breakdown-table";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableTotalRow,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/Table";
 
 interface OutletBreakdownRow {
   outlet_id: string;
@@ -44,51 +53,45 @@ export function OutletBreakdownSection({ outletBreakdown }: OutletBreakdownSecti
             <div className="font-bold text-text-primary">{o.name}</div>
             <div className="flex justify-between items-baseline">
               <span className="text-sm text-text-secondary">{o.orderCount} đơn</span>
-              <span className="font-bold text-success">{formatNumber(o.revenue)}</span>
+              <span className="font-bold text-text-primary">{formatNumber(o.revenue)}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* From md up: a real table. */}
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-surface-secondary text-text-secondary text-[11px] uppercase tracking-wider border-b border-border">
-              <th scope="col" className="px-4 py-3 font-bold">Điểm bán</th>
-              <th scope="col" className="px-4 py-3 font-bold text-right">Số đơn</th>
-              <th scope="col" className="px-4 py-3 font-bold text-right">Doanh thu</th>
-              <th scope="col" className="px-4 py-3 font-bold text-right">TB/đơn</th>
-              <th scope="col" className="px-4 py-3 font-bold text-right">% tổng</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
+      <div className="hidden md:block">
+        <Table>
+          <TableHead>
+            <TableHeaderCell>Điểm bán</TableHeaderCell>
+            <TableHeaderCell>Số đơn</TableHeaderCell>
+            <TableHeaderCell>Doanh thu</TableHeaderCell>
+            <TableHeaderCell>TB/đơn</TableHeaderCell>
+            <TableHeaderCell>% tổng</TableHeaderCell>
+          </TableHead>
+          <TableTotalRow>
+            <TableCell>Tổng</TableCell>
+            <TableCell align="right">{formatNumber(totalOrders)}</TableCell>
+            <TableCell align="right">{formatNumber(totalRevenue)}</TableCell>
+            <TableCell align="right" />
+            <TableCell align="right" />
+          </TableTotalRow>
+          <TableBody>
             {outletBreakdown.map(o => {
               const avg = avgPerOrder(o.revenue, o.orderCount);
               const pct = percentOfTotal(o.revenue, totalRevenue);
               return (
-                <tr key={o.outlet_id || "none"} className="hover:bg-surface-secondary/50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-semibold text-text-primary">{o.name}</td>
-                  <td className="px-4 py-3 text-sm text-text-secondary text-right">{formatNumber(o.orderCount)}</td>
-                  <td className="px-4 py-3 text-sm font-bold text-success text-right">{formatNumber(o.revenue)}</td>
-                  <td className="px-4 py-3 text-sm text-text-secondary text-right">
-                    {avg === null ? "—" : formatNumber(avg)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-text-secondary text-right">{formatPercent(pct)}</td>
-                </tr>
+                <TableRow key={o.outlet_id || "none"}>
+                  <TableCell>{o.name}</TableCell>
+                  <TableCell align="right">{formatNumber(o.orderCount)}</TableCell>
+                  <TableCell align="right">{formatNumber(o.revenue)}</TableCell>
+                  <TableCell align="right">{avg === null ? "—" : formatNumber(avg)}</TableCell>
+                  <TableCell align="right">{formatPercent(pct)}</TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-          <tfoot>
-            <tr className="border-t border-border font-bold text-text-primary">
-              <td className="px-4 py-3 text-sm">Tổng</td>
-              <td className="px-4 py-3 text-sm text-right">{formatNumber(totalOrders)}</td>
-              <td className="px-4 py-3 text-sm text-success text-right">{formatNumber(totalRevenue)}</td>
-              <td className="px-4 py-3 text-sm text-right" />
-              <td className="px-4 py-3 text-sm text-right" />
-            </tr>
-          </tfoot>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </>
   );

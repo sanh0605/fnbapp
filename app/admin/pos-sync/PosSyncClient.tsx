@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
+import { Button } from "@/components/ui/Button";
+import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { resolvePosSyncFailure } from "./actions";
 import type { PosSyncFailureItem, PosSyncLateOrder } from "./actions";
 
@@ -21,70 +23,113 @@ export function PosSyncClient({
     }
   };
 
+  const activeFailures = failures.filter(f => !resolvedIds.has(f.id));
+
   return (
     <div className="space-y-8">
       <section>
         <h2 className="text-lg font-bold text-text-primary mb-3">
           Đơn gửi lại thất bại thật sự — cần xử lý tay
         </h2>
-        {failures.filter(f => !resolvedIds.has(f.id)).length === 0 ? (
+        {activeFailures.length === 0 ? (
           <p className="text-text-muted text-sm">Không có đơn nào.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-text-muted border-b border-border">
-                <th className="py-2">Mã yêu cầu</th>
-                <th className="py-2">Lỗi</th>
-                <th className="py-2">Thời điểm</th>
-                <th className="py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {failures.filter(f => !resolvedIds.has(f.id)).map(f => (
-                <tr key={f.id} className="border-b border-border/50">
-                  <td className="py-2 font-mono text-xs">{f.request_token}</td>
-                  <td className="py-2">{f.error_message}</td>
-                  <td className="py-2">{formatDateTimeFull(f.occurred_at)}</td>
-                  <td className="py-2">
-                    <button
+          <>
+            <div className="hidden md:block">
+              <Table>
+                <TableHead>
+                  <TableHeaderCell>Mã yêu cầu</TableHeaderCell>
+                  <TableHeaderCell>Lỗi</TableHeaderCell>
+                  <TableHeaderCell>Thời điểm</TableHeaderCell>
+                  <TableHeaderCell></TableHeaderCell>
+                </TableHead>
+                <TableBody>
+                  {activeFailures.map(f => (
+                    <TableRow key={f.id}>
+                      <TableCell>
+                        <span className="font-mono text-xs">{f.request_token}</span>
+                      </TableCell>
+                      <TableCell>{f.error_message}</TableCell>
+                      <TableCell>{formatDateTimeFull(f.occurred_at)}</TableCell>
+                      <TableCell align="right">
+                        <Button
+                          variant="secondary"
+                          onClick={() => handleResolve(f.id)}
+                        >
+                          Đã xử lý
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="md:hidden space-y-3">
+              {activeFailures.map(f => (
+                <div key={f.id} className="rounded-card border border-border bg-surface-card p-4 space-y-2">
+                  <div className="font-mono text-xs text-text-primary">{f.request_token}</div>
+                  <p className="text-sm text-text-secondary">
+                    <span className="text-text-muted">Lỗi:</span> {f.error_message}
+                  </p>
+                  <p className="text-sm text-text-secondary">
+                    <span className="text-text-muted">Thời điểm:</span> {formatDateTimeFull(f.occurred_at)}
+                  </p>
+                  <div className="pt-2">
+                    <Button
+                      variant="secondary"
                       onClick={() => handleResolve(f.id)}
-                      className="text-primary font-bold hover:underline"
+                      className="w-full"
                     >
                       Đã xử lý
-                    </button>
-                  </td>
-                </tr>
+                    </Button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </section>
 
       <section>
         <h2 className="text-lg font-bold text-text-primary mb-3">
-          Đơn đồng bộ trễ (chỉ để biết, không cần xử lý)
+          Đơn đồng bộ trễ, 30 ngày gần nhất (chỉ để biết, không cần xử lý)
         </h2>
         {lateOrders.length === 0 ? (
           <p className="text-text-muted text-sm">Không có đơn nào.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-text-muted border-b border-border">
-                <th className="py-2">Mã đơn</th>
-                <th className="py-2">Giờ bán thực tế</th>
-                <th className="py-2">Trễ bao lâu</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="hidden md:block">
+              <Table>
+                <TableHead>
+                  <TableHeaderCell>Mã đơn</TableHeaderCell>
+                  <TableHeaderCell>Giờ bán thực tế</TableHeaderCell>
+                  <TableHeaderCell>Trễ bao lâu</TableHeaderCell>
+                </TableHead>
+                <TableBody>
+                  {lateOrders.map(o => (
+                    <TableRow key={o.id}>
+                      <TableCell>{o.order_no}</TableCell>
+                      <TableCell>{formatDateTimeFull(o.created_at)}</TableCell>
+                      <TableCell>{o.delayMinutes} phút</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="md:hidden space-y-3">
               {lateOrders.map(o => (
-                <tr key={o.id} className="border-b border-border/50">
-                  <td className="py-2">{o.order_no}</td>
-                  <td className="py-2">{formatDateTimeFull(o.created_at)}</td>
-                  <td className="py-2">{o.delayMinutes} phút</td>
-                </tr>
+                <div key={o.id} className="rounded-card border border-border bg-surface-card p-4 space-y-2">
+                  <div className="text-sm text-text-primary">{o.order_no}</div>
+                  <p className="text-sm text-text-secondary">
+                    <span className="text-text-muted">Giờ bán thực tế:</span> {formatDateTimeFull(o.created_at)}
+                  </p>
+                  <p className="text-sm text-text-secondary">
+                    <span className="text-text-muted">Trễ bao lâu:</span> {o.delayMinutes} phút
+                  </p>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </section>
     </div>

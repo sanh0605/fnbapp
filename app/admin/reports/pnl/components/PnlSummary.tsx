@@ -17,10 +17,10 @@ function Tile({ label, value, sub, tone }: { label: string; value: string; sub: 
 // shows only when a month lost money. Best/worst months show their title as
 // the big value and their amount as the sub-line, as in the sample.
 export function PnlSummary({ table }: { table: PnlTable }) {
-  const { summary, periodLabel, months } = table;
+  const { summary, rangeName, months } = table;
   const firstMonth = months[0];
   const lastMonth = months[months.length - 1];
-  const periodEnd = lastMonth ? (lastMonth.until ? `${lastMonth.until}/${table.year}` : lastMonth.title) : "";
+  const periodEnd = lastMonth ? (lastMonth.until ? `${lastMonth.until}/${lastMonth.month.slice(0, 4)}` : lastMonth.title) : "";
   const netTone: "success" | "danger" = summary.netProfit < 0 ? "danger" : "success";
   const worstMonthNotes = summary.worstMonth
     ? months.find(m => m.month === summary.worstMonth!.month)?.notes ?? []
@@ -32,12 +32,12 @@ export function PnlSummary({ table }: { table: PnlTable }) {
       className={`hidden gap-3 md:grid md:grid-cols-2 ${summary.worstMonth ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}
     >
       <Tile
-        label={`Doanh thu ${periodLabel}`}
+        label={`Doanh thu ${rangeName}`}
         value={formatNumber(summary.revenue)}
         sub={firstMonth ? `từ ${firstMonth.title} đến ${periodEnd}` : ""}
       />
       <Tile
-        label={`Lợi nhuận ròng ${periodLabel}`}
+        label={`Lợi nhuận ròng ${rangeName}`}
         value={formatNumber(summary.netProfit)}
         sub={summary.margin === null ? "chưa có doanh thu" : `biên ${formatPercent(summary.margin)} doanh thu`}
         tone={netTone}

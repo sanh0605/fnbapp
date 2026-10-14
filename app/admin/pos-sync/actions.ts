@@ -19,6 +19,8 @@ export interface PosSyncFailureItem {
 }
 
 const LATE_THRESHOLD_MINUTES = 5;
+// The late list is informational only (no action to take), so it shows the recent month.
+const LATE_WINDOW_DAYS = 30;
 
 export async function getPosSyncAttentionItems(): Promise<{
   lateOrders: PosSyncLateOrder[];
@@ -28,16 +30,12 @@ export async function getPosSyncAttentionItems(): Promise<{
   if (!auth.ok) throw new Error(auth.error);
 
   const [orders, syncFailures] = await Promise.all([
-    // findAllWhere doesn't support a column projection or an explicit
-    // "is not null" filter (see lib/db/tables.ts), so this scopes the read
-    // the closest way the existing abstraction allows: a `gte` filter on
-    // synced_at against the epoch. Postgres/PostgREST evaluates a `gte`
-    // comparison against a NULL column as NULL (not true), so rows with no
-    // synced_at yet (legacy pre-migration-0040 orders) are excluded at the
-    // database level -- exactly the "synced_at is not null" scoping this
-    // function needs -- instead of pulling every row (including large
-    // pos_snapshot_json blobs) via findAllNoCache and filtering in memory.
-    findAllWhere("Orders_V2", { gte: { synced_at: "1970-01-01T00:00:00.000Z" } }),
+    // A `gte` on synced_at also excludes rows with no synced_at (NULL compares
+    // as not-true), so legacy pre-0040 orders never load; the 30-day floor
+    // keeps the read from growing with the full order history.
+    findAllWhere("Orders_V2", {
+      gte: { synced_at: new Date(Date.now() - LATE_WINDOW_DAYS * 86400000).toISOString() },
+    }),
     findAllNoCache("Pos_Sync_Failures"),
   ]);
 

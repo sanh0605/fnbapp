@@ -19,7 +19,7 @@ import type { Purchase, Issue, ClassifiedIssue } from "@/lib/costing/issue-costi
 // adjusted figure is derived at read time, same as every other issue-
 // costing input -- never persisted.
 //
-// Plan G G1: extracted from app/admin/reports/actions.ts (the only prior
+// Plan G G1: extracted from app/admin/reports/pnl-actions.ts (the only prior
 // caller) so a second report can build the same issue-costing inputs
 // without a second definition of what a purchase or an issue is. Pure
 // move -- no behaviour change.
@@ -104,7 +104,7 @@ export function buildClassifiedIssues(stockIssues: any[], stocktakeSessions: any
 // the register). This layer is a filter, not a refusal: it protects any
 // issue slip already recorded before the picker excluded equipment too
 // (section 3.1) -- 0 exist today, but this must not depend on that number
-// staying 0. Called by both app/admin/reports/actions.ts (getPnLDataV2)
+// staying 0. Called by both app/admin/reports/pnl-actions.ts (getPnLDataV2)
 // and app/admin/reports/issued/actions.ts (getIssuedValueReport), the only
 // two callers of buildIssueCostingIssues -- one place, so both can only
 // ever agree.

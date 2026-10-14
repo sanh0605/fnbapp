@@ -2,6 +2,8 @@
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import { BankAccountForm } from "./BankAccountForm";
+import { updateBankAccount } from "../actions";
+import type { DBBankAccount } from "@/types/db";
 
 const { push, refresh } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -43,7 +45,7 @@ describe("BankAccountForm account number field (M6)", () => {
 describe("BankAccountForm on-page behaviour", () => {
   it("renders fields on the page without opening a dialog", () => {
     render(<BankAccountForm returnTo="/admin/finance/bank-accounts" />);
-    expect(screen.getByLabelText("Tên gợi nhớ")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Tên gợi nhớ/)).toBeInTheDocument();
   });
 
   it("Bỏ navigates to returnTo without saving", () => {
@@ -53,3 +55,38 @@ describe("BankAccountForm on-page behaviour", () => {
   });
 });
 
+
+// Wave K5 (plan Review Focus 2): the account number is a code, not a number.
+// It moves to TextInput with the digit keypad, and must show and post the
+// exact string typed -- a leading zero kept, no thousands commas.
+describe("BankAccountForm account number keeps its leading zero (wave K5)", () => {
+  const ACCOUNT: DBBankAccount = {
+    id: "BA-1",
+    name: "Vietcombank Sanh",
+    bank_name: "Vietcombank",
+    account_number: "0071001234567",
+    status: "ACTIVE",
+    created_at: "2026-10-01T00:00:00.000Z",
+    created_by_id: null,
+    created_by_name: null,
+    updated_at: "2026-10-01T00:00:00.000Z",
+    updated_by_id: null,
+    updated_by_name: null,
+  };
+
+  it("shows 0071001234567 as stored, with the digit keypad", () => {
+    render(<BankAccountForm account={ACCOUNT} />);
+    const box = screen.getByLabelText(/^Số tài khoản/) as HTMLInputElement;
+    expect(box.value).toBe("0071001234567");
+    expect(box.getAttribute("inputmode")).toBe("numeric");
+  });
+
+  it("posts account_number=0071001234567 unchanged", async () => {
+    vi.mocked(updateBankAccount).mockResolvedValue({ error: null } as never);
+    render(<BankAccountForm account={ACCOUNT} />);
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    await vi.waitFor(() => expect(updateBankAccount).toHaveBeenCalled());
+    const sent = vi.mocked(updateBankAccount).mock.calls[0][0] as FormData;
+    expect(sent.get("account_number")).toBe("0071001234567");
+  });
+});

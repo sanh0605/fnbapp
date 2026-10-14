@@ -3,16 +3,40 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { formatNumber } from "@/lib/shared/format";
-import { editOrderV2, type OrderListItem } from "@/app/admin/orders/actions";
+import { editOrderV2 } from "@/app/admin/orders/order-edit-actions";
+import type { OrderListItem } from "@/app/admin/orders/actions";
 import type { CartInput } from "@/lib/sales/order-cart";
 import { LineItemEditor, type EditItem } from "@/app/admin/orders/components/LineItemEditor";
 import { DiscountEditor } from "@/app/admin/orders/components/DiscountEditor";
 import { Button } from "@/components/ui/Button";
 import { BackLink } from "@/components/ui/BackLink";
-import { X, Search } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { NumberInput } from "@/components/ui/NumberInput";
+import { X } from "lucide-react";
+
+import { OptionGroupPicker } from "@/components/ui/OptionGroupPicker";
+import {
+  optionGroupsForProduct,
+  type OptionGroup,
+  type GroupLink,
+} from "@/lib/sales/option-groups";
 
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
+
+interface PaymentPart {
+  method: "CASH" | "BANK_TRANSFER";
+  amount: number;
+}
+
+function normalizePaymentMethod(method?: string): "CASH" | "BANK_TRANSFER" {
+  if (method === "BANK_TRANSFER" || method === "Chuyen khoan") {
+    return "BANK_TRANSFER";
+  }
+  return "CASH";
+}
 
 function expandModifierSnapshots(modifiers: any[]): any[] {
   return modifiers.flatMap((modifier: any) => {
@@ -43,6 +67,8 @@ interface OrderEditFormProps {
   modifiers: any[];
   categories: any[];
   returnTo: string;
+  optionGroups?: OptionGroup[];
+  optionGroupLinks?: GroupLink[];
 }
 
 export function OrderEditForm({
@@ -53,6 +79,8 @@ export function OrderEditForm({
   modifiers,
   categories,
   returnTo,
+  optionGroups = [],
+  optionGroupLinks = [],
 }: OrderEditFormProps) {
   const router = useRouter();
   const viewUrl = `/admin/orders/${encodeURIComponent(order.id)}?returnTo=${encodeURIComponent(returnTo)}`;
@@ -77,7 +105,21 @@ export function OrderEditForm({
 
   const [orderDiscount, setOrderDiscount] = useState(Number(order.manual_order_discount || 0));
   const [orderDiscountType, setOrderDiscountType] = useState("VND");
-  const [paymentMethod, setPaymentMethod] = useState(order.method || "Tien mat");
+  const [payments, setPayments] = useState<PaymentPart[]>(() => {
+    if (Array.isArray(order.payments) && order.payments.length > 0) {
+      return order.payments.map((p) => ({
+        method: normalizePaymentMethod(p.method),
+        amount: Number(p.amount) || 0,
+      }));
+    }
+    const fallbackMethod = normalizePaymentMethod(order.method);
+    return [
+      {
+        method: fallbackMethod,
+        amount: Number(order.net_total || 0),
+      },
+    ];
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [editReason, setEditReason] = useState("");
@@ -93,15 +135,6 @@ export function OrderEditForm({
   const [selectedNewVariant, setSelectedNewVariant] = useState<any>(null);
   const [selectedNewModifiers, setSelectedNewModifiers] = useState<any[]>([]);
   const [newQty, setNewQty] = useState(1);
-
-  const groupedModifiers = useMemo(() => {
-    const groups: Record<string, any[]> = {};
-    modifiers.forEach((m: any) => {
-      if (!groups[m.group_name]) groups[m.group_name] = [];
-      groups[m.group_name].push(m);
-    });
-    return groups;
-  }, [modifiers]);
 
   const filteredAddProducts = useMemo(() => {
     let list = products;
@@ -122,17 +155,6 @@ export function OrderEditForm({
     }
     const productLevelDisc = items.reduce((sum, item) => sum + Number(item.line_discount || 0), 0);
     return Math.max(0, subtotal - orderLevelDisc - productLevelDisc);
-  };
-
-  const addNewModifier = (mod: any) => {
-    setSelectedNewModifiers([...selectedNewModifiers, { id: mod.id, name: mod.name, price: Number(mod.price || 0) }]);
-  };
-
-  const removeNewModifier = (mod: any) => {
-    const idx = selectedNewModifiers.findIndex((m: any) => m.id === mod.id);
-    if (idx !== -1) {
-      setSelectedNewModifiers(selectedNewModifiers.filter((_: any, i: number) => i !== idx));
-    }
   };
 
   const confirmAddProduct = () => {
@@ -164,6 +186,51 @@ export function OrderEditForm({
     setAddCategory("ALL");
   };
 
+  const totalAmount = calculateTotal();
+  const totalParts = payments.reduce((sum, p) => sum + p.amount, 0);
+
+  const isPaymentValid =
+    payments.length === 1
+      ? true
+      : payments.length === 2 &&
+        payments.every((p) => p.amount > 0) &&
+        payments[0].method !== payments[1].method &&
+        totalParts === totalAmount;
+
+  const handleMethodChange = (idx: number, newMethod: "CASH" | "BANK_TRANSFER") => {
+    setPayments((prev) =>
+      prev.map((p, i) => {
+        if (i === idx) return { ...p, method: newMethod };
+        if (prev.length === 2 && p.method === newMethod) {
+          return { ...p, method: newMethod === "CASH" ? "BANK_TRANSFER" : "CASH" };
+        }
+        return p;
+      })
+    );
+  };
+
+  const handleAmountChange = (idx: number, amount: number) => {
+    setPayments((prev) =>
+      prev.map((p, i) => (i === idx ? { ...p, amount } : p))
+    );
+  };
+
+  const handleAddPaymentPart = () => {
+    if (payments.length !== 1) return;
+    const currentMethod = payments[0].method;
+    const otherMethod: "CASH" | "BANK_TRANSFER" =
+      currentMethod === "CASH" ? "BANK_TRANSFER" : "CASH";
+    setPayments([
+      { method: currentMethod, amount: totalAmount },
+      { method: otherMethod, amount: 0 },
+    ]);
+  };
+
+  const handleRemovePaymentPart = (removeIdx: number) => {
+    if (payments.length <= 1) return;
+    setPayments((prev) => prev.filter((_, i) => i !== removeIdx));
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setInlineError(null);
@@ -171,6 +238,20 @@ export function OrderEditForm({
     if (!editReason.trim()) {
       setInlineError("Lý do chỉnh sửa là bắt buộc");
       return;
+    }
+    if (payments.length === 2) {
+      if (payments.some((p) => p.amount <= 0)) {
+        setInlineError("Số tiền mỗi phần phải lớn hơn 0");
+        return;
+      }
+      if (totalParts !== totalAmount) {
+        setInlineError("Tổng các phần không khớp với tiền đơn");
+        return;
+      }
+      if (payments[0].method === payments[1].method) {
+        setInlineError("Hai phần thanh toán không được trùng phương thức");
+        return;
+      }
     }
     setIsSaving(true);
 
@@ -195,7 +276,12 @@ export function OrderEditForm({
           manual_item_discount: { value: manualItemValue, type: manualItemType },
         };
       }),
-      payment_method: paymentMethod === "Chuyen khoan" ? "BANK_TRANSFER" : "CASH",
+      payment_method: payments[0]?.method || "CASH",
+      payments: payments.map((p) => ({
+        method: p.method,
+        amount: payments.length === 1 ? totalAmount : p.amount,
+        reference: "",
+      })),
       manual_order_discount:
         orderDiscount > 0
           ? { value: orderDiscount, type: orderDiscountType === "PERCENT" ? "PERCENT" : "VND" }
@@ -220,37 +306,39 @@ export function OrderEditForm({
     }
   };
 
-  const totalAmount = calculateTotal();
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       <BackLink href={viewUrl} label={order.display_order_no || order.order_no} />
 
-      <form onSubmit={handleSave} className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden">
-        {/* Header */}
-        <div className="p-4 border-b border-border bg-page flex justify-between items-center shrink-0">
-          <div>
-            <h1 className="text-lg font-bold text-text-primary">Sửa đơn hàng</h1>
-            <p className="text-sm text-text-secondary">{order.display_order_no || order.order_no}</p>
-          </div>
-        </div>
+      <PageHeader
+        title="Sửa đơn hàng"
+        subtitle={order.display_order_no || order.order_no}
+      />
 
-        {inlineError && (
-          <div role="alert" aria-live="polite" className="mx-4 mt-4 p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/30 flex justify-between">
-            <span>{inlineError}</span>
-            <button
-              type="button"
-              onClick={() => setInlineError(null)}
-              className="ml-2 text-danger hover:opacity-80"
-              aria-label="Đóng"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+      <form
+        onSubmit={handleSave}
+        data-testid="form-layout"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start"
+      >
+        {/* Dishes list */}
+        <div
+          data-testid="form-lines"
+          className="bg-surface-card rounded-card shadow-sm border border-border p-4 space-y-3 lg:col-span-2 lg:col-start-1 lg:row-start-1"
+        >
+          {inlineError && (
+            <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/30 flex justify-between">
+              <span>{inlineError}</span>
+              <button
+                type="button"
+                onClick={() => setInlineError(null)}
+                className="ml-2 text-danger hover:opacity-80"
+                aria-label="Đóng"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
-        {/* Items list */}
-        <div className="p-4 space-y-3">
           {items.length === 0 && !isAddingProduct && (
             <div className="text-center text-text-muted py-8">Không có món nào trong đơn</div>
           )}
@@ -262,7 +350,7 @@ export function OrderEditForm({
               idx={idx}
               isEditing={editingIndex === idx}
               variants={variants}
-              groupedModifiers={groupedModifiers}
+              groups={optionGroupsForProduct(item.product_id, optionGroups, optionGroupLinks, modifiers)}
               onStartEdit={(i) => setEditingIndex(i)}
               onCancelEdit={() => setEditingIndex(null)}
               onSaveEdit={(i, updatedFields) => {
@@ -296,7 +384,7 @@ export function OrderEditForm({
                     setNewQty(1);
                   }}
                   className="text-text-muted hover:text-text-secondary"
-                  aria-label="Hủy thêm sản phẩm"
+                  aria-label="Huỷ thêm sản phẩm"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -305,27 +393,22 @@ export function OrderEditForm({
               {!selectedNewProduct ? (
                 <>
                   {/* Search */}
-                  <div className="relative">
-                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-text-muted" />
-                    <input
-                      type="text"
-                      aria-label="Tìm sản phẩm"
-                      placeholder="Tìm sản phẩm..."
-                      value={addSearch}
-                      onChange={(e) => setAddSearch(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring"
-                    />
-                  </div>
+                  <TextInput
+                    aria-label="Tìm sản phẩm"
+                    placeholder="Ví dụ: Cà phê sữa đá"
+                    value={addSearch}
+                    onChange={(e) => setAddSearch(e.target.value)}
+                  />
 
                   {/* Category filter */}
                   <div className="flex flex-wrap gap-1.5">
                     <button
                       type="button"
                       onClick={() => setAddCategory("ALL")}
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
                         addCategory === "ALL"
-                          ? "bg-primary text-on-primary"
-                          : "bg-surface-card text-text-secondary border border-border"
+                          ? "bg-primary-soft text-primary border-primary font-bold"
+                          : "bg-surface-card text-text-secondary border-border"
                       }`}
                     >
                       Tất cả
@@ -335,10 +418,10 @@ export function OrderEditForm({
                         key={c.id}
                         type="button"
                         onClick={() => setAddCategory(c.id)}
-                        className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
                           addCategory === c.id
-                            ? "bg-primary text-on-primary"
-                            : "bg-surface-card text-text-secondary border border-border"
+                            ? "bg-primary-soft text-primary border-primary font-bold"
+                            : "bg-surface-card text-text-secondary border-border"
                         }`}
                       >
                         {c.name}
@@ -356,7 +439,7 @@ export function OrderEditForm({
                           setSelectedNewProduct(p);
                           setSelectedNewVariant(null);
                         }}
-                        className="p-2 rounded-lg border border-border bg-surface-card hover:border-primary text-center transition-colors min-h-[44px]"
+                        className="p-2 rounded-lg border border-border bg-surface-card hover:border-primary text-center transition-colors min-h-[44px] md:min-h-[40px]"
                       >
                         <div className="text-sm font-medium text-text-primary truncate">{p.name}</div>
                       </button>
@@ -384,7 +467,7 @@ export function OrderEditForm({
                             key={v.id}
                             type="button"
                             onClick={() => setSelectedNewVariant(v)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors min-h-[44px] ${
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors min-h-[44px] md:min-h-[40px] ${
                               selectedNewVariant?.id === v.id
                                 ? "border-primary bg-primary-soft text-primary"
                                 : "border-border bg-surface-card text-text-secondary hover:border-border-hover"
@@ -396,52 +479,13 @@ export function OrderEditForm({
                     </div>
                   </div>
 
-                  {/* Modifier selection */}
+                  {/* Option groups selection */}
                   {selectedNewVariant && (
-                    <div>
-                      <div className="text-xs font-medium text-text-muted mb-1.5">Topping</div>
-                      <div className="space-y-2">
-                        {Object.entries(groupedModifiers).map(([groupName, mods]) => (
-                          <div key={groupName}>
-                            <div className="text-[11px] text-text-muted mb-1">{groupName}</div>
-                            <div className="flex flex-wrap gap-1.5">
-                              {mods.map((mod: any) => {
-                                const count = selectedNewModifiers.filter((m: any) => m.id === mod.id).length;
-                                return (
-                                  <div
-                                    key={mod.id}
-                                    className={`flex items-center gap-1 rounded-lg border text-xs ${
-                                      count > 0 ? "border-primary bg-primary-soft" : "border-border bg-surface-card"
-                                    }`}
-                                  >
-                                    {count > 0 && (
-                                      <button
-                                        type="button"
-                                        onClick={() => removeNewModifier(mod)}
-                                        className="px-1.5 py-1 text-primary hover:text-danger font-bold min-h-[36px] min-w-[36px] flex items-center justify-center"
-                                      >
-                                        -
-                                      </button>
-                                    )}
-                                    <span className="px-1 py-1 text-text-primary">
-                                      {mod.name} <span className="text-text-muted">+{formatNumber(mod.price)}</span>
-                                    </span>
-                                    {count > 0 && <span className="px-1 py-1 font-bold text-primary">{count}x</span>}
-                                    <button
-                                      type="button"
-                                      onClick={() => addNewModifier(mod)}
-                                      className="px-1.5 py-1 text-text-muted hover:text-primary font-bold min-h-[36px] min-w-[36px] flex items-center justify-center"
-                                    >
-                                      +
-                                    </button>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <OptionGroupPicker
+                      groups={optionGroupsForProduct(selectedNewProduct.id, optionGroups, optionGroupLinks, modifiers)}
+                      picks={selectedNewModifiers}
+                      onChange={setSelectedNewModifiers}
+                    />
                   )}
 
                   {/* Qty + price summary */}
@@ -488,16 +532,16 @@ export function OrderEditForm({
                         setSelectedNewVariant(null);
                         setSelectedNewModifiers([]);
                       }}
-                      className="flex-1 min-h-[44px]"
+                      className="flex-1 min-h-[44px] md:min-h-[40px]"
                     >
                       Quay lại
                     </Button>
                     <Button
                       type="button"
-                      variant="primary"
+                      variant="secondary"
                       onClick={confirmAddProduct}
                       disabled={!selectedNewVariant}
-                      className="flex-1 min-h-[44px]"
+                      className="flex-1 min-h-[44px] md:min-h-[40px]"
                     >
                       Thêm vào đơn
                     </Button>
@@ -509,7 +553,7 @@ export function OrderEditForm({
             <Button
               type="button"
               variant="secondary"
-              className="w-full border-dashed min-h-[44px]"
+              className="w-full border-dashed min-h-[44px] md:min-h-[40px]"
               onClick={() => setIsAddingProduct(true)}
             >
               + Thêm sản phẩm
@@ -517,8 +561,11 @@ export function OrderEditForm({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-border shrink-0">
+        {/* Totals, reason, actions */}
+        <div
+          data-testid="form-money"
+          className="bg-surface-card rounded-card shadow-sm border border-border overflow-hidden lg:col-start-3 lg:sticky lg:top-4"
+        >
           <div className="px-4 py-3 bg-page space-y-3">
             <DiscountEditor
               orderDiscount={orderDiscount}
@@ -526,17 +573,110 @@ export function OrderEditForm({
               setOrderDiscount={setOrderDiscount}
               setOrderDiscountType={setOrderDiscountType}
             />
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-text-secondary w-28">Thanh toán:</span>
-              <select
-                aria-label="Phương thức thanh toán"
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-surface-card text-text-primary outline-none focus:ring-1 focus:ring-focus-ring min-h-[44px]"
-              >
-                <option value="Tien mat">Tiền mặt</option>
-                <option value="Chuyen khoan">Chuyển khoản</option>
-              </select>
+            {/* Payment Section (BR-SALE-013) */}
+            <div className="space-y-3 pt-1 border-t border-border">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-text-secondary">Thanh toán</span>
+                {payments.length === 1 && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleAddPaymentPart}
+                    className="text-xs min-h-[36px] py-1 px-3"
+                  >
+                    Thêm cách trả
+                  </Button>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                {payments.map((part, idx) => (
+                  <div
+                    key={`payment-part-${idx}`}
+                    className="flex flex-col sm:flex-row sm:items-center gap-2"
+                  >
+                    <div className="w-full sm:flex-1">
+                      <Select
+                        aria-label={
+                          payments.length === 2
+                            ? `Phương thức thanh toán ${idx + 1}`
+                            : "Phương thức thanh toán"
+                        }
+                        value={part.method}
+                        onChange={(e) =>
+                          handleMethodChange(idx, e.target.value as "CASH" | "BANK_TRANSFER")
+                        }
+                      >
+                        <option
+                          value="CASH"
+                          disabled={payments.length === 2 && payments[1 - idx]?.method === "CASH"}
+                        >
+                          Tiền mặt
+                        </option>
+                        <option
+                          value="BANK_TRANSFER"
+                          disabled={
+                            payments.length === 2 && payments[1 - idx]?.method === "BANK_TRANSFER"
+                          }
+                        >
+                          Chuyển khoản
+                        </option>
+                      </Select>
+                    </div>
+
+                    {payments.length === 2 ? (
+                      <>
+                        <div className="w-full sm:flex-1">
+                          <NumberInput
+                            id={`payment-amount-${idx}`}
+                            decimals={0}
+                            unit="đ"
+                            min={0}
+                            value={part.amount}
+                            onValueChange={(v) => handleAmountChange(idx, v ?? 0)}
+                            aria-label={`Số tiền ${
+                              part.method === "CASH" ? "tiền mặt" : "chuyển khoản"
+                            }`}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => handleRemovePaymentPart(idx)}
+                          aria-label={`Xoá ${
+                            part.method === "CASH" ? "tiền mặt" : "chuyển khoản"
+                          }`}
+                          className="w-full sm:w-auto px-3 min-h-[44px] md:min-h-[40px] shrink-0"
+                        >
+                          Xoá
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="w-full sm:w-auto text-sm font-semibold text-text-primary text-right tabular-nums py-2 px-1 shrink-0">
+                        {formatNumber(totalAmount)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {payments.length === 2 && (
+                <div className="space-y-1 pt-1">
+                  <div className="text-xs text-text-secondary">
+                    Tổng các phần: {formatNumber(totalParts)} • Tiền đơn: {formatNumber(totalAmount)}
+                  </div>
+                  {totalParts !== totalAmount && (
+                    <div role="alert" className="text-xs font-semibold text-danger">
+                      Còn lệch {formatNumber(Math.abs(totalParts - totalAmount))}
+                    </div>
+                  )}
+                  {totalParts === totalAmount && payments.some((p) => p.amount <= 0) && (
+                    <div role="alert" className="text-xs font-semibold text-danger">
+                      Số tiền mỗi phần phải lớn hơn 0
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -552,7 +692,7 @@ export function OrderEditForm({
             <textarea
               id="edit-order-reason"
               aria-label="Lý do chỉnh sửa"
-              placeholder="VD: Khách đổi từ 1 ly thành 2 ly"
+              placeholder="Ví dụ: Khách đổi từ 1 ly thành 2 ly"
               value={editReason}
               onChange={(e) => setEditReason(e.target.value)}
               rows={2}
@@ -560,23 +700,23 @@ export function OrderEditForm({
             />
           </div>
 
-          <div className="px-4 py-3 flex gap-3 bg-surface-card border-t border-border">
+          <div className="p-4 flex flex-col gap-3 bg-surface-card border-t border-border">
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSaving || items.length === 0 || !editReason.trim() || !isPaymentValid}
+              className="w-full min-h-[44px] md:min-h-[40px]"
+            >
+              {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
+            </Button>
             <Button
               type="button"
               variant="secondary"
               onClick={() => router.push(viewUrl)}
               disabled={isSaving}
-              className="flex-1 min-h-[44px]"
+              className="w-full min-h-[44px] md:min-h-[40px]"
             >
               Bỏ
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSaving || items.length === 0 || !editReason.trim()}
-              className="flex-1 min-h-[44px]"
-            >
-              {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
             </Button>
           </div>
         </div>

@@ -38,6 +38,29 @@ integrity. Deleting an ingredient used in a recipe, or a product already sold,
 still fails — the `RESTRICT` foreign keys refuse it. The role decides who may
 press the button; the data decides whether the button can succeed.
 
+**Staff accounts (Opus 2026-10-14, gap G4 of the master plan).** Deleting a staff
+account refuses two cases on the server: the account that is signed in ("Không
+thể xoá tài khoản đang đăng nhập.") and the last active `ADMIN` ("Không thể xoá
+tài khoản chủ quán cuối cùng."). A stopped `ADMIN` cannot sign in, so it does not
+count. Without this, the owner could lock everyone out of owner-only screens.
+Code: `deleteUserAction` in `app/admin/users/actions.ts`.
+
 **Why:** the owner replaced the earlier per-table exception with one system-wide
 rule so that "who can erase history" has a single answer instead of one answer
 per screen.
+
+### BR-ACCESS-004 — Only the owner touches the owner role
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item E2, chose *"Chỉ chủ quán đụng vai Chủ quán"*. Not built yet.
+
+**Why.** A manager could open Nhân sự, raise their own account to `ADMIN` or reset the owner's password, and then do everything kept for the owner: delete for good, undo or edit a stocktake. They could edit the very count that checks them.
+
+- A `MANAGER` keeps Nhân sự: adding and editing `STAFF` and `MANAGER` accounts, including resetting their passwords.
+- Only an `ADMIN` may give the `ADMIN` role (create or change), and only an `ADMIN` may edit an account that is already `ADMIN` (role or password). Checked on the server with `requireOwner()`, not by hiding buttons.
+- For a manager the role list offers only Nhân viên and Quản lý, and an `ADMIN` account shows no edit button.
+
+### BR-ACCESS-005 — The public API roles hold no table or function rights
+
+**Status:** `APPROVED` — technical decision, audit item E9, 2026-10-14. Measured that day: 6 tables still granted every right to both roles, 2 functions callable by `anon`, 0 sequences. Migration `0117` ran on the server 2026-10-14, owner approved "Chạy cả 4"; re-measured after: 0 tables, 0 functions.
+
+The `anon` and `authenticated` roles hold no right on any table, function or sequence in `public`. Tables and sequences created later get none either. A function created later still gets the global "everyone may run it" default, so each migration that creates one must revoke it from `public`, `anon` and `authenticated` itself, as every migration since `0091` does. Row-level security already blocks their rows; this also closes `TRUNCATE` and function calls. The app uses only the service-role key on the server, whose rights are untouched.

@@ -10,8 +10,13 @@ import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 
 const SHEET = "Users";
 const PATH = "/admin/users";
+const ROLES = ["STAFF", "MANAGER", "ADMIN"];
 
-type DBUserRow = DBUser & Record<string, unknown>;
+// BR-ACCESS-004: same set requireOwner() accepts; requireAdmin() also lets MANAGER in.
+const isOwnerRole = (role: string) => role === "ADMIN" || role === "SYSTEM";
+const GRANT_ADMIN_DENIED = "Chỉ chủ quán mới cấp được vai Chủ quán.";
+
+type DBUserRow =DBUser & Record<string, unknown>;
 
 function toClientUser(user: DBUserRow): DBUser {
   return {
@@ -21,6 +26,14 @@ function toClientUser(user: DBUserRow): DBUser {
     status: user.status,
     created_at: user.created_at,
   };
+}
+
+// True when this account is an ADMIN and no other ACTIVE ADMIN exists: nobody could open
+// owner-only screens again. A stopped ADMIN cannot sign in (lib/auth/auth.ts), so it does not count.
+function isLastAdmin(users: DBUserRow[], id: string): boolean {
+  const target = users.find(candidate => candidate.id === id);
+  if (target?.role !== "ADMIN") return false;
+  return !users.some(candidate => candidate.id !== id && candidate.role === "ADMIN" && candidate.status === "ACTIVE");
 }
 
 export async function getUsers(): Promise<DBUser[]> {
@@ -64,6 +77,8 @@ export async function addUser(formData: FormData): Promise<ActionResponse> {
   const password = formData.get("password") as string;
 
   if (!username || !role || !password) return fail("Vui lòng điền đủ thông tin");
+  if (!ROLES.includes(role)) return fail("Vai trò không hợp lệ");
+  if (role === "ADMIN" && !isOwnerRole(auth.actor.role)) return fail(GRANT_ADMIN_DENIED);
 
   try {
     const users = await findAll(SHEET);
@@ -83,7 +98,7 @@ export async function addUser(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// PRESERVE: hard delete, no admin protection check (matches current behavior)
+// PRESERVE: hard delete. Refuses self-delete and removing the last ADMIN account.
 export async function deleteUserAction(formData: FormData): Promise<ActionResponse> {
   // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
   const auth = await requireOwner();
@@ -92,7 +107,13 @@ export async function deleteUserAction(formData: FormData): Promise<ActionRespon
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
 
+  // Never let the signed-in owner delete their own account.
+  if (auth.actor.id === id) return fail("Không thể xoá tài khoản đang đăng nhập.");
+
   try {
+    const users = await findAll(SHEET) as DBUserRow[];
+    if (isLastAdmin(users, id)) return fail("Không thể xoá tài khoản chủ quán cuối cùng.");
+
     await remove(SHEET, id);
     revalidatePath(PATH);
     return ok();
@@ -111,8 +132,18 @@ export async function updateUser(formData: FormData): Promise<ActionResponse> {
   const password = formData.get("password") as string;
 
   if (!id || !role) return fail("Thiếu thông tin bắt buộc");
+  if (!ROLES.includes(role)) return fail("Vai trò không hợp lệ");
+  const isOwner = isOwnerRole(auth.actor.role);
 
   try {
+    const users = await findAll(SHEET) as DBUserRow[];
+    if (!isOwner && users.find(candidate => candidate.id === id)?.role === "ADMIN") {
+      return fail("Chỉ chủ quán mới sửa được tài khoản chủ quán.");
+    }
+    if (role === "ADMIN" && !isOwner) return fail(GRANT_ADMIN_DENIED);
+    if (role !== "ADMIN" && isLastAdmin(users, id)) {
+      return fail("Không thể hạ vai tài khoản chủ quán cuối cùng.");
+    }
     const dataToUpdate: Record<string, string> = { role };
 
     if (password && password.trim() !== "") {

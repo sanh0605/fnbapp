@@ -4,6 +4,8 @@ import { findAll, findAllNoCache, findAllWhere } from "@/lib/db/tables";
 import { requireAdmin } from "@/lib/auth/auth";
 import { ORDER_STATUS } from "@/lib/sales/order-types";
 import { saigonBucketKeys, toSaigonUtcRange } from "@/lib/shared/report-time";
+import type { RangeValue } from "@/lib/shared/date-range-params";
+import { endOfMonth, presetLabel } from "@/lib/shared/date-range-presets";
 import { computeProfitAndLoss, listAvailableYears, type PnlFigures } from "@/lib/reports/profit-and-loss";
 import { buildPnlTable, type PnlTable } from "@/lib/reports/profit-and-loss-table";
 import type { DBBrand } from "@/types/db";
@@ -15,10 +17,16 @@ export interface ProfitAndLossReport {
   brandNames: string[]; // for the page's header subtitle, ordered by code
 }
 
+// "Năm nay" -> "năm nay"; a hand-picked span has no ready name.
+function rangeNameOf(range: RangeValue): string {
+  if (range.preset === "CUSTOM") return "trong khoảng đã chọn";
+  return presetLabel(range.preset).toLocaleLowerCase("vi-VN");
+}
+
 // BR-PNL-004: ADMIN and MANAGER, the same guard as every other report.
 // No try/catch: an engine error must reach the page as an error, never as
 // a table of zeros that looks right (plan, question C).
-export async function getProfitAndLossReport(year?: number): Promise<ProfitAndLossReport> {
+export async function getProfitAndLossReport(range: RangeValue): Promise<ProfitAndLossReport> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
@@ -64,17 +72,18 @@ export async function getProfitAndLossReport(year?: number): Promise<ProfitAndLo
     ],
     currentYear,
   );
-  const selectedYear = year !== undefined && availableYears.includes(year) ? year : availableYears[0];
-
-  const yearRange = toSaigonUtcRange(`${selectedYear}-01-01`, `${selectedYear}-12-31`)!;
+  // Whole months in Saigon time: the first day of the first month to the
+  // last moment of the last month. No fallback to another span when empty.
+  const spanRange = toSaigonUtcRange(`${range.start}-01`, endOfMonth(`${range.end}-01`))!;
   const orders = await findAllWhere("Orders_V2", {
     eq: { status: ORDER_STATUS.COMPLETED },
-    gte: { created_at: yearRange.startUtc },
-    lte: { created_at: yearRange.endUtc },
+    gte: { created_at: spanRange.startUtc },
+    lte: { created_at: spanRange.endUtc },
   });
 
   const figures = computeProfitAndLoss({
-    year: selectedYear,
+    fromMonth: range.start,
+    toMonth: range.end,
     today,
     orders: orders as any[],
     cashEntries: cashEntries as any[],
@@ -90,5 +99,5 @@ export async function getProfitAndLossReport(year?: number): Promise<ProfitAndLo
     firstPaymentAt: (firstPayments[0] as any)?.created_at ?? null,
   });
 
-  return { availableYears, figures, table: buildPnlTable(figures, today), brandNames };
+  return { availableYears, figures, table: buildPnlTable(figures, today, rangeNameOf(range)), brandNames };
 }

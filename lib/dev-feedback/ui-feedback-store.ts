@@ -97,6 +97,14 @@ export function removeEntry(content: string, id: string): string {
   return serializeFeedback(parseFeedback(content).filter(e => e.id !== id));
 }
 
+// Replaces the whole note text of one entry; every other field and the entry
+// order stay as they were. Null when the id is not present.
+export function updateEntryNote(content: string, id: string, note: string): string | null {
+  const entries = parseFeedback(content);
+  if (!entries.some(e => e.id === id)) return null;
+  return serializeFeedback(entries.map(e => (e.id === id ? { ...e, note } : e)));
+}
+
 export function emptyFeedbackFile(): string {
   return HEADER;
 }

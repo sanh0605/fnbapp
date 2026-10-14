@@ -35,33 +35,64 @@ const sampleCategory: DBProductCategory = {
   id: "CAT-001",
   name: "Cà phê",
   status: "ACTIVE",
+  type_id: "PT-001",
 };
+
+const TYPES = [
+  { id: "PT-001", name: "Thức uống", is_drink: true, created_at: "2026-10-14T09:00:00Z" },
+  { id: "PT-002", name: "Thức ăn", is_drink: false, created_at: "2026-10-14T09:00:00Z" },
+];
 
 describe("ProductCategoryForm", () => {
   it("renders the category name field on the page directly, not in a dialog", () => {
-    render(<ProductCategoryForm returnTo="/admin/products/categories" />);
+    render(<ProductCategoryForm types={TYPES} returnTo="/admin/products/categories" />);
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.getByLabelText("Tên Danh Mục")).toBeInTheDocument();
+    expect(screen.getByLabelText("Tên nhóm món")).toBeInTheDocument();
   });
 
   it("pre-fills category name when editing", () => {
     render(
       <ProductCategoryForm
         initialData={sampleCategory}
+        types={TYPES}
         returnTo="/admin/products/categories"
       />
     );
-    expect(screen.getByLabelText("Tên Danh Mục")).toHaveValue("Cà phê");
+    expect(screen.getByLabelText("Tên nhóm món")).toHaveValue("Cà phê");
   });
 
   it("'Bỏ' navigates to returnTo without submitting", () => {
     render(
       <ProductCategoryForm
+        types={TYPES}
         returnTo="/admin/products/categories?q=tra"
       />
     );
     const cancelButton = screen.getByRole("button", { name: "Bỏ" });
     fireEvent.click(cancelButton);
     expect(push).toHaveBeenCalledWith("/admin/products/categories?q=tra");
+  });
+});
+
+// Plan 2026-10-14-tong-quan-moi Task 6: every dish group picks a Loại món.
+describe("ProductCategoryForm product type", () => {
+  const TYPES = [
+    { id: "PT-001", name: "Thức uống", is_drink: true, created_at: "2026-10-14T09:00:00Z" },
+    { id: "PT-002", name: "Thức ăn", is_drink: false, created_at: "2026-10-14T09:00:00Z" },
+  ];
+
+  it("asks for a Loại món, required, listing every type by name", () => {
+    render(<ProductCategoryForm types={TYPES} />);
+    const select = screen.getByLabelText(/^Loại món/) as HTMLSelectElement;
+    expect(select.getAttribute("name")).toBe("type_id");
+    expect(select.required).toBe(true);
+    const labels = [...select.options].map(o => o.textContent);
+    expect(labels).toEqual(["Chọn loại món", "Thức uống", "Thức ăn"]);
+    expect(select.value).toBe("");
+  });
+
+  it("the edit form starts on the group's own type", () => {
+    render(<ProductCategoryForm types={TYPES} initialData={{ ...sampleCategory, type_id: "PT-002" }} />);
+    expect((screen.getByLabelText(/^Loại món/) as HTMLSelectElement).value).toBe("PT-002");
   });
 });

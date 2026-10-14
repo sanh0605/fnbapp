@@ -4,6 +4,11 @@ export const BACKUP_TABLES = [
   // must come before both for lib/db/backup-restore.ts's parent-first
   // restore order to resolve.
   "outlets",
+  // product_categories.type_id and dashboard_settings.topping_type_id
+  // reference it, so it must come before both. Added 2026-10-14 with
+  // migration 0109 (live on the server since 2026-10-14).
+  "product_types",
+  "dashboard_settings",
   "product_categories",
   "item_categories",
   "units",
@@ -11,7 +16,14 @@ export const BACKUP_TABLES = [
   "purchase_sources",
   "products",
   "product_variants",
+  // modifiers.group_id references it, so it must come before modifiers. Added
+  // 2026-10-14 with migration 0119. WARNING: this function must not be deployed
+  // until 0119 is live -- dumpTable throws on a 404, and one missing table kills
+  // the whole night's backup.
+  "modifier_groups",
   "modifiers",
+  // References modifier_groups and products, so it must come after both. Added with 0119.
+  "modifier_group_products",
   "promotions",
   "purchased_items",
   "asset_depreciation_bands",
@@ -45,6 +57,9 @@ export const BACKUP_TABLES = [
   // None exist any more, so none are listed.
   "cash_categories",
   "bank_accounts",
+  // References cash_categories, and cash_entries.monthly_item_id references
+  // it, so it sits between them. Added 2026-10-14 with migration 0109.
+  "monthly_expense_items",
   // References cash_categories (category_id) and bank_accounts
   // (bank_account_id), so it must come after both for
   // lib/db/backup-restore.ts's parent-first restore order to resolve. See

@@ -61,11 +61,10 @@ export type IssuedEventFigure = {
 // practice), every MANUAL row carries issue_slip_id (required by the
 // multi-line slip RPC). Order the groups by their own representative
 // timestamp (every row in one group shares the exact same issued_at, since
-// one RPC call writes a whole session or a whole slip at once), then replay
-// computeIssueCosting over a growing set of full groups -- never a single
-// group in isolation, since a group's own value depends on the weighted-
-// average cost at the moment it happened, which depends on everything
-// before it. A group's value is the delta between consecutive replays.
+// one RPC call writes a whole session or a whole slip at once). A group's
+// value is the delta of the running total before and after it -- never the
+// group costed in isolation, since its weighted-average cost depends on
+// everything before it (how the running total is kept: see below).
 //
 // This does not depend on a group's rows being contiguous once sorted by
 // time (they are, in the data checked 2026-08-13, but this derivation does
@@ -128,12 +127,35 @@ export function computeIssuedEventFigures(
 
   const orderedGroups = [...groups.values()].sort((a, b) => a.at - b.at);
 
-  let cumulativeIssues: Issue[] = [];
+  // Items never interact in the engine, so only the items a group touches are
+  // replayed again (with their own full history so far). The running total is
+  // summed in the order computeIssueCosting lists its items -- the purchases'
+  // items first, then issue-only items as they first appear -- so every
+  // group's figure is identical to replaying everything.
+  const purchasesByItem = new Map<string, Purchase[]>();
+  for (const p of purchases) {
+    const list = purchasesByItem.get(p.purchased_item_id) ?? [];
+    list.push(p);
+    purchasesByItem.set(p.purchased_item_id, list);
+  }
+  if (orderedGroups.length > 0) computeIssueCosting(purchases, []); // validates every purchase once, as a full replay would
+  const issuesByItem = new Map<string, Issue[]>();
+  const issuedValueByItem = new Map<string, number>([...purchasesByItem.keys()].map(id => [id, 0]));
   let previousTotal = 0;
   const eventFigures: IssuedEventFigure[] = [];
   for (const group of orderedGroups) {
-    cumulativeIssues = cumulativeIssues.concat(buildIssueCostingIssues(group.rows));
-    const total = computeIssueCosting(purchases, cumulativeIssues).reduce((sum, r) => sum + r.issued_value, 0);
+    for (const issue of buildIssueCostingIssues(group.rows)) {
+      const list = issuesByItem.get(issue.purchased_item_id) ?? [];
+      list.push(issue);
+      issuesByItem.set(issue.purchased_item_id, list);
+      issuedValueByItem.set(issue.purchased_item_id, issuedValueByItem.get(issue.purchased_item_id) ?? 0);
+    }
+    for (const itemId of new Set(group.rows.map(r => r.purchased_item_id))) {
+      const [cost] = computeIssueCosting(purchasesByItem.get(itemId) ?? [], issuesByItem.get(itemId)!);
+      issuedValueByItem.set(itemId, cost.issued_value);
+    }
+    let total = 0;
+    for (const value of issuedValueByItem.values()) total += value;
     const valueExact = total - previousTotal;
     previousTotal = total;
 
@@ -184,7 +206,7 @@ function lastDayOfMonth(year: number, month: number): number {
 //
 // Section 3 and 5 still hold: no second cost definition. Each month's value
 // comes from computePeriodIssuedValue, the same function
-// app/admin/reports/actions.ts already uses for getPnLDataV2's totalCOGS,
+// app/admin/reports/pnl-actions.ts already uses for getPnLDataV2's totalCOGS,
 // with Asia/Saigon month boundaries from toSaigonUtcRange (the same helper
 // that file uses for its own date filters) -- no hand-rolled timezone
 // arithmetic.

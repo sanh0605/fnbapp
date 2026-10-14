@@ -77,7 +77,7 @@ export default function LoginPage() {
               className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-primary focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none transition-colors"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Tên đăng nhập…"
+              placeholder="Ví dụ: nhanvien01"
               autoComplete="username"
             />
           </div>

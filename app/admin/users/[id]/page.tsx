@@ -23,6 +23,9 @@ export default async function UserDetailPage({
   }
 
   const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
+  const canGrantAdmin = Boolean(
+    auth.ok && (auth.actor.role === "ADMIN" || auth.actor.role === "SYSTEM")
+  );
 
   const rawReturnTo = safeReturnTo(
     typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined
@@ -36,6 +39,7 @@ export default async function UserDetailPage({
       user={user}
       returnTo={returnTo}
       canDelete={canDelete}
+      canGrantAdmin={canGrantAdmin}
     />
   );
 }

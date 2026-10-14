@@ -6,11 +6,14 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterCard } from "@/components/ui/list/FilterCard";
 import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
+import { TextInput } from "@/components/ui/TextInput";
+import { Field } from "@/components/ui/Field";
+import { Badge } from "@/components/ui/Badge";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { formatNumber } from "@/lib/shared/format";
 import { AssetItemCard } from "./AssetItemCard";
-import type { AssetItemRow } from "@/lib/assets/asset-items";
+import { assetItemTotals, type AssetItemRow } from "@/lib/assets/asset-items";
 
 interface AssetsClientProps {
   items: AssetItemRow[];
@@ -81,7 +84,7 @@ export default function AssetsClient({
         header: "Mã hàng",
         sortValue: (asset) => asset.itemId,
         render: (asset) => (
-          <span className="font-mono text-text-secondary">{asset.itemId}</span>
+          <span className="font-mono text-primary">{asset.itemId}</span>
         ),
       },
       {
@@ -90,11 +93,11 @@ export default function AssetsClient({
         sortValue: (asset) => asset.name,
         render: (asset) => (
           <div className="flex items-center gap-2">
-            <span className="font-bold text-text-primary">{asset.name}</span>
+            <span className="text-text-primary">{asset.name}</span>
             {asset.fullyDisposed && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-secondary text-text-secondary border border-border shrink-0">
+              <Badge variant="neutral">
                 Đã thanh lý hết
-              </span>
+              </Badge>
             )}
           </div>
         ),
@@ -126,7 +129,7 @@ export default function AssetsClient({
         align: "right",
         sortValue: (asset) => asset.remainingValue,
         render: (asset) => (
-          <span className="font-bold text-text-primary">
+          <span className="text-text-primary">
             {formatNumber(Math.round(asset.remainingValue))}đ
           </span>
         ),
@@ -162,6 +165,8 @@ export default function AssetsClient({
     });
   }, [items, search, showAll]);
 
+  const assetTotals = useMemo(() => assetItemTotals(filteredAssets), [filteredAssets]);
+
   const sortedAssets = useMemo(() => {
     const col = columns.find((c) => c.key === sortKey);
     return col?.sortValue ? sortRows(filteredAssets, col.sortValue, sortDir) : filteredAssets;
@@ -194,21 +199,16 @@ export default function AssetsClient({
         onClear={handleClearFilter}
         showClear={Boolean(search.trim() || showAll)}
       >
-        <div className="shrink-0 flex-1 md:flex-none w-full md:w-64">
-          <label
-            htmlFor="assets-search"
-            className="block text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1"
-          >
-            Tìm kiếm
-          </label>
-          <input
-            id="assets-search"
-            type="text"
-            placeholder="Tên tài sản..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card"
-          />
+        <div className="shrink-0 w-full md:w-64">
+          <Field label="Tìm kiếm" htmlFor="assets-search">
+            <TextInput
+              id="assets-search"
+              type="text"
+              placeholder="Ví dụ: Tạp dề"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
         </div>
         <div className="shrink-0 flex items-center h-10 mt-auto pb-1">
           <label className="inline-flex items-center gap-2 cursor-pointer text-sm text-text-primary select-none">
@@ -232,6 +232,10 @@ export default function AssetsClient({
         }
         columns={columns}
         renderCard={(asset) => <AssetItemCard item={asset} />}
+        totals={{
+          label: "Tổng (không tính đã thanh lý hết)",
+          values: { remainingValue: formatNumber(assetTotals.remainingValue) },
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

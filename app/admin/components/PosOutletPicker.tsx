@@ -3,6 +3,7 @@
 import { isOutletOpenAt } from "@/lib/catalog/outlet-hours";
 import { confirm } from "@/lib/shared/dialog";
 import { Store } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface PickerOutlet {
   id: string;
@@ -50,21 +51,22 @@ export function PosOutletPicker({ outlets, nowHHMM, onOpenTill }: PosOutletPicke
         const isOpen = isOutletOpenAt(outlet.open_time, outlet.close_time, nowHHMM);
         const hasStatedHours = !!(outlet.open_time && outlet.close_time);
         return (
-          <button
+          <Button
             key={outlet.id}
+            variant="secondary"
+            className="w-full flex-col"
             onClick={() => void handleSelect(outlet)}
-            className="w-full bg-primary text-on-primary border border-primary font-bold text-lg py-4 rounded-button hover:bg-primary-hover active:bg-primary-active active:scale-[0.98] transition-colors flex flex-col items-center gap-1 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none"
           >
             <span className="flex items-center gap-3">
               <Store size={24} />
               <span>{outlet.name}</span>
             </span>
             {hasStatedHours && (
-              <span className={`text-xs font-medium ${isOpen ? "text-white/80" : "text-warning"}`}>
+              <span className={`text-xs font-medium ${isOpen ? "text-success" : "text-warning"}`}>
                 {isOpen ? "Đang trong giờ mở cửa" : "Ngoài giờ mở cửa"}
               </span>
             )}
-          </button>
+          </Button>
         );
       })}
     </>

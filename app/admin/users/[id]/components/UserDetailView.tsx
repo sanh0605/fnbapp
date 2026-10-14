@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
@@ -15,15 +15,18 @@ export interface UserDetailViewProps {
   user: DBUser;
   returnTo: string;
   canDelete: boolean;
+  canGrantAdmin?: boolean;
 }
 
 export function UserDetailView({
   user,
   returnTo,
   canDelete,
+  canGrantAdmin = true,
 }: UserDetailViewProps): JSX.Element {
   const currentDetailUrl = `/admin/users/${encodeURIComponent(user.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/users/${encodeURIComponent(user.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
+  const canEdit = canGrantAdmin || user.role !== "ADMIN";
 
   const fields: Field[] = [
     { label: "Mã NV", value: user.id },
@@ -34,12 +37,11 @@ export function UserDetailView({
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
-        href={editHref}
-        className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition shadow-sm min-h-[44px] flex items-center justify-center text-sm"
-      >
-        Chỉnh sửa
-      </Link>
+      {canEdit && (
+        <Button href={editHref} variant="secondary">
+          Chỉnh sửa
+        </Button>
+      )}
       {canDelete && user.username !== "admin" && (
         <RemoveRecordButton
           verb="Xoá"

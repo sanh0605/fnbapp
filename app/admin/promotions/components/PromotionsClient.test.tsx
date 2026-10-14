@@ -183,8 +183,27 @@ describe("PromotionsClient", () => {
     expect(screen.getAllByText("Giảm 10,000đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Uchako").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đã hết hạn").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/15\/07\/2026 12:59/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/15\/07\/2026 12:59:00/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("2 món, 3 size").length).toBeGreaterThan(0);
+  });
+
+  it("leaves a plain date start_date (day with no time) as a plain date without seconds", () => {
+    const promoWithPlainDate: DBPromotion = {
+      ...samplePromotions[0],
+      start_date: "2026-06-01",
+    };
+    render(
+      <PromotionsClient
+        promotions={[promoWithPlainDate]}
+        brands={sampleBrands}
+        products={[]}
+        variants={sampleVariants}
+        categories={[]}
+        canDelete={false}
+      />,
+    );
+    expect(screen.getAllByText("01/06/2026").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/01\/06\/2026 00:00/)).toBeNull();
   });
 
   it("renders in default order newest code first", () => {

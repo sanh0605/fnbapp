@@ -3,7 +3,10 @@
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addCashCategory, updateCashCategory } from "../actions";
-import { LoadingButton } from "@/components/ui/LoadingButton";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { Select } from "@/components/ui/Select";
+import { TextInput } from "@/components/ui/TextInput";
 import { confirm } from "@/lib/shared/dialog";
 import { safeReturnTo } from "../../components/return-to";
 import type { DBCashCategory } from "@/types/db";
@@ -21,8 +24,7 @@ const AFFECTS_PNL_CHANGE_WARNING =
 // jsdom + React 18 (this repo's test toolchain) does not execute a
 // function-valued <form action>, which is a React 19 / Next.js
 // canary-channel feature -- so a simulated click-to-submit never reaches
-// handleSubmit in a test. Same reasoning as resolveDateRange in
-// app/admin/finance/resolve-date-range.ts.
+// handleSubmit in a test.
 export function shouldConfirmAffectsPnlChange(
   isKindLocked: boolean,
   previousAffectsPnl: boolean,
@@ -82,7 +84,7 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
@@ -90,96 +92,93 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
           </div>
         )}
 
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên nhóm
-          </label>
-          <input
-            id={`${formId}-name`}
-            type="text"
-            name="name"
-            required
-            defaultValue={category?.name}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Vận hành"
-          />
-        </div>
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên nhóm" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              defaultValue={category?.name}
+              placeholder="Ví dụ: Vận hành"
+            />
+          </Field>
 
-        <div>
-          <label htmlFor={`${formId}-kind`} className="block text-sm font-medium text-text-secondary mb-1">
-            Bên
-          </label>
-          <select
-            id={`${formId}-kind`}
-            name={isKindLocked ? undefined : "kind"}
-            disabled={isKindLocked}
-            value={kind}
-            onChange={(e) => {
-              const next = e.target.value as "EXPENSE" | "INCOME";
-              setKind(next);
-              if (next !== "INCOME") setIsSalesRevenue(false);
-            }}
-            className="w-full border border-border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary disabled:opacity-60"
+          <Field
+            label="Bên"
+            htmlFor={`${formId}-kind`}
+            hint={isKindLocked ? "Đã có dòng sổ — không đổi được bên" : undefined}
           >
-            <option value="EXPENSE">Chi</option>
-            <option value="INCOME">Thu</option>
-          </select>
-          {isKindLocked && (
-            <>
+            <Select
+              id={`${formId}-kind`}
+              name={isKindLocked ? undefined : "kind"}
+              disabled={isKindLocked}
+              value={kind}
+              onChange={(e) => {
+                const next = e.target.value as "EXPENSE" | "INCOME";
+                setKind(next);
+                if (next !== "INCOME") setIsSalesRevenue(false);
+              }}
+            >
+              <option value="EXPENSE">Chi</option>
+              <option value="INCOME">Thu</option>
+            </Select>
+            {isKindLocked && (
               <input type="hidden" name="kind" value={category!.kind} />
-              <p className="mt-1 text-xs text-text-muted">Đã có dòng sổ — không đổi được bên</p>
-            </>
-          )}
-        </div>
+            )}
+          </Field>
 
-        <label className="flex items-center gap-2 text-sm text-text-primary">
-          <input
-            type="checkbox"
-            name="affects_pnl"
-            checked={affectsPnl}
-            onChange={(e) => {
-              setAffectsPnl(e.target.checked);
-              if (!e.target.checked) setIsSalesRevenue(false);
-            }}
-            className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
-          />
-          Tính vào lãi lỗ
-        </label>
-
-        {canBeSalesRevenue && (
-          <div>
+          <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm text-text-primary">
               <input
                 type="checkbox"
-                name="is_sales_revenue"
-                checked={isSalesRevenue}
-                onChange={(e) => setIsSalesRevenue(e.target.checked)}
+                name="affects_pnl"
+                checked={affectsPnl}
+                onChange={(e) => {
+                  setAffectsPnl(e.target.checked);
+                  if (!e.target.checked) setIsSalesRevenue(false);
+                }}
                 className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
               />
-              Tính là doanh thu bán hàng
+              Tính vào lãi lỗ
             </label>
-            <p className="mt-1 text-xs text-text-muted">
-              Đánh dấu khi tiền của nhóm này là tiền bán hàng ghi tay. Trang Báo cáo tài chính cộng vào dòng Doanh thu thay vì Thu khác.
-            </p>
+
+            {canBeSalesRevenue && (
+              <div>
+                <label className="flex items-center gap-2 text-sm text-text-primary">
+                  <input
+                    type="checkbox"
+                    name="is_sales_revenue"
+                    checked={isSalesRevenue}
+                    onChange={(e) => setIsSalesRevenue(e.target.checked)}
+                    className="h-4 w-4 rounded border-border focus:ring-2 focus:ring-focus-ring"
+                  />
+                  Tính là doanh thu bán hàng
+                </label>
+                <p className="mt-1 text-xs text-text-muted">
+                  Đánh dấu khi tiền của nhóm này là tiền bán hàng ghi tay. Trang Lãi lỗ cộng vào dòng Doanh thu thay vì Thu khác.
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             loading={loading}
-            loadingText="Đang lưu…"
             className="w-full sm:w-auto"
           >
             {isEdit ? "Cập nhật" : "Lưu nhóm"}
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

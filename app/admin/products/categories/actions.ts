@@ -4,7 +4,7 @@ import { findAll, insert, update, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { ok, fail, softDeleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
-import type { DBProductCategory, DBProduct } from "@/types/db";
+import type { DBProductCategory, DBProduct, DBProductType } from "@/types/db";
 import { requireAdmin } from "@/lib/auth/auth";
 
 const SHEET = "Product_Categories";
@@ -37,17 +37,26 @@ export async function getCategoriesWithCounts(): Promise<{
   }
 }
 
+// The product type must be chosen and must exist.
+async function typeExists(typeId: string): Promise<boolean> {
+  if (!typeId) return false;
+  const types = (await findAll("Product_Types")) as DBProductType[];
+  return types.some(t => t.id === typeId);
+}
+
 export async function saveCategory(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
   const name = formData.get("name") as string;
   if (!name) return fail("Vui lòng nhập tên danh mục");
+  const type_id = ((formData.get("type_id") as string) || "").trim();
 
   try {
+    if (!(await typeExists(type_id))) return fail("Chọn loại món");
     const id = await generateNewId(SHEET, "CAT");
     const created_at = new Date().toISOString();
-    await insert(SHEET, { id, name, status: "ACTIVE", created_at });
+    await insert(SHEET, { id, name, type_id, status: "ACTIVE", created_at });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -62,9 +71,11 @@ export async function updateCategory(formData: FormData): Promise<ActionResponse
   const id = formData.get("id") as string;
   const name = formData.get("name") as string;
   if (!id || !name) return fail("Dữ liệu không hợp lệ");
+  const type_id = ((formData.get("type_id") as string) || "").trim();
 
   try {
-    await update(SHEET, id, { name });
+    if (!(await typeExists(type_id))) return fail("Chọn loại món");
+    await update(SHEET, id, { name, type_id });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

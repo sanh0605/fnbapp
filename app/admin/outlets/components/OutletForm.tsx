@@ -4,10 +4,12 @@ import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addOutlet, editOutlet } from "@/app/admin/outlets/actions";
 import { nextOutletCode } from "@/lib/catalog/outlet-code";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
-import { LoadingButton } from "@/components/ui/LoadingButton";
-import { alert } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
@@ -77,7 +79,7 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
   }
 
   return (
-    <div className="bg-surface-card rounded-2xl border border-border p-6 max-w-2xl shadow-sm">
+    <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
@@ -96,110 +98,95 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
           </p>
         )}
 
-        <div>
-          <label htmlFor={`${formId}-name`} className="block text-sm font-medium text-text-secondary mb-1">
-            Tên điểm bán
-          </label>
-          <input
-            id={`${formId}-name`}
-            type="text"
-            name="name"
-            required
-            defaultValue={initialData?.name}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: Điểm bán 3"
-          />
-        </div>
-
-        <div>
-          <label htmlFor={`${formId}-brand`} className="block text-sm font-medium text-text-secondary mb-1">
-            Thương hiệu
-          </label>
-          <select
-            id={`${formId}-brand`}
-            name="brand_id"
-            required
-            value={brandId}
-            onChange={(e) => setBrandId(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card text-text-primary"
-          >
-            <option value="" disabled>-- Chọn thương hiệu --</option>
-            {brands.map(b => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor={`${formId}-address`} className="block text-sm font-medium text-text-secondary mb-1">
-            Địa chỉ
-          </label>
-          <input
-            id={`${formId}-address`}
-            type="text"
-            name="address"
-            defaultValue={initialData?.address}
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-            placeholder="VD: 123 Đường ABC, Quận 1"
-          />
-        </div>
-
-        <div>
-          <label htmlFor={`${formId}-start-date`} className="block text-sm font-medium text-text-secondary mb-1">
-            Ngày bắt đầu hoạt động
-          </label>
-          <CustomDatePicker
-            id={`${formId}-start-date`}
-            selected={selectedDate}
-            onChange={(date: Date | null) => setSelectedDate(date)}
-            dateFormat="dd/MM/yyyy"
-            showTimeSelect={false}
-            placeholderText="DD/MM/YYYY"
-            className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label htmlFor={`${formId}-open-time`} className="block text-sm font-medium text-text-secondary mb-1">
-              Giờ mở cửa
-            </label>
-            <input
-              id={`${formId}-open-time`}
-              type="time"
-              name="open_time"
-              defaultValue={toTimeInputValue(initialData?.open_time)}
-              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên điểm bán" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              defaultValue={initialData?.name}
+              placeholder="Ví dụ: Điểm bán 3"
             />
-          </div>
-          <div>
-            <label htmlFor={`${formId}-close-time`} className="block text-sm font-medium text-text-secondary mb-1">
-              Giờ đóng cửa
-            </label>
-            <input
-              id={`${formId}-close-time`}
-              type="time"
-              name="close_time"
-              defaultValue={toTimeInputValue(initialData?.close_time)}
-              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+          </Field>
+
+          <Field label="Thương hiệu" htmlFor={`${formId}-brand`} required>
+            <Select
+              id={`${formId}-brand`}
+              name="brand_id"
+              required
+              value={brandId}
+              onChange={(e) => setBrandId(e.target.value)}
+            >
+              <option value="" disabled>-- Chọn thương hiệu --</option>
+              {brands.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field label="Địa chỉ" htmlFor={`${formId}-address`}>
+            <TextInput
+              id={`${formId}-address`}
+              name="address"
+              defaultValue={initialData?.address}
+              placeholder="Ví dụ: 123 Đường ABC, Quận 1"
             />
+          </Field>
+
+          <Field label="Ngày bắt đầu hoạt động" htmlFor={`${formId}-start-date`}>
+            <CustomDatePicker
+              id={`${formId}-start-date`}
+              selected={selectedDate}
+              onChange={(date: Date | null) => setSelectedDate(date)}
+              dateFormat="dd/MM/yyyy"
+              showTimeSelect={false}
+              placeholderText="DD/MM/YYYY"
+              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] md:min-h-[40px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+            />
+          </Field>
+
+          <div className="space-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Giờ mở cửa" htmlFor={`${formId}-open-time`}>
+                <TextInput
+                  id={`${formId}-open-time`}
+                  type="time"
+                  name="open_time"
+                  defaultValue={toTimeInputValue(initialData?.open_time)}
+                />
+              </Field>
+              <Field label="Giờ đóng cửa" htmlFor={`${formId}-close-time`}>
+                <TextInput
+                  id={`${formId}-close-time`}
+                  type="time"
+                  name="close_time"
+                  defaultValue={toTimeInputValue(initialData?.close_time)}
+                />
+              </Field>
+            </div>
+            <p className="text-xs text-text-muted">
+              Để trống nếu chưa muốn hệ thống nhắc giờ mở/đóng cửa cho điểm bán này.
+            </p>
           </div>
         </div>
-        <p className="text-xs text-text-muted">
-          Để trống nếu chưa muốn hệ thống nhắc giờ mở/đóng cửa cho điểm bán này.
-        </p>
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto px-4 py-2 text-text-secondary hover:bg-surface-secondary rounded-lg font-medium transition text-center min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Bỏ
-          </button>
-          <LoadingButton type="submit" loading={loading} loadingText="Đang lưu…" className="w-full sm:w-auto min-h-[44px]">
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            loading={loading}
+            className="w-full sm:w-auto"
+          >
             {isEdit ? "Cập nhật" : "Lưu điểm bán"}
-          </LoadingButton>
+          </Button>
         </div>
       </form>
     </div>

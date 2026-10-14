@@ -22,7 +22,8 @@ export function rpcWriteTargets(sqlSources: string[]): Map<string, string[]> {
   for (const sql of sqlSources) {
     for (const def of sql.matchAll(FN_DEF)) {
       const fn = def[1];
-      const body = def[3];
+      // Row-lock clauses (for update [of x], for no key update, for share) are reads, not writes.
+      const body = def[3].replace(/\bfor\s+(?:no\s+key\s+update|key\s+share|update|share)\b/gi, "");
       const tables = new Set<string>();
       for (const w of body.matchAll(WRITE_TARGET)) tables.add(w[1]);
       map.set(fn, [...tables].sort()); // later migration overwrites earlier

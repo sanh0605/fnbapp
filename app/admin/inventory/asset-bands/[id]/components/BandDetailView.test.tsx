@@ -1,10 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import { BandDetailView } from "./BandDetailView";
 import type { DBAssetDepreciationBand } from "@/types/db";
-import { deleteAssetBand } from "../../actions";
-import { confirm } from "@/lib/shared/dialog";
 
 const { push, refresh, router } = vi.hoisted(() => {
   const pushFn = vi.fn();
@@ -28,18 +26,6 @@ vi.mock("next/link", () => ({
       {children}
     </a>
   ),
-}));
-
-vi.mock("../../actions", () => ({
-  deleteAssetBand: vi.fn(),
-}));
-
-vi.mock("@/app/admin/inventory/asset-bands/actions", () => ({
-  deleteAssetBand: vi.fn(),
-}));
-
-vi.mock("@/lib/shared/dialog", () => ({
-  confirm: vi.fn(),
 }));
 
 const BAND: DBAssetDepreciationBand = {
@@ -81,38 +67,19 @@ describe("BandDetailView", () => {
     ).toBeInTheDocument();
   });
 
-  it("'Chỉnh sửa' href goes to /edit with returnTo = detail url", () => {
+  it("'Sửa' href goes to /admin/inventory/asset-bands/edit with returnTo = detail url", () => {
     const returnTo = "/admin/inventory/asset-bands";
     render(<BandDetailView band={BAND} returnTo={returnTo} canDelete={false} />);
 
-    const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
+    const editLink = screen.getByRole("link", { name: "Sửa" });
     const detailUrl = `/admin/inventory/asset-bands/${BAND.id}?returnTo=${encodeURIComponent(returnTo)}`;
-    const expectedEditHref = `/admin/inventory/asset-bands/${BAND.id}/edit?returnTo=${encodeURIComponent(detailUrl)}`;
+    const expectedEditHref = `/admin/inventory/asset-bands/edit?returnTo=${encodeURIComponent(detailUrl)}`;
 
     expect(editLink).toHaveAttribute("href", expectedEditHref);
   });
 
-  it("hides 'Xoá' button when canDelete is false", () => {
-    render(<BandDetailView band={BAND} returnTo="/admin/inventory/asset-bands" canDelete={false} />);
+  it("does not render 'Xoá' button even when canDelete is true", () => {
+    render(<BandDetailView band={BAND} returnTo="/admin/inventory/asset-bands" canDelete={true} />);
     expect(screen.queryByRole("button", { name: /Xoá/ })).toBeNull();
-  });
-
-  it("renders 'Xoá' button when canDelete is true", () => {
-    render(<BandDetailView band={BAND} returnTo="/admin/inventory/asset-bands" canDelete={true} />);
-    expect(screen.getByRole("button", { name: /Xoá/ })).toBeInTheDocument();
-  });
-
-  it("calls deleteAssetBand when delete button is clicked and confirmed", async () => {
-    vi.mocked(confirm).mockResolvedValue(true);
-    vi.mocked(deleteAssetBand).mockResolvedValue({ ok: true });
-
-    render(<BandDetailView band={BAND} returnTo="/admin/inventory/asset-bands" canDelete={true} />);
-
-    const deleteBtn = screen.getByRole("button", { name: /Xoá/ });
-    fireEvent.click(deleteBtn);
-
-    await waitFor(() => {
-      expect(deleteAssetBand).toHaveBeenCalled();
-    });
   });
 });

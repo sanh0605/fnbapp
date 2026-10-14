@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { ListPagination } from "@/components/ui/list/ListPagination";
@@ -53,7 +53,7 @@ export default function UnitsClient({
         header: "Tên",
         sortValue: (unit) => unit.name,
         render: (unit) => (
-          <span className="font-bold text-text-primary">{unit.name}</span>
+          <span className="text-text-primary">{unit.name}</span>
         ),
       },
       {
@@ -92,7 +92,7 @@ export default function UnitsClient({
 
   const renderCard = (unit: DBUnit) => (
     <div className="flex flex-col gap-1">
-      <div className="font-bold text-text-primary text-base leading-tight">
+      <div className="text-sm text-text-primary">
         {unit.name}
       </div>
       <div className="text-sm text-text-muted">
@@ -123,12 +123,12 @@ export default function UnitsClient({
         group="Kho"
         title="Đơn vị tính"
         action={
-          <Link
+          <Button
             href={`/admin/inventory/units/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-hover transition w-full md:w-auto text-center inline-flex items-center justify-center min-h-[44px] shadow-sm"
+            className="w-full md:w-auto"
           >
             Tạo
-          </Link>
+          </Button>
         }
       />
 
