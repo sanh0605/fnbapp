@@ -50,9 +50,9 @@ both sale paths and link the records: *"Có, giữ cả hai đường."* **Not y
 `modifiers` and is written into `order_lines_v2.modifiers_snapshot_json` on the
 parent line. Bought on its own, it is a row in `products` under category
 `CAT-007` with its own variant and price, and becomes an ordinary order line.
-Both paths are live and intended: `app/admin/products/toppings/actions.ts`
-already carries `toggleToppingStandalone`, which turns the second path on and off
-per topping by flipping the product's status.
+Both paths are live and intended: `toggleToppingStandalone` in
+`app/admin/products/modifiers/actions.ts` turns the second path on and off
+per topping by pausing or resuming the product with its sizes.
 
 **Measured 2026-09-07, the whole trading history:** 278 topping units sold as
 add-ons for 1.385.000đ, against 2 sold standalone for 16.000đ — one *Kem muối
@@ -185,6 +185,6 @@ Until then the option form offered four names written into the code and the till
 
 **What he was shown.** Each dish has a hidden "brand" field, `products.brand_id`. On 2026-10-15 it was empty on 48 of 48 dishes, and no screen sets it, so Phin Đi and Uchako already sell the same menu.
 
-- Every dish sells at every outlet. The field and the till's filter on it (`app/pos/components/POSScreen.tsx`) are removed. The till's filter goes first, then the column.
+- Every dish sells at every outlet. Checked 2026-10-15: the till and the server's cart builder never filtered dishes by brand. The `brand_id` checks in `POSScreen.tsx` and `lib/sales/order-cart.ts` read `promotions.brand_id`. A test on each side now pins this.
+- The column `products.brand_id` goes in the structure migration batch (`docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`).
 - A promotion keeps its own brand (`promotions.brand_id`). That is unchanged.
-- Not built yet.

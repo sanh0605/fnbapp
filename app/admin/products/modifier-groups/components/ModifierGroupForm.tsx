@@ -11,6 +11,7 @@ import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
+import { Alert } from "@/components/ui/Alert";
 import type { DBModifierGroup, DBProductCategory, DBProduct } from "@/types/db";
 
 export interface ModifierGroupFormProps {
@@ -168,13 +169,9 @@ export function ModifierGroupForm({
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div
-            role="alert"
-            aria-live="polite"
-            className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20 font-medium"
-          >
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
         <div

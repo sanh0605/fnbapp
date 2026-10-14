@@ -8,9 +8,10 @@ import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
 import { formatDate } from "@/lib/shared/datetime";
 import { confirm } from "@/lib/shared/dialog";
-import { retireOutlet } from "@/app/admin/outlets/actions";
+import { retireOutlet, reactivateOutlet } from "@/app/admin/outlets/actions";
 import type { DBOutlet } from "@/types/db";
 
 export interface OutletDetailViewProps {
@@ -26,13 +27,14 @@ export function OutletDetailView({
 }: OutletDetailViewProps): JSX.Element {
   const router = useRouter();
   const [retireLoading, setRetireLoading] = useState(false);
-  const [retireError, setRetireError] = useState<string | null>(null);
+  const [reactivateLoading, setReactivateLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const currentDetailUrl = `/admin/outlets/${encodeURIComponent(outlet.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/outlets/${encodeURIComponent(outlet.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
 
   const handleRetire = async () => {
-    setRetireError(null);
+    setActionError(null);
     const approved = await confirm({
       title: "Ngừng hoạt động điểm bán",
       message: `Ngừng hoạt động "${outlet.name}"? Điểm bán sẽ không còn dùng để mở máy POS, nhưng dữ liệu và mã ${outlet.code} vẫn được giữ nguyên.`,
@@ -48,12 +50,38 @@ export function OutletDetailView({
       fd.set("id", outlet.id);
       const res = await retireOutlet(fd);
       if (res?.error) {
-        setRetireError(res.error);
+        setActionError(res.error);
       } else {
         router.refresh();
       }
     } finally {
       setRetireLoading(false);
+    }
+  };
+
+  const handleReactivate = async () => {
+    setActionError(null);
+    const approved = await confirm({
+      title: "Mở lại hoạt động điểm bán",
+      message: `Mở lại hoạt động "${outlet.name}"? Điểm bán sẽ có thể tiếp tục dùng để mở máy POS và nhận đơn.`,
+      okText: "Mở lại hoạt động",
+      cancelText: "Huỷ",
+      variant: "warning",
+    });
+    if (!approved) return;
+
+    setReactivateLoading(true);
+    try {
+      const fd = new FormData();
+      fd.set("id", outlet.id);
+      const res = await reactivateOutlet(fd);
+      if (res?.error) {
+        setActionError(res.error);
+      } else {
+        router.refresh();
+      }
+    } finally {
+      setReactivateLoading(false);
     }
   };
 
@@ -97,29 +125,37 @@ export function OutletDetailView({
   ];
 
   const headerActions = (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button href={editHref} variant="secondary">
+    <div className="flex flex-col gap-2 w-full md:w-auto">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
+        <Button href={editHref} variant="secondary" className="w-full md:w-auto">
           Chỉnh sửa
         </Button>
-        {outlet.status === "ACTIVE" && (
+        {outlet.status === "ACTIVE" ? (
           <Button
             type="button"
             variant="delete"
             onClick={handleRetire}
             loading={retireLoading}
+            className="w-full md:w-auto"
           >
             Ngừng hoạt động
           </Button>
-        )}
+        ) : outlet.status === "INACTIVE" ? (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleReactivate}
+            loading={reactivateLoading}
+            className="w-full md:w-auto"
+          >
+            Mở lại hoạt động
+          </Button>
+        ) : null}
       </div>
-      {retireError && (
-        <div
-          role="alert"
-          className="text-sm font-medium text-danger bg-danger/10 border border-danger/20 rounded-lg p-3"
-        >
-          {retireError}
-        </div>
+      {actionError && (
+        <Alert variant="danger">
+          {actionError}
+        </Alert>
       )}
     </div>
   );

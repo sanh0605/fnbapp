@@ -23,6 +23,7 @@ export interface ModifierDetailViewProps {
   product: LinkedProduct | null;
   groupName: string;
   allowStandalone: boolean;
+  groupSelectionMode?: "ONE" | "MANY";
   returnTo: string;
 }
 
@@ -31,12 +32,14 @@ export function ModifierDetailView({
   product,
   groupName,
   allowStandalone,
+  groupSelectionMode,
   returnTo,
 }: ModifierDetailViewProps): JSX.Element {
   const currentDetailUrl = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
 
   const displayGroupName = groupName || "—";
+  const isOne = groupSelectionMode === "ONE";
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
@@ -66,9 +69,21 @@ export function ModifierDetailView({
     { label: "Nhóm", value: displayGroupName },
     { label: "Tên tuỳ chọn", value: modifier.name },
     { label: "Giá thêm", value: formatNumber(modifier.price) },
+    { label: "Có sẵn", value: modifier.is_default ? "Có" : "Không" },
+    {
+      label: "Tối đa mỗi món",
+      value:
+        modifier.max_qty !== null &&
+        modifier.max_qty !== undefined &&
+        modifier.max_qty > 0
+          ? String(modifier.max_qty)
+          : "Không giới hạn",
+    },
     {
       label: "Bán độc lập",
-      value: (
+      value: isOne ? (
+        "—"
+      ) : (
         <StandaloneToppingSwitch
           modifierId={modifier.id}
           modifierName={modifier.name}

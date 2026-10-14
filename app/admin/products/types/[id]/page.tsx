@@ -2,16 +2,9 @@ import { notFound } from "next/navigation";
 import { resolveActor } from "@/lib/auth/auth";
 import { getProductTypes } from "@/app/admin/products/types/actions";
 import { ProductTypeDetailView } from "./components/ProductTypeDetailView";
+import { safeReturnTo } from "@/app/admin/products/components/return-to";
 
 export const dynamic = "force-dynamic";
-
-function safeReturnTo(raw: string | undefined | null, fallback = "/admin/products/types"): string {
-  if (!raw) return fallback;
-  if (raw === fallback || raw.startsWith(`${fallback}?`) || raw.startsWith(`${fallback}/`)) {
-    return raw;
-  }
-  return fallback;
-}
 
 export default async function ProductTypeDetailPage({
   params,

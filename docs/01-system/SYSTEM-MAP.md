@@ -48,7 +48,6 @@ app/admin/products/actions.ts -> Products (write)
 app/admin/products/categories/actions.ts -> Product_Categories (write)
 app/admin/products/modifiers/actions.ts -> Modifiers (write)
 app/admin/products/types/actions.ts -> Product_Types (write)
-app/admin/products/toppings/actions.ts -> Products (write)
 app/admin/promotions/actions.ts -> Promotions (write)
 app/admin/suppliers/actions.ts -> Suppliers (write)
 app/admin/users/actions.ts -> Users (write)
@@ -104,7 +103,7 @@ issue).
 `lib/products/product-erase-transaction.ts` writes `products`, `product_variants`, and
 `product_price_history`. `app/admin/products/categories/actions.ts` writes
 `Product_Categories`; `app/admin/products/modifiers/actions.ts` writes
-`Modifiers`; `app/admin/products/toppings/actions.ts` writes `Products`.
+`Modifiers`.
 `lib/products/modifier-save-transaction.ts` writes `modifiers`, and via `sync_topping_price_atomic` `product_variants` and `product_price_history` (`BR-CATALOG-003`).
 `lib/products/modifier-group-transaction.ts` writes `modifier_groups`, `modifier_group_products` and `modifiers`; `lib/products/product-save-transaction.ts` also writes `modifier_group_products` (dish ticks, `BR-CATALOG-005`).
 `lib/products/create-standalone-topping.ts` writes `products`,

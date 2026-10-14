@@ -151,4 +151,18 @@ describe("CategoriesClient", () => {
     expect(createLink).toBeInTheDocument();
     expect(createLink.getAttribute("href")).toContain("/admin/products/categories/new?returnTo=");
   });
+
+  it("renders Loại món column and type name for category", () => {
+    const sampleTypes = [{ id: "PT-001", name: "Đồ uống", status: "ACTIVE" }];
+    render(
+      <CategoriesClient
+        categories={sampleCategories}
+        counts={sampleCounts}
+        types={sampleTypes as any}
+      />,
+    );
+
+    expect(screen.getAllByText("Loại món").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Đồ uống").length).toBeGreaterThan(0);
+  });
 });

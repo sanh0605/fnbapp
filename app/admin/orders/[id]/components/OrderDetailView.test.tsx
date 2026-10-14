@@ -92,7 +92,7 @@ function makeDetail(
 }
 
 describe("OrderDetailView", () => {
-  it("shows Sửa đơn link to edit page and Huỷ đơn button for COMPLETED order", () => {
+  it("shows Sửa đơn and Huỷ đơn links in DetailHeader for COMPLETED order", () => {
     const detail = makeDetail("COMPLETED");
     const brands = [{ id: "BRD-1", name: "Phin Đi" }];
     const returnTo = "/admin/orders?payment=Tien+mat";
@@ -108,8 +108,11 @@ describe("OrderDetailView", () => {
       `/admin/orders/ORD-1/edit?returnTo=${encodeURIComponent(returnTo)}`
     );
 
-    const voidButton = screen.getByRole("button", { name: "Huỷ đơn" });
-    expect(voidButton).toBeDefined();
+    const voidLink = screen.getByRole("link", { name: "Huỷ đơn" });
+    expect(voidLink).toBeDefined();
+    expect(voidLink.getAttribute("href")).toBe(
+      `/admin/orders/ORD-1/void?returnTo=${encodeURIComponent(returnTo)}`
+    );
   });
 
   it("does not show Sửa đơn or Huỷ đơn for VOIDED order", () => {
@@ -117,8 +120,109 @@ describe("OrderDetailView", () => {
     render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
 
     expect(screen.queryByRole("link", { name: "Sửa đơn" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Huỷ đơn" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Huỷ đơn" })).toBeNull();
     expect(screen.getByText("Đã huỷ")).toBeDefined();
+  });
+
+  it("shows void reason for a VOIDED order", () => {
+    const detail: OrderDetailV2Result = {
+      ...makeDetail("VOIDED"),
+      events: [
+        {
+          id: "evt-void",
+          order_id: "ORD-1",
+          event_type: "VOIDED",
+          event_at: "2026-10-01T10:10:00.000Z",
+          actor_id: "usr-1",
+          actor_name: "Quản lý 1",
+          from_version: 1,
+          to_version: 1,
+          previous_order_id: "",
+          delta_json: "{}",
+          reason: "Khách đổi ý sang quán khác",
+        },
+      ],
+    };
+    render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
+
+    expect(screen.getByText("Lý do huỷ:", { exact: false })).toBeDefined();
+    expect(screen.getAllByText(/Khách đổi ý sang quán khác/).length).toBeGreaterThan(0);
+    expect(screen.getByText("Đã huỷ")).toBeDefined();
+  });
+
+  it("shows Vietnamese event names in events card", () => {
+    const detail: OrderDetailV2Result = {
+      ...makeDetail("COMPLETED"),
+      events: [
+        {
+          id: "evt-1",
+          order_id: "ORD-1",
+          event_type: "CREATED",
+          event_at: "2026-10-01T10:00:00.000Z",
+          actor_id: "usr-1",
+          actor_name: "Thu ngân 1",
+          from_version: 1,
+          to_version: 1,
+          previous_order_id: "",
+          delta_json: "{}",
+          reason: "Tạo đơn",
+        },
+        {
+          id: "evt-2",
+          order_id: "ORD-1",
+          event_type: "EDITED",
+          event_at: "2026-10-01T10:05:00.000Z",
+          actor_id: "usr-1",
+          actor_name: "Thu ngân 1",
+          from_version: 1,
+          to_version: 2,
+          previous_order_id: "",
+          delta_json: "{}",
+          reason: "Đổi phương thức thanh toán",
+        },
+        {
+          id: "evt-3",
+          order_id: "ORD-1",
+          event_type: "VOIDED",
+          event_at: "2026-10-01T10:10:00.000Z",
+          actor_id: "usr-1",
+          actor_name: "Quản lý 1",
+          from_version: 2,
+          to_version: 2,
+          previous_order_id: "",
+          delta_json: "{}",
+          reason: "Khách huỷ",
+        },
+        {
+          id: "evt-4",
+          order_id: "ORD-1",
+          event_type: "MIGRATED",
+          event_at: "2026-10-01T10:15:00.000Z",
+          actor_id: "usr-1",
+          actor_name: "Hệ thống",
+          from_version: 1,
+          to_version: 1,
+          previous_order_id: "",
+          delta_json: "{}",
+          reason: "Chuyển từ bản cũ",
+        },
+      ],
+    };
+
+    render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
+
+    expect(screen.getByText("Tạo")).toBeDefined();
+    expect(screen.getByText("Sửa")).toBeDefined();
+    expect(screen.getByText("Huỷ")).toBeDefined();
+    expect(screen.getByText("Chuyển dữ liệu cũ")).toBeDefined();
+  });
+
+  it("renders version tag and staff name with Badge", () => {
+    const detail = makeDetail("COMPLETED", { version: 2, created_by_name: "Thu ngân A" });
+    render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
+
+    expect(screen.getByText("v2")).toBeDefined();
+    expect(screen.getByText("Thu ngân A")).toBeDefined();
   });
 });
 
@@ -139,7 +243,9 @@ describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
     expect(lines.className).toContain("lg:col-span-2");
     const side = screen.getByTestId("detail-side");
     expect(side.textContent).toContain("Khách trả");
-    expect(side.textContent).toContain("Sửa đơn");
+    // Sửa đơn and Huỷ đơn are in DetailHeader right corner
+    expect(screen.getByRole("link", { name: "Sửa đơn" })).toBeDefined();
+    expect(screen.getByRole("link", { name: "Huỷ đơn" })).toBeDefined();
   });
 
   it("shows the dishes as a table on a computer and as cards on a phone", () => {
@@ -206,4 +312,3 @@ describe("OrderDetailView payment parts (BR-SALE-013, owner 2026-10-14 C12)", ()
     expect(screen.queryByText(/•/)).toBeNull();
   });
 });
-

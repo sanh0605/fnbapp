@@ -89,4 +89,19 @@ describe("ProductCategoryDetailView", () => {
 
     expect(screen.getByText("Chưa có món nào trong nhóm này.")).toBeInTheDocument();
   });
+
+  it("renders Loại món field", () => {
+    render(
+      <ProductCategoryDetailView
+        category={sampleCategory}
+        typeName="Đồ uống"
+        dishCount={0}
+        dishes={[]}
+        returnTo="/admin/products/categories"
+      />,
+    );
+
+    expect(screen.getByText("Loại món")).toBeInTheDocument();
+    expect(screen.getByText("Đồ uống")).toBeInTheDocument();
+  });
 });

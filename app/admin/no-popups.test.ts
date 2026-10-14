@@ -18,7 +18,6 @@ const ALLOWED: Record<string, string> = {
   // Moved out of IssueSlipDetailClient.tsx unchanged when it was split (wave K3).
   "app/admin/inventory/issue-slips/components/IssueSlipDialogs.tsx":
     "yes/no: cancel the slip when every line is removed, and cancel-slip confirmation (BR-INV-014)",
-  "app/admin/orders/components/VoidOrderButton.tsx": "yes/no void confirmation with its mandatory reason",
 };
 
 const BOX_PATTERN = /\bFormModal\b|\bModalPortal\b|fixed inset-0/;

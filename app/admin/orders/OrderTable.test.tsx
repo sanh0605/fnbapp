@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import OrderTable from "./OrderTable";
 import type { OrderListItem } from "./actions";
 
@@ -12,9 +12,6 @@ const { push, replace, router, mockSearchParams, searchParamsObject } = vi.hoist
   const pushFn = vi.fn();
   const replaceFn = vi.fn();
   const searchMap = new Map<string, string>();
-  // One object for the whole render, as Next.js returns the same instance
-  // until the URL changes; a fresh object per render would re-run every
-  // effect keyed on it.
   const paramsObject = {
     get: (key: string) => searchMap.get(key) || null,
     toString: () => {
@@ -36,10 +33,6 @@ vi.mock("next/navigation", () => ({
   useRouter: () => router,
   usePathname: () => "/admin/orders",
   useSearchParams: () => searchParamsObject,
-}));
-
-vi.mock("./components/VoidOrderButton", () => ({
-  VoidOrderButton: () => <button>Huỷ đơn</button>,
 }));
 
 vi.mock("@/components/ui/CustomDatePicker", () => ({
@@ -110,24 +103,119 @@ function makeOrder(
   };
 }
 
-describe("OrderTable buttons (BR-UI-005, spec 2.1)", () => {
-  it('"Xoá bộ lọc" only clears the filters, so it wears the Phụ look, not the red delete outline', () => {
+describe("OrderTable header and template (ticket B1)", () => {
+  it("renders ListPageHeader with group 'Bán hàng' and title 'Đơn hàng'", () => {
+    render(
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialOrders={[]}
+        totalCount={0}
+        itemsPerPage={20}
+        brands={[]}
+      />
+    );
+    expect(screen.getByText("Bán hàng")).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Đơn hàng" })).toBeDefined();
+  });
+
+  it("renders search input with placeholder 'Ví dụ: 261012001030'", () => {
+    render(
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialOrders={[]}
+        totalCount={0}
+        itemsPerPage={20}
+        brands={[]}
+      />
+    );
+    expect(screen.getByPlaceholderText("Ví dụ: 261012001030")).toBeDefined();
+  });
+
+  it("shows 'Xoá lọc' in the filter bar when filters are active", () => {
     mockSearchParams.set("payment", "Chuyen khoan");
     render(
-      <OrderTable range={TEST_RANGE} today={TEST_TODAY}
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
         initialOrders={[makeOrder("ORD-1", "000001")]}
         totalCount={1}
         itemsPerPage={20}
         brands={[]}
-        products={[]}
-        variants={[]}
-        modifiers={[]}
-        categories={[]}
       />
     );
-    const classes = screen.getByRole("button", { name: "Xoá bộ lọc" }).className.split(/\s+/);
-    expect(classes).toContain("border-border");
-    expect(classes).not.toContain("text-danger");
+    const clearButton = screen.getByRole("button", { name: "Xoá lọc" });
+    expect(clearButton).toBeDefined();
+  });
+
+  it("renders 'Trạng thái' filter select with Hoàn tất and Đã huỷ", () => {
+    render(
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialOrders={[]}
+        totalCount={0}
+        itemsPerPage={20}
+        brands={[]}
+      />
+    );
+    const select = screen.getByLabelText("Trạng thái");
+    expect(select).toBeDefined();
+    expect(screen.getByRole("option", { name: "Hoàn tất" })).toBeDefined();
+    expect(screen.getByRole("option", { name: "Đã huỷ" })).toBeDefined();
+  });
+
+  it("renders column header 'Khách trả' instead of 'Tổng tiền'", () => {
+    render(
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialOrders={[makeOrder("ORD-1", "000001")]}
+        totalCount={1}
+        itemsPerPage={20}
+        brands={[]}
+      />
+    );
+    expect(screen.getByRole("columnheader", { name: "Khách trả" })).toBeDefined();
+    expect(screen.queryByRole("columnheader", { name: "Tổng tiền" })).toBeNull();
+  });
+});
+
+describe("OrderTable voided orders display", () => {
+  it("renders 'Đã huỷ' badge and void reason for voided orders", () => {
+    const voidedOrder = makeOrder("ORD-VOID", "000099", {
+      status: "VOIDED",
+      void_reason: "Khách huỷ bàn",
+    });
+    render(
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialOrders={[voidedOrder]}
+        totalCount={1}
+        itemsPerPage={20}
+        brands={[]}
+      />
+    );
+    expect(screen.getAllByText("Đã huỷ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Khách huỷ bàn").length).toBeGreaterThan(0);
+  });
+
+  it("hides total row under VOIDED status", () => {
+    mockSearchParams.set("status", "VOIDED");
+    render(
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialOrders={[makeOrder("ORD-1", "000001", { status: "VOIDED" })]}
+        totalCount={1}
+        totals={{ count: 0, netTotal: 0 }}
+        itemsPerPage={20}
+        brands={[]}
+      />
+    );
+    expect(screen.queryByText("Tổng (không tính huỷ)")).toBeNull();
   });
 });
 
@@ -136,20 +224,16 @@ describe("OrderTable navigation", () => {
     mockSearchParams.set("payment", "Chuyen khoan");
 
     render(
-      <OrderTable range={TEST_RANGE} today={TEST_TODAY}
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
         initialOrders={[makeOrder("ORD-1", "000001")]}
         totalCount={1}
         itemsPerPage={20}
         brands={[]}
-        products={[]}
-        variants={[]}
-        modifiers={[]}
-        categories={[]}
       />
     );
 
-    // Wave K4: the row opens through the shared list's link (DataList), on
-    // desktop and phone alike, instead of a click handler on the <tr>.
     const expectedCurrentUrl = "/admin/orders?payment=Chuyen+khoan";
     const expected = `/admin/orders/ORD-1?returnTo=${encodeURIComponent(expectedCurrentUrl)}`;
     const links = screen.getAllByRole("link").filter((a) => a.getAttribute("href") === expected);
@@ -164,15 +248,13 @@ describe("OrderTable navigation", () => {
       mockSearchParams.set("to", "2026-09-15");
 
       render(
-        <OrderTable range={TEST_RANGE} today={TEST_TODAY}
+        <OrderTable
+          range={TEST_RANGE}
+          today={TEST_TODAY}
           initialOrders={[makeOrder("ORD-1", "000001")]}
           totalCount={1}
           itemsPerPage={20}
           brands={[]}
-          products={[]}
-          variants={[]}
-          modifiers={[]}
-          categories={[]}
         />
       );
 
@@ -183,21 +265,16 @@ describe("OrderTable navigation", () => {
   });
 });
 
-// Wave K4 (BR-UI-003, BR-UI-005, BR-DATA-007): the list wears the Table set;
-// an order is cancelled from its own page (owner 2026-10-05), so no row
-// carries a cancel button; the phone shows one card per order.
 describe("OrderTable -- shared table (wave K4)", () => {
   const renderList = () =>
     render(
-      <OrderTable range={TEST_RANGE} today={TEST_TODAY}
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
         initialOrders={[makeOrder("ORD-1", "000001"), makeOrder("ORD-2", "000002")]}
         totalCount={2}
         itemsPerPage={20}
         brands={[]}
-        products={[]}
-        variants={[]}
-        modifiers={[]}
-        categories={[]}
       />
     );
 
@@ -214,20 +291,16 @@ describe("OrderTable -- shared table (wave K4)", () => {
     expect(phone!.textContent).toContain("ORD000002");
   });
 
-  // BR-UI-004: total of every order the filter matches, across all pages;
-  // voided orders and old versions are left out.
-  it("shows the filter's total under the Khách trả header", () => {
+  it("shows the filter's total under the Khách trả header when COMPLETED", () => {
     render(
-      <OrderTable range={TEST_RANGE} today={TEST_TODAY}
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
         initialOrders={[makeOrder("ORD-1", "000001")]}
         totalCount={21}
         totals={{ count: 21, netTotal: 1234000 }}
         itemsPerPage={20}
         brands={[]}
-        products={[]}
-        variants={[]}
-        modifiers={[]}
-        categories={[]}
       />
     );
     expect(screen.getAllByText("Tổng (không tính huỷ)").length).toBeGreaterThan(0);
@@ -253,10 +326,6 @@ describe("OrderTable payment method display (BR-SALE-013, owner 2026-10-14 C12)"
         totalCount={1}
         itemsPerPage={20}
         brands={[]}
-        products={[]}
-        variants={[]}
-        modifiers={[]}
-        categories={[]}
       />
     );
 
@@ -292,10 +361,6 @@ describe("OrderTable payment method display (BR-SALE-013, owner 2026-10-14 C12)"
         totalCount={2}
         itemsPerPage={20}
         brands={[]}
-        products={[]}
-        variants={[]}
-        modifiers={[]}
-        categories={[]}
       />
     );
 
@@ -304,4 +369,3 @@ describe("OrderTable payment method display (BR-SALE-013, owner 2026-10-14 C12)"
     expect(screen.getAllByText("Chuyển khoản").length).toBeGreaterThan(0);
   });
 });
-

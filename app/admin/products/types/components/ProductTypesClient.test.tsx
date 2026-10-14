@@ -60,9 +60,10 @@ const sampleRows: ProductTypeRow[] = [
 ];
 
 describe("ProductTypesClient", () => {
-  it("renders columns Tên loại, Tính là ly, Nhóm món đang dùng", () => {
+  it("renders columns Mã, Tên loại, Tính là ly, Nhóm món đang dùng", () => {
     render(<ProductTypesClient rows={sampleRows} />);
 
+    expect(screen.getByText("Mã")).toBeInTheDocument();
     expect(screen.getByText("Tên loại")).toBeInTheDocument();
     expect(screen.getByText("Tính là ly")).toBeInTheDocument();
     expect(screen.getByText("Nhóm món đang dùng")).toBeInTheDocument();
@@ -117,5 +118,14 @@ describe("ProductTypesClient", () => {
     expect(tableBody).toBeInTheDocument();
     const boldInsideTbody = tableBody?.querySelectorAll(".font-bold, .font-semibold");
     expect(boldInsideTbody?.length ?? 0).toBe(0);
+  });
+
+  it("renders in default order newest code first (code descending)", () => {
+    render(<ProductTypesClient rows={sampleRows} />);
+
+    const codeElements = screen.getAllByText(/^PT-00[123]$/);
+    expect(codeElements[0].textContent).toBe("PT-003");
+    expect(codeElements[1].textContent).toBe("PT-002");
+    expect(codeElements[2].textContent).toBe("PT-001");
   });
 });

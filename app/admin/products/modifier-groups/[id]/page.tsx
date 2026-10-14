@@ -4,16 +4,9 @@ import { findAll } from "@/lib/db/tables";
 import { getModifierGroup } from "@/app/admin/products/modifier-groups/actions";
 import { ModifierGroupDetailView } from "./components/ModifierGroupDetailView";
 import type { DBProduct, DBProductCategory } from "@/types/db";
+import { safeReturnTo } from "@/app/admin/products/components/return-to";
 
 export const dynamic = "force-dynamic";
-
-function safeReturnTo(raw: string | undefined | null, fallback = "/admin/products/modifier-groups"): string {
-  if (!raw) return fallback;
-  if (raw === fallback || raw.startsWith(`${fallback}?`) || raw.startsWith(`${fallback}/`)) {
-    return raw;
-  }
-  return fallback;
-}
 
 export default async function ModifierGroupDetailPage({
   params,

@@ -87,6 +87,17 @@ Not seen: the full bodies of `save_product_atomic` and the 5-argument `supersede
 | Dead code: ToppingsManager, the /admin/products/toppings redirect, canDelete props, 6 copies of safeReturnTo | Sonnet | no | none |
 | Tạo món / Sửa món scan every order line | Sonnet | no | none |
 
+### Design: the Huỷ đơn page (`BR-DATA-007`)
+
+- **Route:** `/admin/orders/[id]/void`.
+- **Pattern:** the same as Huỷ phiếu nhập (`app/admin/inventory/purchase-orders/[id]/cancel/`).
+  - `DetailHeader` with a link back to the order and the title "Huỷ đơn <code>".
+  - Computer: a summary on the left (time, dishes, Khách trả); on the right a required reason box, "Xác nhận huỷ" and "Quay lại".
+  - Phone: one column, summary first.
+- **Saving:** the existing `voidOrderV2`. On success the page returns to the order page.
+- **Who and which orders:** only ADMIN and MANAGER reach it, as today. A VOIDED or SUPERSEDED order shows "Đơn này không huỷ được" and a back link.
+- **Out of scope:** no new data, no migration.
+
 ## Data writes, each needs the owner's approval to run
 
 1. **Price history.** Fill the 37 rows of 55 whose new price is 0đ, all from the 28/6 import:

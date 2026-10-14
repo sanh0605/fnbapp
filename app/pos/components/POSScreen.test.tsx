@@ -89,7 +89,20 @@ describe("POSScreen option group integration", () => {
 });
 
 describe("one menu for both brands (BR-CATALOG-006)", () => {
-  it.todo(
-    "Hai thương hiệu bán chung một thực đơn; máy bán không lọc món theo thương hiệu (chủ quán chốt 15/10/2026)",
-  );
+  it("shows a dish whose brand differs from the outlet's brand", () => {
+    render(
+      <POSScreen
+        brandId="BR-002"
+        categories={categories}
+        products={[{ id: "TRA", name: "Trà sữa", category_id: "CAT-1", brand_id: "BR-001" }]}
+        variants={variants}
+        modifiers={[]}
+        optionGroups={[]}
+        optionGroupLinks={[]}
+        bestSellers={["TRA"]}
+      />
+    );
+
+    expect(screen.getByText("Trà sữa")).toBeInTheDocument();
+  });
 });

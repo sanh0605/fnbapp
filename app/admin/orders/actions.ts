@@ -35,6 +35,7 @@ export interface OrderListItem {
   payments: Array<{ method: string; amount: number }>;
   created_by_name: string;
   created_at: string;
+  void_reason?: string;
   lines: Array<OrderLineV2 & {
     product_name: string;
     size_name: string;
@@ -49,39 +50,37 @@ export interface OrdersV2Filters {
   to?: string;
   payment?: string;
   brand?: string;
+  // COMPLETED (default) or VOIDED; anything else reads as COMPLETED.
+  status?: string;
 }
 
 export interface GetOrdersV2Result {
   orders: OrderListItem[];
   totalCount: number;
   // BR-UI-004: money total over every order the filter matches (all pages).
-  // Same rows as totalCount: latest COMPLETED versions only, so voided,
-  // superseded and draft orders are out of it.
+  // Same rows as totalCount, except the Đã huỷ filter, whose total is 0:
+  // voided orders never count as money.
   totals: { count: number; netTotal: number };
   itemsPerPage: number;
   brands: any[];
-  products: any[];
-  variants: any[];
-  modifiers: any[];
-  categories: any[];
 }
 
 // ============================================================
-// getOrdersV2 — list latest COMPLETED versions with details
+// getOrdersV2 — list latest versions (COMPLETED, or VOIDED on the Đã huỷ filter)
 // ============================================================
 
 const ORDERS_ITEMS_PER_PAGE = 20;
 
 // The one place the orders-list filter is written: the page of rows and the
 // money total both read through it, so they can never disagree (BR-UI-004).
-// `paymentOrderIds` are the orders that have an order_payments row of the
-// wanted method (see paymentFilterOrderIds), so an order paid two ways shows
-// under both filters (B1, lib/sales/payment-method.ts).
+// `paymentOrderIds` are the split orders with a part of the wanted method (see
+// splitOrderIds), so an order paid two ways shows under both filters (B1,
+// lib/sales/payment-method.ts); every other order is matched by payment_method.
 function applyOrderFilters<Q extends { eq: any; neq: any; gte: any; lte: any; ilike: any; or: any }>(
   query: Q, filters: OrdersV2Filters, paymentOrderIds: string[] = [],
 ): Q {
   let q: any = query
-    .eq("status", ORDER_STATUS.COMPLETED)
+    .eq("status", filters.status === ORDER_STATUS.VOIDED ? ORDER_STATUS.VOIDED : ORDER_STATUS.COMPLETED)
     .or("superseded_by.is.null,superseded_by.eq.");
   if (filters.q) q = q.ilike("order_no", `%${filters.q}%`);
   if (filters.from) q = q.gte("created_at", filters.from);
@@ -97,24 +96,36 @@ function applyOrderFilters<Q extends { eq: any; neq: any; gte: any; lte: any; il
   return q;
 }
 
-// Orders with an order_payments row of the wanted method: the split orders
-// the single payment_method column cannot see. Empty method means cash.
-async function paymentFilterOrderIds(
+// Reads of up to 1,000 rows per request (the most one request returns).
+const TOTALS_CHUNK = 1000;
+
+// Orders paid two ways (2+ order_payments rows) with a part of the wanted
+// method: the only orders the single payment_method column cannot see. Reads
+// every row in chunks because PostgREST cannot group. Empty method means cash.
+async function splitOrderIds(
   supabase: ReturnType<typeof getSupabaseClient>, filters: OrdersV2Filters,
 ): Promise<string[]> {
   if (filters.payment !== "Chuyen khoan" && filters.payment !== "Tien mat") return [];
-  const methods = filters.payment === "Chuyen khoan"
-    ? [PAYMENT_METHOD.BANK_TRANSFER]
-    : [PAYMENT_METHOD.CASH, ""];
-  const { data, error } = await supabase.from("order_payments").select("order_id").in("method", methods);
-  if (error) throw new Error(error.message);
-  return Array.from(new Set((data || []).map((r: any) => String(r.order_id))));
+  const wantBank = filters.payment === "Chuyen khoan";
+  const parts = new Map<string, string[]>();
+  for (let from = 0; ; from += TOTALS_CHUNK) {
+    const { data, error } = await supabase.from("order_payments").select("order_id,method")
+      .order("id").range(from, from + TOTALS_CHUNK - 1);
+    if (error) throw new Error(error.message);
+    for (const r of (data || []) as any[]) {
+      const methods = parts.get(String(r.order_id)) ?? [];
+      methods.push(normalizePaymentMethod(r.method));
+      parts.set(String(r.order_id), methods);
+    }
+    if ((data || []).length < TOTALS_CHUNK) break;
+  }
+  return Array.from(parts)
+    .filter(([, methods]) => methods.length >= 2 && methods.some(m => (m === PAYMENT_METHOD.BANK_TRANSFER) === wantBank))
+    .map(([id]) => id);
 }
 
-// Sums net_total over every matched order, reading the database in chunks of
-// 1,000 rows (the most one request returns). Rounded once from the exact sum
-// (BR-DATA-005).
-const TOTALS_CHUNK = 1000;
+// Sums net_total over every matched order, in chunks. Rounded once from the
+// exact sum (BR-DATA-005).
 async function sumFilteredOrders(
   supabase: ReturnType<typeof getSupabaseClient>, filters: OrdersV2Filters, paymentOrderIds: string[],
 ): Promise<{ count: number; netTotal: number }> {
@@ -143,10 +154,10 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
     const offset = (page - 1) * ORDERS_ITEMS_PER_PAGE;
 
     const supabase = getSupabaseClient();
-    // Latest versions only: status=COMPLETED AND superseded_by empty/null --
+    // Latest versions only: the chosen status AND superseded_by empty/null --
     // filtered, counted, and paginated at the database level instead of
     // fetching the whole (1600+ rows and growing) table on every load.
-    const paymentOrderIds = await paymentFilterOrderIds(supabase, filters);
+    const paymentOrderIds = await splitOrderIds(supabase, filters);
     const ordersQuery = applyOrderFilters(
       supabase.from("orders_v2").select("*", { count: "exact" }), filters, paymentOrderIds)
       .order("created_at", { ascending: false })
@@ -154,19 +165,20 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
 
     const [{ data: pageOrders, count, error: ordersError }, totals] = await Promise.all([
       ordersQuery,
-      sumFilteredOrders(supabase, filters, paymentOrderIds),
+      // BR-UI-004: voided orders never count in the total.
+      filters.status === ORDER_STATUS.VOIDED
+        ? { count: 0, netTotal: 0 }
+        : sumFilteredOrders(supabase, filters, paymentOrderIds),
     ]);
     if (ordersError) throw new Error(ordersError.message);
 
     const orderIds = (pageOrders || []).map((o: any) => o.id);
-    const [orderLines, paymentRows, products, variants, brands, modifiers, categories] = await Promise.all([
+    const [orderLines, paymentRows, products, variants, brands] = await Promise.all([
       findAllWhereInBatches("Order_Lines_V2", "order_id", orderIds),
       findAllWhereInBatches("Order_Payments", "order_id", orderIds),
       findAll("Products"),
       findAll("Product_Variants"),
       findAll("Brands"),
-      findAll("Modifiers"),
-      findAll("Product_Categories"),
     ]);
 
     // Claude code — CODE-13: build Maps once for O(1) lookup instead of O(n) find per line.
@@ -201,18 +213,10 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
         };
       });
 
-      const brand = (brands as any[]).find(b => b.id === order.brand_id);
-      let display_order_no = order.order_no;
-      if (display_order_no && display_order_no.startsWith("#")) {
-        const numStr = display_order_no.replace("#", "").padStart(6, "0");
-        const bCode = brand?.code || "ORD";
-        display_order_no = `${bCode}${numStr}`;
-      }
-
       return {
         id: order.id,
         order_no: order.order_no,
-        display_order_no,
+        display_order_no: order.order_no,
         brand_id: order.brand_id,
         status: order.status,
         version: Number(order.version) || 1,
@@ -226,6 +230,7 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
         payments: effectivePaymentRows(order, (paymentRows as any[]).filter(p => p.order_id === order.id)),
         created_by_name: order.created_by_name || "",
         created_at: order.created_at,
+        void_reason: order.void_reason || "",
         lines: mappedLines,
       };
     });
@@ -236,10 +241,6 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
       totals,
       itemsPerPage: ORDERS_ITEMS_PER_PAGE,
       brands: (brands as any[]).filter(b => b.status !== "DELETED"),
-      products: (products as any[]).filter(p => p.status !== "DELETED"),
-      variants: (variants as any[]).filter(v => v.status !== "DELETED"),
-      modifiers: (modifiers as any[]).filter(m => m.status !== "DELETED"),
-      categories: (categories as any[]).filter(c => c.status !== "DELETED"),
     };
   } catch (err: any) {
     // not in the plan's own list (found while re-deriving it) -- same

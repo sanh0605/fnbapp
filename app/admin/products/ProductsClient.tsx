@@ -31,8 +31,6 @@ interface Product {
   status: string;
   image_url?: string;
   variants: ProductVariant[];
-  priceHistory: any[];
-  neverSold: boolean;
   hasNoSellableVariant: boolean;
   isLinkedTopping?: boolean;
   [key: string]: any;
@@ -50,7 +48,6 @@ interface ProductsClientProps {
   initialCategory?: string;
   initialStatus?: string;
   initialPage?: string;
-  canDelete?: boolean;
 }
 
 const VALID_STATUSES = ["ACTIVE", "INACTIVE", "DELETED"] as const;

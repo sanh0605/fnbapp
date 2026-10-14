@@ -35,7 +35,6 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
   const name = String(formData.get("name") || "");
   const imageUrl = String(formData.get("image_url") || "");
   const variantsJson = String(formData.get("variants_json") || "");
-  const effectiveDate = String(formData.get("effective_date") || "");
   const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
   if (!name || !categoryId || !variantsJson) {
     return fail("Thiếu thông tin bắt buộc");
@@ -84,9 +83,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     const existingVariants = allVariants.filter((variant: Record<string, unknown>) =>
       variant.product_id === id && variant.status !== "DELETED"
     );
-    const effectiveAt = effectiveDate
-      ? new Date(effectiveDate).toISOString()
-      : new Date().toISOString();
+    const effectiveAt = new Date().toISOString();
 
     let expectedPriceHistoryCount = 0;
     const keepVariantIds: string[] = [];

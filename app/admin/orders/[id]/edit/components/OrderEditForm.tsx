@@ -378,11 +378,9 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
 
           <div className="p-4 flex flex-col gap-3 bg-surface-card border-t border-border">
             {inlineError && (
-              <div role="alert">
-                <Alert variant="danger">
-                  {inlineError}
-                </Alert>
-              </div>
+              <Alert variant="danger">
+                {inlineError}
+              </Alert>
             )}
             <Button
               type="submit"

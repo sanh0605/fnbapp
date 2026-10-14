@@ -83,11 +83,9 @@ const SOLID_BUTTON_DEBT: string[] = [
 ];
 
 const TABLE_DEBT: string[] = [
-  "app/admin/products/components/ToppingsManager.tsx", // dead code: nothing imports it (master plan part 6); not moved
 ];
 
 const BOLD_CELL_DEBT: string[] = [
-  "app/admin/products/components/ToppingsManager.tsx", // dead code: nothing imports it (master plan part 6); not moved
 ];
 
 const ENGLISH_BRACKET_DEBT: string[] = [

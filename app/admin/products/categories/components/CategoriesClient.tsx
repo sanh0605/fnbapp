@@ -13,11 +13,12 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { deleteCategory } from "@/app/admin/products/categories/actions";
-import type { DBProductCategory } from "@/types/db";
+import type { DBProductCategory, DBProductType } from "@/types/db";
 
 interface CategoriesClientProps {
   categories: DBProductCategory[];
   counts: Record<string, number>;
+  types?: DBProductType[];
   initialSearch?: string;
   initialPage?: string;
 }
@@ -41,6 +42,7 @@ function listUrl(
 export default function CategoriesClient({
   categories,
   counts,
+  types = [],
   initialSearch = "",
   initialPage,
 }: CategoriesClientProps) {
@@ -67,6 +69,11 @@ export default function CategoriesClient({
       setPage(searchParams?.get("page") || undefined);
   }, [initialPage, searchParams]);
 
+  const typesById = useMemo(
+    () => new Map(types.map((t) => [t.id, t.name])),
+    [types],
+  );
+
   const columns: DataColumn<DBProductCategory>[] = useMemo(
     () => [
       {
@@ -88,6 +95,16 @@ export default function CategoriesClient({
         ),
       },
       {
+        key: "type",
+        header: "Loại món",
+        sortValue: (cat) => typesById.get(cat.type_id) ?? "",
+        render: (cat) => (
+          <span className="text-text-secondary text-sm">
+            {typesById.get(cat.type_id) || "—"}
+          </span>
+        ),
+      },
+      {
         key: "count",
         header: "Số món",
         align: "right",
@@ -99,7 +116,7 @@ export default function CategoriesClient({
         ),
       },
     ],
-    [counts],
+    [counts, typesById],
   );
 
   const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
@@ -147,6 +164,7 @@ export default function CategoriesClient({
 
   const renderCard = (cat: DBProductCategory) => {
     const count = counts[cat.id] ?? 0;
+    const typeName = typesById.get(cat.type_id) || "—";
     return (
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
@@ -161,6 +179,9 @@ export default function CategoriesClient({
           <div className="shrink-0 text-text-secondary text-xs">
             {`${count} món`}
           </div>
+        </div>
+        <div className="text-xs text-text-secondary">
+          Loại món: <span className="text-text-primary">{typeName}</span>
         </div>
       </div>
     );

@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
+import { Alert } from "@/components/ui/Alert";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import type { DBModifier, DBModifierGroup } from "@/types/db";
 import { StandaloneToppingSwitch } from "./StandaloneToppingSwitch";
@@ -84,9 +85,9 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={(e) => { e.preventDefault(); handleSubmit(new FormData(e.currentTarget)); }} className="space-y-4">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">

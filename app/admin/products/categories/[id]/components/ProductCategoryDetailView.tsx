@@ -20,6 +20,7 @@ export interface DishItem {
 
 export interface ProductCategoryDetailViewProps {
   category: DBProductCategory;
+  typeName?: string;
   dishCount?: number;
   dishes: DishItem[];
   returnTo: string;
@@ -27,6 +28,7 @@ export interface ProductCategoryDetailViewProps {
 
 export function ProductCategoryDetailView({
   category,
+  typeName,
   dishCount,
   dishes,
   returnTo,
@@ -38,6 +40,7 @@ export function ProductCategoryDetailView({
   const fields: Field[] = [
     { label: "Mã", value: category.id },
     { label: "Tên nhóm", value: category.name },
+    { label: "Loại món", value: typeName || "—" },
     { label: "Số món", value: `${count} món` },
   ];
 

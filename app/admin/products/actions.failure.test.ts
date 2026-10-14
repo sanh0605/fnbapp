@@ -57,7 +57,7 @@ describe("saveProduct atomic persistence", () => {
         price: 30_000,
       }],
       removedVariantIds: [],
-      effectiveAt: "2026-07-19T00:00:00.000Z",
+      effectiveAt: expect.any(String),
       expectedPriceHistoryCount: 1,
     });
     // section 3:
@@ -170,7 +170,6 @@ function makeCreateFormData(): FormData {
     price: 30_000,
     ingredients: [makeIngredient("ING-001")],
   }]));
-  formData.set("effective_date", "2026-07-19T00:00:00.000Z");
   return formData;
 }
 
@@ -185,7 +184,6 @@ function makeEditFormData(options: { price?: number; ingredientId?: string } = {
     price: options.price ?? 25_000,
     ingredients: [makeIngredient(options.ingredientId ?? "ING-001")],
   }]));
-  formData.set("effective_date", "2026-07-19T00:00:00.000Z");
   return formData;
 }
 

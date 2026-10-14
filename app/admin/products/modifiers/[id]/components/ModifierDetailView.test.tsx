@@ -164,4 +164,66 @@ describe("ModifierDetailView", () => {
     expect(passedProps.allowStandalone).toBe(true);
     expect(passedProps.groupName).toBeUndefined();
   });
+
+  it("shows 'Có sẵn' and 'Tối đa mỗi món', and shows '—' for 'Bán độc lập' when group is Chọn một", () => {
+    standaloneSwitchMock.mockClear();
+    render(
+      <ModifierDetailView
+        modifier={{
+          id: "MOD-004",
+          name: "Ít đường",
+          price: "0",
+          status: "ACTIVE",
+          product_id: null,
+          group_id: "MG-002",
+          is_default: true,
+          max_qty: null,
+        } as DBModifier}
+        product={null}
+        groupName="Mức đường"
+        allowStandalone={false}
+        groupSelectionMode="ONE"
+        returnTo="/admin/products/modifiers"
+      />
+    );
+
+    // Có sẵn is "Có"
+    expect(screen.getByText("Có sẵn")).toBeInTheDocument();
+    expect(screen.getByText("Có")).toBeInTheDocument();
+
+    // Tối đa mỗi món is "Không giới hạn"
+    expect(screen.getByText("Tối đa mỗi món")).toBeInTheDocument();
+    expect(screen.getByText("Không giới hạn")).toBeInTheDocument();
+
+    // Bán độc lập is "—" (not StandaloneToppingSwitch)
+    expect(standaloneSwitchMock).not.toHaveBeenCalled();
+    expect(screen.getByText("Bán độc lập")).toBeInTheDocument();
+  });
+
+  it("shows numeric 'Tối đa mỗi món' when max_qty is set", () => {
+    render(
+      <ModifierDetailView
+        modifier={{
+          id: "MOD-005",
+          name: "Trân châu đen",
+          price: "5000",
+          status: "ACTIVE",
+          product_id: null,
+          group_id: "MG-001",
+          is_default: false,
+          max_qty: 3,
+        } as DBModifier}
+        product={null}
+        groupName="Thêm Topping"
+        allowStandalone={true}
+        groupSelectionMode="MANY"
+        returnTo="/admin/products/modifiers"
+      />
+    );
+
+    expect(screen.getByText("Có sẵn")).toBeInTheDocument();
+    expect(screen.getByText("Không")).toBeInTheDocument();
+    expect(screen.getByText("Tối đa mỗi món")).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
+  });
 });

@@ -184,4 +184,30 @@ describe("ProductDetailView", () => {
     // 2026-06-28T16:27:49.637Z UTC -> 28/06/2026 23:27:49 Asia/Saigon
     expect(within(historySection!).getAllByText("28/06/2026 23:27:49").length).toBeGreaterThan(0);
   });
+
+  it("renders Nhóm tuỳ chọn field with ticked groups or '—'", () => {
+    const { rerender } = render(
+      <ProductDetailView
+        product={matchaLatteProduct}
+        categoryName="Giải trí"
+        returnTo="/admin/products"
+        canDelete={false}
+        optionGroupNames={["Độ ngọt", "Topping"]}
+      />,
+    );
+
+    expect(screen.getByText("Nhóm tuỳ chọn")).toBeInTheDocument();
+    expect(screen.getByText("Độ ngọt, Topping")).toBeInTheDocument();
+
+    rerender(
+      <ProductDetailView
+        product={matchaLatteProduct}
+        categoryName="Giải trí"
+        returnTo="/admin/products"
+        canDelete={false}
+        optionGroupNames={[]}
+      />,
+    );
+    expect(screen.getByText("Nhóm tuỳ chọn")).toBeInTheDocument();
+  });
 });
