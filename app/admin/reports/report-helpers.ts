@@ -68,6 +68,13 @@ export function filterLinesByCategory(lines: OrderLineV2[], categoryId: string):
   });
 }
 
+/** Sums net_line_total per order in one pass (same add order as filtering the lines per order). */
+export function sumNetByOrder(lines: Array<{ order_id: string; net_line_total: number }>): Map<string, number> {
+  const byOrder = new Map<string, number>();
+  for (const l of lines) byOrder.set(l.order_id, (byOrder.get(l.order_id) ?? 0) + l.net_line_total);
+  return byOrder;
+}
+
 export function mergeModifierRevenueRows(
   productRows: ProductRevenueRow[],
   canonicalModifiers: ReturnType<typeof buildCanonicalModifierLookup>,

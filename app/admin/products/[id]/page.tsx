@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { loadProductRows } from "@/app/admin/products/load-product-rows";
+import { loadProductRow } from "@/app/admin/products/load-product-rows";
 import { resolveActor } from "@/lib/auth/auth";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
-import { findAll } from "@/lib/db/tables";
+import { findAllWhere } from "@/lib/db/tables";
 import { ProductDetailView } from "./components/ProductDetailView";
 
 export const dynamic = "force-dynamic";
@@ -14,12 +14,7 @@ export default async function ProductDetailPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const [{ enhancedProducts, activeCategories }, auth] = await Promise.all([
-    loadProductRows(),
-    resolveActor(),
-  ]);
-
-  const product = enhancedProducts.find((p: any) => p.id === params.id);
+  const [product, auth] = await Promise.all([loadProductRow(params.id), resolveActor()]);
   if (!product) {
     notFound();
   }
@@ -33,15 +28,17 @@ export default async function ProductDetailPage({
     ? "/admin/products"
     : rawReturnTo;
 
-  const category = activeCategories.find((c: any) => c.id === product.category_id);
+  const [category] = product.category_id
+    ? (await findAllWhere("Product_Categories", { eq: { id: product.category_id }, limit: 1 })).filter(
+        (c: any) => c.status !== "DELETED",
+      )
+    : [];
   const categoryName = category?.name || "Chưa phân loại";
 
   let linkedModifierId: string | null = null;
   if (product.isLinkedTopping) {
-    const modifiers = await findAll("Modifiers");
-    const mod = modifiers.find(
-      (m: any) => m.status === "ACTIVE" && m.product_id === product.id,
-    );
+    const modifiers = await findAllWhere("Modifiers", { eq: { product_id: product.id } });
+    const mod = modifiers.find((m: any) => m.status === "ACTIVE");
     if (mod) {
       linkedModifierId = mod.id;
     }

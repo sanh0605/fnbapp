@@ -34,6 +34,7 @@ hoạt động. Nên C3, C4, F2, F1, B8 chưa làm sai đơn nào — sửa đ�
 | B3, B9 (câu 7) | Lọc Nhóm SP ở Doanh số tạm ẩn khối tiền cả đơn (chủ quán "Tạm ẩn khi lọc"); Luỹ kế cộng từ tháng đầu khoảng đang xem (chủ quán, máy vốn đã làm vậy, chỉ sửa luật) | `7eb7c030` |
 | B6, A11, A12 (đợt 2) | Phiếu xuất, Giá trị hàng đã xuất, Lãi lỗ tính lại giá vốn nhanh hơn (1.095 phiếu giả lập: 802 → 76 ms); Lãi lỗ chạy 2 vòng thay vì 4. Đo trên máy chủ 14/10: 0 lệch trên 102 phiếu, 234 dòng, 8 tháng; `verify-cogs` qua, `verify-pnl-monthly` 0 lệch trên 8 tháng; người soát độc lập so 420.000 phép tính cũ/mới, 0 lệch | `823081a3` |
 | F4 (câu 9), C12 | Công tắc Bán độc lập theo liên kết topping (`bae42483`); Đơn hàng hiện từng phần của đơn trả hai cách, Sửa đơn sửa được từng phần (`BR-SALE-013`) | `ad314a25` |
+| B7, B13, F12, C16 (đợt 2, hết) | Doanh số lọc nhóm món cộng một lần; bộ định dạng giờ tạo một lần; trang một món chỉ đọc dòng của món đó (phép thử so bằng với bộ nạp cả danh sách trên 5 kiểu món); "Đơn đồng bộ trễ" chỉ 30 ngày gần nhất, tiêu đề ghi rõ (danh sách chỉ để biết, đơn chưa đồng bộ không nằm ở đây) | (lưu này) |
 
 ## Đợt 1 — lỗi kỹ thuật, không cần chủ quán quyết (làm ngay, theo thứ tự)
 

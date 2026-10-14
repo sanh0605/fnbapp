@@ -1,4 +1,4 @@
-import { findAll, findOrderLineProductAndVariantIds } from "@/lib/db/tables";
+import { findAll, findAllWhere, findAllWhereInBatches, findOrderLineProductAndVariantIds } from "@/lib/db/tables";
 import { resolveActor } from "@/lib/auth/auth";
 
 interface PriceHistory {
@@ -106,4 +106,47 @@ export async function loadProductRows() {
   });
 
   return { enhancedProducts, activeCategories, canDelete };
+}
+
+/**
+ * Same row loadProductRows() builds for one product, reading only that
+ * product's own rows (F12). Returns null when the product does not exist.
+ * Order lines are probed with two limit-1 queries instead of every line id.
+ */
+export async function loadProductRow(id: string) {
+  const [product] = await findAllWhere<any>("Products", { eq: { id }, limit: 1 });
+  if (!product) return null;
+
+  const [variants, modifiers] = await Promise.all([
+    findAllWhere<any>("Product_Variants", { eq: { product_id: id } }),
+    findAllWhere<any>("Modifiers", { eq: { product_id: id } }),
+  ]);
+  const productVariants = variants.filter(v => v.status !== "DELETED");
+  const variantIds = productVariants.map(v => v.id as string);
+
+  const [priceHistory, soldByProduct, soldByVariant, soldIds] = await Promise.all([
+    findAllWhereInBatches<any>("Product_Price_History", "variant_id", variantIds),
+    findAllWhere("Order_Lines_V2", { eq: { product_id: id }, limit: 1 }),
+    variantIds.length
+      ? findAllWhere("Order_Lines_V2", { in: { variant_id: variantIds }, limit: 1 })
+      : Promise.resolve([]),
+    // Only a dish linked to a topping can be sold as an add-on (BR-CATALOG-003).
+    modifiers.length ? findOrderLineProductAndVariantIds() : Promise.resolve(null),
+  ]);
+  let sold = soldByProduct.length > 0 || soldByVariant.length > 0;
+  if (soldIds) {
+    sold = sold || modifiers.some(m => soldIds.modifierIds.includes(m.id));
+  }
+
+  return {
+    ...product,
+    variants: productVariants,
+    priceHistory: [...priceHistory].sort(
+      (a: PriceHistory, b: PriceHistory) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    ),
+    neverSold: !sold,
+    hasNoSellableVariant: product.status !== "DELETED" && !productVariants.some(v => v.status === "ACTIVE"),
+    isLinkedTopping: modifiers.some(m => m.status === "ACTIVE"),
+    hasModifierLink: modifiers.length > 0,
+  };
 }

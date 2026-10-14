@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { toSaigonUtcRange, saigonBucketKeys } from "./report-time";
 
 describe("toSaigonUtcRange", () => {
@@ -44,6 +44,17 @@ describe("toSaigonUtcRange", () => {
 });
 
 describe("saigonBucketKeys", () => {
+  it("does not build a new Intl.DateTimeFormat per call (B13)", () => {
+    saigonBucketKeys("2026-08-01T06:22:53+07:00"); // warm any lazy init
+    const spy = vi.spyOn(Intl, "DateTimeFormat");
+    try {
+      for (let i = 0; i < 50; i++) saigonBucketKeys("2026-08-01T06:22:53+07:00");
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
   it("crosses the UTC date/month boundary correctly -- the owner's real case", () => {
     // 2026-08-01T06:22:53+07:00 (Saigon) is 2026-07-31T23:22:53.000Z in UTC.
     // toISOString()/getHours() on that UTC instant would read 2026-07-31,

@@ -71,6 +71,17 @@ export interface SaigonBucketKeys {
   hourKey: string;  // "06:00"
 }
 
+// Built once: constructing an Intl.DateTimeFormat per call is the slow part
+// when bucketing thousands of orders.
+const SAIGON_BUCKET_FORMAT = new Intl.DateTimeFormat("en-CA", {
+  timeZone: SAIGON_TZ,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  hour12: false,
+});
+
 /**
  * Derives the Saigon calendar date/month/day-of-week/hour a timestamp falls
  * on, for chart bucketing. Sales-chart timezone fix, 2026-08-26:
@@ -82,14 +93,7 @@ export interface SaigonBucketKeys {
  */
 export function saigonBucketKeys(iso: string): SaigonBucketKeys {
   const d = new Date(iso);
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: SAIGON_TZ,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    hour12: false,
-  }).formatToParts(d);
+  const parts = SAIGON_BUCKET_FORMAT.formatToParts(d);
   const get = (type: string) => parts.find(p => p.type === type)?.value || "00";
 
   const year = Number(get("year"));

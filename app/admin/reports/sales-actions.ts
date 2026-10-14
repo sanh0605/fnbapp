@@ -13,6 +13,7 @@ import {
   findCompletedOrders,
   selectSalesOrders,
   filterLinesByCategory,
+  sumNetByOrder,
   buildCanonicalModifierLookup,
   normalizeModifierName,
   type PnLReportFilters,
@@ -225,6 +226,9 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       timeSeriesOrders = typedOrders.filter(o => validOrderIds.has(o.id));
     }
 
+    // Built once; was a full lines scan per order (B7).
+    const categoryRevenueByOrder = categoryId ? sumNetByOrder(typedLines) : null;
+
     const byDate = new Map<string, number>();
     const byMonth = new Map<string, number>();
     const byDayOfWeek = new Map<string, number>();
@@ -237,9 +241,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     // whose local zone already happens to be Asia/Ho_Chi_Minh).
     for (const o of timeSeriesOrders) {
       if (!o.created_at) continue;
-      const rev = categoryId
-        ? typedLines.filter(l => l.order_id === o.id).reduce((s, l) => s + l.net_line_total, 0)
-        : o.net_total;
+      const rev = categoryRevenueByOrder ? (categoryRevenueByOrder.get(o.id) ?? 0) : o.net_total;
 
       const { dateKey, monthKey, dowLabel, hourKey } = saigonBucketKeys(o.created_at);
       byDate.set(dateKey, (byDate.get(dateKey) || 0) + rev);
@@ -258,9 +260,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
     );
     const outletBuckets = new Map<string, { orderCount: number; revenue: number }>();
     for (const o of timeSeriesOrders) {
-      const rev = categoryId
-        ? typedLines.filter(l => l.order_id === o.id).reduce((s, l) => s + l.net_line_total, 0)
-        : o.net_total;
+      const rev = categoryRevenueByOrder ? (categoryRevenueByOrder.get(o.id) ?? 0) : o.net_total;
       const outletId = o.outlet_id || "";
       if (!outletBuckets.has(outletId)) outletBuckets.set(outletId, { orderCount: 0, revenue: 0 });
       const bucket = outletBuckets.get(outletId)!;

@@ -92,7 +92,7 @@ export function PosSyncClient({
 
       <section>
         <h2 className="text-lg font-bold text-text-primary mb-3">
-          Đơn đồng bộ trễ (chỉ để biết, không cần xử lý)
+          Đơn đồng bộ trễ, 30 ngày gần nhất (chỉ để biết, không cần xử lý)
         </h2>
         {lateOrders.length === 0 ? (
           <p className="text-text-muted text-sm">Không có đơn nào.</p>

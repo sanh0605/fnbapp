@@ -53,11 +53,7 @@ mockCategories: [
 ] }));
 
 vi.mock("@/app/admin/products/load-product-rows", () => ({
-  loadProductRows: vi.fn().mockResolvedValue({
-    enhancedProducts: mockProducts,
-    activeCategories: mockCategories,
-    canDelete: true,
-  }),
+  loadProductRow: vi.fn(async (id: string) => mockProducts.find(p => p.id === id) ?? null),
 }));
 
 vi.mock("@/lib/auth/auth", () => ({
@@ -65,7 +61,9 @@ vi.mock("@/lib/auth/auth", () => ({
 }));
 
 vi.mock("@/lib/db/tables", () => ({
-  findAll: vi.fn().mockResolvedValue([]),
+  findAllWhere: vi.fn(async (name: string, f: any) =>
+    name === "Product_Categories" ? mockCategories.filter(c => c.id === f.eq.id) : [],
+  ),
 }));
 
 describe("ProductDetailPage", () => {
@@ -90,6 +88,14 @@ describe("ProductDetailPage", () => {
     expect(element).toBeDefined();
     expect(element.props.product.id).toBe("PROD-099");
     expect(element.props.product.status).toBe("DELETED");
+  });
+
+  it("shows the category name, and the fallback when the category is missing", async () => {
+    const ok: any = await ProductDetailPage({ params: { id: "PROD-005" }, searchParams: {} });
+    expect(ok.props.categoryName).toBe("Giải trí");
+    mockProducts.push({ ...mockProducts[0], id: "PROD-X", category_id: "CAT-GONE" });
+    const gone: any = await ProductDetailPage({ params: { id: "PROD-X" }, searchParams: {} });
+    expect(gone.props.categoryName).toBe("Chưa phân loại");
   });
 
   it("does not pass function props to Client Component", async () => {
