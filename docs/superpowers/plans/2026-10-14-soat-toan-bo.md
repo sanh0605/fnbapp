@@ -33,7 +33,7 @@ hoạt động. Nên C3, C4, F2, F1, B8 chưa làm sai đơn nào — sửa đ�
 | A2, A3b (đơn mới), A4, A5, E9, B10–B12 | Kiểm kê tính lại sổ theo giờ đếm; chặn phiếu nhập mới trước kiểm kê; khung khấu hao lưu cả bảng; bỏ ô "cập nhật lịch sử"; gỡ quyền thừa; Doanh số đọc Loại món, chữ Việt. Migration 0115–0118 đã chạy trên máy chủ 14/10 (chủ quán duyệt "Chạy cả 4") | `e730c9be`, `3b9a68ca` |
 | B3, B9 (câu 7) | Lọc Nhóm SP ở Doanh số tạm ẩn khối tiền cả đơn (chủ quán "Tạm ẩn khi lọc"); Luỹ kế cộng từ tháng đầu khoảng đang xem (chủ quán, máy vốn đã làm vậy, chỉ sửa luật) | `7eb7c030` |
 | B6, A11, A12 (đợt 2) | Phiếu xuất, Giá trị hàng đã xuất, Lãi lỗ tính lại giá vốn nhanh hơn (1.095 phiếu giả lập: 802 → 76 ms); Lãi lỗ chạy 2 vòng thay vì 4. Đo trên máy chủ 14/10: 0 lệch trên 102 phiếu, 234 dòng, 8 tháng; `verify-cogs` qua, `verify-pnl-monthly` 0 lệch trên 8 tháng; người soát độc lập so 420.000 phép tính cũ/mới, 0 lệch | `823081a3` |
-| F4 (câu 9), C12 | Công tắc Bán độc lập theo liên kết topping (`bae42483`); Đơn hàng hiện từng phần của đơn trả hai cách, Sửa đơn sửa được từng phần (`BR-SALE-013`) | (lưu này) |
+| F4 (câu 9), C12 | Công tắc Bán độc lập theo liên kết topping (`bae42483`); Đơn hàng hiện từng phần của đơn trả hai cách, Sửa đơn sửa được từng phần (`BR-SALE-013`) | `ad314a25` |
 
 ## Đợt 1 — lỗi kỹ thuật, không cần chủ quán quyết (làm ngay, theo thứ tự)
 
