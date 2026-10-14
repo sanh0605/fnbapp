@@ -7,7 +7,7 @@ tables: Products, products, product_variants, product_price_history, Product_Cat
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003, BR-SALE-007
 ```
 
-**Behaviour change — 2026-10-14 (audit F2, F3, F6, F7; migration `0114`, not yet run on the server):** editing a dish keeps its picture; "Xoá vĩnh viễn" is not offered on a dish linked to any topping, and the server names the topping when it refuses; a dish linked to an active topping cannot get a second size ("Thêm size" hidden, server refuses); Ngừng bán and Bán lại write the dish and its sizes in one Postgres function, `set_product_status_atomic`. Dates with a time show seconds (`BR-DATA-006`).
+**Behaviour change — 2026-10-14 (audit F2, F3, F6, F7; migration `0114`, ran on the server 2026-10-14 with the owner's approval):** editing a dish keeps its picture; "Xoá vĩnh viễn" is not offered on a dish linked to any topping, and the server names the topping when it refuses; a dish linked to an active topping cannot get a second size ("Thêm size" hidden, server refuses); Ngừng bán and Bán lại write the dish and its sizes in one Postgres function, `set_product_status_atomic`. Dates with a time show seconds (`BR-DATA-006`).
 
 **Behaviour change — 2026-10-14 (Loại món, migration `0109`):** a new list `/admin/products/types` sits under Bán hàng, after Nhóm món.
 - Each type has a name and a "Là thức uống (tính là ly)" mark.

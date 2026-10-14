@@ -29,7 +29,7 @@ hoạt động. Nên C3, C4, F2, F1, B8 chưa làm sai đơn nào — sửa đ�
 | E5 | Hàm thay đơn hàng là cổng công khai không hỏi đăng nhập; thêm phép canh `lib/` | `4965976d` |
 | A9 | Thẻ kiểm kê và trang phiếu kiểm kê không có đơn vị | `3f99d821` |
 | E3, E4, E7, E8, E10–E12, C13 | Nhóm bảo mật đợt 1 (xem bảng dưới) | `d1565186` |
-| A1, A3a, A3b, A6 (một phần), A7, A8, E2, F1–F3, F6–F8, B1, B2, B4, B5, C2, C6, C7 | Đợt 1 phần còn lại; migration 0111, 0112, 0114 chưa chạy trên máy chủ; A6 chưa gộp một hàm Postgres | lần lưu sau `7c5fac10` |
+| A1, A3a, A3b, A6 (một phần), A7, A8, E2, F1–F3, F6–F8, B1, B2, B4, B5, C2, C6, C7 | Đợt 1 phần còn lại; migration 0111, 0112, 0114 đã chạy trên máy chủ 14/10 (chủ quán duyệt "Chạy cả 3"); A6 chưa gộp một hàm Postgres | `6041c021` |
 
 ## Đợt 1 — lỗi kỹ thuật, không cần chủ quán quyết (làm ngay, theo thứ tự)
 
