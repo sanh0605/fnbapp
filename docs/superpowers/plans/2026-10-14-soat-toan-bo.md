@@ -30,6 +30,7 @@ hoạt động. Nên C3, C4, F2, F1, B8 chưa làm sai đơn nào — sửa đ�
 | A9 | Thẻ kiểm kê và trang phiếu kiểm kê không có đơn vị | `3f99d821` |
 | E3, E4, E7, E8, E10–E12, C13 | Nhóm bảo mật đợt 1 (xem bảng dưới) | `d1565186` |
 | A1, A3a, A3b, A6 (một phần), A7, A8, E2, F1–F3, F6–F8, B1, B2, B4, B5, C2, C6, C7 | Đợt 1 phần còn lại; migration 0111, 0112, 0114 đã chạy trên máy chủ 14/10 (chủ quán duyệt "Chạy cả 3"); A6 chưa gộp một hàm Postgres | `6041c021` |
+| A2, A3b (đơn mới), A4, A5, E9, B10–B12 | Kiểm kê tính lại sổ theo giờ đếm; chặn phiếu nhập mới trước kiểm kê; khung khấu hao lưu cả bảng; bỏ ô "cập nhật lịch sử"; gỡ quyền thừa; Doanh số đọc Loại món, chữ Việt. Migration 0115–0118 đã chạy trên máy chủ 14/10 (chủ quán duyệt "Chạy cả 4") | `e730c9be`, `3b9a68ca` |
 
 ## Đợt 1 — lỗi kỹ thuật, không cần chủ quán quyết (làm ngay, theo thứ tự)
 
