@@ -18,7 +18,7 @@ describe("admin order edit COGS calculation", () => {
   // entirely, so there is no longer a consumeEntries field to send at all.
   it("computes no cost for the edited lines and writes no new consumption", () => {
     const source = readFileSync(resolve(__dirname, "order-edit-actions.ts"), "utf8");
-    const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
+    const editOrderSource = source.slice(source.indexOf("export async function changeOrderPayments"));
 
     expect(source).not.toContain("computeMacCostForConsumptionRows");
     expect(source).not.toContain("allocateRecipeConsumption");
@@ -30,24 +30,23 @@ describe("admin order edit COGS calculation", () => {
 
   it("preserves payment rows through the atomic edit transaction", () => {
     const source = readFileSync(resolve(__dirname, "order-edit-actions.ts"), "utf8");
-    const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
+    const editOrderSource = source.slice(source.indexOf("export async function changeOrderPayments"));
 
-    expect(editOrderSource).toContain('findAllWhere<{');
     expect(editOrderSource).toContain('>("Order_Payments"');
-    expect(editOrderSource).toContain("planEditedOrderPayments(");
-    expect(editOrderSource).toContain("payments: editedPayments");
+    expect(editOrderSource).toContain("planRequestedPayments(");
+    expect(editOrderSource).toContain("payments,");
   });
 
   it("bounds edit reads to the target order, and reads no ledger table at all", () => {
     const source = readFileSync(resolve(__dirname, "order-edit-actions.ts"), "utf8");
-    const editOrderSource = source.slice(source.indexOf("export async function editOrderV2"));
+    const editOrderSource = source.slice(source.indexOf("export async function changeOrderPayments"));
 
     expect(editOrderSource).toContain('findById("Orders_V2", input.orderId)');
     expect(editOrderSource).toContain('findAllWhere("Order_Lines_V2"');
     expect(editOrderSource).not.toContain('findAllNoCache("Orders_V2")');
     expect(editOrderSource).not.toContain('findAllNoCache("Order_Lines_V2")');
     // Phase A:
-    // editOrderV2 no longer reads Stock_Ledger through any call shape --
+    // changeOrderPayments no longer reads Stock_Ledger through any call shape --
     // proved live before removal that it always returned zero rows anyway
     // (53 real voided/edited order ids checked, 0 stock_ledger rows).
     expect(editOrderSource).not.toContain("Stock_Ledger");
@@ -59,7 +58,7 @@ describe("admin order edit COGS calculation", () => {
   });
 
   // Phase A
-  // replaces this test's own prior claim. It used to assert editOrderV2
+  // replaces this test's own prior claim. It used to assert changeOrderPayments
   // called buildVoidReversalRows to reverse the old order's real ledger
   // rows (same gap voidOrderV2 fixed before commit 4f6ba40: reversing only
   // SALES_CONSUME would lose the PRODUCTION_CONSUME/YIELD pair). That
@@ -76,8 +75,8 @@ describe("admin order edit COGS calculation", () => {
   it("no longer builds a reversal from ledger data -- there is no reversalEntries field left to send", () => {
     const source = readFileSync(resolve(__dirname, "order-edit-actions.ts"), "utf8");
     const editOrderSource = source.slice(
-      source.indexOf("export async function editOrderV2"),
-      source.indexOf("export async function", source.indexOf("export async function editOrderV2") + 1),
+      source.indexOf("export async function changeOrderPayments"),
+      source.indexOf("export async function", source.indexOf("export async function changeOrderPayments") + 1),
     );
 
     expect(source).not.toContain("buildVoidReversalRows");

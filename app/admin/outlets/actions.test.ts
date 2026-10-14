@@ -261,3 +261,9 @@ describe("retireOutlet", () => {
     expect(mocks.update).not.toHaveBeenCalled();
   });
 });
+
+describe("reopening a stopped outlet (BR-SALE-006)", () => {
+  it.todo(
+    "Điểm bán đã ngừng có nút Mở lại hoạt động; mở lại giữ nguyên mã, số đơn đánh tiếp (chủ quán chốt 15/10/2026)",
+  );
+});

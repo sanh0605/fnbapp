@@ -66,7 +66,6 @@ export interface CartInput {
   payments?: CartPaymentInput[];
   manual_order_discount?: { value: number; type: "VND" | "PERCENT" } | null;
   applied_promotion_id?: string | null; // explicit override; else auto-resolve
-  suppress_auto_promotion?: boolean;
   actor: { id: string; name: string };
   // Captured client-side (new Date()) at the moment "Thanh toán" is
   // pressed, before any network call -- preserved across offline queueing
@@ -226,8 +225,6 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
 // ============================================================
 
 function resolvePromotion(input: CartInput, ref: ReferenceData, asOf: string): any | null {
-  if (input.suppress_auto_promotion) return null;
-
   const now = new Date(asOf);
   const eligible = ref.promotions.filter(p => {
     if (p.status !== "ACTIVE") return false;

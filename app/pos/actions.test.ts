@@ -95,6 +95,12 @@ describe("submitOrderV2 -- a price changed while the till was open (BR-SALE-008)
   );
 });
 
+describe("submitOrderV2 -- a promotion edited after the order was taken (BR-SALE-008)", () => {
+  it.todo(
+    "Khuyến mãi sửa được dù đã có đơn dùng; đơn gửi trễ không khớp mức khuyến mãi hiện tại thì bị từ chối, thu ngân bấm lại (chủ quán chốt 15/10/2026)",
+  );
+});
+
 describe("submitOrderV2 -- percent order discount base (BR-SALE-009)", () => {
   it.todo(
     "Giảm % cả đơn tính trên tổng sau giảm từng món, máy chủ ra đúng số máy bán hiện (chủ quán chốt 14/10/2026)",
@@ -104,6 +110,12 @@ describe("submitOrderV2 -- percent order discount base (BR-SALE-009)", () => {
 describe("submitOrderV2 -- whole-order promotion stacks with the cashier discount (BR-SALE-010)", () => {
   it.todo(
     "Khuyến mãi giảm cả hoá đơn áp trước, giảm tay cả đơn áp sau, máy chủ ra đúng số máy bán hiện (chủ quán chốt 14/10/2026)",
+  );
+});
+
+describe("submitOrderV2 -- minimum order value after dish discounts (BR-SALE-011)", () => {
+  it.todo(
+    "Đơn tối thiểu so với tổng sau giảm từng món: 4 Bạc xỉu 116.000, giảm 5.000 mỗi ly còn 96.000, khuyến mãi tối thiểu 100.000 không được áp (chủ quán chốt 15/10/2026)",
   );
 });
 

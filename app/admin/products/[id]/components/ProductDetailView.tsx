@@ -137,7 +137,7 @@ export function ProductDetailView({
         >
           Ngừng bán
         </Button>
-      ) : (
+      ) : product.status === "INACTIVE" ? (
         <Button
           type="button"
           variant="secondary"
@@ -146,7 +146,7 @@ export function ProductDetailView({
         >
           Bán lại
         </Button>
-      )}
+      ) : null}
       {product.neverSold && canDelete && (
         <RemoveRecordButton
           verb="Xoá vĩnh viễn"

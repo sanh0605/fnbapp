@@ -1,6 +1,6 @@
 -- supabase/migrations/0120_modifier_group_required.sql
 -- Nhóm tuỳ chọn, migration B. Spec: docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md
--- ("Rollout" step 3), plan: docs/superpowers/plans/2026-10-15-migration-b-nhom-tuy-chon.md.
+-- ("Rollout" step 3).
 -- The Supabase CLI runs this file as one transaction (like every migration here), so
 -- the refusal below leaves everything unchanged.
 --

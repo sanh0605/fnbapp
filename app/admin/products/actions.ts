@@ -6,7 +6,7 @@ import { setProductStatusAtomic } from "@/lib/products/product-status-transactio
 import { eraseProductAtomic } from "@/lib/products/product-erase-transaction";
 import { fail, ok, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
-import { findAll, update } from "@/lib/db/tables";
+import { findAll, findById, update } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import {
   findDuplicateActiveName,
@@ -203,6 +203,9 @@ async function setStatus(formData: FormData, status: "ACTIVE" | "INACTIVE"): Pro
   const id = String(formData.get("id") || "");
   if (!id) return fail("ID không hợp lệ");
   try {
+    // The RPC accepts any dish; a deleted one would come back on the till.
+    const product = await findById(PRODUCT_SHEET, id);
+    if (product?.status === "DELETED") return fail("Món đã xoá, không bán lại hay ngừng bán được");
     await setProductStatusAtomic(id, status);
     // POS reads these two tables through a cache tag, not this screen's path
     // (the owner hit a stale POS right after a resume, 2026-08-31).

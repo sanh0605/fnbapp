@@ -38,21 +38,21 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
   const current = await findById("Orders_V2", orderId);
   if (!current) return null;
 
-  // Find root
-  const rootId = current.parent_order_id || current.id;
-
-  // All versions in chain
-  const [rootOrder, childOrders] = await Promise.all([
-    rootId === current.id
-      ? Promise.resolve(current)
-      : findById("Orders_V2", rootId),
-    findAllWhere("Orders_V2", {
-      eq: { parent_order_id: rootId },
-    }),
-  ]);
-  const chainById = new Map<string, any>();
-  for (const order of [rootOrder, current, ...childOrders]) {
-    if (order?.id) chainById.set(order.id, order);
+  // Each version's parent is the version it replaced: walk up to v1, then down.
+  const chainById = new Map<string, any>([[current.id, current]]);
+  let root = current;
+  while (root.parent_order_id && !chainById.has(root.parent_order_id)) {
+    const parent = await findById("Orders_V2", root.parent_order_id);
+    if (!parent) break;
+    chainById.set(parent.id, parent);
+    root = parent;
+  }
+  const queue = [root.id];
+  for (const id of queue) {
+    for (const child of await findAllWhere("Orders_V2", { eq: { parent_order_id: id } })) {
+      if (child?.id && !chainById.has(child.id)) chainById.set(child.id, child);
+      if (child?.id && !queue.includes(child.id)) queue.push(child.id);
+    }
   }
   const chainOrders = Array.from(chainById.values());
   chainOrders.sort((a, b) => Number(a.version) - Number(b.version));

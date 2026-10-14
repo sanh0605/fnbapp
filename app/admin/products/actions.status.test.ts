@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   requireOwner: vi.fn(),
   findAll: vi.fn(),
+  findById: vi.fn(),
   update: vi.fn(),
   eraseProductAtomic: vi.fn(),
   setProductStatusAtomic: vi.fn(),
@@ -14,6 +15,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  findById: mocks.findById,
   update: mocks.update,
 }));
 vi.mock("@/lib/products/product-erase-transaction", () => ({
@@ -44,6 +46,21 @@ describe("pauseProduct / resumeProduct -- one atomic call", () => {
       actor: { id: "admin-1", name: "Quản lý", role: "ADMIN" },
     });
     mocks.setProductStatusAtomic.mockResolvedValue({ productId: "PROD-1", variantsChanged: 2 });
+    mocks.findById.mockResolvedValue({ id: "PROD-1", status: "ACTIVE" });
+  });
+
+  // A deleted dish must stay deleted: the RPC would flip it (and its sizes) back on.
+  it.each([
+    ["resume", resumeProduct],
+    ["pause", pauseProduct],
+  ])("%s on a deleted dish is refused and never reaches the RPC", async (_name, action) => {
+    mocks.findById.mockResolvedValue({ id: "PROD-1", status: "DELETED" });
+
+    const res = await action(formDataWithId("PROD-1"));
+
+    expect(res.error).toBe("Món đã xoá, không bán lại hay ngừng bán được");
+    expect(mocks.setProductStatusAtomic).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 
   it("pausing makes one call and no separate row writes", async () => {
