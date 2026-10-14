@@ -86,12 +86,12 @@ describe("deleteBrand", () => {
     expect(mocks.remove).not.toHaveBeenCalled();
   });
 
-  it("names dishes between promotions and orders", async () => {
-    seed({ Products: 3, Orders_V2: 2 });
+  it("does not look at dishes: products no longer carry a brand (BR-CATALOG-006)", async () => {
+    seed({ Orders_V2: 2 });
 
-    const res = await deleteBrand(form("BR-001"));
+    await deleteBrand(form("BR-001"));
 
-    expect(res).toEqual({ error: 'Không xoá được thương hiệu "Phin Đi": còn 3 món, 2 đơn hàng.' });
+    expect(mocks.findAllWhere).not.toHaveBeenCalledWith("Products", expect.anything());
   });
 
   it("deletes a brand nothing uses", async () => {

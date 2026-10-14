@@ -7,6 +7,8 @@ tables: Pos_Sync_Failures, Outlets, Brands, Dashboard_Settings
 brCodes: BR-SALE-006, BR-SALE-007, BR-CASH-009
 ```
 
+**Behaviour change — 2026-10-15 (Bán hàng đợt 3, A4a):** deleting a brand no longer counts dishes by `products.brand_id`, a column nothing writes; migration `0121` drops it. Outlets, promotions and orders still block the delete.
+
 **Behaviour change — 2026-10-15 (Bán hàng đợt 2, `BR-SALE-006`):** a stopped outlet can be reopened. `reactivateOutlet` (`app/admin/outlets/actions.ts`, ADMIN only) sets it back to `ACTIVE` and clears its end date; it keeps its code, so its order numbers carry on. The outlet's page shows "Mở lại hoạt động" only while it is stopped.
 
 **Behaviour change — 2026-10-14 (audit C16):** the "Đơn đồng bộ trễ" list on `/admin/pos-sync` reads only orders synced in the last 30 days, and its heading says "30 ngày gần nhất". The list is for information only (no action on it); orders not yet synced were never in it, and the failures table above it keeps no date limit.
