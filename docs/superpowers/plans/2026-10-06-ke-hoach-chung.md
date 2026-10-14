@@ -56,7 +56,7 @@ tối ưu được diện tích sử dụng"*.
 | 5 | Ô tiền tự thêm dấu chấm ở các màn còn lại | chưa làm |
 | 6 | Dọn phần sót (bước H) | đang làm: báo cáo và Đơn hàng tách file 2026-10-14; còn máy bán hàng (phần 7) và code chết chờ chủ quán |
 | 6b | Sửa theo đợt soát toàn bộ 2026-10-14 (chủ quán yêu cầu): đợt 1 lỗi kỹ thuật, đợt 2 tốc độ, đợt 3 dọn dẹp, đợt 4 gộp chỗ lặp, 10 câu chủ quán quyết | kế hoạch con `docs/superpowers/plans/2026-10-14-soat-toan-bo.md`; đã sửa ngay: lộ mã băm mật khẩu ở Doanh số, cổng sửa đơn không hỏi đăng nhập, đơn vị ở Kiểm kê |
-| 6c | Thống nhất một khuôn thiết kế chung cho toàn dự án, rồi soát mọi trang theo cùng một luật, cùng một thiết kế; chủ quán 2026-10-14: *"đây luôn là điểm ưu"*. Làm sau khi xong 6b | chưa làm |
+| 6c | Thống nhất một khuôn thiết kế chung cho toàn dự án, rồi soát mọi trang theo cùng một luật, cùng một thiết kế; chủ quán 2026-10-14: *"đây luôn là điểm ưu"*. Kèm theo: trang nào có cách làm tốt hơn (tra hệ thống lớn cùng ngành) thì đề xuất làm lại, không bám code 100% (chủ quán 2026-10-14). Làm sau khi xong 6b | chưa làm |
 | 6d | Soát cấu trúc cơ sở dữ liệu, tối ưu cho không thừa không thiếu; chủ quán 2026-10-14 chấp nhận thao tác trên hệ thống có thể đổi theo (*"đó là điều phải xảy ra"*); được chạy nhiều Opus song song để soát. Làm sau 6c. Việc nào có thể làm máy bán ngừng nhận đơn phải báo trước | chưa làm |
 | 7 | Máy bán hàng và trang đăng nhập | chưa làm |
 | 8 | Lộ trình dài hạn | chưa làm |
