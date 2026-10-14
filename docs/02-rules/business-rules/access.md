@@ -61,6 +61,6 @@ per screen.
 
 ### BR-ACCESS-005 — The public API roles hold no table or function rights
 
-**Status:** `APPROVED` — technical decision, audit item E9, 2026-10-14. Measured that day: 6 tables still granted every right to both roles, 2 functions callable by `anon`, 0 sequences. Migration `0117` not yet run on the server.
+**Status:** `APPROVED` — technical decision, audit item E9, 2026-10-14. Measured that day: 6 tables still granted every right to both roles, 2 functions callable by `anon`, 0 sequences. Migration `0117` ran on the server 2026-10-14, owner approved "Chạy cả 4"; re-measured after: 0 tables, 0 functions.
 
 The `anon` and `authenticated` roles hold no right on any table, function or sequence in `public`. Tables and sequences created later get none either. A function created later still gets the global "everyone may run it" default, so each migration that creates one must revoke it from `public`, `anon` and `authenticated` itself, as every migration since `0091` does. Row-level security already blocks their rows; this also closes `TRUNCATE` and function calls. The app uses only the service-role key on the server, whose rights are untouched.
