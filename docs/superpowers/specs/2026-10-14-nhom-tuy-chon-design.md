@@ -1,6 +1,6 @@
 # Nhóm tuỳ chọn: thiết kế
 
-Audit F5. The owner chose 2026-10-14 to have a page of its own, "Nhóm tuỳ chọn", where he adds, edits, stops and orders the option groups the till shows. This spec records his six answers from that day and the technical choices made around them.
+Audit F5. The owner chose 2026-10-14 to have a page of its own, "Nhóm tuỳ chọn", where he adds, edits, stops and orders the option groups the till shows. Later the same day he reopened the model, and it now follows how the large tills do it (see "The model").
 
 ## Hiện trạng (đo 2026-10-14 trên máy chủ)
 
@@ -9,12 +9,14 @@ Audit F5. The owner chose 2026-10-14 to have a page of its own, "Nhóm tuỳ ch�
    - `ModifierForm.tsx:114`;
    - `StandaloneToppingSwitch.tsx`;
    - migration 0100's `create_standalone_topping_product_atomic`.
-3. **Lists.** The till (`POSScreen.tsx:272`, `ItemConfigModal.tsx`) shows every active option, grouped by name, on every dish, with +/− buttons. That includes Khoai lang, Trứng luộc and the 8 Topping dishes themselves. Sửa đơn (`OrderEditForm.tsx:131`) does the same.
+3. **Lists.** The till (`POSScreen.tsx:272`, `ItemConfigModal.tsx`) shows every active option, grouped by name, on every dish, with +/− buttons and no cap. That includes Khoai lang, Trứng luộc and the 8 Topping dishes themselves. Sửa đơn (`OrderEditForm.tsx:131`) does the same.
 4. **Inputs.** The group name is a select of the four names above.
 5. **Data served.**
    - All 8 options are in "Thêm Topping", for example Trân châu trắng 5.000đ, Kem muối 4.000đ and Kem muối phô mai 6.000đ.
    - 322 of 4.824 order lines ever sold carry options. All 322 are drinks: Cà phê 169, Giải trí 71, Trà 58, Yogurt 24.
-   - The sold snapshot (`order_lines_v2.modifiers_snapshot_json`) keeps id, name and price, not the group. Reports (`sales-actions.ts`, `pnl-actions.ts`) never read the group.
+   - The sold snapshot (`order_lines_v2.modifiers_snapshot_json`) keeps id, name and price, one entry per portion, and not the group. Reports (`sales-actions.ts`, `pnl-actions.ts`) never read the group.
+   - The app has no recipe table, so options change only the price, never the stock or the cost.
+   - The till prints no ticket. Options are shown on the cart line (`CartPanel.tsx:271`) and on the order page.
 
 Looked at: the files named above, `app/pos/page.tsx`, `app/pos/actions.ts`, `app/admin/products/modifiers/actions.ts`, and migrations 0097, 0098 and 0100. Not looked at yet: the POS offline cache code and the service worker. The plan must read them before Task POS.
 
@@ -23,93 +25,127 @@ Looked at: the files named above, `app/pos/page.tsx`, `app/pos/actions.ts`, `app
 | # | Question | Answer |
 |---|---|---|
 | 1 | Which dishes a group applies to | "Anh chọn từng món": each group lists the dishes it applies to |
-| 2 | How a customer picks inside a group | "Mỗi nhóm tự đặt": each group is either **Chọn một** or **Chọn nhiều** |
 | 3 | Which groups may sell an option on its own | "Mỗi nhóm có công tắc": a "Cho bán riêng" box per group. Thêm Topping starts on, new groups start off |
-| 4 | Must the cashier pick in a Chọn một group | "Không bắt buộc": skipping means the drink is made the normal way |
 | 5 | Where a group is attached to a dish | "Cả hai chỗ": on the group page and on Sửa món, both editing the same data |
 | 6 | Which dishes get Thêm Topping on day one | "Chỉ đồ uống": every dish in Cà phê, Giải trí, Trà, Yogurt and Cacao |
+| 7 | The model itself | "Dùng khung chuẩn". This replaces his answers 2 ("Mỗi nhóm tự đặt" Chọn một / Chọn nhiều) and 4 ("Không bắt buộc") |
 
-## Approaches
+**Answer 7.** Shown a first example, the owner said: *"Phải hiện mức đường trước rồi mới thêm topping, nhưng anh nghĩ lại tất cả việc thêm topping hay thêm đường hay đổi sữa đều phải lên lại logic … em đang dựa theo đó mà làm chứ không đề xuất lại cho anh cách phù hợp hơn"*. He was right: the questions extended today's code. The large tills were looked up the same day:
+- **Square.** Each set is required or not, and single or multiple choice, with a minimum and a maximum. The default is marked on the option. ([Square help 5119](https://squareup.com/help/us/en/article/5119))
+- **Toast.**
+  - A group is optional or required. A multi-choice group has a cap and may allow one option more than once.
+  - A swap is charged only the difference. ([Toast: Configure Modifier Behavior](https://support.toasttab.com/en/article/Required-Optional-Modifiers))
+- **StoreKit.** Separates the cap on the group from the cap on each option. ([StoreKit multi-max](https://storekit.com/docs/guides/menu/multi-max))
 
-- **A. Group table, a dish-link table, and a foreign key from each option. Chosen.** Renaming a group touches one row, and Postgres refuses orphaned links by itself.
-- **B. Group table keyed by its name, with options still holding the text.** Rejected: a rename must rewrite every option, and a typo creates a second group silently.
-- **C. No groups, a per-dish list of options.** Rejected: it drops the group the owner chose, and the till could not order or label options.
+## The model
+
+The example the owner approved is one Trà sữa truyền thống at 18.000đ. The till shows the groups in making order:
+
+1. **MỨC ĐƯỜNG**: Chọn một, Bắt buộc. Ít đường • **Bình thường (sẵn)** • Nhiều đường.
+2. **MỨC ĐÁ**: Chọn một, Bắt buộc. Ít đá • **Bình thường (sẵn)** • Không đá.
+3. **LOẠI SỮA**: Chọn một. **Sữa tươi (sẵn) 0đ** • Sữa yến mạch +8.000đ.
+4. **THÊM TOPPING**: Chọn nhiều, at most 3 portions in all, each kind at most x2.
+
+A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.000đ. The cart line and the order page show only what differs from the defaults: "Ít đường, Sữa yến mạch, +Trân châu trắng x2".
+
+### Group settings (the owner sets each one on the group page)
+
+| Setting | Values | Rule |
+|---|---|---|
+| Tên | text, not blank | Unique among groups that are not erased, ignoring case |
+| Kiểu chọn | Chọn một / Chọn nhiều | — |
+| Bắt buộc | yes / no; Chọn một only | A required group must have a default option, so it never costs a tap. Saving without one is refused: "Nhóm bắt buộc phải có một lựa chọn có sẵn." |
+| Tối đa mấy phần | blank = no cap, or an integer 1–20; Chọn nhiều only | Total portions across the group |
+| Cho bán riêng | yes / no; Chọn nhiều only | Rule 3 below |
+| Thứ tự hiện | an integer 1–99 | Ties sort by name |
+| Món áp dụng | tick list, by dish group, with "Chọn cả nhóm" | Answers 1 and 5 |
+
+### Option settings (on the option form)
+
+- **Nhóm**: a Select of the groups that are not erased.
+- **Giá**: the money the option adds to the cup. A swap is just an option with a dearer price than the default (Sữa yến mạch +8.000đ against Sữa tươi 0đ). No substitution arithmetic is needed.
+- **Có sẵn**: at most one per Chọn một group. Ticking it on one option clears it on the others in that group, in the same save.
+- **Tối đa mỗi món**: Chọn nhiều only; blank means no cap, otherwise an integer 1–20.
 
 ## Data
 
 - **`modifier_groups`**
-  - `id` text, `MG-001` style, made by `generateNewId` as for options.
-  - `name` text, not blank, unique among non-deleted groups (case-insensitive).
-  - `selection_mode` text, either `ONE` or `MANY`.
-  - `allow_standalone` boolean, default false. A check refuses true when the mode is `ONE`.
-  - `sort_order` integer ≥ 1.
+  - `id`, made by `generateNewId` (`MG-001`).
+  - `name`.
+  - `selection_mode`, either `ONE` or `MANY`.
+  - `required` boolean.
+  - `max_total` integer, nullable.
+  - `allow_standalone` boolean.
+  - `sort_order` integer.
   - `status`, either `ACTIVE` or `INACTIVE`.
   - `created_at` and `updated_at`.
-- **`modifier_group_products`**: `group_id` and `product_id`, both `RESTRICT`, primary key on the pair. Unticking a dish deletes its row. This is settings with no history, and the rows sold keep their own snapshot.
-- **`modifiers.group_id`**: references `modifier_groups`, `RESTRICT`, not null after the backfill.
-- **What edits affect.** Changing a group changes only what the till shows from then on. Orders already sold keep the option names and prices written at sale time. Nothing is recomputed.
+  - Checks: `required` and `allow_standalone` are false unless the mode is `MANY`/`ONE` as the table above says, and `max_total` is null for `ONE`.
+- **`modifier_group_products`**: `group_id` and `product_id`, both `RESTRICT`, primary key on the pair. Unticking deletes the row; this is settings with no history.
+- **`modifiers`** gains three columns:
+  - `group_id`, referencing the group, `RESTRICT`, not null after the backfill;
+  - `is_default` boolean, with a partial unique index on (`group_id`) where it is true;
+  - `max_qty` integer, nullable.
+- **What a sale stores.** A sold line stores only the options picked away from the defaults, one entry per portion, as today. A plain cup stores none, exactly like the 4.502 plain lines already sold, and reports stay unchanged. The cost is that a later change of default does not rewrite old orders; they meant the default of their day.
+- **What edits affect.** Edits change only what the till shows from then on. Nothing is recomputed.
 
 ## Rules
 
-1. **Chọn một.** On the till, tapping an option selects it and clears the others in that group, and tapping it again clears it. **Chọn nhiều** keeps today's +/− buttons.
-2. **Stopping a group.** A stopped group and its options disappear from the till, Sửa món and Sửa đơn. The options stay in the group and its dishes stay ticked, so "Dùng lại" restores everything. Only `ADMIN` may erase a group, and only an empty one: Postgres refuses while an option points at it. That refusal is shown in Vietnamese and names the options.
-3. **"Cho bán riêng"** shows only on Chọn nhiều groups.
-   - Turning it off is refused while an option in the group is sold on its own. The message names those dishes, for example "Trân châu trắng".
-   - Moving an option that is sold on its own into a group that does not allow it is refused the same way.
-   - Rules 1, 3 and 4 replace every hardcoded "Thêm Topping": migration 0100's function reads `allow_standalone` instead.
-4. **Order on the till.**
-   - Groups appear by `sort_order` and then by name. The group page lists them the same way and has a "Thứ tự hiện" number box.
-   - Options inside a group appear in today's order.
+1. **Till behaviour.**
+   - A Chọn một group opens with its default picked. Tapping another option moves the pick. In a group that is not required, tapping the picked option clears it.
+   - A Chọn nhiều group keeps +/−. "+" greys out at the option's cap or the group's cap.
+   - "Thêm vào đơn" needs every required group answered, which the default already does.
+2. **Stopping and erasing.**
+   - A stopped group and its options disappear from the till, Sửa món and Sửa đơn. Its options and dish ticks stay, so "Dùng lại" restores it.
+   - Only `ADMIN` erases a group (`requireOwner()`), and only an empty one. Postgres refuses otherwise, and the refusal is shown in Vietnamese naming the options.
+3. **"Cho bán riêng".**
+   - Turning it off is refused while an option in the group is sold on its own, naming those dishes (for example "Trân châu trắng").
+   - Moving such an option into a group that does not allow it is refused the same way.
+   - Migration 0100's function reads `allow_standalone` instead of the name. Every hardcoded "Thêm Topping" goes.
+4. **Order.** The till, the group page, the cart line and the order page all list groups by `sort_order` and then by name.
 5. **Dishes.**
-   - The group page shows the dishes under their dish groups, each dish with a tick box, plus "Chọn cả nhóm" per dish group.
-   - Sửa món has a "Nhóm tuỳ chọn" tick list.
    - A new dish starts with no group.
-   - Saving a dish together with its ticks writes two tables, so it goes through one Postgres function.
-6. **Server intake** does not refuse an option that is no longer attached to the dish. An order the till queued offline before the owner unticked it must still save, and its price comes from the server as today.
-7. **Sửa đơn** shows the groups attached to that dish. An option already on the line but no longer attached stays shown and ticked, so saving never drops it silently.
-8. **Who may do what.** The group page uses the same guard as Topping & Tuỳ chọn for add, edit and stop. Erasing a group is `ADMIN` only, through `requireOwner()`.
+   - Saving a dish together with its ticks, or a group together with its ticks, writes two tables, so it goes through one Postgres function.
+   - Saving an option's "Có sẵn" also goes through one function, because it clears the others in the group.
+6. **Server intake** checks prices as today but does not refuse an option that is no longer attached, or a count over a cap. An order the till queued offline before the owner changed the group must still save.
+7. **Sửa đơn** applies the same groups, defaults and caps as the till. An option already on the line but no longer attached stays shown and ticked, so a save never drops it silently.
+8. **Who may do what.** The group page uses the same guard as Topping & Tuỳ chọn.
 
 ## Screens
 
-- **Menu.** Under Bán hàng, the entry "Nhóm tuỳ chọn" sits next to "Topping & Tuỳ chọn".
-- **Pages.** List, create, detail and edit. They are pages, not popups (`BR-DATA-007`), and follow the shared list/detail/form templates. Each has a desktop and a phone layout (`.claude/rules/ui-devices.md`).
-- **Option form.** The "Nhóm" box becomes a Select of the active groups.
-- **Order of building.** Gemini builds the screens and Sonnet builds the data and server side, as two separate tickets.
+- **Menu.** Under Bán hàng, "Nhóm tuỳ chọn" sits next to "Topping & Tuỳ chọn".
+- **Pages.** List, create, detail and edit. They are pages, not popups (`BR-DATA-007`), and follow the shared templates, with a desktop and a phone layout each (`.claude/rules/ui-devices.md`).
+- **Till.** `ItemConfigModal` gets the Chọn một buttons and the greyed "+".
+- **Who builds what.** Gemini builds the screens and the till dialog; Sonnet builds the tables, functions and server actions, as two separate tickets.
 
 ## Rollout: two migrations, never ahead of the code
 
-1. **Migration A runs before the deploy.** The code live today still reads `group_name`, and that keeps working because this step only adds.
-   - It creates both tables.
-   - It creates group "Thêm Topping": `MANY`, `allow_standalone` true, `sort_order` 1.
-   - It sets every option's `group_id`.
-   - It ticks every non-deleted dish in Cà phê, Giải trí, Trà, Yogurt and Cacao. Inactive dishes are included so "Bán lại" keeps their options.
-   - It switches 0100's check to `allow_standalone`.
-   - It adds the save functions.
-2. **The deploy.** The code reads `group_id` and the links.
+1. **Migration A runs before the deploy.** The live code still reads `group_name`, and that keeps working because this step only adds. It does the following:
+   - adds the tables and columns;
+   - creates "Thêm Topping": `MANY`, no caps, `allow_standalone` true, `sort_order` 50, so groups the owner adds later with lower numbers come before it;
+   - sets every option's `group_id`;
+   - ticks every non-deleted dish in Cà phê, Giải trí, Trà, Yogurt and Cacao, re-measured that day;
+   - switches 0100's check.
+2. **The deploy.** On day one the till behaves as today except that only drinks show toppings.
 3. **Migration B runs after the deploy is checked.** It drops `modifiers.group_name` and moves migration 0098's sync function off it.
 
-The dish count in step 1 is measured again on the day it runs, not taken from this spec. **Cost to state before running:** between the deploy and the till reloading, a till holding the old page keeps today's behaviour, which shows every option on every dish. It does not stop taking orders.
-
-## Example to confirm with the owner
-
-The owner creates group "Mức đường" as **Chọn một**, with "Cho bán riêng" off, "Thứ tự hiện" 2 and options Ít đường 0đ and Nhiều đường 0đ, and ticks only Trà sữa truyền thống.
-
-On the till:
-- Trà sữa truyền thống shows THÊM TOPPING first (+/−), then MỨC ĐƯỜNG, where tapping Ít đường and then Nhiều đường leaves only Nhiều đường.
-- Cà phê sữa shows only THÊM TOPPING.
-- Khoai lang shows no options.
+**Cost to state before running:** a till still holding the old page shows every option on every dish until it reloads. It does not stop taking orders.
 
 ## Testing
 
-- **Failing tests first, one per rule above.** They include:
-  - Chọn một clears its sibling.
-  - Turning off "Cho bán riêng" is refused with Trân châu trắng named.
-  - The till shows only the dish's groups, in order.
-  - An unattached option already on an order survives Sửa đơn.
-  - Erasing a group that still has options is refused in Vietnamese.
-- **Migration A text test.** The backfill leaves 0 options without a group and ticks only the five drink groups.
+- **Failing tests first**, one per rule. They include:
+  - the default is picked on open;
+  - Chọn một moves the pick;
+  - a required group cannot be cleared;
+  - "+" stops at x2 and at 3 in all;
+  - a required group without a default is refused;
+  - only the non-default picks are stored and shown;
+  - "Có sẵn" on a second option clears the first;
+  - turning off "Cho bán riêng" is refused, naming Trân châu trắng;
+  - an unattached option survives Sửa đơn;
+  - erasing a group that has options is refused in Vietnamese.
+- **Migration A text test.** It leaves 0 options without a group and ticks only the five drink groups.
 - **After migration A on the server**, measure and report with the denominators:
-  - options without a group: expected 0 of 8;
+  - options without a group (expected 0 of 8);
   - dishes ticked, per dish group;
-  - drinks with no Thêm Topping: expected 0 out of the number of drinks.
+  - drinks without Thêm Topping (expected 0).
 - **Turn the todo into a test.** The `it.todo` in `ModifierForm.test.tsx` becomes a passing test.

@@ -154,12 +154,15 @@ Chọn Đá); all 8 live rows are *Thêm Topping* (measured 2026-10-14). The new
 adds, edits, stops and orders the groups the till shows. Owner's answers
 2026-10-14, one per question: each group lists the dishes it applies to
 (*"Anh chọn từng món"*), ticked on the group page or on Sửa món (*"Cả hai
-chỗ"*); each group is *Chọn một* or *Chọn nhiều* (*"Mỗi nhóm tự đặt"*); a
-*Chọn một* group is never compulsory, skipping means made as normal (*"Không
-bắt buộc"*); a "Cho bán riêng" box per group replaces the hardcoded *Thêm
+chỗ"*); a "Cho bán riêng" box per group replaces the hardcoded *Thêm
 Topping* (*"Mỗi nhóm có công tắc"*); on day one *Thêm Topping* is ticked for
 drinks only, since all 322 of 4.824 lines ever sold with options were drinks
-(*"Chỉ đồ uống"*). Design: `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md`.
+(*"Chỉ đồ uống"*). He then reopened the model itself and chose the standard
+one the large tills use (*"Dùng khung chuẩn"*): each group is *Chọn một* or
+*Chọn nhiều*, may be required, has a pre-picked default, a cap on portions
+in all and per option, and a place in making order (Mức đường before
+Topping); a swap such as Sữa yến mạch +8.000đ is an option dearer than the
+default. Design: `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md`.
 Not built yet.
 
 ---
