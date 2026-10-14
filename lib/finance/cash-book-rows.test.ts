@@ -37,7 +37,7 @@ const DAY_ROWS: DBCashBookDailyRow[] = [
 
 const ENTRY: DBCashEntry = {
   id: "CE-040", entry_date: "2026-09-02", category_id: "CFC-005", amount: 2443400,
-  payment_method: "CASH", bank_account_id: null, payer: null, note: "Vốn góp thêm", status: "ACTIVE",
+  payment_method: "CASH", bank_account_id: null, monthly_item_id: null, payer: null, note: "Vốn góp thêm", status: "ACTIVE",
   created_at: "", created_by_id: "u1", created_by_name: "Chủ quán",
   updated_at: "", updated_by_id: null, updated_by_name: null,
 };

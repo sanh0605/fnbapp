@@ -26,6 +26,9 @@ const HARD_DELETE_ACTIONS: Array<[string, string]> = [
   ["app/admin/finance/bank-accounts/actions.ts", "deleteBankAccount"],
   ["app/admin/finance/actions.ts", "deleteCashEntry"],
   ["app/admin/finance/transfers/actions.ts", "deleteCashTransfer"],
+  // Tổng quan plan Task 5: both are guarded by requireOwner() and refused up front when still referenced.
+  ["app/admin/finance/monthly-items/actions.ts", "deleteMonthlyItem"],
+  ["app/admin/products/types/actions.ts", "deleteProductType"],
   // I2 (final-fix-brief.md): a never-sold product is erased for good,
   // history and all -- CLAUDE.md's "Món chưa bán lần nào được xoá hẳn kèm
   // lịch sử giá … chỉ vai ADMIN xoá, chặn bằng requireOwner()". This was

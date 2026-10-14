@@ -50,8 +50,8 @@ beforeEach(() => {
 });
 
 const sampleCategories: DBProductCategory[] = [
-  { id: "CAT-001", name: "Cà phê", status: "ACTIVE" },
-  { id: "CAT-002", name: "Trà sữa", status: "ACTIVE" },
+  { id: "CAT-001", name: "Cà phê", status: "ACTIVE", type_id: "PT-001" },
+  { id: "CAT-002", name: "Trà sữa", status: "ACTIVE", type_id: "PT-001" },
 ];
 
 const sampleCounts: Record<string, number> = {

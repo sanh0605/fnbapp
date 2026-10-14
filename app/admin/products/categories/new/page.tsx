@@ -1,3 +1,4 @@
+import { getProductTypes } from "@/app/admin/products/types/actions";
 import { ProductCategoryForm } from "@/app/admin/products/categories/components/ProductCategoryForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import { BackLink } from "@/components/ui/BackLink";
@@ -11,6 +12,8 @@ export default async function NewProductCategoryPage({
   searchParams?: { returnTo?: string };
 }) {
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/products/categories");
+  const typeRows = await getProductTypes();
+  const types = typeRows.map((r) => r.type);
 
   return (
     <div className="space-y-6">
@@ -19,7 +22,7 @@ export default async function NewProductCategoryPage({
         title="Tạo nhóm món"
         subtitle="Thêm nhóm sản phẩm mới vào Menu bán hàng."
       />
-      <ProductCategoryForm returnTo={returnTo} />
+      <ProductCategoryForm types={types} returnTo={returnTo} />
     </div>
   );
 }

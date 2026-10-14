@@ -53,3 +53,16 @@ The system records payments in `order_payments`, and **that table begins 2026-07
 `orders_v2.brand_id` is derived server-side from `orders_v2.outlet_id` at the moment of sale, **never accepted from the client.** The till (`/pos`) opens by picking an outlet, not a brand; a `brandId` present in the URL is ignored by both the page and `submitOrderV2`. `outlet_id` itself is frozen at sale time the same way `created_at` is — an order edit preserves the original outlet, not the editor's own.
 
 This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `brand_id` per outlet, no time-windowed brand slots, no staff-to-outlet assignment, manual outlet picker only. See `docs/04-operations/OPEN-ITEMS.md` item 5.
+
+### BR-SALE-007 — Tổng quan's 7-day table: a cup is a drink-type line, 0đ orders count
+
+**Status:** `APPROVED` — owner 2026-10-14. He confirmed the worked example in `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md` section 5. He asked for a separate column for toppings sold on their own (*"nếu có topping mua riêng thì có thêm 1 cột riêng"*), and kept 0đ orders in the count (*"1c"*). Built on the branch `feat/no-popups` 2026-10-14, not yet pushed. Code: `lib/dashboard/seven-day-table.ts`.
+
+- **Which days and orders.** The table covers today and the six days before it, by the Saigon day of the order's `created_at`. It counts `COMPLETED` orders that have not been replaced by an edit: `superseded_by` is empty, which on live data means either null or `""`.
+- **0đ orders count.** These are mostly a staff member's daily Cà phê đá + Trứng luộc + Khoai lang. He was shown that they lower the average: 08/10 is 20,889 with them and 21,692 without.
+- **A cup** is any line whose dish group, read from the line's snapshot, belongs to a Loại món marked "là thức uống". The owner manages Loại món himself.
+- **Average per cup** is the money on the cup lines divided by the number of cups, rounded with `displayMoney`. It includes toppings ordered with that cup, because they are already in the line's money. Example: Cacao latte 23,000 + Kem muối 4,000 is one cup at 27,000.
+- **Topping mua riêng** counts portions of dishes whose group belongs to the Loại món chosen in Cài đặt Tổng quan. When none is chosen, the column is not shown.
+- **One column per food dish** chosen in Cài đặt Tổng quan. Each shows the quantity sold.
+- **Nothing is stored.** The table is worked out each time the page opens. Changing a group's Loại món recomputes all seven days with the new type.
+- Re-runnable check: `scripts/verify-dashboard-seven-days.ts` gives 0 differences on 36 cells (08/10–13/10) against the confirmed example.

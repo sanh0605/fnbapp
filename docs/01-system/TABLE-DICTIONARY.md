@@ -5,7 +5,7 @@ Việt dùng trong `docs/02-rules/GLOSSARY.md` và `docs/02-rules/business-rules
 Mở file này khi thấy một tên bảng trong log lỗi, trong mã nguồn, hay trong một
 báo cáo kỹ thuật, và cần biết nó nói về cái gì trong thực tế quán.
 
-**Số bảng đang sống: 35** (đếm theo file migration, 2026-10-04). Lịch sử migration từng tạo 51 bảng
+**Số bảng đang sống: 38** (đếm theo file migration, 2026-10-14). Lịch sử migration từng tạo 51 bảng
 (bốn bảng cuối là sổ thu chi: migration `0101` tạo `cash_categories`,
 `bank_accounts`, `cash_entries`; migration `0107` tạo `cash_transfers`), nhưng 16 bảng đã bị `DROP TABLE` thật sự.
 Migration `0107` còn tạo view chỉ đọc `cash_book_daily` (tiền bán hàng và nhập hàng gộp theo ngày và cách trả); view không phải bảng, không tính vào số trên.
@@ -24,7 +24,7 @@ Trước đó đã gỡ 6 bảng: `stock_ledger`,
 hai, chủ quán quyết định xoá 2026-09-01), và `backdated_ledger_events`,
 `backdated_recipe_events`, `audit_baseline_locks` (migration `0054` — bộ máy
 soát lùi ngày, chưa từng chạy thật, chủ quán duyệt gỡ 2026-08-05). Bảng dưới
-đây chỉ liệt kê 35 bảng đang sống, xác nhận bằng cách đọc từng file migration,
+đây chỉ liệt kê 38 bảng đang sống, xác nhận bằng cách đọc từng file migration,
 không đọc theo số liệu trong bất cứ tài liệu nào khác.
 
 Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh doanh) ghi
@@ -38,11 +38,13 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `bank_accounts` | Tài khoản ngân hàng | Tài khoản nhận/chi tiền chuyển khoản; dòng sổ thu chi chuyển khoản phải chỉ vào một tài khoản ở đây |
 | `brands` | Thương hiệu | Nhãn gắn với điểm bán, ví dụ Phin Đi, Uchako |
 | `cash_categories` | Nhóm thu chi | Nhóm của sổ thu chi, ví dụ Vận hành, Marketing; mỗi nhóm thuộc bên Thu hoặc Chi và có cờ tính vào lãi lỗ hay không |
-| `cash_entries` | Sổ thu chi | Một khoản tiền ra/vào ngoài bán hàng và mua hàng: ngày, nhóm, số tiền, tiền mặt hay chuyển khoản |
+| `cash_entries` | Sổ thu chi | Một khoản tiền ra/vào ngoài bán hàng và mua hàng: ngày, nhóm, số tiền, tiền mặt hay chuyển khoản; từ migration `0109` có thêm cột `monthly_item_id` (không bắt buộc) chỉ khoản chi hằng tháng mà dòng này đã trả |
 | `cash_transfers` | Chuyển tiền | Một lần chuyển tiền giữa két và tài khoản ngân hàng (hoặc giữa hai tài khoản); không phải thu, không phải chi (migration `0107`) |
+| `dashboard_settings` | Cài đặt Tổng quan | Đúng một dòng (id = 1): mấy ngày không kiểm kê thì báo, mấy ngày phiếu kiểm kê mở dở thì báo, ngày bắt đầu nhắc khoản chi hằng tháng, các món đồ ăn có cột riêng, loại món của cột topping (migration `0109`) |
 | `issue_slips` | Phiếu xuất kho | Chứng từ nhân viên lập khi cho nguyên liệu ra khỏi kho ngoài việc bán |
 | `item_categories` | Nhóm vật tư | Phân loại vật tư mua vào: nguyên liệu, vật tư tiêu hao, hoặc dụng cụ |
 | `modifiers` | Topping / tuỳ chọn thêm | Món phụ thêm vào một đơn, có giá riêng |
+| `monthly_expense_items` | Khoản chi hằng tháng | Một khoản chi lặp mỗi tháng, ví dụ Tiền điện, gắn với một nhóm thu chi bên Chi; Tổng quan nhắc khi tháng nào chưa có dòng sổ nào của khoản này (migration `0109`) |
 | `order_events` | Nhật ký thao tác đơn hàng | Ghi mỗi lần một đơn được tạo, sửa, huỷ, hoặc mở lại |
 | `order_lines_v2` | Dòng đơn hàng | Từng món trong một đơn: tên món, cỡ, số lượng, giá |
 | `order_payments` | Chi tiết thanh toán | Từng phương thức thanh toán của một đơn, cho trường hợp trả nhiều phương thức |
@@ -50,8 +52,9 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `outlets` | Điểm bán | Một chỗ bán hàng thực tế; kho dùng chung, không tách theo điểm bán |
 | `pos_drafts` | Giỏ hàng tạm | Giỏ hàng đang thao tác trên máy bán hàng, trước khi đặt thành đơn chính thức |
 | `pos_sync_failures` | hạ tầng/kỹ thuật | Đơn từ máy bán hàng gửi lên bị lỗi đồng bộ ở lần thử ngầm, chờ admin xử lý tay |
-| `product_categories` | Nhóm món | Danh mục phân loại món trong thực đơn |
+| `product_categories` | Nhóm món | Danh mục phân loại món trong thực đơn; từ migration `0109` mỗi nhóm có cột `type_id` (bắt buộc) chỉ loại món |
 | `product_price_history` | Lịch sử đổi giá | Mỗi lần đổi giá một cỡ món, kèm giá cũ/mới và lý do |
+| `product_types` | Loại món | Thức uống, Thức ăn, Topping; mỗi nhóm món thuộc đúng một loại, loại Thức uống (`is_drink`) là thứ Tổng quan đếm thành ly (migration `0109`) |
 | `product_variants` | Cỡ món | Một cỡ/biến thể của một món, mỗi cỡ có giá riêng |
 | `products` | Món | Một món trong thực đơn |
 | `promotions` | Khuyến mãi | Chương trình giảm giá theo đơn hoặc theo món |

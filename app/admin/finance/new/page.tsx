@@ -1,5 +1,6 @@
 import { getCashCategories } from "../categories/actions";
 import { getBankAccounts } from "../bank-accounts/actions";
+import { getMonthlyItems } from "@/app/admin/finance/monthly-items/actions";
 import { CashEntryForm } from "../components/CashEntryForm";
 import { safeReturnTo } from "../components/return-to";
 import { BackLink } from "@/components/ui/BackLink";
@@ -11,13 +12,16 @@ export const dynamic = "force-dynamic";
 export default async function NewCashEntryPage({
   searchParams,
 }: {
-  searchParams?: { returnTo?: string };
+  searchParams?: { returnTo?: string; monthlyItem?: string };
 }) {
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance");
+  const initialMonthlyItemId =
+    typeof searchParams?.monthlyItem === "string" ? searchParams.monthlyItem : undefined;
   const today = toSaigonIsoString(new Date()).slice(0, 10);
-  const [categories, accounts] = await Promise.all([
+  const [categories, accounts, monthlyItemRows] = await Promise.all([
     getCashCategories(),
     getBankAccounts(),
+    getMonthlyItems(),
   ]);
 
   return (
@@ -30,6 +34,8 @@ export default async function NewCashEntryPage({
       <CashEntryForm
         categories={categories}
         accounts={accounts}
+        monthlyItems={monthlyItemRows.map((r) => r.item)}
+        initialMonthlyItemId={initialMonthlyItemId}
         today={today}
         returnTo={returnTo}
       />

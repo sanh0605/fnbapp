@@ -18,6 +18,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { name: "Đơn hàng", href: "/admin/orders" },
       { name: "Món", href: "/admin/products" },
       { name: "Nhóm món", href: "/admin/products/categories" },
+      { name: "Loại món", href: "/admin/products/types" },
       { name: "Topping & tuỳ chọn", href: "/admin/products/modifiers" },
       { name: "Khuyến mãi", href: "/admin/promotions" },
       { name: "Thương hiệu", href: "/admin/brands" },
@@ -45,6 +46,7 @@ export const NAV_GROUPS: NavGroup[] = [
     name: "Thu chi", icon: Wallet, children: [
       { name: "Sổ thu chi", href: "/admin/finance" },
       { name: "Nhóm thu chi", href: "/admin/finance/categories" },
+      { name: "Khoản chi hằng tháng", href: "/admin/finance/monthly-items" },
       { name: "Tài khoản ngân hàng", href: "/admin/finance/bank-accounts" },
     ],
   },
@@ -59,6 +61,7 @@ export const NAV_GROUPS: NavGroup[] = [
     name: "Cài đặt", icon: Settings, children: [
       { name: "Nhân viên & quyền", href: "/admin/users" },
       { name: "Nhật ký hoạt động", href: "/admin/activity-log" },
+      { name: "Cài đặt Tổng quan", href: "/admin/dashboard-settings" },
     ],
   },
 ];

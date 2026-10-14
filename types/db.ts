@@ -67,6 +67,42 @@ export interface DBProductCategory {
   id: string;
   name: string;
   status: string;
+  // product_types.id; NOT NULL in the database since migration 0109.
+  type_id: string;
+}
+
+export interface DBProductType {
+  id: string;
+  name: string;
+  // Lines of categories whose type has this flag count as cups.
+  is_drink: boolean;
+  created_at: string;
+}
+
+export interface DBMonthlyExpenseItem {
+  id: string;
+  name: string;
+  cash_category_id: string;
+  status: "ACTIVE" | "INACTIVE";
+  created_at: string;
+  created_by_id: string | null;
+  created_by_name: string | null;
+  updated_at: string;
+  updated_by_id: string | null;
+  updated_by_name: string | null;
+}
+
+// Single row, id = 1.
+export interface DBDashboardSettings {
+  id: 1;
+  stale_stocktake_days: number;
+  open_stocktake_days: number;
+  reminder_start_day: number;
+  food_product_ids: string[];
+  topping_type_id: string | null;
+  updated_at: string;
+  updated_by_id: string | null;
+  updated_by_name: string | null;
 }
 
 export interface DBBrand {
@@ -314,6 +350,8 @@ export interface DBCashEntry {
   amount: number;
   payment_method: "CASH" | "BANK_TRANSFER";
   bank_account_id: string | null;
+  // monthly_expense_items.id this row settles; null for an ordinary row.
+  monthly_item_id: string | null;
   payer: string | null;
   note: string | null;
   status: "ACTIVE" | "CANCELLED";

@@ -6,9 +6,11 @@ Do not edit by hand. Regenerate with `vite-node scripts/system-map/generate.ts`.
 ```relations
 app/actions/auth.ts -> users (write)
 app/admin/brands/actions.ts -> Brands (write)
+app/admin/dashboard-settings/actions.ts -> Dashboard_Settings (write)
 app/admin/finance/actions.ts -> Cash_Entries (write)
 app/admin/finance/bank-accounts/actions.ts -> Bank_Accounts (write)
 app/admin/finance/categories/actions.ts -> Cash_Categories (write)
+app/admin/finance/monthly-items/actions.ts -> Monthly_Expense_Items (write)
 app/admin/finance/transfers/actions.ts -> Cash_Transfers (write)
 app/admin/inventory/actions.ts -> Item_Categories (write)
 app/admin/inventory/actions.ts -> Purchase_Order_Lines (write)
@@ -33,6 +35,7 @@ app/admin/products/actions.ts -> Products (write)
 app/admin/products/categories/actions.ts -> Product_Categories (write)
 app/admin/products/modifiers/actions.ts -> Modifiers (write)
 app/admin/products/toppings/actions.ts -> Products (write)
+app/admin/products/types/actions.ts -> Product_Types (write)
 app/admin/promotions/actions.ts -> Promotions (write)
 app/admin/suppliers/actions.ts -> Suppliers (write)
 app/admin/users/actions.ts -> Users (write)
@@ -71,11 +74,13 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - bank_accounts (id, name, bank_name, account_number, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, INACTIVE
 - brands (id, name, code, start_date, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
 - cash_categories (id, name, kind, affects_pnl, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, is_sales_revenue) status: ACTIVE, INACTIVE
-- cash_entries (id, entry_date, category_id, amount, payment_method, bank_account_id, payer, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, or) status: ACTIVE, CANCELLED
+- cash_entries (id, entry_date, category_id, amount, payment_method, bank_account_id, payer, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, or, monthly_item_id) status: ACTIVE, CANCELLED
 - cash_transfers (id, transfer_date, amount, from_account_id, to_account_id, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, CANCELLED
+- dashboard_settings (id, stale_stocktake_days, open_stocktake_days, reminder_start_day, food_product_ids, topping_type_id, updated_at, updated_by_id, updated_by_name)
 - issue_slips (id, issued_at, note, created_by_id, created_by_name, created_at)
 - item_categories (id, name, system_type, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - modifiers (id, name, group_name, price, status, sort_order, created_at, updated_at, product_id) status: ACTIVE, INACTIVE, DELETED
+- monthly_expense_items (id, name, cash_category_id, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, INACTIVE
 - order_events (id, order_id, event_type, event_at, actor_id, actor_name, from_version, to_version, previous_order_id, delta_json, reason)
 - order_lines_v2 (id, order_id, line_no, product_id, product_snapshot_json, variant_id, variant_snapshot_json, qty, unit_price, modifiers_snapshot_json, gross_line_total, promo_discount, manual_item_discount, order_discount_allocation, net_line_total, cost_at_sale, recipe_snapshot_json, promo_discount_reason, manual_discount_reason, created_at)
 - order_payments (id, order_id, method, amount, reference, created_at)
@@ -83,8 +88,9 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - outlets (id, code, name, brand_id, address, status, start_date, end_date, created_at, updated_at, open_time)
 - pos_drafts (id, cart_json, status, created_at, updated_at, timestamp, outlet_id) status: OPEN, SUBMITTED, ABANDONED
 - pos_sync_failures (id, request_token, cart_payload_json, error_message, occurred_at, resolved)
-- product_categories (id, name, status, created_at) status: ACTIVE, INACTIVE, DELETED
+- product_categories (id, name, status, created_at, type_id) status: ACTIVE, INACTIVE, DELETED
 - product_price_history (id, variant_id, old_price, new_price, reason, effective_at, created_at)
+- product_types (id, name, is_drink, created_at)
 - product_variants (id, product_id, size_name, price, sort_order, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
 - products (id, name, category_id, brand_id, description, status, image_url, sort_order, created_at, updated_at, duplicate_warning_confirmed) status: ACTIVE, INACTIVE, DELETED
 - promotions (id, name, brand_id, code, type, discount_type, discount_value, applicable_products_json, start_date, end_date, status, created_at, updated_at, min_order_value) status: ACTIVE, INACTIVE, DELETED

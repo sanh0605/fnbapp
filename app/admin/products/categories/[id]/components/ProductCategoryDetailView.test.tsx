@@ -34,6 +34,7 @@ const sampleCategory = {
   id: "CAT-001",
   name: "Cà phê",
   status: "ACTIVE",
+  type_id: "PT-001",
 };
 
 const sampleDishes = [

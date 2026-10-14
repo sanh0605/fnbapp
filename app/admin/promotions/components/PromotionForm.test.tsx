@@ -53,7 +53,7 @@ const mockBrands: DBBrand[] = [
   { id: "BR-001", name: "Phin Đi", code: "PHD", start_date: "2026-01-01", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
 ];
 const mockCategories: DBProductCategory[] = [
-  { id: "CAT-001", name: "Cà phê", status: "ACTIVE" },
+  { id: "CAT-001", name: "Cà phê", status: "ACTIVE", type_id: "PT-001" },
 ];
 const mockProducts: DBProduct[] = [
   { id: "PROD-001", code: "CF01", name: "Cà phê đen", category_id: "CAT-001", status: "ACTIVE" },

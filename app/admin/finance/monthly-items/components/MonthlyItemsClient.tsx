@@ -1,0 +1,324 @@
+"use client";
+
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
+import { FilterCard } from "@/components/ui/list/FilterCard";
+import { ListPagination } from "@/components/ui/list/ListPagination";
+import { DataList, type DataColumn } from "@/components/ui/list/DataList";
+import { paginate } from "@/components/ui/list/paginate";
+import { sortRows, parseSort } from "@/components/ui/list/sort";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { TextInput } from "@/components/ui/TextInput";
+import { Select } from "@/components/ui/Select";
+import { Field } from "@/components/ui/Field";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { formatNumber } from "@/lib/shared/format";
+import type { MonthlyItemRow } from "../actions";
+import type { DBCashCategory } from "@/types/db";
+
+export interface MonthlyItemsClientProps {
+  items: MonthlyItemRow[];
+  categories: DBCashCategory[];
+  initialSearch?: string;
+  initialStatus?: string;
+  initialPage?: string;
+}
+
+const VALID_STATUSES = ["ACTIVE", "INACTIVE", "ALL"] as const;
+type MonthlyItemStatusFilter = (typeof VALID_STATUSES)[number];
+
+function parseStatus(raw: string | null | undefined): MonthlyItemStatusFilter {
+  if (raw === "ACTIVE" || raw === "INACTIVE") return raw;
+  return "ALL";
+}
+
+function listUrl(
+  search: string,
+  status: string,
+  page: number = 1,
+  sort?: string,
+  dir?: string,
+): string {
+  const p = new URLSearchParams();
+  const trimmed = search.trim();
+  if (trimmed) p.set("q", trimmed);
+  if (status && status !== "ALL") p.set("status", status);
+  if (page > 1) p.set("page", String(page));
+  if (sort) p.set("sort", sort);
+  if (dir) p.set("dir", dir);
+  const qs = p.toString();
+  return qs ? `/admin/finance/monthly-items?${qs}` : "/admin/finance/monthly-items";
+}
+
+export default function MonthlyItemsClient({
+  items,
+  categories,
+  initialSearch,
+  initialStatus,
+  initialPage,
+}: MonthlyItemsClientProps): JSX.Element {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawSort = searchParams?.get("sort");
+  const rawDir = searchParams?.get("dir");
+
+  const [search, setSearch] = useState(
+    () => initialSearch ?? searchParams?.get("q") ?? "",
+  );
+  const [status, setStatus] = useState<MonthlyItemStatusFilter>(() =>
+    parseStatus(initialStatus ?? searchParams?.get("status")),
+  );
+  const [page, setPage] = useState<string | number | undefined>(
+    () => initialPage ?? searchParams?.get("page") ?? undefined,
+  );
+
+  useEffect(() => {
+    if (initialSearch !== undefined) setSearch(initialSearch);
+    else if (searchParams?.get("q") !== null)
+      setSearch(searchParams?.get("q") || "");
+  }, [initialSearch, searchParams]);
+
+  useEffect(() => {
+    if (initialStatus !== undefined) setStatus(parseStatus(initialStatus));
+    else if (searchParams?.get("status") !== null)
+      setStatus(parseStatus(searchParams?.get("status")));
+  }, [initialStatus, searchParams]);
+
+  useEffect(() => {
+    if (initialPage !== undefined) setPage(initialPage);
+    else if (searchParams?.get("page") !== null)
+      setPage(searchParams?.get("page") || undefined);
+  }, [initialPage, searchParams]);
+
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, DBCashCategory>();
+    for (const c of categories) {
+      map.set(c.id, c);
+    }
+    return map;
+  }, [categories]);
+
+  const columns: DataColumn<MonthlyItemRow>[] = useMemo(
+    () => [
+      {
+        key: "name",
+        header: "Tên khoản",
+        sortValue: (r) => r.item.name,
+        render: (r) => (
+          <div className="text-text-primary">{r.item.name}</div>
+        ),
+      },
+      {
+        key: "category",
+        header: "Nhóm thu chi",
+        sortValue: (r) => categoryMap.get(r.item.cash_category_id)?.name ?? "",
+        render: (r) => (
+          <span className="text-text-secondary">
+            {categoryMap.get(r.item.cash_category_id)?.name ?? r.item.cash_category_id}
+          </span>
+        ),
+      },
+      {
+        key: "entryCount",
+        header: "Số dòng đã nhập",
+        align: "right",
+        sortValue: (r) => r.entryCount,
+        render: (r) => (
+          <span className="text-text-secondary tabular-nums">
+            {formatNumber(r.entryCount)}
+          </span>
+        ),
+      },
+      {
+        key: "status",
+        header: "Trạng thái",
+        sortValue: (r) => (r.item.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng"),
+        render: (r) =>
+          r.item.status === "ACTIVE" ? (
+            <Badge variant="success">Đang dùng</Badge>
+          ) : (
+            <Badge variant="warning">Ngừng dùng</Badge>
+          ),
+      },
+    ],
+    [categoryMap],
+  );
+
+  const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "name");
+  const sortParam = rawSort ? sortKey : undefined;
+  const dirParam = rawSort ? sortDir : undefined;
+
+  const filteredItems = useMemo(() => {
+    const q = search.trim().toLocaleLowerCase("vi");
+    return items.filter((row) => {
+      const matchStatus =
+        status === "ALL" ||
+        (status === "ACTIVE"
+          ? row.item.status === "ACTIVE"
+          : row.item.status !== "ACTIVE");
+      if (!matchStatus) return false;
+
+      if (q) {
+        const catName = categoryMap.get(row.item.cash_category_id)?.name || "";
+        const matchName = (row.item.name || "").toLocaleLowerCase("vi").includes(q);
+        const matchId = (row.item.id || "").toLocaleLowerCase("vi").includes(q);
+        const matchCat = catName.toLocaleLowerCase("vi").includes(q);
+        return matchName || matchId || matchCat;
+      }
+      return true;
+    });
+  }, [items, search, status, categoryMap]);
+
+  const sortedItems = useMemo(() => {
+    const col = columns.find((c) => c.key === sortKey);
+    return col?.sortValue
+      ? sortRows(filteredItems, col.sortValue, sortDir)
+      : filteredItems;
+  }, [filteredItems, columns, sortKey, sortDir]);
+
+  const slice = useMemo(() => {
+    return paginate(sortedItems, page);
+  }, [sortedItems, page]);
+
+  const handleApplyFilter = () => {
+    setPage(1);
+    router.replace(listUrl(search, status, 1, sortParam, dirParam), {
+      scroll: false,
+    });
+  };
+
+  const handleClearFilter = () => {
+    setSearch("");
+    setStatus("ALL");
+    setPage(1);
+    router.replace(listUrl("", "ALL", 1, sortParam, dirParam), {
+      scroll: false,
+    });
+  };
+
+  const currentListUrl = listUrl(search, status, slice.page, sortParam, dirParam);
+
+  const renderCard = (row: MonthlyItemRow) => {
+    const catName = categoryMap.get(row.item.cash_category_id)?.name ?? row.item.cash_category_id;
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between items-start gap-2">
+          <div>
+            <div className="text-sm text-text-primary">
+              {row.item.name}
+            </div>
+            <div className="text-[11px] text-text-muted mt-0.5 font-mono">
+              {row.item.id}
+            </div>
+          </div>
+          <div className="shrink-0">
+            {row.item.status === "ACTIVE" ? (
+              <Badge variant="success">Đang dùng</Badge>
+            ) : (
+              <Badge variant="warning">Ngừng dùng</Badge>
+            )}
+          </div>
+        </div>
+        <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
+          <div className="flex justify-between">
+            <span className="text-text-muted">Nhóm thu chi:</span>
+            <span>{catName}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-text-muted">Số dòng đã nhập:</span>
+            <span className="tabular-nums">{formatNumber(row.entryCount)}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <ListPageHeader
+          group="Thu chi"
+          title="Khoản chi hằng tháng"
+          action={
+            <Button
+              href={`/admin/finance/monthly-items/new?returnTo=${encodeURIComponent(currentListUrl)}`}
+              variant="primary"
+              className="w-full md:w-auto"
+            >
+              Tạo
+            </Button>
+          }
+        />
+        <p className="text-sm text-text-secondary">
+          Mỗi khoản được nhắc ở Tổng quan từ ngày bắt đầu nhắc của mỗi tháng cho tới khi có một dòng chi gắn khoản đó trong tháng.
+        </p>
+      </div>
+
+      <FilterCard
+        onApply={handleApplyFilter}
+        onClear={handleClearFilter}
+        showClear={Boolean(search || status !== "ALL")}
+      >
+        <div className="shrink-0 w-full md:w-64">
+          <Field label="Tìm khoản chi" htmlFor="monthly-items-search">
+            <TextInput
+              id="monthly-items-search"
+              placeholder="Ví dụ: Tiền điện"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
+        </div>
+        <div className="shrink-0 w-full md:w-48">
+          <Field label="Trạng thái" htmlFor="monthly-items-status">
+            <Select
+              id="monthly-items-status"
+              value={status}
+              onChange={(e) => setStatus(parseStatus(e.target.value))}
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="ACTIVE">Đang dùng</option>
+              <option value="INACTIVE">Ngừng dùng</option>
+            </Select>
+          </Field>
+        </div>
+      </FilterCard>
+
+      <DataList
+        rows={slice.rows}
+        getId={(r) => r.item.id}
+        getName={(r) => r.item.name}
+        getHref={(r) =>
+          `/admin/finance/monthly-items/${encodeURIComponent(r.item.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
+        }
+        columns={columns}
+        renderCard={renderCard}
+        sort={{
+          key: sortKey,
+          dir: sortDir,
+          href: (k, d) => listUrl(search, status, 1, k, d),
+        }}
+        empty={
+          <EmptyState
+            icon="📅"
+            title="Chưa có khoản chi hằng tháng nào"
+            description="Thêm khoản chi để theo dõi các chi phí cố định mỗi tháng."
+          />
+        }
+      />
+
+      {slice.total > 0 && (
+        <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
+          <ListPagination
+            slice={slice}
+            unit="khoản chi"
+            pageHref={(p) => listUrl(search, status, p, sortParam, dirParam)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}

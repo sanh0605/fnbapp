@@ -88,7 +88,8 @@ nhắc tắt. Nếu sang 03/11 vẫn chưa nhập, lời nhắc vẫn hiện và
    - Nhóm thu chi của khoản: bắt buộc, chỉ chọn nhóm bên Chi.
 5. **Dữ liệu.** Có bảng mới, nên phải chạy migration. Chủ quán duyệt riêng việc này, tách
    khỏi việc đẩy code.
-   - `product_types` (id, name, is_drink, status) và cột `product_categories.type_id`, khoá
+   - `product_types` (id, name, is_drink; không có cột trạng thái, vì xoá hẳn là đủ: khoá ngoại tự
+     từ chối loại còn nhóm dùng; kế hoạch 2026-10-14) và cột `product_categories.type_id`, khoá
      ngoại `RESTRICT`. Gán sẵn: Cà phê, Giải trí, Trà, Yogurt, Cacao → Thức uống; Thức ăn →
      Thức ăn; Topping → Topping.
    - `monthly_expense_items` (id, name, cash_category_id, status, created_at) và cột
@@ -112,7 +113,16 @@ nhắc tắt. Nếu sang 03/11 vẫn chưa nhập, lời nhắc vẫn hiện và
   bảng 7 ngày. Thứ có nghĩa hơn để thay vào chỗ đó: đề xuất sau, khi báo động đã dựng xong.
   Luật đi kèm: `BR-UI-007`.
 
-## 6. Đề xuất cho chỗ đầu trang (Opus, 2026-10-14, chờ chủ quán chọn)
+- **Đơn 0đ vẫn tính (chủ quán chốt 2026-10-14, *"1c"*).** Gần như mỗi ngày có một đơn 0đ do tài khoản `tuyen2612`
+  tạo, gồm Cà phê đá, Trứng luộc, Khoai lang (ví dụ đơn `261008001020`). Ví dụ ở mục 3 đã
+  tính chúng. Bỏ chúng thì TB mỗi ly đổi: 08/10 từ 20.889 lên 21.692 (26 ly thay vì 27), 09/10
+  từ 21.344 lên 22.032, 10/10 từ 20.000 lên 21.111, 12/10 từ 20.848 lên 21.500; Trứng luộc
+  bớt 2–4 quả mỗi ngày. Chủ quán giữ như ví dụ: đơn 0đ đã hoàn thành tính như mọi đơn.
+
+## 6. Đề xuất cho chỗ đầu trang (Opus, 2026-10-14) — chủ quán không chọn mục nào
+
+Chủ quán 2026-10-14: *"Anh thấy đều là những cái anh không cần, làm trước những cái anh đã
+yêu cầu đi, rồi anh sẽ yêu cầu thêm"*. Không dựng mục nào dưới đây; giữ lại làm ghi chép.
 
 Chủ quán hỏi: *"em có đề xuất gì sẽ hiện thêm trên trang tổng quan không ?"*. Đo trên dữ liệu
 thật ngày 2026-10-14, chỉ đọc:

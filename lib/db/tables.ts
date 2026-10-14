@@ -36,7 +36,7 @@ export const getCacheTag = (sheetName: string) => `sheets-${sheetName}`;
 // revalidateTag to invalidate on mutation, so longer TTL is safe.
 // Static (reference) tables: 30 min. Catalog: 10 min. Transactions: 2 min.
 const STATIC_SHEETS = new Set([
-  'Units', 'Item_Categories', 'Product_Categories', 'Brands', 'Outlets',
+  'Units', 'Item_Categories', 'Product_Categories', 'Product_Types', 'Brands', 'Outlets',
   'Suppliers', 'Users',
 ]);
 const CATALOG_SHEETS = new Set([

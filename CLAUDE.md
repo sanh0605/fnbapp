@@ -147,6 +147,16 @@ Model chủ quán chốt 2026-10-01 (thay bản 2026-09-29): *"giao cho model m�
 - Phép kiểm mới phải chạy đỏ trên bản chưa sửa trước, và nói rõ đỏ vì giá trị sai hay vì thiếu hàm.
 - Deploy xong phải có người mở trang sau khi đăng nhập; `curl` trả 307 không chứng minh gì.
 
+## Tiện ích ponytail
+
+Ponytail (cài cho cả máy) đặt cách viết code mặc định. Khi trái nhau, file này thắng. Chủ quán duyệt 2026-10-14.
+
+- Mức `full` là mặc định. Không dùng `ultra` khi đang bàn ý tưởng hay viết kế hoạch.
+- Không cài Lodash; dùng JavaScript sẵn có, không thêm thư viện này.
+- Việc ghi vào hai bảng trở lên chạy trong một hàm Postgres (gọi qua rpc) để cùng thành hoặc cùng không; đây là phần bắt buộc, không phải "code thừa".
+- Bốn bước đặc tả → thiết kế → kế hoạch → code, viết test trước, và năm lệnh kiểm không bao giờ bị bỏ cho gọn.
+- Không viết comment `shortcut:` trong code; chỗ nào làm tắt thì nêu trong câu trả lời cuối lượt.
+
 ## Cấu trúc và đường dẫn
 
 | Thư mục | Chứa |

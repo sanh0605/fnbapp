@@ -51,7 +51,7 @@ tối ưu được diện tích sử dụng"*.
 | 1 | Giao diện đồng nhất — đợt 8: Phiếu nhập, Phiếu xuất, Đơn hàng | đang làm |
 | 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | xong trên nhánh, chờ đẩy: khuôn K1–K6 (K2–K6 chờ đẩy); bộ lọc thời gian 2026-10-09; 2026-10-14 dòng danh sách một kiểu, chữ một cách viết, dòng tổng dưới tiêu đề cột, sửa góp ý đã lưu (kế hoạch con `docs/superpowers/plans/2026-10-14-dot-9-phan-con-lai.md`) |
 | 2 | Giao diện đồng nhất — các trang ngoài khuôn | gần xong trên nhánh, chờ đẩy: trang lẻ và báo cáo theo khuôn (K5, K6), trang tạo theo khuôn (2026-10-11 → 14), Kiểm kê tách thành bốn file 2026-10-14; còn câu Q4 kiểm kê hỏi chủ quán |
-| 3 | Tổng quan mới (bước D của bản cải tổ) | chưa làm |
+| 3 | Tổng quan mới (bước D của bản cải tổ) | đang làm: đặc tả `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md` chủ quán xác nhận ví dụ 2026-10-14; kế hoạch con `docs/superpowers/plans/2026-10-14-tong-quan-moi.md` |
 | 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E), trả phiếu nhập bằng nhiều hình thức, bảng chữ viết tắt, số tiền thu khi thanh lý | chưa làm |
 | 5 | Ô tiền tự thêm dấu chấm ở các màn còn lại | chưa làm |
 | 6 | Dọn phần sót (bước H) | đang làm: báo cáo và Đơn hàng tách file 2026-10-14; còn máy bán hàng (phần 7) và code chết chờ chủ quán |

@@ -1,11 +1,18 @@
 # Product catalogue flow
 
 ```flow-decl
-routes: /admin/products, /admin/products/new, /admin/products/[id], /admin/products/[id]/edit, /admin/products/[id]/history, /admin/products/categories, /admin/products/categories/new, /admin/products/categories/[id], /admin/products/categories/[id]/edit, /admin/products/modifiers, /admin/products/modifiers/new, /admin/products/modifiers/[id], /admin/products/modifiers/[id]/edit, /admin/products/toppings
-files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
-tables: Products, products, Product_Variants, product_variants, product_price_history, Product_Categories, Modifiers
-brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003
+routes: /admin/products, /admin/products/new, /admin/products/[id], /admin/products/[id]/edit, /admin/products/[id]/history, /admin/products/categories, /admin/products/categories/new, /admin/products/categories/[id], /admin/products/categories/[id]/edit, /admin/products/types, /admin/products/types/new, /admin/products/types/[id], /admin/products/types/[id]/edit, /admin/products/modifiers, /admin/products/modifiers/new, /admin/products/modifiers/[id], /admin/products/modifiers/[id]/edit, /admin/products/toppings
+files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/types/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/topping-price-sync.ts, lib/products/create-standalone-topping.ts
+tables: Products, products, Product_Variants, product_variants, product_price_history, Product_Categories, Product_Types, Modifiers
+brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-ACCESS-003, BR-SALE-007
 ```
+
+**Behaviour change — 2026-10-14 (Loại món, migration `0109`):** a new list `/admin/products/types` sits under Bán hàng, after Nhóm món.
+- Each type has a name and a "Là thức uống (tính là ly)" mark.
+- It starts with three types: Thức uống (marked), Thức ăn and Topping.
+- Every Nhóm món now has a required "Loại món". The migration set Cà phê, Giải trí, Cacao, Trà and Yogurt to Thức uống, Thức ăn to Thức ăn, and Topping to Topping.
+- A type can be deleted only by the owner (`requireOwner()`), and only while no group uses it. A refusal names the groups, for example "Loại món đang được dùng ở nhóm: Cà phê, Trà.".
+- Tổng quan counts a cup by this mark (`BR-SALE-007`).
 
 **Reviewed, no behaviour change — 2026-10-14:** `app/admin/products/modifiers/actions.ts` one message spelled "Thiếu mã tuỳ chọn" instead of "tùy" (`BR-UI-001`); no logic changed.
 

@@ -61,6 +61,14 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the categories list -- legitimately unlinked",
   },
   {
+    route: "/admin/finance/monthly-items/new",
+    reason: "reached from the monthly-items list -- legitimately unlinked",
+  },
+  {
+    route: "/admin/products/types/new",
+    reason: "reached from the product-types list -- legitimately unlinked",
+  },
+  {
     route: "/admin/finance/bank-accounts/new",
     reason: "reached from the bank-accounts list -- legitimately unlinked",
   },

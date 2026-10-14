@@ -137,3 +137,60 @@ describe("CashEntryForm day box (wave K5)", () => {
     expect(addCashEntry).not.toHaveBeenCalled();
   });
 });
+
+// Plan 2026-10-14-tong-quan-moi Task 6: a ledger row can settle a Khoản chi
+// hằng tháng; the Tổng quan reminder's "Nhập" link opens this form prefilled.
+describe("CashEntryForm monthly expense item", () => {
+  const CATS = [
+    { id: "CFC-001", name: "Vận hành", kind: "EXPENSE", affects_pnl: true, status: "ACTIVE" },
+    { id: "CFC-002", name: "Điện nước", kind: "EXPENSE", affects_pnl: true, status: "ACTIVE" },
+    { id: "CFC-003", name: "Thu khác", kind: "INCOME", affects_pnl: true, status: "ACTIVE" },
+  ] as any;
+  const ITEMS = [
+    { id: "KCT-001", name: "Tiền điện", cash_category_id: "CFC-002", status: "ACTIVE", created_at: "2026-10-14T09:00:00Z" },
+    { id: "KCT-002", name: "Tiền nước", cash_category_id: "CFC-002", status: "ACTIVE", created_at: "2026-10-14T09:00:00Z" },
+    { id: "KCT-003", name: "Tiền nhà", cash_category_id: "CFC-001", status: "INACTIVE", created_at: "2026-10-14T09:00:00Z" },
+  ] as any;
+  const itemBox = () => screen.queryByLabelText(/^Khoản chi hằng tháng/) as HTMLSelectElement | null;
+  const groupBox = () => screen.getByLabelText(/^Nhóm thu chi/) as HTMLSelectElement;
+
+  it("shows no item box until an expense group is chosen, and none for an income group", () => {
+    render(<CashEntryForm categories={CATS} accounts={[]} monthlyItems={ITEMS} today="2026-10-14" />);
+    expect(itemBox()).toBeNull();
+    fireEvent.change(groupBox(), { target: { value: "CFC-003" } });
+    expect(itemBox()).toBeNull();
+  });
+
+  it("lists only the chosen group's active items, optional, empty by default", () => {
+    render(<CashEntryForm categories={CATS} accounts={[]} monthlyItems={ITEMS} today="2026-10-14" />);
+    fireEvent.change(groupBox(), { target: { value: "CFC-002" } });
+    const box = itemBox()!;
+    expect(box.getAttribute("name")).toBe("monthly_item_id");
+    expect(box.required).toBe(false);
+    expect([...box.options].map(o => o.textContent)).toEqual(["Không gắn khoản nào", "Tiền điện", "Tiền nước"]);
+    expect(box.value).toBe("");
+  });
+
+  it("opened from a reminder, starts on the item and its group, and sends both", async () => {
+    vi.mocked(addCashEntry).mockClear();
+    vi.mocked(addCashEntry).mockResolvedValue({ error: null } as never);
+    const { container } = render(
+      <CashEntryForm categories={CATS} accounts={[]} monthlyItems={ITEMS} initialMonthlyItemId="KCT-001" today="2026-10-14" />,
+    );
+    expect(groupBox().value).toBe("CFC-002");
+    expect(itemBox()!.value).toBe("KCT-001");
+    fireEvent.change(screen.getByPlaceholderText("Ví dụ: 150,000"), { target: { value: "850000" } });
+    fireEvent.submit(container.querySelector("form")!);
+    await vi.waitFor(() => expect(addCashEntry).toHaveBeenCalled());
+    const sent = vi.mocked(addCashEntry).mock.calls[0][0] as FormData;
+    expect(sent.get("category_id")).toBe("CFC-002");
+    expect(sent.get("monthly_item_id")).toBe("KCT-001");
+  });
+
+  it("the edit form keeps a link to an item retired since", () => {
+    const entry = { id: "CE-009", entry_date: "2026-09-30", category_id: "CFC-001", amount: 5000000,
+      payment_method: "CASH", bank_account_id: null, note: null, status: "ACTIVE", monthly_item_id: "KCT-003" } as DBCashEntry;
+    render(<CashEntryForm entry={entry} categories={CATS} accounts={[]} monthlyItems={ITEMS} today="2026-10-14" />);
+    expect(itemBox()!.value).toBe("KCT-003");
+  });
+});

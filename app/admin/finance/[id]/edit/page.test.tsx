@@ -44,6 +44,10 @@ vi.mock("@/app/admin/finance/bank-accounts/actions", () => ({
   getBankAccounts: vi.fn().mockResolvedValue([]),
 }));
 
+vi.mock("@/app/admin/finance/monthly-items/actions", () => ({
+  getMonthlyItems: vi.fn().mockResolvedValue([]),
+}));
+
 vi.mock("@/app/admin/finance/components/CashEntryForm", () => ({
   CashEntryForm: (props: any) => <div data-testid="cash-entry-form" {...props} />,
 }));

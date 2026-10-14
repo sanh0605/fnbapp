@@ -6,6 +6,8 @@ const EXPECTED: [string, [string, string][]][] = [
   ["Tổng quan", []],
   ["Bán hàng", [
     ["Đơn hàng", "/admin/orders"], ["Món", "/admin/products"], ["Nhóm món", "/admin/products/categories"],
+    // Tổng quan spec 2026-10-14: Loại món, Khoản chi hằng tháng, Cài đặt Tổng quan.
+    ["Loại món", "/admin/products/types"],
     ["Topping & tuỳ chọn", "/admin/products/modifiers"], ["Khuyến mãi", "/admin/promotions"],
     ["Thương hiệu", "/admin/brands"], ["Điểm bán", "/admin/outlets"],
   ]],
@@ -16,13 +18,13 @@ const EXPECTED: [string, [string, string][]][] = [
     ["Thời hạn khấu hao", "/admin/inventory/asset-bands"], ["Đơn vị tính", "/admin/inventory/units"],
     ["Phân loại hàng", "/admin/inventory/categories"],
   ]],
-  ["Thu chi", [["Sổ thu chi", "/admin/finance"], ["Nhóm thu chi", "/admin/finance/categories"], ["Tài khoản ngân hàng", "/admin/finance/bank-accounts"]]],
+  ["Thu chi", [["Sổ thu chi", "/admin/finance"], ["Nhóm thu chi", "/admin/finance/categories"], ["Khoản chi hằng tháng", "/admin/finance/monthly-items"], ["Tài khoản ngân hàng", "/admin/finance/bank-accounts"]]],
   ["Báo cáo", [
     // BR-UI-007 (owner 2026-10-09): Tổng kết ngày goes; Doanh số on Hôm nay replaces it.
     ["Doanh số", "/admin/reports/sales"],
     ["Hàng đã xuất", "/admin/reports/issued"], ["Lãi lỗ", "/admin/reports/pnl"],
   ]],
-  ["Cài đặt", [["Nhân viên & quyền", "/admin/users"], ["Nhật ký hoạt động", "/admin/activity-log"]]],
+  ["Cài đặt", [["Nhân viên & quyền", "/admin/users"], ["Nhật ký hoạt động", "/admin/activity-log"], ["Cài đặt Tổng quan", "/admin/dashboard-settings"]]],
 ];
 
 describe("admin menu (7 groups)", () => {

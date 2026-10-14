@@ -24,7 +24,7 @@ function day(
 
 function entry(over: Partial<DBCashEntry> & Pick<DBCashEntry, "id" | "entry_date" | "category_id" | "amount">): DBCashEntry {
   return {
-    payment_method: "CASH", bank_account_id: null, payer: null, note: null, status: "ACTIVE",
+    payment_method: "CASH", bank_account_id: null, monthly_item_id: null, payer: null, note: null, status: "ACTIVE",
     created_at: "", created_by_id: null, created_by_name: null,
     updated_at: "", updated_by_id: null, updated_by_name: null,
     ...over,

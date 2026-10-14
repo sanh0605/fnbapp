@@ -1,11 +1,19 @@
 # Operations flow (POS sync, outlets, brands, activity log, cache)
 
 ```flow-decl
-routes: /admin/pos-sync, /admin/outlets, /admin/outlets/new, /admin/outlets/[id], /admin/outlets/[id]/edit, /admin/brands, /admin/brands/new, /admin/brands/[id], /admin/brands/[id]/edit, /admin/activity-log, /admin/clear-cache
-files: app/admin/pos-sync/actions.ts, app/admin/outlets/actions.ts, app/admin/brands/actions.ts
-tables: Pos_Sync_Failures, Outlets, Brands
-brCodes: BR-SALE-006
+routes: /admin/pos-sync, /admin/outlets, /admin/outlets/new, /admin/outlets/[id], /admin/outlets/[id]/edit, /admin/brands, /admin/brands/new, /admin/brands/[id], /admin/brands/[id]/edit, /admin/activity-log, /admin/clear-cache, /admin/dashboard-settings
+files: app/admin/pos-sync/actions.ts, app/admin/outlets/actions.ts, app/admin/brands/actions.ts, app/admin/dashboard-settings/actions.ts
+tables: Pos_Sync_Failures, Outlets, Brands, Dashboard_Settings
+brCodes: BR-SALE-006, BR-SALE-007, BR-CASH-009
 ```
+
+**Behaviour change — 2026-10-14 (Cài đặt Tổng quan, migration `0109`):** a new page `/admin/dashboard-settings` under Cài đặt edits the single `dashboard_settings` row. It holds:
+- the days before "lâu chưa kiểm kê" fires (30) and before an open stock count is flagged (2), each 1–365;
+- the reminder start day for monthly expenses (25, 1–28);
+- the dishes that get a food column in the 7-day table (Trứng luộc, Khoai lang);
+- the Loại món counted as "Topping mua riêng" (Topping, or none).
+
+The server checks every range; an out-of-range value is named under its box. Saving applies at once and nothing past is stored (`BR-SALE-007`, `BR-CASH-009`).
 
 **Behaviour change — 2026-10-03 (list/detail template, wave 5):** Điểm bán and Thương hiệu
 are tables on desktop and cards on phone; each row opens `/admin/outlets/[id]` or

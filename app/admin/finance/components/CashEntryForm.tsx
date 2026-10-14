@@ -10,13 +10,15 @@ import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Select } from "@/components/ui/Select";
 import { TextInput } from "@/components/ui/TextInput";
 import { safeReturnTo } from "./return-to";
-import type { DBBankAccount, DBCashCategory, DBCashEntry } from "@/types/db";
+import type { DBBankAccount, DBCashCategory, DBCashEntry, DBMonthlyExpenseItem } from "@/types/db";
 
 interface CashEntryFormProps {
   // Present -> edit this entry. Absent -> add a new one.
   entry?: DBCashEntry;
   categories: DBCashCategory[];
   accounts: DBBankAccount[];
+  monthlyItems?: DBMonthlyExpenseItem[];
+  initialMonthlyItemId?: string;
   // M7: today in Asia/Saigon, the same value the page already computes for
   // DateRangeButton -- only used to default the add form's date. The edit
   // form always keeps the entry's own date.
@@ -28,6 +30,8 @@ export function CashEntryForm({
   entry,
   categories,
   accounts,
+  monthlyItems,
+  initialMonthlyItemId,
   today,
   returnTo: rawReturnTo,
 }: CashEntryFormProps) {
@@ -44,6 +48,37 @@ export function CashEntryForm({
   const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER">(
     entry?.payment_method ?? "CASH",
   );
+
+  const [categoryId, setCategoryId] = useState(() => {
+    if (entry?.category_id) return entry.category_id;
+    if (!entry && initialMonthlyItemId && monthlyItems) {
+      const it = monthlyItems.find((i) => i.id === initialMonthlyItemId);
+      if (it) return it.cash_category_id;
+    }
+    return "";
+  });
+
+  const [monthlyItemId, setMonthlyItemId] = useState(() => {
+    if (entry?.monthly_item_id) return entry.monthly_item_id;
+    if (!entry && initialMonthlyItemId) return initialMonthlyItemId;
+    return "";
+  });
+
+  const handleCategoryChange = (newCatId: string) => {
+    setCategoryId(newCatId);
+    const currentItem = monthlyItems?.find((i) => i.id === monthlyItemId);
+    if (!currentItem || currentItem.cash_category_id !== newCatId) {
+      setMonthlyItemId("");
+    }
+  };
+
+  const chosenCategory = categories.find((c) => c.id === categoryId);
+  const isExpense = chosenCategory?.kind === "EXPENSE";
+
+  const availableMonthlyItems = (monthlyItems ?? []).filter((item) => {
+    if (item.cash_category_id !== categoryId) return false;
+    return item.status === "ACTIVE" || item.id === entry?.monthly_item_id;
+  });
 
   // ACTIVE rows to pick from, plus this entry's own group/account even if it
   // has since been retired -- otherwise opening the edit form and saving
@@ -114,7 +149,8 @@ export function CashEntryForm({
               id={`${formId}-category_id`}
               name="category_id"
               required
-              defaultValue={entry?.category_id ?? ""}
+              value={categoryId}
+              onChange={(e) => handleCategoryChange(e.target.value)}
             >
               <option value="" disabled>Chọn nhóm</option>
               {categoryOptions.map((c) => (
@@ -122,6 +158,24 @@ export function CashEntryForm({
               ))}
             </Select>
           </Field>
+
+          {isExpense && (
+            <Field label="Khoản chi hằng tháng" htmlFor={`${formId}-monthly_item_id`}>
+              <Select
+                id={`${formId}-monthly_item_id`}
+                name="monthly_item_id"
+                value={monthlyItemId}
+                onChange={(e) => setMonthlyItemId(e.target.value)}
+              >
+                <option value="">Không gắn khoản nào</option>
+                {availableMonthlyItems.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
 
           <Field label="Số tiền (đồng)" htmlFor={`${formId}-amount`} required>
             <MoneyInput

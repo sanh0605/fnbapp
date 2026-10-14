@@ -4,7 +4,8 @@
 // shifts, shift_stock_checks, sync_state, data_migration_runs,
 // data_recovery_changes) were dropped 2026-09-28, migration 0105.
 const EXPECTED_TABLES = [
-  "brands", "outlets", "product_categories", "item_categories", "units", "suppliers",
+  "brands", "outlets", "product_types", "dashboard_settings",
+  "product_categories", "item_categories", "units", "suppliers",
   "purchase_sources", "products", "product_variants", "modifiers",
   "promotions", "purchased_items", "asset_depreciation_bands",
   "assets", "asset_disposals", "uom_conversions", "product_price_history",
@@ -12,7 +13,7 @@ const EXPECTED_TABLES = [
   "purchase_order_lines", "pos_drafts", "users", "order_payments",
   "stocktake_sessions", "stocktake_lines", "issue_slips", "stock_issues",
   "purchase_order_edits", "pos_sync_failures", "cash_categories",
-  "bank_accounts", "cash_entries", "cash_transfers",
+  "bank_accounts", "monthly_expense_items", "cash_entries", "cash_transfers",
 ];
 const DAILY_RETENTION_COUNT = 180;
 const DAILY_PREFIX = "fnbapp-backup-";
