@@ -31,6 +31,7 @@ hoạt động. Nên C3, C4, F2, F1, B8 chưa làm sai đơn nào — sửa đ�
 | E3, E4, E7, E8, E10–E12, C13 | Nhóm bảo mật đợt 1 (xem bảng dưới) | `d1565186` |
 | A1, A3a, A3b, A6 (một phần), A7, A8, E2, F1–F3, F6–F8, B1, B2, B4, B5, C2, C6, C7 | Đợt 1 phần còn lại; migration 0111, 0112, 0114 đã chạy trên máy chủ 14/10 (chủ quán duyệt "Chạy cả 3"); A6 chưa gộp một hàm Postgres | `6041c021` |
 | A2, A3b (đơn mới), A4, A5, E9, B10–B12 | Kiểm kê tính lại sổ theo giờ đếm; chặn phiếu nhập mới trước kiểm kê; khung khấu hao lưu cả bảng; bỏ ô "cập nhật lịch sử"; gỡ quyền thừa; Doanh số đọc Loại món, chữ Việt. Migration 0115–0118 đã chạy trên máy chủ 14/10 (chủ quán duyệt "Chạy cả 4") | `e730c9be`, `3b9a68ca` |
+| B3, B9 (câu 7) | Lọc Nhóm SP ở Doanh số tạm ẩn khối tiền cả đơn (chủ quán "Tạm ẩn khi lọc"); Luỹ kế cộng từ tháng đầu khoảng đang xem (chủ quán, máy vốn đã làm vậy, chỉ sửa luật) | `7eb7c030` |
 
 ## Đợt 1 — lỗi kỹ thuật, không cần chủ quán quyết (làm ngay, theo thứ tự)
 
