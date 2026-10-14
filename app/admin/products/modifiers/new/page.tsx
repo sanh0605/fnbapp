@@ -1,3 +1,5 @@
+import { findAll } from "@/lib/db/tables";
+import type { DBModifierGroup } from "@/types/db";
 import { ModifierForm } from "@/app/admin/products/modifiers/components/ModifierForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import { BackLink } from "@/components/ui/BackLink";
@@ -10,6 +12,7 @@ export default async function NewModifierPage({
 }: {
   searchParams?: { returnTo?: string };
 }) {
+  const groups = (await findAll("Modifier_Groups")) as DBModifierGroup[];
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/products/modifiers");
 
   return (
@@ -19,7 +22,7 @@ export default async function NewModifierPage({
         title="Tạo tuỳ chọn"
         subtitle="Thêm tuỳ chọn mới vào Menu bán hàng."
       />
-      <ModifierForm returnTo={returnTo} />
+      <ModifierForm groups={groups} returnTo={returnTo} />
     </div>
   );
 }

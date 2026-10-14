@@ -1,15 +1,16 @@
 "use server";
 
-import { findAll, insert, update, generateNewId, getCacheTag } from "@/lib/db/tables";
+import { findAll, update, generateNewId, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
-import type { DBModifier } from "@/types/db";
+import type { DBModifier, DBModifierGroup } from "@/types/db";
 import { requireAdmin } from "@/lib/auth/auth";
-import { syncToppingPriceAtomic } from "@/lib/products/topping-price-sync";
+import { saveModifierAtomic } from "@/lib/products/modifier-save-transaction";
 import { createStandaloneToppingProductAtomic } from "@/lib/products/create-standalone-topping";
 
 const MODIFIER_SHEET = "Modifiers";
+const GROUP_SHEET = "Modifier_Groups";
 const PATH = "/admin/products/modifiers";
 
 export async function getModifiersData(): Promise<{
@@ -36,43 +37,46 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
   const isEdit = formData.get("is_edit") === "true";
   const modifier_id = formData.get("id") as string;
   const name = formData.get("name") as string;
-  const group_name = formData.get("group_name") as string;
-  const price = formData.get("price") as string;
+  const group_id = formData.get("group_id") as string;
+  const price = Number(formData.get("price"));
+  const maxQtyRaw = ((formData.get("max_qty") as string) || "").trim();
 
-  if (!name || !group_name) return fail("Vui lòng nhập đầy đủ thông tin");
+  if (!name || !group_id) return fail("Vui lòng nhập đầy đủ thông tin");
+  if (!Number.isFinite(price) || price < 0) return fail("Giá không hợp lệ");
+  const maxQty = maxQtyRaw ? Number(maxQtyRaw) : null;
+  if (maxQty !== null && !(Number.isInteger(maxQty) && maxQty >= 1 && maxQty <= 20)) {
+    return fail("Tối đa từ 1 đến 20 phần");
+  }
 
   try {
-    if (isEdit && modifier_id) {
-      // BR-CATALOG-003: price
-      // goes through the atomic sync RPC, one write, not a plain update()
-      // for price plus a second call for name/group_name -- it carries
-      // those two along on the same call. A synced price also moves the
-      // linked product's variant, so the product caches must not sit stale.
-      await syncToppingPriceAtomic({
-        modifierId: modifier_id,
-        price: Number(price),
-        name,
-        groupName: group_name,
-      });
+    const group = ((await findAll(GROUP_SHEET)) as DBModifierGroup[]).find((g) => g.id === group_id);
+    if (!group) return fail("Nhóm tuỳ chọn không tồn tại");
+    const isDefault = formData.get("is_default") === "on";
+    if (isDefault && group.selection_mode !== "ONE") return fail("Chỉ nhóm chọn một mới có lựa chọn có sẵn");
+    if (isEdit) {
+      // Rule 3 of the Nhóm tuỳ chọn spec: a dish sold on its own needs a group that allows it.
+      const existing = ((await findAll(MODIFIER_SHEET)) as DBModifier[]).find((m) => m.id === modifier_id);
+      if (existing?.product_id && !group.allow_standalone) {
+        return fail(`Món ${existing.name} đang bán riêng; nhóm này không cho bán riêng.`);
+      }
+    }
+
+    const id = isEdit && modifier_id ? modifier_id : await generateNewId(MODIFIER_SHEET, "MOD");
+    // BR-CATALOG-003: one RPC writes the option; on edit it also syncs the price to the
+    // linked product, so the product caches must not sit stale.
+    await saveModifierAtomic({
+      isEdit,
+      modifier: { id, name, price, group_id, is_default: isDefault, max_qty: group.selection_mode === "MANY" ? maxQty : null },
+    });
+    if (isEdit) {
       revalidateTag("sheets-Products");
       revalidateTag("sheets-Product_Variants");
-    } else {
-      const finalId = await generateNewId(MODIFIER_SHEET, "MOD");
-      await insert(MODIFIER_SHEET, {
-        id: finalId,
-        group_name,
-        name,
-        price,
-        status: "ACTIVE",
-        created_at: new Date().toISOString(),
-      });
     }
 
     // Opus code review, 2026-09-08 (finding 2): Modifiers.product_id now
     // drives both the P&L/sales report merge and the POS quick-add
-    // exclusion -- a stale Modifiers cache is a stale link, not
-    // just a stale name/price. revalidatePath(PATH) below does not clear
-    // this tag-keyed cache (established fact, a known Next.js caching behaviour).
+    // exclusion -- a stale Modifiers cache is a stale link, not just a stale
+    // name/price. revalidatePath(PATH) below does not clear this tag-keyed cache.
     revalidateTag(getCacheTag("Modifiers"));
     revalidatePath(PATH);
     return ok();

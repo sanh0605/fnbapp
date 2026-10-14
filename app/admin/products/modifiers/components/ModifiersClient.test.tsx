@@ -57,6 +57,9 @@ const sampleModifiers: DBModifier[] = [
     price: "5000",
     status: "ACTIVE",
     product_id: "PROD-035",
+    group_id: "MG-001",
+    is_default: false,
+    max_qty: null,
   },
   {
     id: "MOD-002",
@@ -65,6 +68,9 @@ const sampleModifiers: DBModifier[] = [
     price: "10000",
     status: "ACTIVE",
     product_id: null,
+    group_id: "MG-001",
+    is_default: false,
+    max_qty: null,
   },
 ];
 

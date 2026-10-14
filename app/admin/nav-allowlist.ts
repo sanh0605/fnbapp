@@ -85,6 +85,10 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the modifiers list -- legitimately unlinked",
   },
   {
+    route: "/admin/products/modifier-groups/new",
+    reason: "reached from the option-groups list -- legitimately unlinked",
+  },
+  {
     route: "/admin/promotions/new",
     reason: "reached from the promotions list -- legitimately unlinked",
   },

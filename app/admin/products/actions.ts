@@ -138,6 +138,10 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
       removedVariantIds,
       effectiveAt,
       expectedPriceHistoryCount,
+      // Undefined (no marker) leaves the ticks alone: a form open since before the deploy has no tick list.
+      optionGroupIds: formData.get("option_group_ids_sent") === "1"
+        ? formData.getAll("option_group_ids").map(String).filter(Boolean)
+        : undefined,
     });
 
     // A separate, small write rather than plumbing this through the atomic
@@ -162,6 +166,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     // this makes that automatic on the write, not a new mechanism.
     revalidateTag("sheets-Products");
     revalidateTag("sheets-Product_Variants");
+    revalidateTag("sheets-Modifier_Group_Products");
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

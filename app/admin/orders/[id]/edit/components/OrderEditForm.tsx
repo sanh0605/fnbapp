@@ -16,6 +16,13 @@ import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { X } from "lucide-react";
 
+import { OptionGroupPicker } from "@/components/ui/OptionGroupPicker";
+import {
+  optionGroupsForProduct,
+  type OptionGroup,
+  type GroupLink,
+} from "@/lib/sales/option-groups";
+
 type OrderLine = OrderListItem["lines"][0];
 type Order = OrderListItem;
 
@@ -60,6 +67,8 @@ interface OrderEditFormProps {
   modifiers: any[];
   categories: any[];
   returnTo: string;
+  optionGroups?: OptionGroup[];
+  optionGroupLinks?: GroupLink[];
 }
 
 export function OrderEditForm({
@@ -70,6 +79,8 @@ export function OrderEditForm({
   modifiers,
   categories,
   returnTo,
+  optionGroups = [],
+  optionGroupLinks = [],
 }: OrderEditFormProps) {
   const router = useRouter();
   const viewUrl = `/admin/orders/${encodeURIComponent(order.id)}?returnTo=${encodeURIComponent(returnTo)}`;
@@ -125,15 +136,6 @@ export function OrderEditForm({
   const [selectedNewModifiers, setSelectedNewModifiers] = useState<any[]>([]);
   const [newQty, setNewQty] = useState(1);
 
-  const groupedModifiers = useMemo(() => {
-    const groups: Record<string, any[]> = {};
-    modifiers.forEach((m: any) => {
-      if (!groups[m.group_name]) groups[m.group_name] = [];
-      groups[m.group_name].push(m);
-    });
-    return groups;
-  }, [modifiers]);
-
   const filteredAddProducts = useMemo(() => {
     let list = products;
     if (addCategory !== "ALL") list = list.filter((p: any) => p.category_id === addCategory);
@@ -153,17 +155,6 @@ export function OrderEditForm({
     }
     const productLevelDisc = items.reduce((sum, item) => sum + Number(item.line_discount || 0), 0);
     return Math.max(0, subtotal - orderLevelDisc - productLevelDisc);
-  };
-
-  const addNewModifier = (mod: any) => {
-    setSelectedNewModifiers([...selectedNewModifiers, { id: mod.id, name: mod.name, price: Number(mod.price || 0) }]);
-  };
-
-  const removeNewModifier = (mod: any) => {
-    const idx = selectedNewModifiers.findIndex((m: any) => m.id === mod.id);
-    if (idx !== -1) {
-      setSelectedNewModifiers(selectedNewModifiers.filter((_: any, i: number) => i !== idx));
-    }
   };
 
   const confirmAddProduct = () => {
@@ -359,7 +350,7 @@ export function OrderEditForm({
               idx={idx}
               isEditing={editingIndex === idx}
               variants={variants}
-              groupedModifiers={groupedModifiers}
+              groups={optionGroupsForProduct(item.product_id, optionGroups, optionGroupLinks, modifiers)}
               onStartEdit={(i) => setEditingIndex(i)}
               onCancelEdit={() => setEditingIndex(null)}
               onSaveEdit={(i, updatedFields) => {
@@ -488,52 +479,13 @@ export function OrderEditForm({
                     </div>
                   </div>
 
-                  {/* Modifier selection */}
+                  {/* Option groups selection */}
                   {selectedNewVariant && (
-                    <div>
-                      <div className="text-xs font-medium text-text-muted mb-1.5">Topping</div>
-                      <div className="space-y-2">
-                        {Object.entries(groupedModifiers).map(([groupName, mods]) => (
-                          <div key={groupName}>
-                            <div className="text-[11px] text-text-muted mb-1">{groupName}</div>
-                            <div className="flex flex-wrap gap-1.5">
-                              {mods.map((mod: any) => {
-                                const count = selectedNewModifiers.filter((m: any) => m.id === mod.id).length;
-                                return (
-                                  <div
-                                    key={mod.id}
-                                    className={`flex items-center gap-1 rounded-lg border text-xs ${
-                                      count > 0 ? "border-primary bg-primary-soft" : "border-border bg-surface-card"
-                                    }`}
-                                  >
-                                    {count > 0 && (
-                                      <button
-                                        type="button"
-                                        onClick={() => removeNewModifier(mod)}
-                                        className="px-1.5 py-1 text-primary hover:text-danger font-bold min-h-[36px] min-w-[36px] flex items-center justify-center"
-                                      >
-                                        -
-                                      </button>
-                                    )}
-                                    <span className="px-1 py-1 text-text-primary">
-                                      {mod.name} <span className="text-text-muted">+{formatNumber(mod.price)}</span>
-                                    </span>
-                                    {count > 0 && <span className="px-1 py-1 font-bold text-primary">{count}x</span>}
-                                    <button
-                                      type="button"
-                                      onClick={() => addNewModifier(mod)}
-                                      className="px-1.5 py-1 text-text-muted hover:text-primary font-bold min-h-[36px] min-w-[36px] flex items-center justify-center"
-                                    >
-                                      +
-                                    </button>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <OptionGroupPicker
+                      groups={optionGroupsForProduct(selectedNewProduct.id, optionGroups, optionGroupLinks, modifiers)}
+                      picks={selectedNewModifiers}
+                      onChange={setSelectedNewModifiers}
+                    />
                   )}
 
                   {/* Qty + price summary */}

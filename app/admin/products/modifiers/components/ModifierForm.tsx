@@ -9,7 +9,7 @@ import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
-import type { DBModifier } from "@/types/db";
+import type { DBModifier, DBModifierGroup } from "@/types/db";
 import { StandaloneToppingSwitch } from "./StandaloneToppingSwitch";
 
 interface ModifierFormProps {
@@ -18,9 +18,10 @@ interface ModifierFormProps {
   // from page lookup rather than re-fetched here.
   productStatus?: string;
   returnTo?: string;
+  groups?: DBModifierGroup[];
 }
 
-export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo }: ModifierFormProps) {
+export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo, groups = [] }: ModifierFormProps) {
   const returnTo = safeReturnTo(rawReturnTo, "/admin/products/modifiers");
   const formId = useId();
   const router = useRouter();
@@ -29,14 +30,25 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState(initialData?.name || "");
-  const [groupName, setGroupName] = useState(initialData?.group_name || "Thêm Topping");
+  const defaultGroupId = groups[0]?.id || initialData?.group_id || "";
+  const [groupId, setGroupId] = useState(initialData?.group_id || defaultGroupId);
   const [price, setPrice] = useState(initialData?.price !== undefined ? String(initialData.price) : "");
+  const [isDefault, setIsDefault] = useState(Boolean(initialData?.is_default));
+  const [maxQty, setMaxQty] = useState(
+    initialData?.max_qty !== undefined && initialData?.max_qty !== null ? String(initialData.max_qty) : ""
+  );
+
+  const effectiveGroupId = groupId || defaultGroupId;
+  const selectedGroup = groups.find((g) => g.id === effectiveGroupId);
+  const isOne = selectedGroup?.selection_mode === "ONE";
+  const isMany = selectedGroup ? selectedGroup.selection_mode === "MANY" : true;
+  const allowStandalone = Boolean(selectedGroup?.allow_standalone);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
 
-    if (!name || !groupName) {
+    if (!name || !effectiveGroupId) {
       setError("Vui lòng nhập đầy đủ thông tin");
       setLoading(false);
       return;
@@ -45,8 +57,18 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
     formData.append("is_edit", String(isEdit));
     if (isEdit) formData.append("id", initialData!.id);
     formData.append("name", name);
-    formData.append("group_name", groupName);
+    formData.append("group_id", effectiveGroupId);
     formData.append("price", price);
+
+    if (isOne) {
+      if (isDefault) {
+        formData.append("is_default", "on");
+      }
+    } else {
+      if (maxQty !== "" && maxQty !== null && maxQty !== undefined) {
+        formData.append("max_qty", maxQty);
+      }
+    }
 
     const res = await saveModifierAction(formData);
     setLoading(false);
@@ -60,7 +82,7 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
 
   return (
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
-      <form action={handleSubmit} className="space-y-4">
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(new FormData(e.currentTarget)); }} className="space-y-4">
         {error && (
           <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
             {error}
@@ -68,16 +90,17 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
         )}
 
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          <Field label="Nhóm tuỳ chọn" htmlFor={`${formId}-groupName`}>
+          <Field label="Nhóm tuỳ chọn" htmlFor={`${formId}-groupId`}>
             <Select
-              id={`${formId}-groupName`}
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
+              id={`${formId}-groupId`}
+              value={effectiveGroupId}
+              onChange={(e) => setGroupId(e.target.value)}
             >
-              <option value="Thêm Topping">Thêm Topping</option>
-              <option value="Chọn Size">Chọn Size</option>
-              <option value="Chọn Đường">Chọn Đường</option>
-              <option value="Chọn Đá">Chọn Đá</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
             </Select>
           </Field>
 
@@ -103,15 +126,51 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
               example="Trân châu trắng"
             />
           </Field>
+
+          {isOne && (
+            <div className="flex items-center pt-2 md:pt-7">
+              <label
+                htmlFor={`${formId}-is_default`}
+                className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[44px] md:min-h-[40px]"
+              >
+                <input
+                  type="checkbox"
+                  id={`${formId}-is_default`}
+                  checked={isDefault}
+                  onChange={(e) => setIsDefault(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                />
+                <span>Có sẵn (mặc định chọn khi mở món)</span>
+              </label>
+            </div>
+          )}
+
+          {isMany && (
+            <Field
+              label="Tối đa mỗi món"
+              htmlFor={`${formId}-max_qty`}
+              hint="Để trống nếu không giới hạn cho mỗi món"
+            >
+              <NumberInput
+                id={`${formId}-max_qty`}
+                decimals={0}
+                min={1}
+                max={20}
+                hint="Bỏ trống là không giới hạn"
+                example="2"
+                value={maxQty === "" ? null : Number(maxQty)}
+                onValueChange={(v) => setMaxQty(v === null ? "" : String(v))}
+              />
+            </Field>
+          )}
         </div>
 
         {/* BR-CATALOG-003.
             Its own labelled section, visually separated -- this switch
             fires its own independent action on click, never bundled into
             the Cập nhật submit above. StandaloneToppingSwitch itself renders
-            null outside that group (state d), and a modifier not yet
-            saved has no id to link anything to. */}
-        {isEdit && initialData!.group_name === "Thêm Topping" && (
+            null outside a group with allow_standalone. */}
+        {isEdit && allowStandalone && (
           <div className="pt-4 mt-2 border-t border-border flex items-center justify-between gap-4">
             <div>
               <div className="text-sm font-medium text-text-primary">Bán độc lập</div>
@@ -122,10 +181,10 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
             <StandaloneToppingSwitch
               modifierId={initialData!.id}
               modifierName={initialData!.name}
-              groupName={initialData!.group_name}
               price={initialData!.price}
               productId={initialData!.product_id}
               productStatus={productStatus}
+              allowStandalone={allowStandalone}
             />
           </div>
         )}

@@ -133,3 +133,26 @@ describe("F3 erasing a dish linked as a topping", () => {
     expect(mocks.eraseProductAtomic).toHaveBeenCalledWith("PROD-1");
   });
 });
+
+describe("Nhóm tuỳ chọn ticks on the dish form", () => {
+  const sizes = [{ id: "VAR-1", size_name: "M", price: 30000 }];
+
+  it("passes the ticked groups to the atomic save and refreshes the links cache", async () => {
+    const fd = editForm(sizes, { option_group_ids_sent: "1" });
+    fd.append("option_group_ids", "MG-001");
+    fd.append("option_group_ids", "MG-002");
+    await saveProduct(fd);
+    expect(mocks.saveProductAtomic.mock.calls[0][0].optionGroupIds).toEqual(["MG-001", "MG-002"]);
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifier_Group_Products");
+  });
+
+  it("sends an empty list when the tick list was shown and every group is unticked", async () => {
+    await saveProduct(editForm(sizes, { option_group_ids_sent: "1" }));
+    expect(mocks.saveProductAtomic.mock.calls[0][0].optionGroupIds).toEqual([]);
+  });
+
+  it("leaves the ticks alone when the form never showed the tick list", async () => {
+    await saveProduct(editForm(sizes));
+    expect(mocks.saveProductAtomic.mock.calls[0][0].optionGroupIds).toBeUndefined();
+  });
+});

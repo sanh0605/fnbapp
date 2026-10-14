@@ -18,9 +18,17 @@ interface ProductFormProps {
   initialData?: any;
   returnTo?: string;
   canDelete?: boolean;
+  optionGroups?: Array<{ id: string; name: string; status?: string }>;
+  selectedOptionGroupIds?: string[];
 }
 
-export default function ProductForm({ categories, initialData, returnTo: rawReturnTo }: ProductFormProps) {
+export default function ProductForm({
+  categories,
+  initialData,
+  returnTo: rawReturnTo,
+  optionGroups,
+  selectedOptionGroupIds: selectedOptionGroupIdsProp,
+}: ProductFormProps) {
   const returnTo = safeReturnTo(rawReturnTo, "/admin/products");
   const router = useRouter();
   const isEdit = !!initialData;
@@ -33,6 +41,9 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
 
   const [categoryId, setCategoryId] = useState(initialData?.category_id || "");
   const [name, setName] = useState(initialData?.name || "");
+  const [selectedOptionGroupIds, setSelectedOptionGroupIds] = useState<string[]>(
+    () => selectedOptionGroupIdsProp || []
+  );
 
   // variants format: { id?: string, size_name: string, price: number | string }
   const [variants, setVariants] = useState<any[]>(
@@ -71,6 +82,10 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
     formData.append("category_id", categoryId);
     formData.append("name", name);
     formData.append("variants_json", JSON.stringify(variants));
+    formData.append("option_group_ids_sent", "1");
+    selectedOptionGroupIds.forEach((gid) => {
+      formData.append("option_group_ids", gid);
+    });
 
     const effectiveDateStr = effectiveDate ? effectiveDate.toISOString() : "";
     formData.append("effective_date", effectiveDateStr);
@@ -254,6 +269,47 @@ export default function ProductForm({ categories, initialData, returnTo: rawRetu
             </div>
           </div>
         </div>
+
+        {/* NHÓM TUỲ CHỌN */}
+        {optionGroups && optionGroups.length > 0 && (
+          <div className="bg-page p-5 rounded-xl border border-border">
+            <h3 className="text-lg font-bold text-text-primary mb-2 flex items-center gap-2">
+              <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">3</span>
+              Nhóm tuỳ chọn
+            </h3>
+            <p className="text-xs text-text-muted mb-4">
+              Chọn các nhóm tuỳ chọn áp dụng cho món này (đường, đá, topping...).
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {optionGroups
+                .filter((g) => g.status !== "INACTIVE")
+                .map((group) => {
+                  const checked = selectedOptionGroupIds.includes(group.id);
+                  return (
+                    <label
+                      key={group.id}
+                      className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[44px] md:min-h-[40px] p-2.5 rounded-xl border border-border bg-surface-card hover:bg-surface-secondary/50 transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        value={group.id}
+                        checked={checked}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedOptionGroupIds((prev) => [...prev, group.id]);
+                          } else {
+                            setSelectedOptionGroupIds((prev) => prev.filter((id) => id !== group.id));
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                      />
+                      <span>{group.name}</span>
+                    </label>
+                  );
+                })}
+            </div>
+          </div>
+        )}
 
         {/* Buttons */}
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">

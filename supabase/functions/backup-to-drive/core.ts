@@ -16,7 +16,14 @@ export const BACKUP_TABLES = [
   "purchase_sources",
   "products",
   "product_variants",
+  // modifiers.group_id references it, so it must come before modifiers. Added
+  // 2026-10-14 with migration 0119. WARNING: this function must not be deployed
+  // until 0119 is live -- dumpTable throws on a 404, and one missing table kills
+  // the whole night's backup.
+  "modifier_groups",
   "modifiers",
+  // References modifier_groups and products, so it must come after both. Added with 0119.
+  "modifier_group_products",
   "promotions",
   "purchased_items",
   "asset_depreciation_bands",

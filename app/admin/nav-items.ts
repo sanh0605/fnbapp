@@ -20,6 +20,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { name: "Nhóm món", href: "/admin/products/categories" },
       { name: "Loại món", href: "/admin/products/types" },
       { name: "Topping & tuỳ chọn", href: "/admin/products/modifiers" },
+      { name: "Nhóm tuỳ chọn", href: "/admin/products/modifier-groups" },
       { name: "Khuyến mãi", href: "/admin/promotions" },
       { name: "Thương hiệu", href: "/admin/brands" },
       { name: "Điểm bán", href: "/admin/outlets" },

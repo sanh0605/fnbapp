@@ -1,3 +1,4 @@
+import { findAll } from "@/lib/db/tables";
 import { loadProductRows } from "@/app/admin/products/load-product-rows";
 import ProductForm from "@/app/admin/products/components/ProductForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
@@ -12,7 +13,7 @@ export default async function NewProductPage({
   searchParams?: { returnTo?: string };
 }) {
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/products");
-  const { activeCategories } = await loadProductRows();
+  const [{ activeCategories }, optionGroups] = await Promise.all([loadProductRows(), findAll("Modifier_Groups")]);
 
   return (
     <div className="space-y-6">
@@ -23,6 +24,8 @@ export default async function NewProductPage({
       />
       <ProductForm
         categories={activeCategories}
+        optionGroups={optionGroups}
+        selectedOptionGroupIds={[]}
         returnTo={returnTo}
       />
     </div>

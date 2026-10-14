@@ -14,11 +14,12 @@ import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { formatNumber } from "@/lib/shared/format";
 import { deleteModifierAction } from "@/app/admin/products/modifiers/actions";
-import type { DBModifier } from "@/types/db";
+import type { DBModifier, DBModifierGroup } from "@/types/db";
 
 interface ModifiersClientProps {
   modifiers: DBModifier[];
   toppings: any[];
+  groups?: DBModifierGroup[];
   initialSearch?: string;
   initialPage?: string;
 }
@@ -42,6 +43,7 @@ function listUrl(
 export default function ModifiersClient({
   modifiers,
   toppings,
+  groups,
   initialSearch = "",
   initialPage,
 }: ModifiersClientProps) {
@@ -67,6 +69,18 @@ export default function ModifiersClient({
     else if (searchParams?.get("page") !== null)
       setPage(searchParams?.get("page") || undefined);
   }, [initialPage, searchParams]);
+
+  const groupsById = useMemo(
+    () => new Map((groups || []).map((g) => [g.id, g])),
+    [groups],
+  );
+
+  const getGroupName = (m: DBModifier): string => {
+    if (m.group_id && groupsById.has(m.group_id)) {
+      return groupsById.get(m.group_id)!.name;
+    }
+    return m.group_name || "—";
+  };
 
   const toppingById = useMemo(
     () => new Map(toppings.map((t: any) => [t.id, t])),
@@ -94,10 +108,10 @@ export default function ModifiersClient({
       {
         key: "group",
         header: "Nhóm",
-        sortValue: (m) => m.group_name,
+        sortValue: (m) => getGroupName(m),
         render: (m) => (
           <span className="text-text-secondary text-sm">
-            {m.group_name}
+            {getGroupName(m)}
           </span>
         ),
       },
@@ -144,11 +158,11 @@ export default function ModifiersClient({
     return modifiers.filter((m) => {
       if (!q) return true;
       const matchName = (m.name || "").toLocaleLowerCase("vi").includes(q);
-      const matchGroup = (m.group_name || "").toLocaleLowerCase("vi").includes(q);
+      const matchGroup = getGroupName(m).toLocaleLowerCase("vi").includes(q);
       const matchId = (m.id || "").toLocaleLowerCase("vi").includes(q);
       return matchName || matchGroup || matchId;
     });
-  }, [modifiers, search]);
+  }, [modifiers, search, getGroupName]);
 
   const sortedModifiers = useMemo(() => {
     const col = columns.find((c) => c.key === sortKey);
@@ -197,7 +211,7 @@ export default function ModifiersClient({
         </div>
         <div className="flex items-center justify-between text-xs text-text-secondary pt-1 border-t border-border/50">
           <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-surface-secondary text-text-secondary">
-            {m.group_name}
+            {getGroupName(m)}
           </span>
           <span>Bán độc lập: {standalone}</span>
         </div>

@@ -11,11 +11,12 @@ import {
 import { extractTables } from "@/scripts/system-map/extract-tables";
 
 describe("Google Drive backup core", () => {
-  it("pins the complete 38-table snapshot policy", () => {
+  it("pins the complete 40-table snapshot policy", () => {
     // 35 -> 38 on 2026-10-14: product_types, dashboard_settings and
-    // monthly_expense_items from migration 0109.
-    expect(BACKUP_TABLES).toHaveLength(38);
-    expect(new Set(BACKUP_TABLES).size).toBe(38);
+    // monthly_expense_items from migration 0109; 38 -> 40: modifier_groups and
+    // modifier_group_products from migration 0119.
+    expect(BACKUP_TABLES).toHaveLength(40);
+    expect(new Set(BACKUP_TABLES).size).toBe(40);
     expect(BACKUP_TABLES).toContain("orders_v2");
     expect(BACKUP_TABLES).toContain("users");
     expect(BACKUP_TABLE_ORDER_COLUMNS).toEqual({});
@@ -128,10 +129,10 @@ describe("Google Drive backup core", () => {
       .toBe("fnbapp-backup-2026-07-17.json");
   });
 
-  it("rejects a snapshot missing any of the 38 required table keys", () => {
+  it("rejects a snapshot missing any of the 40 required table keys", () => {
     const rows = new Map(BACKUP_TABLES.map(table => [table, []]));
     const complete = buildBackupBundle("2026-07-16T00:00:00.000Z", rows);
-    expect(validateBackupBundle(complete)).toEqual({ tableCount: 38, totalRowCount: 0 });
+    expect(validateBackupBundle(complete)).toEqual({ tableCount: 40, totalRowCount: 0 });
 
     delete complete.tables.users;
     expect(() => validateBackupBundle(complete)).toThrow(/missing.*users/i);

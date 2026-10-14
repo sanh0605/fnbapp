@@ -11,34 +11,32 @@ import { formatNumber } from "@/lib/shared/format";
 // linked modifier toggles its product ACTIVE/INACTIVE directly, same as
 // ToppingsManager.tsx's existing pattern; (c) an unlinked modifier asks for
 // confirmation, then creates the product+variant+link in one transaction
-// (migration 0100). No switch renders at all outside the Thêm Topping group
+// (migration 0100). No switch renders at all outside groups with allow_standalone
 // (state d) -- Chọn Size/Đường/Đá are choices inside a drink, not toppings.
 // Shared between ModifiersClient.tsx's merged table and
 // ModifierForm.tsx's own labelled section so both write paths stay
 // identical instead of drifting into two switches with different bugs.
-const STANDALONE_ELIGIBLE_GROUP = "Thêm Topping";
-
 interface StandaloneToppingSwitchProps {
   modifierId: string;
   modifierName: string;
-  groupName: string;
   price: string | number;
   productId: string | null;
   productStatus?: string;
+  allowStandalone: boolean;
 }
 
 export function StandaloneToppingSwitch({
   modifierId,
   modifierName,
-  groupName,
   price,
   productId,
   productStatus,
+  allowStandalone,
 }: StandaloneToppingSwitchProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
-  if (groupName !== STANDALONE_ELIGIBLE_GROUP) return null;
+  if (!allowStandalone) return null;
 
   const isLinked = Boolean(productId);
   const isActive = isLinked && productStatus === "ACTIVE";

@@ -218,3 +218,48 @@ describe("ProductForm -- price box (wave K4)", () => {
     expect(container.textContent).toContain("Cần nhập số.");
   });
 });
+
+describe("ProductForm -- option groups tick list", () => {
+  it("renders option groups and appends option_group_ids to formData on save", async () => {
+    mocks.saveProduct.mockResolvedValue({ success: true });
+    const container = await renderTracked(
+      <ProductForm
+        categories={[{ id: "CAT-001", name: "Cà phê" }]}
+        optionGroups={[
+          { id: "MG-001", name: "Thêm Topping", status: "ACTIVE" },
+          { id: "MG-002", name: "Mức đường", status: "ACTIVE" },
+        ]}
+        selectedOptionGroupIds={["MG-001"]}
+      />,
+    );
+    expect(container.textContent).toContain("Nhóm tuỳ chọn");
+    const toppingCheckbox = container.querySelector('input[value="MG-001"]') as HTMLInputElement;
+    const sugarCheckbox = container.querySelector('input[value="MG-002"]') as HTMLInputElement;
+    expect(toppingCheckbox.checked).toBe(true);
+    expect(sugarCheckbox.checked).toBe(false);
+
+    // Tick sugar checkbox
+    await fireClick(sugarCheckbox);
+    expect(sugarCheckbox.checked).toBe(true);
+
+    // Fill required fields and save
+    const nameInput = container.querySelector('input[placeholder*="Cà phê"]') as HTMLInputElement;
+    await typeInto(nameInput, "Cà phê đen");
+    const categorySelect = container.querySelector("select") as HTMLSelectElement;
+    await act(async () => {
+      categorySelect.value = "CAT-001";
+      categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    const priceBox = priceBoxOf(container);
+    await typeInto(priceBox, "20000");
+
+    const save = Array.from(container.querySelectorAll("button")).find((b) => /^Lưu/.test(b.textContent?.trim() ?? ""))!;
+    await fireClick(save);
+
+    expect(mocks.saveProduct).toHaveBeenCalled();
+    const fd = mocks.saveProduct.mock.calls[0][0] as FormData;
+    expect(fd.get("option_group_ids_sent")).toBe("1");
+    expect(fd.getAll("option_group_ids")).toEqual(["MG-001", "MG-002"]);
+  });
+});
+

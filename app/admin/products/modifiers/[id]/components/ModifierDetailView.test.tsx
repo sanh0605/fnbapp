@@ -26,12 +26,14 @@ vi.mock("@/app/admin/products/modifiers/actions", () => ({
   deleteModifierAction: vi.fn(),
 }));
 
+const standaloneSwitchMock = vi.fn((props: any) => (
+  <div data-testid="mock-standalone-switch" data-modifier-id={props.modifierId}>
+    StandaloneToppingSwitchMock
+  </div>
+));
+
 vi.mock("@/app/admin/products/modifiers/components/StandaloneToppingSwitch", () => ({
-  StandaloneToppingSwitch: (props: any) => (
-    <div data-testid="mock-standalone-switch" data-modifier-id={props.modifierId}>
-      StandaloneToppingSwitchMock
-    </div>
-  ),
+  StandaloneToppingSwitch: (props: any) => standaloneSwitchMock(props),
 }));
 
 afterEach(() => {
@@ -46,6 +48,9 @@ const linkedModifier: DBModifier = {
   price: "5000",
   status: "ACTIVE",
   product_id: "PROD-035",
+  group_id: "MG-001",
+  is_default: false,
+  max_qty: null,
 };
 
 const linkedProduct: LinkedProduct = {
@@ -61,6 +66,9 @@ const unlinkedModifier: DBModifier = {
   price: "10000",
   status: "ACTIVE",
   product_id: null,
+  group_id: "MG-001",
+  is_default: false,
+  max_qty: null,
 };
 
 describe("ModifierDetailView", () => {
@@ -70,6 +78,8 @@ describe("ModifierDetailView", () => {
       <ModifierDetailView
         modifier={linkedModifier}
         product={linkedProduct}
+        groupName="Thêm Topping"
+        allowStandalone={true}
         returnTo={returnTo}
       />,
     );
@@ -101,6 +111,8 @@ describe("ModifierDetailView", () => {
       <ModifierDetailView
         modifier={unlinkedModifier}
         product={null}
+        groupName="Chọn Size"
+        allowStandalone={false}
         returnTo={returnTo}
       />,
     );
@@ -122,5 +134,36 @@ describe("ModifierDetailView", () => {
 
     // Xoá button
     expect(screen.getByRole("button", { name: "Xoá" })).toBeInTheDocument();
+  });
+
+  it("uses groupName and allowStandalone props directly and does not pass groupName to StandaloneToppingSwitch", () => {
+    standaloneSwitchMock.mockClear();
+    render(
+      <ModifierDetailView
+        modifier={{
+          id: "MOD-003",
+          name: "Trân châu sợi",
+          price: "6000",
+          status: "ACTIVE",
+          product_id: null,
+          group_id: "MG-005",
+          is_default: false,
+          max_qty: null,
+        } as DBModifier}
+        product={null}
+        groupName="Topping đặc biệt"
+        allowStandalone={true}
+        returnTo="/admin/products/modifiers"
+      />
+    );
+
+    // Displays groupName directly in "Nhóm" row
+    expect(screen.getByText("Topping đặc biệt")).toBeInTheDocument();
+
+    // StandaloneToppingSwitch receives allowStandalone directly and does not receive groupName prop
+    expect(standaloneSwitchMock).toHaveBeenCalled();
+    const passedProps = standaloneSwitchMock.mock.calls[0][0];
+    expect(passedProps.allowStandalone).toBe(true);
+    expect(passedProps.groupName).toBeUndefined();
   });
 });

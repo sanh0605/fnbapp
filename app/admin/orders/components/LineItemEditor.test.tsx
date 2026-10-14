@@ -35,7 +35,7 @@ function renderEditing(onSaveEdit = vi.fn()) {
       idx={0}
       isEditing
       variants={VARIANTS}
-      groupedModifiers={{}}
+      groups={[]}
       onStartEdit={vi.fn()}
       onCancelEdit={vi.fn()}
       onSaveEdit={onSaveEdit}
@@ -78,7 +78,7 @@ describe("LineItemEditor -- line buttons inside the order form", () => {
           idx={0}
           isEditing
           variants={VARIANTS}
-          groupedModifiers={{}}
+          groups={[]}
           onStartEdit={vi.fn()}
           onCancelEdit={vi.fn()}
           onSaveEdit={vi.fn()}
@@ -88,5 +88,38 @@ describe("LineItemEditor -- line buttons inside the order form", () => {
     );
     fireEvent.click(screen.getByRole("button", { name }));
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it("renders unattached modifier under 'Đã chọn trước' and preserves it on save", () => {
+    const onSaveEdit = vi.fn();
+    const itemWithUnattachedMod: EditItem = {
+      ...ITEM,
+      modifiers: [{ id: "MOD-OLD", name: "Trân châu đen cũ", price: 5000 }],
+    };
+
+    render(
+      <LineItemEditor
+        item={itemWithUnattachedMod}
+        idx={0}
+        isEditing
+        variants={VARIANTS}
+        groups={[]}
+        onStartEdit={vi.fn()}
+        onCancelEdit={vi.fn()}
+        onSaveEdit={onSaveEdit}
+        onRemove={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(/Đã chọn trước/i)).toBeInTheDocument();
+    expect(screen.getByText("Trân châu đen cũ")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
+    expect(onSaveEdit).toHaveBeenCalledWith(
+      0,
+      expect.objectContaining({
+        modifiers: [{ id: "MOD-OLD", name: "Trân châu đen cũ", price: 5000 }],
+      })
+    );
   });
 });

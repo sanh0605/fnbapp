@@ -36,11 +36,13 @@ export default async function POSPage({
 
   const brandId = outlet.brand_id;
 
-  const [categories, products, variants, modifiers, promotions, bestSellers] = await Promise.all([
+  const [categories, products, variants, modifiers, optionGroups, optionGroupLinks, promotions, bestSellers] = await Promise.all([
     findAll("Product_Categories"),
     findAll("Products"),
     findAll("Product_Variants"),
     findAll("Modifiers"),
+    findAll("Modifier_Groups"),
+    findAll("Modifier_Group_Products"),
     findAll("Promotions"),
     getPOSBestSellerProductIds({
       startDate: lastWeek.toISOString(),
@@ -86,6 +88,8 @@ export default async function POSPage({
       products={activeProducts}
       variants={activeVariants}
       modifiers={activeModifiers}
+      optionGroups={optionGroups}
+      optionGroupLinks={optionGroupLinks}
       promotions={activePromotions}
       bestSellers={bestSellers}
     />

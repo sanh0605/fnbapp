@@ -42,7 +42,7 @@ const STATIC_SHEETS = new Set([
 const CATALOG_SHEETS = new Set([
   'Products', 'Product_Variants', 'Modifiers', 'Promotions',
   'Purchased_Items', 'UOM_Conversions',
-  'Product_Price_History',
+  'Product_Price_History', 'Modifier_Groups', 'Modifier_Group_Products',
 ]);
 const getRevalidation = (sheetName: string) => {
   if (STATIC_SHEETS.has(sheetName)) return 1800;  // 30 min

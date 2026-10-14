@@ -1,0 +1,76 @@
+import { notFound } from "next/navigation";
+import { findAll } from "@/lib/db/tables";
+import { getModifierGroup } from "@/app/admin/products/modifier-groups/actions";
+import { ModifierGroupForm } from "@/app/admin/products/modifier-groups/components/ModifierGroupForm";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
+import type { DBProduct, DBProductCategory } from "@/types/db";
+
+export const dynamic = "force-dynamic";
+
+function safeReturnTo(raw: string | undefined | null, fallback = "/admin/products/modifier-groups"): string {
+  if (!raw) return fallback;
+  if (raw === fallback || raw.startsWith(`${fallback}?`) || raw.startsWith(`${fallback}/`)) {
+    return raw;
+  }
+  return fallback;
+}
+
+export default async function EditModifierGroupPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams?: { returnTo?: string };
+}) {
+  const rawReturnTo = safeReturnTo(
+    searchParams?.returnTo,
+    "/admin/products/modifier-groups",
+  );
+
+  const [groupData, allCategories, allProducts] = await Promise.all([
+    getModifierGroup(params.id),
+    findAll("Product_Categories") as Promise<DBProductCategory[]>,
+    findAll("Products") as Promise<DBProduct[]>,
+  ]);
+
+  if (!groupData) {
+    notFound();
+  }
+
+  const { group, productIds } = groupData;
+
+  const ownDetailPath = `/admin/products/modifier-groups/${encodeURIComponent(group.id)}`;
+  const ownDetailPathRaw = `/admin/products/modifier-groups/${group.id}`;
+  const isOwnDetail =
+    rawReturnTo === ownDetailPath ||
+    rawReturnTo.startsWith(`${ownDetailPath}?`) ||
+    rawReturnTo === ownDetailPathRaw ||
+    rawReturnTo.startsWith(`${ownDetailPathRaw}?`);
+
+  const listReturnTo = rawReturnTo.startsWith("/admin/products/modifier-groups/")
+    ? "/admin/products/modifier-groups"
+    : rawReturnTo;
+
+  const detailHref = isOwnDetail
+    ? rawReturnTo
+    : `/admin/products/modifier-groups/${encodeURIComponent(group.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
+
+  return (
+    <DetailFrame>
+      <DetailHeader
+        backHref={detailHref}
+        backLabel={group.name}
+        title="Sửa nhóm tuỳ chọn"
+        subtitle={group.name}
+      />
+      <ModifierGroupForm
+        initialData={group}
+        initialProductIds={productIds}
+        categories={allCategories}
+        products={allProducts}
+        returnTo={detailHref}
+      />
+    </DetailFrame>
+  );
+}

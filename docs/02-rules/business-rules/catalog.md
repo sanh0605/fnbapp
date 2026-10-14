@@ -133,9 +133,10 @@ Turning *Bán độc lập* on for an unlinked modifier (`MOD-009`, *Hộp sữa
 the only one today) asks first, then creates the `CAT-007` product, its single
 ACTIVE variant at the modifier's price, and the link — one transaction, or none
 of it. A product created without its link would be a second place to edit a
-price, which is exactly what the rule above exists to prevent. Only the
-*Thêm Topping* group may do this: *Chọn Size*, *Chọn Đường* and *Chọn Đá* are
-choices inside a drink, and a món called "Size L" on the menu would be a defect.
+price, which is exactly what the rule above exists to prevent. Only a group
+whose *Cho bán riêng* box is on may do this (`BR-CATALOG-005`): a sugar level
+or a milk swap is a choice inside a drink, and a món called "Ít đường" on the
+menu would be a defect.
 
 **The new món starts in the "Topping" group and may be moved, owner decision
 2026-10-14** (audit F4, chose *"Mặc định Topping, sửa được"* over asking the
@@ -145,25 +146,6 @@ group from Sửa món, and the switch keeps working because it follows the link
 (`modifiers.product_id`), not the group. Moving it moves its sales to that
 group's column in Doanh số. Today (measured 2026-10-14) all 8 linked món are in
 "Topping" and every modifier of *Thêm Topping* has one.
-
-**Option groups become a table the owner edits on their own page, owner
-decision 2026-10-14** (audit F5, chose *"Trang riêng Nhóm tuỳ chọn"* over typing
-a new group into the box and over keeping four). Today the box "Nhóm tuỳ chọn"
-offers four names written into the code (Thêm Topping, Chọn Size, Chọn Đường,
-Chọn Đá); all 8 live rows are *Thêm Topping* (measured 2026-10-14). The new page
-adds, edits, stops and orders the groups the till shows. Owner's answers
-2026-10-14, one per question: each group lists the dishes it applies to
-(*"Anh chọn từng món"*), ticked on the group page or on Sửa món (*"Cả hai
-chỗ"*); a "Cho bán riêng" box per group replaces the hardcoded *Thêm
-Topping* (*"Mỗi nhóm có công tắc"*); on day one *Thêm Topping* is ticked for
-drinks only, since all 322 of 4.824 lines ever sold with options were drinks
-(*"Chỉ đồ uống"*). He then reopened the model itself and chose the standard
-one the large tills use (*"Dùng khung chuẩn"*): each group is *Chọn một* or
-*Chọn nhiều*, may be required, has a pre-picked default, a cap on portions
-in all and per option, and a place in making order (Mức đường before
-Topping); a swap such as Sữa yến mạch +8.000đ is an option dearer than the
-default. Design: `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md`.
-Not built yet.
 
 ---
 
@@ -178,3 +160,21 @@ Asked for it the same day: *"trang hàng hoá anh muốn xem được tồn kho 
 - **In the base unit only** (owner, *"1b"*): Sữa tươi Mlekovita shows "42.000 ml", not "42 Hộp (42.000 ml)". He was offered the package form first and chose the plain one.
 - **Dụng cụ shows no stock figure, only "Xem ở Tài sản"** (owner, *"2a"*): a broken or disposed tool is recorded on the Tài sản page (`asset_disposals`), not as a stock issue, so a stock figure would still count it. Measured 2026-10-05: 67 Dụng cụ items, 64 with purchases.
 - **An item marked "Tính tồn kho: Không" shows "Không theo dõi tồn"**, no figure (owner 2026-10-05, *"1a"*). Such items are written off when bought and almost never issued, so purchases minus issues only grows: measured that day, Đá viên showed 4.515.000 g bought and 0 issued. 15 items (6 Nguyên liệu such as Đá viên, Muối, Trái chanh; 9 Vật tư tiêu hao such as Túi xốp 1 ly, Muỗng nhựa đen), 1 issue among them. He was offered the raw figure and a blank, and chose this.
+
+---
+
+### BR-CATALOG-005 — Option groups are a table the owner edits on the page "Nhóm tuỳ chọn", on the standard model
+
+**Status:** `APPROVED` — owner decisions 2026-10-14 (audit F5). Built 2026-10-14 (migration `0119`, `lib/sales/option-groups.ts`, `app/admin/products/modifier-groups/`). Design: `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md`.
+
+Until then the option form offered four names written into the code and the till showed every option on every dish, Khoai lang included. The owner chose a page of its own (*"Trang riêng Nhóm tuỳ chọn"*), then, shown a first example, reopened the model and chose the one the large tills use (*"Dùng khung chuẩn"*).
+
+- **A group is *Chọn một* or *Chọn nhiều*.** A *Chọn một* group may have one pre-picked option ("Có sẵn"); ticking it on another option clears the first in the same save. A *Chọn nhiều* group may cap portions in all and per option (blank = no cap, else 1–20).
+- **No "Bắt buộc" box:** a *Chọn một* group with a default is always answered; one without stays optional, as the owner chose (*"Không bắt buộc"*).
+- **A swap is an option dearer than the default** (Sữa yến mạch +8.000đ against Sữa tươi 0đ). No substitution arithmetic.
+- **Each group lists its dishes** (*"Anh chọn từng món"*), ticked on the group page or on Sửa món, both editing the same data (*"Cả hai chỗ"*). A new dish starts with no group. On day one *Thêm Topping* is ticked for drinks only (*"Chỉ đồ uống"*): all 322 of 4.824 lines ever sold with options were drinks (measured 2026-10-14).
+- **"Cho bán riêng" per group** replaces the hardcoded *Thêm Topping* (*"Mỗi nhóm có công tắc"*); *Chọn nhiều* only. Turning it off, or moving an option into a group without it, is refused while that option is sold on its own, naming the dish.
+- **Order on the till:** "Thứ tự hiện" 1–99, ties by name. *Thêm Topping* starts at 50.
+- **A sale stores only what differs from the defaults**, one entry per portion, as before; a plain cup stores none. A later change of default does not rewrite old orders. Edits change only what the till shows from then on.
+- **Server intake does not refuse** an option no longer attached or a count over a cap, so an order queued offline before a change still saves. Sửa đơn keeps an option already on the line under "Đã chọn trước".
+- **Stopping and erasing:** a stopped group disappears from the till, Sửa món and Sửa đơn and keeps its options and ticks. Only `ADMIN` erases a group, and only an empty one.

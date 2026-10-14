@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { formatNumber } from "@/lib/shared/format";
+import { OptionGroupPicker } from "@/components/ui/OptionGroupPicker";
+import type { ProductOptionGroup } from "@/lib/sales/option-groups";
 
 export type ItemConfigSubmission = {
   variant: any;
@@ -14,7 +16,7 @@ export type ItemConfigSubmission = {
 interface ItemConfigModalProps {
   product: any;
   variants: any[];
-  groupedModifiers: Record<string, any[]>;
+  groups?: ProductOptionGroup[];
   promoVariantsMap: Map<string, number>;
   promoDetailsMap: Map<string, any>;
   initialLine: any | null;
@@ -26,7 +28,7 @@ interface ItemConfigModalProps {
 export function ItemConfigModal({
   product,
   variants,
-  groupedModifiers,
+  groups = [],
   promoVariantsMap,
   promoDetailsMap,
   initialLine,
@@ -51,19 +53,6 @@ export function ItemConfigModal({
   const [itemDiscountType, setItemDiscountType] = useState<"VND" | "PERCENT">(() =>
     initialLine ? initialLine.discount_type || "VND" : "VND"
   );
-
-  const addModifier = (mod: any) => {
-    setSelectedModifiers([...selectedModifiers, mod]);
-  };
-
-  const removeModifier = (mod: any) => {
-    const index = selectedModifiers.findIndex(m => m.id === mod.id);
-    if (index !== -1) {
-      const newModifiers = [...selectedModifiers];
-      newModifiers.splice(index, 1);
-      setSelectedModifiers(newModifiers);
-    }
-  };
 
   const addToCart = () => {
     if (!selectedVariant) return;
@@ -144,46 +133,12 @@ export function ItemConfigModal({
             </div>
           </div>
 
-          {/* MODIFIERS (TOPPINGS, SUGAR, ICE) */}
-          {Object.keys(groupedModifiers).map(groupName => (
-            <div key={groupName}>
-              <h4 className="font-bold text-sm text-text-primary mb-3 uppercase">{groupName}</h4>
-              <div className="flex flex-col gap-2">
-                {groupedModifiers[groupName].map((mod: any) => {
-                  const count = selectedModifiers.filter(m => m.id === mod.id).length;
-                  return (
-                    <div key={mod.id} className={`flex justify-between items-center px-4 py-3 rounded-xl border transition-colors ${count > 0 ? "border-primary bg-primary-soft shadow-sm" : "border-border bg-surface-card hover:bg-page"}`}>
-                      <div className="flex flex-col">
-                        <span className={`text-sm ${count > 0 ? "text-primary font-bold" : "text-text-primary font-medium"}`}>{mod.name}</span>
-                        {Number(mod.price) > 0 && (
-                          <span className="text-xs text-text-secondary mt-0.5">+{formatNumber(mod.price)}</span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => removeModifier(mod)}
-                          disabled={count === 0}
-                          className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-lg transition-colors ${count > 0 ? "bg-surface-card text-primary border border-primary/20 hover:bg-primary-soft shadow-sm" : "bg-surface-secondary text-text-muted cursor-not-allowed"}`}
-                        >
-                          -
-                        </button>
-                        <span className={`font-bold w-4 text-center ${count > 0 ? "text-primary" : "text-text-secondary"}`}>
-                          {count}
-                        </span>
-                        <button
-                          onClick={() => addModifier(mod)}
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-card text-primary border border-primary/20 hover:bg-primary-soft font-bold text-lg transition-colors shadow-sm"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+          {/* OPTION GROUPS (MODIFIERS, SUGAR, ICE, MILK) */}
+          <OptionGroupPicker
+            groups={groups}
+            picks={selectedModifiers}
+            onChange={setSelectedModifiers}
+          />
         </div>
 
         <div className="p-4 border-t border-border/50 bg-surface-card/95 backdrop-blur-md shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] flex flex-col gap-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:pb-4">

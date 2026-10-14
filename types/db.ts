@@ -141,6 +141,27 @@ export interface DBModifier {
   // product it also sells standalone, if one exists. Nullable -- a
   // modifier may have no standalone counterpart (e.g. MOD-009).
   product_id: string | null;
+  // Nhóm tuỳ chọn (migration 0119). group_id is null only until migration B.
+  group_id: string | null;
+  is_default: boolean;
+  max_qty: number | null;
+}
+
+export interface DBModifierGroup {
+  id: string;
+  name: string;
+  selection_mode: "ONE" | "MANY";
+  max_total: number | null;
+  allow_standalone: boolean;
+  sort_order: number;
+  status: "ACTIVE" | "INACTIVE";
+}
+
+// `id` is a plain text column set by the save functions (group_id:product_id) so findAll can page the table.
+export interface DBModifierGroupProduct {
+  id: string;
+  group_id: string;
+  product_id: string;
 }
 
 export interface DBSupplier {

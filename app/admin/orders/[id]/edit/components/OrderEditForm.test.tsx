@@ -436,3 +436,58 @@ describe("OrderEditForm two columns (owner 2026-10-10)", () => {
     expectBefore(screen.getByTestId("form-lines"), screen.getByTestId("form-money"));
   });
 });
+
+describe("OrderEditForm option groups (Task 5)", () => {
+  it("passes option groups and links to line editor and add product", async () => {
+    const orderWithMod = makeOrder({
+      lines: [
+        {
+          id: "line-1",
+          order_id: "ORD-1",
+          line_no: 1,
+          product_id: "PROD-1",
+          product_snapshot_json: "{}",
+          variant_id: "VAR-1",
+          variant_snapshot_json: "{}",
+          qty: 1,
+          unit_price: 50000,
+          modifiers_snapshot_json: '[{"id":"MOD-OLD","name":"Trân châu cũ","price":5000,"qty":1}]',
+          gross_line_total: 55000,
+          promo_discount: 0,
+          manual_item_discount: 0,
+          order_discount_allocation: 0,
+          net_line_total: 55000,
+          cost_at_sale: 0,
+          recipe_snapshot_json: "{}",
+          promo_discount_reason: "",
+          manual_discount_reason: "",
+          product_name: "Cà phê sữa",
+          size_name: "M",
+          modifiers: [{ id: "MOD-OLD", name: "Trân châu cũ", price: 5000, qty: 1 }],
+        },
+      ],
+    });
+
+    render(
+      <OrderEditForm
+        order={orderWithMod}
+        brands={[]}
+        products={[{ id: "PROD-1", name: "Cà phê sữa", category_id: "CAT-1", status: "ACTIVE" }]}
+        variants={[{ id: "VAR-1", product_id: "PROD-1", size_name: "M", price: 50000, status: "ACTIVE" }]}
+        modifiers={[]}
+        categories={[{ id: "CAT-1", name: "Cà phê" }]}
+        optionGroups={[]}
+        optionGroupLinks={[]}
+        returnTo="/admin/orders"
+      />
+    );
+
+    // Click "Sửa" on the line item
+    const editLineBtn = screen.getByRole("button", { name: "Sửa" });
+    fireEvent.click(editLineBtn);
+
+    // Old unattached modifier is rendered under "Đã chọn trước"
+    expect(screen.getByText(/Đã chọn trước/i)).toBeInTheDocument();
+    expect(screen.getByText("Trân châu cũ")).toBeInTheDocument();
+  });
+});

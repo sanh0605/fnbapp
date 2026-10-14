@@ -461,7 +461,7 @@ export function canAddPortion(picks: Pick[], g: ProductOptionGroup, option: Opti
 - [ ] **Step 2: Run the five gates, with the build in a throwaway worktree.** Run `npx vite-node scripts/verify-cogs.ts` too: no figure should move.
 - [ ] **Step 3: Review.** A fresh reviewer agent checks the branch against the spec and this plan, including excess code (ponytail rule).
 - [ ] **Step 4: Ask the owner to run migration 0119**, on its own and before any push. After it runs, measure, with denominators:
-  - options without a group: 0 of 8;
+  - options without a group: 0 of 9 rows (the erased Dâu sấy row included);
   - links per dish group;
   - drinks without Thêm Topping: 0.
 - [ ] **Step 5: Push.** Push needs the owner's separate yes. After the deploy is checked, write migration B (spec "Rollout" step 3) as its own plan row.

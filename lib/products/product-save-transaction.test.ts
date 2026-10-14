@@ -44,7 +44,28 @@ describe("saveProductAtomic", () => {
       p_variants: input.variants,
       p_removed_variant_ids: [],
       p_effective_at: input.effectiveAt,
+      p_option_group_ids: null,
     });
+  });
+
+  it("forwards the dish's option group ticks", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: { product_id: "PROD-001", variant_count: 1, price_history_count: 0, removed_variant_count: 0 },
+      error: null,
+    });
+    await saveProductAtomic({
+      isEdit: true,
+      product: { id: "PROD-001" },
+      variants: [{ id: "VAR-001", size_name: "M", price: 30_000 }],
+      removedVariantIds: [],
+      effectiveAt: "2026-07-19T00:00:00.000Z",
+      expectedPriceHistoryCount: 0,
+      optionGroupIds: ["MG-001", "MG-002"],
+    });
+    expect(mocks.rpc).toHaveBeenCalledWith(
+      "save_product_atomic",
+      expect.objectContaining({ p_option_group_ids: ["MG-001", "MG-002"] }),
+    );
   });
 
   it("refuses a result whose price-history count differs from the plan", async () => {

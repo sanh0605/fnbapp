@@ -43,7 +43,9 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `dashboard_settings` | Cài đặt Tổng quan | Đúng một dòng (id = 1): mấy ngày không kiểm kê thì báo, mấy ngày phiếu kiểm kê mở dở thì báo, ngày bắt đầu nhắc khoản chi hằng tháng, các món đồ ăn có cột riêng, loại món của cột topping (migration `0109`) |
 | `issue_slips` | Phiếu xuất kho | Chứng từ nhân viên lập khi cho nguyên liệu ra khỏi kho ngoài việc bán |
 | `item_categories` | Nhóm vật tư | Phân loại vật tư mua vào: nguyên liệu, vật tư tiêu hao, hoặc dụng cụ |
-| `modifiers` | Topping / tuỳ chọn thêm | Món phụ thêm vào một đơn, có giá riêng |
+| `modifier_group_products` | Món áp dụng của nhóm tuỳ chọn | Mỗi dòng: một nhóm tuỳ chọn hiện trên một món; bỏ tích là xoá dòng (migration `0119`) |
+| `modifier_groups` | Nhóm tuỳ chọn | Nhóm các tuỳ chọn hiện trên máy bán, ví dụ Thêm Topping: Chọn một hoặc Chọn nhiều, thứ tự hiện, tối đa mấy phần, cho bán riêng hay không (migration `0119`) |
+| `modifiers` | Topping / tuỳ chọn thêm | Món phụ thêm vào một đơn, có giá riêng; từ migration `0119` thuộc một nhóm tuỳ chọn (`group_id`), có thể là lựa chọn có sẵn (`is_default`) và có tối đa mỗi món (`max_qty`) |
 | `monthly_expense_items` | Khoản chi hằng tháng | Một khoản chi lặp mỗi tháng, ví dụ Tiền điện, gắn với một nhóm thu chi bên Chi; Tổng quan nhắc khi tháng nào chưa có dòng sổ nào của khoản này (migration `0109`) |
 | `order_events` | Nhật ký thao tác đơn hàng | Ghi mỗi lần một đơn được tạo, sửa, huỷ, hoặc mở lại |
 | `order_lines_v2` | Dòng đơn hàng | Từng món trong một đơn: tên món, cỡ, số lượng, giá |

@@ -22,6 +22,11 @@ import {
   removePendingOrder,
 } from "@/lib/pos/pos-offline-queue";
 import { reportPosSyncFailure } from "@/app/pos/actions";
+import {
+  optionGroupsForProduct,
+  type OptionGroup,
+  type GroupLink,
+} from "@/lib/sales/option-groups";
 
 function parseApplicableVariants(applicableData: any): {
   variantsList: string[];
@@ -63,6 +68,8 @@ export default function POSScreen({
   products,
   variants,
   modifiers,
+  optionGroups = [],
+  optionGroupLinks = [],
   promotions = [],
   bestSellers = [],
   outOfStockProductIds = []
@@ -73,6 +80,8 @@ export default function POSScreen({
   products: any[];
   variants: any[];
   modifiers: any[];
+  optionGroups?: OptionGroup[];
+  optionGroupLinks?: GroupLink[];
   promotions?: any[];
   bestSellers?: string[];
   outOfStockProductIds?: string[];
@@ -267,16 +276,6 @@ export default function POSScreen({
   // Cashier Custom Override State
   const [userCustomDiscount, setUserCustomDiscount] = useState<number | null>(null);
   const [userCustomDiscountType, setUserCustomDiscountType] = useState<"VND" | "PERCENT">("VND");
-
-  // Group modifiers by group_name
-  const groupedModifiers = useMemo(() => {
-    const groups: any = {};
-    modifiers.forEach((m: any) => {
-      if (!groups[m.group_name]) groups[m.group_name] = [];
-      groups[m.group_name].push(m);
-    });
-    return groups;
-  }, [modifiers]);
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -1146,7 +1145,7 @@ export default function POSScreen({
           key={`${selectedProduct.id}-${editingCartIndex ?? "new"}`}
           product={selectedProduct}
           variants={variants}
-          groupedModifiers={groupedModifiers}
+          groups={optionGroupsForProduct(selectedProduct.id, optionGroups, optionGroupLinks, modifiers)}
           promoVariantsMap={promoVariantsMap}
           promoDetailsMap={promoDetailsMap}
           initialLine={editingCartIndex !== null ? cart[editingCartIndex] : null}

@@ -16,12 +16,14 @@ export default async function OrderEditPage({
   const returnToRaw = typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined;
   const returnTo = safeReturnTo(returnToRaw);
 
-  const [detail, products, variants, brands, modifiers, categories] = await Promise.all([
+  const [detail, products, variants, brands, modifiers, optionGroups, optionGroupLinks, categories] = await Promise.all([
     getOrderDetailV2(params.id),
     findAll("Products"),
     findAll("Product_Variants"),
     findAll("Brands"),
     findAll("Modifiers"),
+    findAll("Modifier_Groups"),
+    findAll("Modifier_Group_Products"),
     findAll("Product_Categories"),
   ]);
 
@@ -36,6 +38,8 @@ export default async function OrderEditPage({
       products={products}
       variants={variants}
       modifiers={modifiers}
+      optionGroups={optionGroups}
+      optionGroupLinks={optionGroupLinks}
       categories={categories}
       returnTo={returnTo}
     />

@@ -21,16 +21,22 @@ export interface LinkedProduct {
 export interface ModifierDetailViewProps {
   modifier: DBModifier;
   product: LinkedProduct | null;
+  groupName: string;
+  allowStandalone: boolean;
   returnTo: string;
 }
 
 export function ModifierDetailView({
   modifier,
   product,
+  groupName,
+  allowStandalone,
   returnTo,
 }: ModifierDetailViewProps): JSX.Element {
   const currentDetailUrl = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
+
+  const displayGroupName = groupName || "—";
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
@@ -57,7 +63,7 @@ export function ModifierDetailView({
 
   const fields: Field[] = [
     { label: "Mã", value: modifier.id },
-    { label: "Nhóm", value: modifier.group_name },
+    { label: "Nhóm", value: displayGroupName },
     { label: "Tên tuỳ chọn", value: modifier.name },
     { label: "Giá thêm", value: formatNumber(modifier.price) },
     {
@@ -66,10 +72,10 @@ export function ModifierDetailView({
         <StandaloneToppingSwitch
           modifierId={modifier.id}
           modifierName={modifier.name}
-          groupName={modifier.group_name}
           price={modifier.price}
           productId={modifier.product_id ?? null}
           productStatus={product?.status}
+          allowStandalone={allowStandalone}
         />
       ),
     },

@@ -26,6 +26,13 @@ describe("extract-rpc", () => {
     expect(targets.get("f")).toEqual(["x"]);
   });
 
+  it("ignores a for update of row lock inside a select", () => {
+    const sql = `create or replace function public.f() returns void as $$ begin
+      select 1 from public.modifiers m where m.id = 'x' for update of m;
+      insert into public.modifiers (id) values ('x'); end; $$ language plpgsql;`;
+    expect(rpcWriteTargets([sql]).get("f")).toEqual(["modifiers"]);
+  });
+
   it("resolves call site to tables, and flags an unknown function", () => {
     const callSites = [
       { file: "lib/x.ts", fn: "create_issue_slip_atomic" },

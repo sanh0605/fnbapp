@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { findAll } from "@/lib/db/tables";
 import { loadProductRows } from "@/app/admin/products/load-product-rows";
 import ProductForm from "@/app/admin/products/components/ProductForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
@@ -16,7 +17,11 @@ export default async function EditProductPage({
 }) {
   const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/products");
 
-  const { enhancedProducts, activeCategories } = await loadProductRows();
+  const [{ enhancedProducts, activeCategories }, optionGroups, optionGroupLinks] = await Promise.all([
+    loadProductRows(),
+    findAll("Modifier_Groups"),
+    findAll("Modifier_Group_Products"),
+  ]);
 
   const product = enhancedProducts.find((p) => p.id === params.id);
   if (!product) {
@@ -50,6 +55,8 @@ export default async function EditProductPage({
       <ProductForm
         categories={activeCategories}
         initialData={product}
+        optionGroups={optionGroups}
+        selectedOptionGroupIds={optionGroupLinks.filter((l: any) => l.product_id === product.id).map((l: any) => l.group_id)}
         returnTo={detailHref}
       />
     </DetailFrame>

@@ -638,3 +638,31 @@ describe("buildOrderFromCart browser-supplied numbers (C13)", () => {
     expect(() => buildOrderFromCart(cart(1, -5000), REF)).toThrow("Giảm giá món không được âm");
   });
 });
+
+// Nhóm tuỳ chọn, Review Focus 5: an old till page can send an option the dish no
+// longer shows, or more portions than a cap. Intake prices by id and checks
+// neither attachment nor caps, so the order still saves. This pins existing behaviour.
+describe("buildOrderFromCart ignores option groups", () => {
+  it("prices and stores an option past its cap, whatever group it sits in", () => {
+    const ref: ReferenceData = {
+      ...REF,
+      modifiers: [{ id: "MOD-004", name: "Trân châu trắng", price: "5000", status: "ACTIVE", group_id: "MG-009", max_qty: 1, is_default: false }],
+    };
+    const result = buildOrderFromCart({
+      brand_id: "BR-002",
+      outlet_id: "OUT-002",
+      items: [{
+        product_id: "PROD-024",
+        variant_id: "VAR-031",
+        qty: 1,
+        modifiers: [{ modifier_id: "MOD-004", modifier_qty: 3 }],
+        manual_item_discount: { value: 0, type: "VND" },
+      }],
+      payment_method: "CASH",
+      actor: { id: "U1", name: "Test" },
+    }, ref);
+
+    expect(JSON.parse(result.lines[0].modifiers_snapshot_json)).toEqual([{ id: "MOD-004", name: "Trân châu trắng", price: 5000, qty: 3 }]);
+    expect(result.lines[0].gross_line_total).toBe(35000 + 3 * 5000);
+  });
+});

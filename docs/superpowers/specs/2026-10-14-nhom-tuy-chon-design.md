@@ -80,7 +80,7 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
   - `status`, either `ACTIVE` or `INACTIVE`.
   - `created_at` and `updated_at`.
   - Checks: `allow_standalone` is false and `max_total` is null when the mode is `ONE`.
-- **`modifier_group_products`**: `group_id` and `product_id`, both `RESTRICT`, primary key on the pair. Unticking deletes the row; this is settings with no history.
+- **`modifier_group_products`**: `id` (the backup and `findAll` page by it), `group_id` and `product_id`, unique on the pair, both `ON DELETE CASCADE`: a tick is settings with no history, so erasing a never-sold dish or an empty group takes its ticks with it. Unticking deletes the row.
 - **`modifiers`** gains three columns:
   - `group_id`, referencing the group, `RESTRICT`; not null from migration B;
   - `is_default` boolean, with a partial unique index on (`group_id`) where it is true;
@@ -95,7 +95,7 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
    - A Chọn nhiều group keeps +/−. "+" greys out at the option's cap or the group's cap.
 2. **Stopping and erasing.**
    - A stopped group and its options disappear from the till, Sửa món and Sửa đơn. Its options and dish ticks stay, so "Dùng lại" restores it.
-   - Only `ADMIN` erases a group (`requireOwner()`), and only an empty one. Postgres refuses otherwise, and the refusal is shown in Vietnamese naming the options.
+   - Only `ADMIN` erases a group (`requireOwner()`), and only an empty one. Postgres refuses otherwise, and the refusal is shown in Vietnamese naming the options. An option marked `DELETED` still belongs to its group, so it counts.
 3. **"Cho bán riêng".**
    - Turning it off is refused while an option in the group is sold on its own, naming those dishes (for example "Trân châu trắng").
    - Moving such an option into a group that does not allow it is refused the same way.
@@ -129,7 +129,10 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
 2. **The deploy.** The new code reads `group_id` and the links and writes through the new functions. On day one the till behaves as today, except that only drinks show toppings.
 3. **Migration B is written only after the deploy is checked**, so a push cannot carry it along early. It sets `group_id` from the name for any option the old code made in between, makes `group_id` not null, drops `modifiers.group_name`, and takes the group argument out of `sync_topping_price_atomic`, which by then only `save_modifier_atomic` calls.
 
-**Cost to state before running:** a till still holding the old page shows every option on every dish until it reloads. It does not stop taking orders.
+**Cost to state before running:**
+- A till still holding the old page shows every option on every dish until it reloads. It does not stop taking orders.
+- An option added on the old page between migration A and the deploy has no group: its Bán độc lập is refused, and after the deploy the till does not show it until migration B gives it one. Run the deploy right after migration A and add no option in between.
+- Measured 2026-10-14 before running: 9 options, one spelling "Thêm Topping"; 35 live drink dishes get ticked, the 8 Topping dishes and 2 food dishes do not.
 
 ## Testing
 
@@ -144,7 +147,7 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
   - erasing a group that has options is refused in Vietnamese.
 - **Migration A text test.** It leaves 0 options without a group and ticks only the five drink groups.
 - **After migration A on the server**, measure and report with the denominators:
-  - options without a group (expected 0 of 8);
+  - options without a group (expected 0 of 9 rows, the erased Dâu sấy row included);
   - dishes ticked, per dish group;
   - drinks without Thêm Topping (expected 0).
 - **Turn the todo into a test.** The `it.todo` in `ModifierForm.test.tsx` becomes a passing test.

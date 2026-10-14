@@ -8,7 +8,7 @@ const EXPECTED: [string, [string, string][]][] = [
     ["Đơn hàng", "/admin/orders"], ["Món", "/admin/products"], ["Nhóm món", "/admin/products/categories"],
     // Tổng quan spec 2026-10-14: Loại món, Khoản chi hằng tháng, Cài đặt Tổng quan.
     ["Loại món", "/admin/products/types"],
-    ["Topping & tuỳ chọn", "/admin/products/modifiers"], ["Khuyến mãi", "/admin/promotions"],
+    ["Topping & tuỳ chọn", "/admin/products/modifiers"], ["Nhóm tuỳ chọn", "/admin/products/modifier-groups"], ["Khuyến mãi", "/admin/promotions"],
     ["Thương hiệu", "/admin/brands"], ["Điểm bán", "/admin/outlets"],
   ]],
   ["Nhập hàng", [["Phiếu nhập", "/admin/inventory/purchase-orders"], ["Nhà cung cấp", "/admin/suppliers"]]],

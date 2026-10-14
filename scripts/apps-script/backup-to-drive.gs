@@ -6,7 +6,8 @@
 const EXPECTED_TABLES = [
   "brands", "outlets", "product_types", "dashboard_settings",
   "product_categories", "item_categories", "units", "suppliers",
-  "purchase_sources", "products", "product_variants", "modifiers",
+  "purchase_sources", "products", "product_variants", "modifier_groups", "modifiers",
+  "modifier_group_products",
   "promotions", "purchased_items", "asset_depreciation_bands",
   "assets", "asset_disposals", "uom_conversions", "product_price_history",
   "orders_v2", "order_lines_v2", "order_events", "purchase_orders",

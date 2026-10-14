@@ -64,9 +64,12 @@ lib/products/product-save-transaction.ts -> product_variants (write)
 lib/products/product-save-transaction.ts -> products (write)
 lib/products/product-status-transaction.ts -> product_variants (write)
 lib/products/product-status-transaction.ts -> products (write)
-lib/products/topping-price-sync.ts -> modifiers (write)
-lib/products/topping-price-sync.ts -> product_price_history (write)
-lib/products/topping-price-sync.ts -> product_variants (write)
+lib/products/modifier-save-transaction.ts -> modifiers (write)
+lib/products/modifier-group-transaction.ts -> modifier_group_products (write)
+lib/products/modifier-group-transaction.ts -> modifier_groups (write)
+lib/products/modifier-group-transaction.ts -> modifiers (write)
+lib/products/product-save-transaction.ts -> modifier_group_products (write)
+app/admin/products/modifier-groups/actions.ts -> Modifier_Groups (write)
 lib/products/create-standalone-topping.ts -> modifiers (write)
 lib/products/create-standalone-topping.ts -> product_price_history (write)
 lib/products/create-standalone-topping.ts -> product_variants (write)
@@ -102,9 +105,8 @@ issue).
 `product_price_history`. `app/admin/products/categories/actions.ts` writes
 `Product_Categories`; `app/admin/products/modifiers/actions.ts` writes
 `Modifiers`; `app/admin/products/toppings/actions.ts` writes `Products`.
-`lib/products/topping-price-sync.ts` writes `modifiers`, `product_variants`,
-and `product_price_history` (a topping's price, synced to its linked
-product in one transaction, `BR-CATALOG-003`).
+`lib/products/modifier-save-transaction.ts` writes `modifiers`, and via `sync_topping_price_atomic` `product_variants` and `product_price_history` (`BR-CATALOG-003`).
+`lib/products/modifier-group-transaction.ts` writes `modifier_groups`, `modifier_group_products` and `modifiers`; `lib/products/product-save-transaction.ts` also writes `modifier_group_products` (dish ticks, `BR-CATALOG-005`).
 `lib/products/create-standalone-topping.ts` writes `products`,
 `product_variants`, `product_price_history`, and `modifiers` (the first
 link: mints the standalone product, its launch-price history row, and the
