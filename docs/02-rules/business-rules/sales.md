@@ -105,3 +105,12 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 - **Both "có":** both apply. Order of steps as in `BR-SALE-010`.
 - **Either "không":** the till lists both with the money each takes off, the cashier asks the customer, and picks one. The server books the one picked.
 - The server books exactly the promotions the till sent, after checking each one's conditions; any mismatch is refused like a changed price (`BR-SALE-008`).
+
+### BR-SALE-012 — Doanh số filtered by a dish group hides the whole-order money
+
+**Status:** `APPROVED` — owner 2026-10-14, audit item B3, chose *"Tạm ẩn khi lọc"* over showing the whole-order figures with a note and over splitting them by each group's share. Built 2026-10-14 on the branch feat/no-popups, not yet pushed.
+
+**The example he was shown.** On 09/10 an order was Cà phê đá 36,000 + Cà phê sữa đá 20,000 + Trứng luộc 5,000, paid 61,000 in cash. Filtered to Nhóm SP = Cà phê, "Tổng doanh thu thuần" said 56,000 while the discount box and the payment-method box said 61,000, because a payment is made once for the whole order and cannot be split by dish.
+
+- With Nhóm SP chosen, Doanh số shows only figures that belong to that group's lines. "Chi tiết giảm giá", "Doanh thu theo phương thức thanh toán" and the small "Trước giảm giá", payment-count and "Khuyến mãi hệ thống" lines under the three figure boxes are hidden, replaced by one line telling him to clear the group filter to see them.
+- Without the group filter the page is unchanged.

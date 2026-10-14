@@ -12,7 +12,7 @@ can therefore miss its total by a đồng or two; when it does, the page says so
 under the table. Percentages show two decimals (`PERCENT_DECIMALS`, owner
 decision 2026-09-11).
 
-**How the page shows it** (the sample the owner approved on 2026-09-11, and his notes of the same evening). A cost line — cost of goods, items bought for immediate use, shrinkage, each expense group, depreciation — shows its value with a minus, so the table reads as a sum from top to bottom; that minus is not red, red is kept for a result below zero. A money cell that is exactly zero shows "–". The running total since January is called "Luỹ kế" (owner, 2026-09-11). Notes under the table are numbered, and a month carries the numbers of the notes about it. The chart shortens money as `BR-DATA-005` says.
+**How the page shows it** (the sample the owner approved on 2026-09-11, and his notes of the same evening). A cost line — cost of goods, items bought for immediate use, shrinkage, each expense group, depreciation — shows its value with a minus, so the table reads as a sum from top to bottom; that minus is not red, red is kept for a result below zero. A money cell that is exactly zero shows "–". The running total is called "Luỹ kế" (owner, 2026-09-11). It adds up from the first month of the range being viewed, not from January (owner 2026-10-14, audit B9, chose *"Từ tháng đầu khoảng đang xem"* over January of each year and over since opening): viewing July to September, September's Luỹ kế is July + August + September. This is what the page already did; only this line changed. Notes under the table are numbered, and a month carries the numbers of the notes about it. The chart shortens money as `BR-DATA-005` says.
 
 ### BR-PNL-001 — One profit and loss for the whole shop
 

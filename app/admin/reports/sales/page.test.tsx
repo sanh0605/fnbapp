@@ -220,6 +220,55 @@ describe("Doanh số Vietnamese labels (audit B11)", () => {
     expect(json).toContain("Doanh thu trước giảm giá");
     expect(json).not.toContain("Gross:");
     expect(json).not.toContain("Doanh thu Gross");
+    expect(json).not.toContain("Doanh thu Net");
+    expect(json).toContain("Doanh thu thuần");
+  });
+});
+
+describe("Doanh số dish category filter hides order-level figures (audit B3)", () => {
+  beforeEach(() => {
+    getSalesDataV2.mockReset();
+    getSalesDataV2.mockResolvedValue({
+      ...EMPTY,
+      grossRevenue: 100000,
+      totalRevenue: 90000,
+      totalDiscount: 10000,
+      paymentBreakdown: [{ method: "CASH", orderCount: 2, revenue: 90000 }],
+      systemPromotionDiscount: 5000,
+    });
+    getHourlyHeatmapV2.mockReset();
+    getHourlyHeatmapV2.mockResolvedValue([]);
+    getSalesTotalsV2.mockReset();
+    getSalesTotalsV2.mockResolvedValue({ totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 });
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-09T09:00:00Z"));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it("with categoryId set, discount and payment sections and order-level card lines are hidden and explanatory notice is present", async () => {
+    const tree = await SalesReportPage({ searchParams: { categoryId: "CAT-CAFE" } });
+    const json = JSON.stringify(tree);
+
+    expect(json).not.toContain("Chi tiết giảm giá");
+    expect(json).not.toContain("Doanh thu theo phương thức thanh toán");
+    expect(json).not.toContain("Trước giảm giá:");
+    expect(json).toContain(
+      "Đang lọc theo nhóm món: giảm giá và tiền mặt / chuyển khoản tính theo cả đơn nên tạm ẩn. Bỏ lọc nhóm món để xem."
+    );
+  });
+
+  it("without categoryId, discount and payment sections and order-level card lines are present and explanatory notice is absent", async () => {
+    const tree = await SalesReportPage({ searchParams: {} });
+    const json = JSON.stringify(tree);
+
+    expect(json).toContain("Chi tiết giảm giá");
+    expect(json).toContain("Doanh thu theo phương thức thanh toán");
+    expect(json).toContain("Trước giảm giá:");
+    expect(json).not.toContain(
+      "Đang lọc theo nhóm món: giảm giá và tiền mặt / chuyển khoản tính theo cả đơn nên tạm ẩn. Bỏ lọc nhóm món để xem."
+    );
+    expect(json).not.toContain("Doanh thu Net");
+    expect(json).toContain("Doanh thu thuần");
   });
 });
 

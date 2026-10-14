@@ -177,11 +177,13 @@ export default async function SalesReportPage({
               />
             </div>
           ))}
-          <div className="text-xs text-text-muted mt-2">
-            Trước giảm giá: {formatNumber(grossRevenue)}
-            {" • "}
-            Giảm giá: {formatNumber(totalDiscount)}
-          </div>
+          {!categoryId && (
+            <div className="text-xs text-text-muted mt-2">
+              Trước giảm giá: {formatNumber(grossRevenue)}
+              {" • "}
+              Giảm giá: {formatNumber(totalDiscount)}
+            </div>
+          )}
         </div>
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
           <div className="text-sm font-medium text-text-secondary mb-1">Tổng số đơn</div>
@@ -194,9 +196,11 @@ export default async function SalesReportPage({
               />
             </div>
           ))}
-          <div className="text-xs text-text-muted mt-2">
-            {paymentBreakdown.map(p => `${p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}: ${p.orderCount}`).join(" • ")}
-          </div>
+          {!categoryId && (
+            <div className="text-xs text-text-muted mt-2">
+              {paymentBreakdown.map(p => `${p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}: ${p.orderCount}`).join(" • ")}
+            </div>
+          )}
         </div>
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
           <div className="text-sm font-medium text-text-secondary mb-1">Doanh thu trung bình / đơn</div>
@@ -209,73 +213,83 @@ export default async function SalesReportPage({
               />
             </div>
           ))}
-          <div className="text-xs text-text-muted mt-2">
-            Khuyến mãi hệ thống: {formatNumber(systemPromotionDiscount)}
-          </div>
+          {!categoryId && (
+            <div className="text-xs text-text-muted mt-2">
+              Khuyến mãi hệ thống: {formatNumber(systemPromotionDiscount)}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Discount + Payment breakdown (Claude code — Phase 5.2) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {categoryId ? (
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <h3 className="font-bold text-text-primary text-base mb-3">Chi tiết giảm giá</h3>
-          <dl className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Khuyến mãi hệ thống</dt>
-              <dd className="font-medium text-text-primary">{formatNumber(systemPromotionDiscount)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Giảm giá theo dòng</dt>
-              <dd className="font-medium text-text-primary">{formatNumber(manualItemDiscount)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Giảm giá trên toàn đơn</dt>
-              <dd className="font-medium text-text-primary">{formatNumber(manualOrderDiscount)}</dd>
-            </div>
-            <div className="flex justify-between border-t border-border pt-2">
-              <dt className="font-semibold text-text-primary">Tổng giảm giá</dt>
-              <dd className="font-bold text-danger">{formatNumber(totalDiscount)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Doanh thu trước giảm giá</dt>
-              <dd className="font-medium text-text-primary">{formatNumber(grossRevenue)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-text-secondary">Doanh thu Net</dt>
-              <dd className="font-bold text-success">{formatNumber(totalRevenue)}</dd>
-            </div>
-          </dl>
+          <p className="text-sm text-text-muted">
+            Đang lọc theo nhóm món: giảm giá và tiền mặt / chuyển khoản tính theo cả đơn nên tạm ẩn. Bỏ lọc nhóm món để xem.
+          </p>
         </div>
-        <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-          <h3 className="font-bold text-text-primary text-base mb-3">Doanh thu theo phương thức thanh toán</h3>
-          <Table>
-            <TableHead>
-              <TableHeaderCell>Phương thức</TableHeaderCell>
-              <TableHeaderCell>Số đơn</TableHeaderCell>
-              <TableHeaderCell>Doanh thu</TableHeaderCell>
-            </TableHead>
-            <TableBody>
-              {paymentBreakdown.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={3}>
-                    <div className="text-center py-4 text-text-muted">Không có dữ liệu</div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paymentBreakdown.map(p => (
-                  <TableRow key={p.method}>
-                    <TableCell>
-                      {p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
+            <h3 className="font-bold text-text-primary text-base mb-3">Chi tiết giảm giá</h3>
+            <dl className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Khuyến mãi hệ thống</dt>
+                <dd className="font-medium text-text-primary">{formatNumber(systemPromotionDiscount)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Giảm giá theo dòng</dt>
+                <dd className="font-medium text-text-primary">{formatNumber(manualItemDiscount)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Giảm giá trên toàn đơn</dt>
+                <dd className="font-medium text-text-primary">{formatNumber(manualOrderDiscount)}</dd>
+              </div>
+              <div className="flex justify-between border-t border-border pt-2">
+                <dt className="font-semibold text-text-primary">Tổng giảm giá</dt>
+                <dd className="font-bold text-danger">{formatNumber(totalDiscount)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Doanh thu trước giảm giá</dt>
+                <dd className="font-medium text-text-primary">{formatNumber(grossRevenue)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-text-secondary">Doanh thu thuần</dt>
+                <dd className="font-bold text-success">{formatNumber(totalRevenue)}</dd>
+              </div>
+            </dl>
+          </div>
+          <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
+            <h3 className="font-bold text-text-primary text-base mb-3">Doanh thu theo phương thức thanh toán</h3>
+            <Table>
+              <TableHead>
+                <TableHeaderCell>Phương thức</TableHeaderCell>
+                <TableHeaderCell>Số đơn</TableHeaderCell>
+                <TableHeaderCell>Doanh thu</TableHeaderCell>
+              </TableHead>
+              <TableBody>
+                {paymentBreakdown.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3}>
+                      <div className="text-center py-4 text-text-muted">Không có dữ liệu</div>
                     </TableCell>
-                    <TableCell align="right">{p.orderCount}</TableCell>
-                    <TableCell align="right">{formatNumber(p.revenue)}</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  paymentBreakdown.map(p => (
+                    <TableRow key={p.method}>
+                      <TableCell>
+                        {p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}
+                      </TableCell>
+                      <TableCell align="right">{p.orderCount}</TableCell>
+                      <TableCell align="right">{formatNumber(p.revenue)}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
-      </div>
+      )}
 
  {/* Outlet breakdown (
           section 6b). One dataset, two shapes -- cards below md, a table
