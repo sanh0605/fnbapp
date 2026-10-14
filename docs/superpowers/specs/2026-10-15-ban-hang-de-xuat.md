@@ -63,14 +63,14 @@ Not seen: the full bodies of `save_product_atomic` and the 5-argument `supersede
 
 | # | Question | Recommendation | Source |
 |---|---|---|---|
-| Q1 | Sửa đơn: (a) becomes "Đổi cách trả" only, and content mistakes are voided and rung again; (b) keep full editing but pin old prices, names, cashier and promotion; (c) line refunds | (a) | Toast same-day void and re-ring; Square refunds are a separate flow |
-| Q2 | Dish codes on the Món, Nhóm món and Topping lists, which touches BR-DATA-008: (a) hide codes, sort by name; (b) hide codes, newest first; (c) keep | (a) | Square and Toast menus list by name |
-| Q3 | "Đơn tối thiểu" compares against the total before or after dish discounts | after (to confirm) | promo report Q-P1 |
-| Q4 | A promotion already used: (a) lock money fields, allow only stopping; (b) edit freely | (a) | promo report Q-P2 |
-| Q5 | A stopped outlet: (a) add "Mở lại hoạt động"; (b) keep it one-way | (a) | Square reactivates locations |
-| Q6 | `products.brand_id` is empty on 48 of 48: (a) both outlets sell one menu, so drop it; (b) a menu per brand | (a) | Square per-location presence |
-| Q7 | Test11 is ACTIVE on the till; its 7 lines are all on voided or replaced orders: (a) Ngừng bán; (b) leave | (a) | — |
-| Q8 | The unused "Ngày áp dụng giá" field: (a) remove; (b) keep | (a) | Toast "Time Specific Price" is a separate feature |
+| Q1 | Sửa đơn: (a) becomes "Đổi cách trả" only, and content mistakes are voided and rung again; (b) keep full editing but pin old prices, names, cashier and promotion; (c) line refunds | **Answered 2026-10-15: (a)**, `BR-SALE-014` | Toast same-day void and re-ring; Square refunds are a separate flow |
+| Q2 | Dish codes on the Món, Nhóm món and Topping lists, which touches BR-DATA-008: (a) hide codes, sort by name; (b) hide codes, newest first; (c) keep | **Answered 2026-10-15: "Giữ như luật cũ"**. Codes stay; the three lists only get the same default as every list, code descending (BR-DATA-008) | Square and Toast menus list by name |
+| Q3 | "Đơn tối thiểu" compares against the total before or after dish discounts | **Answered 2026-10-15: after**, written into `BR-SALE-011` | promo report Q-P1 |
+| Q4 | A promotion already used: (a) lock money fields, allow only stopping; (b) edit freely | **Answered 2026-10-15: edit freely, refuse late orders that no longer match**, written into `BR-SALE-008` | promo report Q-P2 |
+| Q5 | A stopped outlet: (a) add "Mở lại hoạt động"; (b) keep it one-way | **Answered 2026-10-15: (a)**, written into `BR-SALE-006` | Square reactivates locations |
+| Q6 | `products.brand_id` is empty on 48 of 48: (a) both outlets sell one menu, so drop it; (b) a menu per brand | **Answered 2026-10-15: (a)**, `BR-CATALOG-006` | Square per-location presence |
+| Q7 | Test11 is ACTIVE on the till; its 7 lines are all on voided or replaced orders: (a) Ngừng bán; (b) leave | **Answered 2026-10-15: leave it** ("Để nguyên") | — |
+| Q8 | The unused "Ngày áp dụng giá" field: (a) remove; (b) keep | **Answered 2026-10-15: remove** | Toast "Time Specific Price" is a separate feature |
 
 ## Technical work, no owner decision (Opus decides, reports)
 

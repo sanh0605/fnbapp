@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { findAll } from "@/lib/db/tables";
 import { getOrderDetailV2 } from "@/app/admin/orders/order-detail-actions";
 import { safeReturnTo } from "@/app/admin/orders/components/return-to";
 import { OrderEditForm } from "./components/OrderEditForm";
@@ -16,16 +15,7 @@ export default async function OrderEditPage({
   const returnToRaw = typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined;
   const returnTo = safeReturnTo(returnToRaw);
 
-  const [detail, products, variants, brands, modifiers, optionGroups, optionGroupLinks, categories] = await Promise.all([
-    getOrderDetailV2(params.id),
-    findAll("Products"),
-    findAll("Product_Variants"),
-    findAll("Brands"),
-    findAll("Modifiers"),
-    findAll("Modifier_Groups"),
-    findAll("Modifier_Group_Products"),
-    findAll("Product_Categories"),
-  ]);
+  const detail = await getOrderDetailV2(params.id);
 
   if (!detail || detail.order.status !== "COMPLETED") {
     notFound();
@@ -34,13 +24,6 @@ export default async function OrderEditPage({
   return (
     <OrderEditForm
       order={detail.order}
-      brands={brands}
-      products={products}
-      variants={variants}
-      modifiers={modifiers}
-      optionGroups={optionGroups}
-      optionGroupLinks={optionGroupLinks}
-      categories={categories}
       returnTo={returnTo}
     />
   );

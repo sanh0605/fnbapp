@@ -176,5 +176,15 @@ Until then the option form offered four names written into the code and the till
 - **"Cho bán riêng" per group** replaces the hardcoded *Thêm Topping* (*"Mỗi nhóm có công tắc"*); *Chọn nhiều* only. Turning it off, or moving an option into a group without it, is refused while that option is sold on its own, naming the dish.
 - **Order on the till:** "Thứ tự hiện" 1–99, ties by name. *Thêm Topping* starts at 50.
 - **A sale stores only what differs from the defaults**, one entry per portion, as before; a plain cup stores none. A later change of default does not rewrite old orders. Edits change only what the till shows from then on.
-- **Server intake does not refuse** an option no longer attached or a count over a cap, so an order queued offline before a change still saves. Sửa đơn keeps an option already on the line under "Đã chọn trước".
+- **Server intake does not refuse** an option no longer attached or a count over a cap, so an order queued offline before a change still saves. Since `BR-SALE-014` (2026-10-15), Sửa đơn no longer edits lines, so it never shows options.
 - **Stopping and erasing:** a stopped group disappears from the till, Sửa món and Sửa đơn and keeps its options and ticks. Only `ADMIN` erases a group, and only an empty one.
+
+### BR-CATALOG-006 — Both brands sell one menu
+
+**Status:** `APPROVED` — owner 2026-10-15, Bán hàng area audit. He chose *"Hai quán chung thực đơn"* over a menu per brand.
+
+**What he was shown.** Each dish has a hidden "brand" field, `products.brand_id`. On 2026-10-15 it was empty on 48 of 48 dishes, and no screen sets it, so Phin Đi and Uchako already sell the same menu.
+
+- Every dish sells at every outlet. The field and the till's filter on it (`app/pos/components/POSScreen.tsx`) are removed. The till's filter goes first, then the column.
+- A promotion keeps its own brand (`promotions.brand_id`). That is unchanged.
+- Not built yet.

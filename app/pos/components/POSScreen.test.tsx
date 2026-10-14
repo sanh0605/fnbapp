@@ -87,3 +87,9 @@ describe("POSScreen option group integration", () => {
     expect(screen.queryByText("Trân châu trắng")).toBeNull();
   });
 });
+
+describe("one menu for both brands (BR-CATALOG-006)", () => {
+  it.todo(
+    "Hai thương hiệu bán chung một thực đơn; máy bán không lọc món theo thương hiệu (chủ quán chốt 15/10/2026)",
+  );
+});

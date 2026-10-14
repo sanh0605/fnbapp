@@ -92,7 +92,7 @@ function makeDetail(
 }
 
 describe("OrderDetailView", () => {
-  it("shows Sửa đơn link to edit page and Huỷ đơn button for COMPLETED order", () => {
+  it("shows Đổi cách trả link to edit page and Huỷ đơn button for COMPLETED order", () => {
     const detail = makeDetail("COMPLETED");
     const brands = [{ id: "BRD-1", name: "Phin Đi" }];
     const returnTo = "/admin/orders?payment=Tien+mat";
@@ -102,7 +102,7 @@ describe("OrderDetailView", () => {
     expect(screen.getByText("ORD000001")).toBeDefined();
     expect(screen.getByText("Phin Đi")).toBeDefined();
 
-    const editLink = screen.getByRole("link", { name: "Sửa đơn" });
+    const editLink = screen.getByRole("link", { name: "Đổi cách trả" });
     expect(editLink).toBeDefined();
     expect(editLink.getAttribute("href")).toBe(
       `/admin/orders/ORD-1/edit?returnTo=${encodeURIComponent(returnTo)}`
@@ -112,11 +112,11 @@ describe("OrderDetailView", () => {
     expect(voidButton).toBeDefined();
   });
 
-  it("does not show Sửa đơn or Huỷ đơn for VOIDED order", () => {
+  it("does not show Đổi cách trả or Huỷ đơn for VOIDED order", () => {
     const detail = makeDetail("VOIDED");
     render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
 
-    expect(screen.queryByRole("link", { name: "Sửa đơn" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Đổi cách trả" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Huỷ đơn" })).toBeNull();
     expect(screen.getByText("Đã huỷ")).toBeDefined();
   });
@@ -139,7 +139,7 @@ describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
     expect(lines.className).toContain("lg:col-span-2");
     const side = screen.getByTestId("detail-side");
     expect(side.textContent).toContain("Khách trả");
-    expect(side.textContent).toContain("Sửa đơn");
+    expect(side.textContent).toContain("Đổi cách trả");
   });
 
   it("shows the dishes as a table on a computer and as cards on a phone", () => {

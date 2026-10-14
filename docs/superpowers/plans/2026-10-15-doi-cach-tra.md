@@ -47,7 +47,7 @@ Extra questions for this change:
   - Copies the old order row unchanged into a new row, except:
     - new id;
     - version+1;
-    - parent = root (`parent_order_id || id`);
+    - parent = the order being replaced (required by supersede_order_v2_atomic, 0081:101);
     - `payment_method` = the first part's method, as the till does (`order-cart.ts:181,208`).
 
     Seller (`created_by_*`), promotion, totals, outlet, brand and sale time are copied.

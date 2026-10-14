@@ -52,6 +52,8 @@ The system records payments in `order_payments`, and **that table begins 2026-07
 
 `orders_v2.brand_id` is derived server-side from `orders_v2.outlet_id` at the moment of sale, **never accepted from the client.** The till (`/pos`) opens by picking an outlet, not a brand; a `brandId` present in the URL is ignored by both the page and `submitOrderV2`. `outlet_id` itself is frozen at sale time the same way `created_at` is — an order edit preserves the original outlet, not the editor's own.
 
+**A stopped outlet can be reopened** — owner 2026-10-15, chose *"Thêm nút Mở lại"* over keeping a stop one-way. The page of a stopped outlet has "Mở lại hoạt động". It sets the outlet back to active, clears its end date, and keeps its code, so its order numbers continue. Not built yet.
+
 This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `brand_id` per outlet, no time-windowed brand slots, no staff-to-outlet assignment, manual outlet picker only. See `docs/04-operations/OPEN-ITEMS.md` item 5.
 
 ### BR-SALE-007 — Tổng quan's 7-day table: a cup is a drink-type line, 0đ orders count
@@ -75,6 +77,7 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 - The till can never set a price. That is why he did not choose "save what the till showed".
 - The cost: the order that hits the change has to be rung up again once. Until the till is reloaded, every order containing a changed dish is refused.
 - An order taken before the change and sent later (sync delay) is checked against the price in force when it was taken, not when it arrived. Otherwise a correct order would be refused.
+- **A promotion stays freely editable, even after orders used it** — owner 2026-10-15, chose *"Sửa thoải mái, từ chối đơn trễ"* over locking its money fields after the first order and over letting late orders through unchecked. A promotion keeps no history of its past values. So an order sent late is checked against the promotion as it is when the order arrives. If the money no longer matches, the order is refused like a changed price, and the cashier rings it again. Each order's own promotion snapshot remains the record of what it got.
 
 ### BR-SALE-009 — A percent discount on the whole order is taken after the dish discounts
 
@@ -100,6 +103,7 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 
 **The example he confirmed.** "Giảm 10.000 Bạc xỉu" needs no code. The customer also hands over the code KHAITRUONG, 15% off the order.
 
+- **Minimum order value is checked after the dish discounts** — owner 2026-10-15, chose *"So sau giảm món"* over the price before any discount. Example he was shown: minimum 100,000; Bạc xỉu ×4 = 116,000 with 5,000 off each cup is 96,000, so the promotion does not apply. Same base as `BR-SALE-009`. Until built, the till compares a third figure: after the cashier's dish discounts but before promotions.
 - **Without a code.** A promotion that needs no code applies itself when the order meets its conditions, minimum order value included. The till shows it before the money is taken. The server never applies a promotion that needs a code unless the till sent that code, and never one whose conditions the order misses (today it does both).
 - **"Dùng chung với khuyến mãi khác"** is a new yes/no box on each promotion, set by the owner on the promotion screen. Existing promotions start at "không".
 - **Both "có":** both apply. Order of steps as in `BR-SALE-010`.

@@ -7,6 +7,12 @@ tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
+**Behaviour change — 2026-10-15 (`BR-SALE-014`):** Sửa đơn becomes "Đổi cách trả" (`/admin/orders/[id]/edit`), which changes only the payment parts.
+- `changeOrderPayments` in `order-edit-actions.ts` copies the old row and its lines unchanged into the new version: same seller, promotion, prices, names and total. It never reads the catalogue.
+- The new version's parent is the order it replaces, as `supersede_order_v2_atomic` requires. So an order can now be changed more than once, and the order page lists every version by walking that chain.
+- The messages "Không tìm thấy đơn" and, on a version clash, "Đơn vừa được người khác sửa…" are in Vietnamese.
+- The line, add-dish and discount editors are gone. A wrong dish is fixed by Huỷ đơn and ringing the order again.
+
 **Behaviour change — 2026-10-14 (audit B1, B4, C2, C6, C7, C13, E12):** an order's payment method follows one rule everywhere (`lib/sales/payment-method.ts`): empty is cash, and an order paid two ways is found under both methods through `order_payments` (Doanh số no longer shows "UNKNOWN"). Doanh số's hour map applies the staff and dish-group filters. The till resends waiting orders every 60 seconds and after each checkout, never two sends at once, and shows "N đơn chờ gửi"; a per-dish promotion code applies; loading a draft first waits for the current cart to save and stops with a message if it cannot. The server refuses a zero, negative or fractional quantity and a negative dish discount. Sửa đơn checks `ADMIN` before reading the order.
 
 **Behaviour change — 2026-10-14 (`BR-UI-004`):** the Đơn hàng list shows a total row under the column titles, "Tổng (không tính huỷ)", the net total of every order the filter keeps, not only the page shown (`sumFilteredOrders` in `app/admin/orders/actions.ts`); cancelled orders are left out (`BR-ACCESS-003`). The order actions are split into `order-detail-actions.ts`, `order-edit-actions.ts`, `order-void-actions.ts` and `order-helpers.ts` with no logic change. `app/pos/actions.ts` comment only: it now points at `app/admin/reports/pnl-actions.ts`.
@@ -58,7 +64,7 @@ and they run through the `void_order_atomic` database function called from
    restores drafts, and sends the order; its brand is derived server-side from the
    chosen outlet and is never taken from the client (`BR-SALE-006`), so no
    brand picker drives the sale. `/admin/orders` lists past orders and offers void
-   and edit on a live order; void and edit should not be offered on a row that is
+   and "Đổi cách trả" (payment parts only, `BR-SALE-014`) on a live order; void and edit should not be offered on a row that is
    already `SUPERSEDED` or already voided, since acting on a stale version would
    fork the order's history. `/admin/promotions` creates, edits, deactivates, and
    deletes promotions. Delete is ADMIN-only per `BR-ACCESS-003` (owner decision
