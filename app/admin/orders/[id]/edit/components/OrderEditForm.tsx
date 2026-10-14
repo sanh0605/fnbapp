@@ -269,13 +269,13 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                 )}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {payments.map((part, idx) => (
                   <div
                     key={`payment-part-${idx}`}
-                    className="flex flex-col sm:flex-row sm:items-center gap-2"
+                    className="flex flex-col gap-2"
                   >
-                    <div className="w-full sm:flex-1">
+                    <div className="w-full">
                       <Select
                         aria-label={
                           payments.length === 2
@@ -305,8 +305,8 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                     </div>
 
                     {payments.length === 2 ? (
-                      <>
-                        <div className="w-full sm:flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
                           <NumberInput
                             id={`payment-amount-${idx}`}
                             decimals={0}
@@ -326,13 +326,13 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                           aria-label={`Xoá ${
                             part.method === "CASH" ? "tiền mặt" : "chuyển khoản"
                           }`}
-                          className="w-full sm:w-auto px-3 min-h-[44px] md:min-h-[40px] shrink-0"
+                          className="px-3 min-h-[44px] md:min-h-[40px] shrink-0"
                         >
                           Xoá
                         </Button>
-                      </>
+                      </div>
                     ) : (
-                      <div className="w-full sm:w-auto text-sm font-semibold text-text-primary text-right tabular-nums py-2 px-1 shrink-0">
+                      <div className="w-full text-sm font-semibold text-text-primary text-right tabular-nums py-2 px-1 shrink-0">
                         {formatNumber(totalAmount)}
                       </div>
                     )}
