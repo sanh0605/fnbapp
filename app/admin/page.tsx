@@ -6,7 +6,7 @@ import { DashboardView } from "@/app/admin/components/DashboardView";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboard(_props?: {
+export default async function AdminDashboard(_props: {
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const now = new Date();

@@ -12,15 +12,6 @@ process.env.CLI_MODE = "true";
  */
 
 const TODAY = "2026-10-13";
-// product_types is not on the server yet, so the category -> type map is the
-// one the migration will backfill (plan Task 1).
-const CATEGORY_TYPE: Array<[string, string]> = [
-  ["CAT-001", "PT-001"], ["CAT-002", "PT-001"], ["CAT-003", "PT-001"], ["CAT-004", "PT-001"], ["CAT-005", "PT-001"],
-  ["CAT-006", "PT-002"],
-  ["CAT-007", "PT-003"],
-];
-const FOOD_IDS = ["PROD-028", "PROD-027"]; // Trung luoc, Khoai lang
-
 interface Expected { day: string; revenue: number; avg: number; cups: number; egg: number; potato: number; topping: number }
 const EXPECTED: Expected[] = [
   { day: "2026-10-08", revenue: 714000, avg: 20889, cups: 27, egg: 22, potato: 12, topping: 0 },
@@ -36,11 +27,17 @@ async function main(): Promise<void> {
   const { buildSevenDayTable } = await import("@/lib/dashboard/seven-day-table");
 
   // findAllNoCache paginates past PostgREST's 1,000-row cap.
-  const [rawOrders, rawLines] = await Promise.all([
+  const [rawOrders, rawLines, categories, types, settingsRows] = await Promise.all([
     findAllNoCache("Orders_V2"),
     findAllNoCache("Order_Lines_V2"),
+    findAllNoCache("Product_Categories") as Promise<Array<{ id: string; type_id: string }>>,
+    findAllNoCache("Product_Types") as Promise<Array<{ id: string; is_drink: boolean }>>,
+    findAllNoCache("Dashboard_Settings") as Promise<Array<{ id: number | string; food_product_ids: string[]; topping_type_id: string | null }>>,
   ]);
-  console.log(`Fetched ${rawOrders.length} orders, ${rawLines.length} lines.`);
+  console.log(`Fetched ${rawOrders.length} orders, ${rawLines.length} lines, ${categories.length} categories, ${types.length} types.`);
+
+  const settings = settingsRows.find(r => String(r.id) === "1");
+  if (!settings) throw new Error("dashboard_settings id 1 is missing");
 
   // product_snapshot_json comes back as a JSON string (see verify-revenue.ts).
   const lines = (rawLines as any[]).map(l => {
@@ -70,10 +67,10 @@ async function main(): Promise<void> {
       net_total: o.net_total,
     })),
     lines,
-    categoryTypeId: new Map(CATEGORY_TYPE),
-    drinkTypeIds: new Set(["PT-001"]),
-    foodProductIds: FOOD_IDS,
-    toppingTypeId: "PT-003",
+    categoryTypeId: new Map(categories.map(c => [c.id, c.type_id])),
+    drinkTypeIds: new Set(types.filter(t => t.is_drink).map(t => t.id)),
+    foodProductIds: settings.food_product_ids,
+    toppingTypeId: settings.topping_type_id,
   });
 
   let cells = 0;
