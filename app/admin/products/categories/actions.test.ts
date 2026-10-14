@@ -133,3 +133,39 @@ describe("category product type", () => {
     expect(mocks.update).toHaveBeenCalledWith("Product_Categories", "CAT-001", { name: "Cà phê", type_id: "PT-001" });
   });
 });
+
+describe("category duplicate name", () => {
+  const form = (fields: Record<string, string>) => {
+    const fd = new FormData();
+    for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+    return fd;
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.generateNewId.mockResolvedValue("CAT-008");
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Product_Types"
+        ? [{ id: "PT-001", name: "Thức uống" }]
+        : [
+            { id: "CAT-001", name: "Cà phê", status: "ACTIVE" },
+            { id: "CAT-002", name: "Bánh cũ", status: "DELETED" },
+          ]
+    );
+  });
+
+  it("saveCategory refuses a name an ACTIVE group already has, but allows a DELETED one's name", async () => {
+    const res = await saveCategory(form({ name: "  cà PHÊ ", type_id: "PT-001" }));
+    expect(res.error).toContain("CAT-001");
+    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(await saveCategory(form({ name: "Bánh cũ", type_id: "PT-001" }))).toEqual({ success: true });
+  });
+
+  it("updateCategory refuses a rename onto another ACTIVE group's name but keeps its own", async () => {
+    const res = await updateCategory(form({ id: "CAT-009", name: "Cà phê", type_id: "PT-001" }));
+    expect(res.error).toContain("CAT-001");
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(await updateCategory(form({ id: "CAT-001", name: "Cà phê", type_id: "PT-001" }))).toEqual({ success: true });
+  });
+});

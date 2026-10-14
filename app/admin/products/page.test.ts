@@ -9,16 +9,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   findAll: vi.fn(),
-  findOrderLineProductAndVariantIds: vi.fn(),
-  resolveActor: vi.fn(),
 }));
 
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
-  findOrderLineProductAndVariantIds: mocks.findOrderLineProductAndVariantIds,
-}));
-vi.mock("@/lib/auth/auth", () => ({
-  resolveActor: mocks.resolveActor,
 }));
 vi.mock("./ProductsClient", () => ({
   default: (props: any) => ({ type: "ProductsClient", props }),
@@ -26,10 +20,9 @@ vi.mock("./ProductsClient", () => ({
 
 import ProductsPage from "./page";
 
-describe("ProductsPage marks a topping sold via its linked modifier", () => {
+describe("ProductsPage flags a dish linked to an ACTIVE option", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.resolveActor.mockResolvedValue({ ok: true, actor: { id: "u1", name: "Chủ quán", role: "ADMIN" } });
     mocks.findAll.mockImplementation(async (sheet: string) => {
       if (sheet === "Product_Categories") {
         return [{ id: "CAT-007", name: "Topping", status: "ACTIVE" }];
@@ -64,22 +57,6 @@ describe("ProductsPage marks a topping sold via its linked modifier", () => {
       }
       return [];
     });
-    mocks.findOrderLineProductAndVariantIds.mockResolvedValue({
-      productIds: ["PROD-C"], // standalone sale of PROD-C
-      variantIds: [],
-      modifierIds: ["MOD-A", "MOD-A2", "MOD-NULL"], // all three modifiers sold as add-ons
-    });
-  });
-
-  it("marks PROD-A sold via its linked modifier, PROD-B stays never-sold, PROD-C stays sold via its own order line", async () => {
-    const element: any = await ProductsPage({});
-    // page.tsx wraps <ProductsClient> in an outer <div>, unlike POSPage.
-    const clientProps = element.props.children.props;
-    const byId = new Map<string, any>(clientProps.enhancedProducts.map((p: any) => [p.id, p]));
-
-    expect(byId.get("PROD-A").neverSold).toBe(false);
-    expect(byId.get("PROD-B").neverSold).toBe(true);
-    expect(byId.get("PROD-C").neverSold).toBe(false);
   });
 
   // BR-CATALOG-003: the

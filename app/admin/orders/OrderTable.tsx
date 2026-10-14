@@ -2,8 +2,7 @@
 
 import { useMemo, useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { Button } from "@/components/ui/Button";
+import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
@@ -11,8 +10,9 @@ import { Select } from "@/components/ui/Select";
 import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FilterCard } from "@/components/ui/list/FilterCard";
+import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
-import { formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import {
   formatRangeButtonText,
@@ -54,36 +54,12 @@ interface Brand {
   name: string;
 }
 
-interface Product {
-  id: string;
-  name: string;
-}
-
-interface Variant {
-  id: string;
-  size_name: string;
-}
-
-interface Modifier {
-  id: string;
-  name: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-}
-
 export interface OrderTableProps {
   initialOrders: Order[];
   totalCount: number;
   totals?: { count: number; netTotal: number };
   itemsPerPage: number;
   brands: Brand[];
-  products: Product[];
-  variants: Variant[];
-  modifiers: Modifier[];
-  categories: Category[];
   range: RangeValue;
   today: string;
   searching?: boolean;
@@ -95,10 +71,6 @@ export default function OrderTable({
   totals,
   itemsPerPage,
   brands,
-  products: _products,
-  variants: _variants,
-  modifiers: _modifiers,
-  categories: _categories,
   range,
   today,
   searching = false,
@@ -111,7 +83,6 @@ export default function OrderTable({
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-
   const [isPendingFilter, startFilterTransition] = useTransition();
 
   const [currentPage, setCurrentPage] = useState<number>(() => {
@@ -121,6 +92,9 @@ export default function OrderTable({
 
   const [searchQuery, setSearchQuery] = useState<string>(() => {
     return searchParams.get("q") || "";
+  });
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    return searchParams.get("status") || "";
   });
   const [paymentFilter, setPaymentFilter] = useState<string>(() => {
     return searchParams.get("payment") || "";
@@ -135,20 +109,22 @@ export default function OrderTable({
   // Sync URL changes back to local states (handles back/forward navigation)
   useEffect(() => {
     const q = searchParams.get("q") || "";
+    const status = searchParams.get("status") || "";
     const payment = searchParams.get("payment") || "";
     const brand = searchParams.get("brand") || "";
     const pageVal = searchParams.get("page");
     const page = pageVal ? parseInt(pageVal, 10) || 1 : 1;
 
     if (q !== searchQuery) setSearchQuery(q);
+    if (status !== statusFilter) setStatusFilter(status);
     if (payment !== paymentFilter) setPaymentFilter(payment);
     if (brand !== brandFilter) setBrandFilter(brand);
     if (page !== currentPage) setCurrentPage(page);
   }, [searchParams]);
 
   const handleFilterChange = (updates: {
-    page?: number;
     q?: string;
+    status?: string;
     payment?: string;
     brand?: string;
   }) => {
@@ -158,6 +134,11 @@ export default function OrderTable({
       if (updates.q) params.set("q", updates.q);
       else params.delete("q");
       setSearchQuery(updates.q);
+    }
+    if (updates.status !== undefined) {
+      if (updates.status === "VOIDED") params.set("status", "VOIDED");
+      else params.delete("status");
+      setStatusFilter(updates.status);
     }
     if (updates.payment !== undefined) {
       if (updates.payment) params.set("payment", updates.payment);
@@ -170,27 +151,9 @@ export default function OrderTable({
       setBrandFilter(updates.brand);
     }
 
-    let targetPage = 1;
-    if (updates.page !== undefined) {
-      targetPage = updates.page;
-    } else {
-      const isFilterChange =
-        updates.q !== undefined ||
-        updates.payment !== undefined ||
-        updates.brand !== undefined;
-      if (!isFilterChange) {
-        const pageVal = params.get("page");
-        targetPage = pageVal ? parseInt(pageVal, 10) || 1 : 1;
-      }
-    }
-
-    if (targetPage === 1) {
-      params.delete("page");
-      setCurrentPage(1);
-    } else {
-      params.set("page", String(targetPage));
-      setCurrentPage(targetPage);
-    }
+    // A filter change starts again from page 1.
+    params.delete("page");
+    setCurrentPage(1);
 
     startFilterTransition(() => {
       if (updates.q !== undefined) {
@@ -222,6 +185,7 @@ export default function OrderTable({
 
   const clearFilters = () => {
     setSearchQuery("");
+    setStatusFilter("");
     setPaymentFilter("");
     setBrandFilter("");
     setCurrentPage(1);
@@ -232,9 +196,11 @@ export default function OrderTable({
 
   const hasActiveFilters = Boolean(
     searchQuery ||
+    statusFilter === "VOIDED" ||
     paymentFilter ||
     brandFilter ||
     searchParams.get("q") ||
+    searchParams.get("status") ||
     searchParams.get("payment") ||
     searchParams.get("brand") ||
     searchParams.get("range") ||
@@ -242,21 +208,16 @@ export default function OrderTable({
     searchParams.get("to")
   );
 
-  const rightContent = (
-    <>
-      {hasActiveFilters && (
-        <Button
-          variant="secondary"
-          onClick={clearFilters}
-        >
-          Xoá bộ lọc
-        </Button>
-      )}
-      <div className="text-xs font-bold text-text-secondary whitespace-nowrap px-3 py-1.5 bg-surface-secondary rounded-lg">
-        {orders.length} / {totalCount}
-      </div>
-    </>
-  );
+  function getPageUrl(pageNum: number): string {
+    const params = new URLSearchParams(searchParams.toString());
+    if (pageNum === 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(pageNum));
+    }
+    const qStr = params.toString();
+    return qStr ? `${pathname}?${qStr}` : pathname;
+  }
 
   const columns: DataColumn<Order>[] = useMemo(
     () => [
@@ -264,14 +225,26 @@ export default function OrderTable({
         key: "order_no",
         header: "Mã đơn",
         render: (order) => (
-          <div className="flex items-center">
-            <span className="font-mono text-xs text-primary transition-colors">
-              {order.display_order_no || order.order_no}
-            </span>
-            {order.parent_order_id && (
-              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-primary-soft text-primary">
-                v{order.version}
+          <div className="space-y-1">
+            <div className="flex items-center">
+              <span className="font-mono text-[13px] text-primary transition-colors">
+                {order.display_order_no || order.order_no}
               </span>
+              {order.parent_order_id && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-primary-soft text-primary">
+                  v{order.version}
+                </span>
+              )}
+            </div>
+            {order.status === "VOIDED" && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Badge variant="danger">Đã huỷ</Badge>
+                {order.void_reason && (
+                  <span className="text-[13px] text-text-muted" title={order.void_reason}>
+                    {order.void_reason}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         ),
@@ -280,21 +253,23 @@ export default function OrderTable({
         key: "created_at",
         header: "Thời gian",
         render: (order) => (
-          <span className="text-text-secondary">{formatDateTime(order.created_at)}</span>
+          <span className="text-text-secondary text-[13px] tabular-nums">
+            {formatDateTimeFull(order.created_at)}
+          </span>
         ),
       },
       {
         key: "lines",
         header: "Sản phẩm (chi tiết)",
         render: (order) => (
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 text-[13px]">
             {order.lines &&
               order.lines.map((line: OrderLine, idx: number) => (
-                <div key={idx} className="text-xs text-text-secondary">
+                <div key={idx} className="text-[13px] text-text-secondary">
                   <span className="text-text-primary">{line.qty}x</span> {line.product_name}{" "}
                   <span className="text-text-muted">({line.size_name})</span>
                   {line.modifiers && line.modifiers.length > 0 && (
-                    <div className="text-[10px] text-text-muted ml-4 mt-0.5">
+                    <div className="text-[13px] text-text-muted ml-4 mt-0.5">
                       + {line.modifiers.map((m: any) => m.name).join(", ")}
                     </div>
                   )}
@@ -305,10 +280,10 @@ export default function OrderTable({
       },
       {
         key: "net_total",
-        header: "Tổng tiền",
+        header: "Khách trả",
         align: "right",
         render: (order) => (
-          <span className="tabular-nums text-text-primary">
+          <span className="tabular-nums text-text-primary text-[13px]">
             {formatNumber(order.net_total)}
           </span>
         ),
@@ -334,9 +309,19 @@ export default function OrderTable({
               v{order.version}
             </span>
           )}
-          <p className="text-[11px] text-text-muted mt-0.5">
-            {formatDateTime(order.created_at)}
+          <p className="text-[11px] text-text-muted mt-0.5 tabular-nums">
+            {formatDateTimeFull(order.created_at)}
           </p>
+          {order.status === "VOIDED" && (
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <Badge variant="danger">Đã huỷ</Badge>
+              {order.void_reason && (
+                <span className="text-xs text-text-muted">
+                  {order.void_reason}
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div className="text-right">
           <div className="text-sm tabular-nums text-text-primary">
@@ -367,16 +352,15 @@ export default function OrderTable({
 
   return (
     <div className="space-y-4">
-      <PageHeader
+      <ListPageHeader
+        group="Bán hàng"
         title="Đơn hàng"
-        subtitle="Quản lý và xem lại tất cả các đơn hàng đã được tạo."
-        actions={rightContent}
       />
 
       <FilterCard
         onApply={handleApply}
         onClear={clearFilters}
-        showClear={false}
+        showClear={hasActiveFilters}
       >
         <div className="w-full md:w-auto shrink-0">
           <DateRangeButton
@@ -391,10 +375,22 @@ export default function OrderTable({
           <Field label="Tìm mã đơn" htmlFor="search-order-no">
             <TextInput
               id="search-order-no"
-              placeholder="Ví dụ: PHD000001"
+              placeholder="Ví dụ: 261012001030"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+          </Field>
+        </div>
+        <div className="w-full md:w-36">
+          <Field label="Trạng thái" htmlFor="status-filter">
+            <Select
+              id="status-filter"
+              value={statusFilter}
+              onChange={(e) => handleFilterChange({ status: e.target.value })}
+            >
+              <option value="">Hoàn tất</option>
+              <option value="VOIDED">Đã huỷ</option>
+            </Select>
           </Field>
         </div>
         <div className="w-full md:w-44">
@@ -447,7 +443,7 @@ export default function OrderTable({
           columns={columns}
           renderCard={renderCard}
           totals={
-            totals
+            totals && statusFilter !== "VOIDED" && searchParams.get("status") !== "VOIDED"
               ? {
                   label: "Tổng (không tính huỷ)",
                   values: { net_total: formatNumber(totals.netTotal) },
@@ -471,41 +467,19 @@ export default function OrderTable({
         />
       </div>
 
-      {totalPages > 1 && (
-        <div className="bg-page rounded-card shadow-sm border border-border px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-sm text-text-secondary text-center sm:text-left">
-            Hiển thị{" "}
-            <span className="font-bold text-text-primary">
-              {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-            </span>{" "}
-            đến{" "}
-            <span className="font-bold text-text-primary">
-              {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}
-            </span>{" "}
-            trong tổng số{" "}
-            <span className="font-bold text-text-primary">{totalCount}</span> đơn hàng
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              onClick={() => handleFilterChange({ page: Math.max(1, currentPage - 1) })}
-              disabled={currentPage === 1}
-            >
-              Trước
-            </Button>
-            <div className="flex items-center px-2 font-medium text-text-secondary text-sm">
-              Trang {currentPage} / {totalPages}
-            </div>
-            <Button
-              variant="secondary"
-              onClick={() =>
-                handleFilterChange({ page: Math.min(totalPages, currentPage + 1) })
-              }
-              disabled={currentPage === totalPages}
-            >
-              Sau
-            </Button>
-          </div>
+      {totalCount > 0 && (
+        <div className="rounded-2xl border border-border overflow-hidden shadow-sm mt-4">
+          <ListPagination
+            slice={{
+              page: currentPage,
+              pageCount: totalPages,
+              firstIndex: (currentPage - 1) * ITEMS_PER_PAGE + 1,
+              lastIndex: Math.min(currentPage * ITEMS_PER_PAGE, totalCount),
+              total: totalCount,
+            }}
+            unit="đơn"
+            pageHref={getPageUrl}
+          />
         </div>
       )}
     </div>

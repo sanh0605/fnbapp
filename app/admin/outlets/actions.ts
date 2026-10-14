@@ -159,3 +159,24 @@ export async function retireOutlet(formData: FormData): Promise<ActionResponse> 
     return describeActionError(error);
   }
 }
+
+// Keeps the code: order numbers are minted per outlet + day, so they continue (BR-SALE-006).
+export async function reactivateOutlet(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  const id = ((formData.get("id") as string) || "").trim();
+  if (!id) return fail("ID không hợp lệ");
+
+  try {
+    const target = ((await findAll(SHEET)) as DBOutlet[]).find(o => o.id === id);
+    if (!target) return fail("Không tìm thấy điểm bán");
+    if (target.status !== "INACTIVE") return fail("Điểm bán này đang hoạt động");
+
+    await update(SHEET, id, { status: "ACTIVE", end_date: null });
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}

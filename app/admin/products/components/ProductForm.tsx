@@ -3,21 +3,20 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { saveProduct } from "@/app/admin/products/actions";
-import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
+import { Alert } from "@/components/ui/Alert";
 import { Plus } from "lucide-react";
-import { alert, confirm } from "@/lib/shared/dialog";
+import { confirm } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
 
 interface ProductFormProps {
   categories: Array<{ id: string; name: string }>;
   initialData?: any;
   returnTo?: string;
-  canDelete?: boolean;
   optionGroups?: Array<{ id: string; name: string; status?: string }>;
   selectedOptionGroupIds?: string[];
 }
@@ -50,17 +49,31 @@ export default function ProductForm({
     initialData?.variants || [{ size_name: "Mặc định", price: "" }]
   );
   const [priceErrors, setPriceErrors] = useState<Record<number, string>>({});
-  const [effectiveDate, setEffectiveDate] = useState<Date | null>(
-    initialData?.effective_date ? new Date(initialData.effective_date) : null
-  );
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !categoryId) {
-      return await alert({ title: "Thiếu thông tin", message: "Vui lòng nhập Tên món và chọn Nhóm.", variant: "warning" });
+    setNameError(null);
+    setCategoryError(null);
+    setSaveError(null);
+
+    let hasFieldError = false;
+    if (!name.trim()) {
+      setNameError("Vui lòng nhập tên món");
+      hasFieldError = true;
+    }
+    if (!categoryId) {
+      setCategoryError("Vui lòng chọn nhóm món");
+      hasFieldError = true;
+    }
+    if (hasFieldError) {
+      return;
     }
     if (variants.length === 0) {
-      return await alert({ title: "Thiếu thông tin", message: "Phải có ít nhất 1 size.", variant: "warning" });
+      setSaveError("Phải có ít nhất 1 size.");
+      return;
     }
 
     const newPriceErrors: Record<number, string> = {};
@@ -87,37 +100,39 @@ export default function ProductForm({
       formData.append("option_group_ids", gid);
     });
 
-    const effectiveDateStr = effectiveDate ? effectiveDate.toISOString() : "";
-    formData.append("effective_date", effectiveDateStr);
-
-    let res = await saveProduct(formData);
-    // Batch 1 follow-up, level 2 (docs/02-rules/business-rules/catalog.md BR-CATALOG-001): a
-    // near-match warning, not a refusal -- ask whether it is really a
-    // different item, resubmit once on "món khác", stay on the form with
-    // nothing saved on "tôi gõ nhầm".
-    if ((res as any).needsDuplicateWarning) {
-      const approved = await confirm({
-        title: "Tên gần giống một mục đã có",
-        message: (res as any).needsDuplicateWarning.message,
-        okText: "Món khác",
-        cancelText: "Tôi gõ nhầm",
-        variant: "warning",
-      });
-      if (approved) {
-        formData.append("duplicate_warning_confirmed", "true");
-        res = await saveProduct(formData);
-      } else {
-        setLoading(false);
-        return;
+    try {
+      let res = await saveProduct(formData);
+      // Batch 1 follow-up, level 2 (docs/02-rules/business-rules/catalog.md BR-CATALOG-001): a
+      // near-match warning, not a refusal -- ask whether it is really a
+      // different item, resubmit once on "món khác", stay on the form with
+      // nothing saved on "tôi gõ nhầm".
+      if ((res as any).needsDuplicateWarning) {
+        const approved = await confirm({
+          title: "Tên gần giống một mục đã có",
+          message: (res as any).needsDuplicateWarning.message,
+          okText: "Món khác",
+          cancelText: "Tôi gõ nhầm",
+          variant: "warning",
+        });
+        if (approved) {
+          formData.append("duplicate_warning_confirmed", "true");
+          res = await saveProduct(formData);
+        } else {
+          setLoading(false);
+          return;
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
 
-    if (res.success) {
-      router.push(returnTo);
-      router.refresh();
-    } else {
-      await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+      if (res.success) {
+        router.push(returnTo);
+        router.refresh();
+      } else {
+        setSaveError(res.error || "Không lưu được.");
+      }
+    } catch {
+      setLoading(false);
+      setSaveError("Không lưu được. Kiểm tra mạng rồi bấm lại.");
     }
   };
 
@@ -162,42 +177,43 @@ export default function ProductForm({
               Thông tin cơ bản
             </h3>
             <div className="grid grid-cols-1 gap-4">
-              <Field label="Tên món" htmlFor={`${formId}-name`} required>
+              <Field
+                label="Tên món"
+                htmlFor={`${formId}-name`}
+                required
+                error={nameError ?? undefined}
+              >
                 <TextInput
                   id={`${formId}-name`}
                   required
                   value={name}
-                  onChange={e => setName(e.target.value)}
+                  onChange={e => {
+                    setName(e.target.value);
+                    if (nameError) setNameError(null);
+                  }}
                   example="Cà phê sữa đá"
                 />
               </Field>
-              <Field label="Nhóm món" htmlFor={`${formId}-category-id`} required>
+              <Field
+                label="Nhóm món"
+                htmlFor={`${formId}-category-id`}
+                required
+                error={categoryError ?? undefined}
+              >
                 <Select
                   id={`${formId}-category-id`}
                   required
                   value={categoryId}
-                  onChange={e => setCategoryId(e.target.value)}
+                  onChange={e => {
+                    setCategoryId(e.target.value);
+                    if (categoryError) setCategoryError(null);
+                  }}
                 >
                   <option value="">-- Chọn nhóm --</option>
                   {categories.map((c: any) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </Select>
-              </Field>
-            </div>
-            <div className="mt-4 pt-4 border-t border-border">
-              <Field
-                label="Ngày áp dụng giá (không bắt buộc)"
-                htmlFor={`${formId}-effective-date`}
-                hint="Bỏ trống hệ thống sẽ lấy thời gian hiện tại. Dành cho việc cập nhật lịch sử bán hàng cũ."
-              >
-                <CustomDatePicker
-                  id={`${formId}-effective-date`}
-                  name="effective_date"
-                  selected={effectiveDate}
-                  onChange={(date) => setEffectiveDate(date)}
-                  placeholderText="dd/mm/yyyy hh:mm:ss"
-                />
               </Field>
             </div>
           </div>
@@ -309,6 +325,12 @@ export default function ProductForm({
                 })}
             </div>
           </div>
+        )}
+
+        {saveError && (
+          <Alert variant="danger">
+            {saveError}
+          </Alert>
         )}
 
         {/* Buttons */}

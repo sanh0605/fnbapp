@@ -9,6 +9,7 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
@@ -33,6 +34,7 @@ export interface ProductDetailViewProps {
   returnTo: string;
   canDelete: boolean;
   linkedModifierId?: string | null;
+  optionGroupNames?: string[];
 }
 
 export function ProductDetailView({
@@ -41,6 +43,7 @@ export function ProductDetailView({
   returnTo,
   canDelete,
   linkedModifierId,
+  optionGroupNames,
 }: ProductDetailViewProps): JSX.Element {
   const router = useRouter();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -53,10 +56,16 @@ export function ProductDetailView({
       ? "Ngừng bán"
       : "Đã xoá";
 
+  const optionGroupsText =
+    optionGroupNames && optionGroupNames.length > 0
+      ? optionGroupNames.join(", ")
+      : "—";
+
   const fields: Field[] = [
     { label: "Mã", value: product.id },
     { label: "Tên", value: product.name },
     { label: "Nhóm", value: categoryName || "—" },
+    { label: "Nhóm tuỳ chọn", value: optionGroupsText },
     { label: "Trạng thái", value: statusLabel },
     {
       label: "Đã bán",
@@ -197,12 +206,9 @@ export function ProductDetailView({
       />
 
       {actionError && (
-        <div
-          role="alert"
-          className="text-sm font-medium text-danger bg-danger/10 border border-danger/20 rounded-lg p-3"
-        >
+        <Alert variant="danger">
           {actionError}
-        </div>
+        </Alert>
       )}
 
       <FieldList fields={fields} />

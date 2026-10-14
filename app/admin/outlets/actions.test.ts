@@ -17,7 +17,7 @@ vi.mock("@/lib/db/tables", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { getOutlets, getActiveOutlets, addOutlet, editOutlet, retireOutlet } from "./actions";
+import { getOutlets, getActiveOutlets, addOutlet, editOutlet, retireOutlet, reactivateOutlet } from "./actions";
 
 const ADMIN = { ok: true as const, actor: { id: "admin-1", name: "Admin" } };
 
@@ -263,7 +263,36 @@ describe("retireOutlet", () => {
 });
 
 describe("reopening a stopped outlet (BR-SALE-006)", () => {
-  it.todo(
-    "Điểm bán đã ngừng có nút Mở lại hoạt động; mở lại giữ nguyên mã, số đơn đánh tiếp (chủ quán chốt 15/10/2026)",
-  );
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+  });
+
+  it("sets ACTIVE and clears end_date, keeping the code (order numbers continue)", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "OUT-002", code: "002", status: "INACTIVE", end_date: "2026-09-01" }]);
+
+    const res = await reactivateOutlet(formData({ id: "OUT-002" }));
+
+    expect(res.success).toBe(true);
+    expect(mocks.update).toHaveBeenCalledWith("Outlets", "OUT-002", { status: "ACTIVE", end_date: null });
+    expect(mocks.update.mock.calls[0][2]).not.toHaveProperty("code");
+  });
+
+  it("refuses an outlet that is not stopped", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "OUT-001", code: "001", status: "ACTIVE" }]);
+
+    const res = await reactivateOutlet(formData({ id: "OUT-001" }));
+
+    expect(res.error).toBe("Điểm bán này đang hoạt động");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses a non-admin before reading anything", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền truy cập" });
+
+    const res = await reactivateOutlet(formData({ id: "OUT-002" }));
+
+    expect(res.error).toBeTruthy();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
 });

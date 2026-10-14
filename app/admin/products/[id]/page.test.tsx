@@ -61,6 +61,7 @@ vi.mock("@/lib/auth/auth", () => ({
 }));
 
 vi.mock("@/lib/db/tables", () => ({
+  findAll: vi.fn(async () => []),
   findAllWhere: vi.fn(async (name: string, f: any) =>
     name === "Product_Categories" ? mockCategories.filter(c => c.id === f.eq.id) : [],
   ),

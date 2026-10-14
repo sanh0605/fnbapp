@@ -666,3 +666,20 @@ describe("buildOrderFromCart ignores option groups", () => {
     expect(result.lines[0].gross_line_total).toBe(35000 + 3 * 5000);
   });
 });
+
+describe("one menu for both brands (BR-CATALOG-006)", () => {
+  it("accepts a dish whose brand differs from the order's brand", () => {
+    const ref: ReferenceData = {
+      ...REF,
+      products: [{ ...REF.products[1], brand_id: "BR-001" }],
+    };
+    const { lines } = buildOrderFromCart({
+      brand_id: "BR-002",
+      outlet_id: "OUT-002",
+      items: [{ product_id: "PROD-017", variant_id: "VAR-024", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
+      payment_method: "CASH",
+      actor: { id: "U1", name: "Test" },
+    }, ref);
+    expect(lines).toHaveLength(1);
+  });
+});

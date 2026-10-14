@@ -72,7 +72,7 @@ describe("voidOrderV2 atomic failure handling", () => {
       });
 
     const failed = await voidOrderV2("ord-void-1", "Customer request");
-    expect(failed).toEqual({ success: false, error: "void_order_atomic: forced rollback" });
+    expect(failed).toEqual({ success: false, error: "Huỷ đơn không thành, thử lại" });
 
     const retry = await voidOrderV2("ord-void-1", "Customer request");
     expect(retry).toEqual({ success: true });
@@ -82,18 +82,27 @@ describe("voidOrderV2 atomic failure handling", () => {
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
-  it("delegates an already-voided retry to the RPC idempotency guard", async () => {
+  it("refuses an already-voided order in Vietnamese before the RPC", async () => {
     orderStatus = "VOIDED";
-    mocks.voidOrderAtomic.mockResolvedValue({
-      orderId: "ord-void-1",
-      reversalCount: 1,
-      alreadyVoided: true,
-    });
 
     const result = await voidOrderV2("ord-void-1", "Customer request");
 
-    expect(result).toEqual({ success: true });
-    expect(mocks.voidOrderAtomic).toHaveBeenCalledOnce();
+    expect(result).toEqual({ success: false, error: "Đơn này không còn huỷ được" });
+    expect(mocks.voidOrderAtomic).not.toHaveBeenCalled();
+  });
+
+  it("says an unknown order was not found, in Vietnamese", async () => {
+    expect(await voidOrderV2("nope", "Customer request"))
+      .toEqual({ success: false, error: "Không tìm thấy đơn" });
+  });
+
+  it("never shows raw English database text: a version clash and any other failure get Vietnamese", async () => {
+    mocks.voidOrderAtomic.mockRejectedValueOnce(new Error("Order status is SUPERSEDED, must be COMPLETED to void"));
+    expect(await voidOrderV2("ord-void-1", "x"))
+      .toEqual({ success: false, error: "Đơn vừa được người khác sửa, tải lại trang rồi làm lại" });
+    mocks.voidOrderAtomic.mockRejectedValueOnce(new Error("void_order_atomic: forced rollback"));
+    expect(await voidOrderV2("ord-void-1", "x"))
+      .toEqual({ success: false, error: "Huỷ đơn không thành, thử lại" });
   });
 
   // Phase A

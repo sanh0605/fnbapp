@@ -57,12 +57,11 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
   const chainOrders = Array.from(chainById.values());
   chainOrders.sort((a, b) => Number(a.version) - Number(b.version));
 
-  const [orderLines, paymentRows, products, variants, brands, events] = await Promise.all([
+  const [orderLines, paymentRows, products, variants, events] = await Promise.all([
     findAllWhereInBatches("Order_Lines_V2", "order_id", [orderId]),
     findAllWhereInBatches("Order_Payments", "order_id", [orderId]),
     findAll("Products"),
     findAll("Product_Variants"),
-    findAll("Brands"),
     findAllWhereInBatches(
       "Order_Events",
       "order_id",
@@ -99,14 +98,6 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
     };
   });
 
-  const brand = (brands as any[]).find(b => b.id === current.brand_id);
-  let display_order_no = current.order_no;
-  if (display_order_no && display_order_no.startsWith("#")) {
-    const numStr = display_order_no.replace("#", "").padStart(6, "0");
-    const bCode = brand?.code || "ORD";
-    display_order_no = `${bCode}${numStr}`;
-  }
-
   // Events for this order chain
   events.sort((a: any, b: any) =>
     new Date(b.event_at).getTime() - new Date(a.event_at).getTime(),
@@ -116,7 +107,7 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
     order: {
       id: current.id,
       order_no: current.order_no,
-      display_order_no,
+      display_order_no: current.order_no,
       brand_id: current.brand_id,
       status: current.status,
       version: Number(current.version) || 1,

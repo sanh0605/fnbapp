@@ -1,7 +1,9 @@
 export type ProductsList =
   | "/admin/products"
   | "/admin/products/categories"
-  | "/admin/products/modifiers";
+  | "/admin/products/modifiers"
+  | "/admin/products/types"
+  | "/admin/products/modifier-groups";
 
 // Only a path inside the specified products list screen is accepted,
 // so a crafted link cannot send the user off-site or to a different list after saving.

@@ -3,16 +3,9 @@ import { getProductType } from "@/app/admin/products/types/actions";
 import { ProductTypeForm } from "@/app/admin/products/types/components/ProductTypeForm";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
+import { safeReturnTo } from "@/app/admin/products/components/return-to";
 
 export const dynamic = "force-dynamic";
-
-function safeReturnTo(raw: string | undefined | null, fallback = "/admin/products/types"): string {
-  if (!raw) return fallback;
-  if (raw === fallback || raw.startsWith(`${fallback}?`) || raw.startsWith(`${fallback}/`)) {
-    return raw;
-  }
-  return fallback;
-}
 
 export default async function EditProductTypePage({
   params,

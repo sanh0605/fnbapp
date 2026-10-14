@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
@@ -190,13 +191,9 @@ export function ModifierGroupDetailView({
         )}
       </div>
       {(deleteError || statusError) && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className="text-sm font-medium text-danger bg-danger/10 border border-danger/20 rounded-lg p-3"
-        >
+        <Alert variant="danger">
           {deleteError || statusError}
-        </div>
+        </Alert>
       )}
     </div>
   );

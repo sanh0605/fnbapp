@@ -19,8 +19,6 @@ function sources(dir: string): string[] {
 const SUMMARY_BOLD: Record<string, number> = {
   // opening/closing balance boxes (title + three figures) and the Tổng chi / Tổng thu boxes
   "app/admin/finance/components/CashBookClient.tsx": 6,
-  // the "N / M" counter and the "Hiển thị a đến b trong tổng số c đơn hàng" pager
-  "app/admin/orders/OrderTable.tsx": 4,
 };
 
 const root = process.cwd();

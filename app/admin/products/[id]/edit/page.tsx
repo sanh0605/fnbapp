@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { findAll } from "@/lib/db/tables";
-import { loadProductRows } from "@/app/admin/products/load-product-rows";
+import { findAll, findAllWhere } from "@/lib/db/tables";
+import { loadProductRow } from "@/app/admin/products/load-product-rows";
 import ProductForm from "@/app/admin/products/components/ProductForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
@@ -17,13 +17,12 @@ export default async function EditProductPage({
 }) {
   const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/products");
 
-  const [{ enhancedProducts, activeCategories }, optionGroups, optionGroupLinks] = await Promise.all([
-    loadProductRows(),
+  const [product, categories, optionGroups, optionGroupLinks] = await Promise.all([
+    loadProductRow(params.id),
+    findAll("Product_Categories"),
     findAll("Modifier_Groups"),
-    findAll("Modifier_Group_Products"),
+    findAllWhere<any>("Modifier_Group_Products", { eq: { product_id: params.id } }),
   ]);
-
-  const product = enhancedProducts.find((p) => p.id === params.id);
   if (!product) {
     notFound();
   }
@@ -53,10 +52,10 @@ export default async function EditProductPage({
         subtitle={product.name}
       />
       <ProductForm
-        categories={activeCategories}
+        categories={categories.filter((c: any) => c.status !== "DELETED")}
         initialData={product}
         optionGroups={optionGroups}
-        selectedOptionGroupIds={optionGroupLinks.filter((l: any) => l.product_id === product.id).map((l: any) => l.group_id)}
+        selectedOptionGroupIds={optionGroupLinks.map((l: any) => l.group_id)}
         returnTo={detailHref}
       />
     </DetailFrame>

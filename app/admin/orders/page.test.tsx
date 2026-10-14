@@ -10,7 +10,11 @@ describe("orders page day window (A1)", () => {
   beforeEach(() => {
     getOrdersV2.mockReset();
     getOrdersV2.mockResolvedValue({
-      orders: [], totalCount: 0, itemsPerPage: 20, brands: [], products: [], variants: [], modifiers: [], categories: [],
+      orders: [],
+      totalCount: 0,
+      totals: { count: 0, netTotal: 0 },
+      itemsPerPage: 20,
+      brands: [],
     });
   });
 
@@ -23,5 +27,11 @@ describe("orders page day window (A1)", () => {
     const order = new Date("2026-09-14T23:30:00Z").getTime();
     expect(order).toBeGreaterThanOrEqual(new Date(arg.from).getTime());
     expect(order).toBeLessThanOrEqual(new Date(arg.to).getTime());
+  });
+
+  it("passes status=VOIDED to getOrdersV2 when status query param is VOIDED", async () => {
+    await OrdersPage({ searchParams: { status: "VOIDED" } });
+    const arg = getOrdersV2.mock.calls[0][0];
+    expect(arg.status).toBe("VOIDED");
   });
 });

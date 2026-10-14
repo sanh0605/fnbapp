@@ -53,6 +53,7 @@ export default async function ModifierDetailPage({
       product={product}
       groupName={group?.name ?? ""}
       allowStandalone={Boolean(group?.allow_standalone)}
+      groupSelectionMode={group?.selection_mode}
       returnTo={returnTo}
     />
   );

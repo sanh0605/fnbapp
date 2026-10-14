@@ -82,17 +82,22 @@ describe("getOrdersV2 payment filter", () => {
       order("empty", "", 30000),
       // Paid two ways: primary method is the first row's (CASH).
       order("split", "CASH", 40000),
+      order("stray", "CASH", 50000),
+      { ...order("voided", "CASH", 60000), status: "VOIDED", void_reason: "Khach doi y" },
     ];
     mocks.payments = [
       { order_id: "split", method: "CASH", amount: 15000 },
       { order_id: "split", method: "BANK_TRANSFER", amount: 25000 },
+      // One-row order: matched by its payment_method only, never by this row.
+      { order_id: "cash", method: "CASH", amount: 10000 },
+      { order_id: "stray", method: "BANK_TRANSFER", amount: 50000 },
     ];
   });
 
   it("Tien mat: cash, an empty method, and the cash part of a split order -- not a pure bank order", async () => {
     const r = await getOrdersV2({ payment: "Tien mat" });
-    expect(r.orders.map(o => o.id).sort()).toEqual(["cash", "empty", "split"]);
-    expect(r.totals).toEqual({ count: 3, netTotal: 80000 });
+    expect(r.orders.map(o => o.id).sort()).toEqual(["cash", "empty", "split", "stray"]);
+    expect(r.totals).toEqual({ count: 4, netTotal: 130000 });
   });
 
   it("Chuyen khoan: the bank order and the split order that has a bank part", async () => {
@@ -101,8 +106,20 @@ describe("getOrdersV2 payment filter", () => {
     expect(r.totals).toEqual({ count: 2, netTotal: 60000 });
   });
 
-  it("no payment filter still returns every order", async () => {
+  it("no payment filter still returns every completed order", async () => {
     const r = await getOrdersV2({});
-    expect(r.orders).toHaveLength(4);
+    expect(r.orders).toHaveLength(5);
+  });
+
+  it("status VOIDED lists voided orders with their reason; the total row stays out of it (BR-UI-004)", async () => {
+    const r = await getOrdersV2({ status: "VOIDED" });
+    expect(r.orders.map(o => [o.id, o.void_reason])).toEqual([["voided", "Khach doi y"]]);
+    expect(r.totals).toEqual({ count: 0, netTotal: 0 });
+  });
+
+  it("any other status value means COMPLETED", async () => {
+    const r = await getOrdersV2({ status: "SUPERSEDED" });
+    expect(r.orders.map(o => o.id)).not.toContain("voided");
+    expect(r.orders).toHaveLength(5);
   });
 });

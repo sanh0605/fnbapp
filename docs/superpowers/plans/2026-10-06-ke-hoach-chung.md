@@ -58,7 +58,7 @@ tối ưu được diện tích sử dụng"*.
 | 6b | Sửa theo đợt soát toàn bộ 2026-10-14 (chủ quán yêu cầu): đợt 1 lỗi kỹ thuật, đợt 2 tốc độ, đợt 3 dọn dẹp, đợt 4 gộp chỗ lặp, 10 câu chủ quán quyết | kế hoạch con `docs/superpowers/plans/2026-10-14-soat-toan-bo.md`; đã sửa ngay: lộ mã băm mật khẩu ở Doanh số, cổng sửa đơn không hỏi đăng nhập, đơn vị ở Kiểm kê |
 | 6b-F5 | Trang "Nhóm tuỳ chọn" theo khung chuẩn (chủ quán chốt 2026-10-14 "Dùng khung chuẩn") | kế hoạch con `docs/superpowers/plans/2026-10-14-nhom-tuy-chon.md`, đặc tả `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md`; code xong 2026-10-14 (năm cửa kiểm xanh, soát độc lập đã sửa xong), migration `0119` đã chạy lên máy chủ 2026-10-15 (chủ quán duyệt; đo: 0/9 tuỳ chọn thiếu nhóm, 35 món đồ uống được gắn, 0 món ăn và Topping); đẩy lên bản thật 2026-10-15 (chủ quán duyệt "đẩy lên bản thật", `feebd7ee`, Vercel READY, 0 lỗi máy chủ 10 phút đầu); hàm sao lưu `backup-to-drive` deploy cùng ngày (chủ quán duyệt riêng, thêm 5 bảng mới; chưa xem bản sao đêm đầu); chủ quán mở trang thật 2026-10-15: "Đã kiểm tra và ổn"; migration B (`0120`, `9bef9288`) đã chạy lên máy chủ 2026-10-15 (chủ quán duyệt "Chạy đi"; đo: `group_id` bắt buộc, cột `group_name` đã bỏ, 9/9 tuỳ chọn có nhóm, `sync_topping_price_atomic` còn một bản 3 đối số chỉ `service_role` gọi được, Kem muối 4.000/4.000); code đẩy lên bản thật cùng ngày (chủ quán duyệt "Đẩy đi", `cf11785f`, Vercel READY, 0 lỗi máy chủ). **Xong** |
 | 6-thứ-tự | **Chủ quán chốt 2026-10-14 "Đổi thứ tự":** xong 6b-F5 → chủ quán bấm thử, đẩy đợt này → làm 6c và 6d chung, **theo từng mảng** (Bán hàng, Kho, Thu chi, Báo cáo, Máy bán hàng). Mỗi mảng soát một lần cả cấu trúc dữ liệu, khuôn thiết kế chung và đề xuất cách làm tốt hơn; chủ quán chọn xong thì làm luôn mảng đó. Đợt 3, đợt 4 của 6b, mục 4, mục 5 và mục 7 gộp vào mảng tương ứng, không làm riêng. **Chủ quán chốt 2026-10-15 "Làm lại từng mảng"** khi hỏi có nên làm lại toàn bộ: không dựng lại cả hệ thống; giữ phần tiền và kho đã đối chiếu đúng; mảng nào gốc sai thì đề xuất dựng lại cả mảng đó (như Nhóm tuỳ chọn), máy bán hàng chạy suốt; bắt đầu từ mảng Bán hàng | — |
-| 6-Bán-hàng | Mảng Bán hàng: soát và đề xuất `docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`; chủ quán trả lời đủ 8 câu 2026-10-15 | **Đã làm:** món đã xoá không còn nút Bán lại (`61937cd0`); Sửa đơn chỉ đổi cách trả (`BR-SALE-014`, `b3253f16`), nút vẫn tên "Sửa đơn" (chủ quán 2026-10-15). **Còn:** các mục kỹ thuật, ghi dữ liệu và đợt đổi cấu trúc theo bảng "Thứ tự làm" của bản đề xuất; tính giá khuyến mãi (C10) làm đủ bốn bước |
+| 6-Bán-hàng | Mảng Bán hàng: soát và đề xuất `docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`; chủ quán trả lời đủ 8 câu 2026-10-15 | **Đã làm:** món đã xoá không còn nút Bán lại (`61937cd0`); Sửa đơn chỉ đổi cách trả (`BR-SALE-014`, `b3253f16`), nút vẫn tên "Sửa đơn" (chủ quán 2026-10-15); đẩy lên bản thật 2026-10-15 (chủ quán duyệt, `167bd201`, Vercel READY, 0 lỗi máy chủ). Đợt 2 (`docs/superpowers/plans/2026-10-15-ban-hang-dot-2.md`) xong trên nhánh 2026-10-15, chưa đẩy: Huỷ đơn thành trang riêng có lý do; danh sách đơn lọc Đã huỷ; mở lại điểm bán đã ngừng; bỏ ô Ngày áp dụng giá; lỗi hiện ngay dưới ô; năm trang tạo mới (Món, Nhóm món, Loại món, Tuỳ chọn, Nhóm tuỳ chọn) theo khuôn; xoá trang Topping cũ; script trả lại người bán và khuyến mãi cho đơn đã sửa viết xong, chưa chạy ghi. **Còn:** các mục kỹ thuật, ghi dữ liệu và đợt đổi cấu trúc theo bảng "Thứ tự làm" của bản đề xuất; tính giá khuyến mãi (C10) làm đủ bốn bước |
 | 6c | Thống nhất một khuôn thiết kế chung cho toàn dự án, rồi soát mọi trang theo cùng một luật, cùng một thiết kế; chủ quán 2026-10-14: *"đây luôn là điểm ưu"*. Kèm theo: trang nào có cách làm tốt hơn (tra hệ thống lớn cùng ngành) thì đề xuất làm lại, không bám code 100% (chủ quán 2026-10-14). Làm sau khi xong 6b | chưa làm |
 | 6d | Soát cấu trúc cơ sở dữ liệu, tối ưu cho không thừa không thiếu; chủ quán 2026-10-14 chấp nhận thao tác trên hệ thống có thể đổi theo (*"đó là điều phải xảy ra"*); được chạy nhiều Opus song song để soát. Làm sau 6c. Việc nào có thể làm máy bán ngừng nhận đơn phải báo trước | chưa làm |
 | 7 | Máy bán hàng và trang đăng nhập | chưa làm |
@@ -112,7 +112,7 @@ Luật: `docs/02-rules/business-rules/screens.md`.
   2026-10-08, chờ đẩy: dòng tổng của bảng báo cáo nằm ngay dưới tiêu đề, bảng lãi lỗ giữ hình đã duyệt.
   Đợt K6 (Nhân sự, Thương hiệu, Điểm bán, Nhật ký, Đơn cần chú ý, Xóa bộ nhớ đệm, Đổi mật khẩu, nút chọn
   điểm bán; kế hoạch con `docs/superpowers/plans/2026-10-08-dot-k6-con-lai.md`) xong trên nhánh 2026-10-08,
-  chờ đẩy: danh sách nợ của phép kiểm canh chỉ còn `ToppingsManager.tsx`, file không ai dùng (mục 6).
+  chờ đẩy. Danh sách nợ của phép kiểm canh nay trống: file Topping không ai dùng đã xoá 2026-10-15 (Bán hàng đợt 2).
 - **Ô nhập số:** soát mọi ô. Mẫu là ô "Số lượng" của trang tạo phiếu xuất (chủ quán khen):
   bàn phím số trên điện thoại, số lẻ gõ bằng dấu chấm (`BR-UI-008`; trước 2026-10-07 là dấu phẩy), hiện "Quy ra" bên cạnh. Thêm: tự chèn dấu phẩy
   hàng nghìn khi gõ, không có mũi tên tăng giảm, cuộn chuột không làm đổi số (ô
@@ -138,10 +138,10 @@ Luật: `docs/02-rules/business-rules/screens.md`.
   chủ quán khi bắt đầu.
 - **Báo cáo:** Tổng kết ngày, Doanh số, Hàng đã xuất, Lãi lỗ.
 - **Trang lẻ:** Nhật ký hoạt động, Đồng bộ máy bán hàng, Xoá cache, Lịch sử giá món
-  (`/admin/products/[id]/history`), `/admin/products/toppings`, Đổi mật khẩu
+  (`/admin/products/[id]/history`), Đổi mật khẩu
   (`/settings/password`).
 - **Trang tạo mới còn dùng kiểu cũ** (`PageHeader` + form): Thương hiệu, Điểm bán,
-  Khuyến mãi, Món, Nhóm món, Topping & tuỳ chọn, Sổ thu chi, Nhóm thu chi, Tài khoản ngân
+  Khuyến mãi, Sổ thu chi, Nhóm thu chi, Tài khoản ngân
   hàng, Chuyển tiền, Nhân viên — dựng giống trang sửa của khuôn.
 
 ## 3. Tổng quan mới
@@ -187,7 +187,7 @@ File lớn chưa bước nào đụng (đo 2026-10-06): `app/pos/components/POSS
 Mỗi lần dọn: mọi phép kiểm xanh và giá vốn tính lại ra đúng số cũ (đo lại trước khi dùng).
 
 Code chết đã thấy, chỉ báo chưa xoá: `getCashEntries` (`app/admin/finance/actions.ts`),
-`DeleteConfirmModal.tsx`, `ToppingsManager.tsx`.
+`DeleteConfirmModal.tsx`.
 
 ## 7. Máy bán hàng và trang đăng nhập
 

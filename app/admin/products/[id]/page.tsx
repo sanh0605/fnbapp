@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { loadProductRow } from "@/app/admin/products/load-product-rows";
 import { resolveActor } from "@/lib/auth/auth";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
-import { findAllWhere } from "@/lib/db/tables";
+import { findAll, findAllWhere } from "@/lib/db/tables";
 import { ProductDetailView } from "./components/ProductDetailView";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +14,20 @@ export default async function ProductDetailPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const [product, auth] = await Promise.all([loadProductRow(params.id), resolveActor()]);
+  const [product, auth, allOptionGroups, optionGroupLinks] = await Promise.all([
+    loadProductRow(params.id),
+    resolveActor(),
+    findAll("Modifier_Groups"),
+    findAllWhere<any>("Modifier_Group_Products", { eq: { product_id: params.id } }),
+  ]);
   if (!product) {
     notFound();
   }
+
+  const linkedGroupIds = new Set(optionGroupLinks.map((l: any) => l.group_id));
+  const optionGroupNames = allOptionGroups
+    .filter((g: any) => linkedGroupIds.has(g.id))
+    .map((g: any) => g.name);
 
   // A dish still linked to a topping cannot be erased (RESTRICT), so the
   // button is not offered; eraseProduct says why if it is called anyway.
@@ -51,6 +61,7 @@ export default async function ProductDetailPage({
       returnTo={returnTo}
       canDelete={canDelete}
       linkedModifierId={linkedModifierId}
+      optionGroupNames={optionGroupNames}
     />
   );
 }

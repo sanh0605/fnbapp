@@ -32,22 +32,6 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: mocks.routerRefresh, push: mocks.push }),
 }));
 
-// ProductForm renders CustomDatePicker (react-datepicker) unconditionally;
-// that component calls window.matchMedia in a mount effect, which jsdom
-// does not implement. Same stub as app/admin/outlets/components/OutletForm.test.tsx.
-if (typeof window.matchMedia !== "function") {
-  window.matchMedia = ((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => false,
-  })) as unknown as typeof window.matchMedia;
-}
-
 const roots: Root[] = [];
 const containers: HTMLElement[] = [];
 
@@ -78,9 +62,9 @@ async function fireClick(el: Element) {
 
 const CATEGORIES = [{ id: "CAT-007", name: "Topping" }];
 
-async function openEditForm(product: any, canDelete?: boolean) {
+async function openEditForm(product: any) {
   const container = await renderTracked(
-    <ProductForm categories={CATEGORIES} initialData={product} canDelete={canDelete} />,
+    <ProductForm categories={CATEGORIES} initialData={product} />,
   );
   return priceBoxOf(container);
 }
@@ -260,6 +244,53 @@ describe("ProductForm -- option groups tick list", () => {
     const fd = mocks.saveProduct.mock.calls[0][0] as FormData;
     expect(fd.get("option_group_ids_sent")).toBe("1");
     expect(fd.getAll("option_group_ids")).toEqual(["MG-001", "MG-002"]);
+  });
+});
+
+describe("ProductForm -- inline validation and Alert (ticket B2)", () => {
+  it("does not render Ngày áp dụng giá date picker", async () => {
+    const container = await renderTracked(<ProductForm categories={CATEGORIES} />);
+    expect(container.textContent).not.toContain("Ngày áp dụng giá");
+    expect(container.querySelector('input[name="effective_date"]')).toBeNull();
+  });
+
+  it("shows inline field errors under Tên món and Nhóm món when submitted empty", async () => {
+    const container = await renderTracked(<ProductForm categories={CATEGORIES} />);
+    // Submit the form itself: jsdom, like the browser, stops a button click on
+    // empty `required` boxes before onSubmit runs.
+    const form = container.querySelector("form")!;
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+
+    expect(mocks.saveProduct).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Vui lòng nhập tên món");
+    expect(container.textContent).toContain("Vui lòng chọn nhóm món");
+  });
+
+  it("shows save error in shared Alert above buttons on failure", async () => {
+    mocks.saveProduct.mockResolvedValue({ success: false, error: "Tên món đã tồn tại" });
+    const container = await renderTracked(
+      <ProductForm categories={[{ id: "CAT-001", name: "Cà phê" }]} />,
+    );
+
+    const nameInput = container.querySelector('input[placeholder*="Cà phê"]') as HTMLInputElement;
+    await typeInto(nameInput, "Cà phê sữa");
+    const categorySelect = container.querySelector("select") as HTMLSelectElement;
+    await act(async () => {
+      categorySelect.value = "CAT-001";
+      categorySelect.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    const priceBox = priceBoxOf(container);
+    await typeInto(priceBox, "25000");
+
+    const save = Array.from(container.querySelectorAll("button")).find((b) => /^Lưu/.test(b.textContent?.trim() ?? ""))!;
+    await fireClick(save);
+
+    expect(mocks.saveProduct).toHaveBeenCalled();
+    const alertEl = container.querySelector('[role="alert"]');
+    expect(alertEl).toBeTruthy();
+    expect(alertEl?.textContent).toContain("Tên món đã tồn tại");
   });
 });
 

@@ -62,12 +62,30 @@ describe("loadProductRow equals loadProductRows for the same dish (F12)", () => 
     __soldModifiers: ["M1"] as any[],
   };
 
+  // The list skips what only the detail page reads.
+  const LIST_SKIPS = ["priceHistory", "neverSold", "hasModifierLink"];
   for (const id of ["P1", "P2", "P3", "P4", "P5"]) {
-    it(`same row for ${id}`, async () => {
+    it(`list row for ${id} is the single row without the detail-only fields`, async () => {
       const bulk = (await loadProductRows()).enhancedProducts.find((p: any) => p.id === id);
-      expect(await loadProductRow(id)).toEqual(bulk);
+      const one: any = await loadProductRow(id);
+      for (const k of LIST_SKIPS) delete one[k];
+      expect(bulk).toEqual(one);
+      for (const k of LIST_SKIPS) expect(bulk).not.toHaveProperty(k);
     });
   }
+
+  // BR-CATALOG-003: P3 sold only as an add-on (M1) counts as sold.
+  it("loadProductRow marks never-sold from order lines and from add-on sales", async () => {
+    expect(((await loadProductRow("P1")) as any).neverSold).toBe(false);
+    expect(((await loadProductRow("P2")) as any).neverSold).toBe(true);
+    expect(((await loadProductRow("P3")) as any).neverSold).toBe(false);
+  });
+
+  it("the list reads no price history and scans no order lines", async () => {
+    db.idScans = 0;
+    await loadProductRows();
+    expect(db.idScans).toBe(0);
+  });
 
   it("returns null for an unknown id and probes order lines with limit-1 reads only", async () => {
     expect(await loadProductRow("NOPE")).toBeNull();

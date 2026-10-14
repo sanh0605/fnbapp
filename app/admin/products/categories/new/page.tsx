@@ -1,8 +1,8 @@
 import { getProductTypes } from "@/app/admin/products/types/actions";
 import { ProductCategoryForm } from "@/app/admin/products/categories/components/ProductCategoryForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +16,13 @@ export default async function NewProductCategoryPage({
   const types = typeRows.map((r) => r.type);
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Nhóm món" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Nhóm món"
         title="Tạo nhóm món"
-        subtitle="Thêm nhóm sản phẩm mới vào Menu bán hàng."
       />
       <ProductCategoryForm types={types} returnTo={returnTo} />
-    </div>
+    </DetailFrame>
   );
 }

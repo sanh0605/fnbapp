@@ -28,9 +28,9 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
     const actor = { id: auth.actor.id, name: auth.actor.name };
 
     const order = await findById("Orders_V2", orderId);
-    if (!order) return { success: false, error: `Order ${orderId} not found` };
-    if (order.status !== ORDER_STATUS.COMPLETED && order.status !== ORDER_STATUS.VOIDED) {
-      return { success: false, error: `Order status is ${order.status}, must be COMPLETED to void` };
+    if (!order) return { success: false, error: "Không tìm thấy đơn" };
+    if (order.status !== ORDER_STATUS.COMPLETED) {
+      return { success: false, error: "Đơn này không còn huỷ được" };
     }
 
     const eventTime = new Date().toISOString();
@@ -69,6 +69,13 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
     }
     return { success: true };
   } catch (err: any) {
-    return { success: false, error: err?.message || String(err) };
+    console.error("[voidOrderV2]", err);
+    return {
+      success: false,
+      // void_order_atomic raises this when someone else voided or changed the order first.
+      error: String(err?.message).includes("must be COMPLETED to void")
+        ? "Đơn vừa được người khác sửa, tải lại trang rồi làm lại"
+        : "Huỷ đơn không thành, thử lại",
+    };
   }
 }

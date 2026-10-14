@@ -12,33 +12,30 @@ vi.mock("next/navigation", () => ({
   notFound: notFoundMock,
 }));
 
-vi.mock("@/app/admin/products/load-product-rows", () => ({
-  loadProductRows: vi.fn().mockResolvedValue({
-    enhancedProducts: [
-      {
-        id: "PROD-005",
-        name: "Matcha latte",
-        category_id: "CAT-002",
-        status: "ACTIVE",
-        variants: [],
-        priceHistory: [],
-      },
-    ],
-    activeCategories: [{ id: "CAT-002", name: "Giải trí" }],
-  }),
+const PRODUCT = {
+  id: "PROD-005",
+  name: "Matcha latte",
+  category_id: "CAT-002",
+  status: "ACTIVE",
+  variants: [],
+  priceHistory: [],
+};
+
+const { loadProductRow, loadProductRows } = vi.hoisted(() => ({
+  loadProductRow: vi.fn(),
+  loadProductRows: vi.fn(),
 }));
+vi.mock("@/app/admin/products/load-product-rows", () => ({ loadProductRow, loadProductRows }));
 
 vi.mock("@/lib/db/tables", () => ({
   findAll: vi.fn(async (sheet: string) =>
-    sheet === "Modifier_Group_Products"
-      ? [
-          { group_id: "MG-001", product_id: "PROD-005" },
-          { group_id: "MG-002", product_id: "PROD-999" },
-        ]
+    sheet === "Product_Categories"
+      ? [{ id: "CAT-002", name: "Giải trí", status: "ACTIVE" }, { id: "CAT-009", name: "Cũ", status: "DELETED" }]
       : sheet === "Modifier_Groups"
         ? [{ id: "MG-001" }, { id: "MG-002" }]
         : [],
   ),
+  findAllWhere: vi.fn(async () => [{ group_id: "MG-001", product_id: "PROD-005" }]),
 }));
 
 vi.mock("@/app/admin/products/components/ProductForm", () => ({
@@ -48,6 +45,7 @@ vi.mock("@/app/admin/products/components/ProductForm", () => ({
 describe("EditProductPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    loadProductRow.mockImplementation(async (id: string) => (id === PRODUCT.id ? PRODUCT : null));
   });
 
   it("calls notFound when product id is unknown", async () => {
@@ -55,6 +53,14 @@ describe("EditProductPage", () => {
       EditProductPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
+  });
+
+  it("loads the one dish, never the whole list", async () => {
+    const element = await EditProductPage({ params: { id: "PROD-005" }, searchParams: {} });
+    const formChild: any = React.Children.toArray(element.props.children).find((c: any) => c.props?.categories);
+    expect(loadProductRow).toHaveBeenCalledWith("PROD-005");
+    expect(loadProductRows).not.toHaveBeenCalled();
+    expect(formChild.props.categories).toEqual([{ id: "CAT-002", name: "Giải trí", status: "ACTIVE" }]);
   });
 
   it("hands the form the groups and only this dish's ticked ones", async () => {

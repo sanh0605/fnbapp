@@ -7,6 +7,8 @@ tables: Pos_Sync_Failures, Outlets, Brands, Dashboard_Settings
 brCodes: BR-SALE-006, BR-SALE-007, BR-CASH-009
 ```
 
+**Behaviour change — 2026-10-15 (Bán hàng đợt 2, `BR-SALE-006`):** a stopped outlet can be reopened. `reactivateOutlet` (`app/admin/outlets/actions.ts`, ADMIN only) sets it back to `ACTIVE` and clears its end date; it keeps its code, so its order numbers carry on. The outlet's page shows "Mở lại hoạt động" only while it is stopped.
+
 **Behaviour change — 2026-10-14 (audit C16):** the "Đơn đồng bộ trễ" list on `/admin/pos-sync` reads only orders synced in the last 30 days, and its heading says "30 ngày gần nhất". The list is for information only (no action on it); orders not yet synced were never in it, and the failures table above it keeps no date limit.
 
 **Behaviour change — 2026-10-14 (audit F1):** `getActiveOutlets` (`app/admin/outlets/actions.ts`) feeds "Chọn điểm bán" in the admin layout, so a stopped outlet no longer appears; `/pos` redirects to `/admin` for a non-`ACTIVE` outlet and `submitOrderV2` refuses it ("Điểm bán này đã ngừng hoạt động"). A till already open at an outlet that is then stopped gets its next orders refused. Tổng quan's "Nhập" on a monthly-expense reminder now sends the reminder's month (audit B2): the new cash-book entry is dated the last day of that month when it is not the current month, and saving returns to Tổng quan.

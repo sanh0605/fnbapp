@@ -36,14 +36,16 @@ export default async function OrdersPage({
 
   const payment = getParam("payment") || undefined;
   const brand = getParam("brand") || undefined;
+  const status = getParam("status");
 
-  const { orders, totalCount, totals, itemsPerPage, brands, products, variants, modifiers, categories } = await getOrdersV2({
+  const { orders, totalCount, totals, itemsPerPage, brands } = await getOrdersV2({
     page,
     q: q || undefined,
     from: searching ? undefined : toStartOfDayIso(range.start),
     to: searching ? undefined : toEndOfDayIso(range.end),
     payment,
     brand,
+    status,
   });
 
   return (
@@ -55,10 +57,6 @@ export default async function OrdersPage({
           totals={totals}
           itemsPerPage={itemsPerPage}
           brands={brands}
-          products={products}
-          variants={variants}
-          modifiers={modifiers}
-          categories={categories}
           range={range}
           today={today}
           searching={searching}

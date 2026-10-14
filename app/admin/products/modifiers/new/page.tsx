@@ -2,8 +2,8 @@ import { findAll } from "@/lib/db/tables";
 import type { DBModifierGroup } from "@/types/db";
 import { ModifierForm } from "@/app/admin/products/modifiers/components/ModifierForm";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +16,13 @@ export default async function NewModifierPage({
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/products/modifiers");
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Topping & tuỳ chọn" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Topping & tuỳ chọn"
         title="Tạo tuỳ chọn"
-        subtitle="Thêm tuỳ chọn mới vào Menu bán hàng."
       />
       <ModifierForm groups={groups} returnTo={returnTo} />
-    </div>
+    </DetailFrame>
   );
 }

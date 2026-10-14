@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -39,16 +38,29 @@ function renderPaymentMethod(order: OrderDetailV2Result["order"]) {
   );
 }
 
+function formatEventType(type: string): string {
+  switch (type) {
+    case "CREATED":
+      return "Tạo";
+    case "EDITED":
+      return "Sửa";
+    case "VOIDED":
+      return "Huỷ";
+    case "MIGRATED":
+      return "Chuyển dữ liệu cũ";
+    default:
+      return type;
+  }
+}
+
 export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewProps) {
-  const router = useRouter();
   const currentOrder = detail.order;
   const timeline = detail.timeline || [];
   const events = detail.events || [];
 
   const brand = brands.find((b) => b.id === currentOrder.brand_id);
   const orderNo = currentOrder.display_order_no || currentOrder.order_no;
-
-  const formatDate = (s: string) => formatDateTime(s);
+  const voidReason = events.find((e) => e.event_type === "VOIDED")?.reason;
 
   return (
     <div className="space-y-6">
@@ -58,16 +70,30 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
         title={orderNo}
         badge={
           currentOrder.version > 1 ? (
-            <span className="text-xs font-bold text-primary bg-primary-soft px-2 py-0.5 rounded">
-              v{currentOrder.version}
-            </span>
+            <Badge variant="neutral">v{currentOrder.version}</Badge>
           ) : undefined
         }
         subtitle={
           <>
-            {formatDate(currentOrder.created_at)}
+            {formatDateTimeFull(currentOrder.created_at)}
             {brand && <span className="ml-2 text-primary font-medium">{brand.name}</span>}
           </>
+        }
+        actions={
+          currentOrder.status === "COMPLETED" ? (
+            <>
+              <Button
+                href={`/admin/orders/${encodeURIComponent(currentOrder.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`}
+                variant="secondary"
+              >
+                Sửa đơn
+              </Button>
+              <VoidOrderButton
+                orderId={currentOrder.id}
+                returnTo={returnTo}
+              />
+            </>
+          ) : undefined
         }
       />
 
@@ -162,17 +188,21 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
 
         {/* Right: side info */}
         <div data-testid="detail-side" className="space-y-6">
-          {/* Card 1: badges, breakdown, actions */}
+          {/* Card 1: badges, breakdown, void reason */}
           <div className="bg-surface-card rounded-card shadow-sm border border-border p-5 space-y-4">
             <div className="flex flex-wrap gap-3 items-center">
               {renderPaymentMethod(currentOrder)}
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-surface-secondary text-text-secondary">
-                {currentOrder.created_by_name}
-              </span>
+              <Badge variant="neutral">{currentOrder.created_by_name}</Badge>
               {currentOrder.status === "VOIDED" && (
                 <Badge variant="danger">Đã huỷ</Badge>
               )}
             </div>
+
+            {currentOrder.status === "VOIDED" && voidReason && (
+              <div className="text-sm text-text-secondary">
+                Lý do huỷ: <span className="text-text-primary font-medium">{voidReason}</span>
+              </div>
+            )}
 
             {/* Money breakdown */}
             <div className="bg-page rounded-xl p-3 text-sm space-y-1">
@@ -203,28 +233,6 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                 <span className="text-primary">{formatNumber(currentOrder.net_total)}</span>
               </div>
             </div>
-
-            {/* Actions for COMPLETED order */}
-            {currentOrder.status === "COMPLETED" && (
-              <div className="flex gap-3">
-                <Button
-                  href={`/admin/orders/${encodeURIComponent(currentOrder.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`}
-                  variant="secondary"
-                  className="flex-1"
-                >
-                  Sửa đơn
-                </Button>
-                <VoidOrderButton
-                  orderId={currentOrder.id}
-                  orderNo={orderNo}
-                  className="flex-1"
-                  onVoided={() => {
-                    router.push(returnTo);
-                    router.refresh();
-                  }}
-                />
-              </div>
-            )}
           </div>
 
           {/* Card 2: Timeline */}
@@ -246,7 +254,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                       {v.status === "VOIDED" && <span className="ml-2 text-danger">(đã huỷ)</span>}
                     </div>
                     <div className="text-right">
-                      <div className="text-text-secondary">{formatDate(v.created_at)}</div>
+                      <div className="text-text-secondary tabular-nums">{formatDateTimeFull(v.created_at)}</div>
                       <div className="text-text-muted">{formatNumber(v.net_total)}</div>
                     </div>
                   </div>
@@ -263,8 +271,8 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                 {events.map((e) => (
                   <div key={e.id} className="text-xs px-3 py-2 bg-page rounded-lg">
                     <div className="flex justify-between">
-                      <span className="font-bold text-text-primary">{e.event_type}</span>
-                      <span className="text-text-secondary">{formatDate(e.event_at)}</span>
+                      <span className="font-bold text-text-primary">{formatEventType(e.event_type)}</span>
+                      <span className="text-text-secondary tabular-nums">{formatDateTimeFull(e.event_at)}</span>
                     </div>
                     <div className="text-text-secondary mt-0.5">
                       {e.actor_name}: {e.reason}

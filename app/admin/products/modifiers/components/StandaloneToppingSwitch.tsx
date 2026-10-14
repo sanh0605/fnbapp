@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toggleToppingStandalone } from "@/app/admin/products/toppings/actions";
-import { createStandaloneToppingAction } from "../actions";
+import { createStandaloneToppingAction, toggleToppingStandalone } from "../actions";
 import { alert, confirm } from "@/lib/shared/dialog";
 import { formatNumber } from "@/lib/shared/format";
 
 // BR-CATALOG-003. One switch, three states: (a)/(b) an already
-// linked modifier toggles its product ACTIVE/INACTIVE directly, same as
-// ToppingsManager.tsx's existing pattern; (c) an unlinked modifier asks for
+// linked modifier toggles its product ACTIVE/INACTIVE directly; (c) an unlinked modifier asks for
 // confirmation, then creates the product+variant+link in one transaction
 // (migration 0100). No switch renders at all outside groups with allow_standalone
 // (state d) -- Chọn Size/Đường/Đá are choices inside a drink, not toppings.

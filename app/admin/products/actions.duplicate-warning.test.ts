@@ -118,6 +118,5 @@ function makeCreateFormData(name: string): FormData {
       unit_id: "UNT-001",
     }],
   }]));
-  formData.set("effective_date", "2026-08-20T00:00:00.000Z");
   return formData;
 }

@@ -1,16 +1,9 @@
 import { ProductTypeForm } from "@/app/admin/products/types/components/ProductTypeForm";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
-
-function safeReturnTo(raw: string | undefined | null, fallback = "/admin/products/types"): string {
-  if (!raw) return fallback;
-  if (raw === fallback || raw.startsWith(`${fallback}?`) || raw.startsWith(`${fallback}/`)) {
-    return raw;
-  }
-  return fallback;
-}
 
 export default async function NewProductTypePage({
   searchParams,
@@ -20,13 +13,13 @@ export default async function NewProductTypePage({
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/products/types");
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Loại món" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Loại món"
         title="Tạo loại món"
-        subtitle="Thêm loại sản phẩm mới vào Menu bán hàng."
       />
       <ProductTypeForm returnTo={returnTo} />
-    </div>
+    </DetailFrame>
   );
 }

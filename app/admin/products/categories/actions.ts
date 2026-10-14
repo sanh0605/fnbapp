@@ -6,6 +6,7 @@ import { ok, fail, softDeleteEntity, type ActionResponse } from "@/lib/db/shared
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBProductCategory, DBProduct, DBProductType } from "@/types/db";
 import { requireAdmin } from "@/lib/auth/auth";
+import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
 
 const SHEET = "Product_Categories";
 const PATH = "/admin/products/categories";
@@ -54,6 +55,8 @@ export async function saveCategory(formData: FormData): Promise<ActionResponse> 
 
   try {
     if (!(await typeExists(type_id))) return fail("Chọn loại món");
+    const duplicate = findDuplicateActiveName((await findAll(SHEET)) as DBProductCategory[], name);
+    if (duplicate) return fail(duplicateNameErrorMessage(duplicate));
     const id = await generateNewId(SHEET, "CAT");
     const created_at = new Date().toISOString();
     await insert(SHEET, { id, name, type_id, status: "ACTIVE", created_at });
@@ -75,6 +78,8 @@ export async function updateCategory(formData: FormData): Promise<ActionResponse
 
   try {
     if (!(await typeExists(type_id))) return fail("Chọn loại món");
+    const duplicate = findDuplicateActiveName((await findAll(SHEET)) as DBProductCategory[], name, id);
+    if (duplicate) return fail(duplicateNameErrorMessage(duplicate));
     await update(SHEET, id, { name, type_id });
     revalidatePath(PATH);
     return ok();

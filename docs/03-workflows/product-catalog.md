@@ -1,11 +1,18 @@
 # Product catalogue flow
 
 ```flow-decl
-routes: /admin/products, /admin/products/new, /admin/products/[id], /admin/products/[id]/edit, /admin/products/[id]/history, /admin/products/categories, /admin/products/categories/new, /admin/products/categories/[id], /admin/products/categories/[id]/edit, /admin/products/types, /admin/products/types/new, /admin/products/types/[id], /admin/products/types/[id]/edit, /admin/products/modifiers, /admin/products/modifiers/new, /admin/products/modifiers/[id], /admin/products/modifiers/[id]/edit, /admin/products/toppings, /admin/products/modifier-groups, /admin/products/modifier-groups/new, /admin/products/modifier-groups/[id], /admin/products/modifier-groups/[id]/edit
-files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-status-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/types/actions.ts, app/admin/products/modifiers/actions.ts, app/admin/products/toppings/actions.ts, lib/products/modifier-save-transaction.ts, lib/products/modifier-group-transaction.ts, app/admin/products/modifier-groups/actions.ts, lib/products/create-standalone-topping.ts
+routes: /admin/products, /admin/products/new, /admin/products/[id], /admin/products/[id]/edit, /admin/products/[id]/history, /admin/products/categories, /admin/products/categories/new, /admin/products/categories/[id], /admin/products/categories/[id]/edit, /admin/products/types, /admin/products/types/new, /admin/products/types/[id], /admin/products/types/[id]/edit, /admin/products/modifiers, /admin/products/modifiers/new, /admin/products/modifiers/[id], /admin/products/modifiers/[id]/edit, /admin/products/modifier-groups, /admin/products/modifier-groups/new, /admin/products/modifier-groups/[id], /admin/products/modifier-groups/[id]/edit
+files: app/admin/products/actions.ts, lib/products/product-save-transaction.ts, lib/products/product-status-transaction.ts, lib/products/product-erase-transaction.ts, app/admin/products/categories/actions.ts, app/admin/products/types/actions.ts, app/admin/products/modifiers/actions.ts, lib/products/modifier-save-transaction.ts, lib/products/modifier-group-transaction.ts, app/admin/products/modifier-groups/actions.ts, lib/products/create-standalone-topping.ts
 tables: Products, products, product_variants, product_price_history, Product_Categories, Product_Types, Modifiers, modifier_groups, modifier_group_products
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-007
 ```
+
+**Behaviour change — 2026-10-15 (Bán hàng đợt 2, `docs/superpowers/plans/2026-10-15-ban-hang-dot-2.md`):**
+- Deleting an option whose standalone dish is on sale is refused, with the dish named. Turn "Bán độc lập" off first.
+- The "Bán độc lập" switch pauses or resumes the dish with its sizes, through the same path as the dish page. The dead `/admin/products/toppings` address and `ToppingsManager` are gone.
+- A Nhóm món name already used by a live group is refused.
+- "Ngày áp dụng giá" is no longer read: a price change is dated when it is saved (Q8).
+- Tạo món and Sửa món load only what they show, and the Món list no longer builds price history per row.
 
 **Behaviour change — 2026-10-15 (migration `0120`, ran on the server 2026-10-15 with the owner's approval):** every option must have a group (`modifiers.group_id` not null) and the old text column `modifiers.group_name` is dropped; `sync_topping_price_atomic` loses its group argument. The Topping & tuỳ chọn list shows the group's name, or "—" if the group is missing. Nothing visible changes in the till. A backup taken before this restores through a shim in `lib/db/backup-restore.ts` that maps the old name to its group.
 
@@ -76,8 +83,10 @@ near-match warning rather than a hard refusal (`BR-CATALOG-001`).
 Saving a product is not a single-table write. The save transaction writes the
 product row and its variants, and as a side effect it also writes a new
 **price-history** row (`product_price_history`) so the price in force at each
-moment is preserved. Toppings are themselves stored as products, which is why
-`app/admin/products/toppings/actions.ts` writes the `Products` table too.
+moment is preserved. Toppings are themselves stored as products; the option
+screen's "Bán độc lập" switch (`toggleToppingStandalone` in
+`app/admin/products/modifiers/actions.ts`) pauses or resumes that product
+through `lib/products/product-status-transaction.ts`, the dish and its sizes together.
 
 **Reviewed, no behaviour change to the save path's own inputs/outputs beyond
 this — 2026-09-28 (migration 0105):** `recipes` was dropped along with 9
@@ -115,8 +124,7 @@ product (`MOD-009` today) updates only itself.
    2026-09-08 (`BR-CATALOG-003`) — a modifier is either **linked** to a standalone `CAT-007` product
    (itself live or hidden, toggled by the same switch) or **unlinked**
    (`MOD-009`'s shape, until the switch is used to create the link — see
-   above). `/admin/products/toppings` no longer has its own list; it redirects
-   to the merged screen for old links/bookmarks.
+   above). The old `/admin/products/toppings` address is gone (2026-10-15).
 2. **Buttons per screen, and when to hide them.** Every row opens its detail
    page; edits happen only from there (list/detail template, wave 4). The
    product list offers create and, while the filter is "Đang bán", a "Ngừng
@@ -160,7 +168,7 @@ Per the generated map, the eight declared files write: `Products` and
 `product_price_history` (`lib/products/product-erase-transaction.ts`);
 `Product_Categories` (`app/admin/products/categories/actions.ts`); `Modifiers`
 (`app/admin/products/modifiers/actions.ts`, when creating or deleting a
-modifier); `Products` (`app/admin/products/toppings/actions.ts`);
+modifier);
 `modifiers`, `product_variants`, `product_price_history`
 (`lib/products/modifier-save-transaction.ts`, called by
 `app/admin/products/modifiers/actions.ts` on every save — the price sync

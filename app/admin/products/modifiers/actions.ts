@@ -6,6 +6,7 @@ import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBModifier, DBModifierGroup } from "@/types/db";
 import { requireAdmin } from "@/lib/auth/auth";
+import { setProductStatusAtomic } from "@/lib/products/product-status-transaction";
 import { saveModifierAtomic } from "@/lib/products/modifier-save-transaction";
 import { createStandaloneToppingProductAtomic } from "@/lib/products/create-standalone-topping";
 
@@ -93,6 +94,14 @@ export async function deleteModifierAction(formData: FormData): Promise<ActionRe
   if (!id) return fail("ID không hợp lệ");
 
   try {
+    // A linked dish that stays ACTIVE would keep selling with no option behind it.
+    const linked = ((await findAll(MODIFIER_SHEET)) as DBModifier[]).find((m) => m.id === id)?.product_id;
+    if (linked) {
+      const dish = ((await findAll("Products")) as any[]).find((p) => p.id === linked);
+      if (dish?.status === "ACTIVE") {
+        return fail(`Tuỳ chọn này đang bán riêng thành món ${dish.name}. Tắt Bán độc lập trước rồi xoá`);
+      }
+    }
     await update(MODIFIER_SHEET, id, { status: "DELETED" });
     revalidateTag(getCacheTag("Modifiers"));
     revalidatePath(PATH);
@@ -124,6 +133,33 @@ export async function createStandaloneToppingAction(modifierId: string): Promise
     revalidateTag("sheets-Products");
     revalidateTag("sheets-Product_Variants");
     revalidateTag(getCacheTag("Modifiers"));
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
+
+// BR-CATALOG-003: the Bán độc lập switch. A standalone topping is identified by its
+// modifier link (migration 0097), not by its dish group. The status change runs through
+// the same atomic rpc as the dish page, so the dish and its sizes move together.
+export async function toggleToppingStandalone(productId: string, enabled: boolean): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  try {
+    const product = ((await findAll("Products")) as any[]).find((p) => p.id === productId);
+    if (!product) return fail(`Không tìm thấy sản phẩm ${productId}`);
+    // The rpc accepts any dish; a deleted one would come back on the till.
+    if (product.status === "DELETED") return fail("Món đã xoá, không bật/tắt bán độc lập được");
+    const modifiers = (await findAll(MODIFIER_SHEET)) as DBModifier[];
+    if (!modifiers.some((m) => m.status !== "DELETED" && m.product_id === productId)) {
+      return fail(`Món "${product.name || productId}" không gắn với topping nào nên không bật/tắt bán độc lập được.`);
+    }
+    await setProductStatusAtomic(productId, enabled ? "ACTIVE" : "INACTIVE");
+    revalidateTag("sheets-Products");
+    revalidateTag("sheets-Product_Variants");
+    revalidatePath("/pos");
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

@@ -67,6 +67,16 @@ export default function ProductTypesClient({
   const columns: DataColumn<ProductTypeRow>[] = useMemo(
     () => [
       {
+        key: "id",
+        header: "Mã",
+        sortValue: (r) => r.type.id,
+        render: (r) => (
+          <span className="font-mono text-xs text-primary font-normal">
+            {r.type.id}
+          </span>
+        ),
+      },
+      {
         key: "name",
         header: "Tên loại",
         sortValue: (r) => r.type.name,
@@ -101,7 +111,7 @@ export default function ProductTypesClient({
   );
 
   const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
-  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "name");
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
   const sortParam = rawSort ? sortKey : undefined;
   const dirParam = rawSort ? sortDir : undefined;
 
@@ -110,10 +120,11 @@ export default function ProductTypesClient({
     return rows.filter((r) => {
       if (!q) return true;
       const matchName = (r.type.name || "").toLocaleLowerCase("vi").includes(q);
+      const matchId = (r.type.id || "").toLocaleLowerCase("vi").includes(q);
       const matchGroups = r.categoryNames.some((n) =>
         n.toLocaleLowerCase("vi").includes(q),
       );
-      return matchName || matchGroups;
+      return matchName || matchId || matchGroups;
     });
   }, [rows, search]);
 
@@ -153,8 +164,13 @@ export default function ProductTypesClient({
     return (
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-start gap-2">
-          <div className="text-text-primary text-base leading-tight font-normal">
-            {r.type.name}
+          <div>
+            <div className="text-text-primary text-base leading-tight font-normal">
+              {r.type.name}
+            </div>
+            <div className="font-mono text-xs text-primary mt-0.5">
+              {r.type.id}
+            </div>
           </div>
           <div className="shrink-0 text-text-secondary text-xs font-normal">
             Tính là ly: {r.type.is_drink ? "Có" : "Không"}

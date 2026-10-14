@@ -8,6 +8,8 @@ const mocks = vi.hoisted(() => ({
   generateNewId: vi.fn(),
   saveModifierAtomic: vi.fn(),
   createStandaloneToppingProductAtomic: vi.fn(),
+  setProductStatusAtomic: vi.fn(),
+  revalidatePath: vi.fn(),
   revalidateTag: vi.fn(),
 }));
 
@@ -23,9 +25,10 @@ vi.mock("@/lib/products/modifier-save-transaction", () => ({ saveModifierAtomic:
 vi.mock("@/lib/products/create-standalone-topping", () => ({
   createStandaloneToppingProductAtomic: mocks.createStandaloneToppingProductAtomic,
 }));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), revalidateTag: mocks.revalidateTag }));
+vi.mock("@/lib/products/product-status-transaction", () => ({ setProductStatusAtomic: mocks.setProductStatusAtomic }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
-import { getModifiersData, saveModifierAction, deleteModifierAction, createStandaloneToppingAction } from "./actions";
+import { getModifiersData, saveModifierAction, deleteModifierAction, createStandaloneToppingAction, toggleToppingStandalone } from "./actions";
 
 const GROUPS = [
   { id: "MG-001", name: "Thêm Topping", selection_mode: "MANY", allow_standalone: true },
@@ -206,6 +209,7 @@ describe("saveModifierAction new-modifier path", () => {
 describe("deleteModifierAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    seedTables();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
   });
 
@@ -218,6 +222,79 @@ describe("deleteModifierAction", () => {
 
     expect(result.success).toBe(true);
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
+  });
+
+  // The linked dish would otherwise stay on the till with no option behind it.
+  it("refuses while the linked dish is ACTIVE, naming the dish, and deletes nothing", async () => {
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Modifiers" ? OPTIONS : [{ id: "PROD-031", name: "Trân châu trắng (lẻ)", status: "ACTIVE" }]);
+    const fd = new FormData();
+    fd.set("id", "MOD-004");
+
+    const result = await deleteModifierAction(fd);
+
+    expect(result.error).toBe(
+      "Tuỳ chọn này đang bán riêng thành món Trân châu trắng (lẻ). Tắt Bán độc lập trước rồi xoá",
+    );
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("deletes once the linked dish is INACTIVE", async () => {
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Modifiers" ? OPTIONS : [{ id: "PROD-031", name: "Trân châu trắng (lẻ)", status: "INACTIVE" }]);
+    const fd = new FormData();
+    fd.set("id", "MOD-004");
+
+    expect((await deleteModifierAction(fd)).success).toBe(true);
+    expect(mocks.update).toHaveBeenCalledWith("Modifiers", "MOD-004", { status: "DELETED" });
+  });
+});
+
+// Moved from toppings/actions: the Bán độc lập switch on a linked dish. The
+// status change goes through the atomic rpc so the dish and its sizes move together.
+describe("toggleToppingStandalone", () => {
+  const linked = [{ id: "MOD-004", product_id: "PROD-031", status: "ACTIVE" }];
+  const seed = (productStatus: string, modifiers: any[] = linked) =>
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Modifiers" ? modifiers : [{ id: "PROD-031", name: "Trân châu trắng", status: productStatus }]);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+  });
+
+  it.each([[true, "ACTIVE"], [false, "INACTIVE"]] as const)(
+    "enabled=%s sets %s through the atomic rpc and revalidates the till caches",
+    async (enabled, status) => {
+      seed(enabled ? "INACTIVE" : "ACTIVE");
+
+      const res = await toggleToppingStandalone("PROD-031", enabled);
+
+      expect(res.error).toBeUndefined();
+      expect(mocks.setProductStatusAtomic).toHaveBeenCalledWith("PROD-031", status);
+      expect(mocks.update).not.toHaveBeenCalled();
+      expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
+      expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
+    },
+  );
+
+  it("refuses a DELETED dish", async () => {
+    seed("DELETED");
+
+    const res = await toggleToppingStandalone("PROD-031", true);
+
+    expect(res.error).toBeTruthy();
+    expect(mocks.setProductStatusAtomic).not.toHaveBeenCalled();
+  });
+
+  it("refuses a dish no option links to", async () => {
+    seed("ACTIVE", []);
+
+    const res = await toggleToppingStandalone("PROD-031", true);
+
+    expect(res.error).toBeTruthy();
+    expect(mocks.setProductStatusAtomic).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 });
 

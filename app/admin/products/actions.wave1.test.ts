@@ -31,7 +31,6 @@ function editForm(variants: unknown[], extra: Record<string, string> = {}): Form
   fd.append("category_id", "CAT-001");
   fd.append("name", "Trà đào");
   fd.append("variants_json", JSON.stringify(variants));
-  fd.append("effective_date", "2026-10-14");
   for (const [k, v] of Object.entries(extra)) fd.append(k, v);
   return fd;
 }
@@ -154,5 +153,14 @@ describe("Nhóm tuỳ chọn ticks on the dish form", () => {
   it("leaves the ticks alone when the form never showed the tick list", async () => {
     await saveProduct(editForm(sizes));
     expect(mocks.saveProductAtomic.mock.calls[0][0].optionGroupIds).toBeUndefined();
+  });
+});
+
+describe("price history takes the save time", () => {
+  it("ignores an effective_date sent by an old open form", async () => {
+    const before = Date.now();
+    await saveProduct(editForm([{ id: "VAR-1", size_name: "M", price: 30000 }], { effective_date: "2020-01-01T00:00:00.000Z" }));
+    const at = Date.parse(mocks.saveProductAtomic.mock.calls[0][0].effectiveAt);
+    expect(at).toBeGreaterThanOrEqual(before);
   });
 });

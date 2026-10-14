@@ -1,18 +1,11 @@
 import { findAll } from "@/lib/db/tables";
 import { ModifierGroupForm } from "@/app/admin/products/modifier-groups/components/ModifierGroupForm";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import type { DBProductCategory, DBProduct } from "@/types/db";
 
 export const dynamic = "force-dynamic";
-
-function safeReturnTo(raw: string | undefined | null, fallback = "/admin/products/modifier-groups"): string {
-  if (!raw) return fallback;
-  if (raw === fallback || raw.startsWith(`${fallback}?`) || raw.startsWith(`${fallback}/`)) {
-    return raw;
-  }
-  return fallback;
-}
 
 export default async function NewModifierGroupPage({
   searchParams,
@@ -27,17 +20,17 @@ export default async function NewModifierGroupPage({
   ]);
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Nhóm tuỳ chọn" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Nhóm tuỳ chọn"
         title="Tạo nhóm tuỳ chọn"
-        subtitle="Thêm nhóm tuỳ chọn mới vào Menu bán hàng."
       />
       <ModifierGroupForm
         categories={categories}
         products={products}
         returnTo={returnTo}
       />
-    </div>
+    </DetailFrame>
   );
 }
