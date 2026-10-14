@@ -137,7 +137,8 @@ export default async function SalesReportPage({
     <div className="space-y-6">
       <SalesFilter
         brands={brands}
-        users={users}
+        // A client component: pass only what the staff filter reads, never password_hash (BR-ACCESS-002).
+        users={(users as any[]).map(({ id, name, username, status }) => ({ id, name, username, status }))}
         categories={categories}
         range={range}
         today={today}

@@ -103,3 +103,21 @@ describe("Doanh số compare cards (BR-UI-007)", () => {
     expect(getSalesDataV2.mock.calls[0][0]).toMatchObject({ startDate: "2026-10-01", endDate: "2026-10-31" });
   });
 });
+
+describe("Doanh số never sends account secrets to the browser (BR-ACCESS-002)", () => {
+  it("passes the staff filter only id, name, username and status", async () => {
+    getSalesDataV2.mockResolvedValue(EMPTY);
+    getHourlyHeatmapV2.mockResolvedValue([]);
+    getSalesTotalsV2.mockResolvedValue({ totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 });
+    const { findAll } = await import("@/lib/db/tables");
+    vi.mocked(findAll).mockImplementation(async (sheet: string) =>
+      sheet === "Users"
+        ? [{ id: "U-1", name: "Chủ quán", username: "admin", status: "ACTIVE", role: "ADMIN", password_hash: "$2b$10$secret-hash" }]
+        : [],
+    );
+    const json = JSON.stringify(await SalesReportPage({ searchParams: {} }));
+    expect(json).not.toContain("secret-hash");
+    expect(json).not.toContain("password_hash");
+    expect(json).toContain('"username":"admin"');
+  });
+});
