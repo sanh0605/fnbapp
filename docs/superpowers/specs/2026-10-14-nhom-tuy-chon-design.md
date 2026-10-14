@@ -41,8 +41,8 @@ Looked at: the files named above, `app/pos/page.tsx`, `app/pos/actions.ts`, `app
 
 The example the owner approved is one Trà sữa truyền thống at 18.000đ. The till shows the groups in making order:
 
-1. **MỨC ĐƯỜNG**: Chọn một, Bắt buộc. Ít đường • **Bình thường (sẵn)** • Nhiều đường.
-2. **MỨC ĐÁ**: Chọn một, Bắt buộc. Ít đá • **Bình thường (sẵn)** • Không đá.
+1. **MỨC ĐƯỜNG**: Chọn một. Ít đường • **Bình thường (sẵn)** • Nhiều đường.
+2. **MỨC ĐÁ**: Chọn một. Ít đá • **Bình thường (sẵn)** • Không đá.
 3. **LOẠI SỮA**: Chọn một. **Sữa tươi (sẵn) 0đ** • Sữa yến mạch +8.000đ.
 4. **THÊM TOPPING**: Chọn nhiều, at most 3 portions in all, each kind at most x2.
 
@@ -54,7 +54,6 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
 |---|---|---|
 | Tên | text, not blank | Unique among groups that are not erased, ignoring case |
 | Kiểu chọn | Chọn một / Chọn nhiều | — |
-| Bắt buộc | yes / no; Chọn một only | A required group must have a default option, so it never costs a tap. Saving without one is refused: "Nhóm bắt buộc phải có một lựa chọn có sẵn." |
 | Tối đa mấy phần | blank = no cap, or an integer 1–20; Chọn nhiều only | Total portions across the group |
 | Cho bán riêng | yes / no; Chọn nhiều only | Rule 3 below |
 | Thứ tự hiện | an integer 1–99 | Ties sort by name |
@@ -67,22 +66,23 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
 - **Có sẵn**: at most one per Chọn một group. Ticking it on one option clears it on the others in that group, in the same save.
 - **Tối đa mỗi món**: Chọn nhiều only; blank means no cap, otherwise an integer 1–20.
 
+**No "Bắt buộc" box.** The example showed sugar and ice as required. Since a Chọn một group with a default is always answered, the box would change nothing on the till, so it was left out (ponytail, owner rule 2026-10-14). A group with no default stays optional, as the owner chose in answer 4.
+
 ## Data
 
 - **`modifier_groups`**
   - `id`, made by `generateNewId` (`MG-001`).
   - `name`.
   - `selection_mode`, either `ONE` or `MANY`.
-  - `required` boolean.
   - `max_total` integer, nullable.
   - `allow_standalone` boolean.
   - `sort_order` integer.
   - `status`, either `ACTIVE` or `INACTIVE`.
   - `created_at` and `updated_at`.
-  - Checks: `required` and `allow_standalone` are false unless the mode is `MANY`/`ONE` as the table above says, and `max_total` is null for `ONE`.
+  - Checks: `allow_standalone` is false and `max_total` is null when the mode is `ONE`.
 - **`modifier_group_products`**: `group_id` and `product_id`, both `RESTRICT`, primary key on the pair. Unticking deletes the row; this is settings with no history.
 - **`modifiers`** gains three columns:
-  - `group_id`, referencing the group, `RESTRICT`, not null after the backfill;
+  - `group_id`, referencing the group, `RESTRICT`; not null from migration B;
   - `is_default` boolean, with a partial unique index on (`group_id`) where it is true;
   - `max_qty` integer, nullable.
 - **What a sale stores.** A sold line stores only the options picked away from the defaults, one entry per portion, as today. A plain cup stores none, exactly like the 4.502 plain lines already sold, and reports stay unchanged. The cost is that a later change of default does not rewrite old orders; they meant the default of their day.
@@ -91,9 +91,8 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
 ## Rules
 
 1. **Till behaviour.**
-   - A Chọn một group opens with its default picked. Tapping another option moves the pick. In a group that is not required, tapping the picked option clears it.
+   - A Chọn một group opens with its default lit. Tapping another option moves the pick; tapping the lit option again goes back to the default, or to nothing when the group has none.
    - A Chọn nhiều group keeps +/−. "+" greys out at the option's cap or the group's cap.
-   - "Thêm vào đơn" needs every required group answered, which the default already does.
 2. **Stopping and erasing.**
    - A stopped group and its options disappear from the till, Sửa món and Sửa đơn. Its options and dish ticks stay, so "Dùng lại" restores it.
    - Only `ADMIN` erases a group (`requireOwner()`), and only an empty one. Postgres refuses otherwise, and the refusal is shown in Vietnamese naming the options.
@@ -101,7 +100,7 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
    - Turning it off is refused while an option in the group is sold on its own, naming those dishes (for example "Trân châu trắng").
    - Moving such an option into a group that does not allow it is refused the same way.
    - Migration 0100's function reads `allow_standalone` instead of the name. Every hardcoded "Thêm Topping" goes.
-4. **Order.** The till, the group page, the cart line and the order page all list groups by `sort_order` and then by name.
+4. **Order.** The till and the group page list groups by `sort_order` and then by name. The cart line and the order page list the stored picks as today.
 5. **Dishes.**
    - A new dish starts with no group.
    - Saving a dish together with its ticks, or a group together with its ticks, writes two tables, so it goes through one Postgres function.
@@ -119,14 +118,16 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
 
 ## Rollout: two migrations, never ahead of the code
 
-1. **Migration A runs before the deploy.** The live code still reads `group_name`, and that keeps working because this step only adds. It does the following:
-   - adds the tables and columns;
+1. **Migration A (0119) runs before the deploy.** The live code still reads and writes `group_name` and calls the same functions with the same arguments. That keeps working because this step only adds, and no function's return changes:
+   - adds the tables and columns; `group_id` stays nullable for now, since the live code inserts options without it;
    - creates "Thêm Topping": `MANY`, no caps, `allow_standalone` true, `sort_order` 50, so groups the owner adds later with lower numbers come before it;
-   - sets every option's `group_id`;
-   - ticks every non-deleted dish in Cà phê, Giải trí, Trà, Yogurt and Cacao, re-measured that day;
-   - switches 0100's check.
-2. **The deploy.** On day one the till behaves as today except that only drinks show toppings.
-3. **Migration B runs after the deploy is checked.** It drops `modifiers.group_name` and moves migration 0098's sync function off it.
+   - sets every option's `group_id` from its name;
+   - ticks every non-deleted dish whose dish group's type is a drink (`product_types.is_drink`, which today means Cà phê, Giải trí, Trà, Yogurt and Cacao), re-measured that day;
+   - switches 0100's check to the option's group;
+   - adds `save_modifier_atomic` and `save_modifier_group_atomic`;
+   - replaces `save_product_atomic` with the same function plus an optional last argument for the dish's groups. It is dropped and recreated so that no second version exists to confuse a call. A call without the argument leaves the ticks alone.
+2. **The deploy.** The new code reads `group_id` and the links and writes through the new functions. On day one the till behaves as today, except that only drinks show toppings.
+3. **Migration B is written only after the deploy is checked**, so a push cannot carry it along early. It sets `group_id` from the name for any option the old code made in between, makes `group_id` not null, drops `modifiers.group_name`, and takes the group argument out of `sync_topping_price_atomic`, which by then only `save_modifier_atomic` calls.
 
 **Cost to state before running:** a till still holding the old page shows every option on every dish until it reloads. It does not stop taking orders.
 
@@ -135,9 +136,7 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
 - **Failing tests first**, one per rule. They include:
   - the default is picked on open;
   - Chọn một moves the pick;
-  - a required group cannot be cleared;
   - "+" stops at x2 and at 3 in all;
-  - a required group without a default is refused;
   - only the non-default picks are stored and shown;
   - "Có sẵn" on a second option clears the first;
   - turning off "Cho bán riêng" is refused, naming Trân châu trắng;
