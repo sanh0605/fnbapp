@@ -233,7 +233,6 @@ export function ModifierGroupForm({
                 min={1}
                 max={20}
                 decimals={0}
-                hint="Bỏ trống là không giới hạn"
                 example="3"
                 value={maxTotal === "" ? null : Number(maxTotal)}
                 onValueChange={(v) => setMaxTotal(v === null ? "" : String(v))}

@@ -156,7 +156,6 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
                 decimals={0}
                 min={1}
                 max={20}
-                hint="Bỏ trống là không giới hạn"
                 example="2"
                 value={maxQty === "" ? null : Number(maxQty)}
                 onValueChange={(v) => setMaxQty(v === null ? "" : String(v))}
