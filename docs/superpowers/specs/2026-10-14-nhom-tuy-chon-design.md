@@ -127,7 +127,7 @@ A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.
    - adds `save_modifier_atomic` and `save_modifier_group_atomic`;
    - replaces `save_product_atomic` with the same function plus an optional last argument for the dish's groups. It is dropped and recreated so that no second version exists to confuse a call. A call without the argument leaves the ticks alone.
 2. **The deploy.** The new code reads `group_id` and the links and writes through the new functions. On day one the till behaves as today, except that only drinks show toppings.
-3. **Migration B is written only after the deploy is checked**, so a push cannot carry it along early. It sets `group_id` from the name for any option the old code made in between, makes `group_id` not null, drops `modifiers.group_name`, and takes the group argument out of `sync_topping_price_atomic`, which by then only `save_modifier_atomic` calls.
+3. **Migration B (written 2026-10-15 as `0120_modifier_group_required.sql`, not yet run on the server) is written only after the deploy is checked**, so a push cannot carry it along early. It sets `group_id` from the name for any option the old code made in between, makes `group_id` not null, drops `modifiers.group_name`, and takes the group argument out of `sync_topping_price_atomic`, which by then only `save_modifier_atomic` calls.
 
 **Cost to state before running:**
 - A till still holding the old page shows every option on every dish until it reloads. It does not stop taking orders.

@@ -108,7 +108,7 @@ describe("ModifierForm -- price box (wave K4)", () => {
   it("an option priced 0đ shows 0, not an empty box", () => {
     render(
       <ModifierForm
-        initialData={{ id: "MOD-001", name: "Ít đá", group_id: "MG-003", group_name: "Mức đá", price: 0 } as any}
+        initialData={{ id: "MOD-001", name: "Ít đá", group_id: "MG-003", price: 0 } as any}
         groups={sampleGroups}
         returnTo="/admin/products/modifiers"
       />,
@@ -149,7 +149,7 @@ describe("ModifierForm -- option groups come from a table the owner edits (audit
     // Editing an option in MG-001 (allow_standalone: true)
     const { unmount } = render(
       <ModifierForm
-        initialData={{ id: "MOD-001", name: "Trân châu trắng", group_id: "MG-001", group_name: "Thêm Topping", price: 5000 } as any}
+        initialData={{ id: "MOD-001", name: "Trân châu trắng", group_id: "MG-001", price: 5000 } as any}
         groups={sampleGroups}
         returnTo="/admin/products/modifiers"
       />
@@ -160,7 +160,7 @@ describe("ModifierForm -- option groups come from a table the owner edits (audit
     unmount();
     render(
       <ModifierForm
-        initialData={{ id: "MOD-002", name: "Ít đường", group_id: "MG-002", group_name: "Mức đường", price: 0 } as any}
+        initialData={{ id: "MOD-002", name: "Ít đường", group_id: "MG-002", price: 0 } as any}
         groups={sampleGroups}
         returnTo="/admin/products/modifiers"
       />

@@ -7,6 +7,8 @@ tables: Products, products, product_variants, product_price_history, Product_Cat
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-007
 ```
 
+**Behaviour change — 2026-10-15 (migration `0120`, written, not yet run on the server):** every option must have a group (`modifiers.group_id` not null) and the old text column `modifiers.group_name` is dropped; `sync_topping_price_atomic` loses its group argument. The Topping & tuỳ chọn list shows the group's name, or "—" if the group is missing. Nothing visible changes in the till. A backup taken before this restores through a shim in `lib/db/backup-restore.ts` that maps the old name to its group.
+
 **Behaviour change — 2026-10-14 (audit F5, owner "Dùng khung chuẩn"; migration `0119`, ran on the server 2026-10-15 with the owner's approval: 0 of 9 options without a group, 35 drink dishes ticked, 0 food or Topping dishes):** a new list `/admin/products/modifier-groups` "Nhóm tuỳ chọn" sits under Bán hàng next to Topping & Tuỳ chọn (`BR-CATALOG-005`).
 - Each group is Chọn một or Chọn nhiều, with a display order, an optional cap on portions (Chọn nhiều), a "Cho bán riêng" box (Chọn nhiều), and the dishes it applies to. Dishes can also be ticked on Sửa món; both save through one Postgres function.
 - The option form picks its group from that table, and has "Có sẵn" (Chọn một) and "Tối đa mỗi món" (Chọn nhiều); `save_modifier_atomic` clears the group's other default and syncs a linked topping's price in one transaction. The old one-purpose price-sync module is gone.

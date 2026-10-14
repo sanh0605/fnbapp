@@ -133,7 +133,6 @@ export interface DBOutlet {
 
 export interface DBModifier {
   id: string;
-  group_name: string;
   name: string;
   price: string;
   status: string;
@@ -141,8 +140,8 @@ export interface DBModifier {
   // product it also sells standalone, if one exists. Nullable -- a
   // modifier may have no standalone counterpart (e.g. MOD-009).
   product_id: string | null;
-  // Nhóm tuỳ chọn (migration 0119). group_id is null only until migration B.
-  group_id: string | null;
+  // Nhóm tuỳ chọn (migration 0119); not null since 0120.
+  group_id: string;
   is_default: boolean;
   max_qty: number | null;
 }

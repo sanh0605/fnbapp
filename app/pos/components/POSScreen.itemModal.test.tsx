@@ -220,7 +220,7 @@ describe("POSScreen item-configuration modal", () => {
   it("a modifier with a price adds it, the counter tracks repeats, and minus is disabled at zero", async () => {
     const product = makeProduct("P1", "Trà đào");
     const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 20000 }];
-    const modifiers = [{ id: "M1", group_id: "MG-1", group_name: "Topping", name: "Trân châu", price: 5000, status: "ACTIVE" }];
+    const modifiers = [{ id: "M1", group_id: "MG-1", name: "Trân châu", price: 5000, status: "ACTIVE" }];
 
     await renderTracked(
       <POSScreen
@@ -267,7 +267,7 @@ describe("POSScreen item-configuration modal", () => {
   it("quantity multiplies base price plus modifiers, and the minus button floors at 1", async () => {
     const product = makeProduct("P1", "Cà phê đen");
     const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 18000 }];
-    const modifiers = [{ id: "M1", group_id: "MG-1", group_name: "Topping", name: "Sữa", price: 2000, status: "ACTIVE" }];
+    const modifiers = [{ id: "M1", group_id: "MG-1", name: "Sữa", price: 2000, status: "ACTIVE" }];
 
     await renderTracked(
       <POSScreen
@@ -524,7 +524,7 @@ describe("POSScreen item-configuration modal", () => {
       { id: "V1", product_id: "P1", size_name: "Nhỏ", price: 25000 },
       { id: "V2", product_id: "P1", size_name: "Lớn", price: 35000 },
     ];
-    const modifiers = [{ id: "M1", group_id: "MG-1", group_name: "Topping", name: "Đá", price: 1000, status: "ACTIVE" }];
+    const modifiers = [{ id: "M1", group_id: "MG-1", name: "Đá", price: 1000, status: "ACTIVE" }];
 
     await renderTracked(
       <POSScreen
@@ -567,8 +567,8 @@ describe("POSScreen item-configuration modal", () => {
     const product = makeProduct("P1", "Bạc xỉu");
     const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 20000 }];
     const modifiers = [
-      { id: "M1", group_id: "MG-1", group_name: "Topping", name: "Trân châu", price: 3000, status: "ACTIVE" },
-      { id: "M2", group_id: "MG-1", group_name: "Topping", name: "Thạch", price: 2000, status: "ACTIVE" },
+      { id: "M1", group_id: "MG-1", name: "Trân châu", price: 3000, status: "ACTIVE" },
+      { id: "M2", group_id: "MG-1", name: "Thạch", price: 2000, status: "ACTIVE" },
     ];
     const promotions = [
       {

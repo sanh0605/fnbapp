@@ -18,7 +18,6 @@ vi.mock("@/app/admin/products/modifiers/actions", () => ({
       {
         id: "MOD-001",
         name: "Trân châu đen",
-        group_name: "Thêm Topping",
         price: "5000",
         status: "ACTIVE",
         product_id: null,
