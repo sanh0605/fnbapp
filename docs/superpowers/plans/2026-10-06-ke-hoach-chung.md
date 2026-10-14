@@ -47,7 +47,7 @@ tối ưu được diện tích sử dụng"*.
 
 | # | Phần | Trạng thái |
 |---|---|---|
-| 0 | Sửa chỗ hỏng sau đợt K2–K6 và bộ lọc thời gian; đo tốc độ trước và sau; rồi tiêu đề cột đậm, căn trái (`BR-UI-011`); trang tạo/sửa hai cột cho Phiếu nhập, Phiếu xuất, Sửa đơn hàng — trước khi đẩy | xong trên nhánh 2026-10-10, chờ đẩy: sửa bảng Khuyến mãi, ô lọc trên điện thoại (15 trang), tiêu đề cột đậm căn trái, ba trang tạo/sửa hai cột; đo tốc độ bản chạy thật: nhánh không chậm hơn bản đang dùng. Còn: bản mẫu hai cột cho Món và Khuyến mãi |
+| 0 | Sửa chỗ hỏng sau đợt K2–K6 và bộ lọc thời gian; đo tốc độ trước và sau; rồi tiêu đề cột đậm, căn trái (`BR-UI-011`); trang tạo/sửa hai cột cho Phiếu nhập, Phiếu xuất, Sửa đơn hàng — trước khi đẩy | xong trên nhánh 2026-10-10, chờ đẩy: sửa bảng Khuyến mãi, ô lọc trên điện thoại (15 trang), tiêu đề cột đậm căn trái, ba trang tạo/sửa hai cột; đo tốc độ bản chạy thật: nhánh không chậm hơn bản đang dùng. Thêm 2026-10-11 → 14: mọi trang chung một khung tối đa 1.280 căn giữa (`BR-UI-012`), ô và dòng gọn hơn trên máy tính (`BR-UI-014`), tiêu đề trang tạo là "Tạo …" (`BR-UI-013`), mọi form còn lại hai cột kể cả Món và Khuyến mãi (chủ quán chốt 2026-10-14 thay cho bản mẫu), trang một đơn hàng hai cột, Hàng đã xuất có bảng trên máy tính |
 | 1 | Giao diện đồng nhất — đợt 8: Phiếu nhập, Phiếu xuất, Đơn hàng | đang làm |
 | 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | đang làm: khuôn K1–K6 xong (K2–K6 chờ đẩy); bộ lọc thời gian xong trên nhánh 2026-10-09, chờ đẩy |
 | 2 | Giao diện đồng nhất — các trang ngoài khuôn | chưa làm |
