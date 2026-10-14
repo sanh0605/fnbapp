@@ -1,6 +1,6 @@
 # Sửa phiếu kiểm kê đã xác nhận — đặc tả và thiết kế
 
-Ngày: 2026-10-14. Luật: `BR-INV-012` (`docs/02-rules/business-rules/inventory.md`).
+Ngày: 2026-10-14. Luật: `BR-INV-012` (`docs/02-rules/business-rules/stocktake.md`).
 Trạng thái: **chủ quán xác nhận ví dụ 2026-10-14** (*"1a 2b 3b"*, Q4 *"a"*).
 
 ## 1. Chủ quán đã chốt

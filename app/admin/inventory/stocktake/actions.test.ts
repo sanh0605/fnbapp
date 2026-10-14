@@ -670,3 +670,9 @@ describe("editing a confirmed stocktake (BR-INV-012)", () => {
     expect(result.error).toContain("Chỉ sửa được phiếu kiểm kê mới nhất");
   });
 });
+
+describe("confirming a stocktake after a late slip (BR-INV-017)", () => {
+  it.todo(
+    "Khi xác nhận kiểm kê, máy tính lại số trên sổ tại giờ đếm, kể cả phiếu nhập trễ ghi ngày trước giờ đếm, nên không trừ hai lần (chủ quán chốt 14/10/2026)",
+  );
+});

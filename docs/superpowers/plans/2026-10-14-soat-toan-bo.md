@@ -104,7 +104,7 @@ dõi tồn" (A13); dòng đơn ở danh sách và chi tiết dùng chung (C14).
 | # | Mã | Câu hỏi | Ảnh hưởng hôm nay |
 |---|---|---|---|
 | 1 | C5 | Máy bán mở cả ngày, chủ quán đổi giá lúc trưa: thu giá cũ mà sổ ghi giá mới. Lấy giá máy bán hiện, hay từ chối đơn và bắt tải lại? | **Đã chốt 14/10: từ chối, bắt tải lại** (`BR-SALE-008`) |
-| 2 | A2 | Phiếu xuất nhập trễ (ngày trước lúc đếm) bị tính hai lần khi xác nhận kiểm kê. Từ chối và đếm lại, hay tự tính lại? | Mỗi lần nhập trễ trong lúc đang kiểm |
+| 2 | A2 | Phiếu xuất nhập trễ (ngày trước lúc đếm) bị tính hai lần khi xác nhận kiểm kê. Từ chối và đếm lại, hay tự tính lại? | **Đã chốt 14/10: tự tính lại lúc xác nhận** (`BR-INV-017`) |
 | 3 | E2 | Quản lý tự nâng mình thành chủ quán hoặc đổi mật khẩu chủ quán được. Chỉ chủ quán đụng tài khoản ADMIN? | Bất kỳ lúc nào |
 | 4 | A3b | Sửa phiếu nhập của tháng đã kiểm kê: có cho không? | Bất kỳ lúc nào |
 | 5 | C9 | Giảm % cả đơn tính trên tổng trước hay sau giảm từng món? | Đơn có cả hai kiểu giảm |
