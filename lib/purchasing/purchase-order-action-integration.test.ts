@@ -14,13 +14,10 @@ describe("purchase order action integration", () => {
   it("uses the atomic RPC instead of client-side multi-step writes", () => {
     expect(source).toContain("savePurchaseOrderAtomic");
     expect(source).not.toContain('generateNewId("Purchase_Orders"');
-    // The one allowed direct update is setPurchaseOrderPayment: a single-row,
-    // single-statement change of the two payment columns of a completed order
-    // (spec 2026-10-04 section 7). Any other update of the order must go
-    // through the atomic function.
+    // No direct update of an order at all: the only way to change a completed
+    // order's payment is the edit form, through the atomic save (owner 2026-10-14).
     const directUpdates = source.match(/update\("Purchase_Orders",[^)]*\)/g) ?? [];
-    expect(directUpdates).toHaveLength(1);
-    expect(source).toMatch(/update\("Purchase_Orders", id, \{\s*payment_method: payment\.value\.payment_method,\s*bank_account_id: payment\.value\.bank_account_id,\s*\}\)/);
+    expect(directUpdates).toHaveLength(0);
     expect(source).not.toContain('removeMany("Purchase_Order_Lines"');
     expect(source).not.toContain('removeMany("Stock_Ledger"');
     expect(source).not.toContain('insertMany("Purchase_Order_Lines"');

@@ -385,45 +385,6 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
   }
 }
 
-// Changes only how a COMPLETED order was paid: lines, amounts, stock and the
-// asset register do not read these two columns (spec section 7).
-export async function setPurchaseOrderPayment(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return fail(auth.error);
-
-  const id = ((formData.get("id") as string) || "").trim();
-  if (!id) return fail("Thiếu mã phiếu nhập");
-
-  try {
-    const existing = (await findById("Purchase_Orders", id)) as DBPurchaseOrder | null;
-    if (!existing) return fail("Không tìm thấy phiếu nhập");
-    if (existing.status === "DRAFT") return fail("Phiếu nháp: chọn cách trả trong phiếu");
-    if (existing.status !== "COMPLETED") return fail("Chỉ phiếu đã hoàn thành mới đổi được cách trả");
-
-    const accounts = (await findAll("Bank_Accounts")) as DBBankAccount[];
-    const payment = parsePurchaseOrderPayment({
-      status: "COMPLETED",
-      method: ((formData.get("payment_method") as string) || "").trim(),
-      bankAccountId: ((formData.get("bank_account_id") as string) || "").trim(),
-      activeAccountIds: accounts.filter(a => a.status === "ACTIVE").map(a => a.id),
-      currentAccountId: existing.bank_account_id ?? null,
-    });
-    if (payment.ok === false) return fail(payment.error);
-
-    await update("Purchase_Orders", id, {
-      payment_method: payment.value.payment_method,
-      bank_account_id: payment.value.bank_account_id,
-    });
-    revalidateTag("sheets-Purchase_Orders");
-    revalidatePath(PATH);
-    revalidatePath(`${PATH}/${id}`);
-    revalidatePath("/admin/finance");
-    return ok();
-  } catch (error: unknown) {
-    return describeActionError(error);
-  }
-}
-
 const CANCEL_MIGRATION_PENDING = "Chưa cập nhật dữ liệu, chưa huỷ được phiếu.";
 
 export type PurchaseOrderCancelView =

@@ -66,7 +66,6 @@ export default async function PurchaseOrderDetail({
   const isDraft = po.status === "DRAFT";
   const isCancelled = po.status === "CANCELLED";
   const isAdmin = role === "ADMIN";
-  const canEditPayment = role === "ADMIN" || role === "MANAGER";
   const bankAccounts = (allBankAccounts as any[]).filter(
     (a) => a.status === "ACTIVE" || a.id === po?.bank_account_id
   );
@@ -285,11 +284,9 @@ export default async function PurchaseOrderDetail({
               {(po.status === "COMPLETED" || isCancelled) && (
                 <div className="bg-surface-card rounded-xl border border-border p-4">
                   <PurchasePaymentBlock
-                    poId={po.id}
                     paymentMethod={po.payment_method}
                     bankAccountId={po.bank_account_id}
                     bankAccounts={bankAccounts}
-                    canEdit={canEditPayment && !isCancelled}
                   />
                 </div>
               )}

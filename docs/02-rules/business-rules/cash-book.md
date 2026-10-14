@@ -9,7 +9,8 @@ Flow: `docs/03-workflows/cash-book.md`.
 ### BR-CASH-001 — Sale and purchase money shows in the cash book but is never typed into it, with one dated exception
 
 **Status:** `APPROVED` — owner decision 2026-09-08; exception 2026-09-11;
-changed 2026-10-04 and built the same day (migration `0107`).
+changed 2026-10-04 and built the same day (migration `0107`); changed 2026-10-14
+(payment changes only in Sửa phiếu), built on the branch `feat/no-popups` that day.
 
 **Changed 2026-10-04.** Owner: *"lưu tất cả các lần ảnh hưởng đến dòng tiền
 vào, tức là bao gồm cả tiền thanh toán đơn nhập hàng và tiền bán hàng."* The
@@ -32,6 +33,11 @@ order nothing is chosen in advance: whoever enters it must pick "Tiền mặt" o
 · 482.000đ". Purchases, the same day: *"Anh nghĩ nhập hàng em cũng làm giống đơn
 bán hàng đi, cho nó gọn"*. A day with no cash sale has no cash row. Opening a
 row lists that day's orders, or purchase orders, paid that way.
+
+**Changed 2026-10-14.** Owner, on the completed order PO-203: *"Chỉ được
+đổi trong trang sửa phiếu"*. A completed order's page only shows how it was
+paid. The payment changes in Sửa phiếu, the order's edit form, like every other
+field; Sửa phiếu is ADMIN only, so a manager can no longer change it.
 
 What still holds from 2026-09-08: sales live in the POS, purchases in
 purchase orders, and nobody types a sale or a purchase into the cash book by

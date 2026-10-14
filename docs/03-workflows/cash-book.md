@@ -33,7 +33,7 @@ now shows every movement of money, not only the hand-typed rows
   counting from zero. Cuối kỳ tổng = Đầu kỳ tổng + Tổng thu − Tổng chi.
 - **"Hình thức thanh toán" on purchase orders.** Tiền mặt or Chuyển khoản (with an
   account); required to complete an order, chosen by hand on every new order;
-  editable afterwards on a completed order's page (`setPurchaseOrderPayment`).
+  changed afterwards only in Sửa phiếu, the order's edit form (owner 2026-10-14).
   Orders that existed when `0107` ran count as cash.
 - **"Loại" filter** on the ledger: Tất cả, Bán hàng, Nhập hàng, Ghi tay,
   Chuyển tiền. Under "Đã huỷ" no day row shows.
