@@ -151,8 +151,16 @@ decision 2026-10-14** (audit F5, chose *"Trang riêng Nhóm tuỳ chọn"* over 
 a new group into the box and over keeping four). Today the box "Nhóm tuỳ chọn"
 offers four names written into the code (Thêm Topping, Chọn Size, Chọn Đường,
 Chọn Đá); all 8 live rows are *Thêm Topping* (measured 2026-10-14). The new page
-adds, edits, stops and orders the groups the till shows. Not built yet: it is a
-new table and a new screen, so it gets a design the owner approves first.
+adds, edits, stops and orders the groups the till shows. Owner's answers
+2026-10-14, one per question: each group lists the dishes it applies to
+(*"Anh chọn từng món"*), ticked on the group page or on Sửa món (*"Cả hai
+chỗ"*); each group is *Chọn một* or *Chọn nhiều* (*"Mỗi nhóm tự đặt"*); a
+*Chọn một* group is never compulsory, skipping means made as normal (*"Không
+bắt buộc"*); a "Cho bán riêng" box per group replaces the hardcoded *Thêm
+Topping* (*"Mỗi nhóm có công tắc"*); on day one *Thêm Topping* is ticked for
+drinks only, since all 322 of 4.824 lines ever sold with options were drinks
+(*"Chỉ đồ uống"*). Design: `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md`.
+Not built yet.
 
 ---
 
