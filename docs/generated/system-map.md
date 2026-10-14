@@ -83,7 +83,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - item_categories (id, name, system_type, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - modifier_group_products (id, group_id, product_id)
 - modifier_groups (id, name, selection_mode, max_total, allow_standalone, sort_order, status, created_at, updated_at) status: ACTIVE, INACTIVE
-- modifiers (id, name, group_name, price, status, sort_order, created_at, updated_at, product_id, group_id, is_default, max_qty) status: ACTIVE, INACTIVE, DELETED
+- modifiers (id, name, price, status, sort_order, created_at, updated_at, product_id, group_id, is_default, max_qty) status: ACTIVE, INACTIVE, DELETED
 - monthly_expense_items (id, name, cash_category_id, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, INACTIVE
 - order_events (id, order_id, event_type, event_at, actor_id, actor_name, from_version, to_version, previous_order_id, delta_json, reason)
 - order_lines_v2 (id, order_id, line_no, product_id, product_snapshot_json, variant_id, variant_snapshot_json, qty, unit_price, modifiers_snapshot_json, gross_line_total, promo_discount, manual_item_discount, order_discount_allocation, net_line_total, cost_at_sale, recipe_snapshot_json, promo_discount_reason, manual_discount_reason, created_at)
@@ -102,7 +102,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - purchase_order_lines (id, purchase_order_id, purchased_item_id, unit, quantity, unit_price, subtotal, conversion_id, base_unit, base_quantity, created_at)
 - purchase_orders (id, supplier_id, source_id, transaction_date, supplier_invoice_code, notes, subtotal_amount, shipping_fee, tax_amount, voucher_amount, discount_amount, total_amount, status, created_by_id, created_by_name, created_at, updated_at, payment_method, bank_account_id, cancelled_at, cancelled_by_id, cancelled_by_name, cancel_reason) status: DRAFT, COMPLETED, CANCELLED
 - purchase_sources (id, name, status, created_at) status: ACTIVE, INACTIVE, DELETED
-- purchased_items (id, name, item_category_id, base_ingredient_id, semi_product_id, default_unit_id, status, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at, is_non_inventory) status: ACTIVE, INACTIVE, DELETED
+- purchased_items (id, name, item_category_id, default_unit_id, status, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at, is_non_inventory) status: ACTIVE, INACTIVE, DELETED
 - stock_issues (id, purchased_item_id, issued_at, base_quantity, source, session_id, note, created_at, reverses_issue_id, issue_slip_id)
 - stocktake_lines (id, session_id, item_reference, item_type, counted_qty, theoretical_at_count, counted_at, and)
 - stocktake_sessions (id, status, created_by_id, created_by_name, created_at, confirmed_by_id, confirmed_by_name, confirmed_at, notes, updated_at, reversed_by_id, reversed_by_name, reversed_at, reversed_reason, is_shrinkage) status: OPEN, CONFIRMED, CANCELLED

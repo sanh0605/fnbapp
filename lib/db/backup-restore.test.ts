@@ -225,4 +225,42 @@ describe("restoreBundleToTarget", () => {
 
     expect(insertCalls[0]).toEqual(rows);
   });
+
+  describe("modifiers from a bundle taken before migration 0120", () => {
+    const groups = [{ id: "MG-001", name: "Thêm Topping" }];
+    const notNull = (_t: string, rows: unknown[]) =>
+      (rows as Array<{ group_id?: string }>).every(r => r.group_id)
+        ? { error: null }
+        : { error: { message: "null value in column group_id" } };
+
+    it("takes group_id from the group with the saved name when 0119 had not run, and drops group_name", async () => {
+      const insertCalls: unknown[][] = [];
+      const client = fakeClient((t, rows) => (insertCalls.push(rows), notNull(t, rows)));
+      const bundle = fakeBundle({ modifier_groups: groups, modifiers: [{ id: "MOD-002", group_name: "Thêm Topping", price: 4000 }] });
+
+      await restoreBundleToTarget(bundle, client, ["modifiers"], 500);
+
+      expect(insertCalls[0]).toEqual([{ id: "MOD-002", group_id: "MG-001", price: 4000 }]);
+    });
+
+    it("keeps the saved group_id and drops group_name when the row has both", async () => {
+      const insertCalls: unknown[][] = [];
+      const client = fakeClient((_t, rows) => (insertCalls.push(rows), { error: null }));
+      const bundle = fakeBundle({ modifier_groups: groups, modifiers: [{ id: "MOD-002", group_id: "MG-009", group_name: "Thêm Topping" }] });
+
+      await restoreBundleToTarget(bundle, client, ["modifiers"], 500);
+
+      expect(insertCalls[0]).toEqual([{ id: "MOD-002", group_id: "MG-009" }]);
+    });
+
+    it("reports a row whose name matches no group as skipped instead of dropping it", async () => {
+      const client = fakeClient(notNull);
+      const bundle = fakeBundle({ modifier_groups: groups, modifiers: [{ id: "MOD-009", group_name: "Mức đá" }] });
+
+      const [result] = await restoreBundleToTarget(bundle, client, ["modifiers"], 500);
+
+      expect(result.inserted).toBe(0);
+      expect(result.skipped).toEqual([{ row: { id: "MOD-009" }, error: "null value in column group_id" }]);
+    });
+  });
 });

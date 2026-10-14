@@ -1020,7 +1020,7 @@ describe("getSalesDataV2", () => {
       { id: "PROD-033", name: "Kem muối phô mai", category_id: "CAT-007" },
     ];
     const modifiers = [
-      { id: "MOD-033", name: "Kem muối phô mai", status: "ACTIVE", product_id: "PROD-033", price: 10000, group_name: "Thêm Topping" },
+      { id: "MOD-033", name: "Kem muối phô mai", status: "ACTIVE", product_id: "PROD-033", price: 10000 },
     ];
 
     (findAllNoCache as any).mockImplementation((sheet: string) => {

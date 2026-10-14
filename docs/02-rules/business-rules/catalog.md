@@ -165,7 +165,7 @@ Asked for it the same day: *"trang hàng hoá anh muốn xem được tồn kho 
 
 ### BR-CATALOG-005 — Option groups are a table the owner edits on the page "Nhóm tuỳ chọn", on the standard model
 
-**Status:** `APPROVED` — owner decisions 2026-10-14 (audit F5). Built 2026-10-14 (migration `0119`, `lib/sales/option-groups.ts`, `app/admin/products/modifier-groups/`). Design: `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md`.
+**Status:** `APPROVED` — owner decisions 2026-10-14 (audit F5). Built 2026-10-14 (migration `0119`; migration `0120` then makes the group required on every option and drops the old name column; `lib/sales/option-groups.ts`, `app/admin/products/modifier-groups/`). Design: `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md`.
 
 Until then the option form offered four names written into the code and the till showed every option on every dish, Khoai lang included. The owner chose a page of its own (*"Trang riêng Nhóm tuỳ chọn"*), then, shown a first example, reopened the model and chose the one the large tills use (*"Dùng khung chuẩn"*).
 

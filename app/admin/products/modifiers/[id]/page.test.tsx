@@ -16,7 +16,6 @@ const { mockModifiers } = vi.hoisted(() => ({
     {
       id: "MOD-001",
       name: "Trân châu đen",
-      group_name: "Thêm Topping",
       price: "5000",
       status: "ACTIVE",
       product_id: "PROD-035",
@@ -24,7 +23,6 @@ const { mockModifiers } = vi.hoisted(() => ({
     {
       id: "MOD-002",
       name: "Size L",
-      group_name: "Chọn Size",
       price: "10000",
       status: "ACTIVE",
       product_id: null,

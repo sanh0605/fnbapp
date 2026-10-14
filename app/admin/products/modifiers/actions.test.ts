@@ -63,7 +63,7 @@ describe("getModifiersData", () => {
 
 // BR-CATALOG-003:
 // editing a modifier's price must go through the atomic sync RPC (one write,
-// not a plain update() for price plus a second call for name/group_name),
+// not a plain update() for price plus a second call for the name),
 // and must revalidate the product caches so a synced price does not sit
 // stale behind Products/Product_Variants.
 describe("saveModifierAction edit path", () => {

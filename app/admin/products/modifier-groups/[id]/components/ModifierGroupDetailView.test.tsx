@@ -59,7 +59,6 @@ const sampleOption: DBModifier = {
   id: "MOD-001",
   name: "Trân châu trắng",
   price: "5000",
-  group_name: "Thêm Topping",
   group_id: "MG-001",
   is_default: false,
   max_qty: 2,

@@ -53,7 +53,6 @@ const sampleModifiers: DBModifier[] = [
   {
     id: "MOD-001",
     name: "Trân châu đen",
-    group_name: "Thêm Topping",
     price: "5000",
     status: "ACTIVE",
     product_id: "PROD-035",
@@ -64,7 +63,6 @@ const sampleModifiers: DBModifier[] = [
   {
     id: "MOD-002",
     name: "Size L",
-    group_name: "Chọn Size",
     price: "10000",
     status: "ACTIVE",
     product_id: null,
@@ -158,8 +156,12 @@ describe("ModifiersClient", () => {
   it("search by group name works", () => {
     render(
       <ModifiersClient
-        modifiers={sampleModifiers}
+        modifiers={[sampleModifiers[0], { ...sampleModifiers[1], group_id: "MG-002" }]}
         toppings={sampleToppings}
+        groups={[
+          { id: "MG-001", name: "Thêm Topping", selection_mode: "MANY", max_total: null, allow_standalone: true, sort_order: 50, status: "ACTIVE" },
+          { id: "MG-002", name: "Chọn Size", selection_mode: "ONE", max_total: null, allow_standalone: false, sort_order: 10, status: "ACTIVE" },
+        ]}
       />,
     );
 

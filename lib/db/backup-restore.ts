@@ -81,6 +81,20 @@ function backfillPurchaseOrderPayment(table: string, row: JsonRow): JsonRow {
 }
 
 /**
+ * Migration 0120 dropped modifiers.group_name and made group_id not null. An older
+ * bundle still carries group_name (and, before 0119, no group_id), so take group_id
+ * from the bundle's group with that name and drop the old key. No match leaves
+ * group_id missing: the insert fails and the row lands in `skipped`.
+ */
+function backfillModifierGroup(table: string, row: JsonRow, bundle: BackupBundle): JsonRow {
+  if (table !== "modifiers" || !("group_name" in row)) return row;
+  const { group_name, ...rest } = row;
+  if (rest.group_id) return rest;
+  const group = bundle.tables.modifier_groups?.rows.find(g => g.name === group_name);
+  return group ? { ...rest, group_id: group.id } : rest;
+}
+
+/**
  * Inserts every table's rows from a backup bundle into the target client, in
  * BACKUP_TABLES order so foreign keys resolve (parent tables restored before
  * the children that reference them). The caller is responsible for having
@@ -112,7 +126,7 @@ export async function restoreBundleToTarget(
     const rows = rawRows.map(row => {
       const result = substituteJsonbNullLiterals(table, row);
       if (result.changed) substituted += 1;
-      return backfillPurchaseOrderPayment(table, result.row);
+      return backfillModifierGroup(table, backfillPurchaseOrderPayment(table, result.row), bundle);
     });
 
     for (let offset = 0; offset < rows.length; offset += batchSize) {

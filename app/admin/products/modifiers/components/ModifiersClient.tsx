@@ -76,10 +76,7 @@ export default function ModifiersClient({
   );
 
   const getGroupName = (m: DBModifier): string => {
-    if (m.group_id && groupsById.has(m.group_id)) {
-      return groupsById.get(m.group_id)!.name;
-    }
-    return m.group_name || "—";
+    return groupsById.get(m.group_id)?.name ?? "—";
   };
 
   const toppingById = useMemo(

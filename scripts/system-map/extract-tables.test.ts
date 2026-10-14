@@ -51,4 +51,14 @@ describe("extractTables", () => {
     expect(extractTables(sources).map(t => t.name)).toEqual(["a"]);
     expect(extractTables(sources)[0].columns).toEqual(["id", "name"]);
   });
+
+  it("removes columns taken out by a later DROP COLUMN", () => {
+    const create = `create table public.t (
+      a text,
+      b text
+    );`;
+    expect(extractTables([create, "alter table public.t drop column b;"])[0].columns).toEqual(["a"]);
+    expect(extractTables([create, "alter table public.t drop column if exists b;"])[0].columns).toEqual(["a"]);
+    expect(extractTables([create, "alter table t drop column b, add column c int;"])[0].columns).toEqual(["a", "c"]);
+  });
 });
