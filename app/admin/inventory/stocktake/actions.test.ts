@@ -538,3 +538,9 @@ describe("getLastConfirmedStocktakeSession (Plan D D14)", () => {
     });
   });
 });
+
+describe("editing a confirmed stocktake (BR-INV-012)", () => {
+  it.todo(
+    "Chủ quán sửa số đếm của phiếu kiểm kê đã xác nhận; phần thiếu hoặc dư tính vào đúng ngày kiểm cũ; chỉ sửa được phiếu kiểm kê mới nhất (chủ quán chốt 14/10/2026)",
+  );
+});

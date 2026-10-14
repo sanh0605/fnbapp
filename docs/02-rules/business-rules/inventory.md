@@ -180,7 +180,7 @@ A stocktake session cancelled before it is confirmed is deleted outright: the se
 
 ### BR-INV-012 — The owner can edit a confirmed stocktake; the change lands on the count's own date
 
-**Status:** `APPROVED` — owner decision 2026-09-28. **Not built yet.** One point still open, below.
+**Status:** `APPROVED` — owner decision 2026-09-28, last point settled 2026-10-14. **Not built yet.**
 
 Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
@@ -192,4 +192,9 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
   - A stocktake that found only surplus and nothing short does not appear in the issue-slip list. Found goods are seen on the stocktake page.
   - When a stocktake has both, the row's value is the shortfall only; found goods are not netted against it.
 
-**Open, to ask the owner (found 2026-09-28, while writing this rule down).** If a later stocktake exists, editing an earlier one breaks the later one's arithmetic. Example with made-up numbers: count 1 finds 10 of an item against a book of 15 (short 5); count 2 later finds 8 against a book of 10 (short 2). Edit count 1 to 12: the book after count 1 becomes 12, so count 2 should now be short 4, but it still says 2, and the book after count 2 reads 10 while the shelf holds 8. Either only the most recent confirmed stocktake may be edited (as with undoing one today), or every later stocktake's shortfall is recomputed from its unchanged count.
+- **Only the most recent confirmed stocktake can be edited** (owner 2026-10-14, *"a"*, question Q4). If a later stocktake exists, editing an earlier one would break the later one's arithmetic. Example put to the owner, with Sữa tươi and made-up numbers:
+  - count 1 finds 10 against a book of 15 (short 5);
+  - count 2 later finds 8 against a book of 10 (short 2);
+  - editing count 1 to 12 would mean count 2 should be short 4, but it would still say 2, and the book would read 10 while the shelf holds 8.
+
+  The owner chose to forbid this rather than have later counts recomputed, the same limit as undoing a stocktake today. To correct an older count, undo stocktakes from the newest back.
