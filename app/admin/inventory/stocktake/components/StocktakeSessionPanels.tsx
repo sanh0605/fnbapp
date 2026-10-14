@@ -55,7 +55,12 @@ export function LastConfirmedSessionPanel({ session }: { session: RecentConfirme
 
   return (
     <div className="bg-surface-card rounded-card shadow-sm border border-border p-4 space-y-2">
-      <h2 className="font-bold text-text-primary text-sm">Phiên kiểm kê gần nhất</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-bold text-text-primary text-sm">Phiên kiểm kê gần nhất</h2>
+        <Button href={`/admin/inventory/stocktake/${session.id}`} variant="secondary">
+          Xem phiếu
+        </Button>
+      </div>
       <p className="text-xs text-text-secondary">
         {session.id} &middot; áp dụng bởi {session.confirmedByName} lúc {formatDateTime(session.confirmedAt)}
         {session.notes && ` · ${session.notes}`}

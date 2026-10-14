@@ -255,3 +255,37 @@ describe("reverseStocktakeSessionAtomic (Plan D D14, U1-U8)", () => {
     })).rejects.toThrow("STK-005");
   });
 });
+
+describe("editConfirmedStocktakeAtomic (BR-INV-012)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
+  });
+
+  it("sends snake_case lines and maps the result to camelCase", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: { session_id: "STK-001", changed_count: 1, issue_ids: ["ISS-00004"] },
+      error: null,
+    });
+
+    const result = await stocktakeTransaction.editConfirmedStocktakeAtomic({
+      sessionId: "STK-001",
+      lines: [{ lineId: "SKL-00004", countedQty: 5000 }],
+    });
+
+    expect(mocks.rpc).toHaveBeenCalledWith("edit_confirmed_stocktake_atomic", {
+      p_session_id: "STK-001",
+      p_lines: [{ line_id: "SKL-00004", counted_qty: 5000 }],
+    });
+    expect(result).toEqual({ sessionId: "STK-001", changedCount: 1, issueIds: ["ISS-00004"] });
+  });
+
+  it("keeps the database message on an rpc error, prefixed like the other adapters", async () => {
+    mocks.rpc.mockResolvedValue({ data: null, error: { message: "Chỉ sửa được phiếu kiểm kê mới nhất (STK-002), không phải STK-001" } });
+
+    await expect(stocktakeTransaction.editConfirmedStocktakeAtomic({
+      sessionId: "STK-001",
+      lines: [{ lineId: "SKL-00004", countedQty: 5000 }],
+    })).rejects.toThrow(/^Chỉ sửa được phiếu kiểm kê mới nhất \(STK-002\), không phải STK-001$/);
+  });
+});

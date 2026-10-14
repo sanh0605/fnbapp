@@ -180,7 +180,7 @@ A stocktake session cancelled before it is confirmed is deleted outright: the se
 
 ### BR-INV-012 — The owner can edit a confirmed stocktake; the change lands on the count's own date
 
-**Status:** `APPROVED` — owner decision 2026-09-28, last point settled 2026-10-14. **Not built yet.**
+**Status:** `APPROVED` — owner decision 2026-09-28, last point settled 2026-10-14. Built 2026-10-14 on the branch `feat/no-popups`, not yet pushed (migration `0110`, function `edit_confirmed_stocktake_atomic`; pages `/admin/inventory/stocktake/[id]` and `/admin/inventory/stocktake/[id]/edit`). Design: `docs/superpowers/specs/2026-10-14-sua-phieu-kiem-ke-design.md`. `0110` has not run on the server yet.
 
 Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
@@ -196,5 +196,5 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
   - count 1 finds 10 against a book of 15 (short 5);
   - count 2 later finds 8 against a book of 10 (short 2);
   - editing count 1 to 12 would mean count 2 should be short 4, but it would still say 2, and the book would read 10 while the shelf holds 8.
-
   The owner chose to forbid this rather than have later counts recomputed, the same limit as undoing a stocktake today. To correct an older count, undo stocktakes from the newest back.
+- **No reason box and no edit history on screen** (owner 2026-10-14, *"1a 2b 3b"*, confirmed on the real example STK-001, line SKL-00004, Bột cà phê truyền thống Phin Đậm: book 6.000 g, counted 4.000 g, short 2.000 g on 09/08; edited to 5.000 g it becomes short 1.000 g on 09/08 and August's cost of goods falls accordingly). His words: *"do anh đều được nghe lí do sửa rồi mới sửa, nên khi nào người khác thay thế thì mới cần thêm vào"*. He hears the reason before he edits; add both only when someone else takes over editing.

@@ -1,11 +1,16 @@
 # Stocktake flow
 
 ```flow-decl
-routes: /admin/inventory/stocktake
+routes: /admin/inventory/stocktake, /admin/inventory/stocktake/[id], /admin/inventory/stocktake/[id]/edit
 files: lib/stock/stocktake-transaction.ts
 tables: stocktake_sessions, stocktake_lines, stock_issues
-brCodes: BR-INV-007, BR-COGS-007, BR-INV-010, BR-INV-011
+brCodes: BR-INV-007, BR-COGS-007, BR-INV-010, BR-INV-011, BR-INV-012
 ```
+
+**Behaviour change — 2026-10-14:** the owner can correct the counts of the most recent confirmed
+session (`BR-INV-012`). Each confirmed session now has its own page listing every line; the
+owner's edit page rewrites the changed lines and their `stock_issues` rows in place, still dated
+at the original confirm time, through `edit_confirmed_stocktake_atomic` (migration 0110).
 
 **Reviewed, no behaviour change — 2026-09-07 (Task 11):** a declared source file's import path only -- lib/auth.ts moved to `lib/auth/auth.ts`, rewritten by the move helper; no logic changed.
 **Reviewed, no behaviour change — 2026-09-07 (Task 9):** a declared source file's import path only -- sheets_db.ts/supabase.ts/shared-actions.ts/backup-restore.ts moved to `lib/db/` (spec D6), rewritten by the move helper; no logic changed.
@@ -26,8 +31,10 @@ function called from `lib/stock/stocktake-transaction.ts`.
    → closed. It is set to open when a worker starts a new count from the stocktake
    screen; during counting the session collects one line per material counted; it
    becomes closed when the worker finalises it, which is the step that computes and
-   books the difference. A closed session is final — there is no re-open. To correct
-   a mistake after closing, a new session is started. An open session can instead be
+   books the difference. A closed session is never re-opened for counting. The owner
+   (role `ADMIN` only) can correct its counts on its edit page while it is the most
+   recent confirmed session and no other session is open; the corrected shortfall
+   stays on the original count date (`BR-INV-012`). An open session can instead be
    cancelled by the owner or a manager, which deletes it and its counted lines
    outright; no cancelled state is kept (`BR-INV-010`).
 
@@ -37,7 +44,11 @@ function called from `lib/stock/stocktake-transaction.ts`.
    button to close the session. The close button should not be available until a
    session is open, and starting a new session should not be offered while one is
    still open — the two states are mutually exclusive, so only the button matching
-   the current state should show.
+   the current state should show. A confirmed session's own page at
+   `/admin/inventory/stocktake/[id]` lists its lines and shows a Sửa button only to the
+   owner, only while editing is allowed; otherwise the owner sees one grey line saying
+   why. The edit page has one number box per line, Lưu and Bỏ, no reason box and no
+   confirmation popup.
 
 3. **What each list contains, and what is excluded.** The session's count list
    holds one line per material being counted, stored in `stocktake_lines`. Only

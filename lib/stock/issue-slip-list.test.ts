@@ -45,7 +45,7 @@ describe("listIssueSlipsPage", () => {
 
   it("stocktake value counts the shortfall only (3A) and links to the stocktake screen", () => {
     const stk = page().rows.find(r => r.id === "STK-001")!;
-    expect(stk).toMatchObject({ kind: "STOCKTAKE", value: 13550, createdByName: "admin", href: "/admin/inventory/stocktake" });
+    expect(stk).toMatchObject({ kind: "STOCKTAKE", value: 13550, createdByName: "admin", href: "/admin/inventory/stocktake/STK-001" });
   });
 
   it("Đã huỷ shows only cancelled slips, at 0đ", () => {

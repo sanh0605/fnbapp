@@ -74,7 +74,7 @@ export function listIssueSlipsPage(input: {
     const exactValue = sumValues(shortfall);
     candidates.push({
       row: {
-        id: s.id, href: "/admin/inventory/stocktake", kind: "STOCKTAKE", reason: "",
+        id: s.id, href: `/admin/inventory/stocktake/${s.id}`, kind: "STOCKTAKE", reason: "",
         dateText: formatDateTimeFull(s.confirmed_at), createdByName: s.confirmed_by_name ?? NO_NAME,
         value: displayMoney(exactValue),
       },
