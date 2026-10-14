@@ -80,7 +80,7 @@ export async function submitOrderV2(
     const saleTime = built.order.created_at;
 
     // Selling no longer moves stock or determines cost (Plan C Task 3) --
-    // cost_at_sale stays at its column default (0), and no stock_ledger row
+    // no stock_ledger row
     // is written here. Recipes and inventory-consumption lookups are gone
     // from checkout entirely, not merely ignored: that lookup was latency on
     // the till for a result nothing reads anymore. As of Phase 2

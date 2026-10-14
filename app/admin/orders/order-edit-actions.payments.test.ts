@@ -29,11 +29,11 @@ const OLD_ORDER = {
   gross_total: "59000", promo_discount_total: "0", manual_item_discount_total: "0",
   manual_order_discount: "0", net_total: "59000",
   applied_promotion_id: "PRM-003", applied_promotion_snapshot_json: { id: "PRM-003" },
-  pos_snapshot_json: {}, payment_method: "CASH", payment_ref: "",
+  pos_snapshot_json: {}, payment_method: "CASH",
 };
 const OLD_LINES = [
   { id: "l-1", order_id: "ord-1", line_no: 1, product_id: "PAUSED-DISH", qty: 1, unit_price: 59000,
-    gross_line_total: 59000, net_line_total: 59000, cost_at_sale: 0, product_snapshot_json: { name: "Sữa dâu" } },
+    gross_line_total: 59000, net_line_total: 59000, product_snapshot_json: { name: "Sữa dâu" } },
 ];
 
 function run(over: Record<string, unknown> = {}) {

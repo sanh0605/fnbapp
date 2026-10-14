@@ -35,7 +35,6 @@ export async function supersedeOrderAtomic(
         "product_snapshot_json",
         "variant_snapshot_json",
         "modifiers_snapshot_json",
-        "recipe_snapshot_json",
       ])),
       p_event: parseJsonColumns(input.event, ["delta_json"]),
       p_payments: input.payments,

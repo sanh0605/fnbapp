@@ -125,7 +125,7 @@ describe("getPnLDataV2", () => {
       [fixture.order.id],
     );
     expect(findAllNoCache).not.toHaveBeenCalledWith("Order_Lines_V2");
-    expect(result.totalCOGS).toBe(fixture.lines[0].cost_at_sale);
+    expect(result.totalCOGS).toBe(0);
   });
 
   it("rounds totalCOGS to the nearest đồng at the display boundary, from the issue-costing engine's exact value (BR-DATA-005, owner 2026-09-11)", async () => {
@@ -325,7 +325,6 @@ describe("getPnLDataV2", () => {
       voided_at: "",
       voided_by_id: "",
       void_reason: "",
-      currency: "VND",
       gross_total: 50000,
       promo_discount_total: 0,
       manual_item_discount_total: 0,
@@ -335,7 +334,6 @@ describe("getPnLDataV2", () => {
       applied_promotion_snapshot_json: "",
       pos_snapshot_json: "{}",
       payment_method: "CASH",
-      payment_ref: "",
       migration_notes: "",
     };
     const drinkLine = {
@@ -354,10 +352,7 @@ describe("getPnLDataV2", () => {
       manual_item_discount: 0,
       order_discount_allocation: 0,
       net_line_total: 30000,
-      cost_at_sale: 12000,
-      recipe_snapshot_json: "{}",
       promo_discount_reason: "",
-      manual_discount_reason: "",
     };
     const foodLine = {
       ...drinkLine,
@@ -369,7 +364,6 @@ describe("getPnLDataV2", () => {
       variant_snapshot_json: JSON.stringify({ id: "VAR-FOOD", size_name: "Default", price: 20000 }),
       gross_line_total: 20000,
       net_line_total: 20000,
-      cost_at_sale: 7000,
     };
 
     (findAllNoCache as any).mockImplementation((sheet: string) => {
@@ -387,7 +381,7 @@ describe("getPnLDataV2", () => {
     // but not cost: issue-based COGS is a whole-period figure with no path
     // to attribute a purchased item to one product category. No purchase/
     // issue fixtures exist in this test, so it reads 0, not a category
-    // share of cost_at_sale.
+    // share of cost.
     expect(result.totalCOGS).toBe(0);
     expect(result.grossProfit).toBe(30000);
     expect(result.productProfitAnalysis.map(row => row.product_id)).toEqual(["PROD-DRINK"]);
@@ -452,7 +446,6 @@ describe("getPnLDataV2", () => {
       voided_at: "",
       voided_by_id: "",
       void_reason: "",
-      currency: "VND",
       gross_total: 30000,
       promo_discount_total: 0,
       manual_item_discount_total: 0,
@@ -462,7 +455,6 @@ describe("getPnLDataV2", () => {
       applied_promotion_snapshot_json: "",
       pos_snapshot_json: "{}",
       payment_method: "CASH",
-      payment_ref: "",
       migration_notes: "",
     };
 
@@ -482,10 +474,7 @@ describe("getPnLDataV2", () => {
       manual_item_discount: 0,
       order_discount_allocation: 0,
       net_line_total: 15000,
-      cost_at_sale: 5000,
-      recipe_snapshot_json: "{}",
       promo_discount_reason: "",
-      manual_discount_reason: "",
     };
     const lineB = {
       ...lineA,
@@ -495,7 +484,6 @@ describe("getPnLDataV2", () => {
       variant_snapshot_json: JSON.stringify({ id: "VAR-B", size_name: "700ml", price: 15000 }),
       gross_line_total: 15000,
       net_line_total: 15000,
-      cost_at_sale: 7000,
     };
 
     (findAllNoCache as any).mockImplementation((sheet: string) => {
@@ -544,7 +532,6 @@ describe("getPnLDataV2", () => {
       voided_at: "",
       voided_by_id: "",
       void_reason: "",
-      currency: "VND",
       gross_total: 25000,
       promo_discount_total: 0,
       manual_item_discount_total: 0,
@@ -554,7 +541,6 @@ describe("getPnLDataV2", () => {
       applied_promotion_snapshot_json: "",
       pos_snapshot_json: "{}",
       payment_method: "CASH",
-      payment_ref: "",
       migration_notes: "",
     };
     const line = {
@@ -573,25 +559,7 @@ describe("getPnLDataV2", () => {
       manual_item_discount: 0,
       order_discount_allocation: 0,
       net_line_total: 25000,
-      cost_at_sale: 5000,
-      recipe_snapshot_json: JSON.stringify({
-        variant: {
-          target_type: "PRODUCT_VARIANT",
-          target_id: "VAR-COFFEE",
-          ingredients: [{ ingredient_id: "ING-MILK", ingredient_type: "BASE_INGREDIENT", quantity: 100 }],
-        },
-        modifiers: [{
-          modifier_id: "MOD-PEARL",
-          modifier_name: "Pearl",
-          recipe: {
-            target_type: "MODIFIER",
-            target_id: "MOD-PEARL",
-            ingredients: [{ ingredient_id: "ING-PEARL", ingredient_type: "BASE_INGREDIENT", quantity: 20 }],
-          },
-        }],
-      }),
       promo_discount_reason: "",
-      manual_discount_reason: "",
     };
     const ledger = [
       { id: "po-milk", transaction_type: "PO_RECEIPT", item_reference: "ING-MILK", quantity_change: 1000, unit_cost: 30, created_at: "2026-06-01T00:00:00.000Z" },
@@ -647,7 +615,6 @@ describe("getPnLDataV2", () => {
       voided_at: "",
       voided_by_id: "",
       void_reason: "",
-      currency: "VND",
       gross_total: 20000,
       promo_discount_total: 0,
       manual_item_discount_total: 0,
@@ -657,7 +624,6 @@ describe("getPnLDataV2", () => {
       applied_promotion_snapshot_json: "",
       pos_snapshot_json: "{}",
       payment_method: "CASH",
-      payment_ref: "",
       migration_notes: "",
     };
     const baseLine = {
@@ -673,21 +639,7 @@ describe("getPnLDataV2", () => {
       manual_item_discount: 0,
       order_discount_allocation: 0,
       net_line_total: 10000,
-      cost_at_sale: 4754,
-      recipe_snapshot_json: JSON.stringify({
-        variant: { target_type: "PRODUCT_VARIANT", target_id: "VAR-COFFEE", ingredients: [] },
-        modifiers: [{
-          modifier_id: "MOD-OLD-DAU",
-          modifier_name: "Dâu sấy",
-          recipe: {
-            target_type: "MODIFIER",
-            target_id: "MOD-OLD-DAU",
-            ingredients: [{ ingredient_id: "ING-DAU", ingredient_type: "BASE_INGREDIENT", quantity: 1 }],
-          },
-        }],
-      }),
       promo_discount_reason: "",
-      manual_discount_reason: "",
     };
     const oldLine = {
       ...baseLine,
@@ -699,18 +651,6 @@ describe("getPnLDataV2", () => {
       ...baseLine,
       id: "ol-pnl-new-dau",
       line_no: 2,
-      recipe_snapshot_json: JSON.stringify({
-        variant: { target_type: "PRODUCT_VARIANT", target_id: "VAR-COFFEE", ingredients: [] },
-        modifiers: [{
-          modifier_id: "MOD-NEW-DAU",
-          modifier_name: "Dâu sấy",
-          recipe: {
-            target_type: "MODIFIER",
-            target_id: "MOD-NEW-DAU",
-            ingredients: [{ ingredient_id: "ING-DAU", ingredient_type: "BASE_INGREDIENT", quantity: 1 }],
-          },
-        }],
-      }),
       modifiers_snapshot_json: JSON.stringify([{ id: "MOD-NEW-DAU", name: "Dâu sấy", price: 10000, qty: 1 }]),
     };
     const modifiers = [
@@ -879,7 +819,6 @@ describe("getSalesDataV2", () => {
       voided_at: "",
       voided_by_id: "",
       void_reason: "",
-      currency: "VND",
       gross_total: 20000,
       promo_discount_total: 0,
       manual_item_discount_total: 0,
@@ -889,7 +828,6 @@ describe("getSalesDataV2", () => {
       applied_promotion_snapshot_json: "",
       pos_snapshot_json: "{}",
       payment_method: "CASH",
-      payment_ref: "",
       migration_notes: "",
     };
     const baseLine = {
@@ -905,10 +843,7 @@ describe("getSalesDataV2", () => {
       manual_item_discount: 0,
       order_discount_allocation: 0,
       net_line_total: 10000,
-      cost_at_sale: 0,
-      recipe_snapshot_json: "{}",
       promo_discount_reason: "",
-      manual_discount_reason: "",
     };
     const oldLine = {
       ...baseLine,
@@ -977,7 +912,6 @@ describe("getSalesDataV2", () => {
       voided_at: "",
       voided_by_id: "",
       void_reason: "",
-      currency: "VND",
       gross_total: 10000,
       promo_discount_total: 0,
       manual_item_discount_total: 0,
@@ -987,7 +921,6 @@ describe("getSalesDataV2", () => {
       applied_promotion_snapshot_json: "",
       pos_snapshot_json: "{}",
       payment_method: "CASH",
-      payment_ref: "",
       migration_notes: "",
     };
     const line = {
@@ -1010,10 +943,7 @@ describe("getSalesDataV2", () => {
       manual_item_discount: 0,
       order_discount_allocation: 0,
       net_line_total: 10000,
-      cost_at_sale: 0,
-      recipe_snapshot_json: "{}",
       promo_discount_reason: "",
-      manual_discount_reason: "",
       modifiers_snapshot_json: "[]",
     };
     const products = [
@@ -1072,7 +1002,6 @@ describe("getSalesDataV2", () => {
       voided_at: "",
       voided_by_id: "",
       void_reason: "",
-      currency: "VND",
       gross_total: 10000,
       promo_discount_total: 0,
       manual_item_discount_total: 0,
@@ -1082,7 +1011,6 @@ describe("getSalesDataV2", () => {
       applied_promotion_snapshot_json: "",
       pos_snapshot_json: "{}",
       payment_method: "CASH",
-      payment_ref: "",
       migration_notes: "",
     };
     const line = {
@@ -1105,10 +1033,7 @@ describe("getSalesDataV2", () => {
       manual_item_discount: 0,
       order_discount_allocation: 0,
       net_line_total: 10000,
-      cost_at_sale: 0,
-      recipe_snapshot_json: "{}",
       promo_discount_reason: "",
-      manual_discount_reason: "",
       modifiers_snapshot_json: "[]",
     };
     const products = [
@@ -1244,10 +1169,9 @@ describe("getSalesDataV2", () => {
       status: "COMPLETED", version: 1, parent_order_id: "", superseded_by: "",
       created_at: "2026-06-15T10:00:00.000Z", created_by_id: "U", created_by_name: "Test",
       completed_at: "2026-06-15T10:00:00.000Z", voided_at: "", voided_by_id: "", void_reason: "",
-      currency: "VND", gross_total: netTotal, promo_discount_total: 0,
       manual_item_discount_total: 0, manual_order_discount: 0, net_total: netTotal,
       applied_promotion_id: "", applied_promotion_snapshot_json: "",
-      pos_snapshot_json: "{}", payment_method: "CASH", payment_ref: "", migration_notes: "",
+      pos_snapshot_json: "{}", payment_method: "CASH", migration_notes: "",
     });
     const orders = [
       makeOrder("ord-out1-a", "OUT-001", 25000),

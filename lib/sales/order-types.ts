@@ -13,7 +13,6 @@
 // ============================================================================
 
 export const ORDER_STATUS = {
-  DRAFT: "DRAFT",
   COMPLETED: "COMPLETED",
   SUPERSEDED: "SUPERSEDED",
   VOIDED: "VOIDED",
@@ -121,7 +120,6 @@ export interface OrderV2 {
   void_reason: string | "";
 
   // Money (integer đồng; all immutable once status = COMPLETED)
-  currency: "VND";
   gross_total: number;
   promo_discount_total: number;
   manual_item_discount_total: number;
@@ -133,7 +131,6 @@ export interface OrderV2 {
   applied_promotion_snapshot_json: string; // empty string when no promo
   pos_snapshot_json: string;
   payment_method: PaymentMethod;
-  payment_ref: string | "";
 
   // Migration metadata
   migration_notes: string | "";
@@ -163,13 +160,8 @@ export interface OrderLineV2 {
   order_discount_allocation: number;
   net_line_total: number;
 
-  // Cost & stock
-  cost_at_sale: number;
-  recipe_snapshot_json: string; // JSON of RecipeSnapshot
-
   // Attribution
   promo_discount_reason: string | "";
-  manual_discount_reason: string | "";
 }
 
 export interface OrderEvent {

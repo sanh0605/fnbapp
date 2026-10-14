@@ -95,6 +95,41 @@ function backfillModifierGroup(table: string, row: JsonRow, bundle: BackupBundle
 }
 
 /**
+ * Migration 0121 dropped these columns and stores "no link" as null, not "".
+ * An older bundle still carries the dropped keys (the insert would fail on an
+ * unknown column) and empty text in the link columns (a foreign key refuses it).
+ */
+const RETIRED_COLUMNS: Record<string, string[]> = {
+  orders_v2: ["currency", "payment_ref"],
+  order_lines_v2: ["cost_at_sale", "recipe_snapshot_json", "manual_discount_reason"],
+  products: ["description", "brand_id", "sort_order"],
+  product_variants: ["sort_order"],
+  modifiers: ["sort_order"],
+};
+const LINK_COLUMNS: Record<string, string[]> = {
+  orders_v2: ["parent_order_id", "superseded_by", "voided_by_id", "applied_promotion_id"],
+  order_events: ["previous_order_id"],
+};
+
+function applyMigration0121(table: string, row: JsonRow): JsonRow {
+  const next: JsonRow = { ...row };
+  for (const column of RETIRED_COLUMNS[table] ?? []) delete next[column];
+  for (const column of LINK_COLUMNS[table] ?? []) if (next[column] === "") next[column] = null;
+  return next;
+}
+
+/**
+ * An edited order and its replacement point at each other (parent_order_id one way,
+ * superseded_by the other), so the rows cannot go in one by one. Oldest version first
+ * satisfies parent_order_id; superseded_by goes in as null and is set after the table.
+ */
+function splitSupersededLinks(rows: JsonRow[]): { rows: JsonRow[]; links: Array<{ id: string; superseded_by: string }> } {
+  const links = rows.filter(r => r.superseded_by).map(r => ({ id: r.id as string, superseded_by: r.superseded_by as string }));
+  const sorted = [...rows].sort((a, b) => Number(a.version) - Number(b.version));
+  return { rows: sorted.map(r => (r.superseded_by ? { ...r, superseded_by: null } : r)), links };
+}
+
+/**
  * Inserts every table's rows from a backup bundle into the target client, in
  * BACKUP_TABLES order so foreign keys resolve (parent tables restored before
  * the children that reference them). The caller is responsible for having
@@ -123,11 +158,13 @@ export async function restoreBundleToTarget(
     let substituted = 0;
     const skipped: Array<{ row: JsonRow; error: string }> = [];
 
-    const rows = rawRows.map(row => {
+    let rows = rawRows.map(row => {
       const result = substituteJsonbNullLiterals(table, row);
       if (result.changed) substituted += 1;
-      return backfillModifierGroup(table, backfillPurchaseOrderPayment(table, result.row), bundle);
+      return applyMigration0121(table, backfillModifierGroup(table, backfillPurchaseOrderPayment(table, result.row), bundle));
     });
+    let links: Array<{ id: string; superseded_by: string }> = [];
+    if (table === "orders_v2") ({ rows, links } = splitSupersededLinks(rows));
 
     for (let offset = 0; offset < rows.length; offset += batchSize) {
       const batch = rows.slice(offset, offset + batchSize);
@@ -144,6 +181,10 @@ export async function restoreBundleToTarget(
           inserted += 1;
         }
       }
+    }
+    for (const link of links) {
+      const { error } = await targetClient.from(table).update({ superseded_by: link.superseded_by }).eq("id", link.id);
+      if (error) skipped.push({ row: link, error: error.message });
     }
     results.push({ table, inserted, skipped, substituted });
   }

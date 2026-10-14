@@ -240,7 +240,5 @@ function makeOrderLine(id: string, productId: string, qty: number) {
     manual_item_discount: 0,
     order_discount_allocation: 0,
     net_line_total: qty * 10000,
-    cost_at_sale: 0,
-    recipe_snapshot_json: "{}",
   };
 }

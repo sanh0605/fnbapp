@@ -27,7 +27,7 @@ describe("supersedeOrderAtomic", () => {
       p_old_order_id: "ord-old",
       p_expected_old_version: 1,
       p_new_order: expect.objectContaining({ pos_snapshot_json: { source: "edit" } }),
-      p_new_lines: [expect.objectContaining({ recipe_snapshot_json: { ingredients: [] } })],
+      p_new_lines: [expect.objectContaining({ product_snapshot_json: {} })],
       p_event: expect.objectContaining({ delta_json: { changed: true } }),
       p_payments: input.payments,
     });
@@ -56,7 +56,6 @@ function makeInput() {
     },
     newLines: [{
       id: "line-new",
-      recipe_snapshot_json: JSON.stringify({ ingredients: [] }),
       product_snapshot_json: "{}",
       variant_snapshot_json: "{}",
       modifiers_snapshot_json: "[]",

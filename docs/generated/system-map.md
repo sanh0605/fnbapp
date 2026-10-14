@@ -80,20 +80,20 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - item_categories (id, name, system_type, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - modifier_group_products (id, group_id, product_id)
 - modifier_groups (id, name, selection_mode, max_total, allow_standalone, sort_order, status, created_at, updated_at) status: ACTIVE, INACTIVE
-- modifiers (id, name, price, status, sort_order, created_at, updated_at, product_id, group_id, is_default, max_qty) status: ACTIVE, INACTIVE, DELETED
+- modifiers (id, name, price, status, created_at, updated_at, product_id, group_id, is_default, max_qty) status: ACTIVE, INACTIVE, DELETED
 - monthly_expense_items (id, name, cash_category_id, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, INACTIVE
 - order_events (id, order_id, event_type, event_at, actor_id, actor_name, from_version, to_version, previous_order_id, delta_json, reason)
-- order_lines_v2 (id, order_id, line_no, product_id, product_snapshot_json, variant_id, variant_snapshot_json, qty, unit_price, modifiers_snapshot_json, gross_line_total, promo_discount, manual_item_discount, order_discount_allocation, net_line_total, cost_at_sale, recipe_snapshot_json, promo_discount_reason, manual_discount_reason, created_at)
+- order_lines_v2 (id, order_id, line_no, product_id, product_snapshot_json, variant_id, variant_snapshot_json, qty, unit_price, modifiers_snapshot_json, gross_line_total, promo_discount, manual_item_discount, order_discount_allocation, net_line_total, promo_discount_reason, created_at)
 - order_payments (id, order_id, method, amount, reference, created_at)
-- orders_v2 (id, order_no, brand_id, status, version, parent_order_id, superseded_by, created_at, created_by_id, created_by_name, completed_at, voided_at, voided_by_id, void_reason, currency, gross_total, promo_discount_total, manual_item_discount_total, manual_order_discount, net_total, applied_promotion_id, applied_promotion_snapshot_json, pos_snapshot_json, payment_method, payment_ref, migration_notes, updated_at, client_request_id, synced_at, outlet_id, legacy_order_no) status: DRAFT, COMPLETED, SUPERSEDED, VOIDED
+- orders_v2 (id, order_no, brand_id, status, version, parent_order_id, superseded_by, created_at, created_by_id, created_by_name, completed_at, voided_at, voided_by_id, void_reason, gross_total, promo_discount_total, manual_item_discount_total, manual_order_discount, net_total, applied_promotion_id, applied_promotion_snapshot_json, pos_snapshot_json, payment_method, migration_notes, updated_at, client_request_id, synced_at, outlet_id, legacy_order_no) status: DRAFT, COMPLETED, SUPERSEDED, VOIDED
 - outlets (id, code, name, brand_id, address, status, start_date, end_date, created_at, updated_at, open_time, close_time)
 - pos_drafts (id, cart_json, status, created_at, updated_at, timestamp, name, brand_id, created_by_id, created_by_name, outlet_id) status: OPEN, SUBMITTED, ABANDONED
 - pos_sync_failures (id, request_token, cart_payload_json, error_message, occurred_at, resolved)
 - product_categories (id, name, status, created_at, type_id) status: ACTIVE, INACTIVE, DELETED
 - product_price_history (id, variant_id, old_price, new_price, reason, effective_at, created_at)
 - product_types (id, name, is_drink, created_at)
-- product_variants (id, product_id, size_name, price, sort_order, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
-- products (id, name, category_id, brand_id, description, status, image_url, sort_order, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at) status: ACTIVE, INACTIVE, DELETED
+- product_variants (id, product_id, size_name, price, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
+- products (id, name, category_id, status, image_url, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at) status: ACTIVE, INACTIVE, DELETED
 - promotions (id, name, brand_id, code, type, discount_type, discount_value, applicable_products_json, start_date, end_date, status, created_at, updated_at, min_order_value) status: ACTIVE, INACTIVE, DELETED
 - purchase_order_edits (id, purchase_order_id, edited_by_id, edited_by_name, edited_at, previous_status, previous_subtotal_amount, previous_line_count, new_subtotal_amount, new_line_count)
 - purchase_order_lines (id, purchase_order_id, purchased_item_id, unit, quantity, unit_price, subtotal, conversion_id, base_unit, base_quantity, created_at)
