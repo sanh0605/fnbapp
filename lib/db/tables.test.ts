@@ -53,7 +53,7 @@ import {
   findAllNoCache,
   findAllWhere,
   findAllWhereInBatches,
-  findOrderLineProductAndVariantIds,
+  findSoldModifierIds,
   updateMany,
 } from "./tables";
 
@@ -406,81 +406,40 @@ describe("updateMany", () => {
   });
 });
 
-// products-page cache overflow fix (2026-09-07):
-// app/admin/products/page.tsx only needs the distinct product_id and
-// variant_id values from Order_Lines_V2 (to compute which products were
-// ever sold), not the full 20-column row -- that pushed the unstable_cache
-// entry past Next's 2 MB ceiling.
-describe("findOrderLineProductAndVariantIds", () => {
+// BR-CATALOG-003: which add-on toppings were ever sold is scanned in Postgres
+// (find_sold_modifier_ids), ids only, so the page's cache entry stays small
+// (commit b954af2). No order line is read into Node.
+describe("findSoldModifierIds", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.supabaseSelect.mockReset();
     mocks.supabaseRpc.mockReset();
-    mocks.supabaseRpc.mockResolvedValue({ data: [], error: null });
     mocks.queryCalls.length = 0;
   });
 
-  it("returns the distinct non-empty product and variant ids across the rows", async () => {
-    mocks.supabaseSelect.mockResolvedValue({
-      data: [
-        { id: "OL-1", product_id: "PROD-001", variant_id: null },
-        { id: "OL-2", product_id: "PROD-002", variant_id: "VAR-002" },
-        { id: "OL-3", product_id: "PROD-001", variant_id: "VAR-002" },
-      ],
-      error: null,
-    });
+  it("returns the sold modifier ids from find_sold_modifier_ids() and reads no order lines", async () => {
+    mocks.supabaseRpc.mockResolvedValue({ data: ["MOD-001", "MOD-004"], error: null });
 
-    const result = await findOrderLineProductAndVariantIds();
-
-    expect(result.productIds).toEqual(["PROD-001", "PROD-002"]);
-    expect(result.variantIds).toEqual(["VAR-002"]);
+    expect(await findSoldModifierIds()).toEqual(["MOD-001", "MOD-004"]);
+    expect(mocks.supabaseRpc).toHaveBeenCalledWith("find_sold_modifier_ids", undefined);
+    expect(mocks.supabaseSelect).not.toHaveBeenCalled();
     expect(mocks.unstableCache).toHaveBeenCalled();
   });
 
-  it("returns empty arrays for an empty table", async () => {
-    mocks.supabaseSelect.mockResolvedValue({ data: [], error: null });
-
-    const result = await findOrderLineProductAndVariantIds();
-
-    expect(result.productIds).toEqual([]);
-    expect(result.variantIds).toEqual([]);
+  it("returns [] when the rpc returns null", async () => {
+    mocks.supabaseRpc.mockResolvedValue({ data: null, error: null });
+    expect(await findSoldModifierIds()).toEqual([]);
   });
 
-  // findAll has this same escape hatch (line 238) so CLI scripts -- which
-  // run outside a Next.js request context -- don't hit unstable_cache's
-  // "incrementalCache missing" invariant. This function needs it too: it
-  // has no caller today outside app/admin/products/page.tsx, but the first
-  // verify-* script that needs product sale history would otherwise get an
-  // error that reads like a Next bug instead of a missing branch.
   it("bypasses unstable_cache when CLI_MODE is set", async () => {
     const original = process.env.CLI_MODE;
     process.env.CLI_MODE = "true";
-    mocks.supabaseSelect.mockResolvedValue({
-      data: [{ id: "OL-1", product_id: "PROD-001", variant_id: "VAR-001" }],
-      error: null,
-    });
-
+    mocks.supabaseRpc.mockResolvedValue({ data: ["MOD-001"], error: null });
     try {
-      const result = await findOrderLineProductAndVariantIds();
-      expect(result.productIds).toEqual(["PROD-001"]);
-      expect(result.variantIds).toEqual(["VAR-001"]);
+      expect(await findSoldModifierIds()).toEqual(["MOD-001"]);
       expect(mocks.unstableCache).not.toHaveBeenCalled();
     } finally {
       process.env.CLI_MODE = original;
     }
-  });
-
-  // BR-CATALOG-003: the reader also returns which modifiers (toppings sold as
-  // an add-on) were ever sold, via the new find_sold_modifier_ids() RPC --
-  // scanned in Postgres, ids only, so this page's cache entry does not
-  // regrow into the JSON payload that broke it before (commit b954af2).
-  it("returns the sold modifier ids from find_sold_modifier_ids()", async () => {
-    mocks.supabaseSelect.mockResolvedValue({ data: [], error: null });
-    mocks.supabaseRpc.mockResolvedValue({ data: ["MOD-001", "MOD-004"], error: null });
-
-    const result = await findOrderLineProductAndVariantIds();
-
-    expect(result.modifierIds).toEqual(["MOD-001", "MOD-004"]);
-    expect(mocks.supabaseRpc).toHaveBeenCalledWith("find_sold_modifier_ids", undefined);
   });
 });

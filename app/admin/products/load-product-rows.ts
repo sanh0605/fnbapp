@@ -1,4 +1,4 @@
-import { findAll, findAllWhere, findAllWhereInBatches, findOrderLineProductAndVariantIds } from "@/lib/db/tables";
+import { findAll, findAllWhere, findAllWhereInBatches, findSoldModifierIds } from "@/lib/db/tables";
 
 interface PriceHistory {
   variant_id: string;
@@ -74,11 +74,11 @@ export async function loadProductRow(id: string) {
       ? findAllWhere("Order_Lines_V2", { in: { variant_id: variantIds }, limit: 1 })
       : Promise.resolve([]),
     // Only a dish linked to a topping can be sold as an add-on (BR-CATALOG-003).
-    modifiers.length ? findOrderLineProductAndVariantIds() : Promise.resolve(null),
+    modifiers.length ? findSoldModifierIds() : Promise.resolve(null),
   ]);
   let sold = soldByProduct.length > 0 || soldByVariant.length > 0;
   if (soldIds) {
-    sold = sold || modifiers.some(m => soldIds.modifierIds.includes(m.id));
+    sold = sold || modifiers.some(m => soldIds.includes(m.id));
   }
 
   return {

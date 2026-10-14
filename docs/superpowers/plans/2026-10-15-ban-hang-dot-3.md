@@ -89,6 +89,22 @@ All backend: Sonnet (Agent model `sonnet`). Ponytail is a project rule: no exces
 
 Opus: reviews each ticket, applies the `lib/db/tables.ts` lines A4 lists, runs the five gates, and updates the master plan row.
 
+## What was built, 2026-10-15 (differences from the tickets above)
+
+- **A1** as planned: `findSoldModifierIds()` (the rpc only) replaces the full-scan helper, which had no other caller.
+- **A2** dry run: 37 of 55 rows will change. 28 take their first sale price; 9 never-sold sizes take today's price. One sold size differs from today's price: `PPH-006`, Cacao latte 500ml, first sold at 27.000đ, today 23.000đ. It takes 27.000đ, the rule's value. The script pages its reads; PostgREST caps a read at 1,000 rows, and the first draft got PPH-006 wrong because of it.
+- **A3** needs no migration. The live `erase_never_sold_product_atomic` (0075) already erases a dish with its sizes and price history in one transaction.
+  - Dry run: Cà phê kem dẻo CT1, Cà phê kem dẻo CT2, Cà phê đá (3 sizes, 3 price-history rows) and the category Cacao.
+  - Kept: the option Dâu sấy (`MOD-007`, DELETED, never sold). The input snapshot of order 260624002014 still names it, although that line points at the live Dâu sấy (`MOD-008`).
+  - Opus decision: a row something still points at is kept and reported, not a stop for the whole run.
+- **A4 differences:**
+  - `order_payments.reference` is kept, because the till's "Mã" box writes it (empty on 1,883 of 1,883 rows today).
+  - `voided_by_id` becomes null-only with no foreign key: 2 of its 37 values are `system`.
+  - `superseded_by` gets a deferred key, because `supersede_order_v2_atomic` writes it before the new row exists.
+  - The `new_price > 0` check is dropped from 0121. A 0đ dish or topping saved from the product screens is legitimate, so data write 1 no longer has to run first.
+  - The brand-delete screen stopped counting dishes by `products.brand_id`.
+  - The backup restore strips the retired keys, turns `''` into null, and sets `superseded_by` after insert.
+
 ## Approvals queued for the owner (asked later, one at a time)
 
 1. Run data write 1 (`--apply`).
