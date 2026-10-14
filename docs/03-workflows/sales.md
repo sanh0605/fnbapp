@@ -64,7 +64,7 @@ and they run through the `void_order_atomic` database function called from
    restores drafts, and sends the order; its brand is derived server-side from the
    chosen outlet and is never taken from the client (`BR-SALE-006`), so no
    brand picker drives the sale. `/admin/orders` lists past orders and offers void
-   and "Đổi cách trả" (payment parts only, `BR-SALE-014`) on a live order; void and edit should not be offered on a row that is
+   and "Sửa đơn" (opens "Đổi cách trả": payment parts only, `BR-SALE-014`) on a live order; void and edit should not be offered on a row that is
    already `SUPERSEDED` or already voided, since acting on a stale version would
    fork the order's history. `/admin/promotions` creates, edits, deactivates, and
    deletes promotions. Delete is ADMIN-only per `BR-ACCESS-003` (owner decision

@@ -142,6 +142,7 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 Every edit rebuilt the order from today's catalog. The new version credited the sale to whoever edited it: 6 orders sold by tuyen2612 now read "admin". It dropped the order's promotion: 3 orders. It could take today's price and dish name: 0 times so far.
 
 - Sửa đơn becomes "Đổi cách trả".
+  - The order page's button still reads "Sửa đơn"; the page it opens is titled "Đổi cách trả". Owner 2026-10-15: *"Không thay đổi tên nút"*.
   - It edits only the payment parts, as `BR-SALE-013` describes. The parts must add up to the order's unchanged total.
   - Every line keeps its dish, size, price, toppings and names as sold.
   - The order keeps its promotion and its seller. Who changed it goes in the order's history.

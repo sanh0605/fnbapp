@@ -212,7 +212,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                   variant="secondary"
                   className="flex-1"
                 >
-                  Đổi cách trả
+                  Sửa đơn
                 </Button>
                 <VoidOrderButton
                   orderId={currentOrder.id}
