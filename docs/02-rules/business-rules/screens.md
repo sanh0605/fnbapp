@@ -79,6 +79,7 @@ Owner choices on 2026-10-09, after trying a clickable sample (two styles, comput
   - **Same number of days, cut at the same point.** On 09/10/2026, Tháng này compares with 01/09–09/09, not with all of September. Tổng quan already did this.
   - **One day compares two ways:** with the day before, and with the same weekday a week earlier. For Friday 09/10 that is Thursday 08/10 and Friday 02/10. Both lines of the removed Báo cáo ngày live on here.
   - **Only Tổng quan and Doanh số compare.** Lãi lỗ does not, because its months already stand side by side.
+  - **Tổng quan loses its figure boxes, its filter and its comparison when the new Tổng quan is built** (owner 2026-10-14: *"Mấy ô số đó anh thấy khá vô nghĩa nên làm gì khác cho nó có nghĩa hơn, nếu chưa thì ưu tiên làm trước các cảnh báo, báo động"*). Alerts take the top of the page. After that only Doanh số compares. Design: `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md`.
 
 ### BR-UI-008 — A comma separates thousands, a dot marks decimals, everywhere
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addCashTransfer, updateCashTransfer } from "../actions";
 import { Button } from "@/components/ui/Button";
@@ -31,6 +31,7 @@ export function CashTransferForm({
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const savingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [day, setDay] = useState(transfer?.transfer_date ?? today ?? "");
   const [dayError, setDayError] = useState("");
@@ -44,6 +45,7 @@ export function CashTransferForm({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (savingRef.current) return;
     if (!day || day === "invalid") {
       setDayError("Ngày không hợp lệ");
       return;
@@ -65,21 +67,29 @@ export function CashTransferForm({
       return;
     }
 
+    savingRef.current = true;
     setLoading(true);
     setError(null);
 
     if (isEdit && transfer) formData.set("id", transfer.id);
-    const result = isEdit
-      ? await updateCashTransfer(formData)
-      : await addCashTransfer(formData);
+    try {
+      const result = isEdit
+        ? await updateCashTransfer(formData)
+        : await addCashTransfer(formData);
 
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+      if (result.error) {
+        savingRef.current = false;
+        setLoading(false);
+        setError(result.error);
+        return;
+      }
+      router.push(returnTo);
+      router.refresh();
+    } catch {
+      savingRef.current = false;
+      setLoading(false);
+      setError("Không lưu được. Kiểm tra mạng rồi bấm lại.");
     }
-    router.push(returnTo);
-    router.refresh();
   }
 
   const defaultFrom = transfer ? (transfer.from_account_id ?? "CASH") : "";

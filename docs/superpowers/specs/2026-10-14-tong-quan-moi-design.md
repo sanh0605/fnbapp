@@ -4,7 +4,7 @@ Phần 3 của kế hoạch chung (bước D của bản cải tổ). Nội dung
 `docs/superpowers/specs/2026-09-28-cai-to-he-thong.md` mục 5.7–5.11. File này gom lại các ý đó
 thành một bản dựng được và thêm phần máy cần biết để dựng.
 
-Trạng thái: **chờ chủ quán xác nhận bằng ví dụ** (mục 3).
+Trạng thái: **chủ quán xác nhận ví dụ 2026-10-14** (mục 5).
 
 ## 1. Đã chốt (trích bản cải tổ)
 
@@ -99,8 +99,37 @@ nhắc tắt. Nếu sang 03/11 vẫn chưa nhập, lời nhắc vẫn hiện và
      loại mới; không ghi lại loại cũ lúc bán.
    - Cố ý không phục vụ: báo giá nhập tăng, báo sắp hết hàng, gắn loại cho từng món.
 
-## 5. Câu đang hỏi chủ quán
+## 5. Chủ quán trả lời ví dụ, 2026-10-14
 
-Trang Tổng quan hôm nay còn có các ô số ở đầu trang, kèm bộ lọc thời gian và so với kỳ
-trước. Phần này dựng 2026-10-09, chưa đẩy. Bản cải tổ chỉ nói bỏ biểu đồ và 5 món bán chạy.
-Khuyến nghị: giữ các ô số ở trên cùng; dưới đó là báo động, rồi tới bảng 7 ngày.
+- **Ví dụ bảng 7 ngày đúng**, thêm: *"nếu có topping mua riêng thì có thêm 1 cột riêng"*.
+  Topping mua riêng là món thuộc loại Topping bán thành một dòng riêng, ví dụ Hộp sữa chua,
+  Kem muối. Đo 2026-10-14: từ trước tới nay chỉ có 2 lần bán (14/07: 1 phần 6.000đ; 24/07:
+  1 phần 10.000đ), 7 ngày trong ví dụ đều là 0. Cột "Topping mua riêng" ghi **số phần**, cộng
+  mọi món thuộc loại Topping, như cột Trứng luộc (chủ quán chốt 2026-10-14, *"a"*).
+- **Bỏ các ô số đầu trang**, kèm bộ lọc thời gian và so với kỳ trước (dựng 2026-10-09, chưa
+  đẩy). Chủ quán: *"Mấy ô số đó anh thấy khá vô nghĩa nên làm gì khác cho nó có nghĩa hơn,
+  nếu chưa thì ưu tiên làm trước các cảnh báo, báo động"*. Báo động lên đầu trang, rồi tới
+  bảng 7 ngày. Thứ có nghĩa hơn để thay vào chỗ đó: đề xuất sau, khi báo động đã dựng xong.
+  Luật đi kèm: `BR-UI-007`.
+
+## 6. Đề xuất cho chỗ đầu trang (Opus, 2026-10-14, chờ chủ quán chọn)
+
+Chủ quán hỏi: *"em có đề xuất gì sẽ hiện thêm trên trang tổng quan không ?"*. Đo trên dữ liệu
+thật ngày 2026-10-14, chỉ đọc:
+
+1. **Tiền đang có**: két và từng tài khoản, tính tới hôm nay, cùng cách tính ô "Cuối kỳ" của
+   Sổ thu chi (`summariseCashBook`). Hôm nay: ACB 31.199.578đ; két **−4.008.751đ**.
+2. **Báo động tiền mặt trên sổ bị âm**, cùng kiểu báo động hàng âm. Két không thể âm thật;
+   âm nghĩa là có khoản chi bằng tiền mặt mà tiền vào két chưa được ghi (ví dụ chủ quán bỏ
+   tiền túi mua hàng). Hôm nay báo động này sẽ bật.
+3. **Giờ đông khách**, số ly theo giờ trong 30 ngày (14/09–13/10, 745 đơn): 6 giờ 195 ly,
+   7 giờ 192, 8 giờ 133, 9 giờ 59; buổi tối 17–22 giờ cộng 132 ly; 10–16 giờ gần như không
+   có. Dùng để xếp ca.
+4. **Món lâu không bán**: món đang bán mà 30 ngày không ai gọi. Hôm nay 8 món: Cà phê kem
+   dẻo, Yogurt đào, Yogurt xoài, Hồng trà chanh, Cacao oatside caramel kem muối, Matcha
+   oatside kem muối, Matcha oatside caramel kem muối (ba món oatside chưa bán lần nào), và
+   "Test11" (đang bật bán).
+
+Đã loại: ô "đã đủ bù chi phí tháng này chưa". Giá vốn hiện ghi theo đợt kiểm kê và phiếu
+nhập, không theo từng ly bán ra (tháng 8 ghi 46.418.990đ, tháng 7 ghi 48.600đ), nên ô này
+sẽ nhảy lung tung và báo sai.

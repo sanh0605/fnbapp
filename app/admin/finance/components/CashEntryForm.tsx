@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addCashEntry, updateCashEntry } from "../actions";
 import { Button } from "@/components/ui/Button";
@@ -37,6 +37,7 @@ export function CashEntryForm({
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const savingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [day, setDay] = useState(entry?.entry_date ?? today ?? "");
   const [dayError, setDayError] = useState("");
@@ -56,24 +57,33 @@ export function CashEntryForm({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (savingRef.current) return;
     if (!day || day === "invalid") {
       setDayError("Ngày không hợp lệ");
       return;
     }
     const formData = new FormData(e.currentTarget);
+    savingRef.current = true;
     setLoading(true);
     setError(null);
 
     if (isEdit && entry) formData.set("id", entry.id);
-    const result = isEdit ? await updateCashEntry(formData) : await addCashEntry(formData);
+    try {
+      const result = isEdit ? await updateCashEntry(formData) : await addCashEntry(formData);
 
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+      if (result.error) {
+        savingRef.current = false;
+        setLoading(false);
+        setError(result.error);
+        return;
+      }
+      router.push(returnTo);
+      router.refresh();
+    } catch {
+      savingRef.current = false;
+      setLoading(false);
+      setError("Không lưu được. Kiểm tra mạng rồi bấm lại.");
     }
-    router.push(returnTo);
-    router.refresh();
   }
 
   return (

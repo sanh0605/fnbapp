@@ -108,6 +108,24 @@ describe("CashTransferForm", () => {
     expect(push).toHaveBeenCalledWith("/admin/finance?preset=THIS_MONTH");
   });
 
+  // Owner 2026-10-14: on a slow connection a second tap must not save a second transfer.
+  it("after a successful save Lưu stays switched off until the page moves on, so a second tap saves nothing", async () => {
+    const { container } = render(
+      <CashTransferForm accounts={ACCOUNTS} today="2026-10-04" returnTo="/admin/finance" />,
+    );
+    fireEvent.change(screen.getByLabelText(/^Từ( \*)?$/), { target: { value: "CASH" } });
+    fireEvent.change(screen.getByLabelText(/^Đến( \*)?$/), { target: { value: "BA-001" } });
+    fireEvent.change(screen.getByPlaceholderText("Ví dụ: 500,000"), { target: { value: "500000" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/finance"));
+
+    expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
+    fireEvent.submit(container.querySelector("form")!);
+    await Promise.resolve();
+    expect(addCashTransferMock).toHaveBeenCalledTimes(1);
+  });
+
   it("defaults date to today for new and keeps transfer date for edit", () => {
     const { unmount } = render(
       <CashTransferForm accounts={ACCOUNTS} today="2026-10-04" />,

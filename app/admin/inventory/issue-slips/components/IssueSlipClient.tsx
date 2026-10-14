@@ -78,6 +78,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
   const [error, setError] = useState<string | null>(null);
   const [unitCosts, setUnitCosts] = useState<Record<string, number>>({});
   const costRequestIdRef = useRef(0);
+  const savingRef = useRef(false);
 
   useEffect(() => {
     if (!issuedAtLocal) return;
@@ -166,6 +167,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
   }
 
   async function handleSubmit() {
+    if (savingRef.current) return;
     setError(null);
 
     if (lines.length === 0) {
@@ -210,18 +212,26 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
       if (!approved) return;
     }
 
+    savingRef.current = true;
     setSubmitting(true);
-    const res = await createIssueSlip({
-      issuedAtIso: issuedAt.toISOString(),
-      note: "",
-      lines: payloadLines,
-    });
-    setSubmitting(false);
-    if (res.error || !res.result) {
-      setError(res.error || "Không thể ghi phiếu xuất");
-      return;
+    try {
+      const res = await createIssueSlip({
+        issuedAtIso: issuedAt.toISOString(),
+        note: "",
+        lines: payloadLines,
+      });
+      if (res.error || !res.result) {
+        savingRef.current = false;
+        setSubmitting(false);
+        setError(res.error || "Không thể ghi phiếu xuất");
+        return;
+      }
+      router.push("/admin/inventory/issue-slips/" + res.result.slipId);
+    } catch {
+      savingRef.current = false;
+      setSubmitting(false);
+      setError("Không lưu được. Kiểm tra mạng rồi bấm lại.");
     }
-    router.push("/admin/inventory/issue-slips/" + res.result.slipId);
   }
 
   return (

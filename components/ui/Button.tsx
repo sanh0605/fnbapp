@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 type Variant = "primary" | "secondary" | "delete" | "danger";
 
@@ -23,7 +23,7 @@ const variantStyles: Record<Variant, string> = {
 };
 
 const baseStyle =
-  "inline-flex items-center justify-center gap-2 min-h-[44px] md:min-h-[40px] px-4 rounded-button text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-50 disabled:pointer-events-none";
+  "relative inline-flex items-center justify-center gap-2 min-h-[44px] md:min-h-[40px] px-4 rounded-button text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-50 disabled:pointer-events-none";
 
 export function Button(props: ButtonProps): JSX.Element {
   const { variant = "primary", loading = false, className = "", children } = props;
@@ -58,10 +58,17 @@ export function Button(props: ButtonProps): JSX.Element {
     <button
       className={classes}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       {...buttonProps}
     >
-      {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-      {children}
+      {loading ? (
+        <>
+          <RefreshCw className="w-4 h-4 animate-spin absolute" />
+          <span className="invisible">{children}</span>
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }

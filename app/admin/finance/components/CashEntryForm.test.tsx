@@ -113,6 +113,20 @@ describe("CashEntryForm day box (wave K5)", () => {
     expect(sent.get("entry_date")).toBe("2026-09-15");
   });
 
+  // Owner 2026-10-14: on a slow connection a second tap must not save a second row.
+  it("after a successful save Lưu stays switched off until the page moves on, so a second tap saves nothing", async () => {
+    vi.mocked(addCashEntry).mockClear();
+    vi.mocked(addCashEntry).mockResolvedValue({ error: null } as never);
+    const { container } = render(<CashEntryForm categories={CATEGORIES} accounts={[]} today="2026-10-08" />);
+    fireEvent.submit(container.querySelector("form")!);
+    await vi.waitFor(() => expect(push).toHaveBeenCalledTimes(1));
+
+    expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
+    fireEvent.submit(container.querySelector("form")!);
+    await Promise.resolve();
+    expect(addCashEntry).toHaveBeenCalledTimes(1);
+  });
+
   it("says a day that is not a date and sends nothing", async () => {
     vi.mocked(addCashEntry).mockClear();
     const { container } = render(<CashEntryForm categories={CATEGORIES} accounts={[]} today="2026-10-08" />);

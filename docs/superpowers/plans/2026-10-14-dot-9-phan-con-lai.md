@@ -50,3 +50,19 @@ mỗi danh sách lấy dữ liệu từ máy chủ (Sonnet đọc khi làm việ
    trong route; Gemini thêm nút "Sửa" trong `UiFeedbackTool.tsx`.
 5. **G4, xoá nhân viên**, Sonnet: chặn tự xoá chính mình và chặn xoá chủ quán cuối cùng, lời
    báo tiếng Việt.
+6. **Nút lưu không bấm lại được khi đang gửi** (chủ quán 2026-10-14: *"nút đó sẽ biến thành 2
+   dấu mũi tên đang xoay tròn, và không bấm lại được để tránh tình trạng duplicate đơn
+   hàng"*). Thiết kế rút gọn:
+   1. Trạng thái: nút thường; đang gửi (hai mũi tên xoay, không bấm được); gửi lỗi thì về
+      thường; gửi xong thì **giữ nguyên đang gửi** cho tới khi trang chuyển đi.
+   2. Nút: mọi nút của khuôn `Button` khi `loading`. Chỗ hở thật: năm trang tạo bản ghi
+      không có tên riêng (Phiếu nhập, Phiếu xuất, Sổ thu chi, Chuyển tiền, Thanh lý) bật lại
+      nút ngay khi máy chủ trả lời, trước khi trang chuyển, nên mạng chậm thì bấm lần hai
+      tạo bản thứ hai. Các trang có tên riêng (Thương hiệu, Đơn vị…) lần hai bị chặn vì trùng
+      tên, không tạo bản thừa.
+   3. Danh sách: không áp dụng, vì không có danh sách.
+   4. Ô nhập: không áp dụng, vì không đổi ô nào.
+   5. Dữ liệu: không đổi bảng. Đo 2026-10-14: 203 phiếu nhập, chưa phiếu nào bị lưu hai lần
+      (các cặp cùng nhà cung cấp, cùng tiền trong vài phút đều khác ngày mua, là nhập lùi).
+   - Gemini: `components/ui/Button.tsx` đổi vòng xoay sang hai mũi tên (`RefreshCw`), chữ ẩn
+     nhưng giữ chỗ; năm form chỉ bật lại nút khi lỗi, thêm khoá chặn lần gửi thứ hai.

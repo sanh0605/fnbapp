@@ -437,6 +437,53 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
     expect(formData.get("status")).toBe("DRAFT");
   });
 
+  // Owner 2026-10-14: on a slow connection a second tap must not save a second slip.
+  it("after a successful save the buttons stay switched off until the page moves on, so a second tap saves nothing", async () => {
+    mockSavePurchaseOrder.mockResolvedValue({ success: true });
+
+    render(
+      <PurchaseOrderForm
+        suppliers={seedSuppliers}
+        sources={sampleSources}
+        items={seedItems}
+        conversions={seedConversions}
+        units={seedUnits}
+        bankAccounts={sampleAccounts}
+        copySeed={po147Seed}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Lưu nháp/i }));
+    await waitFor(() => expect(router.push).toHaveBeenCalledTimes(1));
+
+    const draftBtn = screen.getByRole("button", { name: /Lưu nháp/i });
+    expect(draftBtn).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeDisabled();
+    fireEvent.click(draftBtn);
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
+    expect(mockSavePurchaseOrder).toHaveBeenCalledTimes(1);
+  });
+
+  it("after a failed save the buttons work again", async () => {
+    mockSavePurchaseOrder.mockResolvedValue({ success: false, error: "Mất kết nối" });
+
+    render(
+      <PurchaseOrderForm
+        suppliers={seedSuppliers}
+        sources={sampleSources}
+        items={seedItems}
+        conversions={seedConversions}
+        units={seedUnits}
+        bankAccounts={sampleAccounts}
+        copySeed={po147Seed}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Lưu nháp/i }));
+    await waitFor(() => expect(mockSavePurchaseOrder).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Lưu nháp/i })).not.toBeDisabled());
+  });
+
   it("with ?draft=1 and a stored draft whose supplierId differs, the draft's supplier wins", async () => {
     mockSearchParams = new URLSearchParams("draft=1");
     mockSavePurchaseOrder.mockResolvedValueOnce({ success: true });

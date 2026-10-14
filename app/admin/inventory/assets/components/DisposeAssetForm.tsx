@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, useEffect } from "react";
+import { useId, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { NumberInput } from "@/components/ui/NumberInput";
@@ -39,6 +39,7 @@ export function DisposeAssetForm({
   const selectedLot = lots.find((l) => l.id === selectedLotId) ?? lots[0];
 
   const [loading, setLoading] = useState(false);
+  const savingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [dateError, setDateError] = useState("");
   const [quantityError, setQuantityError] = useState("");
@@ -83,6 +84,7 @@ export function DisposeAssetForm({
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (savingRef.current) return;
     if (!selectedLot) return;
     if (quantity === "") {
       setQuantityError("Cần nhập số.");
@@ -93,16 +95,24 @@ export function DisposeAssetForm({
       return;
     }
     const formData = new FormData(e.currentTarget);
+    savingRef.current = true;
     setLoading(true);
     setError(null);
     formData.set("asset_id", selectedLot.id);
-    const res = await disposeAsset(formData);
-    setLoading(false);
-    if (res.error) {
-      setError(res.error);
-    } else {
-      router.push(returnTo);
-      router.refresh();
+    try {
+      const res = await disposeAsset(formData);
+      if (res.error) {
+        savingRef.current = false;
+        setLoading(false);
+        setError(res.error);
+      } else {
+        router.push(returnTo);
+        router.refresh();
+      }
+    } catch {
+      savingRef.current = false;
+      setLoading(false);
+      setError("Không lưu được. Kiểm tra mạng rồi bấm lại.");
     }
   }
 

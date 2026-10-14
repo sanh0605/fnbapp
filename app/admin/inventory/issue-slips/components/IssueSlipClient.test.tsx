@@ -298,6 +298,25 @@ describe("IssueSlipClient -- package-size counting produces the base quantity se
     expect(call.lines).toEqual([{ purchasedItemId: "SPM-001", baseQuantity: 36 }]);
   });
 
+  // Owner 2026-10-14: on a slow connection a second tap must not record a second slip.
+  it("after a successful save a second tap sends nothing until the page moves on", async () => {
+    mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
+    const theItem = item({
+      packageLines: [pkg({ conversionId: "QD-002", sizeLabel: "Hộp lẻ", conversionRate: 1, purchasedUnitName: "Hộp" })],
+    });
+    const container = await renderTracked(<IssueSlipClient items={[theItem]} />);
+    const block = getLineBlocks(container)[0];
+
+    await selectItemInBlock(block, "Sữa tươi Vinamilk");
+    await selectPackage(block, "Hộp lẻ");
+    await setInputValue(findQtyInput(block), "3");
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+    expect(mocks.routerPush).toHaveBeenCalledTimes(1);
+
+    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+    expect(mocks.createIssueSlip).toHaveBeenCalledTimes(1);
+  });
+
   // BR-UI-008 (owner 2026-10-07): the dot is the decimal mark typed into the
   // box. Before, the box dropped the dot, so "1.5" Thùng became 15 Thùng.
   it("typing 1.5 Thùng 12 hộp sends 18 hộp, not 180", async () => {

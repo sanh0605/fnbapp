@@ -53,6 +53,23 @@ describe("BR-UI-005 Button", () => {
     render(<Button loading>Lưu</Button>);
     expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
   });
+
+  // Owner 2026-10-14: while a save runs the button turns into two arrows going round.
+  it("while loading shows only the two turning arrows in place of its words, and keeps its name", () => {
+    render(<Button loading>Tạo</Button>);
+    const button = screen.getByRole("button", { name: "Tạo" });
+    const icon = button.querySelector("svg");
+    expect(icon?.getAttribute("class")).toContain("lucide-refresh-cw");
+    expect(icon?.getAttribute("class")).toContain("animate-spin");
+    expect(button.querySelector("svg.lucide-loader-circle, svg.lucide-loader-2")).toBeNull();
+    const words = screen.getByText("Tạo");
+    expect(words.className).toContain("invisible");
+  });
+
+  it("shows no arrows when not loading", () => {
+    render(<Button>Tạo</Button>);
+    expect(screen.getByRole("button", { name: "Tạo" }).querySelector("svg")).toBeNull();
+  });
 });
 
 describe("Button height by device (owner 2026-10-11 trial)", () => {

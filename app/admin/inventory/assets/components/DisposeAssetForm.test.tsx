@@ -340,6 +340,31 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
     expect(formData.get("asset_id")).toBe("TS-057");
   });
 
+  // Owner 2026-10-14: on a slow connection a second tap must not record a second disposal.
+  it("after a successful save a second submit sends nothing until the page moves on", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    mocks.disposeAsset.mockResolvedValue({ ok: true });
+
+    const container = await renderTracked(
+      <DisposeAssetForm lots={[TS030_LOT]} initialLotId="TS-030" returnTo="/admin/inventory/assets/SPM-COC" />,
+    );
+    await flush();
+    await typeQuantity(container, "1");
+
+    const form = container.querySelector("form")!;
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    await flush();
+    expect(mocks.routerPush).toHaveBeenCalled();
+
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    await flush();
+    expect(mocks.disposeAsset).toHaveBeenCalledTimes(1);
+  });
+
   it("navigates to returnTo when 'Bỏ' is clicked", async () => {
     mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
     const container = await renderTracked(

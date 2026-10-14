@@ -101,6 +101,7 @@ export default function PurchaseOrderForm({
   const initialLines = initialData?.lines;
 
   const [loading, setLoading] = useState(false);
+  const savingRef = useRef(false);
   const [supplierId, setSupplierId] = useState(initialData?.po?.supplier_id || copySeed?.supplier_id || "");
   const [sourceId, setSourceId] = useState(initialData?.po?.source_id || copySeed?.source_id || "");
   const [supplierInvoiceCode, setSupplierInvoiceCode] = useState(
@@ -221,6 +222,8 @@ export default function PurchaseOrderForm({
   const totalAmount = subtotalAmount + Number(shippingFee) + Number(taxAmount) - Number(voucherAmount) - Number(discountAmount);
 
   const handleSubmit = async (status: string) => {
+    if (savingRef.current) return;
+
     if (status === "COMPLETED") {
       const headerError = validatePurchaseOrderHeader({ supplierId, sourceId, lineCount: lines.length });
       if (headerError) return await alert({ title: "Thiếu thông tin", message: headerError, variant: "warning" });
@@ -231,6 +234,7 @@ export default function PurchaseOrderForm({
       }
     }
 
+    savingRef.current = true;
     setLoading(true);
     setPaymentError(null);
     const formData = new FormData();
@@ -250,28 +254,35 @@ export default function PurchaseOrderForm({
     formData.append("payment_method", paymentMethod);
     formData.append("bank_account_id", paymentMethod === "BANK_TRANSFER" ? bankAccountId : "");
 
-    const res = await savePurchaseOrder(formData);
-    setLoading(false);
+    try {
+      const res = await savePurchaseOrder(formData);
 
-    if (res.success) {
-      const assetWarning = (res as { assetWarning?: string }).assetWarning;
-      const poId = (res as { po_id?: string }).po_id;
-      if (assetWarning) {
-        router.push(`/admin/inventory/purchase-orders/${poId}?assetWarning=1`);
+      if (res.success) {
+        const assetWarning = (res as { assetWarning?: string }).assetWarning;
+        const poId = (res as { po_id?: string }).po_id;
+        if (assetWarning) {
+          router.push(`/admin/inventory/purchase-orders/${poId}?assetWarning=1`);
+        } else {
+          router.push("/admin/inventory/purchase-orders");
+        }
+        router.refresh();
       } else {
-        router.push("/admin/inventory/purchase-orders");
+        savingRef.current = false;
+        setLoading(false);
+        if (
+          res.error === "Chọn cách trả tiền" ||
+          res.error === "Chọn tài khoản nhận chuyển khoản" ||
+          res.error === "Tài khoản không còn dùng"
+        ) {
+          setPaymentError(res.error);
+        } else {
+          await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
+        }
       }
-      router.refresh();
-    } else {
-      if (
-        res.error === "Chọn cách trả tiền" ||
-        res.error === "Chọn tài khoản nhận chuyển khoản" ||
-        res.error === "Tài khoản không còn dùng"
-      ) {
-        setPaymentError(res.error);
-      } else {
-        await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
-      }
+    } catch {
+      savingRef.current = false;
+      setLoading(false);
+      await alert({ title: "Lỗi", message: "Không lưu được. Kiểm tra mạng rồi bấm lại.", variant: "danger" });
     }
   };
 
