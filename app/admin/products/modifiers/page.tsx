@@ -14,9 +14,9 @@ export default async function ModifiersPage({
     getModifiersData(),
     findAll("Products") as Promise<any[]>,
   ]);
-  const toppings = products.filter(
-    (p: any) => p.category_id === "CAT-007"
-  );
+  // A standalone topping is the product a modifier links to, in any dish group.
+  const linkedIds = new Set(modifiers.map((m: any) => m.product_id).filter(Boolean));
+  const toppings = products.filter((p: any) => linkedIds.has(p.id));
   return (
     <Suspense fallback={<div>Đang tải...</div>}>
       <ModifiersClient

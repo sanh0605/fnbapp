@@ -114,7 +114,7 @@ dõi tồn" (A13); dòng đơn ở danh sách và chi tiết dùng chung (C14).
 | 6 | C3, C4 | Khuyến mãi giảm cả hoá đơn cộng dồn với giảm tay không; máy chủ có tự áp khuyến mãi khi máy bán không áp? | **C3 đã chốt 14/10: cộng dồn** (`BR-SALE-010`); C4 đã chốt: tự áp loại không mã, ô "Dùng chung" (`BR-SALE-011`) |
 | 7 | B3, B9 | Doanh số lọc nhóm món: ẩn khối cả đơn hay ghi chú; "Luỹ kế" Lãi lỗ tính lại từ tháng 1 hay từ đầu khoảng | **Đã chốt 14/10: tạm ẩn khi lọc** (`BR-SALE-012`); **Luỹ kế từ tháng đầu khoảng đang xem** |
 | 8 | C1 | Bán khi mất mạng (`BR-U-001`): bật lại ba nút thanh toán khi máy biết đang mất mạng — gộp với phần 7 máy bán hàng | Mỗi lần mất mạng |
-| 9 | F4b, F5, F13, C12 | Nhóm của topping bán riêng; bảng "Nhóm tuỳ chọn" tự sửa; hộp báo lỗi có biểu tượng; hiện từng phần của đơn trả hai cách | Thấp |
+| 9 | F4b, F5, F13, C12 | Nhóm của topping bán riêng; bảng "Nhóm tuỳ chọn" tự sửa; hộp báo lỗi có biểu tượng; hiện từng phần của đơn trả hai cách | **F4b đã chốt 14/10: mặc định Topping, sửa được** (đã làm cùng F4a); **F5 đã chốt: trang riêng "Nhóm tuỳ chọn"**, cần thiết kế trước; F13, C12 còn hỏi |
 | 10 | E6, D12, D16 | Việc chủ quán tự làm (E9 đã xong bằng migration 0117): luật giới hạn đăng nhập trên Vercel; tắt đăng ký Supabase Auth; gỡ hàm `user-admin` trên máy chủ; sửa `.claude/settings.json` và `.claude/rules/ui-devices.md` | — |
 
 ## Chưa xem

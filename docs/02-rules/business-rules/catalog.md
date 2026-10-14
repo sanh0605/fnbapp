@@ -137,6 +137,23 @@ price, which is exactly what the rule above exists to prevent. Only the
 *Thêm Topping* group may do this: *Chọn Size*, *Chọn Đường* and *Chọn Đá* are
 choices inside a drink, and a món called "Size L" on the menu would be a defect.
 
+**The new món starts in the "Topping" group and may be moved, owner decision
+2026-10-14** (audit F4, chose *"Mặc định Topping, sửa được"* over asking the
+group each time and over locking it). Turning *Bán độc lập* on still puts the
+món in `CAT-007` with no extra step; the owner may then move it to another
+group from Sửa món, and the switch keeps working because it follows the link
+(`modifiers.product_id`), not the group. Moving it moves its sales to that
+group's column in Doanh số. Today (measured 2026-10-14) all 8 linked món are in
+"Topping" and every modifier of *Thêm Topping* has one.
+
+**Option groups become a table the owner edits on their own page, owner
+decision 2026-10-14** (audit F5, chose *"Trang riêng Nhóm tuỳ chọn"* over typing
+a new group into the box and over keeping four). Today the box "Nhóm tuỳ chọn"
+offers four names written into the code (Thêm Topping, Chọn Size, Chọn Đường,
+Chọn Đá); all 8 live rows are *Thêm Topping* (measured 2026-10-14). The new page
+adds, edits, stops and orders the groups the till shows. Not built yet: it is a
+new table and a new screen, so it gets a design the owner approves first.
+
 ---
 
 ### BR-CATALOG-004 — The Hàng hoá page shows each item's current stock, in its base unit; equipment points to Tài sản

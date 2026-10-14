@@ -84,3 +84,9 @@ describe("ModifierForm -- price box (wave K4)", () => {
     expect(priceBox().value).toBe("0");
   });
 });
+
+describe("ModifierForm -- option groups come from a table the owner edits (audit F5)", () => {
+  it.todo(
+    "Ô Nhóm tuỳ chọn lấy từ trang riêng Nhóm tuỳ chọn chủ quán tự thêm, sửa, ngừng và xếp thứ tự hiện trên máy bán (chủ quán chốt 14/10/2026)",
+  );
+});
