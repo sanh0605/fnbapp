@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { findAll } from "@/lib/db/tables";
+import { resolveActor } from "@/lib/auth/auth";
 import { getCategoriesWithCounts } from "@/app/admin/products/categories/actions";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import { ProductCategoryDetailView } from "./components/ProductCategoryDetailView";
@@ -15,10 +16,11 @@ export default async function ProductCategoryDetailPage(
 ) {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const [{ categories, counts }, allProducts, allTypes] = await Promise.all([
+  const [{ categories, counts }, allProducts, allTypes, auth] = await Promise.all([
     getCategoriesWithCounts(),
     findAll("Products") as Promise<DBProduct[]>,
     findAll("Product_Types") as Promise<DBProductType[]>,
+    resolveActor(),
   ]);
 
   const category = categories.find((c) => c.id === params.id);
@@ -29,12 +31,14 @@ export default async function ProductCategoryDetailPage(
   const productType = allTypes.find((t) => t.id === category.type_id);
 
   const dishes = allProducts
-    .filter((p) => p.category_id === category.id && p.status !== "DELETED")
+    .filter((p) => p.category_id === category.id)
     .map((p) => ({
       id: p.id,
       name: p.name,
       status: p.status,
     }));
+
+  const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
 
   const rawReturnTo = safeReturnTo(
     searchParams?.returnTo,
@@ -50,6 +54,7 @@ export default async function ProductCategoryDetailPage(
       typeName={productType?.name || "—"}
       dishCount={counts[category.id] ?? dishes.length}
       dishes={dishes}
+      canDelete={canDelete}
       returnTo={returnTo}
     />
   );

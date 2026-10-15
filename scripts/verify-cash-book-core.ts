@@ -67,9 +67,11 @@ interface Move {
   amount: number;
 }
 
-// A missing method reads as cash, as the order list does.
-function sideOf(method: string | null): "cash" | "bank" {
-  return method === "BANK_TRANSFER" ? "bank" : "cash";
+// Same rule as lib/finance/cash-flow.ts: only these two methods exist.
+function sideOf(method: string): "cash" | "bank" {
+  if (method === "CASH") return "cash";
+  if (method === "BANK_TRANSFER") return "bank";
+  throw new Error(`Unknown payment method: ${method}`);
 }
 
 function collectMoves(raw: RawCashBook): Move[] {
@@ -88,7 +90,8 @@ function collectMoves(raw: RawCashBook): Move[] {
     if (payments && payments.length > 0) {
       for (const p of payments) moves.push({ day, side: sideOf(p.method), amount: Number(p.amount) });
     } else {
-      moves.push({ day, side: sideOf(o.payment_method), amount: Number(o.net_total) });
+      // An order with no payment rows and no method reads as cash, as the view does.
+      moves.push({ day, side: sideOf(o.payment_method ?? "CASH"), amount: Number(o.net_total) });
     }
   }
 
@@ -96,7 +99,7 @@ function collectMoves(raw: RawCashBook): Move[] {
     if (po.status !== "COMPLETED") continue;
     moves.push({
       day: saigonDay(po.transaction_date ?? po.created_at),
-      side: sideOf(po.payment_method),
+      side: sideOf(po.payment_method ?? ""),
       amount: -Number(po.total_amount),
     });
   }

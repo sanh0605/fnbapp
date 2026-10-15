@@ -9,6 +9,7 @@ import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Alert } from "@/components/ui/Alert";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Plus } from "lucide-react";
 import { confirm } from "@/lib/shared/dialog";
 import { safeReturnTo } from "./return-to";
@@ -333,25 +334,11 @@ export default function ProductForm({
           </Alert>
         )}
 
-        {/* Buttons */}
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            variant="primary"
-            type="submit"
-            loading={loading}
-            className="w-full sm:w-auto min-h-[44px] md:min-h-[40px]"
-          >
-            Lưu món
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

@@ -150,7 +150,7 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 
 ### BR-UI-015 — One footer on every create and edit form, always in reach
 
-**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation (*"Đúng, làm vậy"*: pending design questions take the recommended option, reviewed together at the end). Spec `docs/superpowers/specs/2026-10-15-khuon-chung-design.md` section 2.1. Not built yet: Tạo món and Sửa món first, the other forms as their area is audited.
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation (*"Đúng, làm vậy"*: pending design questions take the recommended option, reviewed together at the end). Spec `docs/superpowers/specs/2026-10-15-khuon-chung-design.md` section 2.1. Built 2026-10-15 on Tạo món and Sửa món (`components/ui/FormActionBar.tsx`, branch feat/khuon-chung-ban-hang-kho, not yet pushed); the other 24 forms follow as their area is audited, tracked by the shrink-only list in `components/ui/form-action-bar.guard.test.ts`.
 
 - Counted 2026-10-15: the last button of a form reads "Bỏ" 27 times, "Tạo" 20, "Lưu" 3, "Cập nhật" 7, plus "Lưu món", "Lưu thông tin", "Lưu Nhân Sự", "Lưu Thương Hiệu", "Lưu Quy Đổi". 0 forms keep the button in view on a long page.
 - **A create page** ends with "Tạo" (`BR-UI-002`) and "Bỏ"; **an edit page** with "Lưu thay đổi" and "Bỏ thay đổi". A page with its own act keeps its word ("Ghi phiếu", "Xác nhận huỷ", "Lưu nháp").

@@ -64,7 +64,7 @@ export function ModifierGroupForm({
     return categories
       .map((cat) => {
         const catProducts = products.filter(
-          (p) => p.category_id === cat.id && p.status !== "DELETED"
+          (p) => p.category_id === cat.id
         );
         return {
           category: cat,

@@ -43,13 +43,14 @@ const sampleDishes = [
 ];
 
 describe("ProductCategoryDetailView", () => {
-  it("renders Cà phê CAT-001 with dishes, status label, edit link and delete button", () => {
+  it("renders Cà phê CAT-001 with dishes, status label, edit link", () => {
     const returnTo = "/admin/products/categories";
     render(
       <ProductCategoryDetailView
         category={sampleCategory}
         dishCount={sampleDishes.length}
         dishes={sampleDishes}
+        canDelete={true}
         returnTo={returnTo}
       />,
     );
@@ -73,8 +74,50 @@ describe("ProductCategoryDetailView", () => {
       "/admin/products/categories/CAT-001/edit?returnTo=",
     );
 
-    // "Xoá" button
+    // "Xoá" button hidden because group has dishes
+    expect(screen.queryByRole("button", { name: "Xoá" })).toBeNull();
+  });
+
+  it("shows 'Xoá' button when canDelete is true and group has 0 dishes", () => {
+    render(
+      <ProductCategoryDetailView
+        category={sampleCategory}
+        dishCount={0}
+        dishes={[]}
+        canDelete={true}
+        returnTo="/admin/products/categories"
+      />,
+    );
+
     expect(screen.getByRole("button", { name: "Xoá" })).toBeInTheDocument();
+  });
+
+  it("hides 'Xoá' button when not owner (canDelete is false) even with 0 dishes", () => {
+    render(
+      <ProductCategoryDetailView
+        category={sampleCategory}
+        dishCount={0}
+        dishes={[]}
+        canDelete={false}
+        returnTo="/admin/products/categories"
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Xoá" })).toBeNull();
+  });
+
+  it("hides 'Xoá' button when group has dishes even for owner (canDelete is true)", () => {
+    render(
+      <ProductCategoryDetailView
+        category={sampleCategory}
+        dishCount={sampleDishes.length}
+        dishes={sampleDishes}
+        canDelete={true}
+        returnTo="/admin/products/categories"
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Xoá" })).toBeNull();
   });
 
   it("renders empty state message when group has no dishes", () => {

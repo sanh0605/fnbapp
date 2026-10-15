@@ -41,16 +41,26 @@ vi.mock("@/app/admin/products/modifiers/actions", () => ({
   deleteModifierAction: vi.fn(),
 }));
 
+const resolveActorMock = vi.fn();
+const findSoldModifierIdsMock = vi.fn();
+
+vi.mock("@/lib/auth/auth", () => ({
+  resolveActor: () => resolveActorMock(),
+}));
+
 vi.mock("@/lib/db/tables", () => ({
   findAll: vi.fn().mockImplementation((table: string) => {
     if (table === "Products") return Promise.resolve(mockProducts);
     return Promise.resolve([]);
   }),
+  findSoldModifierIds: () => findSoldModifierIdsMock(),
 }));
 
 describe("ModifierDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resolveActorMock.mockResolvedValue({ ok: true, actor: { role: "ADMIN" } });
+    findSoldModifierIdsMock.mockResolvedValue([]);
   });
 
   it("calls notFound when modifier id is unknown", async () => {
@@ -90,5 +100,31 @@ describe("ModifierDetailPage", () => {
 
     const props = element.props;
     expect(Object.values(props).every((v) => typeof v !== "function")).toBe(true);
+  });
+
+  it("passes canDelete true for ADMIN when modifier is not sold", async () => {
+    const element = await ModifierDetailPage({
+      params: Promise.resolve({ id: "MOD-001" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(element.props.canDelete).toBe(true);
+  });
+
+  it("passes canDelete false when modifier has already been sold", async () => {
+    findSoldModifierIdsMock.mockResolvedValue(["MOD-001"]);
+    const element = await ModifierDetailPage({
+      params: Promise.resolve({ id: "MOD-001" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(element.props.canDelete).toBe(false);
+  });
+
+  it("passes canDelete false for non-ADMIN actor", async () => {
+    resolveActorMock.mockResolvedValue({ ok: true, actor: { role: "STAFF" } });
+    const element = await ModifierDetailPage({
+      params: Promise.resolve({ id: "MOD-001" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(element.props.canDelete).toBe(false);
   });
 });

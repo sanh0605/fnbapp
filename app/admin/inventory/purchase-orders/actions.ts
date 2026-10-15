@@ -199,6 +199,17 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
         l.id && l.purchased_item_id ? [{ id: String(l.id), purchased_item_id: String(l.purchased_item_id) }] : []);
     }
 
+    // BR-CATALOG-007: a stopped supplier or item is refused unless the stored order already names it.
+    const keptItemIds = new Set(storedLines.map(l => l.purchased_item_id));
+    const stoppedSupplier = ((await findAll("Suppliers")) as DBSupplier[]).find(
+      s => s.id === supplier_id && s.status === "INACTIVE" && s.id !== previousPo?.supplier_id,
+    );
+    if (stoppedSupplier) return fail(`Nhà cung cấp ${stoppedSupplier.name} đã ngừng hợp tác.`);
+    const stoppedItem = (purchasedItems as DBPurchasedItem[]).find(
+      p => p.status === "INACTIVE" && !keptItemIds.has(p.id) && lines.some((l: { purchased_item_id?: string }) => l.purchased_item_id === p.id),
+    );
+    if (stoppedItem) return fail(`${stoppedItem.name} đã ngừng dùng.`);
+
     // How it was paid. A form that leaves the two fields out entirely (key
     // absent) keeps what the saved order has, so re-saving a completed order
     // never blanks its payment; a key that is present, even empty, is the

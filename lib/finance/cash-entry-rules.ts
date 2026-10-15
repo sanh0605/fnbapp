@@ -1,3 +1,4 @@
+import { saigonToday } from "@/lib/shared/datetime";
 import type { DBCashCategory } from "@/types/db";
 
 export interface CashEntryInput {
@@ -9,7 +10,7 @@ export interface CashEntryInput {
   note: string;
 }
 
-export interface CashEntryFields {
+interface CashEntryFields {
   entry_date: string;
   category_id: string;
   amount: number;
@@ -19,6 +20,20 @@ export interface CashEntryFields {
 }
 
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; error: string };
+
+// BR-CASH-007: balances count from zero on this day, so no row may be older.
+const CASH_BOOK_START = "2026-03-26";
+export const NOTE_MAX_LENGTH = 500;
+export const NOTE_TOO_LONG_ERROR = `Ghi chú tối đa ${NOTE_MAX_LENGTH} ký tự`;
+
+// "YYYY-MM-DD" that names a real calendar day ("2026-02-30" is not one).
+export function isRealCalendarDate(value: string): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!m) return false;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const date = new Date(Date.UTC(y, mo - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
+}
 
 const AMOUNT_FORMAT_ERROR =
   "Số tiền chỉ gồm chữ số; dấu phẩy chỉ dùng để chia hàng nghìn (ví dụ 150,000)";
@@ -55,9 +70,18 @@ export function parseAmountVn(raw: string): ParseResult<number> {
   return { ok: true, value: amount };
 }
 
-export function parseCashEntry(input: CashEntryInput): ParseResult<CashEntryFields> {
+// today is the Saigon day; tests pass it, callers take the default.
+export function parseCashEntry(
+  input: CashEntryInput,
+  today: string = saigonToday(),
+): ParseResult<CashEntryFields> {
   const entry_date = (input.entry_date || "").trim();
   if (!entry_date) return { ok: false, error: "Chọn ngày ghi sổ" };
+  if (!isRealCalendarDate(entry_date)) return { ok: false, error: "Ngày ghi sổ không hợp lệ" };
+  if (entry_date > today) return { ok: false, error: "Ngày ghi sổ không được sau hôm nay" };
+  if (entry_date < CASH_BOOK_START) {
+    return { ok: false, error: "Sổ bắt đầu từ ngày 26/03/2026, không ghi ngày trước đó" };
+  }
 
   const category_id = (input.category_id || "").trim();
   if (!category_id) return { ok: false, error: "Chọn nhóm thu chi" };
@@ -67,7 +91,10 @@ export function parseCashEntry(input: CashEntryInput): ParseResult<CashEntryFiel
   if (parsedAmount.ok === false) return { ok: false, error: parsedAmount.error };
   const amount = parsedAmount.value;
 
-  const payment_method = input.payment_method === "BANK_TRANSFER" ? "BANK_TRANSFER" : "CASH";
+  const payment_method = input.payment_method;
+  if (payment_method !== "CASH" && payment_method !== "BANK_TRANSFER") {
+    return { ok: false, error: "Chọn tiền mặt hoặc chuyển khoản" };
+  }
   const chosen = (input.bank_account_id || "").trim();
   // Cash never carries an account. The form hides the field, but a stale value
   // can still arrive from a half-filled form; drop it here so the database
@@ -78,6 +105,7 @@ export function parseCashEntry(input: CashEntryInput): ParseResult<CashEntryFiel
   }
 
   const note = (input.note || "").trim() || null;
+  if (note && note.length > NOTE_MAX_LENGTH) return { ok: false, error: NOTE_TOO_LONG_ERROR };
 
   return {
     ok: true,

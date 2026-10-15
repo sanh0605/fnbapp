@@ -65,7 +65,7 @@ import type {
  * so nothing below confirms or refutes what the cashier was shown -- that
  * data does not exist to recover. H3 only checks whether the CHARGED
  * discount agrees with the terms of the promotion recorded on the order at
- * the time, recomputed from lib/sales/order-cart.ts's computePromoForLine (the
+ * the time, recomputed from lib/sales/price-cart.ts's priceCart (the
  * function that actually decided what got charged), derived before touching
  * any data. See scripts/verify-revenue-core.ts's own H3 section comment for
  * the three discount_type formulas and how they were derived.

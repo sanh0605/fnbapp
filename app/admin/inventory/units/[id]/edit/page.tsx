@@ -17,7 +17,7 @@ export default async function EditUnitPage(
   const searchParams = await props.searchParams;
   const params = await props.params;
   const unit = (await findById("Units", params.id)) as DBUnit | null;
-  if (!unit || !unit.name || unit.name.startsWith("DELETED_")) {
+  if (!unit) {
     notFound();
   }
 

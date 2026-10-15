@@ -105,11 +105,12 @@ describe("ModifiersClient", () => {
     expect(mod1Links.length).toBeGreaterThan(0);
   });
 
-  it("bin 'Xoá' is present", () => {
+  it("bin 'Xoá' is present when canDelete is true", () => {
     render(
       <ModifiersClient
         modifiers={sampleModifiers}
         toppings={sampleToppings}
+        canDelete={true}
       />,
     );
 
@@ -183,5 +184,38 @@ describe("ModifiersClient", () => {
     const createLink = screen.getByRole("link", { name: "Tạo" });
     expect(createLink).toBeInTheDocument();
     expect(createLink.getAttribute("href")).toContain("/admin/products/modifiers/new?returnTo=");
+  });
+
+  it("hides remove controls when canDelete is false", () => {
+    render(
+      <ModifiersClient
+        modifiers={sampleModifiers}
+        toppings={sampleToppings}
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: /Xoá/i })).toBeNull();
+    expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
+  });
+
+  it("shows 'Ngừng dùng' badge on INACTIVE rows and cards", () => {
+    const inactiveModifiers: DBModifier[] = [
+      {
+        ...sampleModifiers[0],
+        id: "MOD-007",
+        name: "Dâu sấy",
+        status: "INACTIVE",
+      },
+    ];
+    render(
+      <ModifiersClient
+        modifiers={inactiveModifiers}
+        toppings={sampleToppings}
+      />,
+    );
+
+    const badges = screen.getAllByText("Ngừng dùng");
+    expect(badges.length).toBeGreaterThanOrEqual(2);
   });
 });

@@ -1,16 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { PurchaseHistoryView } from "./PurchaseHistoryView";
-import { deletePurchasedItemAction } from "../../actions";
+import { confirm } from "@/lib/shared/dialog";
+import { deletePurchasedItemAction, setPurchasedItemStatus } from "../../actions";
 import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
 import type { ItemPurchaseHistoryRow } from "@/lib/purchasing/item-purchase-history";
 import type { ItemStockDisplay } from "@/lib/stock/item-stock-display";
@@ -42,6 +45,39 @@ export function ItemDetailView({
   returnTo,
   canDelete,
 }: ItemDetailViewProps) {
+  const router = useRouter();
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [isStatusPending, setIsStatusPending] = useState(false);
+
+  const isInactive = item.status === "INACTIVE";
+
+  async function handleToggleStatus() {
+    setStatusError(null);
+    if (!isInactive) {
+      const ok = await confirm({
+        title: "Ngừng dùng",
+        message: `Ngừng dùng ${item.name}? Phiếu nhập mới sẽ không chọn được hàng này; phiếu xuất và kiểm kê vẫn dùng được.`,
+        variant: "danger",
+      });
+      if (!ok) return;
+    }
+
+    setIsStatusPending(true);
+    try {
+      const fd = new FormData();
+      fd.append("id", item.id);
+      fd.append("status", isInactive ? "ACTIVE" : "INACTIVE");
+      const res = await setPurchasedItemStatus(fd);
+      if (res?.error) {
+        setStatusError(res.error);
+      } else {
+        router.refresh();
+      }
+    } finally {
+      setIsStatusPending(false);
+    }
+  }
+
   const isNonInventory =
     item.is_non_inventory === true || (item.is_non_inventory as any) === "true";
 
@@ -80,6 +116,14 @@ export function ItemDetailView({
       <Button href={editHref} variant="secondary">
         Chỉnh sửa
       </Button>
+      <Button
+        type="button"
+        variant={isInactive ? "secondary" : "delete"}
+        loading={isStatusPending}
+        onClick={handleToggleStatus}
+      >
+        {isInactive ? "Dùng lại" : "Ngừng dùng"}
+      </Button>
       {canDelete && (
         <RemoveRecordButton
           verb="Xoá"
@@ -116,6 +160,12 @@ export function ItemDetailView({
         }
         actions={headerActions}
       />
+
+      {statusError && (
+        <Alert variant="danger">
+          {statusError}
+        </Alert>
+      )}
 
       <FieldList fields={fields} />
 

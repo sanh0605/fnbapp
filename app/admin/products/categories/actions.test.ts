@@ -2,15 +2,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
+  remove: vi.fn(),
   update: vi.fn(),
   insert: vi.fn(),
   generateNewId: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  remove: mocks.remove,
   insert: mocks.insert,
   update: mocks.update,
   generateNewId: mocks.generateNewId,
@@ -56,42 +59,40 @@ describe("deleteCategory", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
   });
 
-  it("refuses with the dish count while non-deleted dishes still use the group", async () => {
+  it("refuses with the dish count while dishes still use the group", async () => {
     tables([
       { id: "P1", category_id: "CAT-001", status: "ACTIVE" },
-      { id: "P2", category_id: "CAT-001", status: "ACTIVE" },
-      { id: "P3", category_id: "CAT-001", status: "DELETED" },
+      { id: "P2", category_id: "CAT-001", status: "INACTIVE" },
       { id: "P4", category_id: "CAT-002", status: "ACTIVE" },
     ]);
 
     const res = await deleteCategory(form("CAT-001"));
 
     expect(res).toEqual({ error: 'Không xoá được nhóm "Cà phê": còn 2 món đang dùng.' });
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.remove).not.toHaveBeenCalled();
   });
 
-  it("soft-deletes when only deleted dishes remain", async () => {
-    tables([{ id: "P3", category_id: "CAT-001", status: "DELETED" }]);
+  it("erases an empty group for good and never writes DELETED", async () => {
+    tables([{ id: "P4", category_id: "CAT-002", status: "ACTIVE" }]);
 
     const res = await deleteCategory(form("CAT-001"));
 
     expect(res).toEqual({ success: true });
-    expect(mocks.update).toHaveBeenCalledWith("Product_Categories", "CAT-001", { status: "DELETED" });
+    expect(mocks.remove).toHaveBeenCalledWith("Product_Categories", "CAT-001");
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 
-  it("lets a MANAGER through (requireAdmin decides) and rejects a non-admin as before", async () => {
+  it("is owner only: a non-owner is rejected and nothing is erased", async () => {
     tables([]);
-    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "m-1", name: "Quản lý", role: "MANAGER" } });
-    expect(await deleteCategory(form("CAT-001"))).toEqual({ success: true });
+    mocks.requireOwner.mockResolvedValue({ ok: false, error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" });
 
-    mocks.update.mockClear();
-    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền" });
     const res = await deleteCategory(form("CAT-001"));
-    expect(res).toEqual({ error: "Không có quyền" });
-    expect(mocks.update).not.toHaveBeenCalled();
+
+    expect(res).toEqual({ error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" });
+    expect(mocks.remove).not.toHaveBeenCalled();
   });
 });
 

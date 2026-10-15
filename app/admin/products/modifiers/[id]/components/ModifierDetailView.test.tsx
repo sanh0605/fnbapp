@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 import { ModifierDetailView, type LinkedProduct } from "./ModifierDetailView";
 import type { DBModifier } from "@/types/db";
@@ -22,8 +22,16 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+const confirmMock = vi.fn();
+vi.mock("@/lib/shared/dialog", () => ({
+  confirm: (...args: any[]) => confirmMock(...args),
+}));
+
+const setModifierStatusMock = vi.fn();
+const deleteModifierActionMock = vi.fn();
 vi.mock("@/app/admin/products/modifiers/actions", () => ({
-  deleteModifierAction: vi.fn(),
+  deleteModifierAction: (...args: any[]) => deleteModifierActionMock(...args),
+  setModifierStatus: (...args: any[]) => setModifierStatusMock(...args),
 }));
 
 const standaloneSwitchMock = vi.fn((props: any) => (
@@ -70,6 +78,10 @@ const unlinkedModifier: DBModifier = {
 };
 
 describe("ModifierDetailView", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("shows 'Món liên kết' link to /admin/products/PROD-035, 'Chỉnh sửa' link, and 'Xoá' button for linked modifier", () => {
     const returnTo = "/admin/products/modifiers";
     render(
@@ -78,6 +90,7 @@ describe("ModifierDetailView", () => {
         product={linkedProduct}
         groupName="Thêm Topping"
         allowStandalone={true}
+        canDelete={true}
         returnTo={returnTo}
       />,
     );
@@ -111,6 +124,7 @@ describe("ModifierDetailView", () => {
         product={null}
         groupName="Chọn Size"
         allowStandalone={false}
+        canDelete={true}
         returnTo={returnTo}
       />,
     );
@@ -151,6 +165,7 @@ describe("ModifierDetailView", () => {
         product={null}
         groupName="Topping đặc biệt"
         allowStandalone={true}
+        canDelete={false}
         returnTo="/admin/products/modifiers"
       />
     );
@@ -183,6 +198,7 @@ describe("ModifierDetailView", () => {
         groupName="Mức đường"
         allowStandalone={false}
         groupSelectionMode="ONE"
+        canDelete={false}
         returnTo="/admin/products/modifiers"
       />
     );
@@ -217,6 +233,7 @@ describe("ModifierDetailView", () => {
         groupName="Thêm Topping"
         allowStandalone={true}
         groupSelectionMode="MANY"
+        canDelete={false}
         returnTo="/admin/products/modifiers"
       />
     );
@@ -225,5 +242,133 @@ describe("ModifierDetailView", () => {
     expect(screen.getByText("Không")).toBeInTheDocument();
     expect(screen.getByText("Tối đa mỗi món")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
+  });
+
+  it("shows 'Ngừng dùng' for ACTIVE modifier and calls setModifierStatus with INACTIVE after confirm", async () => {
+    confirmMock.mockResolvedValue(true);
+    setModifierStatusMock.mockResolvedValue({});
+    render(
+      <ModifierDetailView
+        modifier={linkedModifier}
+        product={linkedProduct}
+        groupName="Thêm Topping"
+        allowStandalone={true}
+        canDelete={true}
+        returnTo="/admin/products/modifiers"
+      />,
+    );
+
+    const pauseBtn = screen.getByRole("button", { name: "Ngừng dùng" });
+    expect(pauseBtn).toBeInTheDocument();
+    expect(screen.getByText("Đang dùng")).toBeInTheDocument();
+
+    fireEvent.click(pauseBtn);
+
+    expect(confirmMock).toHaveBeenCalledWith({
+      title: "Ngừng dùng",
+      message: 'Ngừng "Trân châu đen"? Máy bán hàng sẽ không còn hiện nó ở phần thêm topping lẫn món bán riêng Trân châu đen.',
+      variant: "danger",
+    });
+
+    await waitFor(() => {
+      expect(setModifierStatusMock).toHaveBeenCalled();
+    });
+    const fd = setModifierStatusMock.mock.calls[0][0] as FormData;
+    expect(fd.get("id")).toBe("MOD-001");
+    expect(fd.get("status")).toBe("INACTIVE");
+  });
+
+  it("shows fallback confirm message when modifier has no active linked product", async () => {
+    confirmMock.mockResolvedValue(true);
+    setModifierStatusMock.mockResolvedValue({});
+    const { unmount } = render(
+      <ModifierDetailView
+        modifier={unlinkedModifier}
+        product={null}
+        groupName="Chọn Size"
+        allowStandalone={false}
+        canDelete={true}
+        returnTo="/admin/products/modifiers"
+      />,
+    );
+
+    const pauseBtn = screen.getByRole("button", { name: "Ngừng dùng" });
+    fireEvent.click(pauseBtn);
+
+    expect(confirmMock).toHaveBeenCalledWith({
+      title: "Ngừng dùng",
+      message: 'Ngừng dùng tuỳ chọn "Size L"? Máy bán hàng sẽ không còn hiện tuỳ chọn này.',
+      variant: "danger",
+    });
+
+    unmount();
+
+    render(
+      <ModifierDetailView
+        modifier={linkedModifier}
+        product={{ ...linkedProduct, status: "INACTIVE" }}
+        groupName="Thêm Topping"
+        allowStandalone={true}
+        canDelete={true}
+        returnTo="/admin/products/modifiers"
+      />,
+    );
+
+    const pauseBtn2 = screen.getByRole("button", { name: "Ngừng dùng" });
+    fireEvent.click(pauseBtn2);
+
+    expect(confirmMock).toHaveBeenCalledWith({
+      title: "Ngừng dùng",
+      message: 'Ngừng dùng tuỳ chọn "Trân châu đen"? Máy bán hàng sẽ không còn hiện tuỳ chọn này.',
+      variant: "danger",
+    });
+  });
+
+  it("shows 'Dùng lại' and badge 'Ngừng dùng' for INACTIVE modifier, calls setModifierStatus with ACTIVE", async () => {
+    setModifierStatusMock.mockResolvedValue({});
+    const inactiveModifier: DBModifier = {
+      ...linkedModifier,
+      status: "INACTIVE",
+    };
+    render(
+      <ModifierDetailView
+        modifier={inactiveModifier}
+        product={linkedProduct}
+        groupName="Thêm Topping"
+        allowStandalone={true}
+        canDelete={true}
+        returnTo="/admin/products/modifiers"
+      />,
+    );
+
+    const resumeBtn = screen.getByRole("button", { name: "Dùng lại" });
+    expect(resumeBtn).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ngừng dùng" })).toBeNull();
+    expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
+
+    fireEvent.click(resumeBtn);
+    expect(confirmMock).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(setModifierStatusMock).toHaveBeenCalled();
+    });
+    const fd = setModifierStatusMock.mock.calls[0][0] as FormData;
+    expect(fd.get("id")).toBe("MOD-001");
+    expect(fd.get("status")).toBe("ACTIVE");
+  });
+
+  it("hides 'Xoá' button when canDelete is false", () => {
+    render(
+      <ModifierDetailView
+        modifier={linkedModifier}
+        product={linkedProduct}
+        groupName="Thêm Topping"
+        allowStandalone={true}
+        canDelete={false}
+        returnTo="/admin/products/modifiers"
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Xoá" })).toBeNull();
   });
 });

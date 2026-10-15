@@ -15,10 +15,7 @@ export default async function NewPromotionPage(
   const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined);
   const { brands, products, variants, categories } = await getPromotionsData();
 
-  const activeBrands = brands.filter((b) => b.status !== "DELETED");
-  const activeProducts = products.filter((p) => p.status !== "DELETED");
   const activeVariants = variants.filter((v) => v.status !== "DELETED");
-  const activeCategories = categories.filter((c) => c.status !== "DELETED");
 
   return (
     <div className="space-y-6">
@@ -28,9 +25,9 @@ export default async function NewPromotionPage(
         subtitle="Tạo mới mã giảm giá, chiết khấu hoá đơn hoặc khuyến mãi theo sản phẩm."
       />
       <PromotionForm
-        brands={activeBrands}
-        categories={activeCategories}
-        products={activeProducts}
+        brands={brands}
+        categories={categories}
+        products={products}
         variants={activeVariants}
         returnTo={returnTo}
       />

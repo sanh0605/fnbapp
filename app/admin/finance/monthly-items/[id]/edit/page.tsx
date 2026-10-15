@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCashCategories } from "@/app/admin/finance/categories/actions";
 import { getMonthlyItem } from "../../actions";
 import { MonthlyItemForm } from "../../components/MonthlyItemForm";
+import { editBackHref } from "@/lib/finance/detail-href";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
@@ -32,18 +33,7 @@ export default async function EditMonthlyItemPage(
     notFound();
   }
 
-  const ownDetailPath = `/admin/finance/monthly-items/${encodeURIComponent(item.id)}`;
-  const isOwnDetail =
-    rawReturnTo === ownDetailPath ||
-    rawReturnTo.startsWith(`${ownDetailPath}?`);
-
-  const listReturnTo = rawReturnTo.startsWith("/admin/finance/monthly-items/")
-    ? "/admin/finance/monthly-items"
-    : rawReturnTo;
-
-  const detailHref = isOwnDetail
-    ? rawReturnTo
-    : `${ownDetailPath}?returnTo=${encodeURIComponent(listReturnTo)}`;
+  const detailHref = editBackHref(rawReturnTo, "/admin/finance/monthly-items", item.id);
 
   return (
     <DetailFrame>

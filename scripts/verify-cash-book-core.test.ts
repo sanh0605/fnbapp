@@ -142,3 +142,14 @@ describe("compareClosings and describeResult", () => {
     expect(r.differences.length).toBeGreaterThan(0);
   });
 });
+
+describe("an unknown payment method", () => {
+  it("is refused loudly instead of being counted as cash", () => {
+    const raw: RawCashBook = {
+      ...EMPTY,
+      payments: [{ order_id: "O-1", method: "MOMO", amount: 10 }],
+      orders: [{ id: "O-1", status: "COMPLETED", created_at: "2026-09-10T03:00:00+00:00", net_total: 10, payment_method: "CASH" }],
+    };
+    expect(() => independentClosings(raw, ["2026-09-30"])).toThrow("Unknown payment method: MOMO");
+  });
+});

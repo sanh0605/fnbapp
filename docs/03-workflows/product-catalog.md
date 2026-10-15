@@ -7,6 +7,8 @@ tables: Products, products, product_variants, product_price_history, Product_Cat
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-007
 ```
 
+**Behaviour change — 2026-10-15 (no "Đã xoá" status, plan `docs/superpowers/plans/2026-10-15-bo-deleted.md`; migration `0125` not yet run):** "Xoá" on an option erases it for good, `ADMIN` only, and only if it was never sold; a sold option is refused and offers "Ngừng dùng"/"Dùng lại" on its page instead. "Xoá" on an empty dish group erases it, `ADMIN` only. The dish list loses its "Đã xoá" filter; the old dish refusal for that state goes with it. Sizes removed on Sửa món still take the old state until a later change of `save_product_atomic`. One live option per standalone dish: "Dùng lại" is refused while another option runs that dish, and stopping an option stops the dish only when no other live option runs it (`0126`, not yet run).
+
 **Behaviour change — 2026-10-15 (Bán hàng đợt 2, design in `docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`):**
 - Deleting an option whose standalone dish is on sale is refused, with the dish named. Turn "Bán độc lập" off first.
 - The "Bán độc lập" switch pauses or resumes the dish with its sizes, through the same path as the dish page. The dead `/admin/products/toppings` address and `ToppingsManager` are gone.
@@ -23,8 +25,6 @@ brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-
 - The Bán độc lập check reads the group's "Cho bán riêng" box instead of the name "Thêm Topping".
 
 **Behaviour change — 2026-10-14 (audit F4, owner "Mặc định Topping, sửa được"):** the *Bán độc lập* switch on Topping & tuỳ chọn follows the topping's link (`modifiers.product_id`), not the dish group, so a standalone topping moved to another group from Sửa món keeps its switch; a product no topping links to is refused with a Vietnamese message naming the dish. A new standalone món still starts in "Topping" (`BR-CATALOG-003`).
-
-**Behaviour change — 2026-10-15 (Bán hàng area audit):** a dish in the old "Đã xoá" state shows neither "Ngừng bán" nor "Bán lại", and `pauseProduct`/`resumeProduct` refuse it before calling `set_product_status_atomic`. Until then "Bán lại" on such a dish put it and its sizes back on the till.
 
 **Behaviour change — 2026-10-14 (audit F2, F3, F6, F7; migration `0114`, ran on the server 2026-10-14 with the owner's approval):** editing a dish keeps its picture; "Xoá vĩnh viễn" is not offered on a dish linked to any topping, and the server names the topping when it refuses; a dish linked to an active topping cannot get a second size ("Thêm size" hidden, server refuses); Ngừng bán and Bán lại write the dish and its sizes in one Postgres function, `set_product_status_atomic`. Dates with a time show seconds (`BR-DATA-006`).
 

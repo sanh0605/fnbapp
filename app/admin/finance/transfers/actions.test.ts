@@ -133,6 +133,21 @@ describe("updateCashTransfer", () => {
     expect(patch).not.toHaveProperty("status");
   });
 
+  // R6: a row may keep the account it already has, even after it was stopped.
+  it("lets an old transfer keep its own stopped account when only the note changes", async () => {
+    mocks.findById.mockResolvedValue({ id: "CT-001", status: "ACTIVE", from_account_id: null, to_account_id: "BA-002" });
+    const result = await updateCashTransfer(formData({ id: "CT-001", ...goodFields, to: "BA-002", note: "Sửa ghi chú" }));
+    expect(result.error).toBeUndefined();
+    expect(mocks.update.mock.calls[0][2]).toMatchObject({ to_account_id: "BA-002", note: "Sửa ghi chú" });
+  });
+
+  it("still refuses switching to a different stopped account", async () => {
+    mocks.findById.mockResolvedValue({ id: "CT-001", status: "ACTIVE", from_account_id: null, to_account_id: "BA-001" });
+    const result = await updateCashTransfer(formData({ id: "CT-001", ...goodFields, to: "BA-002" }));
+    expect(result.error).toBe("Tài khoản không còn dùng");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
   it("says so when the row does not exist", async () => {
     mocks.findById.mockResolvedValue(null);
     const result = await updateCashTransfer(formData({ id: "CT-404", ...goodFields }));

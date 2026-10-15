@@ -48,7 +48,6 @@ const GROUPS = [
 const OPTIONS = [
   { id: "MOD-004", name: "Trân châu trắng", group_id: "MG-001", status: "ACTIVE", product_id: "PROD-031" },
   { id: "MOD-002", name: "Kem muối", group_id: "MG-001", status: "ACTIVE", product_id: null },
-  { id: "MOD-007", name: "Cũ", group_id: "MG-001", status: "DELETED", product_id: "PROD-035" },
   { id: "MOD-010", name: "Ít đường", group_id: "MG-002", status: "ACTIVE", product_id: null },
 ];
 const LINKS = [
@@ -152,7 +151,7 @@ describe("setModifierGroupStatus", () => {
 
 describe("deleteModifierGroup", () => {
   it("refuses a group that still has options, in Vietnamese, without trying to delete", async () => {
-    expect(await deleteModifierGroup(form({ id: "MG-001" }))).toEqual({ error: "Nhóm còn tuỳ chọn: Trân châu trắng, Kem muối, Cũ." });
+    expect(await deleteModifierGroup(form({ id: "MG-001" }))).toEqual({ error: "Nhóm còn tuỳ chọn: Trân châu trắng, Kem muối." });
     expect(mocks.remove).not.toHaveBeenCalled();
   });
 
@@ -167,6 +166,6 @@ describe("deleteModifierGroup", () => {
   it("translates the foreign-key refusal when an option appears between check and delete", async () => {
     mocks.findAll.mockImplementationOnce(async () => []);
     mocks.remove.mockRejectedValue(new Error('update or delete on table "modifier_groups" violates foreign key constraint'));
-    expect(await deleteModifierGroup(form({ id: "MG-001" }))).toEqual({ error: "Nhóm còn tuỳ chọn: Trân châu trắng, Kem muối, Cũ." });
+    expect(await deleteModifierGroup(form({ id: "MG-001" }))).toEqual({ error: "Nhóm còn tuỳ chọn: Trân châu trắng, Kem muối." });
   });
 });

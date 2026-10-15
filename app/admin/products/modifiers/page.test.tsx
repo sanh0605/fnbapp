@@ -5,6 +5,9 @@ vi.mock("./actions", () => ({
     modifiers: [{ id: "MOD-009", product_id: "PROD-049", status: "ACTIVE" }],
   }),
 }));
+vi.mock("@/lib/auth/auth", () => ({
+  resolveActor: async () => ({ ok: true, actor: { role: "ADMIN" } }),
+}));
 vi.mock("@/lib/db/tables", () => ({
   findAll: async () => [
     { id: "PROD-049", name: "Hộp sữa chua", category_id: "CAT-006" },

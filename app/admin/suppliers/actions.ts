@@ -1,7 +1,7 @@
 "use server";
 
-import { findAll, insert, update, remove, generateNewId } from "@/lib/db/tables";
-import { revalidatePath } from "next/cache";
+import { findAll, insert, update, remove, generateNewId, getCacheTag } from "@/lib/db/tables";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { formatNumber } from "@/lib/shared/format";
@@ -194,4 +194,24 @@ export async function deleteSupplierAction(formData: FormData): Promise<ActionRe
     return describeActionError(error);
   }
   return deleteEntity(SHEET, id, PATH);
+}
+
+export async function setSupplierStatus(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  const id = readSupplierText(formData, "id");
+  const status = readSupplierText(formData, "status");
+  if (status !== "ACTIVE" && status !== "INACTIVE") return fail("Trạng thái không hợp lệ.");
+
+  try {
+    const suppliers = (await findAll(SHEET)) as DBSupplier[];
+    if (!suppliers.some((s) => s.id === id)) return fail("Không tìm thấy nhà cung cấp.");
+    await update(SHEET, id, { status });
+    revalidateTag(getCacheTag(SHEET), { expire: 0 });
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
 }

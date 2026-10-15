@@ -362,3 +362,62 @@ describe("sales-revenue flag (BR-CASH-006)", () => {
     );
   });
 });
+
+// Root 3 (spec 2026-10-15-thu-chi-de-xuat): monthly items lean on their group, so
+// the group's side, retirement and deletion check them.
+describe("a group used by a monthly item", () => {
+  const ITEM = { id: "KCT-001", name: "Tiền điện", cash_category_id: "CFC-001", status: "ACTIVE" };
+  // Entries: none. Monthly items: the one above, only when asked for its group.
+  function mockItems(items: unknown[]) {
+    mocks.findAllWhere.mockImplementation(async (sheet: string) => (sheet === "Monthly_Expense_Items" ? items : []));
+  }
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.requireOwner.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([{ id: "CFC-001", name: "Điện nước gas", kind: "EXPENSE", status: "ACTIVE" }]);
+    mocks.findById.mockResolvedValue({ id: "CFC-001", name: "Điện nước gas", kind: "EXPENSE", status: "ACTIVE" });
+  });
+
+  it("cannot switch to Thu while an ACTIVE monthly item uses it", async () => {
+    mockItems([ITEM]);
+    const result = await updateCashCategory(formData({ id: "CFC-001", name: "Điện nước gas", kind: "INCOME" }));
+    expect(result.error).toBe(
+      'Khoản chi hằng tháng "Tiền điện" đang dùng nhóm này nên không đổi sang bên Thu được. Hãy ngừng khoản chi đó trước.',
+    );
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("cannot be stopped while an ACTIVE monthly item uses it", async () => {
+    mockItems([ITEM]);
+    const result = await setCashCategoryStatus(formData({ id: "CFC-001", status: "INACTIVE" }));
+    expect(result.error).toBe(
+      'Khoản chi hằng tháng "Tiền điện" đang dùng nhóm này. Hãy ngừng khoản chi đó hoặc chuyển sang nhóm khác trước khi ngừng dùng nhóm.',
+    );
+    expect(mocks.findAllWhere).toHaveBeenCalledWith(
+      "Monthly_Expense_Items",
+      expect.objectContaining({ eq: { cash_category_id: "CFC-001", status: "ACTIVE" } }),
+    );
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("is stopped fine when no ACTIVE monthly item uses it", async () => {
+    mockItems([]);
+    const result = await setCashCategoryStatus(formData({ id: "CFC-001", status: "INACTIVE" }));
+    expect(result.error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalled();
+  });
+
+  it("is not deleted while any monthly item points at it, in Vietnamese", async () => {
+    mockItems([{ ...ITEM, status: "INACTIVE" }]);
+    const result = await deleteCashCategory(formData({ id: "CFC-001" }));
+    expect(result.error).toBe(
+      'Nhóm "Điện nước gas" đã có khoản chi hằng tháng nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn nhóm này.',
+    );
+    expect(mocks.findAllWhere).toHaveBeenCalledWith(
+      "Monthly_Expense_Items",
+      expect.objectContaining({ eq: { cash_category_id: "CFC-001" } }),
+    );
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+});

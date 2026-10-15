@@ -66,20 +66,24 @@ beforeEach(() => {
     sheet === "Monthly_Expense_Items" ? ITEMS : sheet === "Cash_Categories" ? CATEGORIES : [],
   );
   mocks.findAllWhere.mockImplementation(async (_sheet: string, f: any) =>
-    ENTRIES.filter((e) => e.monthly_item_id === f.eq.monthly_item_id),
+    ENTRIES.filter((e) =>
+      f.in ? f.in.monthly_item_id.includes(e.monthly_item_id) : e.monthly_item_id === f.eq.monthly_item_id),
   );
   mocks.findById.mockImplementation(async (_s: string, id: string) => ITEMS.find((i) => i.id === id) ?? null);
 });
 
 describe("getMonthlyItems", () => {
-  it("sorts by name and counts only non-cancelled linked entries", async () => {
-    mocks.findAll.mockImplementation(async (sheet: string) =>
-      sheet === "Monthly_Expense_Items" ? ITEMS : sheet === "Cash_Entries" ? ENTRIES : CATEGORIES,
-    );
+  // The Xoá button hides when any row is linked, cancelled ones included (RESTRICT key),
+  // so the count covers every status; and only linked rows are read, never the whole table.
+  it("sorts by name and counts every linked entry, cancelled included", async () => {
     const rows = await getMonthlyItems();
     expect(rows.map((r) => r.item.name)).toEqual(["Internet", "Tiền điện", "Tiền nhà"]);
-    expect(rows.find((r) => r.item.id === "KCT-001")!.entryCount).toBe(2);
+    expect(rows.find((r) => r.item.id === "KCT-001")!.entryCount).toBe(3);
     expect(rows.find((r) => r.item.id === "KCT-002")!.entryCount).toBe(0);
+    expect(mocks.findAllWhere).toHaveBeenCalledWith("Cash_Entries", {
+      in: { monthly_item_id: ["KCT-002", "KCT-001", "KCT-003"] },
+    });
+    expect(mocks.findAll).not.toHaveBeenCalledWith("Cash_Entries");
   });
 
   it("getMonthlyItem returns one row or null", async () => {
@@ -129,6 +133,36 @@ describe("updateMonthlyItem", () => {
       error: "Tên khoản chi đã có",
     });
   });
+
+  // R6: the item may keep its own group even after the group was stopped.
+  it("lets an item keep its own stopped group when only the name changes", async () => {
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Monthly_Expense_Items"
+        ? [{ id: "KCT-005", name: "Rác", cash_category_id: "CFC-003", status: "ACTIVE" }]
+        : CATEGORIES,
+    );
+    expect((await updateMonthlyItem(form({ id: "KCT-005", name: "Rác thải", cash_category_id: "CFC-003" }))).success).toBe(true);
+  });
+
+  const WITH_CFC_004 = async (sheet: string) =>
+    sheet === "Monthly_Expense_Items"
+      ? ITEMS
+      : [...CATEGORIES, { id: "CFC-004", name: "Khác", kind: "EXPENSE", status: "ACTIVE" }];
+
+  it("refuses a group change once the item has any entry, cancelled included", async () => {
+    mocks.findAll.mockImplementation(WITH_CFC_004);
+    mocks.findAllWhere.mockResolvedValue([{ id: "CE-3", status: "CANCELLED" }]);
+    expect(await updateMonthlyItem(form({ id: "KCT-001", name: "Tiền điện", cash_category_id: "CFC-004" }))).toEqual({
+      error: "Khoản chi này đã có dòng trong sổ thu chi nên không đổi nhóm được. Muốn dùng nhóm khác thì tạo khoản chi mới.",
+    });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("changes the group while the item has no entry", async () => {
+    mocks.findAll.mockImplementation(WITH_CFC_004);
+    mocks.findAllWhere.mockResolvedValue([]);
+    expect((await updateMonthlyItem(form({ id: "KCT-001", name: "Tiền điện", cash_category_id: "CFC-004" }))).success).toBe(true);
+  });
 });
 
 describe("setMonthlyItemStatus", () => {
@@ -146,6 +180,20 @@ describe("setMonthlyItemStatus", () => {
         : CATEGORIES,
     );
     expect(await setMonthlyItemStatus(form({ id: "KCT-003", status: "ACTIVE" }))).toEqual({ error: "Tên khoản chi đã có" });
+  });
+});
+
+describe("reactivating under a stopped group", () => {
+  it("is refused, because stopping a group needs every item under it stopped first", async () => {
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Monthly_Expense_Items"
+        ? [{ id: "KCT-005", name: "Rác", cash_category_id: "CFC-003", status: "INACTIVE" }]
+        : CATEGORIES,
+    );
+    expect(await setMonthlyItemStatus(form({ id: "KCT-005", status: "ACTIVE" }))).toEqual({
+      error: "Nhóm chi của khoản này đã ngừng dùng. Hãy dùng lại nhóm đó trước.",
+    });
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 });
 

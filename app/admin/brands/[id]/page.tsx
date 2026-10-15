@@ -25,7 +25,7 @@ export default async function BrandDetailPage(
   ]);
 
   const brand = allBrands.find(
-    (b) => b.id === params.id && b.status !== "DELETED",
+    (b) => b.id === params.id,
   );
   if (!brand) {
     notFound();
@@ -34,7 +34,7 @@ export default async function BrandDetailPage(
   const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
 
   const outlets: BrandOutletItem[] = allOutlets
-    .filter((o) => o.brand_id === brand.id && o.status !== "DELETED")
+    .filter((o) => o.brand_id === brand.id)
     .map((o) => ({ id: o.id, name: o.name }));
 
   const rawReturnTo = safeReturnTo(

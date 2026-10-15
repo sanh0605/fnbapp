@@ -177,6 +177,13 @@ describe("listPurchaseOrdersPage", () => {
       expect(r.rows.map(x => x.id)).toEqual(["PO-1"]);
     });
 
+    it("account keeps only orders paid from that bank account", () => {
+      const r = listPurchaseOrdersPage({ ...base, orders: paid, filters: { pay: "BANK_TRANSFER", account: "BA-001" } });
+      expect(r.rows.map(x => x.id)).toEqual(["PO-2"]);
+      const other = listPurchaseOrdersPage({ ...base, orders: paid, filters: { account: "BA-009" } });
+      expect(other.total).toBe(0);
+    });
+
     it("any other pay value is ignored", () => {
       const r = listPurchaseOrdersPage({ ...base, orders: paid, filters: { pay: "whatever" } });
       expect(r.total).toBe(3);

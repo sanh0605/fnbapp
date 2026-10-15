@@ -53,7 +53,7 @@ export default async function EditProductPage(
         subtitle={product.name}
       />
       <ProductForm
-        categories={categories.filter((c: any) => c.status !== "DELETED")}
+        categories={categories}
         initialData={product}
         optionGroups={optionGroups}
         selectedOptionGroupIds={optionGroupLinks.map((l: any) => l.group_id)}

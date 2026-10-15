@@ -49,20 +49,6 @@ describe("pauseProduct / resumeProduct -- one atomic call", () => {
     mocks.findById.mockResolvedValue({ id: "PROD-1", status: "ACTIVE" });
   });
 
-  // A deleted dish must stay deleted: the RPC would flip it (and its sizes) back on.
-  it.each([
-    ["resume", resumeProduct],
-    ["pause", pauseProduct],
-  ])("%s on a deleted dish is refused and never reaches the RPC", async (_name, action) => {
-    mocks.findById.mockResolvedValue({ id: "PROD-1", status: "DELETED" });
-
-    const res = await action(formDataWithId("PROD-1"));
-
-    expect(res.error).toBe("Món đã xoá, không bán lại hay ngừng bán được");
-    expect(mocks.setProductStatusAtomic).not.toHaveBeenCalled();
-    expect(mocks.revalidateTag).not.toHaveBeenCalled();
-  });
-
   it("pausing makes one call and no separate row writes", async () => {
     const res = await pauseProduct(formDataWithId("PROD-1"));
 

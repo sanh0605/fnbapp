@@ -13,7 +13,6 @@ vi.mock("next/navigation", () => ({
 
 const mockBrands = [
   { id: "BR-001", name: "Phin Đi", code: "PHD", status: "ACTIVE" },
-  { id: "BR-003", name: "Thương hiệu đã xoá", code: "DEL", status: "DELETED" },
 ];
 
 const mockOutlets = [
@@ -43,13 +42,6 @@ describe("BrandDetailPage", () => {
   it("calls notFound when brand id is unknown", async () => {
     await expect(
       BrandDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
-    ).rejects.toThrow("NEXT_NOT_FOUND");
-    expect(notFoundMock).toHaveBeenCalled();
-  });
-
-  it("calls notFound when brand status is DELETED", async () => {
-    await expect(
-      BrandDetailPage({ params: Promise.resolve({ id: "BR-003" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });

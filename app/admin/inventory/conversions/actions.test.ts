@@ -62,6 +62,13 @@ describe("getConversionsData", () => {
 
     await expect(getConversionsData()).resolves.toEqual({ items: [], conversions: [], units: [] });
   });
+
+  it("returns an INACTIVE unit too, so names and validation still resolve", async () => {
+    const unit = { id: "UNIT-9", name: "Cũ", status: "INACTIVE" };
+    mocks.findAll.mockImplementation(async (sheet: string) => (sheet === "Units" ? [unit] : []));
+
+    expect((await getConversionsData()).units).toEqual([unit]);
+  });
 });
 
 // section 4:

@@ -181,7 +181,7 @@ describe("ProductForm -- price box (wave K4)", () => {
     const box = priceBoxOf(container);
     expect(box.value).toBe("25,000");
     await typeInto(box, "30000");
-    const save = Array.from(container.querySelectorAll("button")).find(b => /^Lưu/.test(b.textContent?.trim() ?? ""))!;
+    const save = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Lưu thay đổi")!;
     await fireClick(save);
     expect(mocks.saveProduct).toHaveBeenCalledTimes(1);
     const fd = mocks.saveProduct.mock.calls[0][0] as FormData;
@@ -196,7 +196,7 @@ describe("ProductForm -- price box (wave K4)", () => {
     );
     const box = priceBoxOf(container);
     await typeInto(box, "");
-    const save = Array.from(container.querySelectorAll("button")).find(b => /^Lưu/.test(b.textContent?.trim() ?? ""))!;
+    const save = Array.from(container.querySelectorAll("button")).find(b => b.textContent?.trim() === "Lưu thay đổi")!;
     await fireClick(save);
     expect(mocks.saveProduct).not.toHaveBeenCalled();
     expect(container.textContent).toContain("Cần nhập số.");
@@ -237,7 +237,7 @@ describe("ProductForm -- option groups tick list", () => {
     const priceBox = priceBoxOf(container);
     await typeInto(priceBox, "20000");
 
-    const save = Array.from(container.querySelectorAll("button")).find((b) => /^Lưu/.test(b.textContent?.trim() ?? ""))!;
+    const save = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === "Tạo")!;
     await fireClick(save);
 
     expect(mocks.saveProduct).toHaveBeenCalled();
@@ -284,7 +284,7 @@ describe("ProductForm -- inline validation and Alert (ticket B2)", () => {
     const priceBox = priceBoxOf(container);
     await typeInto(priceBox, "25000");
 
-    const save = Array.from(container.querySelectorAll("button")).find((b) => /^Lưu/.test(b.textContent?.trim() ?? ""))!;
+    const save = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.trim() === "Tạo")!;
     await fireClick(save);
 
     expect(mocks.saveProduct).toHaveBeenCalled();

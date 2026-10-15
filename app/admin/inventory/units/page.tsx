@@ -20,12 +20,9 @@ export default async function UnitsPage(
   // blocks it.
   const canDelete = auth.ok && auth.actor.role === "ADMIN";
 
-  // Filter out softly deleted
-  const units = allUnits.filter((u) => u.name && !u.name.startsWith("DELETED_"));
-
   return (
     <UnitsClient
-      units={units}
+      units={allUnits}
       canDelete={canDelete}
       initialPage={searchParams?.page}
     />

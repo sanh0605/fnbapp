@@ -23,7 +23,7 @@ gains a payment choice, cash or transfer (labelled "Trả bằng" until 2026-10-
 exist on 2026-10-04 count as cash until the owner changes one; **changed
 2026-10-15:** the 53 Shopee orders among them (26.048.237đ, 2026-03-26 to
 2026-09-30) were paid through "ACB - Phin Di", so one approved write moves them
-to transfer on that account (Thu chi proposal Q2; Lãi lỗ unchanged). On a new
+to transfer on that account (Thu chi proposal Q2; Lãi lỗ unchanged); written 2026-10-15 (`scripts/move-shopee-orders-to-acb.ts`, 0 differences on 9 months). The same day the owner said all three "Vốn góp" rows (CE-001, CE-024, CE-040, 35.982.207đ) went into that account, so they moved to transfer too (`scripts/move-capital-entries-to-acb.ts`). Cash then reads negative from 31/03 (lowest −26.250.920đ on 31/07): money taken out of ACB as cash was never recorded; the owner chose to leave it and record one ACB → Tiền mặt transfer himself in October 2026. On a new
 purchase order nothing is chosen in advance: whoever enters it must pick "Tiền
 mặt" or "Chuyển khoản", so nobody forgets to switch it for a transfer (owner
 answer "1a", 2026-10-04).

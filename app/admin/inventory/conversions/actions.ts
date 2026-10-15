@@ -98,12 +98,11 @@ export async function getConversionsData(): Promise<{
     // used to derive base_unit from an item's linked group; now it reads
     // the item's own conversions instead, so this screen has no remaining
     // use for the group data at all.
-    const [items, conversions, allUnits] = await Promise.all([
+    const [items, conversions, units] = await Promise.all([
       findAll("Purchased_Items") as Promise<DBPurchasedItem[]>,
       findAll(SHEET) as Promise<DBUOMConversion[]>,
       findAll("Units") as Promise<DBUnit[]>,
     ]);
-    const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
     return { items, conversions, units };
   } catch (error) {
     // rethrow instead of a fabricated empty result -- app/error.tsx handles it.

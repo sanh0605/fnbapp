@@ -7,7 +7,7 @@ import type {
   DBCashTransfer,
 } from "@/types/db";
 
-export type CashBookRowKind = "SALE" | "PURCHASE" | "HAND" | "TRANSFER";
+type CashBookRowKind = "SALE" | "PURCHASE" | "HAND" | "TRANSFER";
 
 export interface CashBookRow {
   key: string; // unique: "SALE:2026-09-15:CASH", "CE-040", "CT-001"
@@ -51,7 +51,8 @@ function dayRowHref(row: DBCashBookDailyRow): string {
     const payment = row.method === "CASH" ? "Tien%20mat" : "Chuyen%20khoan";
     return `/admin/orders?${range}&payment=${payment}`;
   }
-  return `/admin/inventory/purchase-orders?${range}&pay=${row.method === "CASH" ? "CASH" : "BANK_TRANSFER"}`;
+  const account = row.bank_account_id ? `&account=${encodeURIComponent(row.bank_account_id)}` : "";
+  return `/admin/inventory/purchase-orders?${range}&pay=${row.method === "CASH" ? "CASH" : "BANK_TRANSFER"}${account}`;
 }
 
 export function buildCashBookRows(input: {
@@ -134,19 +135,15 @@ export function buildCashBookRows(input: {
 // its filter left (every page, not just the one shown). A cancelled row is out
 // of every total (BR-ACCESS-003); a transfer moves money between the shop's own
 // places, so it is neither money in nor money out. Thu and Chi are never mixed
-// into one figure without saying which is which, hence the three numbers.
-export interface CashBookRowTotals { count: number; income: number; expense: number; net: number }
-
-export function cashBookRowTotals(rows: CashBookRow[]): CashBookRowTotals {
-  let count = 0;
+// into one figure without saying which is which, so there is no net.
+export function cashBookRowTotals(rows: CashBookRow[]): { income: number; expense: number } {
   let income = 0;
   let expense = 0;
   for (const r of rows) {
     if (r.status === "CANCELLED" || r.kind === "TRANSFER") continue;
-    count += 1;
     if (r.sideLabel === "Thu") income += r.amount;
     else if (r.sideLabel === "Chi") expense += r.amount;
   }
   const shown = (n: number) => displayMoney(n);
-  return { count, income: shown(income), expense: shown(expense), net: shown(income - expense) };
+  return { income: shown(income), expense: shown(expense) };
 }

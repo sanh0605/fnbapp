@@ -12,11 +12,10 @@ export default async function BrandsPage(
   }
 ) {
   const searchParams = await props.searchParams;
-  const [allBrands, auth] = await Promise.all([
+  const [brands, auth] = await Promise.all([
     findAll("Brands") as Promise<DBBrand[]>,
     resolveActor(),
   ]);
-  const brands = allBrands.filter((b: DBBrand) => b.status !== "DELETED");
   const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
 
   return (

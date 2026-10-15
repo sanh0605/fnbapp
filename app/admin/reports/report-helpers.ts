@@ -142,8 +142,8 @@ export function buildCanonicalModifierLookup(modifiers: any[]): {
 }
 
 function compareModifierCanonicalPriority(a: any, b: any): number {
-  const aActive = a.status === "DELETED" ? 0 : 1;
-  const bActive = b.status === "DELETED" ? 0 : 1;
+  const aActive = a.status === "ACTIVE" ? 1 : 0;
+  const bActive = b.status === "ACTIVE" ? 1 : 0;
   if (aActive !== bActive) return bActive - aActive;
 
   const aTime = new Date(a.created_at || 0).getTime();

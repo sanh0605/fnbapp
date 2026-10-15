@@ -1,14 +1,20 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { ItemDetailView } from "./ItemDetailView";
 import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
 import type { ItemPurchaseHistoryRow } from "@/lib/purchasing/item-purchase-history";
 
+const { refreshMock, pushMock } = vi.hoisted(() => {
+  const refreshFn = vi.fn();
+  const pushFn = vi.fn();
+  return { refreshMock: refreshFn, pushMock: pushFn };
+});
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn(),
+    push: pushMock,
+    refresh: refreshMock,
   }),
   useSearchParams: () => new URLSearchParams(),
   usePathname: () => "/admin/inventory/items",
@@ -22,8 +28,23 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+const { confirmMock } = vi.hoisted(() => ({
+  confirmMock: vi.fn(),
+}));
+
+vi.mock("@/lib/shared/dialog", () => ({
+  confirm: (...args: any[]) => confirmMock(...args),
+}));
+
+const { setPurchasedItemStatusMock, deletePurchasedItemActionMock } = vi.hoisted(() => ({
+  setPurchasedItemStatusMock: vi.fn(),
+  deletePurchasedItemActionMock: vi.fn(),
+}));
+
+
 vi.mock("../../actions", () => ({
-  deletePurchasedItemAction: vi.fn(),
+  setPurchasedItemStatus: (...args: any[]) => setPurchasedItemStatusMock(...args),
+  deletePurchasedItemAction: (...args: any[]) => deletePurchasedItemActionMock(...args),
 }));
 
 const mlekovitaItem: DBPurchasedItem = {
@@ -66,6 +87,14 @@ const units: DBUnit[] = [
 ];
 
 const purchaseHistory: ItemPurchaseHistoryRow[] = [];
+
+beforeEach(() => {
+  refreshMock.mockReset();
+  pushMock.mockReset();
+  confirmMock.mockReset();
+  setPurchasedItemStatusMock.mockReset();
+  deletePurchasedItemActionMock.mockReset();
+});
 
 afterEach(() => {
   cleanup();
@@ -120,6 +149,159 @@ describe("ItemDetailView", () => {
     // Back link "Hàng hoá" to returnTo
     const backLink = screen.getByRole("link", { name: /Hàng hoá/ });
     expect(backLink).toHaveAttribute("href", returnTo);
+  });
+
+  it("ACTIVE item shows 'Ngừng dùng', INACTIVE shows 'Dùng lại'", () => {
+    const { unmount } = render(
+      <ItemDetailView
+        item={mlekovitaItem}
+        category={category}
+        conversions={mlekovitaConversions}
+        units={units}
+        purchaseHistory={purchaseHistory}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />
+    );
+    expect(screen.getByRole("button", { name: "Ngừng dùng" })).toBeInTheDocument();
+
+    unmount();
+
+    const inactiveItem: DBPurchasedItem = {
+      ...mlekovitaItem,
+      status: "INACTIVE",
+    };
+    render(
+      <ItemDetailView
+        item={inactiveItem}
+        category={category}
+        conversions={mlekovitaConversions}
+        units={units}
+        purchaseHistory={purchaseHistory}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />
+    );
+    expect(screen.getByRole("button", { name: "Dùng lại" })).toBeInTheDocument();
+  });
+
+  it("clicking 'Dùng lại' calls setPurchasedItemStatus with id and status ACTIVE", async () => {
+    setPurchasedItemStatusMock.mockResolvedValue({});
+    const inactiveItem: DBPurchasedItem = {
+      ...mlekovitaItem,
+      status: "INACTIVE",
+    };
+
+    render(
+      <ItemDetailView
+        item={inactiveItem}
+        category={category}
+        conversions={[]}
+        units={units}
+        purchaseHistory={[]}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />
+    );
+
+    const reactivateBtn = screen.getByRole("button", { name: "Dùng lại" });
+    fireEvent.click(reactivateBtn);
+
+    await waitFor(() => {
+      expect(setPurchasedItemStatusMock).toHaveBeenCalledTimes(1);
+    });
+
+    const fd: FormData = setPurchasedItemStatusMock.mock.calls[0][0];
+    expect(fd.get("id")).toBe("SPM-002");
+    expect(fd.get("status")).toBe("ACTIVE");
+    expect(confirmMock).not.toHaveBeenCalled();
+    expect(refreshMock).toHaveBeenCalled();
+  });
+
+  it("clicking 'Ngừng dùng' asks confirmation and calls setPurchasedItemStatus with INACTIVE on confirm", async () => {
+    confirmMock.mockResolvedValue(true);
+    setPurchasedItemStatusMock.mockResolvedValue({});
+
+    render(
+      <ItemDetailView
+        item={mlekovitaItem}
+        category={category}
+        conversions={[]}
+        units={units}
+        purchaseHistory={[]}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />
+    );
+
+    const stopBtn = screen.getByRole("button", { name: "Ngừng dùng" });
+    fireEvent.click(stopBtn);
+
+    await waitFor(() => {
+      expect(confirmMock).toHaveBeenCalledWith({
+        title: "Ngừng dùng",
+        message: "Ngừng dùng Sữa tươi Mlekovita? Phiếu nhập mới sẽ không chọn được hàng này; phiếu xuất và kiểm kê vẫn dùng được.",
+        variant: "danger",
+      });
+      expect(setPurchasedItemStatusMock).toHaveBeenCalledTimes(1);
+    });
+
+    const fd: FormData = setPurchasedItemStatusMock.mock.calls[0][0];
+    expect(fd.get("id")).toBe("SPM-002");
+    expect(fd.get("status")).toBe("INACTIVE");
+    expect(refreshMock).toHaveBeenCalled();
+  });
+
+  it("cancelling 'Ngừng dùng' does not call setPurchasedItemStatus", async () => {
+    confirmMock.mockResolvedValue(false);
+
+    render(
+      <ItemDetailView
+        item={mlekovitaItem}
+        category={category}
+        conversions={[]}
+        units={units}
+        purchaseHistory={[]}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />
+    );
+
+    const stopBtn = screen.getByRole("button", { name: "Ngừng dùng" });
+    fireEvent.click(stopBtn);
+
+    await waitFor(() => {
+      expect(confirmMock).toHaveBeenCalled();
+    });
+
+    expect(setPurchasedItemStatusMock).not.toHaveBeenCalled();
+    expect(refreshMock).not.toHaveBeenCalled();
+  });
+
+  it("shows error alert near header when setPurchasedItemStatus fails", async () => {
+    setPurchasedItemStatusMock.mockResolvedValue({ error: "Lỗi lưu trạng thái hàng hoá" });
+    const inactiveItem: DBPurchasedItem = {
+      ...mlekovitaItem,
+      status: "INACTIVE",
+    };
+
+    render(
+      <ItemDetailView
+        item={inactiveItem}
+        category={category}
+        conversions={[]}
+        units={units}
+        purchaseHistory={[]}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Dùng lại" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Lỗi lưu trạng thái hàng hoá");
+    expect(refreshMock).not.toHaveBeenCalled();
   });
 
   it("renders delete button when canDelete is true", () => {

@@ -499,8 +499,8 @@ export function checkLineSanity(lines: readonly RevenueLineDetail[]): LineSanity
 // CHARGED discount agrees with the terms of the promotion recorded on the
 // order at the time.
 //
-// The three discount_type formulas are derived from lib/sales/order-cart.ts's
-// computePromoForLine (the function that actually decided what got charged),
+// The three discount_type formulas are derived from lib/sales/price-cart.ts's
+// priceCart (the function that actually decided what got charged),
 // not from data and not reverse-engineered after the fact:
 //   FLAT_PRICE: perUnitDiscount = max(0, unit_price - targetPrice);
 //     discount = min(gross_line_total, perUnitDiscount * qty).

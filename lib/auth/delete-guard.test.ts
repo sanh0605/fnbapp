@@ -28,6 +28,9 @@ const HARD_DELETE_ACTIONS: Array<[string, string]> = [
   ["app/admin/products/types/actions.ts", "deleteProductType"],
   // Nhóm tuỳ chọn: an empty group is erased for good, owner only, refused while any option points at it.
   ["app/admin/products/modifier-groups/actions.ts", "deleteModifierGroup"],
+  // Plan bo-deleted: DELETED is gone. An empty dish group and a never-sold option are erased for good, owner only.
+  ["app/admin/products/categories/actions.ts", "deleteCategory"],
+  ["app/admin/products/modifiers/actions.ts", "deleteModifierAction"],
   // I2 (final-fix-brief.md): a never-sold product is erased for good,
   // history and all -- CLAUDE.md's "Món chưa bán lần nào được xoá hẳn kèm
   // lịch sử giá … chỉ vai ADMIN xoá, chặn bằng requireOwner()". This was

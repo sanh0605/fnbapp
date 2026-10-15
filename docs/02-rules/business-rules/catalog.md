@@ -86,8 +86,8 @@ a 5.000đ topping stores 27.000đ — which is why `verify-revenue` reconciles.
 
 **Open, deliberately not decided here:** *Hộp sữa chua* (`MOD-009`, created
 2026-08-28) has no `CAT-007` product, so it cannot be sold standalone and has
-nothing to link to. `Dâu sấy` has two modifier rows, `MOD-007` (DELETED) and
-`MOD-008` (ACTIVE), which must both point at `PROD-035`. And `CAT-007` is
+nothing to link to. `Dâu sấy` has two modifier rows, `MOD-007` (stopped, `INACTIVE` since the DELETED status went, plan `2026-10-15-bo-deleted.md`) and
+`MOD-008` (ACTIVE), which must both point at `PROD-035`; the ACTIVE one governs the link. And `CAT-007` is
 hard-coded in `toggleToppingStandalone` rather than being a column a screen can
 edit, against the rule that anything the owner may want to change belongs in
 data.
@@ -177,7 +177,7 @@ Until then the option form offered four names written into the code and the till
 - **Order on the till:** "Thứ tự hiện" 1–99, ties by name. *Thêm Topping* starts at 50.
 - **A sale stores only what differs from the defaults**, one entry per portion, as before; a plain cup stores none. A later change of default does not rewrite old orders. Edits change only what the till shows from then on.
 - **Server intake does not refuse** an option no longer attached or a count over a cap, so an order queued offline before a change still saves. Since `BR-SALE-014` (2026-10-15), Sửa đơn no longer edits lines, so it never shows options.
-- **Stopping and erasing:** a stopped group disappears from the till, Sửa món and Sửa đơn and keeps its options and ticks. Only `ADMIN` erases a group, and only an empty one.
+- **Stopping and erasing:** a stopped group disappears from the till, Sửa món and Sửa đơn and keeps its options and ticks. Only `ADMIN` erases a group, and only an empty one. An option the same way (2026-10-15, no "Đã xoá" status any more): "Ngừng dùng"/"Dùng lại" for anyone who edits the menu; "Xoá" only by `ADMIN` and only for an option never sold, otherwise refused with "Tuỳ chọn {tên} đã có trong đơn; chọn Ngừng dùng thay vì xoá." Stopping a topping stops both ways it sells, the add-on and its standalone dish, in one save (owner 2026-10-15, *"Ngừng cả hai"*, over asking each time or stopping the add-on only); to keep only the standalone dish he turns "Bán độc lập" back on. "Dùng lại" restarts the add-on only, and is refused while another live option runs the same standalone dish (one live option per dish); stopping an option stops the dish only when no other live option runs it. An empty dish group (Nhóm món) is erased for good, `ADMIN` only.
 
 ### BR-CATALOG-006 — Both brands sell one menu
 
@@ -191,10 +191,10 @@ Until then the option form offered four names written into the code and the till
 
 ### BR-CATALOG-007 — A supplier is stopped, not deleted; only a supplier with no purchase order can be deleted
 
-**Status:** `APPROVED` — owner 2026-10-15, Kho area audit question Q3. He chose *"Ngừng + xoá nhà chưa dùng"* over "never delete". Not built yet: Kho step 4 (`docs/superpowers/specs/2026-10-15-kho-de-xuat.md`).
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit question Q3. He chose *"Ngừng + xoá nhà chưa dùng"* over "never delete". Built 2026-10-15 on the branch feat/khuon-chung-ban-hang-kho (Kho step 4, `docs/superpowers/plans/2026-10-15-kho-buoc-4-ngung-dung.md`), not yet pushed.
 
 **What he was shown.** On 2026-10-15 there were 48 suppliers, all `ACTIVE`. 2 had no purchase order: The Garden Tea & Coffee and Circle K. The screen let him delete those two. It had no way to stop using the other 46.
 
-- Each supplier gets "Ngừng hợp tác" and "Hợp tác lại". A stopped supplier is not offered when entering a purchase order. Its past orders keep showing its name.
-- "Xoá" shows only on a supplier with no purchase order, the same as for a dish never sold. The database's `RESTRICT` key still refuses the rest.
-- This follows KiotViet's "Ngừng hoạt động" for suppliers.
+- Each supplier gets "Ngừng hợp tác" and "Hợp tác lại". A stopped supplier is not offered when entering a purchase order. Its past orders keep showing its name. "Xoá" shows only on a supplier with no purchase order, the same as for a dish never sold; the database's `RESTRICT` key still refuses the rest. This follows KiotViet's "Ngừng hoạt động" for suppliers.
+- **Purchased items work the same way**: "Ngừng dùng" and "Dùng lại" on the item page. A stopped item is not offered on a new purchase order, but stock issues, stocktakes and recipes still list it, since stock bought before may still need issuing or counting (`BR-INV-019`). Its "Xoá" keeps the existing rule: refused once the item has a purchase order line, an issue line, a conversion or an asset.
+- **An order being edited or copied keeps what it already lists.** A stopped supplier or item already on the order still shows when the order is opened again. Saving an order that names a stopped supplier or item not already on the stored order is refused with "Nhà cung cấp {tên} đã ngừng hợp tác." or "{tên} đã ngừng dùng."; this includes a copy of an old order (chosen by recommendation, owner's 2026-10-15 delegation: the copy shows the old lines, the refusal names the one to replace).

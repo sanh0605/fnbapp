@@ -142,8 +142,8 @@ const CATEGORIES = [
   { id: "NHH-003", name: "Dụng cụ", system_type: "EQUIPMENT" },
 ];
 const UNITS = [
-  { id: "U-BAO", name: "Bao" },
-  { id: "U-G", name: "g" },
+  { id: "U-BAO", name: "Bao", status: "ACTIVE" },
+  { id: "U-G", name: "g", status: "ACTIVE" },
 ];
 
 async function openForm() {
@@ -574,6 +574,82 @@ describe("PurchasedItemForm -- update_history removed (audit A5)", () => {
     expect(mocks.updatePurchasedItem).toHaveBeenCalledTimes(1);
     expect(capturedFormData).not.toBeNull();
     expect(capturedFormData!.get("update_history")).toBeNull();
+  });
+});
+
+describe("PurchasedItemForm -- stopped units (B4)", () => {
+  const UNITS_WITH_INACTIVE = [
+    { id: "U-BAO", name: "Bao", status: "ACTIVE" },
+    { id: "U-G", name: "g", status: "ACTIVE" },
+    { id: "U-INACTIVE", name: "Thùng Cũ", status: "INACTIVE" },
+  ];
+
+  it("a new item does not see the INACTIVE unit in the picker", async () => {
+    await renderTracked(
+      <PurchasedItemForm
+        itemCategories={CATEGORIES as any}
+        units={UNITS_WITH_INACTIVE as any}
+      />
+    );
+
+    const categorySelect = document.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-002");
+
+    const baseUnitWrapper = document.querySelector('[role="combobox"]')!.closest(".relative") as HTMLElement;
+    const trigger = baseUnitWrapper.querySelector('[role="combobox"]')!;
+    await fireClick(trigger);
+
+    const options = Array.from(document.body.querySelectorAll('[role="option"]')).map(
+      el => el.textContent?.trim()
+    );
+    expect(options).toContain("Bao");
+    expect(options).toContain("g");
+    expect(options).not.toContain("Thùng Cũ");
+  });
+
+  it("an item whose base unit is INACTIVE still saves and its unit still shows as an option", async () => {
+    const EDIT_ITEM = {
+      id: "SPM-OLD",
+      name: "Món dùng đơn vị cũ",
+      item_category_id: "NHH-002",
+      is_non_inventory: false,
+    };
+    const EDIT_CONVERSIONS = [
+      { id: "QD-OLD", purchased_item_id: "SPM-OLD", purchased_unit: "U-BAO", base_unit: "U-INACTIVE", conversion_rate: "10" },
+    ];
+
+    let capturedFormData: FormData | null = null;
+    mocks.updatePurchasedItem.mockImplementationOnce(async (fd: FormData) => {
+      capturedFormData = fd;
+      return { ok: true };
+    });
+
+    const container = await renderTracked(
+      <PurchasedItemForm
+        itemCategories={CATEGORIES as any}
+        units={UNITS_WITH_INACTIVE as any}
+        initialData={EDIT_ITEM as any}
+        initialConversions={EDIT_CONVERSIONS as any}
+      />
+    );
+
+    // The base unit selector shows the inactive unit name
+    const baseUnitWrapper = document.querySelector('[role="combobox"]')!.closest(".relative") as HTMLElement;
+    expect(baseUnitWrapper.textContent).toContain("Thùng Cũ");
+
+    // It is also available as an option in the dropdown
+    const trigger = baseUnitWrapper.querySelector('[role="combobox"]')!;
+    await fireClick(trigger);
+    const options = Array.from(document.body.querySelectorAll('[role="option"]')).map(
+      el => el.textContent?.trim()
+    );
+    expect(options).toContain("Thùng Cũ");
+
+    // Saving the form succeeds and retains the INACTIVE base unit
+    await submitForm(container);
+    expect(mocks.updatePurchasedItem).toHaveBeenCalledTimes(1);
+    expect(capturedFormData).not.toBeNull();
+    expect(capturedFormData!.get("base_unit")).toBe("U-INACTIVE");
   });
 });
 

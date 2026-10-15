@@ -29,6 +29,25 @@ function readCashEntryInput(formData: FormData): CashEntryInput {
   };
 }
 
+// R6: a group or account must exist and be ACTIVE, unless the row already uses it
+// (so an old row stays editable after its group or account was stopped).
+async function checkRefs(
+  f: { category_id: string; bank_account_id: string | null },
+  existing: DBCashEntry | null,
+): Promise<string | null> {
+  const category = (await findById("Cash_Categories", f.category_id)) as DBCashCategory | null;
+  if (!category || (category.status !== "ACTIVE" && category.id !== existing?.category_id)) {
+    return "Nhóm thu chi không còn dùng";
+  }
+  if (f.bank_account_id) {
+    const account = (await findById("Bank_Accounts", f.bank_account_id)) as DBBankAccount | null;
+    if (!account || (account.status !== "ACTIVE" && account.id !== existing?.bank_account_id)) {
+      return "Tài khoản không còn dùng";
+    }
+  }
+  return null;
+}
+
 // Empty -> null. A set item must be ACTIVE (unless the row already carried it)
 // and belong to the entry's own category, or the reminder it settles is wrong.
 async function checkMonthlyItem(
@@ -98,6 +117,8 @@ export async function addCashEntry(formData: FormData): Promise<ActionResponse> 
   if (r.ok === false) return fail(r.error);
 
   try {
+    const refError = await checkRefs(r.value, null);
+    if (refError) return fail(refError);
     const monthly = await checkMonthlyItem(formData, r.value.category_id, null);
     if (monthly.ok === false) return fail(monthly.error);
 
@@ -127,6 +148,8 @@ export async function updateCashEntry(formData: FormData): Promise<ActionRespons
     const r = parseCashEntry(readCashEntryInput(formData));
     if (r.ok === false) return fail(r.error);
 
+    const refError = await checkRefs(r.value, existing);
+    if (refError) return fail(refError);
     const monthly = await checkMonthlyItem(formData, r.value.category_id, existing.monthly_item_id ?? null);
     if (monthly.ok === false) return fail(monthly.error);
 

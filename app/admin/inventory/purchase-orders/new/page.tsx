@@ -1,4 +1,5 @@
 import { findAll } from "@/lib/db/tables";
+import { activeOrOnOrder } from "@/lib/purchasing/active-or-on-order";
 import { getPurchaseOrderCopySeed } from "../actions";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import Link from "next/link";
@@ -26,7 +27,7 @@ export default async function NewPurchaseOrderPage(
     copyFrom ? getPurchaseOrderCopySeed(copyFrom) : Promise.resolve(null),
   ]);
 
-  const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
+  const units = allUnits.filter(u => u.status === "ACTIVE");
   const bankAccounts = (allBankAccounts as any[]).filter(a => a.status === "ACTIVE");
 
   return (
@@ -56,9 +57,9 @@ export default async function NewPurchaseOrderPage(
       )}
 
       <PurchaseOrderForm 
-        suppliers={suppliers}
+        suppliers={activeOrOnOrder(suppliers, copySeed ? [copySeed.supplier_id] : [])}
         sources={sources}
-        items={items}
+        items={activeOrOnOrder(items, copySeed?.lines.map(l => l.purchased_item_id) ?? [])}
         conversions={conversions}
         units={units}
         bankAccounts={bankAccounts}

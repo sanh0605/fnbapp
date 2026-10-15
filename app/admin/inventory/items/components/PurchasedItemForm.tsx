@@ -303,8 +303,24 @@ export function PurchasedItemForm({
     router.refresh();
   }
 
+  const usedUnitIds = new Set<string>();
+  if (initialData?.default_unit_id) usedUnitIds.add(initialData.default_unit_id);
+  if (initialConversions) {
+    for (const c of initialConversions) {
+      if (c.base_unit) usedUnitIds.add(c.base_unit);
+      if (c.purchased_unit) usedUnitIds.add(c.purchased_unit);
+    }
+  }
+
   const categoryOptions = itemCategories.map(c => ({ id: c.id, label: c.name }));
-  const unitOptions = units.map(u => ({ id: u.name, label: u.name }));
+  const unitOptions = units
+    .filter(u =>
+      u.status === "ACTIVE" ||
+      usedUnitIds.has(u.id) ||
+      usedUnitIds.has(u.name) ||
+      (selectedBaseUnitName && u.name.toLowerCase() === selectedBaseUnitName.toLowerCase())
+    )
+    .map(u => ({ id: u.name, label: u.name }));
 
   return (
     <div className="bg-surface-card rounded-2xl border border-border p-6">

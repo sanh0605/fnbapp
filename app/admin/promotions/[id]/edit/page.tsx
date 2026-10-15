@@ -41,10 +41,7 @@ export default async function EditPromotionPage(
     ? rawReturnTo
     : `/admin/promotions/${encodeURIComponent(promo.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
 
-  const activeBrands = brands.filter((b) => b.status !== "DELETED");
-  const activeProducts = products.filter((p) => p.status !== "DELETED");
   const activeVariants = variants.filter((v) => v.status !== "DELETED");
-  const activeCategories = categories.filter((c) => c.status !== "DELETED");
 
   return (
     <DetailFrame>
@@ -56,9 +53,9 @@ export default async function EditPromotionPage(
       />
       <PromotionForm
         initialData={promo}
-        brands={activeBrands}
-        categories={activeCategories}
-        products={activeProducts}
+        brands={brands}
+        categories={categories}
+        products={products}
         variants={activeVariants}
         returnTo={detailHref}
       />

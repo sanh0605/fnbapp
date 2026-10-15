@@ -22,9 +22,12 @@ function readCashTransferInput(formData: FormData): CashTransferInput {
   };
 }
 
-async function activeAccountIds(): Promise<string[]> {
+// R6: ACTIVE accounts, plus the ones the row already uses (even if stopped since).
+async function allowedAccountIds(own?: DBCashTransfer): Promise<string[]> {
   const accounts = (await findAll("Bank_Accounts")) as DBBankAccount[];
-  return accounts.filter((a) => a.status === "ACTIVE").map((a) => a.id);
+  const ids = accounts.filter((a) => a.status === "ACTIVE").map((a) => a.id);
+  for (const id of [own?.from_account_id, own?.to_account_id]) if (id) ids.push(id);
+  return ids;
 }
 
 export async function getCashTransfer(id: string): Promise<DBCashTransfer | null> {
@@ -47,7 +50,7 @@ export async function addCashTransfer(formData: FormData): Promise<ActionRespons
   if (!auth.ok) return fail(auth.error);
 
   try {
-    const r = parseCashTransfer(readCashTransferInput(formData), await activeAccountIds());
+    const r = parseCashTransfer(readCashTransferInput(formData), await allowedAccountIds());
     if (r.ok === false) return fail(r.error);
 
     const id = await generateNewId(SHEET, "CT");
@@ -73,7 +76,7 @@ export async function updateCashTransfer(formData: FormData): Promise<ActionResp
     if (!existing) return fail("Không tìm thấy dòng chuyển tiền");
     if (existing.status === "CANCELLED") return fail("Dòng đã huỷ, không sửa được");
 
-    const r = parseCashTransfer(readCashTransferInput(formData), await activeAccountIds());
+    const r = parseCashTransfer(readCashTransferInput(formData), await allowedAccountIds(existing));
     if (r.ok === false) return fail(r.error);
 
     await update(SHEET, id, { ...r.value, ...updateAudit(auth.actor) });

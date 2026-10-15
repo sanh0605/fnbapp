@@ -21,7 +21,7 @@ export default async function UnitDetailPage(
   ]);
 
   const unit = allUnits.find((u) => u.id === params.id);
-  if (!unit || !unit.name || unit.name.startsWith("DELETED_")) {
+  if (!unit) {
     notFound();
   }
 

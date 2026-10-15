@@ -654,7 +654,7 @@ describe("getPnLDataV2", () => {
       modifiers_snapshot_json: JSON.stringify([{ id: "MOD-NEW-DAU", name: "Dâu sấy", price: 10000, qty: 1 }]),
     };
     const modifiers = [
-      { id: "MOD-OLD-DAU", name: "Dâu sấy", status: "DELETED", created_at: "2026-06-01T00:00:00.000Z" },
+      { id: "MOD-OLD-DAU", name: "Dâu sấy", status: "INACTIVE", created_at: "2026-06-01T00:00:00.000Z" },
       { id: "MOD-NEW-DAU", name: "Dâu sấy", status: "ACTIVE", created_at: "2026-06-20T00:00:00.000Z" },
     ];
 
@@ -858,7 +858,7 @@ describe("getSalesDataV2", () => {
       modifiers_snapshot_json: JSON.stringify([{ id: "MOD-NEW-DAU", name: "Dâu sấy", price: 10000, qty: 1 }]),
     };
     const modifiers = [
-      { id: "MOD-OLD-DAU", name: "Dâu sấy", status: "DELETED", created_at: "2026-06-01T00:00:00.000Z" },
+      { id: "MOD-OLD-DAU", name: "Dâu sấy", status: "INACTIVE", created_at: "2026-06-01T00:00:00.000Z" },
       { id: "MOD-NEW-DAU", name: "Dâu sấy", status: "ACTIVE", created_at: "2026-06-20T00:00:00.000Z" },
     ];
 
