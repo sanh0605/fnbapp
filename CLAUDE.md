@@ -147,6 +147,7 @@ Model chủ quán chốt 2026-10-01 (thay bản 2026-09-29): *"giao cho model m�
 - Thấy code chết không liên quan thì nói, không tự xoá.
 - Phép kiểm mới phải chạy đỏ trên bản chưa sửa trước, và nói rõ đỏ vì giá trị sai hay vì thiếu hàm.
 - Deploy xong phải có người mở trang sau khi đăng nhập; `curl` trả 307 không chứng minh gì.
+- Không tạo file hay thư mục nào ngoài thư mục dự án; worktree đặt trong thư mục con .worktrees của dự án. Việc nào buộc phải ra ngoài thì hỏi trước, nói rõ tạo gì, ở đâu, vì sao, khi nào xoá. Chủ quán chốt 2026-10-15: *"không được tạo ra ngoài folders của nó nữa, nếu có thì nó phải giải thích"*.
 
 ## Tiện ích ponytail
 

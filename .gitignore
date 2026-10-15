@@ -117,3 +117,6 @@ fnbapp-monthly-*.json
 # tracked; their build output is not.
 __pycache__/
 *.pyc
+
+# Build worktrees live inside the repo (owner rule 2026-10-15: nothing outside the project folder).
+.worktrees/
