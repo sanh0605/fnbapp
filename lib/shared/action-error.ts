@@ -24,12 +24,37 @@ function looksHandWrittenForTheOwner(message: string): boolean {
   return /[^\x00-\x7F]/.test(message);
 }
 
+// Database refusals added in migration 0132. The db layer keeps only the message text, so the
+// key is a piece of it: the constraint name, or the column for a NOT NULL.
+const CONSTRAINT_MESSAGES: [string, string][] = [
+  ["uom_conversions_rate_positive", "Tỷ lệ quy đổi phải lớn hơn 0."],
+  ["purchase_order_lines_money_not_negative", "Đơn giá, thành tiền và số lượng của dòng nhập không được âm."],
+  ["stock_issues_session_matches_source", "Dòng xuất kho không khớp với phiên kiểm kê. Tải lại trang rồi thử lại."],
+  ["stock_issues_manual_one_link", "Dòng xuất kho tay phải thuộc một phiếu xuất hoặc một lần đảo. Tải lại trang rồi thử lại."],
+  ["ux_stock_issues_reverses", "Dòng xuất kho này đã được đảo rồi, không đảo hai lần."],
+  ["assets_quantity_positive", "Số lượng tài sản phải lớn hơn 0."],
+  ["assets_term_positive", "Thời gian khấu hao phải lớn hơn 0 tháng."],
+  ["assets_costs_not_negative", "Đơn giá và tổng giá tài sản không được âm."],
+  ["asset_depreciation_bands_min_unique", "Hai bậc khấu hao không được có cùng mức giá từ."],
+  ["asset_depreciation_bands_min_not_negative", "Mức giá từ của bậc khấu hao không được âm."],
+  ['column "category_id" of relation "products"', "Món phải thuộc một nhóm món."],
+  ["ux_product_categories_active_name", "Đã có nhóm món đang dùng với tên này."],
+  ["product_variants_price_not_negative", "Giá bán của cỡ món không được âm."],
+  ["modifiers_price_not_negative", "Giá của topping không được âm."],
+  ["promotions_dates_ordered", "Ngày kết thúc khuyến mãi không được trước ngày bắt đầu."],
+  ["promotions_value_valid", "Giá trị giảm không được âm, và giảm theo phần trăm không quá 100."],
+  ["promotions_min_order_not_negative", "Đơn tối thiểu của khuyến mãi không được âm."],
+];
+
 // Logged server-side only for the sites this function actually genericizes
 // -- a message already judged fit for the owner explains itself and needs
 // no duplicate; the raw ones are exactly what an engineer would otherwise
 // have lost.
 export function describeActionError(error: unknown): ActionResponse {
   const raw = error instanceof Error ? error.message : String(error);
+
+  const known = CONSTRAINT_MESSAGES.find(([key]) => raw.includes(key));
+  if (known) return { error: known[1] };
 
   if (looksHandWrittenForTheOwner(raw)) {
     return { error: raw };

@@ -26,7 +26,7 @@ import type {
  * Run: npx vite-node scripts/verify-revenue.ts
  *
  * Gated (exit 1 on failure):
- *   - H1 checks 1-4, H2 checks 1-4, and H3 checks 1-4, zero violations
+ *   - H1 checks 1-5, H2 checks 1-4, and H3 checks 1-4, zero violations
  *     required (H3's "unrecomputable" orders are reported, never gated --
  *     see the H3 section below for why)
  *   - row-count sanity (trap #1 below)
@@ -103,6 +103,8 @@ async function main(): Promise<void> {
     checkLineSum,
     checkNoSupersededCompleted,
     checkPayments,
+    checkPaymentRowsSince,
+    PAYMENT_ROWS_REQUIRED_FROM,
     buildMonthlyReport,
     meetsMinimumOrderCount,
     checkLineGrossFormula,
@@ -296,6 +298,15 @@ async function main(): Promise<void> {
     console.log(`  ${m.order_no} (${m.order_id}): expected ${m.expected}, actual ${m.actual}`);
   }
   if (check4.mismatches.length > 0) failures.push(`Check 4: ${check4.mismatches.length} payment-sum violation(s).`);
+
+  // --- Check 5 ---------------------------------------------------------
+  const check5 = checkPaymentRowsSince(orders, payments, PAYMENT_ROWS_REQUIRED_FROM);
+  console.log(
+    `
+Check 5 (COMPLETED order since ${PAYMENT_ROWS_REQUIRED_FROM} has a payment row): ${check5.missing.length} violation(s) / ${check5.checked}.`,
+  );
+  for (const o of check5.missing.slice(0, 20)) console.log(`  ${o.order_no} (${o.id}): net_total ${o.net_total}, no payment row`);
+  if (check5.missing.length > 0) failures.push(`Check 5: ${check5.missing.length} COMPLETED order(s) without a payment row.`);
 
   // --- H2: line-level arithmetic -----------------------------------------
   console.log(

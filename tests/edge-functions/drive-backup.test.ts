@@ -151,4 +151,32 @@ describe("Google Drive backup core", () => {
 
     expect(expectedTables).toEqual([...BACKUP_TABLES]);
   });
+  it("lists every parent table before the tables whose foreign keys point at it", () => {
+    // child>parent pairs of the 52 live foreign keys (measured 2026-10-16) plus
+    // cash_entries>asset_disposals from migration 0131. Self-references
+    // (orders_v2, stock_issues) are skipped; the orders_v2 parent/superseded
+    // cycle is a self-reference. lib/db/backup-restore.ts restores in this
+    // order, so a child ahead of its parent loses its rows (K-1, 2026-10-16).
+    const fks = `asset_disposals>assets assets>purchased_items cash_entries>bank_accounts
+      cash_entries>cash_categories cash_entries>monthly_expense_items cash_entries>asset_disposals
+      cash_transfers>bank_accounts dashboard_settings>product_types modifier_group_products>modifier_groups
+      modifier_group_products>products modifiers>modifier_groups modifiers>products
+      monthly_expense_items>cash_categories order_events>orders_v2 order_lines_v2>orders_v2
+      order_lines_v2>products order_lines_v2>product_variants order_payments>orders_v2
+      order_promotions>orders_v2 order_promotions>promotions orders_v2>promotions orders_v2>brands
+      orders_v2>outlets outlets>brands pos_drafts>brands pos_drafts>outlets
+      product_categories>product_types product_price_history>product_variants product_variants>products
+      products>product_categories promotions>brands purchase_order_edits>purchase_orders
+      purchase_order_lines>units purchase_order_lines>uom_conversions purchase_order_lines>purchase_orders
+      purchase_order_lines>purchased_items purchase_orders>bank_accounts purchase_orders>purchase_sources
+      purchase_orders>suppliers purchased_items>units purchased_items>item_categories
+      stock_issues>issue_slips stock_issues>purchased_items stock_issues>stocktake_sessions
+      stocktake_lines>stocktake_sessions uom_conversions>units uom_conversions>purchased_items`
+      .split(/\s+/);
+    const wrong = fks.filter(pair => {
+      const [child, parent] = pair.split(">");
+      return child !== parent && BACKUP_TABLES.indexOf(child as never) < BACKUP_TABLES.indexOf(parent as never);
+    });
+    expect(wrong).toEqual([]);
+  });
 });

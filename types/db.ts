@@ -258,9 +258,9 @@ export interface DBAssetDisposal {
   asset_id: string;
   quantity: number;
   disposed_date: string;
-  reason: string;
-  created_by_id: string;
-  created_by_name: string;
+  reason: string | null;
+  created_by_id: string | null;
+  created_by_name: string | null;
   created_at: string;
 }
 

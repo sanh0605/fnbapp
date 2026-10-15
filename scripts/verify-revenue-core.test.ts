@@ -4,6 +4,7 @@ import {
   checkLineSum,
   checkNoSupersededCompleted,
   checkPayments,
+  checkPaymentRowsSince,
   computeMonthlyTotal,
   deriveSaigonMonthLabels,
   isMonthClosed,
@@ -174,6 +175,25 @@ describe("checkPayments", () => {
     expect(result.ordersWithoutPayments).toBe(1);
     expect(result.netTotalWithoutPayments).toBe(15000);
     expect(result.ordersWithPayments).toBe(0);
+  });
+});
+
+describe("checkPaymentRowsSince", () => {
+  const since = "2026-07-20";
+  it("lists an order from the start date on that has no payment row", () => {
+    const lonely = makeOrder({ id: "o-lonely", order_no: "260723001017", created_at: "2026-07-23T01:11:37Z" });
+    const paid = makeOrder({ id: "o-paid", created_at: "2026-07-23T02:00:00Z" });
+    const result = checkPaymentRowsSince([lonely, paid], [{ order_id: "o-paid", amount: 20000 }], since);
+    expect(result.missing.map(o => o.order_no)).toEqual(["260723001017"]);
+    expect(result.checked).toBe(2);
+  });
+
+  it("ignores an order before the start date and counts the day boundary in Saigon time", () => {
+    const old = makeOrder({ id: "o-old", created_at: "2026-07-19T16:59:59Z" }); // 19/07 23:59:59 Saigon
+    const first = makeOrder({ id: "o-first", created_at: "2026-07-19T17:00:00Z" }); // 20/07 00:00:00 Saigon
+    const result = checkPaymentRowsSince([old, first], [], since);
+    expect(result.missing.map(o => o.id)).toEqual(["o-first"]);
+    expect(result.checked).toBe(1);
   });
 });
 

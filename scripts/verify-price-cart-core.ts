@@ -97,3 +97,20 @@ export function replayOrders(orders: any[], lines: any[], promotions: any[] = []
   const badLines = new Set(diffs.map((d) => `${d.order_no}:${d.line_no}`)).size;
   return { lineCount, orderCount: orders.length, badLines, orderNos, diffs };
 }
+
+// Every size's price must equal the new_price of its latest history row (6d H1):
+// save_product_atomic and the late-order price both read that history.
+export function checkHistoryMatchesPrice(
+  variants: { id: string; price: number }[],
+  history: { id: string; variant_id: string; new_price: number; created_at: string }[],
+) {
+  const mismatches: { variant_id: string; price: number; historyPrice: number | null }[] = [];
+  for (const v of variants) {
+    const latest = history
+      .filter((h) => h.variant_id === v.id)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime() || (a.id < b.id ? 1 : -1))[0];
+    const historyPrice = latest ? num(latest.new_price) : null;
+    if (historyPrice !== num(v.price)) mismatches.push({ variant_id: v.id, price: num(v.price), historyPrice });
+  }
+  return { checked: variants.length, mismatches };
+}

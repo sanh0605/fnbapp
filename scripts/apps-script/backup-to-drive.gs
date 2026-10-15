@@ -6,7 +6,7 @@
 const EXPECTED_TABLES = [
   "brands", "outlets", "product_types", "dashboard_settings",
   "product_categories", "item_categories", "units", "suppliers",
-  "purchase_sources", "products", "product_variants", "modifier_groups", "modifiers",
+  "purchase_sources", "bank_accounts", "products", "product_variants", "modifier_groups", "modifiers",
   "modifier_group_products",
   "promotions", "purchased_items", "asset_depreciation_bands",
   "assets", "asset_disposals", "uom_conversions", "product_price_history",
@@ -15,7 +15,7 @@ const EXPECTED_TABLES = [
   "order_promotions",
   "stocktake_sessions", "stocktake_lines", "issue_slips", "stock_issues",
   "purchase_order_edits", "cash_categories",
-  "bank_accounts", "monthly_expense_items", "cash_entries", "cash_transfers",
+  "monthly_expense_items", "cash_entries", "cash_transfers",
 ];
 const DAILY_RETENTION_COUNT = 180;
 const DAILY_PREFIX = "fnbapp-backup-";

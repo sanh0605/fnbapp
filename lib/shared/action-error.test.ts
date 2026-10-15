@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { describeActionError } from "./action-error";
 
@@ -62,5 +63,48 @@ describe("describeActionError", () => {
     const result = describeActionError("some raw string, not an Error instance");
     expect(result.error).toMatch(/Có lỗi xảy ra/);
     expect(result.errorDetail).toBe("some raw string, not an Error instance");
+  });
+});
+
+// Migration 0132 constraints: the database refuses in English, the owner reads Vietnamese.
+describe("describeActionError: 0132 constraint refusals", () => {
+  const refusals: [string, string][] = [
+    ["uom_conversions_rate_positive", 'new row for relation "uom_conversions" violates check constraint "uom_conversions_rate_positive"'],
+    ["purchase_order_lines_money_not_negative", 'new row for relation "purchase_order_lines" violates check constraint "purchase_order_lines_money_not_negative"'],
+    ["stock_issues_session_matches_source", 'new row for relation "stock_issues" violates check constraint "stock_issues_session_matches_source"'],
+    ["stock_issues_manual_one_link", 'new row for relation "stock_issues" violates check constraint "stock_issues_manual_one_link"'],
+    ["ux_stock_issues_reverses", 'duplicate key value violates unique constraint "ux_stock_issues_reverses"'],
+    ["assets_quantity_positive", 'new row for relation "assets" violates check constraint "assets_quantity_positive"'],
+    ["assets_term_positive", 'new row for relation "assets" violates check constraint "assets_term_positive"'],
+    ["assets_costs_not_negative", 'new row for relation "assets" violates check constraint "assets_costs_not_negative"'],
+    ["asset_depreciation_bands_min_unique", 'duplicate key value violates unique constraint "asset_depreciation_bands_min_unique"'],
+    ["asset_depreciation_bands_min_not_negative", 'new row for relation "asset_depreciation_bands" violates check constraint "asset_depreciation_bands_min_not_negative"'],
+    ["products.category_id", 'null value in column "category_id" of relation "products" violates not-null constraint'],
+    ["ux_product_categories_active_name", 'duplicate key value violates unique constraint "ux_product_categories_active_name"'],
+    ["product_variants_price_not_negative", 'new row for relation "product_variants" violates check constraint "product_variants_price_not_negative"'],
+    ["modifiers_price_not_negative", 'new row for relation "modifiers" violates check constraint "modifiers_price_not_negative"'],
+    ["promotions_dates_ordered", 'new row for relation "promotions" violates check constraint "promotions_dates_ordered"'],
+    ["promotions_value_valid", 'new row for relation "promotions" violates check constraint "promotions_value_valid"'],
+    ["promotions_min_order_not_negative", 'new row for relation "promotions" violates check constraint "promotions_min_order_not_negative"'],
+  ];
+
+  it.each(refusals)("%s becomes a Vietnamese sentence, not the generic one", (_name, raw) => {
+    const result = describeActionError(new Error(raw));
+    expect(result.error).toMatch(/[^\x00-\x7F]/);
+    expect(result.error).not.toBe(raw);
+    expect(result.error).not.toMatch(/Có lỗi xảy ra/);
+  });
+
+  it("maps every constraint and unique index that migration 0132 adds", () => {
+    const sql = readFileSync("supabase/migrations/0132_6d_batch_1a.sql", "utf8").replace(/^\s*--.*$/gm, "");
+    const names = [
+      ...[...sql.matchAll(/add constraint (\w+)/g)].map(m => m[1]),
+      ...[...sql.matchAll(/create unique index (\w+)/g)].map(m => m[1]),
+    ];
+    expect(names.length).toBe(16);
+    for (const name of names) {
+      const raw = `violates constraint "${name}"`;
+      expect(describeActionError(new Error(raw)).error, name).toMatch(/[^\x00-\x7F]/);
+    }
   });
 });

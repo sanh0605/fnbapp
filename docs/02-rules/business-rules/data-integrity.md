@@ -153,3 +153,7 @@ Backup success does not authorize restoration. A restore needs a reviewed mappin
 
 **The rule survives the repair, because the drift can recur.** Any migration applied by hand from here starts the gap again. To know whether a migration has run, query the table, column or function it creates or drops; do not read the CLI list or a document, this one included. Two traps met while proving the 32, both worth knowing before trusting a probe: `information_schema` is privilege-filtered, so a role without `SELECT` on a table sees zero columns and "no permission" looks exactly like "never ran" — read `pg_catalog` instead; and an absence marker ("the new body no longer mentions X") false-fails when the new body carries a *comment* explaining why X was removed, so prefer a positive marker unique to the version you are testing for.
 
+
+## A size's price equals its latest price-history row
+
+Checked read-only by `verify-price-cart` (2026-10-16). `save_product_atomic` writes the size's real previous price as `old_price` (migration `0132`), not the last history row. Measured 2026-10-16: 9 of 57 sizes disagreed (Cacao latte 500ml 27.000đ against 23.000đ, and 8 sizes with no history row); `scripts/add-missing-price-history.ts` adds the 9 rows after the owner's approval. Cacao latte's change date is estimated halfway between its last 27.000đ sale and the first 23.000đ sale (21/04/2026), because its line dates are import dates.

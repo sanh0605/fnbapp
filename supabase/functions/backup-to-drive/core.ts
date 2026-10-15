@@ -14,6 +14,9 @@ export const BACKUP_TABLES = [
   "units",
   "suppliers",
   "purchase_sources",
+  // purchase_orders.bank_account_id references it, so it must come before
+  // purchase_orders (K-1, 2026-10-16: 53 orders would be lost on restore).
+  "bank_accounts",
   "products",
   "product_variants",
   // modifiers.group_id references it, so it must come before modifiers. Added
@@ -57,7 +60,6 @@ export const BACKUP_TABLES = [
   // 2026-09-02); base_ingredients is dropped (migration 0090, 2026-09-01).
   // None exist any more, so none are listed.
   "cash_categories",
-  "bank_accounts",
   // References cash_categories, and cash_entries.monthly_item_id references
   // it, so it sits between them. Added 2026-10-14 with migration 0109.
   "monthly_expense_items",

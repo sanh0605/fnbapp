@@ -5,7 +5,7 @@ Việt dùng trong `docs/02-rules/GLOSSARY.md` và `docs/02-rules/business-rules
 Mở file này khi thấy một tên bảng trong log lỗi, trong mã nguồn, hay trong một
 báo cáo kỹ thuật, và cần biết nó nói về cái gì trong thực tế quán.
 
-**Số bảng đang sống: 38** (đếm theo file migration, 2026-10-14). Lịch sử migration từng tạo 51 bảng
+**Số bảng đang sống: 40** (đếm trên máy chủ thật, 2026-10-16). Lịch sử migration từng tạo 51 bảng
 (bốn bảng cuối là sổ thu chi: migration `0101` tạo `cash_categories`,
 `bank_accounts`, `cash_entries`; migration `0107` tạo `cash_transfers`), nhưng 16 bảng đã bị `DROP TABLE` thật sự.
 Migration `0107` còn tạo view chỉ đọc `cash_book_daily` (tiền bán hàng và nhập hàng gộp theo ngày và cách trả); view không phải bảng, không tính vào số trên.
@@ -24,7 +24,7 @@ Trước đó đã gỡ 6 bảng: `stock_ledger`,
 hai, chủ quán quyết định xoá 2026-09-01), và `backdated_ledger_events`,
 `backdated_recipe_events`, `audit_baseline_locks` (migration `0054` — bộ máy
 soát lùi ngày, chưa từng chạy thật, chủ quán duyệt gỡ 2026-08-05). Bảng dưới
-đây chỉ liệt kê 38 bảng đang sống, xác nhận bằng cách đọc từng file migration,
+đây chỉ liệt kê 40 bảng đang sống, xác nhận bằng cách đọc từng file migration,
 không đọc theo số liệu trong bất cứ tài liệu nào khác.
 
 Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh doanh) ghi

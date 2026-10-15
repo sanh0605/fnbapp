@@ -65,7 +65,7 @@ nguồn, nên dựng lại hay đổi chỗ chạy là dễ mất — cần nh�
 
 ## Thành phần chạy ngoài luồng màn hình
 
-Hai Supabase Edge Function và bốn route API của Next.js không thuộc một màn
+Một Supabase Edge Function và bốn route API của Next.js không thuộc một màn
 hình nào — chạy nền hoặc phục vụ máy khác gọi tới. Liệt kê ở đây cho đủ, đọc
 mã nguồn trực tiếp nếu cần chi tiết.
 
@@ -74,14 +74,11 @@ mã nguồn trực tiếp nếu cần chi tiết.
 - `backup-to-drive` — dựng một bản chụp toàn bộ dữ liệu (theo danh sách bảng
   cho phép) khi có request kèm token đúng, dùng cho sao lưu định kỳ lên Google
   Drive. Chi tiết vận hành: `docs/04-operations/INCIDENT-RESPONSE.md`.
-- `user-admin` — tạo/sửa/xoá tài khoản đăng nhập, cầu nối giữa Supabase Auth
-  và bảng `users`; chỉ vai trò `owner` gọi được, trừ nhánh `/migrate` một lần
-  dùng khoá service-role để đưa tài khoản cũ sang Supabase Auth.
 
 **Route API** (`app/api/`):
 
 - `app/api/auth/[...nextauth]/route.ts` — cổng đăng nhập/phiên làm việc của
-  chính ứng dụng (NextAuth), tách biệt với Supabase Auth mà `user-admin` dùng.
+  chính ứng dụng (NextAuth); ứng dụng không dùng Supabase Auth.
 - `app/api/client-errors/route.ts` — nhận lỗi JavaScript xảy ra trên trình
   duyệt của người dùng đã đăng nhập, ghi vào log server để theo dõi.
 - `app/api/dev-feedback/route.ts` — chỉ chạy khi phát triển (chặn hẳn ở môi

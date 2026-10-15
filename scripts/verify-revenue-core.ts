@@ -176,6 +176,21 @@ export function checkPayments(
   };
 }
 
+// From this Saigon date on every COMPLETED order must carry a payment row
+// (BR-SALE-005). Order 260723001017 broke it until its row was added.
+export const PAYMENT_ROWS_REQUIRED_FROM = "2026-07-20";
+
+export function checkPaymentRowsSince(
+  orders: readonly RevenueOrder[],
+  payments: readonly RevenuePayment[],
+  sinceSaigonDate: string,
+): { missing: RevenueOrder[]; checked: number } {
+  const from = toSaigonUtcRange(sinceSaigonDate, sinceSaigonDate)!.startUtc.getTime();
+  const paid = new Set(payments.map(p => p.order_id));
+  const inScope = orders.filter(o => new Date(o.created_at).getTime() >= from);
+  return { missing: inScope.filter(o => !paid.has(o.id)), checked: inScope.length };
+}
+
 export interface MonthlyTotal {
   label: string;
   total: number;

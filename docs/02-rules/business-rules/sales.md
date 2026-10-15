@@ -38,6 +38,8 @@ The system records payments in `order_payments`, and **that table begins 2026-07
 
 **What that leaves.** **44.229.000đ across 1.573 orders, April to mid-July 2026, has nothing to reconcile against.** Asked on 2026-08-14 whether external records — bank statements, a cash book — could close the gap, the owner confirmed **none exist**.
 
+**Every completed order since 2026-07-20 has a payment row** (checked by `verify-revenue`, check 5; measured 2026-10-16: 1 of 1.874 lacked one, order 260723001017, a CASH version created by an edit of a BANK_TRANSFER order; the row is added by `scripts/add-missing-order-payment.ts`, after the owner's approval).
+
 **So the figure is closed as unverifiable, and must never be quietly upgraded to "audited" later.** It is internally consistent at every level that can be tested, and it has never been compared to money that actually arrived. Any statement about the shop's first four months rests on that distinction. A later report that presents the period without the caveat is wrong even if every number in it is unchanged.
 
 **Why this is a rule and not a note.** Cost was audited line by line in Plan C and found 7,4% wrong (`BR-COGS-006`) — an error invisible until someone checked against what was paid. The same class of error in early revenue would be invisible **permanently**, because the thing to check against was never written down. The rule exists so nobody re-derives false confidence from the internal checks passing.
