@@ -4,15 +4,13 @@
  *  - a size with no history gets an opening row at its current price, stamped
  *    with the size's own creation time (the shape save_product_atomic writes);
  *  - a size whose price differs from its latest history row gets the missing
- *    change row, effective halfway between the last sale at the old price
- *    before the first sale at the new price. Sales alone cannot pin the day
- *    (Cacao latte has stray old-price sales after the change), so the rule
- *    stops when either price has no sale.
+ *    change row, effective one second after that latest row: the latest row
+ *    was an import mistake (Cacao latte opened at 27.000) corrected right
+ *    after it. Earlier sales at the old price are imported history.
  * "Latest" is created_at then id, the order save_product_atomic reads.
  */
 export interface VariantRow { id: string; price: number; created_at: string; label: string }
-export interface HistoryRow { id: string; variant_id: string; new_price: number; created_at: string }
-export interface SaleRow { variant_id: string; unit_price: number; order_created_at: string }
+export interface HistoryRow { id: string; variant_id: string; new_price: number; created_at: string; effective_at: string }
 export interface NewHistoryRow {
   id: string;
   variant_id: string;
@@ -28,7 +26,6 @@ const time = (iso: string) => new Date(iso).getTime();
 export function planPriceHistory(
   variants: readonly VariantRow[],
   history: readonly HistoryRow[],
-  sales: readonly SaleRow[],
 ): NewHistoryRow[] {
   let next = Math.max(0, ...history.map(h => Number(h.id.replace(/^PPH-/, "")))) + 1;
   const mint = () => `PPH-${String(next++).padStart(3, "0")}`;
@@ -44,14 +41,7 @@ export function planPriceHistory(
     const old = own[0].new_price;
     if (old === v.price) continue;
 
-    const mine = sales.filter(s => s.variant_id === v.id);
-    const firstNew = mine.filter(s => s.unit_price === v.price).map(s => time(s.order_created_at)).sort((a, b) => a - b)[0];
-    const lastOld = mine.filter(s => s.unit_price === old && time(s.order_created_at) < firstNew)
-      .map(s => time(s.order_created_at)).sort((a, b) => b - a)[0];
-    if (firstNew === undefined || lastOld === undefined) {
-      throw new Error(`${v.id}: price ${v.price} differs from history ${old} but a sale at one of them is missing; set the date by hand`);
-    }
-    const at = new Date(Math.round((lastOld + firstNew) / 2)).toISOString();
+    const at = new Date(time(own[0].effective_at) + 1000).toISOString();
     rows.push({ id: mint(), variant_id: v.id, old_price: old, new_price: v.price, effective_at: at, created_at: at, label: v.label });
   }
   return rows;

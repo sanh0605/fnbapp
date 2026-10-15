@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
 import { createClient } from "@supabase/supabase-js";
-import { planPriceHistory, type HistoryRow, type SaleRow, type VariantRow } from "./add-missing-price-history-core";
+import { planPriceHistory, type HistoryRow, type VariantRow } from "./add-missing-price-history-core";
 
 /**
  * 6d batch 1a, H1: adds the price history rows that are missing (Cacao latte's
@@ -37,15 +37,10 @@ async function main(): Promise<void> {
   }
 
   console.log(apply ? "MODE: --apply (WILL WRITE)" : "MODE: dry run (no writes; pass --apply to write)");
-  const history = await fetchAll<HistoryRow>("product_price_history", "id,variant_id,new_price,created_at");
+  const history = await fetchAll<HistoryRow>("product_price_history", "id,variant_id,new_price,created_at,effective_at");
   const variants = (await fetchAll<any>("product_variants", "id,price,created_at,size_name,products(name)"))
     .map((v): VariantRow => ({ id: v.id, price: v.price, created_at: v.created_at, label: `${v.products?.name ?? v.id} ${v.size_name}` }));
-  const lines = await fetchAll<any>("order_lines_v2", "id,variant_id,unit_price,orders_v2(created_at,status)");
-  const sales: SaleRow[] = lines
-    .filter(l => l.orders_v2?.status === "COMPLETED")
-    .map(l => ({ variant_id: l.variant_id, unit_price: l.unit_price, order_created_at: l.orders_v2.created_at }));
-
-  const rows = planPriceHistory(variants, history, sales);
+  const rows = planPriceHistory(variants, history);
   for (const r of rows) {
     console.log(`${r.id}\t${r.variant_id}\t${r.label}\t${r.old_price ?? "(mở đầu)"} -> ${r.new_price}đ\thiệu lực ${r.effective_at}`);
   }
@@ -56,8 +51,8 @@ async function main(): Promise<void> {
     .insert(rows.map(({ label: _label, ...row }) => row));
   if (error) throw new Error(`insert: ${error.message}`);
 
-  const after = await fetchAll<HistoryRow>("product_price_history", "id,variant_id,new_price,created_at");
-  const left = planPriceHistory(variants, after, sales).length;
+  const after = await fetchAll<HistoryRow>("product_price_history", "id,variant_id,new_price,created_at,effective_at");
+  const left = planPriceHistory(variants, after).length;
   console.log(left === 0 ? `OK: còn 0 cỡ món thiếu hoặc lệch lịch sử giá trên ${variants.length} cỡ` : `LỆCH: còn ${left} dòng cần thêm`);
   if (left) process.exit(1);
 }
