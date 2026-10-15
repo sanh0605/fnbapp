@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllWhere, insert, update, remove, generateNewId, getCacheTag } from "@/lib/db/tables";
+import { findAll, findAllWhere, remove, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
@@ -28,6 +28,7 @@ import {
 } from "@/lib/assets/asset-removal";
 import { computeOnHandByPurchasedItem } from "@/lib/stock/purchased-item-onhand";
 import { buildItemStockById, type ItemStockDisplay } from "@/lib/stock/item-stock-display";
+import { savePurchasedItemAtomic } from "@/lib/catalog/purchased-item-transaction";
 import { resolveUnitLock, unitChangeIsRefused, unitLockRefusalMessage } from "@/lib/catalog/unit-lock";
 
 const SHEET = "Purchased_Items";
@@ -35,6 +36,11 @@ const PATH = "/admin/inventory/items";
 const RATE_REFUSAL = "Hệ số quy đổi phải là số lớn hơn 0.";
 const hasBadRate = (units: Array<{ name?: string; conversion_rate?: unknown }>) =>
   units.some(u => u.name && !(Number(u.conversion_rate) > 0 && Number.isFinite(Number(u.conversion_rate))));
+
+type ConversionInput = { id?: string; name?: string; conversion_rate?: string | number };
+// Rows without a name or rate are skipped, as the form's blank rows always were.
+const writableConversions = (units: ConversionInput[]) =>
+  units.flatMap(u => (u.name && u.conversion_rate ? [{ ...(u.id ? { id: u.id } : {}), name: u.name, conversion_rate: u.conversion_rate }] : []));
 
 export async function getItemsData(): Promise<{
   categories: DBItemCategory[];
@@ -150,37 +156,19 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
     }
     const wasWarningConfirmed = !!warning && warningConfirmed;
 
-    const id = await generateNewId("Purchased_Items", "SPM");
-    await insert("Purchased_Items", {
-      id,
+    // Item and conversions are written in one Postgres transaction (0124).
+    // base_ingredient_id is no longer required: a consumable has none, only
+    // base_unit and units_json.
+    await savePurchasedItemAtomic({
+      itemId: null,
       name,
-      item_category_id,
-      is_non_inventory,
-      duplicate_warning_confirmed: wasWarningConfirmed,
-      duplicate_warning_confirmed_by: wasWarningConfirmed ? auth.actor.name : null,
-      duplicate_warning_confirmed_at: wasWarningConfirmed ? new Date().toISOString() : null,
+      categoryId: item_category_id,
+      isNonInventory: is_non_inventory,
+      warningConfirmedBy: wasWarningConfirmed ? auth.actor.name : null,
+      baseUnit: base_unit,
+      conversions: unitsJson && base_unit ? writableConversions(JSON.parse(unitsJson)) : null,
+      retireAssetIds: [],
     });
-
-    // Batch 1, item B, gate 3 of 4 (section B1): base_ingredient_id is no
-    // longer required here -- a consumable has none, only base_unit (from
-    // its own selector, section B2) and units_json. Requiring
-    // base_ingredient_id silently dropped every consumable's conversions,
-    // which is the defect this task exists to fix.
-    if (unitsJson && base_unit) {
-      const units = JSON.parse(unitsJson);
-      for (const u of units) {
-        if (u.name && u.conversion_rate) {
-          const convId = await generateNewId("UOM_Conversions", "QD");
-          await insert("UOM_Conversions", {
-            id: convId,
-            purchased_item_id: id,
-            purchased_unit: u.name,
-            base_unit: base_unit,
-            conversion_rate: u.conversion_rate
-          });
-        }
-      }
-    }
 
     // section 2: Purchased_Items and UOM_Conversions are cached 10 min,
     // keyed by table -- Đơn nhập, Phiếu xuất kho, Kiểm kê all read them
@@ -285,18 +273,15 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
 
     // Audit A6: the conversion refusal is decided here, before the first write,
     // so a refusal never leaves the item, its assets or some conversions saved
-    // and the rest not. The write loop below only reads what is prepared here.
-    let newUnits: Array<{ id?: string; name?: string; conversion_rate?: string | number }> = [];
-    let existingConversions: any[] = [];
-    let poLines: any[] = [];
-    let referencedConversionIds = new Set<string>();
+    // and the rest not. The single save below only writes.
+    let newUnits: ConversionInput[] = [];
     if (unitsJson && base_unit) {
       newUnits = JSON.parse(unitsJson);
       if (hasBadRate(newUnits)) return fail(RATE_REFUSAL);
       const allConversions = await findAll("UOM_Conversions");
-      poLines = await findAll("Purchase_Order_Lines");
-      existingConversions = allConversions.filter((c: any) => c.purchased_item_id === id);
-      referencedConversionIds = new Set(
+      const poLines = await findAll("Purchase_Order_Lines");
+      const existingConversions = allConversions.filter((c: any) => c.purchased_item_id === id);
+      const referencedConversionIds = new Set(
         poLines
           .filter((line: any) => line.conversion_id)
           .map((line: any) => line.conversion_id)
@@ -315,71 +300,19 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       }
     }
 
-    // base_ingredient_id is intentionally not written here. The tier-2
-    // group link field was removed from the form 2026-09-01
-    // (section 2.2) but the column itself is untouched this batch (section
-    // 2.3, step 2) -- omitting the key from this partial update leaves
-    // whatever value the row already has, rather than overwriting it with
-    // an empty string on every edit.
-    await update("Purchased_Items", id, {
+    // Item, asset retirements and conversions go in one Postgres transaction
+    // (0124); it removes or retires the conversions the form no longer lists.
+    // base_ingredient_id is intentionally not sent: it keeps its stored value.
+    await savePurchasedItemAtomic({
+      itemId: id,
       name,
-      item_category_id,
-      is_non_inventory,
-      ...(wasWarningConfirmed
-        ? {
-            duplicate_warning_confirmed: true,
-            duplicate_warning_confirmed_by: auth.actor.name,
-            duplicate_warning_confirmed_at: new Date().toISOString(),
-          }
-        : {}),
+      categoryId: item_category_id,
+      isNonInventory: is_non_inventory,
+      warningConfirmedBy: wasWarningConfirmed ? auth.actor.name : null,
+      baseUnit: base_unit,
+      conversions: unitsJson && base_unit ? writableConversions(newUnits) : null,
+      retireAssetIds: assetsToRetire.map(a => a.id),
     });
-
-    // Item first, assets second: if this fails, the next save asks again.
-    for (const a of assetsToRetire) {
-      await update("assets", a.id, { status: "INACTIVE" });
-    }
-
-    // Batch 1, item B, gate 4 of 4 (section B1): same relaxation as the
-    // create path above.
-    if (unitsJson && base_unit) {
-      const newUnitIds: string[] = [];
-      for (const u of newUnits) {
-        if (!u.name || !u.conversion_rate) continue;
-        
-        if (u.id) {
-          // Cập nhật record cũ
-          await update("UOM_Conversions", u.id, {
-            purchased_item_id: id,
-            purchased_unit: u.name,
-            base_unit: base_unit,
-            conversion_rate: u.conversion_rate
-          });
-          newUnitIds.push(u.id);
-        } else {
-          // Tạo mới record
-          const convId = await generateNewId("UOM_Conversions", "QD");
-          await insert("UOM_Conversions", {
-            id: convId,
-            purchased_item_id: id,
-            purchased_unit: u.name,
-            base_unit: base_unit,
-            conversion_rate: u.conversion_rate
-          });
-          newUnitIds.push(convId);
-        }
-      }
-
-      // Xoá những record đã bị xoá khỏi UI
-      for (const ex of existingConversions) {
-        if (!newUnitIds.includes(ex.id)) {
-          if (referencedConversionIds.has(ex.id)) {
-            await update("UOM_Conversions", ex.id, { status: "INACTIVE" });
-          } else {
-            await remove("UOM_Conversions", ex.id);
-          }
-        }
-      }
-    }
 
     revalidateTag(getCacheTag("Purchased_Items"));
     revalidateTag(getCacheTag("UOM_Conversions"));

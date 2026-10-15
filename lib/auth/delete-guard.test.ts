@@ -42,7 +42,6 @@ const HARD_DELETE_ACTIONS: Array<[string, string]> = [
 // edit/create flow, not a row the user picked to destroy.
 const EXEMPTIONS: Array<[string, string, string]> = [
   ["app/pos/actions.ts", "deletePOSDraft", "the owner's stated exception -- a draft is scratch state, never history"],
-  ["app/admin/inventory/items/actions.ts", "updatePurchasedItem", "sibling-conversion cleanup inside an edit, not a user-picked delete"],
 ];
 
 // remove()/removeMany() (lib/db/tables.ts) and deleteEntity() (lib/db/shared-actions.ts)
@@ -225,6 +224,7 @@ describe("permanent deletion is ADMIN only", () => {
   });
 
   it("leaves the item edit's conversion cleanup alone -- it is an edit", () => {
+    // The cleanup runs inside save_purchased_item_atomic (migration 0124).
     // Tightening this would stop a MANAGER editing an item at all.
     expect(head(read("app/admin/inventory/items/actions.ts"), "updatePurchasedItem"))
       .toContain("requireAdmin()");
