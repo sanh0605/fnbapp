@@ -63,11 +63,11 @@ Seen: the agent's report, the SQL results (scratchpad `baocao-1.sql`, `baocao-2.
 
 ## Owner decisions
 
-One question. Everything else is taken by recommendation.
+One question, answered the same day. Everything else is taken by recommendation.
 
 | # | Question | Options | Recommendation | Source |
 |---|---|---|---|---|
-| Q1 | September 2026 closed with 15.442.000đ over 624 orders (Điểm bán 1: 532 orders, 12.108.000đ, 22 days; Điểm bán 2: 92 orders, 3.334.000đ, 18 days). Do these match his own records? `verify-revenue` refuses to add a month's baseline without his confirmation | (a) yes, add them; (b) his sheet says otherwise, he gives the figures; (c) he keeps no separate record for September, take the app's figures | **(a)** if his sheet agrees. Not auto-taken: the script's rule is "have the owner confirm them against his own records" (`scripts/verify-revenue.ts:74-80`), and `BR-SALE-005` is about exactly this kind of figure | the script's own header; August was confirmed the same way on 2026-09-01 |
+| Q1 | September 2026 closed with 15.442.000đ over 624 orders (Điểm bán 1: 532 orders, 12.108.000đ, 22 days; Điểm bán 2: 92 orders, 3.334.000đ, 18 days). Do these match his own records? `verify-revenue` refuses to add a month's baseline without his confirmation | (a) yes, add them; (b) his sheet says otherwise, he gives the figures; (c) he keeps no separate record for September, take the app's figures | **(a)** if his sheet agrees. Not auto-taken: the script's rule is "have the owner confirm them against his own records" (`scripts/verify-revenue.ts:74-80`), and `BR-SALE-005` is about exactly this kind of figure | the script's own header; August was confirmed the same way on 2026-09-01. **Answer 2026-10-15: (c)** — *"Anh không có sổ riêng tháng 9"*. The app's figures become the baseline, with the script comment saying so: app figures, no outside record, owner told 2026-10-15 |
 
 Taken by recommendation (chọn theo khuyến nghị, chủ quán uỷ quyền 2026-10-15):
 
@@ -86,7 +86,7 @@ Taken by recommendation (chọn theo khuyến nghị, chủ quán uỷ quyền 2
 | Item | Who | Migration | Till risk |
 |---|---|---|---|
 | Delete `app/admin/reports/pnl-actions.ts` and `app/admin/reports/actions.test.ts` (0 importers; grep `getPnLDataV2` and `pnl-actions` across `app lib scripts tests`); reword the comment `app/pos/actions.ts:197` that names it; fix `docs/03-workflows/reports.md:114`, which says `verify-pnl-monthly` checks against `getPnLDataV2` (it does not import it; say what it does check against) | Sonnet | no | comment only in `app/pos/actions.ts`; no code line changes there |
-| After Q1: add September 2026 to `KNOWN_MONTHLY_BASELINES` in `scripts/verify-revenue.ts` with the confirmation date; run it, expect "matches" on 6 of 6 | Sonnet | no | none |
+| Q1 answered: add September 2026 (15.442.000đ, 624 orders) to `KNOWN_MONTHLY_BASELINES` in `scripts/verify-revenue.ts`, comment "2026-10-15: app figures, the owner keeps no outside record for September"; run it, expect "matches" on 6 of 6 | Sonnet | no | none |
 | Root 1 backend: `getSalesDataV2` returns everything the page shows (category totals from the line snapshot's group, payments per R2, best sellers already split Nước / Thức ăn / Topping); the page does no `find` in loops and loads no product list; one order definition through `selectSalesOrders` everywhere (`findCompletedOrders` also drops superseded) | Sonnet | no | none |
 | Root 1 frontend: Doanh số on the report frame `BR-UI-017`, both layouts (`.claude/rules/ui-devices.md`); "(V2)" and the stale comments gone; `SalesFilter`: a range change carries only picks already applied (read them from the URL, not component state) | Gemini | no | none |
 | Root 2: `getIssuedValueReport(range)`; month figures split by issue kind using the same classification as `lib/costing/issue-costing-inputs.ts:73-81`; page on the report frame; a test that the month total equals `verify-pnl-monthly`'s Giá vốn + Hao hụt for one real month (September 2026) | Sonnet + Gemini | no | `lib/costing/issue-costing-inputs.ts` is shared with the till's costing path: change nothing in it, read it |
@@ -107,7 +107,7 @@ None. No column is dead, no migration. `dashboard_settings.food_product_ids` sta
 
 ## Order of work
 
-1. Dead report out; Q1 answered, September baseline in; `verify-revenue` green. Small, no visible change.
+1. Dead report out; September baseline in (Q1, answered); `verify-revenue` green. Small, no visible change.
 2. Root 1: Doanh số backend then frontend on the report frame (R1, R2). The frame itself (`BR-UI-017`) is fnbapp-f5's; the first page built on it is this one.
 3. Root 2: Hàng đã xuất with a range and the two lines (R3), tie test against Lãi lỗ.
 4. R5, R7, Tổng quan reads, duplicates.
