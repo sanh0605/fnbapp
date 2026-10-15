@@ -1,7 +1,7 @@
 import { getOutlets } from "@/app/admin/outlets/actions";
 import { getBrands } from "@/app/admin/brands/actions";
 import { OutletForm } from "@/app/admin/outlets/components/OutletForm";
-import { safeReturnTo } from "@/app/admin/outlets/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import type { DBOutlet, DBBrand } from "@/types/db";
@@ -14,7 +14,7 @@ export default async function NewOutletPage(
   }
 ) {
   const searchParams = await props.searchParams;
-  const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined);
+  const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/outlets");
   const [outlets, brands] = await Promise.all([
     getOutlets() as Promise<DBOutlet[]>,
     getBrands() as Promise<DBBrand[]>,

@@ -8,7 +8,7 @@ import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBBrand } from "@/types/db";
 
 interface BrandFormProps {
@@ -17,7 +17,7 @@ interface BrandFormProps {
 }
 
 export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps) {
-  const returnTo = safeReturnTo(rawReturnTo);
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/brands");
   const isEdit = !!initialData;
   const formId = useId();
   const router = useRouter();

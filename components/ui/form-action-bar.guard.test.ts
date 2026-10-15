@@ -36,11 +36,6 @@ const usesBar = (path: string) => /from "@\/components\/ui\/FormActionBar"/.test
 
 const OWED = [
   "app/admin/brands/components/BrandForm.tsx",
-  "app/admin/finance/bank-accounts/components/BankAccountForm.tsx",
-  "app/admin/finance/categories/components/CategoryForm.tsx",
-  "app/admin/finance/components/CashEntryForm.tsx",
-  "app/admin/finance/monthly-items/components/MonthlyItemForm.tsx",
-  "app/admin/finance/transfers/components/CashTransferForm.tsx",
   "app/admin/inventory/asset-bands/edit/components/EditBandsForm.tsx",
   "app/admin/inventory/components/CategoryForm.tsx",
   "app/admin/inventory/conversions/components/ConversionForm.tsx",

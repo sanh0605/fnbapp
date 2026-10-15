@@ -10,7 +10,7 @@ import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
 // <input type="time"> wants "HH:MM"; Postgres time comes back "HH:MM:SS".
@@ -29,7 +29,7 @@ interface OutletFormProps {
 }
 
 export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo }: OutletFormProps) {
-  const returnTo = safeReturnTo(rawReturnTo);
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/outlets");
   const isEdit = !!initialData;
   const formId = useId();
   const router = useRouter();

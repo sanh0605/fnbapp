@@ -169,7 +169,7 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 
 ### BR-UI-017 — Report pages share one frame
 
-**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation, as `BR-UI-015`. Spec section 2.3. Not built yet: the Báo cáo area (step 6 of plan A).
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation, as `BR-UI-015`. Spec section 2.3. Built 2026-10-15 for Doanh số, Hàng đã xuất, Lãi lỗ and the "Theo tháng" tab of Sổ thu chi, not yet pushed.
 
 - Top to bottom: the title; one filter bar (date range per `BR-UI-007`, outlet where the report can split by outlet); the headline figures for the range; the detail table with its total row (`BR-UI-004`).
 - Exporting to a file is left out until someone keeping the books asks for it.

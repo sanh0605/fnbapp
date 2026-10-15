@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBrands } from "@/app/admin/brands/actions";
 import { BrandForm } from "@/app/admin/brands/components/BrandForm";
-import { safeReturnTo } from "@/app/admin/brands/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import type { DBBrand } from "@/types/db";
@@ -16,7 +16,7 @@ export default async function EditBrandPage(
 ) {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const rawReturnTo = safeReturnTo(searchParams?.returnTo);
+  const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/brands");
 
   const brands = await getBrands();
   const brand = brands.find(

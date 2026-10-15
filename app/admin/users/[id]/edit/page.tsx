@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { resolveActor } from "@/lib/auth/auth";
 import { getUserById } from "@/app/admin/users/actions";
 import EditUserForm from "@/app/admin/users/components/EditUserForm";
-import { safeReturnTo } from "@/app/admin/users/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
@@ -17,8 +17,7 @@ export default async function EditUserPage(
   const searchParams = await props.searchParams;
   const params = await props.params;
   const rawReturnTo = safeReturnTo(
-    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined
-  );
+    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/users");
   const [user, auth] = await Promise.all([
     getUserById(params.id),
     resolveActor(),

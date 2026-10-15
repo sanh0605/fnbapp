@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDateTime, formatDate, formatTime, toSaigonIsoString, formatDateTimeFull, parseVnDay, formatVnDay, saigonToday, formatVnDayWithWeekday } from "./datetime";
+import { formatDateTime, formatDate, formatTime, toSaigonIsoString, formatDateTimeFull, parseVnDay, formatVnDay, saigonToday, formatVnDayWithWeekday, formatMonthLabel } from "./datetime";
 
 describe("formatDateTime", () => {
   it("formats UTC instant as Asia/Saigon local time", () => {
@@ -103,5 +103,11 @@ describe("formatVnDayWithWeekday", () => {
   });
   it("returns empty for a non day value", () => {
     expect(formatVnDayWithWeekday("")).toBe("");
+  });
+});
+
+describe("formatMonthLabel", () => {
+  it("writes a YYYY-MM month as MM/YYYY", () => {
+    expect(formatMonthLabel("2026-09")).toBe("09/2026");
   });
 });

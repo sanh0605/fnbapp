@@ -96,7 +96,6 @@ Không đổi gì chủ quán nhìn thấy. Mỗi file xoá đã grep: không ch
   phần "thay đổi" vào thân tài liệu luồng việc và bỏ phép kiểm bắt ghi dấu; cắt phần chép tay của
   `SYSTEM-MAP.md` và phép kiểm đi kèm; bỏ phép kiểm cảnh báo không ai đọc; sửa README, SYSTEM-OVERVIEW,
   TABLE-DICTIONARY, GLOSSARY, `cash-book.md`; rút luật đã RETIRED còn một dòng trạng thái.
-- **Ổ đĩa:** sáu thư mục làm việc cũ của Codex ở `C:/tmp` vẫn đăng ký với git → `git worktree prune`.
 
 ## Đợt 4 — gộp chỗ lặp
 
