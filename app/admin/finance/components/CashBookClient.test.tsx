@@ -121,6 +121,7 @@ const sept15SaleCash: CashBookRow = {
   note: "23 đơn",
   creator: "—",
   status: "ACTIVE",
+  monthlyItemName: null,
   href: "/admin/orders?from=2026-09-15&to=2026-09-15&payment=Tien%20mat",
 };
 
@@ -137,6 +138,7 @@ const sept15SaleTransfer: CashBookRow = {
   note: "11 đơn",
   creator: "—",
   status: "ACTIVE",
+  monthlyItemName: null,
   href: "/admin/orders?from=2026-09-15&to=2026-09-15&payment=Chuyen%20khoan",
 };
 
@@ -153,6 +155,7 @@ const sept15PurchaseCash: CashBookRow = {
   note: "2 đơn nhập",
   creator: "—",
   status: "ACTIVE",
+  monthlyItemName: null,
   href: "/admin/inventory/purchase-orders?from=2026-09-15&to=2026-09-15&pay=CASH",
 };
 
@@ -169,6 +172,7 @@ const ce040Hand: CashBookRow = {
   note: "Vốn góp đợt mới",
   creator: "admin",
   status: "ACTIVE",
+  monthlyItemName: null,
   href: "/admin/finance/CE-040",
 };
 
@@ -185,6 +189,7 @@ const ce032Hand: CashBookRow = {
   note: "Tiền điện",
   creator: "admin",
   status: "ACTIVE",
+  monthlyItemName: null,
   href: "/admin/finance/CE-032",
 };
 
@@ -201,6 +206,7 @@ const ce034Hand: CashBookRow = {
   note: "Doanh thu bị mất dữ liệu",
   creator: "admin",
   status: "ACTIVE",
+  monthlyItemName: null,
   href: "/admin/finance/CE-034",
 };
 
@@ -217,6 +223,7 @@ const ce020Cancelled: CashBookRow = {
   note: "Khoản đã huỷ",
   creator: "admin",
   status: "CANCELLED",
+  monthlyItemName: null,
   href: "/admin/finance/CE-020",
 };
 
@@ -233,6 +240,7 @@ const ct001Transfer: CashBookRow = {
   note: "Nộp tiền mặt vào tài khoản",
   creator: "admin",
   status: "ACTIVE",
+  monthlyItemName: null,
   href: "/admin/finance/transfers/CT-001",
 };
 
@@ -261,6 +269,7 @@ const sampleRows: CashBookRow[] = [
       note: `Chi phí ${num}`,
       creator: "admin",
       status: "ACTIVE" as const,
+      monthlyItemName: null,
       href: `/admin/finance/${id}`,
     };
   }),
@@ -269,9 +278,6 @@ const sampleRows: CashBookRow[] = [
 const defaultProps = {
   rows: sampleRows,
   summary: septemberSummary,
-  categories: sampleCategories,
-  accounts: sampleAccounts,
-  canDelete: true,
   today: "2026-10-04",
   resolvedRange: {
     preset: "THIS_MONTH" as const,
@@ -422,18 +428,17 @@ describe("CashBookClient", () => {
     expect(screen.queryByRole("button", { name: /^Huỷ/i })).toBeNull();
   });
 
-  it("rendered with canDelete={false} (a MANAGER), a HAND row and a TRANSFER row still have their selection checkbox, and day rows (SALE/PURCHASE) have none", () => {
+  it("a HAND row and a TRANSFER row have their selection checkbox, and day rows (SALE/PURCHASE) have none", () => {
     render(
       <CashBookClient
         {...defaultProps}
-        canDelete={false}
         rows={[
           ce040Hand,
           ct001Transfer,
           sept15SaleCash,
           sept15PurchaseCash,
         ]}
-      />,
+      />
     );
 
     // HAND row and TRANSFER row have their selection checkboxes
@@ -565,5 +570,30 @@ describe("CashBookClient", () => {
     expect(ce040Idx).toBeGreaterThan(-1);
     expect(ce032Idx).toBeGreaterThan(-1);
     expect(ce032Idx).toBeGreaterThan(ce040Idx);
+  });
+
+  it("shows 'Tiền mặt (theo sổ)' label and 'cả sổ, mọi loại' caption on balance cards", () => {
+    render(<CashBookClient {...defaultProps} />);
+    expect(screen.getAllByText("Tiền mặt (theo sổ)").length).toBe(2);
+    expect(screen.getAllByText("cả sổ, mọi loại").length).toBe(2);
+  });
+
+  it("shows warning Alert 'sổ chưa ghi tiền gửi ngân hàng' when cash balance is negative", () => {
+    render(<CashBookClient {...defaultProps} />);
+    const alerts = screen.getAllByText("sổ chưa ghi tiền gửi ngân hàng");
+    expect(alerts.length).toBeGreaterThan(0);
+  });
+
+  it("search box filters rows by query and allows clearing", () => {
+    render(<CashBookClient {...defaultProps} rows={[ce040Hand, ce032Hand]} initialStatus="ALL" />);
+    const searchInput = screen.getByLabelText("Tìm kiếm");
+    fireEvent.change(searchInput, { target: { value: "CE-040" } });
+
+    expect(screen.getByText("CE-040")).toBeInTheDocument();
+    expect(screen.queryByText("CE-032")).toBeNull();
+
+    const clearBtn = screen.getByRole("button", { name: "Xoá lọc" });
+    fireEvent.click(clearBtn);
+    expect(replace).toHaveBeenCalledWith("/admin/finance?range=THIS_MONTH", { scroll: false });
   });
 });

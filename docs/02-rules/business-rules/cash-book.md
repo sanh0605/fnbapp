@@ -194,6 +194,5 @@ The owner keeps his own list of "Khoản chi hằng tháng", such as Tiền đi�
 **Missed months carry over.** A month never entered keeps its reminder, naming the month ("Chưa nhập Tiền điện tháng 10/2026"). This is still true in November, alongside November's own reminder.
 
 **Stopping and deleting.**
-- An item with entries can only be stopped ("Ngừng dùng"), not deleted.
-- An item with no entries can be deleted by the owner only (`requireOwner()`).
-- A stopped item no longer reminds. Old entries keep their link.
+- An item with entries, cancelled ones included, can only be stopped ("Ngừng dùng"); with none, the owner alone may delete it (`requireOwner()`). A stopped item no longer reminds; old entries keep their link.
+- **Its group is guarded too** (built 2026-10-15, Thu chi proposal root 3). While an item in use leans on a group, that group cannot switch to Thu or be stopped, and a group with any item cannot be deleted; each refusal names the item. An item with entries cannot move to another group, since its entries were checked against the old one.

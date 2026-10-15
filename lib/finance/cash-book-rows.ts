@@ -5,6 +5,7 @@ import type {
   DBCashCategory,
   DBCashEntry,
   DBCashTransfer,
+  DBMonthlyExpenseItem,
 } from "@/types/db";
 
 type CashBookRowKind = "SALE" | "PURCHASE" | "HAND" | "TRANSFER";
@@ -22,6 +23,7 @@ export interface CashBookRow {
   note: string; // "23 đơn", "2 đơn nhập", hand note, transfer note
   creator: string; // "—" for day rows
   status: "ACTIVE" | "CANCELLED";
+  monthlyItemName: string | null; // the monthly expense item a hand row settles
   href: string; // no returnTo; the client appends it for HAND and TRANSFER
 }
 
@@ -61,9 +63,11 @@ export function buildCashBookRows(input: {
   transfers: DBCashTransfer[];
   categories: DBCashCategory[];
   accounts: DBBankAccount[];
+  monthlyItems: DBMonthlyExpenseItem[];
 }): CashBookRow[] {
   const accountNames = new Map(input.accounts.map((a) => [a.id, a.name]));
   const categoryById = new Map(input.categories.map((c) => [c.id, c]));
+  const monthlyNames = new Map(input.monthlyItems.map((m) => [m.id, m.name]));
   const rows: CashBookRow[] = [];
 
   for (const d of input.dayRows) {
@@ -84,6 +88,7 @@ export function buildCashBookRows(input: {
       note: isSale ? `${d.doc_count} đơn` : `${d.doc_count} đơn nhập`,
       creator: NONE,
       status: "ACTIVE",
+      monthlyItemName: null,
       href: dayRowHref(d),
     });
   }
@@ -103,6 +108,7 @@ export function buildCashBookRows(input: {
       note: e.note ?? "",
       creator: e.created_by_name ?? NONE,
       status: e.status,
+      monthlyItemName: e.monthly_item_id ? (monthlyNames.get(e.monthly_item_id) ?? null) : null,
       href: `/admin/finance/${e.id}`,
     });
   }
@@ -121,6 +127,7 @@ export function buildCashBookRows(input: {
       note: t.note,
       creator: t.created_by_name ?? NONE,
       status: t.status,
+      monthlyItemName: null,
       href: `/admin/finance/transfers/${t.id}`,
     });
   }

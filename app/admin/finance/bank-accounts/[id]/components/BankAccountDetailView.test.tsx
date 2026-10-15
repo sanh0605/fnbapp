@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach } from "vitest";
 import React from "react";
 import { BankAccountDetailView } from "./BankAccountDetailView";
+import { setBankAccountStatus } from "@/app/admin/finance/bank-accounts/actions";
 import type { DBBankAccount } from "@/types/db";
 
 vi.mock("next/navigation", () => ({
@@ -20,6 +21,10 @@ vi.mock("next/link", () => ({
 vi.mock("@/app/admin/finance/bank-accounts/actions", () => ({
   setBankAccountStatus: vi.fn(),
   deleteBankAccount: vi.fn(),
+}));
+
+vi.mock("@/lib/shared/dialog", () => ({
+  confirm: vi.fn().mockResolvedValue(true),
 }));
 
 afterEach(() => {
@@ -110,5 +115,24 @@ describe("BankAccountDetailView", () => {
       />,
     );
     expect(screen.getByRole("button", { name: "Xoá hẳn" })).toBeInTheDocument();
+  });
+
+  it("displays actionError in Alert when status change fails", async () => {
+    vi.mocked(setBankAccountStatus).mockResolvedValueOnce({ error: "Không đổi được trạng thái tài khoản" });
+
+    render(
+      <BankAccountDetailView
+        account={sampleAccount}
+        returnTo="/admin/finance/bank-accounts"
+        canDelete={false}
+      />,
+    );
+
+    const toggleBtn = screen.getByRole("button", { name: "Ngừng dùng" });
+    fireEvent.click(toggleBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText("Không đổi được trạng thái tài khoản")).toBeInTheDocument();
+    });
   });
 });

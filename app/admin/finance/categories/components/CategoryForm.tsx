@@ -1,14 +1,15 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addCashCategory, updateCashCategory } from "../actions";
-import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Select } from "@/components/ui/Select";
 import { TextInput } from "@/components/ui/TextInput";
 import { confirm } from "@/lib/shared/dialog";
-import { safeReturnTo } from "../../components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBCashCategory } from "@/types/db";
 
 interface CategoryFormProps {
@@ -41,6 +42,7 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const savingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [affectsPnl, setAffectsPnl] = useState(category ? category.affects_pnl : true);
   const [kind, setKind] = useState<"EXPENSE" | "INCOME">(category?.kind ?? "EXPENSE");
@@ -52,6 +54,7 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (savingRef.current) return;
     const formData = new FormData(e.currentTarget);
     setError(null);
 
@@ -70,26 +73,34 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
       }
     }
 
+    savingRef.current = true;
     setLoading(true);
     if (isEdit && category) formData.set("id", category.id);
-    const result = isEdit ? await updateCashCategory(formData) : await addCashCategory(formData);
+    try {
+      const result = isEdit ? await updateCashCategory(formData) : await addCashCategory(formData);
 
-    setLoading(false);
-    if (result.error) {
-      setError(result.error);
-      return;
+      if (result.error) {
+        savingRef.current = false;
+        setLoading(false);
+        setError(result.error);
+        return;
+      }
+      router.push(returnTo);
+      router.refresh();
+    } catch {
+      savingRef.current = false;
+      setLoading(false);
+      setError("Không lưu được. Kiểm tra mạng rồi bấm lại.");
     }
-    router.push(returnTo);
-    router.refresh();
   }
 
   return (
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -162,24 +173,11 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
           </div>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật" : "Lưu nhóm"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

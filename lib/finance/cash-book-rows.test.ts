@@ -5,6 +5,7 @@ import type {
   DBCashCategory,
   DBCashEntry,
   DBCashTransfer,
+  DBMonthlyExpenseItem,
 } from "@/types/db";
 import { buildCashBookRows, cashBookRowTotals, type CashBookRow } from "./cash-book-rows";
 
@@ -37,7 +38,7 @@ const DAY_ROWS: DBCashBookDailyRow[] = [
 
 const ENTRY: DBCashEntry = {
   id: "CE-040", entry_date: "2026-09-02", category_id: "CFC-005", amount: 2443400,
-  payment_method: "CASH", bank_account_id: null, monthly_item_id: null, payer: null, note: "Vốn góp thêm", status: "ACTIVE",
+  payment_method: "CASH", bank_account_id: null, monthly_item_id: null, note: "Vốn góp thêm", status: "ACTIVE",
   created_at: "", created_by_id: "u1", created_by_name: "Chủ quán",
   updated_at: "", updated_by_id: null, updated_by_name: null,
 };
@@ -51,30 +52,41 @@ const TRANSFER: DBCashTransfer = {
 
 function build(over: Partial<Parameters<typeof buildCashBookRows>[0]> = {}) {
   return buildCashBookRows({
-    dayRows: DAY_ROWS, entries: [ENTRY], transfers: [TRANSFER], categories: CATEGORIES, accounts: ACCOUNTS, ...over,
+    dayRows: DAY_ROWS, entries: [ENTRY], transfers: [TRANSFER], categories: CATEGORIES, accounts: ACCOUNTS, monthlyItems: [], ...over,
   });
 }
 
 describe("buildCashBookRows", () => {
+  it("carries the monthly item name on a linked hand row, a stopped item included; every other row gets null", () => {
+    const monthlyItems = [{ id: "KCT-001", name: "Tiền điện", status: "INACTIVE" }] as DBMonthlyExpenseItem[];
+    const linked: DBCashEntry = { ...ENTRY, id: "CE-050", category_id: "CFC-001", monthly_item_id: "KCT-001" };
+    const rows = build({ entries: [linked, ENTRY], monthlyItems });
+    const byKey = (k: string) => rows.find((r) => r.key === k)!;
+    expect(byKey("CE-050").monthlyItemName).toBe("Tiền điện");
+    expect(byKey("CE-040").monthlyItemName).toBeNull();
+    expect(byKey("SALE:2026-09-15:CASH").monthlyItemName).toBeNull();
+    expect(byKey("CT-001").monthlyItemName).toBeNull();
+  });
+
   it("builds the three day rows of 15/09/2026 with exact labels and hrefs", () => {
     const rows = build({ entries: [], transfers: [] });
     expect(rows).toEqual([
       {
         key: "SALE:2026-09-15:CASH", kind: "SALE", id: null, date: "2026-09-15",
         groupLabel: "Bán hàng", sideLabel: "Thu", amount: 522000, methodLabel: "Tiền mặt",
-        accountLabel: "—", note: "23 đơn", creator: "—", status: "ACTIVE",
+        accountLabel: "—", note: "23 đơn", creator: "—", status: "ACTIVE", monthlyItemName: null,
         href: "/admin/orders?range=CUSTOM&from=2026-09-15&to=2026-09-15&payment=Tien%20mat",
       },
       {
         key: "SALE:2026-09-15:BANK_TRANSFER", kind: "SALE", id: null, date: "2026-09-15",
         groupLabel: "Bán hàng", sideLabel: "Thu", amount: 482000, methodLabel: "Chuyển khoản",
-        accountLabel: "—", note: "11 đơn", creator: "—", status: "ACTIVE",
+        accountLabel: "—", note: "11 đơn", creator: "—", status: "ACTIVE", monthlyItemName: null,
         href: "/admin/orders?range=CUSTOM&from=2026-09-15&to=2026-09-15&payment=Chuyen%20khoan",
       },
       {
         key: "PURCHASE:2026-09-15:CASH:-", kind: "PURCHASE", id: null, date: "2026-09-15",
         groupLabel: "Nhập hàng", sideLabel: "Chi", amount: 536023, methodLabel: "Tiền mặt",
-        accountLabel: "—", note: "2 đơn nhập", creator: "—", status: "ACTIVE",
+        accountLabel: "—", note: "2 đơn nhập", creator: "—", status: "ACTIVE", monthlyItemName: null,
         href: "/admin/inventory/purchase-orders?range=CUSTOM&from=2026-09-15&to=2026-09-15&pay=CASH",
       },
     ]);
@@ -101,7 +113,7 @@ describe("buildCashBookRows", () => {
     expect(row).toEqual({
       key: "CE-040", kind: "HAND", id: "CE-040", date: "2026-09-02",
       groupLabel: "Vốn góp", sideLabel: "Thu", amount: 2443400, methodLabel: "Tiền mặt",
-      accountLabel: "—", note: "Vốn góp thêm", creator: "Chủ quán", status: "ACTIVE",
+      accountLabel: "—", note: "Vốn góp thêm", creator: "Chủ quán", status: "ACTIVE", monthlyItemName: null,
       href: "/admin/finance/CE-040",
     });
   });
@@ -122,7 +134,7 @@ describe("buildCashBookRows", () => {
     expect(row).toEqual({
       key: "CT-001", kind: "TRANSFER", id: "CT-001", date: "2026-09-10",
       groupLabel: "Chuyển tiền", sideLabel: "Chuyển", amount: 5000000, methodLabel: "Két → ACB - Phin Di",
-      accountLabel: "—", note: "Gửi két vào ngân hàng", creator: "Chủ quán", status: "ACTIVE",
+      accountLabel: "—", note: "Gửi két vào ngân hàng", creator: "Chủ quán", status: "ACTIVE", monthlyItemName: null,
       href: "/admin/finance/transfers/CT-001",
     });
   });
@@ -147,7 +159,7 @@ describe("buildCashBookRows", () => {
 describe("cashBookRowTotals (BR-UI-004)", () => {
   const row = (over: Partial<CashBookRow>): CashBookRow => ({
     key: "k", kind: "HAND", id: null, date: "2026-09-15", groupLabel: "x", sideLabel: "Thu", amount: 0,
-    methodLabel: "Tiền mặt", accountLabel: "—", note: "", creator: "—", status: "ACTIVE", href: "", ...over,
+    methodLabel: "Tiền mặt", accountLabel: "—", note: "", creator: "—", status: "ACTIVE", monthlyItemName: null, href: "", ...over,
   });
   // 2 income + 1 expense counted; a cancelled line, a transfer: never counted.
   const rows = [

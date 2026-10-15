@@ -11,12 +11,13 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
+import { Alert } from "@/components/ui/Alert";
 import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { formatDate, formatVnDay } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { cancelCashEntry } from "@/app/admin/finance/actions";
 import { cancelCashTransfer } from "@/app/admin/finance/transfers/actions";
-import type { DBBankAccount, DBCashCategory } from "@/types/db";
 import { cashBookRowTotals, type CashBookRow } from "@/lib/finance/cash-book-rows";
 import type { CashBookSummary, Balance } from "@/lib/finance/cash-flow";
 import { writeRangeParams, type RangeValue } from "@/lib/shared/date-range-params";
@@ -24,11 +25,9 @@ import { writeRangeParams, type RangeValue } from "@/lib/shared/date-range-param
 export interface CashBookClientProps {
   rows: CashBookRow[];
   summary: CashBookSummary;
-  categories: DBCashCategory[];
-  accounts: DBBankAccount[];
-  canDelete: boolean;
   today: string;
   resolvedRange: RangeValue;
+  initialSearch?: string;
   initialKind?: string;
   initialStatus?: string;
   initialPage?: string;
@@ -72,9 +71,11 @@ function listUrl(
   page: number = 1,
   sort?: string,
   dir?: string,
+  search?: string,
 ): string {
   const p = new URLSearchParams();
   writeRangeParams(p, range);
+  if (search && search.trim()) p.set("q", search.trim());
   if (kind && kind !== "ALL") p.set("kind", kind);
   if (status && status !== "ACTIVE") p.set("status", status);
   if (page > 1) p.set("page", String(page));
@@ -95,10 +96,13 @@ function BalanceBlock({
 }) {
   return (
     <div className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm space-y-3">
-      <div className="text-sm font-semibold text-text-primary">{title}</div>
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="text-sm font-semibold text-text-primary">{title}</div>
+        <div className="text-xs text-text-muted">cả sổ, mọi loại</div>
+      </div>
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <div className="text-xs text-text-muted">Tiền mặt</div>
+          <div className="text-xs text-text-muted">Tiền mặt (theo sổ)</div>
           <div
             data-testid={`${testIdPrefix}-cash`}
             className={`font-semibold mt-1 text-sm sm:text-base ${
@@ -131,6 +135,11 @@ function BalanceBlock({
           </div>
         </div>
       </div>
+      {balance.cash < 0 && (
+        <Alert variant="warning">
+          sổ chưa ghi tiền gửi ngân hàng
+        </Alert>
+      )}
     </div>
   );
 }
@@ -138,9 +147,9 @@ function BalanceBlock({
 export default function CashBookClient({
   rows,
   summary,
-  canDelete: _canDelete,
   today,
   resolvedRange,
+  initialSearch,
   initialKind,
   initialStatus,
   initialPage,
@@ -151,6 +160,10 @@ export default function CashBookClient({
   const rawDir = searchParams?.get("dir");
 
   const [range, setRange] = useState<RangeValue>(() => resolvedRange);
+
+  const [search, setSearch] = useState<string>(
+    () => initialSearch ?? searchParams?.get("q") ?? "",
+  );
 
   const [kind, setKind] = useState<CashBookKindFilter>(() =>
     parseKind(initialKind ?? searchParams?.get("kind")),
@@ -167,6 +180,12 @@ export default function CashBookClient({
   useEffect(() => {
     setRange(resolvedRange);
   }, [resolvedRange.preset, resolvedRange.start, resolvedRange.end]);
+
+  useEffect(() => {
+    if (initialSearch !== undefined) setSearch(initialSearch);
+    else if (searchParams?.get("q") !== null)
+      setSearch(searchParams?.get("q") || "");
+  }, [initialSearch, searchParams]);
 
   useEffect(() => {
     if (initialKind !== undefined) setKind(parseKind(initialKind));
@@ -214,9 +233,16 @@ export default function CashBookClient({
         header: "Nhóm",
         sortValue: (r) => r.groupLabel,
         render: (r) => (
-          <span className="text-text-primary">
-            {r.groupLabel}
-          </span>
+          <div>
+            <span className="text-text-primary">
+              {r.groupLabel}
+            </span>
+            {r.monthlyItemName && (
+              <div className="text-xs text-text-muted">
+                Khoản chi hằng tháng: {r.monthlyItemName}
+              </div>
+            )}
+          </div>
         ),
       },
       {
@@ -313,13 +339,25 @@ export default function CashBookClient({
   const dirParam = rawSort ? sortDir : undefined;
 
   const filteredRows = useMemo(() => {
+    const q = search.trim().toLocaleLowerCase("vi");
     return rows.filter((row) => {
       if (kind !== "ALL" && row.kind !== kind) return false;
-      if (status === "ACTIVE") return row.status === "ACTIVE";
-      if (status === "CANCELLED") return row.status === "CANCELLED";
-      return true; // status === "ALL"
+      if (status === "ACTIVE" && row.status !== "ACTIVE") return false;
+      if (status === "CANCELLED" && row.status !== "CANCELLED") return false;
+      if (q) {
+        const matchId = (row.id || "").toLocaleLowerCase("vi").includes(q);
+        const matchGroup = (row.groupLabel || "").toLocaleLowerCase("vi").includes(q);
+        const matchNote = (row.note || "").toLocaleLowerCase("vi").includes(q);
+        const matchAccount = (row.accountLabel || "").toLocaleLowerCase("vi").includes(q);
+        const matchCreator = (row.creator || "").toLocaleLowerCase("vi").includes(q);
+        const matchMonthly = row.monthlyItemName
+          ? String(row.monthlyItemName).toLocaleLowerCase("vi").includes(q)
+          : false;
+        return matchId || matchGroup || matchNote || matchAccount || matchCreator || matchMonthly;
+      }
+      return true;
     });
-  }, [rows, kind, status]);
+  }, [rows, kind, status, search]);
 
   const rowTotals = useMemo(() => cashBookRowTotals(filteredRows), [filteredRows]);
 
@@ -341,28 +379,30 @@ export default function CashBookClient({
     slice.page,
     sortParam,
     dirParam,
+    search,
   );
 
   const handleDateRangeChange = (nextRange: RangeValue) => {
     setRange(nextRange);
     setPage(1);
-    router.replace(listUrl(nextRange, kind, status, 1, sortParam, dirParam), {
+    router.replace(listUrl(nextRange, kind, status, 1, sortParam, dirParam, search), {
       scroll: false,
     });
   };
 
   const handleApplyFilters = () => {
     setPage(1);
-    router.replace(listUrl(range, kind, status, 1, sortParam, dirParam), {
+    router.replace(listUrl(range, kind, status, 1, sortParam, dirParam, search), {
       scroll: false,
     });
   };
 
   const handleClearFilter = () => {
+    setSearch("");
     setKind("ALL");
     setStatus("ACTIVE");
     setPage(1);
-    router.replace(listUrl(range, "ALL", "ACTIVE", 1, sortParam, dirParam), {
+    router.replace(listUrl(range, "ALL", "ACTIVE", 1, sortParam, dirParam, ""), {
       scroll: false,
     });
   };
@@ -416,6 +456,12 @@ export default function CashBookClient({
             <div className="flex justify-between">
               <span className="text-text-muted">Tài khoản:</span>
               <span>{row.accountLabel}</span>
+            </div>
+          )}
+          {row.monthlyItemName && (
+            <div className="flex justify-between">
+              <span className="text-text-muted">Khoản chi hằng tháng:</span>
+              <span>{row.monthlyItemName}</span>
             </div>
           )}
           {row.note && (
@@ -475,7 +521,7 @@ export default function CashBookClient({
       <FilterCard
         onApply={handleApplyFilters}
         onClear={handleClearFilter}
-        showClear={status !== "ACTIVE" || kind !== "ALL"}
+        showClear={Boolean(search.trim() || status !== "ACTIVE" || kind !== "ALL")}
       >
         <div className="shrink-0 w-full md:w-auto">
           <label className="block text-[13px] font-medium text-text-primary mb-1">
@@ -486,6 +532,16 @@ export default function CashBookClient({
             today={today}
             onChange={handleDateRangeChange}
           />
+        </div>
+        <div className="flex-1 min-w-[200px]">
+          <Field label="Tìm kiếm" htmlFor="cashbook-search">
+            <TextInput
+              id="cashbook-search"
+              placeholder="Ví dụ: CE-001"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </Field>
         </div>
         <div className="shrink-0 w-full md:w-44">
           <Field label="Loại" htmlFor="cashbook-kind">
@@ -616,15 +672,17 @@ export default function CashBookClient({
         sort={{
           key: sortKey,
           dir: sortDir,
-          href: (k, d) => listUrl(range, kind, status, 1, k, d),
+          href: (k, d) => listUrl(range, kind, status, 1, k, d, search),
         }}
         removal={removal}
         empty={
           <div className="bg-surface-card rounded-2xl border border-border p-8 text-center space-y-3">
             <div className="text-text-secondary text-sm">
-              Chưa có khoản nào trong khoảng này
+              {rows.length === 0
+                ? "Chưa có khoản nào trong khoảng này"
+                : "Không có dòng nào khớp bộ lọc"}
             </div>
-            {(status !== "ACTIVE" || kind !== "ALL") && (
+            {Boolean(search.trim() || status !== "ACTIVE" || kind !== "ALL") && (
               <div>
                 <Button
                   type="button"
@@ -644,7 +702,7 @@ export default function CashBookClient({
           <ListPagination
             slice={slice}
             unit="dòng sổ"
-            pageHref={(p) => listUrl(range, kind, status, p, sortParam, dirParam)}
+            pageHref={(p) => listUrl(range, kind, status, p, sortParam, dirParam, search)}
           />
         </div>
       )}

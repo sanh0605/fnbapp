@@ -3,9 +3,9 @@ import { findById } from "@/lib/db/tables";
 import { resolveActor } from "@/lib/auth/auth";
 import { getCashCategories } from "@/app/admin/finance/categories/actions";
 import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
-import { safeReturnTo } from "@/app/admin/finance/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { CashEntryDetailView } from "./components/CashEntryDetailView";
-import type { DBCashEntry } from "@/types/db";
+import type { DBCashEntry, DBMonthlyExpenseItem } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +28,10 @@ export default async function CashEntryDetailPage(
     notFound();
   }
 
+  const monthlyItem = entry.monthly_item_id
+    ? ((await findById("Monthly_Expense_Items", entry.monthly_item_id)) as DBMonthlyExpenseItem | null)
+    : null;
+
   const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
 
   const rawReturnTo = safeReturnTo(
@@ -43,6 +47,7 @@ export default async function CashEntryDetailPage(
       entry={entry}
       categories={categories}
       accounts={accounts}
+      monthlyItemName={monthlyItem?.name}
       returnTo={returnTo}
       canDelete={canDelete}
     />

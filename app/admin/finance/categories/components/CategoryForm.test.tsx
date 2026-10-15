@@ -167,4 +167,33 @@ describe("CategoryForm sales-revenue box (BR-CASH-006)", () => {
   });
 });
 
+describe("CategoryForm submission guards", () => {
+  it("prevents double submission on slow network", async () => {
+    const { addCashCategory } = await import("../actions");
+    vi.mocked(addCashCategory).mockClear();
+    vi.mocked(addCashCategory).mockResolvedValue({} as any);
+
+    const { container } = render(<CategoryForm returnTo="/admin/finance/categories" />);
+    fireEvent.change(screen.getByLabelText(/^Tên nhóm/), { target: { value: "Chi phí mới" } });
+
+    fireEvent.submit(container.querySelector("form")!);
+    fireEvent.submit(container.querySelector("form")!);
+    await Promise.resolve();
+
+    expect(addCashCategory).toHaveBeenCalledTimes(1);
+  });
+
+  it("handles network error with friendly message in Alert", async () => {
+    const { addCashCategory } = await import("../actions");
+    vi.mocked(addCashCategory).mockClear();
+    vi.mocked(addCashCategory).mockRejectedValue(new Error("Network failed"));
+
+    const { container } = render(<CategoryForm returnTo="/admin/finance/categories" />);
+    fireEvent.change(screen.getByLabelText(/^Tên nhóm/), { target: { value: "Chi phí mới" } });
+
+    fireEvent.submit(container.querySelector("form")!);
+    expect(await screen.findByText("Không lưu được. Kiểm tra mạng rồi bấm lại.")).toBeInTheDocument();
+  });
+});
+
 

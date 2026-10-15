@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach } from "vitest";
 import React from "react";
 import { CashEntryDetailView } from "./CashEntryDetailView";
+import { cancelCashEntry } from "@/app/admin/finance/actions";
 import type { DBCashCategory, DBCashEntry, DBBankAccount } from "@/types/db";
 
 vi.mock("next/navigation", () => ({
@@ -20,6 +21,10 @@ vi.mock("next/link", () => ({
 vi.mock("@/app/admin/finance/actions", () => ({
   cancelCashEntry: vi.fn(),
   deleteCashEntry: vi.fn(),
+}));
+
+vi.mock("@/lib/shared/dialog", () => ({
+  confirm: vi.fn().mockResolvedValue(true),
 }));
 
 afterEach(() => {
@@ -123,5 +128,42 @@ describe("CashEntryDetailView", () => {
       />,
     );
     expect(screen.getByRole("button", { name: "Xoá hẳn" })).toBeInTheDocument();
+  });
+
+  it("renders monthlyItemName under Khoản chi hằng tháng when provided", () => {
+    render(
+      <CashEntryDetailView
+        entry={sampleEntry}
+        categories={sampleCategories}
+        accounts={sampleAccounts}
+        monthlyItemName="Tiền điện"
+        returnTo="/admin/finance"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.getByText("Khoản chi hằng tháng")).toBeInTheDocument();
+    expect(screen.getByText("Tiền điện")).toBeInTheDocument();
+  });
+
+  it("displays actionError in Alert when cancel fails", async () => {
+    vi.mocked(cancelCashEntry).mockResolvedValueOnce({ error: "Không huỷ được dòng này" });
+
+    render(
+      <CashEntryDetailView
+        entry={sampleEntry}
+        categories={sampleCategories}
+        accounts={sampleAccounts}
+        returnTo="/admin/finance"
+        canDelete={false}
+      />,
+    );
+
+    const cancelBtn = screen.getByRole("button", { name: "Huỷ" });
+    fireEvent.click(cancelBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText("Không huỷ được dòng này")).toBeInTheDocument();
+    });
   });
 });

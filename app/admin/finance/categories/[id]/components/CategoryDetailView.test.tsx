@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach } from "vitest";
 import React from "react";
 import { CategoryDetailView } from "./CategoryDetailView";
+import { setCashCategoryStatus } from "@/app/admin/finance/categories/actions";
 import type { DBCashCategory } from "@/types/db";
 
 vi.mock("next/navigation", () => ({
@@ -20,6 +21,10 @@ vi.mock("next/link", () => ({
 vi.mock("@/app/admin/finance/categories/actions", () => ({
   setCashCategoryStatus: vi.fn(),
   deleteCashCategory: vi.fn(),
+}));
+
+vi.mock("@/lib/shared/dialog", () => ({
+  confirm: vi.fn().mockResolvedValue(true),
 }));
 
 afterEach(() => {
@@ -99,5 +104,24 @@ describe("CategoryDetailView", () => {
       />,
     );
     expect(screen.getByRole("button", { name: "Xoá hẳn" })).toBeInTheDocument();
+  });
+
+  it("displays actionError in Alert when status change fails", async () => {
+    vi.mocked(setCashCategoryStatus).mockResolvedValueOnce({ error: "Không đổi được trạng thái" });
+
+    render(
+      <CategoryDetailView
+        category={sampleCategory}
+        returnTo="/admin/finance/categories"
+        canDelete={false}
+      />,
+    );
+
+    const toggleBtn = screen.getByRole("button", { name: "Ngừng dùng" });
+    fireEvent.click(toggleBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText("Không đổi được trạng thái")).toBeInTheDocument();
+    });
   });
 });

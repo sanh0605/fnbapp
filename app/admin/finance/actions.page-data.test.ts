@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   requireOwner: vi.fn(),
   findAllWhere: vi.fn(),
+  findAll: vi.fn(),
   getCashCategories: vi.fn(),
   getBankAccounts: vi.fn(),
   getCashTransfers: vi.fn(),
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({
   findAllWhere: mocks.findAllWhere,
+  findAll: mocks.findAll,
   findById: vi.fn(),
   insert: vi.fn(),
   update: vi.fn(),
@@ -35,7 +37,7 @@ const CATEGORIES = [
 function entry(id: string, entry_date: string, category_id: string, amount: number) {
   return {
     id, entry_date, category_id, amount, payment_method: "CASH", bank_account_id: null,
-    payer: null, note: null, status: "ACTIVE", created_by_name: "Chủ quán",
+    note: null, status: "ACTIVE", created_by_name: "Chủ quán",
   };
 }
 
@@ -47,6 +49,7 @@ beforeEach(() => {
   mocks.getCashTransfers.mockResolvedValue([]);
   mocks.readCashBookDaily.mockResolvedValue([]);
   mocks.findAllWhere.mockResolvedValue([]);
+  mocks.findAll.mockResolvedValue([]);
 });
 
 describe("getFinancePageData", () => {
@@ -93,6 +96,18 @@ describe("getFinancePageData", () => {
     const data = await getFinancePageData("2026-09-01", "2026-09-30");
     expect(data.rows.map((r) => r.key)).toEqual(["CE-009"]);
     expect(data.summary.closing.total).toBe(0);
+  });
+
+  it("reads the monthly items once and names the linked hand row", async () => {
+    mocks.findAll.mockResolvedValue([{ id: "KCT-001", name: "Tiền điện", status: "INACTIVE" }]);
+    mocks.findAllWhere.mockResolvedValue([
+      { ...entry("CE-001", "2026-09-02", "CFC-001", 100), monthly_item_id: "KCT-001" },
+      { ...entry("CE-002", "2026-09-03", "CFC-001", 100), monthly_item_id: null },
+    ]);
+    const data = await getFinancePageData("2026-09-01", "2026-09-30");
+    expect(mocks.findAll).toHaveBeenCalledTimes(1);
+    expect(mocks.findAll).toHaveBeenCalledWith("Monthly_Expense_Items");
+    expect(data.rows.map((r) => r.monthlyItemName)).toEqual([null, "Tiền điện"]);
   });
 
   it("refuses when not signed in as admin", async () => {

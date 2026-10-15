@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { resolveActor } from "@/lib/auth/auth";
 import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
-import { safeReturnTo } from "@/app/admin/finance/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { BankAccountDetailView } from "./components/BankAccountDetailView";
 
 export const dynamic = "force-dynamic";

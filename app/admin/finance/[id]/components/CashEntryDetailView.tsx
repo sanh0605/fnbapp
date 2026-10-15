@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
@@ -18,6 +19,7 @@ export interface CashEntryDetailViewProps {
   entry: DBCashEntry;
   categories: DBCashCategory[];
   accounts: DBBankAccount[];
+  monthlyItemName?: string | null;
   returnTo: string;
   canDelete: boolean;
 }
@@ -36,6 +38,7 @@ export function CashEntryDetailView({
   entry,
   categories,
   accounts,
+  monthlyItemName,
   returnTo,
   canDelete,
 }: CashEntryDetailViewProps) {
@@ -92,6 +95,7 @@ export function CashEntryDetailView({
     { label: "Mã", value: entry.id },
     { label: "Ngày", value: formatDate(entry.entry_date) },
     { label: "Nhóm", value: category?.name ?? "—" },
+    ...(monthlyItemName ? [{ label: "Khoản chi hằng tháng", value: monthlyItemName }] : []),
     { label: "Bên", value: category ? KIND_LABEL[category.kind] : "—" },
     { label: "Số tiền", value: amountStr },
     { label: "Cách trả", value: PAYMENT_METHOD_LABEL[entry.payment_method] },
@@ -138,12 +142,9 @@ export function CashEntryDetailView({
         )}
       </div>
       {actionError && (
-        <div
-          role="alert"
-          className="text-sm font-medium text-danger bg-danger/10 border border-danger/20 rounded-lg p-3"
-        >
+        <Alert variant="danger">
           {actionError}
-        </div>
+        </Alert>
       )}
     </div>
   );

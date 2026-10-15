@@ -52,7 +52,6 @@ export interface CashEntryRow {
   amount: number;
   payment_method: "CASH" | "BANK_TRANSFER";
   bank_account_id: string | null;
-  payer: null;
   note: string | null;
   status: "ACTIVE";
   // Midnight Asia/Saigon on the sheet's date, as an ISO timestamp.
@@ -104,7 +103,6 @@ export function buildRows(
       amount: row.amount,
       payment_method: row.payment_method,
       bank_account_id,
-      payer: null,
       note: row.note || null,
       status: "ACTIVE",
       created_at: `${row.entry_date}T00:00:00+07:00`,

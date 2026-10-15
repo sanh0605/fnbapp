@@ -4,7 +4,7 @@ import { getCashCategories } from "@/app/admin/finance/categories/actions";
 import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
 import { getMonthlyItems } from "@/app/admin/finance/monthly-items/actions";
 import { CashEntryForm } from "@/app/admin/finance/components/CashEntryForm";
-import { safeReturnTo } from "@/app/admin/finance/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { editBackHref } from "@/lib/finance/detail-href";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { findAllWhere } from "@/lib/db/tables";
 import { getCashCategories } from "../../actions";
 import { CategoryForm } from "../../components/CategoryForm";
-import { safeReturnTo } from "@/app/admin/finance/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { editBackHref } from "@/lib/finance/detail-href";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";

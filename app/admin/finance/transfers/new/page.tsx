@@ -1,6 +1,6 @@
 import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
 import { CashTransferForm } from "../components/CashTransferForm";
-import { safeReturnTo } from "../components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { saigonToday } from "@/lib/shared/datetime";
@@ -13,7 +13,7 @@ export default async function NewCashTransferPage(
   }
 ) {
   const searchParams = await props.searchParams;
-  const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance");
+  const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance", { detail: ["/admin/finance/transfers"] });
   const today = saigonToday();
   const accounts = await getBankAccounts();
 

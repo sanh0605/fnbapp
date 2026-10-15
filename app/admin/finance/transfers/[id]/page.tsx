@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { resolveActor } from "@/lib/auth/auth";
 import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
 import { getCashTransfer } from "../actions";
-import { safeReturnTo } from "../components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { CashTransferDetailView } from "./components/CashTransferDetailView";
 
 export const dynamic = "force-dynamic";
@@ -29,8 +29,7 @@ export default async function CashTransferDetailPage(
 
   const rawReturnTo = safeReturnTo(
     typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined,
-    "/admin/finance",
-  );
+    "/admin/finance", { detail: ["/admin/finance/transfers"] });
   const returnTo = rawReturnTo.startsWith("/admin/finance/transfers/")
     ? "/admin/finance"
     : rawReturnTo;

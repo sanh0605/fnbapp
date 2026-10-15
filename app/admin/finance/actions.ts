@@ -1,18 +1,20 @@
 "use server";
 
-import { findAllWhere, findById, insert, update, remove, generateNewId } from "@/lib/db/tables";
+import { findAll, findAllWhere, findById, insert, update, remove, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { creationAudit, updateAudit } from "@/lib/finance/audit-columns";
-import { parseCashEntry, type CashEntryInput } from "@/lib/finance/cash-entry-rules";
+import { parseCashEntry, CASH_BOOK_START, type CashEntryInput } from "@/lib/finance/cash-entry-rules";
 import { getCashCategories } from "./categories/actions";
 import { getBankAccounts } from "./bank-accounts/actions";
 import { getCashTransfers } from "./transfers/actions";
 import { readCashBookDaily } from "@/lib/finance/cash-book-daily";
 import { buildCashBookRows, type CashBookRow } from "@/lib/finance/cash-book-rows";
 import { summariseCashBook, type CashBookSummary } from "@/lib/finance/cash-flow";
+import { summariseCashBookMonths, type CashBookMonth } from "@/lib/finance/cash-book-months";
+import { toSaigonIsoString } from "@/lib/shared/datetime";
 import type { DBCashEntry, DBCashCategory, DBBankAccount, DBMonthlyExpenseItem } from "@/types/db";
 
 const SHEET = "Cash_Entries";
@@ -87,12 +89,13 @@ export async function getFinancePageData(start: string, end: string): Promise<{
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [allEntries, transfers, dayRows, categories, accounts] = await Promise.all([
+  const [allEntries, transfers, dayRows, categories, accounts, monthlyItems] = await Promise.all([
     getCashEntriesThrough(end),
     getCashTransfers(end),
     readCashBookDaily(end),
     getCashCategories(),
     getBankAccounts(),
+    findAll("Monthly_Expense_Items") as Promise<DBMonthlyExpenseItem[]>,
   ]);
 
   const summary = summariseCashBook({ dayRows, entries: allEntries, transfers, categories, start, end });
@@ -105,8 +108,29 @@ export async function getFinancePageData(start: string, end: string): Promise<{
     transfers: transfers.filter((t) => inRange(t.transfer_date)),
     categories,
     accounts,
+    monthlyItems,
   });
   return { rows, summary, categories, accounts };
+}
+
+export async function getCashBookMonths(): Promise<CashBookMonth[]> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  // Reads stop today: hand rows cannot be dated later (R7).
+  const end = toSaigonIsoString(new Date()).slice(0, 10);
+  const thisMonth = end.slice(0, 7);
+  const months: string[] = [];
+  for (let d = new Date(`${CASH_BOOK_START.slice(0, 7)}-01T00:00:00Z`); d.toISOString().slice(0, 7) <= thisMonth; d.setUTCMonth(d.getUTCMonth() + 1)) {
+    months.push(d.toISOString().slice(0, 7));
+  }
+  const [entries, transfers, dayRows, categories] = await Promise.all([
+    getCashEntriesThrough(end),
+    getCashTransfers(end),
+    readCashBookDaily(end),
+    getCashCategories(),
+  ]);
+  return summariseCashBookMonths({ dayRows, entries, transfers, categories, months });
 }
 
 export async function addCashEntry(formData: FormData): Promise<ActionResponse> {

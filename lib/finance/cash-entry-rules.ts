@@ -22,7 +22,7 @@ interface CashEntryFields {
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; error: string };
 
 // BR-CASH-007: balances count from zero on this day, so no row may be older.
-const CASH_BOOK_START = "2026-03-26";
+export const CASH_BOOK_START = "2026-03-26";
 export const NOTE_MAX_LENGTH = 500;
 export const NOTE_TOO_LONG_ERROR = `Ghi chú tối đa ${NOTE_MAX_LENGTH} ký tự`;
 

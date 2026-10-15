@@ -3,8 +3,9 @@
 import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createMonthlyItem, updateMonthlyItem } from "../actions";
-import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Select } from "@/components/ui/Select";
 import { TextInput } from "@/components/ui/TextInput";
 import type { DBCashCategory, DBMonthlyExpenseItem } from "@/types/db";
@@ -59,9 +60,9 @@ export function MonthlyItemForm({ item, categories, returnTo = "/admin/finance/m
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -92,24 +93,11 @@ export function MonthlyItemForm({ item, categories, returnTo = "/admin/finance/m
           </Field>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật" : "Tạo"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );
