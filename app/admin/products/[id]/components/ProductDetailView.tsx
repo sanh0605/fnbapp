@@ -52,9 +52,7 @@ export function ProductDetailView({
   const statusLabel =
     product.status === "ACTIVE"
       ? "Đang bán"
-      : product.status === "INACTIVE"
-      ? "Ngừng bán"
-      : "Đã xoá";
+      : "Ngừng bán";
 
   const optionGroupsText =
     optionGroupNames && optionGroupNames.length > 0
@@ -195,10 +193,6 @@ export function ProductDetailView({
           product.status === "INACTIVE" ? (
             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-warning/10 text-warning border border-warning/20">
               Ngừng bán
-            </span>
-          ) : product.status === "DELETED" ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-surface-secondary text-text-secondary border border-border">
-              Đã xoá
             </span>
           ) : undefined
         }

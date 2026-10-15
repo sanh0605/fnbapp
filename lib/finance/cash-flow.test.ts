@@ -273,3 +273,12 @@ describe("summariseCashBook, September 2026 fixture (measured 2026-10-04)", () =
     expect(s.opening.total + s.totals.totalIncome - s.totals.totalExpense).toBe(s.closing.total);
   });
 });
+
+describe("an unknown payment method", () => {
+  it("is refused loudly instead of being read as the bank side", () => {
+    const odd = [{ ...day("SALE", "2026-09-10", "CASH", 1000), method: "MOMO" as never }];
+    expect(() => summariseCashBook({ ...base, dayRows: odd })).toThrow("Unknown payment method: MOMO");
+    const entries = [entry({ id: "CE-1", entry_date: "2026-09-10", category_id: "CFC-001", amount: 5, payment_method: "" as never })];
+    expect(() => summariseCashBook({ ...base, entries })).toThrow("Unknown payment method: ");
+  });
+});

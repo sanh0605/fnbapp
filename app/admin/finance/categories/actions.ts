@@ -8,7 +8,7 @@ import { describeActionError } from "@/lib/shared/action-error";
 import { creationAudit, updateAudit } from "@/lib/finance/audit-columns";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
 import { parseSalesRevenueFlag } from "@/lib/finance/cash-entry-rules";
-import type { DBCashCategory } from "@/types/db";
+import type { DBCashCategory, DBMonthlyExpenseItem } from "@/types/db";
 
 const SHEET = "Cash_Categories";
 const PATH = "/admin/finance/categories";
@@ -17,6 +17,15 @@ export async function getCashCategories(): Promise<DBCashCategory[]> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
   return (await findAll(SHEET)) as DBCashCategory[];
+}
+
+// A monthly item leans on its group; the first one (ACTIVE only, or any status).
+async function monthlyItemOf(categoryId: string, activeOnly: boolean): Promise<DBMonthlyExpenseItem | undefined> {
+  const [item] = await findAllWhere<DBMonthlyExpenseItem>("Monthly_Expense_Items", {
+    eq: { cash_category_id: categoryId, ...(activeOnly ? { status: "ACTIVE" } : {}) },
+    limit: 1,
+  });
+  return item;
 }
 
 export async function addCashCategory(formData: FormData): Promise<ActionResponse> {
@@ -89,6 +98,12 @@ export async function updateCashCategory(formData: FormData): Promise<ActionResp
           "Nhóm này đã có dòng sổ nên không đổi được bên Thu/Chi. Muốn ghi bên kia thì tạo nhóm mới.",
         );
       }
+      const item = await monthlyItemOf(id, true);
+      if (item) {
+        return fail(
+          `Khoản chi hằng tháng "${item.name}" đang dùng nhóm này nên không đổi sang bên Thu được. Hãy ngừng khoản chi đó trước.`,
+        );
+      }
     }
 
     await update(SHEET, id, { name, kind, affects_pnl, is_sales_revenue: salesRevenue.value, ...updateAudit(auth.actor) });
@@ -110,6 +125,14 @@ export async function setCashCategoryStatus(formData: FormData): Promise<ActionR
   const status = formData.get("status") === "ACTIVE" ? "ACTIVE" : "INACTIVE";
 
   try {
+    if (status === "INACTIVE") {
+      const item = await monthlyItemOf(id, true);
+      if (item) {
+        return fail(
+          `Khoản chi hằng tháng "${item.name}" đang dùng nhóm này. Hãy ngừng khoản chi đó hoặc chuyển sang nhóm khác trước khi ngừng dùng nhóm.`,
+        );
+      }
+    }
     // M3 -- "Dùng lại" (reactivate) can bring a name back into collision:
     // another category may have taken it ACTIVE while this one was retired.
     // Re-run the same ruling-6 guard used on add/rename.
@@ -148,11 +171,12 @@ export async function deleteCashCategory(formData: FormData): Promise<ActionResp
     // same shape as lib/catalog/unit-delete-restriction.ts. The FK stays as
     // the backstop for a race between two concurrent requests.
     const linked = await findAllWhere("Cash_Entries", { eq: { category_id: id }, limit: 1 });
-    if (linked.length > 0) {
+    const hasMonthlyItem = linked.length === 0 && Boolean(await monthlyItemOf(id, false));
+    if (linked.length > 0 || hasMonthlyItem) {
       const category = (await findById(SHEET, id)) as DBCashCategory | null;
       const name = category?.name ?? id;
       return fail(
-        `Nhóm "${name}" đã có dòng sổ nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn nhóm này.`,
+        `Nhóm "${name}" đã có ${hasMonthlyItem ? "khoản chi hằng tháng" : "dòng sổ"} nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn nhóm này.`,
       );
     }
 

@@ -1,14 +1,20 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { SupplierDetailView } from "./SupplierDetailView";
 import type { DBSupplier } from "@/types/db";
 import type { PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
 
+const { refreshMock, pushMock } = vi.hoisted(() => {
+  const refreshFn = vi.fn();
+  const pushFn = vi.fn();
+  return { refreshMock: refreshFn, pushMock: pushFn };
+});
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn(),
+    push: pushMock,
+    refresh: refreshMock,
   }),
 }));
 
@@ -20,8 +26,23 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+const { confirmMock } = vi.hoisted(() => ({
+  confirmMock: vi.fn(),
+}));
+
+vi.mock("@/lib/shared/dialog", () => ({
+  confirm: (...args: any[]) => confirmMock(...args),
+}));
+
+const { setSupplierStatusMock, deleteSupplierActionMock } = vi.hoisted(() => ({
+  setSupplierStatusMock: vi.fn(),
+  deleteSupplierActionMock: vi.fn(),
+}));
+
+
 vi.mock("../../actions", () => ({
-  deleteSupplierAction: vi.fn(),
+  setSupplierStatus: (...args: any[]) => setSupplierStatusMock(...args),
+  deleteSupplierAction: (...args: any[]) => deleteSupplierActionMock(...args),
 }));
 
 const vinamilkSupplier: DBSupplier = {
@@ -56,6 +77,26 @@ const ordersWithTwelve: PurchaseOrderListPage = {
   daySpan: { first: "2026-03-14", last: "2026-10-01" },
   totals: { count: 0, totalAmount: 0 },
 };
+
+const emptyOrders: PurchaseOrderListPage = {
+  rows: [],
+  total: 0,
+  page: 1,
+  pageCount: 1,
+  firstIndex: 0,
+  lastIndex: 0,
+  rangeError: false,
+  daySpan: null,
+  totals: { count: 0, totalAmount: 0 },
+};
+
+beforeEach(() => {
+  refreshMock.mockReset();
+  pushMock.mockReset();
+  confirmMock.mockReset();
+  setSupplierStatusMock.mockReset();
+  deleteSupplierActionMock.mockReset();
+});
 
 afterEach(() => {
   cleanup();
@@ -114,8 +155,36 @@ describe("SupplierDetailView", () => {
     });
   });
 
-  it("renders delete button when canDelete is true", () => {
+  it("ACTIVE supplier shows 'Ngừng hợp tác', INACTIVE shows 'Hợp tác lại'", () => {
+    const { unmount } = render(
+      <SupplierDetailView
+        supplier={vinamilkSupplier}
+        orders={ordersWithTwelve}
+        returnTo="/admin/suppliers"
+        canDelete={false}
+      />
+    );
+    expect(screen.getByRole("button", { name: "Ngừng hợp tác" })).toBeInTheDocument();
+
+    unmount();
+
+    const inactiveSupplier: DBSupplier = {
+      ...vinamilkSupplier,
+      status: "INACTIVE",
+    };
     render(
+      <SupplierDetailView
+        supplier={inactiveSupplier}
+        orders={ordersWithTwelve}
+        returnTo="/admin/suppliers"
+        canDelete={false}
+      />
+    );
+    expect(screen.getByRole("button", { name: "Hợp tác lại" })).toBeInTheDocument();
+  });
+
+  it("'Xoá' hidden when orders.total > 0, shown when 0 for a viewer who may delete", () => {
+    const { unmount } = render(
       <SupplierDetailView
         supplier={vinamilkSupplier}
         orders={ordersWithTwelve}
@@ -123,23 +192,131 @@ describe("SupplierDetailView", () => {
         canDelete={true}
       />
     );
+    // orders.total is 12 (> 0) -> Xoá hidden
+    expect(screen.queryByRole("button", { name: /Xoá/ })).toBeNull();
 
+    unmount();
+
+    render(
+      <SupplierDetailView
+        supplier={vinamilkSupplier}
+        orders={emptyOrders}
+        returnTo="/admin/suppliers"
+        canDelete={true}
+      />
+    );
+    // orders.total is 0 and canDelete is true -> Xoá shown
     expect(screen.getByRole("button", { name: /Xoá/ })).toBeInTheDocument();
   });
 
-  it("shows empty state when orders is empty", () => {
-    const emptyOrders: PurchaseOrderListPage = {
-      rows: [],
-      total: 0,
-      page: 1,
-      pageCount: 1,
-      firstIndex: 0,
-      lastIndex: 0,
-      rangeError: false,
-      daySpan: null,
-      totals: { count: 0, totalAmount: 0 },
+  it("clicking 'Hợp tác lại' calls setSupplierStatus with id and status ACTIVE", async () => {
+    setSupplierStatusMock.mockResolvedValue({});
+    const inactiveSupplier: DBSupplier = {
+      ...vinamilkSupplier,
+      status: "INACTIVE",
     };
 
+    render(
+      <SupplierDetailView
+        supplier={inactiveSupplier}
+        orders={emptyOrders}
+        returnTo="/admin/suppliers"
+        canDelete={false}
+      />
+    );
+
+    const reactivateBtn = screen.getByRole("button", { name: "Hợp tác lại" });
+    fireEvent.click(reactivateBtn);
+
+    await waitFor(() => {
+      expect(setSupplierStatusMock).toHaveBeenCalledTimes(1);
+    });
+
+    const fd: FormData = setSupplierStatusMock.mock.calls[0][0];
+    expect(fd.get("id")).toBe("NCC-029");
+    expect(fd.get("status")).toBe("ACTIVE");
+    expect(confirmMock).not.toHaveBeenCalled();
+    expect(refreshMock).toHaveBeenCalled();
+  });
+
+  it("clicking 'Ngừng hợp tác' asks confirmation and calls setSupplierStatus with INACTIVE on confirm", async () => {
+    confirmMock.mockResolvedValue(true);
+    setSupplierStatusMock.mockResolvedValue({});
+
+    render(
+      <SupplierDetailView
+        supplier={vinamilkSupplier}
+        orders={emptyOrders}
+        returnTo="/admin/suppliers"
+        canDelete={false}
+      />
+    );
+
+    const stopBtn = screen.getByRole("button", { name: "Ngừng hợp tác" });
+    fireEvent.click(stopBtn);
+
+    await waitFor(() => {
+      expect(confirmMock).toHaveBeenCalledWith({
+        title: "Ngừng hợp tác",
+        message: "Ngừng hợp tác với Vinamilk? Phiếu nhập mới sẽ không chọn được nhà cung cấp này.",
+        variant: "danger",
+      });
+      expect(setSupplierStatusMock).toHaveBeenCalledTimes(1);
+    });
+
+    const fd: FormData = setSupplierStatusMock.mock.calls[0][0];
+    expect(fd.get("id")).toBe("NCC-029");
+    expect(fd.get("status")).toBe("INACTIVE");
+    expect(refreshMock).toHaveBeenCalled();
+  });
+
+  it("cancelling 'Ngừng hợp tác' does not call setSupplierStatus", async () => {
+    confirmMock.mockResolvedValue(false);
+
+    render(
+      <SupplierDetailView
+        supplier={vinamilkSupplier}
+        orders={emptyOrders}
+        returnTo="/admin/suppliers"
+        canDelete={false}
+      />
+    );
+
+    const stopBtn = screen.getByRole("button", { name: "Ngừng hợp tác" });
+    fireEvent.click(stopBtn);
+
+    await waitFor(() => {
+      expect(confirmMock).toHaveBeenCalled();
+    });
+
+    expect(setSupplierStatusMock).not.toHaveBeenCalled();
+    expect(refreshMock).not.toHaveBeenCalled();
+  });
+
+  it("shows error alert near header when setSupplierStatus fails", async () => {
+    setSupplierStatusMock.mockResolvedValue({ error: "Lỗi kết nối máy chủ" });
+    const inactiveSupplier: DBSupplier = {
+      ...vinamilkSupplier,
+      status: "INACTIVE",
+    };
+
+    render(
+      <SupplierDetailView
+        supplier={inactiveSupplier}
+        orders={emptyOrders}
+        returnTo="/admin/suppliers"
+        canDelete={false}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Hợp tác lại" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Lỗi kết nối máy chủ");
+    expect(refreshMock).not.toHaveBeenCalled();
+  });
+
+  it("shows empty state when orders is empty", () => {
     render(
       <SupplierDetailView
         supplier={vinamilkSupplier}

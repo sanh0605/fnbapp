@@ -21,19 +21,16 @@ export default async function PromotionsPage(
   const canDelete = auth.ok && auth.actor.role === "ADMIN";
 
   // Filter out DELETED entities (preserving current behavior)
-  const activeBrands = brands.filter((b) => b.status !== "DELETED");
-  const activeProducts = products.filter((p) => p.status !== "DELETED");
   const activeVariants = variants.filter((v) => v.status !== "DELETED");
-  const activeCategories = categories.filter((c) => c.status !== "DELETED");
 
   return (
     <Suspense fallback={<div>Đang tải...</div>}>
       <PromotionsClient
         promotions={promotions}
-        brands={activeBrands}
-        products={activeProducts}
+        brands={brands}
+        products={products}
         variants={activeVariants}
-        categories={activeCategories}
+        categories={categories}
         canDelete={canDelete}
         initialSearch={searchParams?.q}
         initialStatus={searchParams?.status}

@@ -240,7 +240,7 @@ export async function getOrdersV2(filters: OrdersV2Filters = {}): Promise<GetOrd
       totalCount: count || 0,
       totals,
       itemsPerPage: ORDERS_ITEMS_PER_PAGE,
-      brands: (brands as any[]).filter(b => b.status !== "DELETED"),
+      brands: brands as any[],
     };
   } catch (err: any) {
     // not in the plan's own list (found while re-deriving it) -- same

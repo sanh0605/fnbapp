@@ -50,13 +50,12 @@ interface ProductsClientProps {
   initialPage?: string;
 }
 
-const VALID_STATUSES = ["ACTIVE", "INACTIVE", "DELETED"] as const;
+const VALID_STATUSES = ["ACTIVE", "INACTIVE"] as const;
 type ProductStatus = typeof VALID_STATUSES[number];
 
 const STATUS_LABELS: Record<string, string> = {
   ACTIVE: "Đang bán",
   INACTIVE: "Ngừng bán",
-  DELETED: "Đã xoá",
 };
 
 function parseStatus(raw: string | null | undefined): ProductStatus {
@@ -227,10 +226,7 @@ export default function ProductsClient({
           if (product.status === "ACTIVE") {
             return <Badge variant="success">Đang bán</Badge>;
           }
-          if (product.status === "INACTIVE") {
-            return <Badge variant="warning">Ngừng bán</Badge>;
-          }
-          return <Badge variant="neutral">Đã xoá</Badge>;
+          return <Badge variant="warning">Ngừng bán</Badge>;
         },
       },
     ],
@@ -329,10 +325,8 @@ export default function ProductsClient({
             </span>
             {product.status === "ACTIVE" ? (
               <Badge variant="success">Đang bán</Badge>
-            ) : product.status === "INACTIVE" ? (
-              <Badge variant="warning">Ngừng bán</Badge>
             ) : (
-              <Badge variant="neutral">Đã xoá</Badge>
+              <Badge variant="warning">Ngừng bán</Badge>
             )}
           </div>
         </div>
@@ -422,7 +416,6 @@ export default function ProductsClient({
             >
               <option value="ACTIVE">Đang bán</option>
               <option value="INACTIVE">Ngừng bán</option>
-              <option value="DELETED">Đã xoá</option>
             </Select>
           </Field>
         </div>

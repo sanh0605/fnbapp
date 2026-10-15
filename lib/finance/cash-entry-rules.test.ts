@@ -108,3 +108,40 @@ describe("parseSalesRevenueFlag (BR-CASH-006)", () => {
     );
   });
 });
+
+// R7 (spec 2026-10-15-thu-chi-de-xuat): a hand-row date is a real day, not after
+// today in Saigon, and not before the book starts (BR-CASH-007).
+describe("parseCashEntry date, method and note", () => {
+  const TODAY = "2026-10-15";
+
+  it("accepts today and the first book day", () => {
+    expect(parseCashEntry({ ...valid, entry_date: TODAY }, TODAY).ok).toBe(true);
+    expect(parseCashEntry({ ...valid, entry_date: "2026-03-26" }, TODAY).ok).toBe(true);
+  });
+
+  it("refuses a day after today", () => {
+    expect(parseCashEntry({ ...valid, entry_date: "2026-10-16" }, TODAY))
+      .toEqual({ ok: false, error: "Ngày ghi sổ không được sau hôm nay" });
+  });
+
+  it("refuses a day before the book starts", () => {
+    expect(parseCashEntry({ ...valid, entry_date: "2026-03-25" }, TODAY))
+      .toEqual({ ok: false, error: "Sổ bắt đầu từ ngày 26/03/2026, không ghi ngày trước đó" });
+  });
+
+  it.each(["2026-02-30", "15/10/2026", "2026-13-01"])("refuses %s as not a real day", (entry_date) => {
+    expect(parseCashEntry({ ...valid, entry_date }, TODAY))
+      .toEqual({ ok: false, error: "Ngày ghi sổ không hợp lệ" });
+  });
+
+  it.each(["", "CHECK", "bank_transfer"])("refuses payment method %j", (payment_method) => {
+    expect(parseCashEntry({ ...valid, payment_method }, TODAY))
+      .toEqual({ ok: false, error: "Chọn tiền mặt hoặc chuyển khoản" });
+  });
+
+  it("limits the note to 500 characters", () => {
+    expect(parseCashEntry({ ...valid, note: "a".repeat(500) }, TODAY).ok).toBe(true);
+    expect(parseCashEntry({ ...valid, note: "a".repeat(501) }, TODAY))
+      .toEqual({ ok: false, error: "Ghi chú tối đa 500 ký tự" });
+  });
+});

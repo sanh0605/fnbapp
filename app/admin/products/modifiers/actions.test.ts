@@ -2,20 +2,26 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
+  remove: vi.fn(),
+  findSoldModifierIds: vi.fn(),
   insert: vi.fn(),
   update: vi.fn(),
   generateNewId: vi.fn(),
   saveModifierAtomic: vi.fn(),
   createStandaloneToppingProductAtomic: vi.fn(),
   setProductStatusAtomic: vi.fn(),
+  setModifierStatusAtomic: vi.fn(),
   revalidatePath: vi.fn(),
   revalidateTag: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  remove: mocks.remove,
+  findSoldModifierIds: mocks.findSoldModifierIds,
   insert: mocks.insert,
   update: mocks.update,
   generateNewId: mocks.generateNewId,
@@ -26,9 +32,10 @@ vi.mock("@/lib/products/create-standalone-topping", () => ({
   createStandaloneToppingProductAtomic: mocks.createStandaloneToppingProductAtomic,
 }));
 vi.mock("@/lib/products/product-status-transaction", () => ({ setProductStatusAtomic: mocks.setProductStatusAtomic }));
+vi.mock("@/lib/products/modifier-status-transaction", () => ({ setModifierStatusAtomic: mocks.setModifierStatusAtomic }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
-import { getModifiersData, saveModifierAction, deleteModifierAction, createStandaloneToppingAction, toggleToppingStandalone } from "./actions";
+import { getModifiersData, saveModifierAction, deleteModifierAction, setModifierStatus, createStandaloneToppingAction, toggleToppingStandalone } from "./actions";
 
 const GROUPS = [
   { id: "MG-001", name: "Thêm Topping", selection_mode: "MANY", allow_standalone: true },
@@ -210,18 +217,42 @@ describe("deleteModifierAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     seedTables();
-    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+    mocks.findSoldModifierIds.mockResolvedValue([]);
+    mocks.remove.mockResolvedValue(true);
   });
 
-  it("revalidates the Modifiers cache tag after a delete", async () => {
-    mocks.update.mockResolvedValue(undefined);
+  it("erases a never-sold option for good, refreshes the Modifiers cache, and never writes DELETED", async () => {
     const fd = new FormData();
     fd.set("id", "MOD-002");
 
     const result = await deleteModifierAction(fd);
 
     expect(result.success).toBe(true);
+    expect(mocks.remove).toHaveBeenCalledWith("Modifiers", "MOD-002");
+    expect(mocks.update).not.toHaveBeenCalled();
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers", { expire: 0 });
+  });
+
+  it("is owner only: a non-owner is rejected and nothing is erased", async () => {
+    mocks.requireOwner.mockResolvedValue({ ok: false, error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" });
+    const fd = new FormData();
+    fd.set("id", "MOD-002");
+
+    expect((await deleteModifierAction(fd)).error).toBe("Chỉ Chủ quán mới có quyền thực hiện thao tác này");
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("refuses an option that is already in an order, naming it", async () => {
+    mocks.findSoldModifierIds.mockResolvedValue(["MOD-002"]);
+    const fd = new FormData();
+    fd.set("id", "MOD-002");
+
+    const result = await deleteModifierAction(fd);
+
+    expect(result.error).toBe("Tuỳ chọn Kem muối đã có trong đơn; chọn Ngừng dùng thay vì xoá.");
+    expect(mocks.remove).not.toHaveBeenCalled();
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 
   // The linked dish would otherwise stay on the till with no option behind it.
@@ -236,17 +267,70 @@ describe("deleteModifierAction", () => {
     expect(result.error).toBe(
       "Tuỳ chọn này đang bán riêng thành món Trân châu trắng (lẻ). Tắt Bán độc lập trước rồi xoá",
     );
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.remove).not.toHaveBeenCalled();
   });
 
-  it("deletes once the linked dish is INACTIVE", async () => {
+  it("erases once the linked dish is INACTIVE", async () => {
     mocks.findAll.mockImplementation(async (sheet: string) =>
       sheet === "Modifiers" ? OPTIONS : [{ id: "PROD-031", name: "Trân châu trắng (lẻ)", status: "INACTIVE" }]);
     const fd = new FormData();
     fd.set("id", "MOD-004");
 
     expect((await deleteModifierAction(fd)).success).toBe(true);
-    expect(mocks.update).toHaveBeenCalledWith("Modifiers", "MOD-004", { status: "DELETED" });
+    expect(mocks.remove).toHaveBeenCalledWith("Modifiers", "MOD-004");
+  });
+});
+
+describe("setModifierStatus", () => {
+  const form = (id: string, status: string) => {
+    const fd = new FormData();
+    fd.set("id", id);
+    fd.set("status", status);
+    return fd;
+  };
+  beforeEach(() => {
+    vi.clearAllMocks();
+    seedTables();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.update.mockResolvedValue(undefined);
+  });
+
+  it("stops an option through the atomic rpc and refreshes the Modifiers cache", async () => {
+    mocks.setModifierStatusAtomic.mockResolvedValue({ modifierId: "MOD-002", productStopped: false });
+    expect(await setModifierStatus(form("MOD-002", "INACTIVE"))).toEqual({ success: true });
+    expect(mocks.setModifierStatusAtomic).toHaveBeenCalledWith("MOD-002", "INACTIVE");
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers", { expire: 0 });
+    expect(mocks.revalidateTag).not.toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+  });
+
+  it("refreshes the Products caches and the products page when the dish was stopped too", async () => {
+    mocks.setModifierStatusAtomic.mockResolvedValue({ modifierId: "MOD-004", productStopped: true });
+    expect(await setModifierStatus(form("MOD-004", "INACTIVE"))).toEqual({ success: true });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/products");
+  });
+
+  it("ACTIVE restarts the option only and never touches the dish", async () => {
+    mocks.setModifierStatusAtomic.mockResolvedValue({ modifierId: "MOD-004", productStopped: false });
+    expect(await setModifierStatus(form("MOD-004", "ACTIVE"))).toEqual({ success: true });
+    expect(mocks.setModifierStatusAtomic).toHaveBeenCalledWith("MOD-004", "ACTIVE");
+    expect(mocks.setProductStatusAtomic).not.toHaveBeenCalled();
+    expect(mocks.revalidateTag).not.toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+  });
+
+  it("shows the database's Vietnamese refusal (another active option already runs the dish) as is", async () => {
+    const msg = 'Đã có tuỳ chọn "Dâu sấy" đang dùng cho món bán riêng này; ngừng tuỳ chọn đó trước.';
+    mocks.setModifierStatusAtomic.mockRejectedValue(new Error(msg));
+    expect(await setModifierStatus(form("MOD-004", "ACTIVE"))).toEqual({ error: msg });
+    expect(mocks.revalidateTag).not.toHaveBeenCalled();
+  });
+
+  it("refuses any other status, including DELETED, and an unknown option", async () => {
+    expect(await setModifierStatus(form("MOD-002", "DELETED"))).toEqual({ error: "Trạng thái không hợp lệ" });
+    expect(await setModifierStatus(form("MOD-999", "INACTIVE"))).toEqual({ error: "Không tìm thấy tuỳ chọn" });
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 });
 
@@ -277,15 +361,6 @@ describe("toggleToppingStandalone", () => {
       expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
     },
   );
-
-  it("refuses a DELETED dish", async () => {
-    seed("DELETED");
-
-    const res = await toggleToppingStandalone("PROD-031", true);
-
-    expect(res.error).toBeTruthy();
-    expect(mocks.setProductStatusAtomic).not.toHaveBeenCalled();
-  });
 
   it("refuses a dish no option links to", async () => {
     seed("ACTIVE", []);

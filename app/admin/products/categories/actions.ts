@@ -2,10 +2,10 @@
 
 import { findAll, insert, update, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
-import { ok, fail, softDeleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
+import { ok, fail, deleteEntity, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBProductCategory, DBProduct, DBProductType } from "@/types/db";
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { findDuplicateActiveName, duplicateNameErrorMessage } from "@/lib/shared/duplicate-name-guard";
 
 const SHEET = "Product_Categories";
@@ -23,14 +23,11 @@ export async function getCategoriesWithCounts(): Promise<{
       findAll(SHEET) as Promise<DBProductCategory[]>,
       findAll("Products") as Promise<DBProduct[]>,
     ]);
-    const activeCategories = categories.filter(c => c.status !== "DELETED");
     const counts: Record<string, number> = {};
-    for (const cat of activeCategories) {
-      counts[cat.id] = products.filter(
-        p => p.category_id === cat.id && p.status !== "DELETED"
-      ).length;
+    for (const cat of categories) {
+      counts[cat.id] = products.filter(p => p.category_id === cat.id).length;
     }
-    return { categories: activeCategories, counts };
+    return { categories, counts };
   } catch (error) {
     // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getCategories:", error);
@@ -88,8 +85,9 @@ export async function updateCategory(formData: FormData): Promise<ActionResponse
   }
 }
 
+// BR-ACCESS-003: an empty group has no history, so only the owner erases it for good.
 export async function deleteCategory(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;
@@ -101,7 +99,7 @@ export async function deleteCategory(formData: FormData): Promise<ActionResponse
       findAll("Products") as Promise<DBProduct[]>,
     ]);
     // same predicate as getCategoriesWithCounts
-    const inUse = products.filter(p => p.category_id === id && p.status !== "DELETED").length;
+    const inUse = products.filter(p => p.category_id === id).length;
     if (inUse > 0) {
       const cat = categories.find(c => c.id === id);
       return fail(`Không xoá được nhóm "${cat?.name ?? id}": còn ${inUse} món đang dùng.`);
@@ -109,5 +107,5 @@ export async function deleteCategory(formData: FormData): Promise<ActionResponse
   } catch (error: unknown) {
     return describeActionError(error);
   }
-  return softDeleteEntity(SHEET, id, PATH);
+  return deleteEntity(SHEET, id, PATH);
 }

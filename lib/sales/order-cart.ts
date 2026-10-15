@@ -16,29 +16,25 @@ import {
   buildModifierSnapshotsFromCart,
   buildPromotionSnapshot,
 } from "@/lib/sales/order-snapshot";
-import { allocateOrderDiscount, assertOrderInvariants } from "@/lib/sales/order-math";
+import { assertOrderInvariants } from "@/lib/sales/order-math";
+import { bestPromotion, priceCart, toPricePromotion } from "@/lib/sales/price-cart";
+import type { PriceCartCatalog, PriceCartItem, PricePromotion } from "@/lib/sales/price-cart";
 import { InvariantError, ORDER_STATUS, PAYMENT_METHOD } from "@/lib/sales/order-types";
 import { resolveCapturedAt } from "@/lib/sales/pos-captured-at";
 import type {
   OrderV2,
   OrderLineV2,
   PromotionSnapshot,
-  ProductSnapshot,
-  VariantSnapshot,
-  ModifierSnapshot,
 } from "@/lib/sales/order-types";
 
 export interface CartItemInput {
   product_id: string;
   variant_id: string;
   qty: number;
-  unit_price_snapshot?: number;
-  promo_discount_snapshot?: number;
   modifiers: Array<{
     modifier_id: string;
     modifier_qty: number;
     modifier_name_snapshot?: string;
-    modifier_price_snapshot?: number;
   }>;
   manual_item_discount: { value: number; type: "VND" | "PERCENT" };
 }
@@ -66,6 +62,7 @@ export interface CartInput {
   payments?: CartPaymentInput[];
   manual_order_discount?: { value: number; type: "VND" | "PERCENT" } | null;
   applied_promotion_id?: string | null; // explicit override; else auto-resolve
+  promo_code?: string; // a promotion with a code applies only when this matches it
   actor: { id: string; name: string };
   // Captured client-side (new Date()) at the moment "Thanh toán" is
   // pressed, before any network call -- preserved across offline queueing
@@ -91,11 +88,6 @@ export interface ReferenceData {
   promotions: any[];
 }
 
-interface BuiltLine {
-  spec: OrderLineV2;
-  capacity: number; // gross - promo - manual_item
-}
-
 export interface BuildOrderResult {
   order: OrderV2;
   lines: OrderLineV2[];
@@ -114,44 +106,54 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   const { createdAt, rejected: capturedAtRejected } = resolveCapturedAt(input.client_captured_at);
   const orderId = `ord-${crypto.randomUUID()}`;
 
+  const prepared = input.items.map(item => prepareLine(item, ref));
+  const items = input.items.map((item, i) => ({
+    variant_id: item.variant_id,
+    qty: item.qty,
+    modifiers: prepared[i].modifierSnap.map(m => ({ modifier_id: m.id, modifier_qty: m.qty })),
+    manual_item_discount: item.manual_item_discount,
+  }));
+  const catalog = {
+    variants: prepared.map(p => ({ id: p.variantSnap.id, price: p.variantSnap.price })),
+    modifiers: prepared.flatMap(p => p.modifierSnap.map(m => ({ id: m.id, price: m.price }))),
+  };
+
   // Resolve promotion (auto or explicit) against the true sale time, not
   // the clock at whatever moment this function actually runs -- for an
   // order queued offline and synced later, those can differ by hours.
-  const resolvedPromo = resolvePromotion(input, ref, createdAt);
+  const candidate = resolvePromotion(input, ref, createdAt, items, catalog);
+  const priced = priceCart(items, catalog, candidate ? [toPricePromotion(candidate)] : [], input.manual_order_discount ?? null);
+  const resolvedPromo = priced.applied.length > 0 ? candidate : null;
   const promoSnapshot = resolvedPromo ? buildPromotionSnapshot(resolvedPromo) : null;
 
-  // Build line specs WITHOUT order_discount_allocation (computed below)
-  const builtLines: BuiltLine[] = [];
-  for (let i = 0; i < input.items.length; i++) {
-    const item = input.items[i];
-    const line = buildLine(item, ref, orderId, i + 1, resolvedPromo);
-    builtLines.push(line);
-  }
-
-  // Compute order-level gross, promo, manual_item
-  const grossTotal = builtLines.reduce((s, l) => s + l.spec.gross_line_total, 0);
-  const promoTotal = builtLines.reduce((s, l) => s + l.spec.promo_discount, 0);
-  const manualItemTotal = builtLines.reduce((s, l) => s + l.spec.manual_item_discount, 0);
-
-  // Compute manual_order_discount in VND
-  const orderDiscountVnd = computeOrderDiscountVnd(input.manual_order_discount, grossTotal);
-
-  // Allocate across lines
-  const allocations = allocateOrderDiscount(
-    builtLines.map(l => ({ line_id: l.spec.id, capacity: l.capacity })),
-    orderDiscountVnd,
-  );
-  for (const l of builtLines) {
-    const alloc = allocations.get(l.spec.id) || 0;
-    l.spec.order_discount_allocation = alloc;
-    l.spec.net_line_total = l.spec.gross_line_total - l.spec.promo_discount - l.spec.manual_item_discount - alloc;
-  }
-
-  // Cap order_discount at sum of allocations (in case discount > total capacity)
-  const sumAlloc = builtLines.reduce((s, l) => s + l.spec.order_discount_allocation, 0);
-  const finalOrderDiscount = Math.min(orderDiscountVnd, sumAlloc);
-
-  const netTotal = builtLines.reduce((s, l) => s + l.spec.net_line_total, 0);
+  const lines: OrderLineV2[] = prepared.map((p, i) => {
+    const l = priced.lines[i];
+    const promo = l.promo + l.orderPromo;
+    return {
+      id: `ol-${crypto.randomUUID()}`,
+      order_id: orderId,
+      line_no: i + 1,
+      product_id: input.items[i].product_id,
+      product_snapshot_json: JSON.stringify(p.productSnap),
+      variant_id: input.items[i].variant_id,
+      variant_snapshot_json: JSON.stringify(p.variantSnap),
+      qty: input.items[i].qty,
+      unit_price: p.variantSnap.price,
+      modifiers_snapshot_json: JSON.stringify(p.modifierSnap),
+      gross_line_total: l.gross,
+      promo_discount: promo,
+      manual_item_discount: l.manualItem,
+      order_discount_allocation: l.orderManual,
+      net_line_total: l.net,
+      promo_discount_reason: promo > 0 ? (resolvedPromo?.id || "") : "",
+    };
+  });
+  const sum = (f: (l: OrderLineV2) => number) => lines.reduce((s, l) => s + f(l), 0);
+  const grossTotal = sum(l => l.gross_line_total);
+  const promoTotal = sum(l => l.promo_discount);
+  const manualItemTotal = sum(l => l.manual_item_discount);
+  const finalOrderDiscount = sum(l => l.order_discount_allocation);
+  const netTotal = priced.total;
 
   const payments: BuiltPayment[] = [];
   if (input.payments && input.payments.length > 0) {
@@ -208,11 +210,11 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   };
 
   // Guardian: assert all 7 invariants before returning
-  assertOrderInvariants(order, builtLines.map(l => l.spec));
+  assertOrderInvariants(order, lines);
 
   return {
     order,
-    lines: builtLines.map(l => l.spec),
+    lines,
     resolvedPromotion: promoSnapshot,
     payments,
   };
@@ -222,7 +224,9 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
 // Internal helpers
 // ============================================================
 
-function resolvePromotion(input: CartInput, ref: ReferenceData, asOf: string): any | null {
+
+// A promotion with a code is taken only when its code was sent; with none named, the best no-code one wins.
+function resolvePromotion(input: CartInput, ref: ReferenceData, asOf: string, items: PriceCartItem[], catalog: PriceCartCatalog): any | null {
   const now = new Date(asOf);
   const eligible = ref.promotions.filter(p => {
     if (p.status !== "ACTIVE") return false;
@@ -234,85 +238,17 @@ function resolvePromotion(input: CartInput, ref: ReferenceData, asOf: string): a
     return true;
   });
 
-  // Explicit override by ID
   if (input.applied_promotion_id) {
-    return eligible.find(p => p.id === input.applied_promotion_id) || null;
+    const p = eligible.find(p => p.id === input.applied_promotion_id);
+    if (!p) return null;
+    if (p.code && String(p.code).trim().toLowerCase() !== (input.promo_code || "").trim().toLowerCase()) return null;
+    return p;
   }
 
-  // Auto: pick the promo that gives the largest discount on this cart
-  let bestPromo: any | null = null;
-  let bestDiscount = 0;
-  for (const p of eligible) {
-    const d = estimatePromoDiscount(p, input.items, ref);
-    if (d > bestDiscount) {
-      bestDiscount = d;
-      bestPromo = p;
-    }
-  }
-  return bestPromo;
+  return bestPromotion(eligible, items, catalog, null);
 }
 
-function estimatePromoDiscount(promo: any, items: CartItemInput[], ref: ReferenceData): number {
-  let total = 0;
-  if (promo.type === "PRODUCT_DISCOUNT") {
-    const applicable = parseApplicable(promo.applicable_products_json);
-    for (const item of items) {
-      const variant = ref.variants.find(v => v.id === item.variant_id);
-      if (!variant) continue;
-      const unitPrice = Number(variant.price);
-      const modsPrice = sumModifierPrices(item.modifiers, ref);
-      const baseTotal = (unitPrice + modsPrice) * item.qty;
-
-      if (applicable.has(item.variant_id)) {
-        const targetPrice = applicable.get(item.variant_id) || Number(promo.discount_value);
-        if (promo.discount_type === "FLAT_PRICE") {
-          total += Math.max(0, (unitPrice - targetPrice) * item.qty);
-        } else if (promo.discount_type === "PERCENT") {
-          total += baseTotal * (Number(promo.discount_value) / 100);
-        } else {
-          total += Number(promo.discount_value) * item.qty;
-        }
-      }
-    }
-  }
-  return total;
-}
-
-function parseApplicable(json: string | undefined): Map<string, number> {
-  const result = new Map<string, number>();
-  if (!json) return result;
-  try {
-    const parsed = JSON.parse(json);
-    if (Array.isArray(parsed)) {
-      for (const id of parsed) result.set(String(id), 0);
-    } else if (parsed && typeof parsed === "object") {
-      for (const [k, v] of Object.entries(parsed)) result.set(k, Number(v));
-    }
-  } catch {}
-  return result;
-}
-
-function sumModifierPrices(mods: CartItemInput["modifiers"], ref: ReferenceData): number {
-  let sum = 0;
-  for (const m of mods) {
-    const row = ref.modifiers.find((r: any) => r.id === m.modifier_id);
-    const price = Number.isFinite(Number(m.modifier_price_snapshot))
-      ? Number(m.modifier_price_snapshot)
-      : Number(row?.price || 0);
-    if (row || Number.isFinite(Number(m.modifier_price_snapshot))) {
-      sum += price * Number(m.modifier_qty || 1);
-    }
-  }
-  return sum;
-}
-
-function buildLine(
-  item: CartItemInput,
-  ref: ReferenceData,
-  orderId: string,
-  lineNo: number,
-  resolvedPromo: any | null,
-): BuiltLine {
+function prepareLine(item: CartItemInput, ref: ReferenceData) {
   const product = ref.products.find(p => p.id === item.product_id);
   if (!product) throw new InvariantError(`Unknown product: ${item.product_id}`);
 
@@ -346,81 +282,8 @@ function buildLine(
   const category = ref.categories.find(c => c.id === product.category_id) || null;
 
   const productSnap = buildProductSnapshot(product, category);
-  const variantSnap = buildVariantSnapshot({
-    ...variant,
-    price: Number.isFinite(Number(item.unit_price_snapshot)) ? item.unit_price_snapshot : variant.price,
-  });
+  const variantSnap = buildVariantSnapshot(variant);
   const modifierSnap = buildModifierSnapshotsFromCart(item.modifiers, ref.modifiers);
 
-  // Gross
-  const gross = (variantSnap.price + modifierSnap.reduce((s, m) => s + m.price * m.qty, 0)) * item.qty;
-
-  // Promo
-  const promoDiscount = Number.isFinite(Number(item.promo_discount_snapshot))
-    ? Math.min(gross, Math.max(0, Math.round(Number(item.promo_discount_snapshot))))
-    : computePromoForLine(resolvedPromo, item, variantSnap, modifierSnap, gross);
-
-  // Manual item (cap at gross - promo)
-  const manualItemRaw = item.manual_item_discount.type === "PERCENT"
-    ? Math.round(gross * (item.manual_item_discount.value / 100))
-    : Math.round(item.manual_item_discount.value);
-  const capacity = Math.max(0, gross - promoDiscount);
-  const manualItem = Math.min(manualItemRaw, capacity);
-
-  const spec: OrderLineV2 = {
-    id: `ol-${crypto.randomUUID()}`,
-    order_id: orderId,
-    line_no: lineNo,
-    product_id: item.product_id,
-    product_snapshot_json: JSON.stringify(productSnap),
-    variant_id: item.variant_id,
-    variant_snapshot_json: JSON.stringify(variantSnap),
-    qty: item.qty,
-    unit_price: variantSnap.price,
-    modifiers_snapshot_json: JSON.stringify(modifierSnap),
-    gross_line_total: gross,
-    promo_discount: promoDiscount,
-    manual_item_discount: manualItem,
-    order_discount_allocation: 0, // filled in by caller
-    net_line_total: 0, // filled in by caller
-    promo_discount_reason: promoDiscount > 0 ? (resolvedPromo?.id || "SNAPSHOT") : "",
-  };
-
-  return { spec, capacity: Math.max(0, gross - promoDiscount - manualItem) };
-}
-
-function computePromoForLine(
-  promo: any | null,
-  item: CartItemInput,
-  variant: VariantSnapshot,
-  modifiers: ModifierSnapshot[],
-  gross: number,
-): number {
-  if (!promo || promo.type !== "PRODUCT_DISCOUNT") return 0;
-  const applicable = parseApplicable(promo.applicable_products_json);
-  if (!applicable.has(item.variant_id)) return 0;
-
-  const targetPrice = applicable.get(item.variant_id) || Number(promo.discount_value);
-
-  if (promo.discount_type === "FLAT_PRICE") {
-    // Discount per unit = unit_price - target_price, applied to variant only (not modifiers)
-    const perUnitDiscount = Math.max(0, variant.price - targetPrice);
-    return Math.min(gross, perUnitDiscount * item.qty);
-  }
-  if (promo.discount_type === "PERCENT") {
-    return Math.min(gross, Math.round(gross * (Number(promo.discount_value) / 100)));
-  }
-  // FLAT_VND per unit
-  return Math.min(gross, Number(promo.discount_value) * item.qty);
-}
-
-function computeOrderDiscountVnd(
-  input: { value: number; type: "VND" | "PERCENT" } | null | undefined,
-  grossTotal: number,
-): number {
-  if (!input || input.value <= 0) return 0;
-  if (input.type === "PERCENT") {
-    return Math.round(grossTotal * (input.value / 100));
-  }
-  return Math.round(input.value);
+  return { productSnap, variantSnap, modifierSnap };
 }

@@ -62,7 +62,7 @@ describe("buildModifierSnapshots", () => {
     expect(snaps[0].qty).toBe(3);
   });
 
-  it("uses modifier snapshot price from edit cart when provided", () => {
+  it("keeps the cart's name but takes the price from the catalogue, never from the cart", () => {
     const cart = [
       {
         modifier_id: "MOD-X",
@@ -74,7 +74,7 @@ describe("buildModifierSnapshots", () => {
     const modifierRows = [{ id: "MOD-X", name: "New topping", price: "10000" }];
     const snaps = buildModifierSnapshotsFromCart(cart, modifierRows);
 
-    expect(snaps[0]).toEqual({ id: "MOD-X", name: "Old topping", price: 3000, qty: 2 });
+    expect(snaps[0]).toEqual({ id: "MOD-X", name: "Old topping", price: 10000, qty: 2 });
   });
 });
 

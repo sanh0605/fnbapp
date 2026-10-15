@@ -8,11 +8,10 @@
 // is the one place that reads the real join instead: modifiers.product_id
 // (migration 0097). Called by both sites so they can only ever agree.
 //
-// A DELETED modifier must never win a link: measured 2026-09-08, MOD-007
-// (DELETED) and MOD-008 (ACTIVE) both carry product_id PROD-035, and only
-// one modifier may govern that product's switch (plan question 3). Filtering
-// DELETED out before the map is built makes the result independent of the
-// input array's order.
+// A stopped (INACTIVE) modifier must never win a link over an ACTIVE one: MOD-007
+// (INACTIVE) and MOD-008 (ACTIVE) both carry product_id PROD-035, and only
+// one modifier may govern that product's switch (plan question 3). Grouping by
+// product and preferring ACTIVE makes the result independent of the input order.
 //
 // Opus code review, 2026-09-08: two ACTIVE modifiers pointing at one
 // product is exactly the state migration 0098's sync_topping_price_atomic
@@ -26,22 +25,22 @@
 // the anomaly is discoverable, rather than throwing and taking either
 // screen down.
 export function buildStandaloneToppingProductLinks(modifiers: any[]): Map<string, string> {
-  const map = new Map<string, string>();
-  const conflictedProductIds = new Set<string>();
+  const byProduct = new Map<string, any[]>();
   for (const m of modifiers) {
-    if (m.status === "DELETED") continue;
     if (!m.product_id) continue;
     const productId = String(m.product_id);
-    const modifierId = String(m.id);
-    const existing = map.get(productId);
-    if (existing !== undefined && existing !== modifierId) {
-      conflictedProductIds.add(productId);
+    byProduct.set(productId, [...(byProduct.get(productId) ?? []), m]);
+  }
+  const map = new Map<string, string>();
+  for (const [productId, linked] of byProduct) {
+    // A stopped option (INACTIVE) still links its dish, but an ACTIVE one governs it
+    // when both exist (MOD-007 and MOD-008 both link PROD-035).
+    const active = linked.filter((m) => m.status === "ACTIVE");
+    const governing = active.length > 0 ? active : linked;
+    if (governing.length === 1) {
+      map.set(productId, String(governing[0].id));
       continue;
     }
-    map.set(productId, modifierId);
-  }
-  for (const productId of conflictedProductIds) {
-    map.delete(productId);
     console.error(
       `buildStandaloneToppingProductLinks: more than one ACTIVE modifier links to product ${productId} -- excluding it. This should be impossible (migration 0098 refuses it at write time); check for a direct DB edit or a writer that bypasses the guard.`,
     );

@@ -82,3 +82,10 @@ describe("parseCashTransfer", () => {
     expect(r.ok && r.value.note).toBe("");
   });
 });
+
+describe("parseCashTransfer note length", () => {
+  it("limits the note to 500 characters", () => {
+    expect(err({ note: "a".repeat(500) })).toBeNull();
+    expect(err({ note: "a".repeat(501) })).toBe("Ghi chú tối đa 500 ký tự");
+  });
+});

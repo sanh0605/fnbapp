@@ -11,7 +11,7 @@ export interface Balance {
   total: number;
 }
 
-export interface CashBookTotals {
+interface CashBookTotals {
   // Transfers between drawer and bank are in neither total (BR-CASH-008).
   totalIncome: number;
   totalExpense: number;
@@ -41,9 +41,11 @@ interface Movement {
   amount: number;
 }
 
-// Only an explicit cash method is cash; anything else reads as the bank side.
-function sideOf(method: string | null | undefined): Side {
-  return method === "CASH" ? "CASH" : "BANK";
+// The database and every write refuse any other method, so none is guessed here.
+function sideOf(method: string): Side {
+  if (method === "CASH") return "CASH";
+  if (method === "BANK_TRANSFER") return "BANK";
+  throw new Error(`Unknown payment method: ${method}`);
 }
 
 function emptyBalance(): Balance {

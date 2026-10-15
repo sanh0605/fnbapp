@@ -146,4 +146,34 @@ describe("SalesFilter brand box (wave K5)", () => {
     expect(q.get("to")).toBe("2026-09-15");
     expect(q.get("brandId")).toBe("BRD-1");
   });
+
+  it("renders only ACTIVE brands, users, and categories in the dropdowns", () => {
+    render(
+      <SalesFilter
+        brands={[
+          { id: "BRD-1", name: "MR.PHIN", status: "ACTIVE" },
+          { id: "BRD-2", name: "Ngừng", status: "INACTIVE" },
+        ]}
+        users={[
+          { id: "U-1", name: "Staff Active", status: "ACTIVE" } as any,
+          { id: "U-2", name: "Staff Inactive", status: "INACTIVE" } as any,
+        ]}
+        categories={[
+          { id: "CAT-1", name: "Món Active", status: "ACTIVE" } as any,
+          { id: "CAT-2", name: "Món Inactive", status: "INACTIVE" } as any,
+        ]}
+        range={THIS_MONTH}
+        today={TODAY}
+      />,
+    );
+
+    expect(screen.getByText("MR.PHIN")).toBeInTheDocument();
+    expect(screen.queryByText("Ngừng")).toBeNull();
+
+    expect(screen.getByText("Staff Active")).toBeInTheDocument();
+    expect(screen.queryByText("Staff Inactive")).toBeNull();
+
+    expect(screen.getByText("Món Active")).toBeInTheDocument();
+    expect(screen.queryByText("Món Inactive")).toBeNull();
+  });
 });

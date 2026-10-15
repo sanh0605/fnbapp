@@ -44,7 +44,14 @@ export function ConversionForm({
   const [purchaseOnly, setPurchaseOnly] = useState(initialData?.purchase_only === true);
 
   const itemOptions = items.map(item => ({ id: item.id, label: item.name }));
-  const unitOptions = units.map(u => ({ id: u.name, label: u.name }));
+  const unitOptions = units
+    .filter(u =>
+      u.status === "ACTIVE" ||
+      u.id === initialData?.purchased_unit ||
+      u.id === initialData?.base_unit ||
+      (selectedUnitName && u.name.toLowerCase() === selectedUnitName.toLowerCase())
+    )
+    .map(u => ({ id: u.name, label: u.name }));
 
   const selectedItem = useMemo(() => 
     items.find(i => i.id === selectedItemId), 

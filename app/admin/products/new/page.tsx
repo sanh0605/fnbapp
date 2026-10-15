@@ -23,7 +23,7 @@ export default async function NewProductPage(
         title="Tạo món"
       />
       <ProductForm
-        categories={categories.filter((c: any) => c.status !== "DELETED")}
+        categories={categories}
         optionGroups={optionGroups}
         selectedOptionGroupIds={[]}
         returnTo={returnTo}

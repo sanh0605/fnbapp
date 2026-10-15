@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth";
 import { redirect, notFound } from "next/navigation";
 import { findById, findAll } from "@/lib/db/tables";
+import { activeOrOnOrder } from "@/lib/purchasing/active-or-on-order";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import PurchasePaymentBlock from "./components/PurchasePaymentBlock";
 import { formatDecimal, formatNumber } from "@/lib/shared/format";
@@ -187,9 +188,9 @@ export default async function PurchaseOrderDetail(
             </Alert>
           )}
           <PurchaseOrderForm
-            suppliers={allSuppliers}
+            suppliers={activeOrOnOrder(allSuppliers, [po.supplier_id])}
             sources={allSources}
-            items={allItems}
+            items={activeOrOnOrder(allItems, poLines.map((l: any) => l.purchased_item_id))}
             conversions={allConversions}
             units={allUnits}
             bankAccounts={bankAccounts}

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/lib/db/tables", () => ({ findAllWhere: vi.fn() }));
 
-import { sumNetByOrder } from "./report-helpers";
+import { sumNetByOrder, buildCanonicalModifierLookup } from "./report-helpers";
 
 describe("sumNetByOrder (B7)", () => {
   it("matches the old per-order filter+reduce on a randomised set, bit for bit", () => {
@@ -18,5 +18,18 @@ describe("sumNetByOrder (B7)", () => {
       const old = lines.filter(l => l.order_id === id).reduce((s, l) => s + l.net_line_total, 0);
       expect(byOrder.get(id) ?? 0).toBe(old);
     }
+  });
+});
+
+describe("buildCanonicalModifierLookup", () => {
+  it("prioritizes status === 'ACTIVE' over stopped/inactive modifier with the same name", () => {
+    const modifiers = [
+      { id: "MOD-OLD-DAU", name: "Dâu sấy", status: "INACTIVE", created_at: "2026-06-01T00:00:00.000Z" },
+      { id: "MOD-NEW-DAU", name: "Dâu sấy", status: "ACTIVE", created_at: "2026-06-20T00:00:00.000Z" },
+    ];
+    const { byId, byName } = buildCanonicalModifierLookup(modifiers);
+    expect(byId.get("MOD-OLD-DAU")?.id).toBe("MOD-NEW-DAU");
+    expect(byId.get("MOD-NEW-DAU")?.id).toBe("MOD-NEW-DAU");
+    expect(byName.get("dau say")?.id).toBe("MOD-NEW-DAU");
   });
 });

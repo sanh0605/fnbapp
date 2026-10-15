@@ -21,6 +21,7 @@ interface CategoriesClientProps {
   types?: DBProductType[];
   initialSearch?: string;
   initialPage?: string;
+  canDelete?: boolean;
 }
 
 function listUrl(
@@ -45,6 +46,7 @@ export default function CategoriesClient({
   types = [],
   initialSearch = "",
   initialPage,
+  canDelete = false,
 }: CategoriesClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -248,7 +250,7 @@ export default function CategoriesClient({
           dir: sortDir,
           href: (k, d) => listUrl(search, 1, k, d),
         }}
-        removal={removal}
+        removal={canDelete ? removal : undefined}
         empty={
           <EmptyState
             icon="📂"

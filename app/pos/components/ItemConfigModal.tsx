@@ -4,6 +4,7 @@ import { useState } from "react";
 import { formatNumber } from "@/lib/shared/format";
 import { OptionGroupPicker } from "@/components/ui/OptionGroupPicker";
 import type { ProductOptionGroup } from "@/lib/sales/option-groups";
+import { priceCart, toPricePromotion, bestPromotion } from "@/lib/sales/price-cart";
 
 export type ItemConfigSubmission = {
   variant: any;
@@ -18,7 +19,8 @@ interface ItemConfigModalProps {
   variants: any[];
   groups?: ProductOptionGroup[];
   promoVariantsMap: Map<string, number>;
-  promoDetailsMap: Map<string, any>;
+  eligiblePromotions?: any[];
+  appliedPromoCode?: string | null;
   initialLine: any | null;
   isEditing: boolean;
   onSubmit: (config: ItemConfigSubmission) => void;
@@ -30,7 +32,8 @@ export function ItemConfigModal({
   variants,
   groups = [],
   promoVariantsMap,
-  promoDetailsMap,
+  eligiblePromotions,
+  appliedPromoCode,
   initialLine,
   isEditing,
   onSubmit,
@@ -66,32 +69,49 @@ export function ItemConfigModal({
     });
   };
 
-  const currentItemBasePrice = selectedVariant ? Number(selectedVariant.price) + selectedModifiers.reduce((sum, m) => sum + Number(m.price), 0) : 0;
-  const currentItemBaseTotal = currentItemBasePrice * selectedQty;
-  let currentItemManualDiscountAmount = 0;
-  if (itemDiscount > 0) {
-    if (itemDiscountType === "PERCENT") {
-      currentItemManualDiscountAmount = (currentItemBaseTotal * itemDiscount) / 100;
-    } else {
-      currentItemManualDiscountAmount = itemDiscount;
-    }
-  }
+  const singleItem = selectedVariant
+    ? [
+        {
+          variant_id: selectedVariant.id,
+          qty: selectedQty,
+          modifiers: selectedModifiers.map((m: any) => ({
+            modifier_id: m.id,
+            modifier_qty: 1,
+          })),
+          manual_item_discount: {
+            value: Number(itemDiscount || 0),
+            type: itemDiscountType,
+          },
+        },
+      ]
+    : [];
 
-  // Calculate promo discount for the current selection in modal
-  let currentItemPromoDiscountAmount = 0;
-  if (selectedVariant && promoDetailsMap.has(selectedVariant.id)) {
-    const promo = promoDetailsMap.get(selectedVariant.id);
-    if (promo.type === "PERCENT") {
-      currentItemPromoDiscountAmount = currentItemBaseTotal * (promo.val / 100);
-    } else if (promo.type === "FLAT_PRICE") {
-      const unitDiscount = Math.max(0, Number(selectedVariant.price) - promo.val);
-      currentItemPromoDiscountAmount = unitDiscount * selectedQty;
-    } else {
-      currentItemPromoDiscountAmount = promo.val * selectedQty;
-    }
-  }
+  const singleCatalog = selectedVariant
+    ? {
+        variants: [{ id: selectedVariant.id, price: Number(selectedVariant.price) }],
+        modifiers: selectedModifiers.map((m: any) => ({ id: m.id, price: Number(m.price) })),
+      }
+    : { variants: [], modifiers: [] };
 
-  const currentItemFinalTotal = Math.max(0, currentItemBaseTotal - currentItemManualDiscountAmount - currentItemPromoDiscountAmount);
+  const promoToApply = eligiblePromotions
+    ? bestPromotion(eligiblePromotions, singleItem, singleCatalog, appliedPromoCode ?? null)
+    : null;
+
+  const priced = selectedVariant
+    ? priceCart(
+        singleItem,
+        singleCatalog,
+        promoToApply ? [toPricePromotion(promoToApply)] : [],
+        null
+      )
+    : null;
+
+  const currentItemBaseTotal = priced ? priced.lines[0]?.gross ?? 0 : 0;
+  const currentItemManualDiscountAmount = priced ? priced.lines[0]?.manualItem ?? 0 : 0;
+  const currentItemPromoDiscountAmount = priced
+    ? (priced.lines[0]?.promo ?? 0) + (priced.lines[0]?.orderPromo ?? 0)
+    : 0;
+  const currentItemFinalTotal = priced ? priced.total : 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm">

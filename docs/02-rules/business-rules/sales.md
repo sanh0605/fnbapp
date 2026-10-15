@@ -148,3 +148,21 @@ Every edit rebuilt the order from today's catalog. The new version credited the 
   - The order keeps its promotion and its seller. Who changed it goes in the order's history.
 - A wrong dish, quantity or discount is fixed by Huỷ đơn with a reason, then ringing the order again at the till. The new order carries the time it is rung.
 - The 6 seller names and the 3 promotion links lost to earlier edits are restored by a separate data write that the owner approves.
+
+### BR-SALE-015 — The till does not sell without internet
+
+**Status:** `APPROVED` — owner 2026-10-15, chose *"Không bán khi mất mạng"* over a real offline queue, after hearing that the till had three behaviours for one state (banner "đơn vẫn được lưu", pay buttons disabled, Enter still sending) and that 0 orders ever waited for the network and 0 sync failures were ever recorded. Closes `BR-U-001`. Not built yet (Máy bán hàng proposal R1).
+
+- When the browser reports no network, the till says "Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại"; the pay buttons and the Enter key are off together.
+- No order is queued in the browser. The queue, the service worker and the Đồng bộ máy bán page are removed with their table.
+- A send that fails while online keeps the cart and shows "Gửi lại" with the same request token, so sending twice cannot write twice.
+- A rule refusal (price changed, `BR-SALE-008`) is told apart from a transport error: the first says reload, the second says retry.
+- Cost accepted by the owner: a dropped connection stops sales until it is back.
+
+### BR-SALE-016 — Each cashier sells under their own account
+
+**Status:** `APPROVED` — owner 2026-10-15, chose *"Mỗi thu ngân một tài khoản"* after seeing 714 orders in 30 days all under one account and no logout on the till. Not built yet (Máy bán hàng proposal R6, Q2). `BR-U-003` stays open for the full role matrix; this fixes one row of it.
+
+- The owner creates a Nhân viên (STAFF) account per cashier in Nhân sự. STAFF opens the till only; `/admin` stays closed to it (owner decision 2026-07-22).
+- The till has a Đăng xuất button. The order keeps the seller's name as today (`created_by_name`), so Doanh số filtered by Nhân viên shows who sold.
+- A STAFF login with no outlet sees the outlet picker, never a redirect loop.

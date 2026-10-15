@@ -1,4 +1,6 @@
-import { parseAmountVn, type ParseResult } from "./cash-entry-rules";
+import {
+  isRealCalendarDate, parseAmountVn, NOTE_MAX_LENGTH, NOTE_TOO_LONG_ERROR, type ParseResult,
+} from "./cash-entry-rules";
 
 // "from" and "to" are "CASH" (the drawer) or a bank account id.
 export interface CashTransferInput {
@@ -9,7 +11,7 @@ export interface CashTransferInput {
   note: string;
 }
 
-export interface CashTransferFields {
+interface CashTransferFields {
   transfer_date: string;
   amount: number;
   // null = the cash drawer
@@ -18,7 +20,7 @@ export interface CashTransferFields {
   note: string;
 }
 
-export const CASH_END = "CASH";
+const CASH_END = "CASH";
 
 const DATE_ERROR = "Chọn ngày chuyển";
 const SAME_END_ERROR = "Nơi chuyển và nơi nhận phải khác nhau";
@@ -26,30 +28,22 @@ const ACCOUNT_GONE_ERROR = "Tài khoản không còn dùng";
 const FROM_MISSING_ERROR = "Chọn nơi chuyển";
 const TO_MISSING_ERROR = "Chọn nơi nhận";
 
-// "YYYY-MM-DD" that names a real calendar day ("2026-02-30" is not one).
-function isRealCalendarDate(value: string): boolean {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!m) return false;
-  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
-  const date = new Date(Date.UTC(y, mo - 1, d));
-  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
-}
-
-// One end of a transfer: the drawer, or an account that is still in use.
+// One end of a transfer: the drawer, or an allowed account (active, or the
+// row's own -- R6).
 function parseEnd(
   raw: string,
   missing: string,
-  activeAccountIds: string[],
+  allowedIds: string[],
 ): ParseResult<string | null> {
   if (!raw) return { ok: false, error: missing };
   if (raw === CASH_END) return { ok: true, value: null };
-  if (!activeAccountIds.includes(raw)) return { ok: false, error: ACCOUNT_GONE_ERROR };
+  if (!allowedIds.includes(raw)) return { ok: false, error: ACCOUNT_GONE_ERROR };
   return { ok: true, value: raw };
 }
 
 export function parseCashTransfer(
   input: CashTransferInput,
-  activeAccountIds: string[],
+  allowedAccountIds: string[],
 ): ParseResult<CashTransferFields> {
   const transfer_date = (input.transfer_date || "").trim();
   if (!isRealCalendarDate(transfer_date)) return { ok: false, error: DATE_ERROR };
@@ -62,10 +56,13 @@ export function parseCashTransfer(
   // Same place on both sides is refused before asking whether it still exists.
   if (from && from === to) return { ok: false, error: SAME_END_ERROR };
 
-  const fromEnd = parseEnd(from, FROM_MISSING_ERROR, activeAccountIds);
+  const fromEnd = parseEnd(from, FROM_MISSING_ERROR, allowedAccountIds);
   if (fromEnd.ok === false) return { ok: false, error: fromEnd.error };
-  const toEnd = parseEnd(to, TO_MISSING_ERROR, activeAccountIds);
+  const toEnd = parseEnd(to, TO_MISSING_ERROR, allowedAccountIds);
   if (toEnd.ok === false) return { ok: false, error: toEnd.error };
+
+  const note = (input.note || "").trim();
+  if (note.length > NOTE_MAX_LENGTH) return { ok: false, error: NOTE_TOO_LONG_ERROR };
 
   return {
     ok: true,
@@ -74,7 +71,7 @@ export function parseCashTransfer(
       amount: parsedAmount.value,
       from_account_id: fromEnd.value,
       to_account_id: toEnd.value,
-      note: (input.note || "").trim(),
+      note,
     },
   };
 }

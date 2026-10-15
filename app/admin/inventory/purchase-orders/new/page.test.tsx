@@ -148,3 +148,39 @@ describe("NewPurchaseOrderPage copyFrom (BR-INV-016)", () => {
     );
   });
 });
+
+describe("NewPurchaseOrderPage stopped suppliers and items (BR-CATALOG-007)", () => {
+  const tables: Record<string, unknown[]> = {
+    Suppliers: [
+      { id: "S-OK", status: "ACTIVE" },
+      { id: "S-OFF", status: "INACTIVE" },
+      { id: "S-OFF-COPY", status: "INACTIVE" },
+    ],
+    Purchased_Items: [
+      { id: "I-OK", status: "ACTIVE" },
+      { id: "I-OFF", status: "INACTIVE" },
+      { id: "I-OFF-COPY", status: "INACTIVE" },
+    ],
+  };
+  beforeEach(() => {
+    findAll.mockReset().mockImplementation(async (t: string) => tables[t] ?? []);
+    getPurchaseOrderCopySeed.mockReset();
+    mockPurchaseOrderForm.mockReset();
+  });
+  const ids = (rows: { id: string }[]) => rows.map(r => r.id);
+
+  it("a new order is offered only active suppliers and items", async () => {
+    collectText((await NewPurchaseOrderPage({})) as ReactNode);
+    const props = mockPurchaseOrderForm.mock.calls[0][0];
+    expect(ids(props.suppliers)).toEqual(["S-OK"]);
+    expect(ids(props.items)).toEqual(["I-OK"]);
+  });
+
+  it("a copy still lists the stopped supplier and items the source order names", async () => {
+    getPurchaseOrderCopySeed.mockResolvedValueOnce({ supplier_id: "S-OFF-COPY", lines: [{ purchased_item_id: "I-OFF-COPY" }] });
+    collectText((await NewPurchaseOrderPage({ searchParams: Promise.resolve({ copyFrom: "PO-1" }) })) as ReactNode);
+    const props = mockPurchaseOrderForm.mock.calls[0][0];
+    expect(ids(props.suppliers)).toEqual(["S-OK", "S-OFF-COPY"]);
+    expect(ids(props.items)).toEqual(["I-OK", "I-OFF-COPY"]);
+  });
+});

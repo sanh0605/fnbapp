@@ -5,6 +5,13 @@ import { formatNumber } from "@/lib/shared/format";
 import { formatDate } from "@/lib/shared/datetime";
 import { submitOrderV2, getPOSDrafts, savePOSDraft, deletePOSDraft } from "@/app/pos/actions";
 import type { CartInput } from "@/lib/sales/order-cart";
+import {
+  priceCart,
+  toPricePromotion,
+  bestPromotion,
+  type PriceCartItem,
+  type PriceCartCatalog,
+} from "@/lib/sales/price-cart";
 import Link from "next/link";
 import { ProductGrid } from "./ProductGrid";
 import { CartPanel } from "./CartPanel";
@@ -293,10 +300,9 @@ export default function POSScreen({
     return result;
   }, [products, activeCategory, searchQuery, bestSellers]);
 
-  const { promoProductsMap, promoVariantsMap, promoDetailsMap } = useMemo(() => {
+  const { promoProductsMap, promoVariantsMap } = useMemo(() => {
     const prodMap = new Map<string, number>();
     const varMap = new Map<string, number>();
-    const detailsMap = new Map<string, any>(); // store promo details for accurate % calc with modifiers
     
     const now = new Date();
     (promotions || []).forEach((p: any) => {
@@ -333,12 +339,11 @@ export default function POSScreen({
           }
           if (!varMap.has(vId) || newPrice < varMap.get(vId)!) {
              varMap.set(vId, newPrice);
-             detailsMap.set(vId, { type: p.discount_type, val });
           }
         }
       });
     });
-    return { promoProductsMap: prodMap, promoVariantsMap: varMap, promoDetailsMap: detailsMap };
+    return { promoProductsMap: prodMap, promoVariantsMap: varMap };
   }, [promotions, variants, brandId]);
 
   const openProductModal = async (product: any, editIndex: number | null = null) => {
@@ -418,15 +423,9 @@ export default function POSScreen({
   const calculateSubtotal = () => cart.reduce((sum, item) => sum + calculateItemTotal(item), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
 
-  const { appliedPromo, promoDiscountAmount } = useMemo(() => {
+  const eligiblePromotions = useMemo(() => {
     const now = new Date();
-    const subtotal = calculateSubtotal();
-    
-    if (cart.length === 0) {
-      return { appliedPromo: null, promoDiscountAmount: 0 };
-    }
-
-    const eligiblePromos = (promotions || []).filter((p: any) => {
+    return (promotions || []).filter((p: any) => {
       if (p.status !== "ACTIVE") return false;
       const isDateValid = new Date(p.start_date) <= now && (!p.end_date || new Date(p.end_date) >= now);
       if (!isDateValid) return false;
@@ -436,116 +435,64 @@ export default function POSScreen({
 
       return true;
     });
+  }, [promotions, brandId, cart]);
 
-    const calcPromoDiscount = (p: any) => {
-      if (p.type === "ORDER_DISCOUNT") {
-        if (subtotal < Number(p.min_order_value || 0)) return 0;
-
-        if (p.discount_type === "PERCENT") {
-          return (subtotal * Number(p.discount_value)) / 100;
-        } else {
-          return Number(p.discount_value);
-        }
-      } else if (p.type === "PRODUCT_DISCOUNT") {
-        if (subtotal < Number(p.min_order_value || 0)) return 0;
-
-        let totalProdDiscount = 0;
-        const {
-          variantsList: applicableVariantsList,
-          variantsMap: applicableVariantsMap,
-          isMap,
-        } = parseApplicableVariants(p.applicable_products_json);
-
-        if (applicableVariantsList.length === 0) return 0;
-
-        cart.forEach((item) => {
-          if (applicableVariantsList.includes(item.variant_id)) {
-            const val = isMap ? Number(applicableVariantsMap[item.variant_id]) : Number(p.discount_value);
-
-            const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
-            const itemBaseTotal = (item.unit_price + modsPrice) * item.qty;
-            let itemDiscount = 0;
-            if (p.discount_type === "PERCENT") {
-              itemDiscount = itemBaseTotal * (val / 100);
-            } else if (p.discount_type === "FLAT_PRICE") {
-              const unitDiscount = Math.max(0, item.unit_price - val);
-              itemDiscount = unitDiscount * item.qty;
-            } else {
-              itemDiscount = val * item.qty;
-            }
-            totalProdDiscount += Math.min(itemBaseTotal, itemDiscount);
-          }
-        });
-
-        return totalProdDiscount;
-      }
-      return 0;
-    };
-
-    if (appliedPromoCode) {
-      const matchedPromo = eligiblePromos.find(
-        (p: any) => p.code && p.code.toUpperCase() === appliedPromoCode.toUpperCase()
-      );
-      if (matchedPromo) {
-        const amt = calcPromoDiscount(matchedPromo);
-        return {
-          appliedPromo: matchedPromo,
-          promoDiscountAmount: amt,
-        };
-      }
-    }
-
-    const autoPromos = eligiblePromos.filter((p: any) => !p.code);
-    let bestPromo: any = null;
-    let maxDiscount = 0;
-
-    autoPromos.forEach((p: any) => {
-      const amt = calcPromoDiscount(p);
-      if (amt > maxDiscount) {
-        maxDiscount = amt;
-        bestPromo = p;
-      }
-    });
-
-    if (bestPromo && maxDiscount > 0) {
+  const { appliedPromo, promoDiscountAmount, itemPromoDiscounts, orderManualAmount, totalAmount } = useMemo(() => {
+    if (cart.length === 0) {
       return {
-        appliedPromo: bestPromo,
-        promoDiscountAmount: maxDiscount,
+        appliedPromo: null,
+        promoDiscountAmount: 0,
+        itemPromoDiscounts: [],
+        orderManualAmount: 0,
+        totalAmount: 0,
       };
     }
 
-    return { appliedPromo: null, promoDiscountAmount: 0 };
-  }, [cart, promotions, brandId, appliedPromoCode]);
+    const cartItems: PriceCartItem[] = cart.map((item) => ({
+      variant_id: item.variant_id,
+      qty: item.qty,
+      modifiers: item.modifiers.map((m: any) => ({
+        modifier_id: m.id,
+        modifier_qty: 1,
+      })),
+      manual_item_discount: {
+        value: Number(item.discount_amount || 0),
+        type: item.discount_type === "PERCENT" ? "PERCENT" : "VND",
+      },
+    }));
 
-  const itemPromoDiscounts = useMemo(() => {
-    const discounts: number[] = new Array(cart.length).fill(0);
-    if (appliedPromo?.type === "PRODUCT_DISCOUNT") {
-      const {
-        variantsList: applicableVariantsList,
-        variantsMap: applicableVariantsMap,
-        isMap,
-      } = parseApplicableVariants(appliedPromo.applicable_products_json);
+    const catalog: PriceCartCatalog = {
+      variants: cart.map((item) => ({ id: item.variant_id, price: Number(item.unit_price) })),
+      modifiers: cart.flatMap((item) =>
+        item.modifiers.map((m: any) => ({ id: m.id, price: Number(m.price) }))
+      ),
+    };
 
-      cart.forEach((item, idx) => {
-        if (applicableVariantsList.includes(item.variant_id)) {
-          const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
-          const baseTotal = (item.unit_price + modsPrice) * item.qty;
-          const val = isMap ? Number(applicableVariantsMap[item.variant_id]) : Number(appliedPromo.discount_value);
-          let itemDiscount = 0;
-          if (appliedPromo.discount_type === "PERCENT") {
-            itemDiscount = baseTotal * (val / 100);
-          } else if (appliedPromo.discount_type === "FLAT_PRICE") {
-            const unitDiscount = Math.max(0, item.unit_price - val);
-            itemDiscount = unitDiscount * item.qty;
-          } else {
-            itemDiscount = val * item.qty;
-          }
-          discounts[idx] = Math.min(baseTotal, itemDiscount);
-        }
-      });
-    }
-    return discounts;
-  }, [cart, appliedPromo]);
+    const appliedPromo = bestPromotion(eligiblePromotions, cartItems, catalog, appliedPromoCode);
+
+    const manualOrderDiscount = userCustomDiscount !== null
+      ? { value: userCustomDiscount, type: userCustomDiscountType }
+      : null;
+
+    const result = priceCart(
+      cartItems,
+      catalog,
+      appliedPromo ? [toPricePromotion(appliedPromo)] : [],
+      manualOrderDiscount
+    );
+
+    const promoDiscountAmount = result.applied.reduce((sum, a) => sum + a.amount, 0);
+    const itemPromoDiscounts = result.lines.map((l) => l.promo + l.orderPromo);
+    const orderManualAmount = result.lines.reduce((s, l) => s + l.orderManual, 0);
+
+    return {
+      appliedPromo,
+      promoDiscountAmount,
+      itemPromoDiscounts,
+      orderManualAmount,
+      totalAmount: result.total,
+    };
+  }, [cart, eligiblePromotions, appliedPromoCode, userCustomDiscount, userCustomDiscountType]);
 
   const handleApplyPromoCode = () => {
     const code = promoCodeInput.trim().toUpperCase();
@@ -618,28 +565,7 @@ export default function POSScreen({
     setUserCustomDiscount(null);
   };
 
-  const calculateTotalAmount = () => {
-    const subtotal = calculateSubtotal();
 
-    let orderLevelDiscount = 0;
-    if (userCustomDiscount !== null) {
-      if (userCustomDiscountType === "PERCENT") {
-        orderLevelDiscount = (subtotal * userCustomDiscount) / 100;
-      } else {
-        orderLevelDiscount = userCustomDiscount;
-      }
-    } else if (appliedPromo?.type === "ORDER_DISCOUNT") {
-      orderLevelDiscount = promoDiscountAmount;
-    }
-
-    const productLevelDiscount = appliedPromo?.type === "PRODUCT_DISCOUNT"
-      ? promoDiscountAmount
-      : 0;
-
-    return Math.max(0, subtotal - orderLevelDiscount - productLevelDiscount);
-  };
-
-  const totalAmount = calculateTotalAmount();
 
 
 
@@ -724,7 +650,7 @@ export default function POSScreen({
 
     // Calculate totals
     const currentSubtotal = calculateSubtotal();
-    const currentTotalAmount = calculateTotalAmount();
+    const currentTotalAmount = totalAmount;
     const currentTotalItems = totalItems;
 
     // Fingerprinted without client_captured_at: that field is decided below,
@@ -760,6 +686,7 @@ export default function POSScreen({
           }
         : null,
       applied_promotion_id: appliedPromo?.id || null,
+      promo_code: appliedPromo?.code ? (appliedPromoCode ?? undefined) : undefined,
       actor: { id: "", name: "" },
     };
     const checkoutAttempt = resolvePosCheckoutAttempt(
@@ -1099,6 +1026,8 @@ export default function POSScreen({
         handleRemovePromoCode={handleRemovePromoCode}
         appliedPromo={appliedPromo}
         promoDiscountAmount={promoDiscountAmount}
+        orderManualAmount={orderManualAmount}
+        totalAmount={totalAmount}
         manualPromoError={manualPromoError}
         userCustomDiscountType={userCustomDiscountType}
         setUserCustomDiscountType={setUserCustomDiscountType}
@@ -1147,7 +1076,8 @@ export default function POSScreen({
           variants={variants}
           groups={optionGroupsForProduct(selectedProduct.id, optionGroups, optionGroupLinks, modifiers)}
           promoVariantsMap={promoVariantsMap}
-          promoDetailsMap={promoDetailsMap}
+          eligiblePromotions={eligiblePromotions}
+          appliedPromoCode={appliedPromoCode}
           initialLine={editingCartIndex !== null ? cart[editingCartIndex] : null}
           isEditing={editingCartIndex !== null}
           onSubmit={handleItemConfigSubmit}

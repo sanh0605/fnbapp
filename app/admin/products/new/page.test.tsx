@@ -7,7 +7,7 @@ vi.mock("@/app/admin/products/load-product-rows", () => ({ loadProductRows }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: vi.fn(async (sheet: string) =>
     sheet === "Product_Categories"
-      ? [{ id: "CAT-002", name: "Giải trí", status: "ACTIVE" }, { id: "CAT-009", name: "Cũ", status: "DELETED" }]
+      ? [{ id: "CAT-002", name: "Giải trí", status: "ACTIVE" }]
       : [{ id: "MG-001" }],
   ),
 }));

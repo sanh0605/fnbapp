@@ -43,8 +43,8 @@ describe("ConversionForm rate box", () => {
     base_unit: "U-ML",
   } as any;
   const UNITS = [
-    { id: "U-THUNG", name: "Thùng" },
-    { id: "U-ML", name: "ml" },
+    { id: "U-THUNG", name: "Thùng", status: "ACTIVE" },
+    { id: "U-ML", name: "ml", status: "ACTIVE" },
   ] as any;
 
   it("shows the stored rate with commas and takes decimals", () => {
@@ -101,8 +101,8 @@ describe("ConversionForm update_history removed (audit A5)", () => {
     base_unit: "U-ML",
   } as any;
   const UNITS = [
-    { id: "U-THUNG", name: "Thùng" },
-    { id: "U-ML", name: "ml" },
+    { id: "U-THUNG", name: "Thùng", status: "ACTIVE" },
+    { id: "U-ML", name: "ml", status: "ACTIVE" },
   ] as any;
 
   it("edit form does not render the update_history checkbox and does not send update_history in FormData", () => {
@@ -115,6 +115,51 @@ describe("ConversionForm update_history removed (audit A5)", () => {
     expect(updateConversion).toHaveBeenCalledTimes(1);
     const fd = vi.mocked(updateConversion).mock.calls[0][0] as FormData;
     expect(fd.get("update_history")).toBeNull();
+  });
+});
+
+// jsdom has no scrollIntoView; the picker calls it when it opens.
+if (typeof Element.prototype.scrollIntoView !== "function") {
+  Element.prototype.scrollIntoView = () => {};
+}
+
+describe("ConversionForm stopped units (B4)", () => {
+  const UNITS_WITH_INACTIVE = [
+    { id: "U-THUNG", name: "Thùng", status: "ACTIVE" },
+    { id: "U-ML", name: "ml", status: "ACTIVE" },
+    { id: "U-INACTIVE", name: "Bao Cũ", status: "INACTIVE" },
+  ] as any;
+
+  it("a new conversion does not see the INACTIVE unit in the picker", () => {
+    render(<ConversionForm items={ITEMS} conversions={[]} units={UNITS_WITH_INACTIVE} />);
+    fireEvent.click(screen.getByRole("combobox", { name: "Ví dụ: Thùng 24 lon" }));
+    const options = screen.getAllByRole("option").map(el => el.textContent?.trim());
+    expect(options).toContain("Thùng");
+    expect(options).toContain("ml");
+    expect(options).not.toContain("Bao Cũ");
+  });
+
+  it("an existing conversion whose unit is INACTIVE still shows as an option and saves", () => {
+    const EDIT_INACTIVE = {
+      id: "CONV-INACTIVE",
+      purchased_item_id: "ITEM-1",
+      purchased_unit: "U-INACTIVE",
+      conversion_rate: "10",
+      base_unit: "U-ML",
+    } as any;
+    render(
+      <ConversionForm
+        items={ITEMS}
+        conversions={[EDIT_INACTIVE]}
+        units={UNITS_WITH_INACTIVE}
+        initialData={EDIT_INACTIVE}
+      />
+    );
+    expect(screen.getByText("Bao Cũ")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    expect(updateConversion).toHaveBeenCalledTimes(1);
+    const fd = vi.mocked(updateConversion).mock.calls[0][0] as FormData;
+    expect(fd.get("purchased_unit")).toBe("U-INACTIVE");
   });
 });
 

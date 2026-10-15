@@ -155,20 +155,6 @@ describe("ProductDetailView", () => {
     expect(screen.getAllByText("Ngừng bán").length).toBeGreaterThan(0);
   });
 
-  it("renders neither 'Bán lại' nor 'Ngừng bán' button when status is DELETED", () => {
-    render(
-      <ProductDetailView
-        product={{ ...matchaLatteProduct, status: "DELETED" }}
-        categoryName="Giải trí"
-        returnTo="/admin/products"
-        canDelete={false}
-      />,
-    );
-
-    expect(screen.queryByRole("button", { name: "Bán lại" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Ngừng bán" })).toBeNull();
-  });
-
   it("displays price history timestamp with seconds (BR-DATA-006)", () => {
     render(
       <ProductDetailView

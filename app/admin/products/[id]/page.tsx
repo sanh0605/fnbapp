@@ -40,9 +40,7 @@ export default async function ProductDetailPage(
     : rawReturnTo;
 
   const [category] = product.category_id
-    ? (await findAllWhere("Product_Categories", { eq: { id: product.category_id }, limit: 1 })).filter(
-        (c: any) => c.status !== "DELETED",
-      )
+    ? (await findAllWhere("Product_Categories", { eq: { id: product.category_id }, limit: 1 }))
     : [];
   const categoryName = category?.name || "Chưa phân loại";
 

@@ -1,12 +1,13 @@
 "use server";
 
-import { findAll, update, generateNewId, getCacheTag } from "@/lib/db/tables";
+import { findAll, remove, findSoldModifierIds, generateNewId, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import type { DBModifier, DBModifierGroup } from "@/types/db";
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { setProductStatusAtomic } from "@/lib/products/product-status-transaction";
+import { setModifierStatusAtomic } from "@/lib/products/modifier-status-transaction";
 import { saveModifierAtomic } from "@/lib/products/modifier-save-transaction";
 import { createStandaloneToppingProductAtomic } from "@/lib/products/create-standalone-topping";
 
@@ -21,9 +22,7 @@ export async function getModifiersData(): Promise<{
   if (!auth.ok) throw new Error(auth.error);
 
   try {
-    const modifiers = (await findAll(MODIFIER_SHEET)) as DBModifier[];
-    const activeModifiers = modifiers.filter(m => m.status !== "DELETED");
-    return { modifiers: activeModifiers };
+    return { modifiers: (await findAll(MODIFIER_SHEET)) as DBModifier[] };
   } catch (error) {
     // rethrow instead of a fabricated empty result -- app/error.tsx handles it.
     console.error("Loi getModifiersData:", error);
@@ -86,24 +85,55 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
   }
 }
 
+// BR-ACCESS-003: permanent deletion is ADMIN only. An option already in an order keeps its
+// history, so it can only be stopped (setModifierStatus), never erased.
 export async function deleteModifierAction(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  const auth = await requireOwner();
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;
   if (!id) return fail("ID không hợp lệ");
 
   try {
+    const option = ((await findAll(MODIFIER_SHEET)) as DBModifier[]).find((m) => m.id === id);
     // A linked dish that stays ACTIVE would keep selling with no option behind it.
-    const linked = ((await findAll(MODIFIER_SHEET)) as DBModifier[]).find((m) => m.id === id)?.product_id;
+    const linked = option?.product_id;
     if (linked) {
       const dish = ((await findAll("Products")) as any[]).find((p) => p.id === linked);
       if (dish?.status === "ACTIVE") {
         return fail(`Tuỳ chọn này đang bán riêng thành món ${dish.name}. Tắt Bán độc lập trước rồi xoá`);
       }
     }
-    await update(MODIFIER_SHEET, id, { status: "DELETED" });
+    if ((await findSoldModifierIds()).includes(id)) {
+      return fail(`Tuỳ chọn ${option?.name ?? id} đã có trong đơn; chọn Ngừng dùng thay vì xoá.`);
+    }
+    await remove(MODIFIER_SHEET, id);
     revalidateTag(getCacheTag("Modifiers"), { expire: 0 });
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
+
+export async function setModifierStatus(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  const id = ((formData.get("id") as string) || "").trim();
+  const status = formData.get("status");
+  if (status !== "ACTIVE" && status !== "INACTIVE") return fail("Trạng thái không hợp lệ");
+
+  try {
+    if (!((await findAll(MODIFIER_SHEET)) as DBModifier[]).some((m) => m.id === id)) return fail("Không tìm thấy tuỳ chọn");
+    // "Ngừng cả hai" (2026-10-15): stopping also stops the linked dish and its sizes, in one rpc.
+    const { productStopped } = await setModifierStatusAtomic(id, status);
+    revalidateTag(getCacheTag("Modifiers"), { expire: 0 });
+    if (productStopped) {
+      revalidateTag("sheets-Products", { expire: 0 });
+      revalidateTag("sheets-Product_Variants", { expire: 0 });
+      revalidatePath("/admin/products");
+    }
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -150,10 +180,8 @@ export async function toggleToppingStandalone(productId: string, enabled: boolea
   try {
     const product = ((await findAll("Products")) as any[]).find((p) => p.id === productId);
     if (!product) return fail(`Không tìm thấy sản phẩm ${productId}`);
-    // The rpc accepts any dish; a deleted one would come back on the till.
-    if (product.status === "DELETED") return fail("Món đã xoá, không bật/tắt bán độc lập được");
     const modifiers = (await findAll(MODIFIER_SHEET)) as DBModifier[];
-    if (!modifiers.some((m) => m.status !== "DELETED" && m.product_id === productId)) {
+    if (!modifiers.some((m) => m.product_id === productId)) {
       return fail(`Món "${product.name || productId}" không gắn với topping nào nên không bật/tắt bán độc lập được.`);
     }
     await setProductStatusAtomic(productId, enabled ? "ACTIVE" : "INACTIVE");

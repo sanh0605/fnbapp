@@ -90,7 +90,8 @@ describe("buildCashBookRows", () => {
     const known = rows.find((r) => r.key.endsWith("BA-001"))!;
     expect(known.accountLabel).toBe("ACB - Phin Di");
     expect(known.methodLabel).toBe("Chuyển khoản");
-    expect(known.href).toBe("/admin/inventory/purchase-orders?range=CUSTOM&from=2026-09-16&to=2026-09-16&pay=BANK_TRANSFER");
+    // The day row is split per account, so its link names the account too.
+    expect(known.href).toBe("/admin/inventory/purchase-orders?range=CUSTOM&from=2026-09-16&to=2026-09-16&pay=BANK_TRANSFER&account=BA-001");
     // An account no longer in the list still shows its id rather than a blank.
     expect(rows.find((r) => r.key.endsWith("BA-009"))!.accountLabel).toBe("BA-009");
   });
@@ -158,10 +159,10 @@ describe("cashBookRowTotals (BR-UI-004)", () => {
   ];
 
   it("splits money in from money out over every given row and leaves cancelled rows and transfers out", () => {
-    expect(cashBookRowTotals(rows)).toEqual({ count: 3, income: 700000, expense: 120000, net: 580000 });
+    expect(cashBookRowTotals(rows)).toEqual({ income: 700000, expense: 120000 });
   });
 
   it("is all zero for no rows", () => {
-    expect(cashBookRowTotals([])).toEqual({ count: 0, income: 0, expense: 0, net: 0 });
+    expect(cashBookRowTotals([])).toEqual({ income: 0, expense: 0 });
   });
 });

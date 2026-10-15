@@ -1,14 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { formatNumber } from "@/lib/shared/format";
-import { deleteModifierAction } from "@/app/admin/products/modifiers/actions";
+import { confirm } from "@/lib/shared/dialog";
+import { deleteModifierAction, setModifierStatus } from "@/app/admin/products/modifiers/actions";
 import { StandaloneToppingSwitch } from "@/app/admin/products/modifiers/components/StandaloneToppingSwitch";
 import type { DBModifier } from "@/types/db";
 
@@ -24,6 +28,7 @@ export interface ModifierDetailViewProps {
   groupName: string;
   allowStandalone: boolean;
   groupSelectionMode?: "ONE" | "MANY";
+  canDelete: boolean;
   returnTo: string;
 }
 
@@ -33,8 +38,46 @@ export function ModifierDetailView({
   groupName,
   allowStandalone,
   groupSelectionMode,
+  canDelete,
   returnTo,
 }: ModifierDetailViewProps) {
+  const router = useRouter();
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [isStatusPending, setIsStatusPending] = useState(false);
+
+  const isInactive = modifier.status === "INACTIVE";
+
+  async function handleToggleStatus() {
+    setStatusError(null);
+    if (!isInactive) {
+      const message =
+        product && product.status === "ACTIVE"
+          ? `Ngừng "${modifier.name}"? Máy bán hàng sẽ không còn hiện nó ở phần thêm topping lẫn món bán riêng ${product.name}.`
+          : `Ngừng dùng tuỳ chọn "${modifier.name}"? Máy bán hàng sẽ không còn hiện tuỳ chọn này.`;
+      const ok = await confirm({
+        title: "Ngừng dùng",
+        message,
+        variant: "danger",
+      });
+      if (!ok) return;
+    }
+
+    setIsStatusPending(true);
+    try {
+      const fd = new FormData();
+      fd.append("id", modifier.id);
+      fd.append("status", isInactive ? "ACTIVE" : "INACTIVE");
+      const res = await setModifierStatus(fd);
+      if (res?.error) {
+        setStatusError(res.error);
+      } else {
+        router.refresh();
+      }
+    } finally {
+      setIsStatusPending(false);
+    }
+  }
+
   const currentDetailUrl = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
 
@@ -46,21 +89,31 @@ export function ModifierDetailView({
       <Button href={editHref} variant="secondary">
         Chỉnh sửa
       </Button>
-      <RemoveRecordButton
-        verb="Xoá"
-        name={modifier.name}
-        confirmMessage={`Xoá tuỳ chọn "${modifier.name}"?`}
-        remove={async () => {
-          const fd = new FormData();
-          fd.append("id", modifier.id);
-          const res = await deleteModifierAction(fd);
-          if (res?.error) {
-            return { error: res.error };
-          }
-          return {};
-        }}
-        afterHref={returnTo}
-      />
+      <Button
+        type="button"
+        variant={isInactive ? "secondary" : "delete"}
+        loading={isStatusPending}
+        onClick={handleToggleStatus}
+      >
+        {isInactive ? "Dùng lại" : "Ngừng dùng"}
+      </Button>
+      {canDelete && (
+        <RemoveRecordButton
+          verb="Xoá"
+          name={modifier.name}
+          confirmMessage={`Xoá tuỳ chọn "${modifier.name}"?`}
+          remove={async () => {
+            const fd = new FormData();
+            fd.append("id", modifier.id);
+            const res = await deleteModifierAction(fd);
+            if (res?.error) {
+              return { error: res.error };
+            }
+            return {};
+          }}
+          afterHref={returnTo}
+        />
+      )}
     </div>
   );
 
@@ -69,6 +122,10 @@ export function ModifierDetailView({
     { label: "Nhóm", value: displayGroupName },
     { label: "Tên tuỳ chọn", value: modifier.name },
     { label: "Giá thêm", value: formatNumber(modifier.price) },
+    {
+      label: "Trạng thái",
+      value: modifier.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng",
+    },
     { label: "Có sẵn", value: modifier.is_default ? "Có" : "Không" },
     {
       label: "Tối đa mỗi món",
@@ -116,8 +173,21 @@ export function ModifierDetailView({
         backLabel="Topping & tuỳ chọn"
         title={modifier.name}
         subtitle={modifier.id}
+        badge={
+          modifier.status === "INACTIVE" ? (
+            <Badge variant="neutral">
+              Ngừng dùng
+            </Badge>
+          ) : undefined
+        }
         actions={headerActions}
       />
+
+      {statusError && (
+        <Alert variant="danger">
+          {statusError}
+        </Alert>
+      )}
 
       <FieldList fields={fields} />
     </DetailFrame>

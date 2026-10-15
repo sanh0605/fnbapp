@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -22,6 +23,7 @@ interface ModifiersClientProps {
   groups?: DBModifierGroup[];
   initialSearch?: string;
   initialPage?: string;
+  canDelete?: boolean;
 }
 
 function listUrl(
@@ -46,6 +48,7 @@ export default function ModifiersClient({
   groups,
   initialSearch = "",
   initialPage,
+  canDelete = false,
 }: ModifiersClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -117,7 +120,14 @@ export default function ModifiersClient({
         header: "Tên tuỳ chọn",
         sortValue: (m) => m.name,
         render: (m) => (
-          <div className="text-text-primary">{m.name}</div>
+          <div>
+            <div className="text-text-primary">{m.name}</div>
+            {m.status === "INACTIVE" && (
+              <Badge variant="neutral" className="mt-1">
+                Ngừng dùng
+              </Badge>
+            )}
+          </div>
         ),
       },
       {
@@ -202,8 +212,15 @@ export default function ModifiersClient({
               {m.id}
             </div>
           </div>
-          <div className="text-primary shrink-0 text-sm tabular-nums">
-            {formatNumber(m.price)}
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <div className="text-primary text-sm tabular-nums">
+              {formatNumber(m.price)}
+            </div>
+            {m.status === "INACTIVE" && (
+              <Badge variant="neutral">
+                Ngừng dùng
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-between text-xs text-text-secondary pt-1 border-t border-border/50">
@@ -277,7 +294,7 @@ export default function ModifiersClient({
           dir: sortDir,
           href: (k, d) => listUrl(search, 1, k, d),
         }}
-        removal={removal}
+        removal={canDelete ? removal : undefined}
         empty={
           <EmptyState
             icon="🧋"

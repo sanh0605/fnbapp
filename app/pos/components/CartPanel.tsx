@@ -26,6 +26,8 @@ interface CartPanelProps {
   handleRemovePromoCode: () => void;
   appliedPromo: any;
   promoDiscountAmount: number;
+  orderManualAmount?: number;
+  totalAmount: number;
   manualPromoError: string | null;
   userCustomDiscountType: "VND" | "PERCENT";
   setUserCustomDiscountType: (type: "VND" | "PERCENT") => void;
@@ -59,6 +61,8 @@ export function CartPanel({
   handleRemovePromoCode,
   appliedPromo,
   promoDiscountAmount,
+  orderManualAmount = 0,
+  totalAmount,
   manualPromoError,
   userCustomDiscountType,
   setUserCustomDiscountType,
@@ -101,29 +105,6 @@ export function CartPanel({
       return sum + (item.unit_price + modsPrice) * item.qty;
     }, 0);
 
-  const calculateTotalAmount = () => {
-    const subtotal = calculateSubtotal();
-
-    let orderLevelDiscount = 0;
-    if (userCustomDiscount !== null) {
-      if (userCustomDiscountType === "PERCENT") {
-        orderLevelDiscount = (subtotal * userCustomDiscount) / 100;
-      } else {
-        orderLevelDiscount = userCustomDiscount;
-      }
-    } else if (appliedPromo?.type === "ORDER_DISCOUNT") {
-      orderLevelDiscount = promoDiscountAmount;
-    }
-
-    const productLevelDiscount = appliedPromo?.type === "PRODUCT_DISCOUNT" ? promoDiscountAmount : 0;
-
-    return Math.max(0, subtotal - orderLevelDiscount - productLevelDiscount);
-  };
-
-  // Rounded to match lib/sales/order-cart.ts's net_total (Math.round on every discount
-  // step) -- without this, a PERCENT order discount can leave a fractional VND
-  // amount here that no whole-number split-payment entry could ever equal exactly.
-  const totalAmount = Math.round(calculateTotalAmount());
   const totalSplitEntered = splitPayments.reduce((sum, p) => sum + p.amount, 0);
   const splitRemaining = Math.max(0, totalAmount - totalSplitEntered);
 
@@ -472,16 +453,14 @@ export function CartPanel({
                 <DiscountBadge
                   kind={DISCOUNT_KIND.ORDER}
                   label="Thu ngân"
-                  amount={
-                    userCustomDiscountType === "PERCENT" ? (calculateSubtotal() * userCustomDiscount) / 100 : userCustomDiscount
-                  }
+                  amount={orderManualAmount}
                 />
               </div>
             )}
 
             {appliedPromo &&
               (() => {
-                const amount = userCustomDiscount !== null && appliedPromo.type === "ORDER_DISCOUNT" ? 0 : promoDiscountAmount;
+                const amount = promoDiscountAmount;
                 if (amount <= 0) return null;
                 return (
                   <div className="flex justify-between items-center mb-3">

@@ -30,6 +30,7 @@ export default async function PurchaseOrdersPage(
     to: searching ? undefined : range.end,
     page: getParam("page"),
     pay: getParam("pay"),
+    account: getParam("account"),
   };
   const pageData = await getPurchaseOrdersPage(filters);
   return (

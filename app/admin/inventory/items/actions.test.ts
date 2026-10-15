@@ -73,6 +73,13 @@ describe("getItemsData -- the production incident this plan exists to fix", () =
       categories: [], items: [], conversions: [], units: [], unitLockedItemIds: [],
     });
   });
+
+  it("returns an INACTIVE unit too, so names and validation still resolve", async () => {
+    const unit = { id: "UNIT-9", name: "Cũ", status: "INACTIVE" };
+    mocks.findAll.mockImplementation(async (sheet: string) => (sheet === "Units" ? [unit] : []));
+
+    expect((await actions.getItemsData()).units).toEqual([unit]);
+  });
 });
 
 // Batch 1, item B, gates 3/4 (section B1): `if (base_ingredient_id &&
@@ -853,5 +860,44 @@ describe("updatePurchasedItem -- an issued item cannot leave costing, and a conv
     const res = await actions.addPurchasedItem(f);
     expect(res.error).toBe("Hệ số quy đổi phải là số lớn hơn 0.");
     expect(mocks.insert).not.toHaveBeenCalled();
+  });
+});
+
+describe("setPurchasedItemStatus (BR-CATALOG-007)", () => {
+  const statusForm = (id: string, status: string) => {
+    const f = new FormData();
+    f.set("id", id);
+    f.set("status", status);
+    return f;
+  };
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findAll.mockResolvedValue([{ id: "SPM-1", name: "Trứng gà", status: "ACTIVE" }]);
+  });
+
+  it.each(["INACTIVE", "ACTIVE"])("writes only status=%s and expires the Purchased_Items cache", async status => {
+    expect(await actions.setPurchasedItemStatus(statusForm("SPM-1", status))).toEqual({ success: true });
+    expect(mocks.update).toHaveBeenCalledWith("Purchased_Items", "SPM-1", { status });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"), { expire: 0 });
+  });
+
+  it("refuses DELETED and any other status", async () => {
+    const res = await actions.setPurchasedItemStatus(statusForm("SPM-1", "DELETED"));
+    expect(res.error).toBe("Trạng thái không hợp lệ.");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses an unknown id", async () => {
+    const res = await actions.setPurchasedItemStatus(statusForm("SPM-404", "INACTIVE"));
+    expect(res.error).toBe("Không tìm thấy hàng hoá.");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses a role that is neither owner nor manager", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền" });
+    const res = await actions.setPurchasedItemStatus(statusForm("SPM-1", "INACTIVE"));
+    expect(res.error).toBe("Không có quyền");
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 });

@@ -20,7 +20,6 @@ const { mockCategories } = vi.hoisted(() => ({
 
 const mockProducts = [
   { id: "PROD-001", name: "Cà phê đá", category_id: "CAT-001", status: "ACTIVE" },
-  { id: "PROD-002", name: "Cà phê sữa", category_id: "CAT-001", status: "DELETED" },
   { id: "PROD-003", name: "Trà đào", category_id: "CAT-002", status: "ACTIVE" },
 ];
 
@@ -30,6 +29,11 @@ vi.mock("@/app/admin/products/categories/actions", () => ({
     counts: { "CAT-001": 1, "CAT-002": 1 },
   }),
   deleteCategory: vi.fn(),
+}));
+
+const resolveActorMock = vi.fn();
+vi.mock("@/lib/auth/auth", () => ({
+  resolveActor: () => resolveActorMock(),
 }));
 
 vi.mock("@/lib/db/tables", () => ({
@@ -42,6 +46,7 @@ vi.mock("@/lib/db/tables", () => ({
 describe("ProductCategoryDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resolveActorMock.mockResolvedValue({ ok: true, actor: { role: "ADMIN" } });
   });
 
   it("calls notFound when category id is unknown", async () => {
@@ -51,7 +56,7 @@ describe("ProductCategoryDetailPage", () => {
     expect(notFoundMock).toHaveBeenCalled();
   });
 
-  it("excludes DELETED dishes from the dishes passed to view", async () => {
+  it("passes only the dishes of this group to the view", async () => {
     const element = await ProductCategoryDetailPage({
       params: Promise.resolve({ id: "CAT-001" }),
       searchParams: Promise.resolve({}),
@@ -61,7 +66,7 @@ describe("ProductCategoryDetailPage", () => {
     expect(element).toBeDefined();
     expect(element.props.dishes).toHaveLength(1);
     expect(element.props.dishes[0].id).toBe("PROD-001");
-    expect(element.props.dishes.some((d: any) => d.id === "PROD-002")).toBe(false);
+    expect(element.props.dishes.some((d: any) => d.id === "PROD-003")).toBe(false);
   });
 
   it("does not pass function props to Client Component", async () => {
@@ -72,5 +77,22 @@ describe("ProductCategoryDetailPage", () => {
 
     const props = element.props;
     expect(Object.values(props).every((v) => typeof v !== "function")).toBe(true);
+  });
+
+  it("passes canDelete true for ADMIN", async () => {
+    const element = await ProductCategoryDetailPage({
+      params: Promise.resolve({ id: "CAT-001" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(element.props.canDelete).toBe(true);
+  });
+
+  it("passes canDelete false for non-ADMIN", async () => {
+    resolveActorMock.mockResolvedValue({ ok: true, actor: { role: "STAFF" } });
+    const element = await ProductCategoryDetailPage({
+      params: Promise.resolve({ id: "CAT-001" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(element.props.canDelete).toBe(false);
   });
 });

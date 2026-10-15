@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { buildOrderFromCart } from "@/lib/sales/order-cart";
+import type { ReferenceData } from "@/lib/sales/order-cart";
 
 describe("POS order COGS calculation", () => {
   // Plan C Task 3: checkout no longer computes a cost or moves stock. The
@@ -101,16 +103,53 @@ describe("submitOrderV2 -- a promotion edited after the order was taken (BR-SALE
   );
 });
 
+const REF: ReferenceData = {
+  brands: [{ id: "BR-002" }],
+  products: [
+    { id: "P1", name: "Bạc xỉu", category_id: "C", status: "ACTIVE" },
+    { id: "P2", name: "Cà phê sữa", category_id: "C", status: "ACTIVE" },
+    { id: "P3", name: "Trà lớn", category_id: "C", status: "ACTIVE" },
+  ],
+  variants: [
+    { id: "V1", product_id: "P1", size_name: "M", price: "29000", status: "ACTIVE" },
+    { id: "V2", product_id: "P2", size_name: "M", price: "25000", status: "ACTIVE" },
+    { id: "V3", product_id: "P3", size_name: "L", price: "100000", status: "ACTIVE" },
+  ],
+  categories: [{ id: "C", name: "Đồ uống" }],
+  modifiers: [],
+  promotions: [{
+    id: "ORD-10", name: "Giảm 10% hóa đơn", type: "ORDER_DISCOUNT", discount_type: "PERCENT", discount_value: "10",
+    applicable_products_json: "", code: "", start_date: "2026-01-01T00:00:00.000Z", end_date: "", status: "ACTIVE", brand_id: "", min_order_value: "0",
+  }],
+};
+const line = (product_id: string, variant_id: string, discount = 0) => ({
+  product_id, variant_id, qty: 1, modifiers: [], manual_item_discount: { value: discount, type: "VND" as const },
+});
+const base = { brand_id: "BR-002", outlet_id: "OUT-002", payment_method: "CASH" as const, actor: { id: "U1", name: "Test" } };
+
 describe("submitOrderV2 -- percent order discount base (BR-SALE-009)", () => {
-  it.todo(
-    "Giảm % cả đơn tính trên tổng sau giảm từng món, máy chủ ra đúng số máy bán hiện (chủ quán chốt 14/10/2026)",
-  );
+  it("Giảm % cả đơn tính trên tổng sau giảm từng món: Bạc xỉu 29.000 giảm 4.000 + Cà phê sữa 25.000, giảm 10% cả đơn = 45.000", () => {
+    const r = buildOrderFromCart({
+      ...base,
+      items: [line("P1", "V1", 4000), line("P2", "V2")],
+      manual_order_discount: { value: 10, type: "PERCENT" },
+    }, { ...REF, promotions: [] });
+    expect(r.order.manual_order_discount).toBe(5000);
+    expect(r.order.net_total).toBe(45000);
+  });
 });
 
 describe("submitOrderV2 -- whole-order promotion stacks with the cashier discount (BR-SALE-010)", () => {
-  it.todo(
-    "Khuyến mãi giảm cả hoá đơn áp trước, giảm tay cả đơn áp sau, máy chủ ra đúng số máy bán hiện (chủ quán chốt 14/10/2026)",
-  );
+  it("Giảm 10% hóa đơn trên 100.000 rồi giảm tay 5.000 = 85.000", () => {
+    const r = buildOrderFromCart({
+      ...base,
+      items: [line("P3", "V3")],
+      manual_order_discount: { value: 5000, type: "VND" },
+    }, REF);
+    expect(r.order.promo_discount_total).toBe(10000);
+    expect(r.order.manual_order_discount).toBe(5000);
+    expect(r.order.net_total).toBe(85000);
+  });
 });
 
 describe("submitOrderV2 -- minimum order value after dish discounts (BR-SALE-011)", () => {

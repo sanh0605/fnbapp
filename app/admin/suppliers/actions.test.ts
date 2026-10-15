@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   remove: vi.fn(),
   generateNewId: vi.fn(),
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/auth", () => ({
@@ -21,10 +22,11 @@ vi.mock("@/lib/db/tables", () => ({
   update: mocks.update,
   remove: mocks.remove,
   generateNewId: mocks.generateNewId,
+  getCacheTag: (t: string) => `sheets-${t}`,
 }));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
-import { addSupplier, editSupplier, getSuppliers, deleteSupplierAction } from "./actions";
+import { addSupplier, editSupplier, getSuppliers, deleteSupplierAction, setSupplierStatus } from "./actions";
 
 function baseFormData(name: string): FormData {
   const formData = new FormData();
@@ -225,5 +227,44 @@ describe("editSupplier -- level 2, diacritic-stripped warning", () => {
     expect(res.error).toBeUndefined();
     expect(res.needsDuplicateWarning).toBeUndefined();
     expect(mocks.update).toHaveBeenCalled();
+  });
+});
+
+describe("setSupplierStatus (BR-CATALOG-007)", () => {
+  const statusForm = (id: string, status: string) => {
+    const f = new FormData();
+    f.set("id", id);
+    f.set("status", status);
+    return f;
+  };
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    mocks.findAll.mockResolvedValue([{ id: "NCC-1", name: "Circle K", status: "ACTIVE" }]);
+  });
+
+  it.each(["INACTIVE", "ACTIVE"])("writes only status=%s and expires the Suppliers cache", async status => {
+    expect(await setSupplierStatus(statusForm("NCC-1", status))).toEqual({ success: true });
+    expect(mocks.update).toHaveBeenCalledWith("Suppliers", "NCC-1", { status });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Suppliers", { expire: 0 });
+  });
+
+  it("refuses DELETED and any other status", async () => {
+    const res = await setSupplierStatus(statusForm("NCC-1", "DELETED"));
+    expect(res.error).toBe("Trạng thái không hợp lệ.");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses an unknown id", async () => {
+    const res = await setSupplierStatus(statusForm("NCC-404", "INACTIVE"));
+    expect(res.error).toBe("Không tìm thấy nhà cung cấp.");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses a role that is neither owner nor manager", async () => {
+    mocks.requireAdmin.mockResolvedValue({ ok: false, error: "Không có quyền" });
+    const res = await setSupplierStatus(statusForm("NCC-1", "INACTIVE"));
+    expect(res.error).toBe("Không có quyền");
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 });

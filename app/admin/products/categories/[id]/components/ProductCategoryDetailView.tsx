@@ -23,6 +23,7 @@ export interface ProductCategoryDetailViewProps {
   typeName?: string;
   dishCount?: number;
   dishes: DishItem[];
+  canDelete?: boolean;
   returnTo: string;
 }
 
@@ -31,6 +32,7 @@ export function ProductCategoryDetailView({
   typeName,
   dishCount,
   dishes,
+  canDelete = false,
   returnTo,
 }: ProductCategoryDetailViewProps) {
   const currentDetailUrl = `/admin/products/categories/${encodeURIComponent(category.id)}?returnTo=${encodeURIComponent(returnTo)}`;
@@ -49,21 +51,23 @@ export function ProductCategoryDetailView({
       <Button href={editHref} variant="secondary">
         Chỉnh sửa
       </Button>
-      <RemoveRecordButton
-        verb="Xoá"
-        name={category.name}
-        confirmMessage={`Xoá nhóm món "${category.name}"?`}
-        remove={async () => {
-          const fd = new FormData();
-          fd.append("id", category.id);
-          const res = await deleteCategory(fd);
-          if (res?.error) {
-            return { error: res.error };
-          }
-          return {};
-        }}
-        afterHref={returnTo}
-      />
+      {canDelete && count === 0 && (
+        <RemoveRecordButton
+          verb="Xoá"
+          name={category.name}
+          confirmMessage={`Xoá nhóm món "${category.name}"?`}
+          remove={async () => {
+            const fd = new FormData();
+            fd.append("id", category.id);
+            const res = await deleteCategory(fd);
+            if (res?.error) {
+              return { error: res.error };
+            }
+            return {};
+          }}
+          afterHref={returnTo}
+        />
+      )}
     </div>
   );
 

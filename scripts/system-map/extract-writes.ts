@@ -2,7 +2,7 @@ export type WriteSite = { file: string; table: string };
 export type UnresolvedWrite = { file: string; reason: string };
 
 const SHEETS_VERBS = ["insert", "insertMany", "update", "updateMany", "remove", "removeMany"];
-const WRAPPERS = ["createEntity", "updateEntity", "deleteEntity", "softDeleteEntity"];
+const WRAPPERS = ["createEntity", "updateEntity", "deleteEntity"];
 
 // `const NAME = "Table"` declarations in the same file.
 function localConsts(source: string): Map<string, string> {

@@ -16,11 +16,7 @@ export async function loadProductRows() {
     findAll("Modifiers"),
   ]);
 
-  const activeCategories = categories.filter(c => c.status !== "DELETED");
-  // Owner decision 2026-08-29: no third state, no archive -- the status
-  // filter itself (ProductsClient.tsx) is the only route to a DELETED
-  // product now that "Tất cả" is gone, so DELETED products must reach the
-  // client instead of being filtered out here.
+  // A removed size is still marked DELETED by save_product_atomic; hide it.
   const activeVariants = variants.filter(v => v.status !== "DELETED");
 
   // Task 2: a product linked to an ACTIVE modifier has its price set on
@@ -38,7 +34,7 @@ export async function loadProductRows() {
     // the row explains the gap. Scoped to ACTIVE/INACTIVE only; a DELETED
     // product already shows its own "Đã xoá" badge and needs no second
     // warning.
-    const hasNoSellableVariant = p.status !== "DELETED" && !productVariants.some(v => v.status === "ACTIVE");
+    const hasNoSellableVariant = !productVariants.some(v => v.status === "ACTIVE");
 
     return {
       ...p,
@@ -48,7 +44,7 @@ export async function loadProductRows() {
     };
   });
 
-  return { enhancedProducts, activeCategories };
+  return { enhancedProducts, activeCategories: categories };
 }
 
 /**
@@ -88,7 +84,7 @@ export async function loadProductRow(id: string) {
       (a: PriceHistory, b: PriceHistory) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     ),
     neverSold: !sold,
-    hasNoSellableVariant: product.status !== "DELETED" && !productVariants.some(v => v.status === "ACTIVE"),
+    hasNoSellableVariant: !productVariants.some(v => v.status === "ACTIVE"),
     isLinkedTopping: modifiers.some(m => m.status === "ACTIVE"),
     hasModifierLink: modifiers.length > 0,
   };

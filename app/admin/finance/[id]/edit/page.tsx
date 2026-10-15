@@ -5,6 +5,7 @@ import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
 import { getMonthlyItems } from "@/app/admin/finance/monthly-items/actions";
 import { CashEntryForm } from "@/app/admin/finance/components/CashEntryForm";
 import { safeReturnTo } from "@/app/admin/finance/components/return-to";
+import { editBackHref } from "@/lib/finance/detail-href";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { formatNumber } from "@/lib/shared/format";
@@ -33,21 +34,7 @@ export default async function EditCashEntryPage(
     notFound();
   }
 
-  const ownDetailPath = `/admin/finance/${encodeURIComponent(entry.id)}`;
-  const ownDetailPathRaw = `/admin/finance/${entry.id}`;
-  const isOwnDetail =
-    rawReturnTo === ownDetailPath ||
-    rawReturnTo.startsWith(`${ownDetailPath}?`) ||
-    rawReturnTo === ownDetailPathRaw ||
-    rawReturnTo.startsWith(`${ownDetailPathRaw}?`);
-
-  const listReturnTo = rawReturnTo.startsWith("/admin/finance/")
-    ? "/admin/finance"
-    : rawReturnTo;
-
-  const detailHref = isOwnDetail
-    ? rawReturnTo
-    : `/admin/finance/${encodeURIComponent(entry.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
+  const detailHref = editBackHref(rawReturnTo, "/admin/finance", entry.id);
 
   const category = categories.find((c) => c.id === entry.category_id);
   const backLabel = category

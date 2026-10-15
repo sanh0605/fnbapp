@@ -16,6 +16,8 @@ export interface PurchaseOrderListFilters {
   q?: string; status?: string; supplier?: string; from?: string; to?: string; page?: string;
   // "CASH" | "BANK_TRANSFER"; anything else is ignored.
   pay?: string;
+  // A bank account id (the cash book splits purchase days per account); empty means any.
+  account?: string;
 }
 export interface PurchaseOrderListRow {
   id: string; dateText: string; supplierName: string; sourceName: string;
@@ -86,6 +88,7 @@ export function listPurchaseOrdersPage(input: {
 
   const matched = orders.filter(po => {
     if (pay && po.payment_method !== pay) return false;
+    if (filters.account && po.bank_account_id !== filters.account) return false;
     if (status === "ACTIVE" ? po.status === "CANCELLED" : status !== "ALL" && po.status !== status) return false;
     if (filters.supplier && filters.supplier !== "ALL" && po.supplier_id !== filters.supplier) return false;
     const t = slipTime(po);

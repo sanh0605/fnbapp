@@ -39,7 +39,7 @@ const { mockProducts, mockCategories, resolveActorMock } = vi.hoisted(() => ({ r
     id: "PROD-099",
     name: "Món đã xoá",
     category_id: "CAT-001",
-    status: "DELETED",
+    status: "INACTIVE",
     variants: [],
     priceHistory: [],
     neverSold: true,
@@ -80,7 +80,7 @@ describe("ProductDetailPage", () => {
     expect(notFoundMock).toHaveBeenCalled();
   });
 
-  it("renders a DELETED product without calling notFound", async () => {
+  it("renders an INACTIVE product without calling notFound", async () => {
     const element = await ProductDetailPage({
       params: Promise.resolve({ id: "PROD-099" }),
       searchParams: Promise.resolve({}),
@@ -88,7 +88,7 @@ describe("ProductDetailPage", () => {
     expect(notFoundMock).not.toHaveBeenCalled();
     expect(element).toBeDefined();
     expect(element.props.product.id).toBe("PROD-099");
-    expect(element.props.product.status).toBe("DELETED");
+    expect(element.props.product.status).toBe("INACTIVE");
   });
 
   it("shows the category name, and the fallback when the category is missing", async () => {

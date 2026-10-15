@@ -3,8 +3,7 @@
 The cash book (`/admin/finance`, tables `cash_categories`, `bank_accounts`,
 `cash_entries`, `cash_transfers`, view `cash_book_daily`) shows every movement
 of money: hand-typed rows, transfers, and the sale and purchase money read from
-the orders themselves.
-Flow: `docs/03-workflows/cash-book.md`.
+the orders themselves. Flow: `docs/03-workflows/cash-book.md`.
 
 ### BR-CASH-001 — Sale and purchase money shows in the cash book but is never typed into it, with one dated exception
 
@@ -21,10 +20,13 @@ the orders and purchase orders themselves, never copied or retyped, so nothing
 is counted twice and profit and loss does not change. A purchase order is
 taken as paid in full on its own date (owner answer "3a", 2026-10-04); it
 gains a payment choice, cash or transfer (labelled "Trả bằng" until 2026-10-06, then "Hình thức thanh toán", shown under the order's total, owner 2026-10-06; paying one order by several methods is approved in principle and waits for its own design), and the 198 completed orders that
-exist on 2026-10-04 count as cash until the owner changes one. On a new purchase
-order nothing is chosen in advance: whoever enters it must pick "Tiền mặt" or
-"Chuyển khoản", so nobody forgets to switch it for a transfer (owner answer
-"1a", 2026-10-04).
+exist on 2026-10-04 count as cash until the owner changes one; **changed
+2026-10-15:** the 53 Shopee orders among them (26.048.237đ, 2026-03-26 to
+2026-09-30) were paid through "ACB - Phin Di", so one approved write moves them
+to transfer on that account (Thu chi proposal Q2; Lãi lỗ unchanged); written 2026-10-15 (`scripts/move-shopee-orders-to-acb.ts`, 0 differences on 9 months). The same day the owner said all three "Vốn góp" rows (CE-001, CE-024, CE-040, 35.982.207đ) went into that account, so they moved to transfer too (`scripts/move-capital-entries-to-acb.ts`). Cash then reads negative from 31/03 (lowest −26.250.920đ on 31/07): money taken out of ACB as cash was never recorded; the owner chose to leave it and record one ACB → Tiền mặt transfer himself in October 2026. On a new
+purchase order nothing is chosen in advance: whoever enters it must pick "Tiền
+mặt" or "Chuyển khoản", so nobody forgets to switch it for a transfer (owner
+answer "1a", 2026-10-04).
 
 **One row per day and payment method, for sales and for purchases** (owner
 2026-10-04). Sales: *"Theo em khuyến nghị"*, after being shown that September
@@ -134,7 +136,11 @@ An income category that counts in profit and loss can carry a second flag, "Tín
 ### BR-CASH-007 — Opening and closing balances, for cash and bank apart and together
 
 **Status:** `APPROVED` — owner decision 2026-10-04; built 2026-10-04
-(`lib/finance/cash-flow.ts`).
+(`lib/finance/cash-flow.ts`). **Reaffirmed 2026-10-15** (owner: *"Giữ nguyên"*)
+after seeing cash −3.593.751đ, bank 31.485.578đ and the split still drifting (91
+transfer-paid sales, 0 transfers since 2026-10-04); a Kiểm quỹ page and an opening
+balance were offered and declined. Only change: the Tiền mặt card is captioned
+"theo sổ" and, while negative, "sổ chưa ghi tiền gửi ngân hàng" (`docs/superpowers/specs/2026-10-15-thu-chi-de-xuat.md`, Q1).
 
 For the date range being viewed, the cash book shows an opening balance (the
 first day, before any of its movements) and a closing balance (after the last

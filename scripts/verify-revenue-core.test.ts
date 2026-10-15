@@ -598,7 +598,7 @@ describe("computeExpectedPromoDiscountForLine", () => {
     const snapshot = parsePromotionSnapshot(FLAT_PRICE_SNAPSHOT_RAW)!;
     snapshot.applicable.set("VAR-ZERO", 0); // a hypothetical genuine free-target override
     // targetPrice = 0 || 15000 = 15000 (discount_value), not 0 -- matching
-    // lib/sales/order-cart.ts's computePromoForLine exactly, not fixed here.
+    // lib/sales/price-cart.ts's priceCart exactly, not fixed here.
     const discount = computeExpectedPromoDiscountForLine(snapshot, "VAR-ZERO", 18000, 1, 18000);
     expect(discount).toBe(3000); // (18000 - 15000) * 1, NOT (18000 - 0) * 1 = 18000
   });

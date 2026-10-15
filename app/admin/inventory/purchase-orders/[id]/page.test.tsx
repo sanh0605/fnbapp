@@ -460,3 +460,34 @@ describe("purchase order stocktake lock (BR-INV-018)", () => {
     expect(text).toContain("nên không huỷ được: lần kiểm kê đã đếm lại hàng trên kệ.");
   });
 });
+
+describe("edit form stopped suppliers and items (BR-CATALOG-007)", () => {
+  const tables: Record<string, unknown[]> = {
+    Suppliers: [
+      { id: "S-OK", status: "ACTIVE" },
+      { id: "S-OFF", status: "INACTIVE" },
+      { id: "S-OFF-OTHER", status: "INACTIVE" },
+    ],
+    Purchased_Items: [
+      { id: "I-OK", status: "ACTIVE" },
+      { id: "I-OFF", status: "INACTIVE" },
+      { id: "I-OFF-OTHER", status: "INACTIVE" },
+    ],
+    Purchase_Order_Lines: [{ purchase_order_id: "PO-9", purchased_item_id: "I-OFF" }],
+  };
+  // The mocked form is a plain function, so the element's props are read straight off the tree.
+  const findForm = (node: any): any =>
+    !node || typeof node !== "object" ? null
+      : node.props?.suppliers ? node
+      : [].concat(node.props?.children ?? []).map(findForm).find(Boolean) ?? null;
+
+  it("lists the order's own stopped supplier and items, and no other stopped ones", async () => {
+    findAll.mockImplementation(async (t: string) => tables[t] ?? []);
+    findById.mockResolvedValue({ id: "PO-9", status: "DRAFT", supplier_id: "S-OFF", created_at: "2026-10-01T00:00:00Z" });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-9" }), searchParams: Promise.resolve({ edit: "1" }) });
+    const form = findForm(tree);
+    expect(form.props.suppliers.map((s: any) => s.id)).toEqual(["S-OK", "S-OFF"]);
+    expect(form.props.items.map((i: any) => i.id)).toEqual(["I-OK", "I-OFF"]);
+    findAll.mockReset().mockResolvedValue([]);
+  });
+});

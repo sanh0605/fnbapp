@@ -23,7 +23,7 @@ export interface ModifierGroupRow {
 const bySortThenName = (a: DBModifierGroup, b: DBModifierGroup) =>
   a.sort_order - b.sort_order || a.name.localeCompare(b.name, "vi");
 
-// Every option counts for an erase, deleted ones too: the RESTRICT key refuses on any row.
+// Every option counts for an erase, stopped ones too: the RESTRICT key refuses on any row.
 const optionsOf = (options: DBModifier[], groupId: string) => options.filter((o) => o.group_id === groupId);
 
 const inUseMessage = (options: DBModifier[]) => `Nhóm còn tuỳ chọn: ${options.map((o) => o.name).join(", ")}.`;
@@ -44,7 +44,7 @@ export async function getModifierGroups(): Promise<ModifierGroupRow[]> {
   ]);
   return [...groups].sort(bySortThenName).map((group) => ({
     group,
-    optionNames: optionsOf(options, group.id).filter((o) => o.status !== "DELETED").map((o) => o.name),
+    optionNames: optionsOf(options, group.id).map((o) => o.name),
     productCount: links.filter((l) => l.group_id === group.id).length,
   }));
 }
@@ -65,7 +65,7 @@ export async function getModifierGroup(id: string): Promise<{
   ]);
   return {
     group,
-    options: optionsOf(options, id).filter((o) => o.status !== "DELETED"),
+    options: optionsOf(options, id),
     productIds: links.filter((l) => l.group_id === id).map((l) => l.product_id),
   };
 }
@@ -94,7 +94,7 @@ async function write(isEdit: boolean, formData: FormData): Promise<ActionRespons
       return fail("Tên nhóm đã có");
     }
     if (isEdit && !allowStandalone) {
-      const sold = optionsOf((await findAll(OPTIONS)) as DBModifier[], editId).filter((o) => o.product_id && o.status !== "DELETED");
+      const sold = optionsOf((await findAll(OPTIONS)) as DBModifier[], editId).filter((o) => o.product_id);
       if (sold.length > 0) {
         return fail(`Nhóm có món bán riêng: ${sold.map((o) => o.name).join(", ")}. Tắt bán riêng ở từng món trước.`);
       }

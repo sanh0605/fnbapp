@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Alert } from "@/components/ui/Alert";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
@@ -11,7 +13,8 @@ import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { ListPagination } from "@/components/ui/list/ListPagination";
 import { formatNumber } from "@/lib/shared/format";
-import { deleteSupplierAction } from "../../actions";
+import { confirm } from "@/lib/shared/dialog";
+import { deleteSupplierAction, setSupplierStatus } from "../../actions";
 import type { DBSupplier } from "@/types/db";
 import type { PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
 
@@ -41,6 +44,39 @@ export function SupplierDetailView({
   returnTo,
   canDelete,
 }: SupplierDetailViewProps) {
+  const router = useRouter();
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [isStatusPending, setIsStatusPending] = useState(false);
+
+  const isInactive = supplier.status === "INACTIVE";
+
+  async function handleToggleStatus() {
+    setStatusError(null);
+    if (!isInactive) {
+      const ok = await confirm({
+        title: "Ngừng hợp tác",
+        message: `Ngừng hợp tác với ${supplier.name}? Phiếu nhập mới sẽ không chọn được nhà cung cấp này.`,
+        variant: "danger",
+      });
+      if (!ok) return;
+    }
+
+    setIsStatusPending(true);
+    try {
+      const fd = new FormData();
+      fd.append("id", supplier.id);
+      fd.append("status", isInactive ? "ACTIVE" : "INACTIVE");
+      const res = await setSupplierStatus(fd);
+      if (res?.error) {
+        setStatusError(res.error);
+      } else {
+        router.refresh();
+      }
+    } finally {
+      setIsStatusPending(false);
+    }
+  }
+
   const poPageHref = (p: number): string => {
     const base = `/admin/suppliers/${encodeURIComponent(supplier.id)}?returnTo=${encodeURIComponent(returnTo)}`;
     return p > 1 ? `${base}&poPage=${p}` : base;
@@ -78,7 +114,15 @@ export function SupplierDetailView({
       >
         Chỉnh sửa
       </Button>
-      {canDelete && (
+      <Button
+        type="button"
+        variant={isInactive ? "secondary" : "delete"}
+        loading={isStatusPending}
+        onClick={handleToggleStatus}
+      >
+        {isInactive ? "Hợp tác lại" : "Ngừng hợp tác"}
+      </Button>
+      {canDelete && orders.total === 0 && (
         <RemoveRecordButton
           verb="Xoá"
           name={supplier.name}
@@ -114,6 +158,12 @@ export function SupplierDetailView({
         }
         actions={headerActions}
       />
+
+      {statusError && (
+        <Alert variant="danger">
+          {statusError}
+        </Alert>
+      )}
 
       <FieldList fields={fields} />
 

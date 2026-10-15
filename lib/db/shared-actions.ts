@@ -64,17 +64,3 @@ export async function deleteEntity(
     return describeActionError(error);
   }
 }
-
-export async function softDeleteEntity(
-  sheetName: string,
-  id: string,
-  revalidatePathStr: string
-): Promise<ActionResponse> {
-  try {
-    await update(sheetName, id, { status: "DELETED" });
-    revalidatePath(revalidatePathStr);
-    return ok();
-  } catch (error: unknown) {
-    return describeActionError(error);
-  }
-}

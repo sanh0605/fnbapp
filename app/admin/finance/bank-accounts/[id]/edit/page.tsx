@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getBankAccounts } from "../../actions";
 import { BankAccountForm } from "../../components/BankAccountForm";
 import { safeReturnTo } from "@/app/admin/finance/components/return-to";
+import { editBackHref } from "@/lib/finance/detail-href";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
@@ -26,21 +27,7 @@ export default async function EditBankAccountPage(
     notFound();
   }
 
-  const ownDetailPath = `/admin/finance/bank-accounts/${encodeURIComponent(account.id)}`;
-  const ownDetailPathRaw = `/admin/finance/bank-accounts/${account.id}`;
-  const isOwnDetail =
-    rawReturnTo === ownDetailPath ||
-    rawReturnTo.startsWith(`${ownDetailPath}?`) ||
-    rawReturnTo === ownDetailPathRaw ||
-    rawReturnTo.startsWith(`${ownDetailPathRaw}?`);
-
-  const listReturnTo = rawReturnTo.startsWith("/admin/finance/bank-accounts/")
-    ? "/admin/finance/bank-accounts"
-    : rawReturnTo;
-
-  const detailHref = isOwnDetail
-    ? rawReturnTo
-    : `/admin/finance/bank-accounts/${encodeURIComponent(account.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
+  const detailHref = editBackHref(rawReturnTo, "/admin/finance/bank-accounts", account.id);
 
   return (
     <DetailFrame>

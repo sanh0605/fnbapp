@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { findAll } from "@/lib/db/tables";
+import { findAll, findSoldModifierIds } from "@/lib/db/tables";
+import { resolveActor } from "@/lib/auth/auth";
 import { getModifiersData } from "@/app/admin/products/modifiers/actions";
 import { safeReturnTo } from "@/app/admin/products/components/return-to";
 import { ModifierDetailView } from "./components/ModifierDetailView";
@@ -15,16 +16,21 @@ export default async function ModifierDetailPage(
 ) {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const [{ modifiers }, allProducts, groups] = await Promise.all([
+  const [{ modifiers }, allProducts, groups, soldIds, auth] = await Promise.all([
     getModifiersData(),
     findAll("Products") as Promise<DBProduct[]>,
     findAll("Modifier_Groups") as Promise<DBModifierGroup[]>,
+    findSoldModifierIds(),
+    resolveActor(),
   ]);
 
   const modifier = modifiers.find((m) => m.id === params.id);
   if (!modifier) {
     notFound();
   }
+
+  const isSold = soldIds.includes(modifier.id);
+  const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN" && !isSold);
 
   const group = groups.find((g) => g.id === modifier.group_id);
 
@@ -55,6 +61,7 @@ export default async function ModifierDetailPage(
       groupName={group?.name ?? ""}
       allowStandalone={Boolean(group?.allow_standalone)}
       groupSelectionMode={group?.selection_mode}
+      canDelete={canDelete}
       returnTo={returnTo}
     />
   );

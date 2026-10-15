@@ -1,13 +1,13 @@
 import type { AuthActor } from "@/lib/auth/auth";
 
-export interface AuditCreateColumns {
+interface AuditCreateColumns {
   created_by_id: string;
   created_by_name: string;
   updated_by_id: string;
   updated_by_name: string;
 }
 
-export interface AuditUpdateColumns {
+interface AuditUpdateColumns {
   updated_by_id: string;
   updated_by_name: string;
 }

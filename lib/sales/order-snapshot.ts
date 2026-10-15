@@ -63,33 +63,27 @@ export function buildModifierSnapshotsFromCart(
     modifier_id: string;
     modifier_qty: number;
     modifier_name_snapshot?: string;
-    modifier_price_snapshot?: number;
   }>,
   modifierRows: any[],
 ): ModifierSnapshot[] {
   const qtyById = new Map<string, number>();
-  const snapshotById = new Map<string, { name?: string; price?: number }>();
+  const nameById = new Map<string, string | undefined>();
   for (const sel of cartSelection) {
     const id = String(sel.modifier_id || "");
     const qty = Number(sel.modifier_qty || 1);
     qtyById.set(id, (qtyById.get(id) || 0) + qty);
-    if (!snapshotById.has(id)) {
-      snapshotById.set(id, {
-        name: sel.modifier_name_snapshot,
-        price: Number.isFinite(Number(sel.modifier_price_snapshot)) ? Number(sel.modifier_price_snapshot) : undefined,
-      });
-    }
+    if (!nameById.has(id)) nameById.set(id, sel.modifier_name_snapshot);
   }
 
   const result: ModifierSnapshot[] = [];
   for (const [id, qty] of qtyById.entries()) {
     const row = modifierRows.find((m: any) => m.id === id);
-    const snapshot = snapshotById.get(id);
-    if (!row && !snapshot?.name) continue;
+    const name = nameById.get(id);
+    if (!row && !name) continue;
     result.push({
       id,
-      name: String(snapshot?.name || row?.name || ""),
-      price: Math.round(Number(snapshot?.price ?? row?.price ?? 0)),
+      name: String(name || row?.name || ""),
+      price: Math.round(Number(row?.price ?? 0)),
       qty,
     });
   }

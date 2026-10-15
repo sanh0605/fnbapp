@@ -20,7 +20,7 @@ export default async function EditBrandPage(
 
   const brands = await getBrands();
   const brand = brands.find(
-    (b: DBBrand) => b.id === params.id && b.status !== "DELETED",
+    (b: DBBrand) => b.id === params.id,
   );
 
   if (!brand) {

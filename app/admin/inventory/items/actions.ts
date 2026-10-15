@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllWhere, remove, getCacheTag } from "@/lib/db/tables";
+import { findAll, findAllWhere, update, remove, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
@@ -53,7 +53,7 @@ export async function getItemsData(): Promise<{
   if (!auth.ok) throw new Error(auth.error);
 
   try {
-    const [categories, items, conversions, allUnits, poLines, stockIssues] = await Promise.all([
+    const [categories, items, conversions, units, poLines, stockIssues] = await Promise.all([
       findAll("Item_Categories") as Promise<DBItemCategory[]>,
       findAll(SHEET) as Promise<DBPurchasedItem[]>,
       findAll("UOM_Conversions") as Promise<DBUOMConversion[]>,
@@ -61,7 +61,6 @@ export async function getItemsData(): Promise<{
       findAll("Purchase_Order_Lines") as Promise<any[]>,
       findAll("Stock_Issues") as Promise<any[]>,
     ]);
-    const units = allUnits.filter(u => u.name && !u.name.startsWith("DELETED_"));
 
     // section 4:
     // both tables checked, not only purchase_order_lines -- see
@@ -363,6 +362,26 @@ export async function deletePurchasedItemAction(formData: FormData): Promise<Act
 
     await remove(SHEET, id);
     revalidateTag(getCacheTag("Purchased_Items"), { expire: 0 });
+    revalidatePath(PATH);
+    return ok();
+  } catch (error: unknown) {
+    return describeActionError(error);
+  }
+}
+
+export async function setPurchasedItemStatus(formData: FormData): Promise<ActionResponse> {
+  const auth = await requireAdmin();
+  if (!auth.ok) return fail(auth.error);
+
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "");
+  if (status !== "ACTIVE" && status !== "INACTIVE") return fail("Trạng thái không hợp lệ.");
+
+  try {
+    const items = (await findAll(SHEET)) as DBPurchasedItem[];
+    if (!items.some(i => i.id === id)) return fail("Không tìm thấy hàng hoá.");
+    await update(SHEET, id, { status });
+    revalidateTag(getCacheTag(SHEET), { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

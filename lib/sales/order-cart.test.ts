@@ -274,7 +274,7 @@ describe("buildOrderFromCart", () => {
           variant_id: "VAR-031",
           qty: 1,
           modifiers: [],
-          manual_item_discount: { value: 10, type: "PERCENT" }, // 10% of 35k = 3500
+          manual_item_discount: { value: 10, type: "PERCENT" }, // 10% of 35k gross = 3500
         },
       ],
       payment_method: "CASH",
@@ -310,7 +310,7 @@ describe("buildOrderFromCart", () => {
     expect(result.order.net_total).toBe(62000 - 22000 - 4000); // 36000
   });
 
-  it("manual_order_discount PERCENT: converts to VND on gross", () => {
+  it("manual_order_discount PERCENT: converts to VND on the total after dish discounts (BR-SALE-009)", () => {
     const result = buildOrderFromCart({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
@@ -318,11 +318,11 @@ describe("buildOrderFromCart", () => {
         { product_id: "PROD-024", variant_id: "VAR-031", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } },
       ],
       payment_method: "CASH",
-      manual_order_discount: { value: 10, type: "PERCENT" }, // 10% of 35k = 3500
+      manual_order_discount: { value: 10, type: "PERCENT" }, // 10% of 25k (35k - 10k promo) = 2500
       actor: { id: "U1", name: "Test" },
     }, REF);
 
-    expect(result.order.manual_order_discount).toBe(3500);
+    expect(result.order.manual_order_discount).toBe(2500);
   });
 
   it("caps manual_item_discount at line capacity (gross - promo)", () => {
@@ -670,5 +670,52 @@ describe("one menu for both brands (BR-CATALOG-006)", () => {
       actor: { id: "U1", name: "Test" },
     }, ref);
     expect(lines).toHaveLength(1);
+  });
+});
+
+describe("buildOrderFromCart pricing is the server's own (C10)", () => {
+  const item = { product_id: "PROD-017", variant_id: "VAR-024", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" as const } };
+  const base = { brand_id: "BR-002", outlet_id: "OUT-002", payment_method: "CASH" as const, actor: { id: "U1", name: "Test" } };
+  const withPromo = (promo: object): ReferenceData => ({ ...REF, promotions: [{ ...REF.promotions[0], ...promo }] });
+
+  it("ignores prices and discounts sent by the browser", () => {
+    const sent = { ...item, unit_price_snapshot: 1, promo_discount_snapshot: 99999 } as any;
+    const r = buildOrderFromCart({ ...base, items: [sent] }, REF);
+    expect(r.lines[0].unit_price).toBe(27000);
+    expect(r.order.net_total).toBe(15000);
+  });
+
+  it("takes a coded promotion only when its code was sent", () => {
+    const ref = withPromo({ id: "PRM-CODE", code: "KHAI", discount_type: "FLAT_VND", discount_value: "5000", applicable_products_json: JSON.stringify(["VAR-024"]) });
+    const noCode = buildOrderFromCart({ ...base, items: [item], applied_promotion_id: "PRM-CODE" }, ref);
+    expect(noCode.order.promo_discount_total).toBe(0);
+    expect(noCode.order.applied_promotion_id).toBe("");
+    const auto = buildOrderFromCart({ ...base, items: [item] }, ref);
+    expect(auto.order.promo_discount_total).toBe(0);
+    const typed = buildOrderFromCart({ ...base, items: [item], applied_promotion_id: "PRM-CODE", promo_code: " khai " }, ref);
+    expect(typed.order.promo_discount_total).toBe(5000);
+    expect(typed.order.applied_promotion_id).toBe("PRM-CODE");
+  });
+
+  it("with no code sent and two no-code promotions, the bigger discount wins (as the till picks)", () => {
+    const small = { ...REF.promotions[0], id: "PRM-S", discount_type: "FLAT_VND", discount_value: "2000", applicable_products_json: JSON.stringify(["VAR-024"]) };
+    const big = { ...small, id: "PRM-B", discount_value: "5000" };
+    const r = buildOrderFromCart({ ...base, items: [item] }, { ...REF, promotions: [small, big] });
+    expect(r.order.applied_promotion_id).toBe("PRM-B");
+    expect(r.order.promo_discount_total).toBe(5000);
+  });
+
+  it("accepts a stored code with trailing space against the typed code", () => {
+    const ref = withPromo({ id: "PRM-CODE", code: "KHAI ", discount_type: "FLAT_VND", discount_value: "5000", applicable_products_json: JSON.stringify(["VAR-024"]) });
+    const r = buildOrderFromCart({ ...base, items: [item], applied_promotion_id: "PRM-CODE", promo_code: "khai" }, ref);
+    expect(r.order.applied_promotion_id).toBe("PRM-CODE");
+  });
+
+  it("books a whole-order promotion into promo_discount (BR-SALE-010)", () => {
+    const ref = withPromo({ id: "PRM-ORD", type: "ORDER_DISCOUNT", discount_type: "PERCENT", discount_value: "10", applicable_products_json: "" });
+    const r = buildOrderFromCart({ ...base, items: [item], manual_order_discount: { value: 1000, type: "VND" } }, ref);
+    expect(r.order.promo_discount_total).toBe(2700);
+    expect(r.order.manual_order_discount).toBe(1000);
+    expect(r.order.net_total).toBe(23300);
   });
 });

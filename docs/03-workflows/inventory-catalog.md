@@ -7,6 +7,8 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004
 ```
 
+**Behaviour change — 2026-10-15 (Kho step 4, `BR-CATALOG-007`):** an item's page has "Ngừng dùng" / "Dùng lại" (`setPurchasedItemStatus` in `app/admin/inventory/items/actions.ts`, ADMIN and MANAGER, writes `status` only and refreshes the item cache). A stopped item is no longer offered on a new purchase order; everything else that lists items is unchanged. See `purchasing.md` for the purchase order side.
+
 **Behaviour change — 2026-10-15 (Kho đợt 2, S2):** adding or editing an item writes the item, its conversions and the assets it retires in one Postgres transaction, `save_purchased_item_atomic` (migration `0124`, ran on the server 2026-10-15 with the owner's approval, then this code was pushed). A removed conversion that a purchase line uses is set `INACTIVE` inside that transaction, any other is deleted; the A6 note below about a partial save no longer applies.
 
 **Behaviour change — 2026-10-15 (Kho đợt 2, S3):** the six old item and conversion actions in `app/admin/inventory/actions.ts`, still callable but used by no screen, are deleted; one of them still rewrote purchase lines.
@@ -94,8 +96,9 @@ than waiting on a code change. The writes run through the server actions in
 3. **What each list contains, and what is excluded.** The item list shows the
    purchased-item catalogue. The duplicate-name guard only compares against
    `ACTIVE` rows, so an `INACTIVE` item does not block reusing a name
-   (`BR-CATALOG-001`). Units flagged as deleted (name prefixed `DELETED_`) are
-   filtered out of the unit picker (`app/admin/inventory/items/actions.ts`).
+   (`BR-CATALOG-001`). A stopped (`INACTIVE`) unit is not offered
+   in the unit picker of Hàng hoá or Quy đổi, except on a row that already uses
+   it; names and checks still read every unit (2026-10-15).
    The category list is the single catalogue tier — RAW / CONSUMABLE /
    EQUIPMENT — with no lower grouping tier beneath it (`BR-CATALOG-002`).
 4. **Valid inputs, and what happens outside the range.** A purchased item needs

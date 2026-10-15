@@ -12,12 +12,8 @@ vi.mock("next/navigation", () => ({
   notFound: notFoundMock,
 }));
 
-vi.mock("@/lib/db/tables", () => ({
-  findAll: vi.fn().mockImplementation((table: string) => {
-    if (table === "Cash_Entries") return Promise.resolve([]);
-    return Promise.resolve([]);
-  }),
-}));
+const { findAllWhereMock } = vi.hoisted(() => ({ findAllWhereMock: vi.fn() }));
+vi.mock("@/lib/db/tables", () => ({ findAllWhere: findAllWhereMock }));
 
 vi.mock("@/app/admin/finance/categories/actions", () => ({
   getCashCategories: vi.fn().mockResolvedValue([
@@ -32,6 +28,20 @@ vi.mock("@/app/admin/finance/categories/components/CategoryForm", () => ({
 describe("EditCashCategoryPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    findAllWhereMock.mockResolvedValue([]);
+  });
+
+  // The form locks Thu/Chi once any row (any status) uses the group; one row is enough to know.
+  it("asks for one linked hand row, not the whole ledger, to lock the side", async () => {
+    findAllWhereMock.mockResolvedValue([{ id: "CE-001" }]);
+    const element = await EditCashCategoryPage({
+      params: Promise.resolve({ id: "CFC-001" }),
+      searchParams: Promise.resolve({}),
+    });
+    const children = React.Children.toArray(element.props.children);
+    const formChild: any = children.find((c: any) => c.props?.returnTo !== undefined);
+    expect(formChild.props.hasEntries).toBe(true);
+    expect(findAllWhereMock).toHaveBeenCalledWith("Cash_Entries", { eq: { category_id: "CFC-001" }, limit: 1 });
   });
 
   it("calls notFound when category id is unknown", async () => {

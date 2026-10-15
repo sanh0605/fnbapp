@@ -88,16 +88,30 @@ describe("CategoriesClient", () => {
     expect(cat1Links.length).toBeGreaterThan(0);
   });
 
-  it("bin 'Xoá' is present", () => {
+  it("bin 'Xoá' is present when canDelete is true", () => {
     render(
       <CategoriesClient
         categories={sampleCategories}
         counts={sampleCounts}
+        canDelete={true}
       />,
     );
 
     const binButtons = screen.getAllByRole("button", { name: /Xoá/i });
     expect(binButtons.length).toBeGreaterThan(0);
+  });
+
+  it("hides remove controls when canDelete is false", () => {
+    render(
+      <CategoriesClient
+        categories={sampleCategories}
+        counts={sampleCounts}
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: /Xoá/i })).toBeNull();
+    expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
   });
 
   it("renders in default order newest code first", () => {

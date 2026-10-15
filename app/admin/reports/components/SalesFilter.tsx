@@ -106,9 +106,9 @@ function SalesFilterInner({
     });
   };
 
-  const activeBrands = useMemo(() => brands.filter(b => b.status !== "DELETED" && b.status !== "INACTIVE"), [brands]);
-  const activeUsers = useMemo(() => users.filter(u => u.status !== "DELETED" && u.status !== "INACTIVE"), [users]);
-  const activeCategories = useMemo(() => categories.filter(c => c.status !== "DELETED" && c.status !== "INACTIVE"), [categories]);
+  const activeBrands = useMemo(() => brands.filter(b => b.status === "ACTIVE"), [brands]);
+  const activeUsers = useMemo(() => users.filter(u => u.status === "ACTIVE"), [users]);
+  const activeCategories = useMemo(() => categories.filter(c => c.status === "ACTIVE"), [categories]);
 
   return (
     <>

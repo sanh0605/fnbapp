@@ -3,6 +3,7 @@ import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
 import { getCashTransfer } from "../../actions";
 import { CashTransferForm } from "../../components/CashTransferForm";
 import { safeReturnTo } from "../../components/return-to";
+import { editBackHref } from "@/lib/finance/detail-href";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { formatNumber } from "@/lib/shared/format";
@@ -29,21 +30,7 @@ export default async function EditCashTransferPage(
     notFound();
   }
 
-  const ownDetailPath = `/admin/finance/transfers/${encodeURIComponent(transfer.id)}`;
-  const ownDetailPathRaw = `/admin/finance/transfers/${transfer.id}`;
-  const isOwnDetail =
-    rawReturnTo === ownDetailPath ||
-    rawReturnTo.startsWith(`${ownDetailPath}?`) ||
-    rawReturnTo === ownDetailPathRaw ||
-    rawReturnTo.startsWith(`${ownDetailPathRaw}?`);
-
-  const listReturnTo = rawReturnTo.startsWith("/admin/finance/transfers/")
-    ? "/admin/finance"
-    : rawReturnTo;
-
-  const detailHref = isOwnDetail
-    ? rawReturnTo
-    : `/admin/finance/transfers/${encodeURIComponent(transfer.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
+  const detailHref = editBackHref(rawReturnTo, "/admin/finance/transfers", transfer.id, "/admin/finance");
 
   const accountNames = new Map(accounts.map((a) => [a.id, a.name]));
   const fromText =
