@@ -55,12 +55,13 @@ Ví dụ bằng số thật: không áp dụng, không đụng dữ liệu. Mố
 
 Backend và cấu hình → Sonnet (S1). Trang Xoá bộ nhớ đệm → Gemini (G1, sau S1 vì cần action của S1). Opus đo trước, soát, đo sau, mở trang bằng mắt (O1, O2). Mỗi phiếu mở đầu bằng việc thách thức kế hoạch này; viết theo ponytail.
 
-### O1 (Opus, trước S1): mốc đo
+### O1 (Opus, trước S1): mốc đo — **xong 2026-10-15**
 
-- [ ] `npm run build` trên Next 14, ghi số giây vào scratchpad.
-- [ ] `npx next start -p 8386`, đăng nhập, đo 5 trang như Hiện trạng; ghi vào scratchpad.
-- [ ] Tắt `next start`.
-- [ ] Nhánh `chore/next-16` từ `feat/no-popups`.
+- [x] `npm run build` trên Next 14.2.35: **52 giây**, 119 route.
+- [x] `npx next start -p 8386`, đo 5 trang bằng `fetch` có cookie phiên ADMIN, mỗi trang 3 lần lấy giữa (trọn thân trang, không tính vẽ ở trình duyệt): Tổng quan `/admin` **311 ms**; Đơn hàng `/admin/orders?range=THIS_MONTH` **538 ms**; Phiếu nhập `/admin/inventory/purchase-orders` **206 ms**; Doanh số `/admin/reports/sales?range=THIS_MONTH` **978 ms**; máy bán hàng `/pos` **56 ms**. O2 đo lại đúng cách này để so.
+- [x] Nhánh `chore/next-16` từ `feat/no-popups` (`29a410bb`), cây làm việc sạch, `node_modules` theo lockfile Next 14.
+- Cách đăng nhập để kiểm không cần mật khẩu: tạo cookie `next-auth.session-token` bằng `encode` của `next-auth/jwt` với `NEXTAUTH_SECRET` trong `.env.local`, token `{ sub, id: "USR-001", role: "ADMIN", name }` (USR-001 là tài khoản ADMIN đang hoạt động duy nhất; đo 2026-10-15). Vai STAFF kiểm bằng token giả `id: "USR-TEST-STAFF", role: "STAFF"` chỉ để xem proxy đẩy về `/pos`. Không in token ra màn hình; ghi vào file trong scratchpad rồi đọc từ script hoặc `page.context().addCookies` của Playwright.
+- Lưu ý: một lần chạy S1 dang dở đã bị dừng và hoàn tác toàn bộ (103 file codemod, `eslint.config.mjs`, `package.json`); bắt đầu lại từ cây sạch.
 
 ### S1 (Sonnet): cài bản mới, codemod, sửa tay, năm cửa kiểm
 
