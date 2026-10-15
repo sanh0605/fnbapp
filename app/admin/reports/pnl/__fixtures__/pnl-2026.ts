@@ -10,10 +10,10 @@ export function monthFigures(month: string, overrides: Partial<PnlMonthFigures> 
     month,
     posRevenue: 0, posOrderCount: 0, posRevenueBeforePayments: 0, manualRevenue: 0,
     cogsExact: 0, shrinkageExact: 0, nonInventoryExact: 0,
-    expenseByCategory: {}, otherIncome: 0, depreciationExact: 0,
+    expenseByCategory: {}, otherIncome: 0, disposalIncome: 0, depreciationExact: 0,
     ...overrides,
     sources: {
-      manualRevenue: [], cogs: [], shrinkage: [], nonInventory: [], expense: {}, otherIncome: [], depreciation: [],
+      manualRevenue: [], cogs: [], shrinkage: [], nonInventory: [], expense: {}, otherIncome: [], disposalIncome: [], depreciation: [],
       ...overrides.sources,
     },
   };
@@ -37,7 +37,7 @@ export function pnlFigures2026(): PnlFigures {
         expenseByCategory: { "CFC-001": 615_000, "CFC-002": 470_000 },
         depreciationExact: 790_974.0694444443,
         sources: {
-          manualRevenue: [], shrinkage: [], otherIncome: [], depreciation: [],
+          manualRevenue: [], shrinkage: [], otherIncome: [], disposalIncome: [], depreciation: [],
           cogs: [
             { kind: "STOCKTAKE", id: "STK-001", date: "2026-08-09", label: "Kiểm kê định kỳ", ref: null, amountExact: 34_864_626.83216999 },
           ],

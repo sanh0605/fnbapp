@@ -14,7 +14,6 @@ app/admin/finance/monthly-items/actions.ts -> Monthly_Expense_Items (write)
 app/admin/finance/transfers/actions.ts -> Cash_Transfers (write)
 app/admin/inventory/actions.ts -> Item_Categories (write)
 app/admin/inventory/actions.ts -> Units (write)
-app/admin/inventory/assets/actions.ts -> asset_disposals (write)
 app/admin/inventory/conversions/actions.ts -> UOM_Conversions (write)
 app/admin/inventory/items/actions.ts -> Purchased_Items (write)
 app/admin/inventory/purchase-orders/actions.ts -> purchase_order_edits (write)
@@ -30,6 +29,8 @@ app/admin/suppliers/actions.ts -> Suppliers (write)
 app/admin/users/actions.ts -> Users (write)
 app/pos/actions.ts -> POS_Drafts (write)
 lib/assets/asset-bands-transaction.ts -> asset_depreciation_bands (write)
+lib/assets/dispose-asset-transaction.ts -> asset_disposals (write)
+lib/assets/dispose-asset-transaction.ts -> cash_entries (write)
 lib/catalog/purchased-item-transaction.ts -> assets (write)
 lib/catalog/purchased-item-transaction.ts -> purchased_items (write)
 lib/catalog/purchased-item-transaction.ts -> uom_conversions (write)
@@ -71,8 +72,8 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - assets (id, purchased_item_id, purchase_order_line_id, name_snapshot, acquired_date, unit_cost, quantity, term_months, status, created_at, updated_at, total_cost)
 - bank_accounts (id, name, bank_name, account_number, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, INACTIVE
 - brands (id, name, code, start_date, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
-- cash_categories (id, name, kind, affects_pnl, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, is_sales_revenue) status: ACTIVE, INACTIVE
-- cash_entries (id, entry_date, category_id, amount, payment_method, bank_account_id, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, or, monthly_item_id) status: ACTIVE, CANCELLED
+- cash_categories (id, name, kind, affects_pnl, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, is_sales_revenue, is_asset_disposal) status: ACTIVE, INACTIVE
+- cash_entries (id, entry_date, category_id, amount, payment_method, bank_account_id, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, or, monthly_item_id, asset_disposal_id) status: ACTIVE, CANCELLED
 - cash_transfers (id, transfer_date, amount, from_account_id, to_account_id, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, CANCELLED
 - dashboard_settings (id, stale_stocktake_days, open_stocktake_days, reminder_start_day, food_product_ids, topping_type_id, updated_at, updated_by_id, updated_by_name)
 - issue_slips (id, issued_at, note, created_by_id, created_by_name, created_at)

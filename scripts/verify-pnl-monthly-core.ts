@@ -34,6 +34,7 @@ export function checkPnlMonth(month: PnlMonthFigures, reference: PnlReference): 
     ["shrinkage", month.shrinkageExact, month.sources.shrinkage],
     ["nonInventory", month.nonInventoryExact, month.sources.nonInventory],
     ["otherIncome", month.otherIncome, month.sources.otherIncome],
+    ["disposalIncome", month.disposalIncome, month.sources.disposalIncome],
     ["depreciation", month.depreciationExact, month.sources.depreciation],
   ];
   const categoryIds = new Set([...Object.keys(month.expenseByCategory), ...Object.keys(month.sources.expense)]);

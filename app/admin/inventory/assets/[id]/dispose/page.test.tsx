@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import DisposeAssetPage from "./page";
 import type { AssetItemDetail, AssetLotView } from "@/lib/assets/asset-items";
 
-const { mockGetAssetItemDetail, mockFindItemIdForAsset, mockNotFound, mockRedirect } = vi.hoisted(() => ({
+const { mockGetAssetItemDetail, mockFindItemIdForAsset, mockNotFound, mockRedirect, mockGetBankAccounts } = vi.hoisted(() => ({
+  mockGetBankAccounts: vi.fn(),
   mockGetAssetItemDetail: vi.fn(),
   mockFindItemIdForAsset: vi.fn(),
   mockNotFound: vi.fn(),
@@ -18,6 +19,8 @@ vi.mock("@/app/admin/inventory/assets/actions", () => ({
   getAssetItemDetail: mockGetAssetItemDetail,
   findItemIdForAsset: mockFindItemIdForAsset,
 }));
+
+vi.mock("@/app/admin/finance/bank-accounts/actions", () => ({ getBankAccounts: mockGetBankAccounts }));
 
 vi.mock("next/navigation", () => ({
   notFound: () => {
@@ -116,6 +119,7 @@ const COC_DONG_DETAIL: AssetItemDetail = {
       disposedDate: "2026-07-02",
       reason: "Rơi vỡ",
       charge: 14583.33,
+      proceeds: null,
     },
   ],
   months: [],
@@ -165,6 +169,7 @@ function checkNoFunctionProps(element: any) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockGetBankAccounts.mockResolvedValue([]);
 });
 
 describe("DisposeAssetPage", () => {
@@ -178,6 +183,21 @@ describe("DisposeAssetPage", () => {
 
     expect(element).toBeDefined();
     checkNoFunctionProps(element);
+  });
+
+  it("passes only the ACTIVE bank accounts, as id and name, to the form (BR-COGS-008)", async () => {
+    mockGetAssetItemDetail.mockResolvedValue(COC_DONG_DETAIL);
+    mockGetBankAccounts.mockResolvedValue([
+      { id: "BA-001", name: "ACB", bank_name: "ACB", account_number: "123", status: "ACTIVE" },
+      { id: "BA-002", name: "Cũ", bank_name: null, account_number: null, status: "INACTIVE" },
+    ]);
+
+    const element = await DisposeAssetPage({
+      params: Promise.resolve({ id: "SPM-COC" }),
+      searchParams: Promise.resolve({}),
+    });
+
+    expect(findFormProps(element).bankAccounts).toEqual([{ id: "BA-001", name: "ACB" }]);
   });
 
   it("redirects /TS-.../dispose to /[itemId]/dispose?lot=TS-..., preserving returnTo", async () => {

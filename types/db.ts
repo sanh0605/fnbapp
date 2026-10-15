@@ -341,6 +341,8 @@ export interface DBCashCategory {
   affects_pnl: boolean;
   // BR-CASH-006: only an income category that counts in profit and loss may be true.
   is_sales_revenue: boolean;
+  // BR-COGS-008: the one group asset-disposal proceeds go to; optional like is_sales_revenue's fixtures, read with === true.
+  is_asset_disposal?: boolean;
   status: "ACTIVE" | "INACTIVE";
   created_at: string;
   created_by_id: string | null;
@@ -375,6 +377,8 @@ export interface DBCashEntry {
   bank_account_id: string | null;
   // monthly_expense_items.id this row settles; null for an ordinary row.
   monthly_item_id: string | null;
+  // asset_disposals.id this row is the proceeds of (BR-COGS-008); null for an ordinary row.
+  asset_disposal_id?: string | null;
   note: string | null;
   status: "ACTIVE" | "CANCELLED";
   created_at: string;

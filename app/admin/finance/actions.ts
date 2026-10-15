@@ -172,6 +172,11 @@ export async function updateCashEntry(formData: FormData): Promise<ActionRespons
     const r = parseCashEntry(readCashEntryInput(formData));
     if (r.ok === false) return fail(r.error);
 
+    // BR-COGS-008: the row an asset disposal wrote stays in the disposal-proceeds group.
+    if (existing.asset_disposal_id && r.value.category_id !== existing.category_id) {
+      return fail("Dòng này ghi từ thanh lý tài sản, không đổi nhóm được");
+    }
+
     const refError = await checkRefs(r.value, existing);
     if (refError) return fail(refError);
     const monthly = await checkMonthlyItem(formData, r.value.category_id, existing.monthly_item_id ?? null);

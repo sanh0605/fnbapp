@@ -18,6 +18,8 @@ export interface DisposeAssetFormProps {
   lots: AssetLotView[];
   initialLotId?: string;
   returnTo?: string;
+  // ACTIVE bank accounts for "Chuyển khoản" (BR-COGS-008); the inputs are drawn by ticket B.
+  bankAccounts?: { id: string; name: string }[];
 }
 
 export function DisposeAssetForm({

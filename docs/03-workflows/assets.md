@@ -2,8 +2,8 @@
 
 ```flow-decl
 routes: /admin/inventory/assets, /admin/inventory/assets/[id], /admin/inventory/assets/[id]/dispose, /admin/inventory/asset-bands, /admin/inventory/asset-bands/[id], /admin/inventory/asset-bands/edit
-files: app/admin/inventory/assets/actions.ts, app/admin/inventory/asset-bands/actions.ts, lib/assets/asset-bands-transaction.ts
-tables: asset_disposals, asset_depreciation_bands
+files: app/admin/inventory/assets/actions.ts, app/admin/inventory/asset-bands/actions.ts, lib/assets/asset-bands-transaction.ts, lib/assets/dispose-asset-transaction.ts
+tables: asset_disposals, asset_depreciation_bands, cash_entries
 brCodes: BR-COGS-008
 ```
 
@@ -78,15 +78,18 @@ table of its own.
 
 ## Where it writes
 
-Disposal is **insert-only** into `asset_disposals`: `disposeAsset` appends one row
-and never mutates `assets.quantity` downward and never deletes, so remaining
+Disposal is **insert-only** into `asset_disposals`: `disposeAsset` calls
+`dispose_asset_atomic` (migration `0131`), which appends one row and, when money
+came in, one income row in `cash_entries` (`asset_disposal_id` points back; group
+= the `cash_categories` row flagged `is_asset_disposal`), both in one transaction.
+It never mutates `assets.quantity` downward and never deletes, so remaining
 quantity is always derived (asset quantity minus the sum of disposals). Nothing
 reverses a disposal (2 live, TL-001 and TL-002, measured 2026-10-15).
 The band screen replaces `asset_depreciation_bands` as a whole through
 `replace_asset_depreciation_bands` — removing a row is safe because
 `assets.term_months` is a frozen value carrying no foreign key back to the band
 that produced it. The generated map at
-`docs/generated/system-map.md` confirms exactly these two write relations for the
-two declared files.
+`docs/generated/system-map.md` confirms these write relations for the
+declared files: the band function writes `asset_depreciation_bands`, the disposal function writes `asset_disposals` and `cash_entries`.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md

@@ -31,7 +31,7 @@ async function main(): Promise<void> {
   for (const year of availableYears) {
     const { figures } = await getProfitAndLossReport({ preset: "CUSTOM", start: `${year}-01`, end: `${year}-12` });
     console.log(`\n== ${year} ==`);
-    console.log("month   | POS revenue | ghi tay | Giá vốn | NL dùng ngay | Hao hụt | Chi phí | Khấu hao | Thu khác");
+    console.log("month   | POS revenue | ghi tay | Giá vốn | NL dùng ngay | Hao hụt | Chi phí | Khấu hao | Thu khác | Thu thanh lý");
     for (const month of figures.months) {
       const ref = await getPnLDataV2({ startDate: `${month.month}-01`, endDate: lastDayOfMonth(month.month) });
       problems.push(...checkPnlMonth(month, ref));
@@ -40,7 +40,7 @@ async function main(): Promise<void> {
       console.log(
         `${month.month} | ${fmt(month.posRevenue)} | ${fmt(month.manualRevenue)} | ${fmt(month.cogsExact)} | ` +
         `${fmt(month.nonInventoryExact)} | ${fmt(month.shrinkageExact)} | ${fmt(expenses)} | ` +
-        `${fmt(month.depreciationExact)} | ${fmt(month.otherIncome)}`,
+        `${fmt(month.depreciationExact)} | ${fmt(month.otherIncome)} | ${fmt(month.disposalIncome)}`,
       );
     }
   }

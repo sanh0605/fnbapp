@@ -86,6 +86,14 @@ export async function updateCashCategory(formData: FormData): Promise<ActionResp
     const existing = categories.find((c) => c.id === id);
     if (!existing) return fail("Không tìm thấy nhóm");
 
+    // BR-COGS-008: the group that takes disposal proceeds stays an income group
+    // that counts in profit and loss, and is not sales revenue.
+    if (existing.is_asset_disposal === true) {
+      if (kind !== "INCOME") return fail("Nhóm thu thanh lý tài sản phải là nhóm Thu, không đổi được");
+      if (!affects_pnl) return fail("Nhóm thu thanh lý tài sản phải tính vào lãi lỗ");
+      if (salesRevenue.value) return fail("Nhóm thu thanh lý tài sản không đánh dấu là doanh thu bán hàng được");
+    }
+
     // I3 -- owner decision 2026-09-11 ("Khoá, tạo nhóm mới"): once any
     // cash_entries row references this category (any status -- a cancelled
     // row is still history), its Thu/Chi side is locked. Changing it would
@@ -164,6 +172,11 @@ export async function deleteCashCategory(formData: FormData): Promise<ActionResp
   if (!id) return fail("Thiếu mã nhóm");
 
   try {
+    const category = (await findById(SHEET, id)) as DBCashCategory | null;
+    if (category?.is_asset_disposal === true) {
+      return fail(`Nhóm "${category.name}" nhận tiền thanh lý tài sản nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn nhóm này.`);
+    }
+
     // I5 -- the RESTRICT FK already refuses this delete, but Postgres's
     // violation message is ASCII English, and describeActionError replaces
     // any all-ASCII error with the generic fallback, telling the owner
@@ -173,7 +186,6 @@ export async function deleteCashCategory(formData: FormData): Promise<ActionResp
     const linked = await findAllWhere("Cash_Entries", { eq: { category_id: id }, limit: 1 });
     const hasMonthlyItem = linked.length === 0 && Boolean(await monthlyItemOf(id, false));
     if (linked.length > 0 || hasMonthlyItem) {
-      const category = (await findById(SHEET, id)) as DBCashCategory | null;
       const name = category?.name ?? id;
       return fail(
         `Nhóm "${name}" đã có ${hasMonthlyItem ? "khoản chi hằng tháng" : "dòng sổ"} nên không xoá hẳn được. Bấm "Ngừng dùng" để ẩn nhóm này.`,

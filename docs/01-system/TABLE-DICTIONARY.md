@@ -33,12 +33,12 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | Bảng | Khái niệm (VN) | Vai trò (1 dòng) |
 |---|---|---|
 | `asset_depreciation_bands` | Bảng khấu hao tài sản | Đơn giá tài sản trong khoảng nào thì phân bổ chi phí trong bao nhiêu tháng; chủ quán tự sửa bảng này |
-| `asset_disposals` | Thanh lý tài sản | Ghi một tài sản được bán/cho/bỏ; chỉ thêm dòng mới, không sửa lịch sử cũ |
+| `asset_disposals` | Thanh lý tài sản | Ghi một tài sản được bán/cho/bỏ; chỉ thêm dòng mới, không sửa lịch sử cũ; số tiền thu được nằm ở dòng sổ thu chi trỏ về đây (`cash_entries.asset_disposal_id`), không có dòng thì là 0đ |
 | `assets` | Tài sản/dụng cụ | Một dòng cho mỗi lần mua tài sản, không phải mỗi cái vật lý; giữ giá vốn phân bổ và thời hạn khấu hao |
 | `bank_accounts` | Tài khoản ngân hàng | Tài khoản nhận/chi tiền chuyển khoản; dòng sổ thu chi chuyển khoản phải chỉ vào một tài khoản ở đây |
 | `brands` | Thương hiệu | Nhãn gắn với điểm bán, ví dụ Phin Đi, Uchako |
-| `cash_categories` | Nhóm thu chi | Nhóm của sổ thu chi, ví dụ Vận hành, Marketing; mỗi nhóm thuộc bên Thu hoặc Chi và có cờ tính vào lãi lỗ hay không |
-| `cash_entries` | Sổ thu chi | Một khoản tiền ra/vào ngoài bán hàng và mua hàng: ngày, nhóm, số tiền, tiền mặt hay chuyển khoản; từ migration `0109` có thêm cột `monthly_item_id` (không bắt buộc) chỉ khoản chi hằng tháng mà dòng này đã trả |
+| `cash_categories` | Nhóm thu chi | Nhóm của sổ thu chi, ví dụ Vận hành, Marketing; mỗi nhóm thuộc bên Thu hoặc Chi và có cờ tính vào lãi lỗ hay không; từ migration `0131` có cờ `is_asset_disposal` đánh dấu nhóm duy nhất nhận tiền thanh lý tài sản |
+| `cash_entries` | Sổ thu chi | Một khoản tiền ra/vào ngoài bán hàng và mua hàng: ngày, nhóm, số tiền, tiền mặt hay chuyển khoản; từ migration `0109` có thêm cột `monthly_item_id` (không bắt buộc) chỉ khoản chi hằng tháng mà dòng này đã trả; từ migration `0131` có thêm `asset_disposal_id` (không bắt buộc, không trùng) chỉ lần thanh lý tài sản sinh ra dòng thu này |
 | `cash_transfers` | Chuyển tiền | Một lần chuyển tiền giữa két và tài khoản ngân hàng (hoặc giữa hai tài khoản); không phải thu, không phải chi (migration `0107`) |
 | `dashboard_settings` | Cài đặt Tổng quan | Đúng một dòng (id = 1): mấy ngày không kiểm kê thì báo, mấy ngày phiếu kiểm kê mở dở thì báo, ngày bắt đầu nhắc khoản chi hằng tháng, các món đồ ăn có cột riêng, loại món của cột topping (migration `0109`) |
 | `issue_slips` | Phiếu xuất kho | Chứng từ nhân viên lập khi cho nguyên liệu ra khỏi kho ngoài việc bán |

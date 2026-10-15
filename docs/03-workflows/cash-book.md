@@ -7,6 +7,8 @@ tables: Cash_Categories, Bank_Accounts, Cash_Entries, Cash_Transfers, Monthly_Ex
 brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006, BR-CASH-007, BR-CASH-008, BR-CASH-009
 ```
 
+**Behaviour change — 2026-10-16 (thanh lý tài sản thu tiền, migration `0131`, `BR-COGS-008`):** a disposal with money writes one income row here by itself (`cash_entries.asset_disposal_id` points back to it), in the one group flagged `cash_categories.is_asset_disposal`. That row's group cannot be changed in `updateCashEntry`; the flagged group cannot switch to Chi, stop counting in profit and loss, become sales revenue, or be deleted (stopping it is allowed). Editing the row keeps the link.
+
 **Behaviour change — 2026-10-15 (Thu chi S-TC1, plan `docs/superpowers/plans/2026-10-15-thu-chi.md`):**
 - **Server checks.** A hand row's date must be a real day, not after today (Sài Gòn time) and not before 2026-03-26. Its group and account must exist and be `ACTIVE` or already its own. The note holds at most 500 characters. A transfer's accounts follow the same rule.
 - **Monthly items.** A group cannot switch Thu/Chi or stop while a monthly item uses it, and a monthly item that has rows keeps its group. "Dùng lại" is refused while its group is stopped. "Xoá" counts rows in every state.

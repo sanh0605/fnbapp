@@ -67,6 +67,7 @@ const BINH_BOM_DETAIL: AssetItemDetail = {
       disposedDate: "2026-07-02",
       reason: "", // empty reason
       charge: 171600,
+      proceeds: null,
     },
   ],
   months: [

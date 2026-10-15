@@ -244,3 +244,47 @@ describe("listAvailableYears", () => {
     expect(listAvailableYears([], 2026)).toEqual([2026]);
   });
 });
+
+// BR-COGS-008 (owner 2026-10-08): disposal proceeds are their own line, not Thu khác.
+describe("disposal proceeds", () => {
+  const categories = [
+    { id: "CFC-004", name: "Thu khác", kind: "INCOME", affects_pnl: true, status: "ACTIVE" },
+    { id: "CFC-008", name: "Thu thanh lý tài sản", kind: "INCOME", affects_pnl: true, is_asset_disposal: true, status: "ACTIVE" },
+  ];
+  // Xe bán nước gấp gọn, TS-027: bought 04/04/2026 for 2,100,000 over 36 months; sold 16/10/2026.
+  const xe = { id: "TS-027", name_snapshot: "Xe bán nước gấp gọn", acquired_date: "2026-04-04", total_cost: 2_100_000, quantity: 1, term_months: 36, status: "ACTIVE" };
+  const sold = [{ id: "TL-003", asset_id: "TS-027", quantity: 1, disposed_date: "2026-10-16" }];
+  const proceeds = { id: "CE-100", entry_date: "2026-10-16", category_id: "CFC-008", amount: 1_200_000, note: "Thanh lý TL-003: Xe bán nước gấp gọn × 1", status: "ACTIVE" };
+  const run = (extra: Partial<PnlInput>) => computeProfitAndLoss(input({ today: "2026-10-16", assets: [xe], assetDisposals: sold, cashCategories: categories, ...extra }));
+
+  it("goes to disposalIncome with its source, not to otherIncome", () => {
+    const oct = month(run({ cashEntries: [proceeds] }), "2026-10");
+    expect(oct.disposalIncome).toBe(1_200_000);
+    expect(oct.otherIncome).toBe(0);
+    expect(oct.sources.disposalIncome).toEqual([
+      { kind: "CASH_ENTRY", id: "CE-100", date: "2026-10-16", label: "Thanh lý TL-003: Xe bán nước gấp gọn × 1", ref: null, amountExact: 1_200_000 },
+    ]);
+    expect(oct.sources.otherIncome).toEqual([]);
+  });
+
+  it("leaves depreciation exactly as it was without the proceeds row", () => {
+    const withRow = run({ cashEntries: [proceeds] });
+    const without = run({ cashEntries: [] });
+    expect(withRow.months.map(m => [m.month, m.depreciationExact])).toEqual(without.months.map(m => [m.month, m.depreciationExact]));
+    expect(month(withRow, "2026-10").depreciationExact).toBeCloseTo(1_750_000, 6);
+  });
+
+  it("a month with only disposal proceeds still shows", () => {
+    const f = computeProfitAndLoss(input({ today: "2026-10-16", cashCategories: categories, cashEntries: [proceeds] }));
+    expect(f.months.map(m => m.month)).toEqual(["2026-10"]);
+  });
+
+  it("a cancelled proceeds row counts nothing", () => {
+    expect(month(run({ cashEntries: [{ ...proceeds, status: "CANCELLED" }] }), "2026-10").disposalIncome).toBe(0);
+  });
+
+  it("a hand-typed row in the flagged group counts the same way", () => {
+    const typed = { ...proceeds, id: "CE-101", note: null, amount: 50_000 };
+    expect(month(run({ cashEntries: [proceeds, typed] }), "2026-10").disposalIncome).toBe(1_250_000);
+  });
+});

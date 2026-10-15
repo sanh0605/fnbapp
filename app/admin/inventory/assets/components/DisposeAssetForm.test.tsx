@@ -400,8 +400,10 @@ describe("DisposeAssetForm -- Lý do example", () => {
   });
 });
 
+// BR-COGS-008: the server half (amount required with 0 valid, one proceeds row, group by flag)
+// is green in app/admin/inventory/assets/actions.test.ts "money received". Left: the two boxes.
 describe("DisposeAssetForm -- money received (BR-COGS-008)", () => {
   it.todo(
-    "Trang thanh lý ghi số tiền thu được (bỏ đi thì 0đ), tự ghi một dòng thu vào sổ thu chi nhóm \"Thu thanh lý tài sản\", lãi lỗ hiện dòng riêng (chủ quán chốt 08/10/2026)",
+    "Trang thanh lý có ô \"Số tiền thu được\" (bắt buộc, 0 hợp lệ) và ô \"Nhận vào\" (Tiền mặt hoặc Chuyển khoản kèm tài khoản, chỉ hiện khi số tiền lớn hơn 0), gửi các trường proceeds, payment_method, bank_account_id (chủ quán chốt 08/10/2026)",
   );
 });
