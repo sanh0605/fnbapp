@@ -393,6 +393,20 @@ describe("updateMany", () => {
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Purchase_Order_Lines", { expire: 0 });
   });
 
+  it("still returns the written rows when revalidateTag throws outside Next.js", async () => {
+    mocks.supabaseUpdate.mockImplementation((payload: any) => ({
+      data: { id: payload.__testId, ...payload, __testId: undefined },
+      error: null,
+    }));
+    mocks.revalidateTag.mockImplementationOnce(() => {
+      throw new Error("static generation store missing");
+    });
+
+    const result = await updateMany("Purchase_Order_Lines", [{ id: "POL-001", unit: "gram" }]);
+
+    expect(result).toEqual([expect.objectContaining({ id: "POL-001", unit: "gram" })]);
+  });
+
   it("returns empty array for empty input without calling Supabase", async () => {
     const result = await updateMany("Purchase_Order_Lines", []);
     expect(result).toEqual([]);

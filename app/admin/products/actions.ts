@@ -159,7 +159,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     // reads the same tables through a different path -- so without this,
     // POS kept serving a stale Products/Product_Variants read for up to the
     // 10-minute catalog TTL after a save here. The manual "Xoá Cache" button
-    // (app/admin/clear-cache/page.tsx) already calls these same two tags;
+    // (app/admin/clear-cache/actions.ts) already calls these same two tags;
     // this makes that automatic on the write, not a new mechanism.
     revalidateTag("sheets-Products", { expire: 0 });
     revalidateTag("sheets-Product_Variants", { expire: 0 });

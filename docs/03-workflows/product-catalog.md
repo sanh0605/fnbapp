@@ -187,4 +187,4 @@ for the naming trap explained once.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md
 
-> Reviewed, no behaviour change — 2026-10-15: Next 16 upgrade only; page params became async and revalidateTag gained its expire argument.
+> Reviewed, no behaviour change — 2026-10-15: Next 16 upgrade only; page params became async, revalidateTag gained its expire argument, and a comment now points at clear-cache/actions.ts.
