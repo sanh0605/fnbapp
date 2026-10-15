@@ -4,7 +4,7 @@ dotenv.config({ path: ".env.local" });
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * Plan 2026-10-15-bo-deleted: erase the last two leftovers of the DELETED vocabulary so
+ * Erase the last two leftovers of the DELETED vocabulary so
  * migration 0125 can drop it.
  *   modifiers MOD-007 (Dâu sấy): status DELETED, never sold -> row deleted
  *   units U-001: name DELETED_gram, referenced nowhere -> row deleted
