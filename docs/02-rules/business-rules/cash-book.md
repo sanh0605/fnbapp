@@ -183,6 +183,8 @@ told this, and chose the single row.
 
 The owner keeps his own list of "Khoản chi hằng tháng", such as Tiền điện or Tiền nhà. Each item belongs to one active expense group.
 
+**An item can only sit in an expense group** — a database trigger refuses a Thu group (migration `0132`, 2026-10-16; 0 of 4 items broke it).
+
 **When a reminder shows.** Tổng quan reminds of item X for month M when all of these hold:
 - X is in use;
 - M is not before the month X was created;

@@ -48,8 +48,8 @@ function normalizePromotionInput(promoData: Record<string, any>):
   if (type === "ORDER_DISCOUNT" && discountType === "FLAT_PRICE") {
     return { ok: false, error: "Khuyến mãi cả hoá đơn không có hình thức Đồng giá" };
   }
-  if (!Number.isFinite(minOrderValue) || minOrderValue < 0) {
-    return { ok: false, error: "Giá trị đơn tối thiểu phải là số hữu hạn không âm" };
+  if (!Number.isInteger(minOrderValue) || minOrderValue < 0) {
+    return { ok: false, error: "Giá trị đơn tối thiểu phải là số nguyên không âm" };
   }
 
   const startTimestamp = Date.parse(startDate);

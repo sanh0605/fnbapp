@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { replayOrders } from "./verify-price-cart-core";
+import { checkHistoryMatchesPrice, replayOrders } from "./verify-price-cart-core";
 
 const snapshot = JSON.stringify({
   id: "PRM-004",
@@ -40,5 +40,29 @@ describe("replayOrders", () => {
     expect(r.badLines).toBe(1);
     expect(r.orderNos).toEqual(["260714002014"]);
     expect(r.diffs).toEqual([{ order_no: "260714002014", line_no: 2, field: "net_line_total", stored: 16000, computed: 17000 }]);
+  });
+});
+
+describe("checkHistoryMatchesPrice", () => {
+  const h = (id: string, variant_id: string, new_price: number, created_at: string) => ({ id, variant_id, new_price, created_at });
+
+  it("passes a size whose price equals its latest history row, picked by created_at then id", () => {
+    const r = checkHistoryMatchesPrice(
+      [{ id: "VAR-001", price: 20000 }],
+      [h("PPH-001", "VAR-001", 18000, "2026-03-27T00:00:00Z"), h("PPH-009", "VAR-001", 20000, "2026-05-01T00:00:00Z")],
+    );
+    expect(r).toEqual({ checked: 1, mismatches: [] });
+  });
+
+  it("reports a price that differs from the latest row, and a size with no row", () => {
+    const r = checkHistoryMatchesPrice(
+      [{ id: "VAR-006", price: 23000 }, { id: "VAR-038", price: 5000 }],
+      [h("PPH-006", "VAR-006", 27000, "2026-03-27T00:00:00Z")],
+    );
+    expect(r.checked).toBe(2);
+    expect(r.mismatches).toEqual([
+      { variant_id: "VAR-006", price: 23000, historyPrice: 27000 },
+      { variant_id: "VAR-038", price: 5000, historyPrice: null },
+    ]);
   });
 });
