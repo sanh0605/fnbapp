@@ -74,7 +74,7 @@ export function removeDigitAcrossDot(
 
   // Removing the digit next to the dot can leave a leading zero, or all
   // zeros -- e.g. "1,000,000" minus the leading "1" is "000000", not "0".
-  // Strip it the same way toMoneyDigits does (fix round 2), and pull the
+  // Strip the leading zeros (fix round 2), and pull the
   // caret back by however many zeros were stripped, never past the start.
   const stripped = newDigits.replace(/^0+/, "");
   const zerosStripped = newDigits.length - stripped.length;
