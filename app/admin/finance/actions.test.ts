@@ -27,9 +27,4 @@ describe("cash entry actions", () => {
   it("refuses to edit a row that was already cancelled", () => {
     expect(source).toContain('fail("Dòng đã huỷ, không sửa được")');
   });
-
-  it("reads one date range rather than the whole table", () => {
-    expect(source).toMatch(/getCashEntries\(\s*start: string,\s*end: string/);
-    expect(source).toContain("entry_date");
-  });
 });

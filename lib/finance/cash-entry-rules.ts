@@ -1,4 +1,4 @@
-import type { DBCashCategory, DBCashEntry } from "@/types/db";
+import type { DBCashCategory } from "@/types/db";
 
 export interface CashEntryInput {
   entry_date: string;
@@ -82,60 +82,6 @@ export function parseCashEntry(input: CashEntryInput): ParseResult<CashEntryFiel
   return {
     ok: true,
     value: { entry_date, category_id, amount, payment_method, bank_account_id, note },
-  };
-}
-
-export interface CategoryTotal {
-  categoryId: string;
-  name: string;
-  kind: "EXPENSE" | "INCOME";
-  total: number;
-}
-
-export interface CashSummary {
-  totalExpense: number;
-  totalIncome: number;
-  // Income the shop did not earn -- capital contributions today, more later.
-  incomeOutsidePnl: number;
-  byCategory: CategoryTotal[];
-  unknownCategoryIds: string[];
-}
-
-export function summariseEntries(
-  entries: DBCashEntry[],
-  categories: DBCashCategory[],
-): CashSummary {
-  const byId = new Map(categories.map((c) => [c.id, c]));
-  const totals = new Map<string, CategoryTotal>();
-  const unknown = new Set<string>();
-  let totalExpense = 0;
-  let totalIncome = 0;
-  let incomeOutsidePnl = 0;
-
-  for (const e of entries) {
-    if (e.status !== "ACTIVE") continue;
-    const cat = byId.get(e.category_id);
-    if (!cat) {
-      unknown.add(e.category_id);
-      continue;
-    }
-    if (cat.kind === "EXPENSE") {
-      totalExpense += e.amount;
-    } else {
-      totalIncome += e.amount;
-      if (!cat.affects_pnl) incomeOutsidePnl += e.amount;
-    }
-    const row = totals.get(cat.id);
-    if (row) row.total += e.amount;
-    else totals.set(cat.id, { categoryId: cat.id, name: cat.name, kind: cat.kind, total: e.amount });
-  }
-
-  return {
-    totalExpense,
-    totalIncome,
-    incomeOutsidePnl,
-    byCategory: [...totals.values()].sort((a, b) => b.total - a.total),
-    unknownCategoryIds: [...unknown],
   };
 }
 

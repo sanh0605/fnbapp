@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCashEntry, summariseEntries, parseSalesRevenueFlag, SALES_REVENUE_FLAG_ERROR } from "./cash-entry-rules";
-import type { DBCashCategory, DBCashEntry } from "@/types/db";
+import { parseCashEntry, parseSalesRevenueFlag, SALES_REVENUE_FLAG_ERROR } from "./cash-entry-rules";
 
 const valid = {
   entry_date: "2026-07-15",
@@ -83,61 +82,6 @@ describe("parseCashEntry", () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.value.note).toBeNull();
-  });
-});
-
-const cats = [
-  { id: "CFC-001", name: "Vận hành", kind: "EXPENSE", affects_pnl: true },
-  { id: "CFC-004", name: "Thu khác", kind: "INCOME", affects_pnl: true },
-  { id: "CFC-005", name: "Vốn góp", kind: "INCOME", affects_pnl: false },
-] as DBCashCategory[];
-
-const entry = (id: string, category_id: string, amount: number, status = "ACTIVE") =>
-  ({ id, category_id, amount, status, entry_date: "2026-07-15" } as DBCashEntry);
-
-describe("summariseEntries", () => {
-  it("keeps income and expense apart and never adds them together", () => {
-    const s = summariseEntries(
-      [entry("CE-001", "CFC-001", 1371000), entry("CE-002", "CFC-004", 200000)],
-      cats,
-    );
-    expect(s.totalExpense).toBe(1371000);
-    expect(s.totalIncome).toBe(200000);
-    expect(s).not.toHaveProperty("net");
-  });
-
-  it("splits out the income that is not revenue", () => {
-    const s = summariseEntries(
-      [entry("CE-001", "CFC-004", 200000), entry("CE-002", "CFC-005", 5000000)],
-      cats,
-    );
-    expect(s.totalIncome).toBe(5200000);
-    expect(s.incomeOutsidePnl).toBe(5000000);
-  });
-
-  it("leaves cancelled rows out of every total", () => {
-    const s = summariseEntries(
-      [entry("CE-001", "CFC-001", 1371000), entry("CE-002", "CFC-001", 999000, "CANCELLED")],
-      cats,
-    );
-    expect(s.totalExpense).toBe(1371000);
-  });
-
-  it("groups by category so the July acceptance figure can be read off", () => {
-    const s = summariseEntries(
-      [entry("CE-001", "CFC-001", 1371000), entry("CE-002", "CFC-001", 1)],
-      cats,
-    );
-    expect(s.byCategory).toEqual([
-      { categoryId: "CFC-001", name: "Vận hành", kind: "EXPENSE", total: 1371001 },
-    ]);
-  });
-
-  it("does not crash on an entry whose category is missing from the list", () => {
-    const s = summariseEntries([entry("CE-001", "CFC-999", 1000)], cats);
-    expect(s.totalExpense).toBe(0);
-    expect(s.totalIncome).toBe(0);
-    expect(s.unknownCategoryIds).toEqual(["CFC-999"]);
   });
 });
 

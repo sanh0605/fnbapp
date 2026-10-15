@@ -51,15 +51,6 @@ async function checkMonthlyItem(
 // entry_date is a Postgres `date` column, no time and no zone, so the filter
 // compares the "YYYY-MM-DD" strings directly -- unlike lib/shared/report-time.ts,
 // which converts a timestamptz between UTC and Asia/Saigon.
-export async function getCashEntries(start: string, end: string): Promise<DBCashEntry[]> {
-  const auth = await requireAdmin();
-  if (!auth.ok) throw new Error(auth.error);
-  return await findAllWhere<DBCashEntry>(SHEET, {
-    gte: { entry_date: start },
-    lte: { entry_date: end },
-  });
-}
-
 // Everything up to and including `end`: the opening balance of a range needs
 // every hand row before it, not only those inside it.
 async function getCashEntriesThrough(end: string): Promise<DBCashEntry[]> {
@@ -148,7 +139,7 @@ export async function updateCashEntry(formData: FormData): Promise<ActionRespons
 }
 
 // The ordinary way to undo a cash-book line: it stays visible, marked
-// cancelled, and drops out of summariseEntries' totals. No hard delete.
+// cancelled, and drops out of the cash-book totals. No hard delete.
 export async function cancelCashEntry(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);

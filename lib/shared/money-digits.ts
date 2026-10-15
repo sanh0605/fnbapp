@@ -5,22 +5,6 @@
  * work, never Number(), avoids float precision loss at that size.
  */
 
-// Digits only, no leading zeros, NOT capped at 15 -- used by the caller to
-// tell a keystroke that would push the box over the cap (which must be
-// rejected outright, never truncated -- fix round 1, item 1) from one that
-// fits.
-export function toMoneyDigitsUncapped(raw: string): string {
-  const digitsOnly = raw.replace(/\D/g, "");
-  return digitsOnly.replace(/^0+/, "");
-}
-
-// Digits only, no leading zeros, capped at 15 digits. "0" alone strips down
-// to "" -- the box is empty, not showing a zero -- because the owner types
-// an amount, he never means to enter zero đồng.
-export function toMoneyDigits(raw: string): string {
-  return toMoneyDigitsUncapped(raw).slice(0, 15);
-}
-
 // Comma every 3 digits from the right (BR-UI-008). String work only (no Intl, no Number)
 // so it stays exact at any length, including past MAX_SAFE_INTEGER.
 export function groupThousands(digits: string): string {
