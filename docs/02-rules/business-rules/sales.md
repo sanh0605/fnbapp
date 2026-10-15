@@ -71,7 +71,7 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 
 ### BR-SALE-008 — A price changed while the till is open: the server refuses the order and the till reloads
 
-**Status:** `APPROVED` — owner 2026-10-14, audit item C5. He was shown this example: the till opens in the morning, Bạc xỉu goes from 29,000 to 32,000 at noon, the till still shows 29,000, the cashier takes 29,000, the book records 32,000, and the drawer is 3,000 short. He chose *"Từ chối, bắt tải lại"* over saving the price the till showed. Not built yet.
+**Status:** `APPROVED` — owner 2026-10-14, audit item C5. He was shown this example: the till opens in the morning, Bạc xỉu goes from 29,000 to 32,000 at noon, the till still shows 29,000, the cashier takes 29,000, the book records 32,000, and the drawer is 3,000 short. He chose *"Từ chối, bắt tải lại"* over saving the price the till showed. Built 2026-10-15 (`docs/superpowers/specs/2026-10-15-tinh-khuyen-mai-design.md`), not yet pushed.
 
 - The till sends the total it showed the customer. The server works the total out again from the prices in force. If the two differ, the order is not saved and the till says the price has changed and to reload the page. After the reload the cashier charges the new price.
 - The till can never set a price. That is why he did not choose "save what the till showed".
@@ -81,7 +81,7 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 
 ### BR-SALE-009 — A percent discount on the whole order is taken after the dish discounts
 
-**Status:** `APPROVED` — owner 2026-10-14, audit item C9, chose *"Sau giảm từng món"*. Not built yet: today the till already works this way, the server does not.
+**Status:** `APPROVED` — owner 2026-10-14, audit item C9, chose *"Sau giảm từng món"*. Built 2026-10-15: the till and the server price through one function (`lib/sales/price-cart.ts`), not yet pushed.
 
 **The example he was shown.** Bạc xỉu 29,000 and Cà phê sữa 25,000 come to 54,000. The cashier takes 4,000 off Bạc xỉu, leaving 50,000, then 10% off the whole order. The till takes 10% of 50,000, so 5,000, and the customer pays 45,000. The server takes 10% of 54,000, so 5,400, and books 44,600: the book and the drawer are 400 apart.
 
@@ -90,7 +90,7 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 
 ### BR-SALE-010 — A whole-order promotion and the cashier's whole-order discount stack
 
-**Status:** `APPROVED` — owner 2026-10-14, audit item C3, chose *"Cộng dồn"* over locking the cashier's discount. Not built yet. Measured 2026-10-14: no running promotion is a whole-order one (both are per dish), so no order has been affected.
+**Status:** `APPROVED` — owner 2026-10-14, audit item C3, chose *"Cộng dồn"* over locking the cashier's discount. Built 2026-10-15, not yet pushed. Measured 2026-10-14: no running promotion is a whole-order one (both are per dish), so no order has been affected.
 
 **The example he was shown.** A "Giảm 10% hóa đơn" promotion takes a 100,000 order to 90,000; the cashier then takes another 5,000 off for a regular. The customer pays 85,000.
 
@@ -99,11 +99,11 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 
 ### BR-SALE-011 — Promotions without a code apply themselves; a "Dùng chung" box on each promotion decides whether two stack
 
-**Status:** `APPROVED` — owner 2026-10-14, audit item C4. He first answered *"máy chủ tự áp, nhưng đúng điều kiện"* for promotions without a code only, with the customer choosing when a code promotion meets another; he then confirmed the worked example below (*"Đúng vậy"*). Not built yet.
+**Status:** `APPROVED` — owner 2026-10-14, audit item C4. He first answered *"máy chủ tự áp, nhưng đúng điều kiện"* for promotions without a code only, with the customer choosing when a code promotion meets another; he then confirmed the worked example below (*"Đúng vậy"*). Built 2026-10-15 (migration `0127`: table `order_promotions`, box `promotions.stackable`), not yet pushed.
 
 **The example he confirmed.** "Giảm 10.000 Bạc xỉu" needs no code. The customer also hands over the code KHAITRUONG, 15% off the order.
 
-- **Minimum order value is checked after the dish discounts** — owner 2026-10-15, chose *"So sau giảm món"* over the price before any discount. Example he was shown: minimum 100,000; Bạc xỉu ×4 = 116,000 with 5,000 off each cup is 96,000, so the promotion does not apply. Same base as `BR-SALE-009`. Until built, the till compares a third figure: after the cashier's dish discounts but before promotions.
+- **Minimum order value is checked after the dish discounts** — owner 2026-10-15, chose *"So sau giảm món"* over the price before any discount. Example he was shown: minimum 100,000; Bạc xỉu ×4 = 116,000 with 5,000 off each cup is 96,000, so the promotion does not apply. Same base as `BR-SALE-009`.
 - **Without a code.** A promotion that needs no code applies itself when the order meets its conditions, minimum order value included. The till shows it before the money is taken. The server never applies a promotion that needs a code unless the till sent that code, and never one whose conditions the order misses (today it does both).
 - **"Dùng chung với khuyến mãi khác"** is a new yes/no box on each promotion, set by the owner on the promotion screen. Existing promotions start at "không".
 - **Both "có":** both apply. Order of steps as in `BR-SALE-010`.
@@ -126,6 +126,7 @@ This is a **thin slice** of the approved multi-outlet design (ARCH-1): one `bran
 **The example he was shown.** Order 261006002002 on 06/10, one Trà sữa truyền thống 18,000, was booked as 9,000 cash + 9,000 transfer; the order list and the order page said only "Tiền mặt". He first took the split for a fault; it is not: the till never splits by itself, the cashier types each part. Measured 2026-10-14: 2 such orders ever, both by the account tuyen2612 at Điểm bán 2 around 19:42 (27/07, 72,000 as 36,000 + 36,000; 06/10). Whether those customers really paid that way is his to check with the cashier or the bank statement.
 
 - The till keeps the button.
+- **In Doanh số** such an order counts once in each payment row it used. The column is "Lượt thanh toán", and its total row says how many orders those payments belong to (06/10: "39 lượt thanh toán của 38 đơn"). "Tổng số đơn" stays the order count. Chosen 2026-10-15 under the owner's delegation (Báo cáo proposal R2, like Toast's Payments Summary), built 2026-10-15, not yet pushed.
 - The order list shows "Tiền mặt + Chuyển khoản" for such an order; the order page shows each part with its amount. A one-way order shows as before.
 - **Sửa đơn edits each part** — owner 2026-10-14, chose *"Sửa được từng phần"* over merging into one method and over locking the method. Until then the page showed one "Phương thức" box and, for an order paid two ways, silently kept the old parts whatever was chosen. Now the page lists the parts it holds (method and amount); the owner may change a part's method or amount, add the other method, or remove a part down to one. One part always takes the order's whole new total. With two parts, their sum must equal the order's new total or the save is refused with both figures shown; this also lets a split order's total change, which was refused before. Example: 18,000 as 9,000 cash + 9,000 transfer can become 10,000 + 8,000, or 18,000 cash. Since `BR-SALE-014` (2026-10-15) the total itself no longer changes on this page.
 
@@ -151,7 +152,7 @@ Every edit rebuilt the order from today's catalog. The new version credited the 
 
 ### BR-SALE-015 — The till does not sell without internet
 
-**Status:** `APPROVED` — owner 2026-10-15, chose *"Không bán khi mất mạng"* over a real offline queue, after hearing that the till had three behaviours for one state (banner "đơn vẫn được lưu", pay buttons disabled, Enter still sending) and that 0 orders ever waited for the network and 0 sync failures were ever recorded. Closes `BR-U-001`. Not built yet (Máy bán hàng proposal R1).
+**Status:** `APPROVED` — owner 2026-10-15, chose *"Không bán khi mất mạng"* over a real offline queue, after hearing that the till had three behaviours for one state (banner "đơn vẫn được lưu", pay buttons disabled, Enter still sending) and that 0 orders ever waited for the network and 0 sync failures were ever recorded. Closes `BR-U-001`. Built 2026-10-15 (Máy bán hàng proposal R1); the table goes with migration 0129, run after the push.
 
 - When the browser reports no network, the till says "Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại"; the pay buttons and the Enter key are off together.
 - No order is queued in the browser. The queue, the service worker and the Đồng bộ máy bán page are removed with their table.
@@ -161,8 +162,12 @@ Every edit rebuilt the order from today's catalog. The new version credited the 
 
 ### BR-SALE-016 — Each cashier sells under their own account
 
-**Status:** `APPROVED` — owner 2026-10-15, chose *"Mỗi thu ngân một tài khoản"* after seeing 714 orders in 30 days all under one account and no logout on the till. Not built yet (Máy bán hàng proposal R6, Q2). `BR-U-003` stays open for the full role matrix; this fixes one row of it.
+**Status:** `APPROVED` — owner 2026-10-15, chose *"Mỗi thu ngân một tài khoản"* after seeing 714 orders in 30 days all under one account and no logout on the till. Built 2026-10-15 (Máy bán hàng proposal R6, Q2): Đăng xuất on the till, outlet picker for STAFF; the STAFF accounts themselves are the owner's to create. `BR-U-003` stays open for the full role matrix; this fixes one row of it.
 
 - The owner creates a Nhân viên (STAFF) account per cashier in Nhân sự. STAFF opens the till only; `/admin` stays closed to it (owner decision 2026-07-22).
 - The till has a Đăng xuất button. The order keeps the seller's name as today (`created_by_name`), so Doanh số filtered by Nhân viên shows who sold.
 - A STAFF login with no outlet sees the outlet picker, never a redirect loop.
+
+### BR-SALE-017 — A dish group's till icon is data the owner edits
+
+2026-10-15 (spec R4; owner rule 2026-09-28, no hard-coding what he may change): `product_categories.icon` holds the emoji shown on a dish card at the till, set on the dish-group form. Blank means no icon on the card, not a default cup. Up to 8 characters (one emoji can be several code units), refused with "Biểu tượng tối đa 8 ký tự". Migration `0130` (runs before the push that ships the form; not run yet on 2026-10-15) backfills only the three groups the old keyword table really matched: Cà phê ☕, Trà 🍵, Yogurt 🥛; Giải trí, Thức ăn and Topping get no icon (the old fallback cup was wrong there).

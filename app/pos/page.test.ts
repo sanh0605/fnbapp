@@ -154,4 +154,20 @@ describe("POSPage refuses a stopped outlet", () => {
     const element: any = await POSPage({ params: {}, searchParams: { outletId: "OUT-001" } } as any);
     expect(element.props.outletId).toBe("OUT-001");
   });
+
+  // R6: proxy.ts sends STAFF away from /admin, so redirecting them there looped.
+  it("shows STAFF the outlet picker (active outlets only) instead of redirecting", async () => {
+    mocks.getServerSession.mockResolvedValue({ user: { name: "Thu ngân", role: "STAFF" } });
+
+    const element: any = await POSPage({ params: {}, searchParams: { outletId: "OUT-STOP" } } as any);
+
+    expect(mocks.redirect).not.toHaveBeenCalled();
+    expect(element.props.outlets.map((o: any) => o.id)).toEqual(["OUT-001"]);
+  });
+
+  it("keeps the /admin redirect for MANAGER with no valid outlet", async () => {
+    mocks.getServerSession.mockResolvedValue({ user: { name: "Quản lý", role: "MANAGER" } });
+
+    await expect(POSPage({ params: {}, searchParams: {} } as any)).rejects.toThrow("NEXT_REDIRECT /admin");
+  });
 });

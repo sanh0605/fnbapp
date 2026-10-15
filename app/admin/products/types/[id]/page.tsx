@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { resolveActor } from "@/lib/auth/auth";
 import { getProductTypes } from "@/app/admin/products/types/actions";
 import { ProductTypeDetailView } from "./components/ProductTypeDetailView";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 
 export const dynamic = "force-dynamic";
 

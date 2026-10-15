@@ -68,6 +68,7 @@ describe("saveProduct atomic persistence", () => {
     // called revalidatePath, it just never called revalidateTag at all.
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products", { expire: 0 });
     expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Price_History", { expire: 0 });
   });
 
   it("leaves no partial create state after rollback and permits retry", async () => {

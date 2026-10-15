@@ -41,6 +41,8 @@ export const BACKUP_TABLES = [
   "pos_drafts",
   "users",
   "order_payments",
+  // References orders_v2 and promotions, both listed above.
+  "order_promotions",
   "stocktake_sessions",
   "stocktake_lines",
   // References stock_issues below only in reverse (stock_issues.issue_slip_id
@@ -51,7 +53,6 @@ export const BACKUP_TABLES = [
   // restore order to resolve.
   "stock_issues",
   "purchase_order_edits",
-  "pos_sync_failures",
   // inventory_balances and stock_ledger are dropped tables (migration 0096,
   // 2026-09-02); base_ingredients is dropped (migration 0090, 2026-09-01).
   // None exist any more, so none are listed.

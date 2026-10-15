@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { loadProductRow } from "@/app/admin/products/load-product-rows";
 import { resolveActor } from "@/lib/auth/auth";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { findAll, findAllWhere } from "@/lib/db/tables";
 import { ProductDetailView } from "./components/ProductDetailView";
 

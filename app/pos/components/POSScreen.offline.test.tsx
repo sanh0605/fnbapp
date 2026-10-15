@@ -1,178 +1,238 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+// @vitest-environment jsdom
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
+import React from "react";
+import POSScreen from "./POSScreen";
+import { formatNumber } from "@/lib/shared/format";
 
-describe("POSScreen offline checkout handling", () => {
-  const source = readFileSync(resolve(__dirname, "POSScreen.tsx"), "utf8");
-  const checkoutSource = source.slice(
-    source.indexOf("const handleConfirmCheckout"),
-    source.indexOf("const handleConfirmCheckoutRef"),
-  );
+vi.mock("@/app/pos/actions", () => ({
+  submitOrderV2: vi.fn(),
+  getPOSDrafts: vi.fn().mockResolvedValue([]),
+  savePOSDraft: vi.fn(),
+  deletePOSDraft: vi.fn(),
+}));
 
-  it("no longer blocks checkout when offline", () => {
-    expect(checkoutSource).not.toMatch(/if \(cart\.length === 0 \|\| !isOnline\) return;/);
-    expect(checkoutSource).toContain("if (cart.length === 0) return;");
-  });
+vi.mock("@/lib/shared/dialog", () => ({
+  alert: vi.fn(),
+  confirm: vi.fn().mockResolvedValue(true),
+}));
 
-  it("captures the sale timestamp once and sends it as client_captured_at", () => {
-    expect(checkoutSource).toContain("client_captured_at");
-  });
+const CATEGORY = { id: "CAT1", name: "Cà phê" };
+const PRODUCT = { id: "P1", name: "Cà phê đen", category_id: CATEGORY.id };
+const VARIANTS = [{ id: "V1", product_id: "P1", size_name: "M", price: 20000 }];
 
-  it("fingerprints the checkout attempt WITHOUT client_captured_at, so a retry's fresh timestamp never mints a new idempotency token", () => {
-    // resolvePosCheckoutAttempt (lib/pos/pos-checkout-idempotency.ts) reuses the
-    // existing request token only when the serialized payload is identical
-    // across calls. If client_captured_at were part of that payload, every
-    // retry (which re-derives a fresh Date().toISOString() call site) would
-    // produce a different fingerprint and mint a brand-new token every time,
-    // defeating duplicate-order prevention entirely.
-    const callIndex = checkoutSource.indexOf("resolvePosCheckoutAttempt(");
-    expect(callIndex).toBeGreaterThan(-1);
-    const callSite = checkoutSource.slice(callIndex, checkoutSource.indexOf(");", callIndex) + 2);
-    expect(callSite).not.toContain("client_captured_at");
-    expect(callSite).toContain("cartInputWithoutTimestamp");
-  });
-
-  it("attempts to queue before falling back to rollback+retry", () => {
-    // The catch block still keeps a rollback fallback for the exceedingly
-    // rare case where IndexedDB itself fails (private browsing mode with
-    // storage disabled, quota exceeded) -- but queuing must be attempted
-    // first, since a network failure (the common case) must never roll
-    // back or interrupt the next sale.
-    const catchBlock = checkoutSource.slice(checkoutSource.indexOf("} catch (err: any) {"));
-    expect(catchBlock).toContain("enqueuePendingOrder");
-    const queueIndex = catchBlock.indexOf("enqueuePendingOrder");
-    const rollbackIndex = catchBlock.indexOf("setCart(cartBackup)");
-    expect(rollbackIndex).toBeGreaterThan(queueIndex);
-  });
-
-  it("resets the checkout attempt refs after a successful offline enqueue, so the next identical cart mints a fresh token", () => {
-    // Once an order is durably enqueued under a given request token, that
-    // token belongs to that specific completed sale. If the refs are not
-    // reset here, the very next "Thanh toan" press with an identical cart
-    // (common in a beverage shop) would fingerprint the same and reuse the
-    // same token, silently merging a second real sale into the first one's
-    // queued record.
-    const enqueueIndex = checkoutSource.indexOf("enqueuePendingOrder(");
-    expect(enqueueIndex).toBeGreaterThan(-1);
-    const queueErrIndex = checkoutSource.indexOf("} catch (queueErr)", enqueueIndex);
-    expect(queueErrIndex).toBeGreaterThan(enqueueIndex);
-    const enqueueSuccessBlock = checkoutSource.slice(enqueueIndex, queueErrIndex);
-
-    expect(enqueueSuccessBlock).toContain("checkoutAttemptRef.current = null;");
-    expect(enqueueSuccessBlock).toContain("clientCapturedAtRef.current = null;");
-  });
-
-  it("does NOT reset the checkout attempt refs in the queue-failure fallback branch", () => {
-    // The rare IndexedDB-failure fallback must keep behaving as an
-    // in-progress, retryable attempt -- resetting the refs here would let a
-    // still-pending attempt silently mint a new token on manual retry.
-    const queueErrIndex = checkoutSource.indexOf("} catch (queueErr)");
-    expect(queueErrIndex).toBeGreaterThan(-1);
-    const catchBlockEnd = checkoutSource.indexOf("\n    }\n  };", queueErrIndex);
-    const queueFailureBlock = checkoutSource.slice(queueErrIndex, catchBlockEnd);
-
-    expect(queueFailureBlock).not.toContain("checkoutAttemptRef.current = null;");
-    expect(queueFailureBlock).not.toContain("clientCapturedAtRef.current = null;");
-  });
-
-  it("still rolls back and shows an interactive retry for a real rejection", () => {
-    const rejectionBlock = checkoutSource.slice(
-      checkoutSource.indexOf("if (res.success) {"),
-      checkoutSource.indexOf("} catch (err: any) {"),
-    );
-    expect(rejectionBlock).toContain("setCart(cartBackup)");
-    expect(rejectionBlock).toContain("Thử lại");
-  });
-
-  it("updates the offline banner to say orders are still saved", () => {
-    expect(source).toContain("vẫn được lưu");
-    expect(source).not.toContain("đơn sẽ không gửi được");
-  });
-
-  it("Enter-key handler no longer requires isOnline for offline checkout", () => {
-    // Extract the Enter key handler section by finding the e.key === "Enter" condition
-    const enterKeyIndex = source.indexOf('e.key === "Enter"');
-    expect(enterKeyIndex).toBeGreaterThan(-1);
-
-    // Get a bounded section around the Enter condition (the full if statement line)
-    const enterKeySection = source.slice(
-      Math.max(0, enterKeyIndex - 50),
-      enterKeyIndex + 150
-    );
-
-    // Verify isOnline is NOT in the Enter key condition
-    expect(enterKeySection).not.toMatch(/e\.key === ["']Enter["'].*isOnline/);
-
-    // Verify cart.length guard is still present
-    expect(enterKeySection).toMatch(/cart\.length\s*>\s*0/);
+beforeEach(async () => {
+  vi.clearAllMocks();
+  const { submitOrderV2 } = await import("@/app/pos/actions");
+  (submitOrderV2 as any).mockReset();
+  Object.defineProperty(window.navigator, "onLine", {
+    value: true,
+    configurable: true,
+    writable: true,
   });
 });
 
-describe("POSScreen background sync", () => {
-  const source = readFileSync(resolve(__dirname, "POSScreen.tsx"), "utf8");
-
-  it("defines a syncPendingOrders function", () => {
-    expect(source).toContain("const syncPendingOrders");
-  });
-
-  it("triggers a sync sweep on mount and when the browser regains connectivity", () => {
-    expect(source).toMatch(/useEffect\(\(\) => \{\s*syncPendingOrders\(\);\s*\}, \[\]\);/);
-    expect(source).toContain('window.addEventListener("online", syncPendingOrders)');
-  });
-
-  it("reports a real (non-network) rejection to the server instead of retrying forever", () => {
-    const syncSource = source.slice(
-      source.indexOf("const syncPendingOrders"),
-      source.indexOf("const handleConfirmCheckout"),
-    );
-    expect(syncSource).toContain("reportPosSyncFailure");
-    expect(syncSource).toContain("removePendingOrder(record.requestToken)");
-  });
-
-  it("only removes the queued order once reportPosSyncFailure actually succeeded", () => {
-    // If reporting the failure itself fails (e.g. the pos_sync_failures
-    // table doesn't exist yet before migration 0040 is applied),
-    // removePendingOrder must NOT run unconditionally right after it -- that
-    // would delete a real sale with no trace anywhere it was ever recorded.
-    const syncSource = source.slice(
-      source.indexOf("const syncPendingOrders"),
-      source.indexOf("const handleConfirmCheckout"),
-    );
-    const rejectionBranch = syncSource.slice(
-      syncSource.indexOf("const report = await reportPosSyncFailure"),
-      syncSource.indexOf("} catch {"),
-    );
-
-    expect(rejectionBranch).toMatch(/^const report = await reportPosSyncFailure\(/);
-
-    const ifIndex = rejectionBranch.indexOf("if (report.success)");
-    const elseIndex = rejectionBranch.indexOf("} else {");
-    const removeIndex = rejectionBranch.indexOf("await removePendingOrder(record.requestToken)");
-    const incrementIndex = rejectionBranch.indexOf("await incrementAttemptCount(record.requestToken)");
-
-    // removePendingOrder must sit inside the `if (report.success)` branch
-    // (before the `else`), and incrementAttemptCount inside the `else`
-    // branch -- never removePendingOrder called unconditionally.
-    expect(ifIndex).toBeGreaterThan(-1);
-    expect(elseIndex).toBeGreaterThan(ifIndex);
-    expect(removeIndex).toBeGreaterThan(ifIndex);
-    expect(removeIndex).toBeLessThan(elseIndex);
-    expect(incrementIndex).toBeGreaterThan(elseIndex);
-  });
-
-  it("leaves a still-network-failing record in the queue for the next sweep", () => {
-    const syncSource = source.slice(
-      source.indexOf("const syncPendingOrders"),
-      source.indexOf("const handleConfirmCheckout"),
-    );
-    expect(syncSource).toContain("incrementAttemptCount");
-  });
+afterEach(() => {
+  cleanup();
 });
 
-describe("POSScreen service worker registration", () => {
-  const source = readFileSync(resolve(__dirname, "POSScreen.tsx"), "utf8");
+describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
+  it("offline: pay buttons are disabled, offline banner is shown, and Enter key sends nothing", async () => {
+    Object.defineProperty(window.navigator, "onLine", {
+      value: false,
+      configurable: true,
+      writable: true,
+    });
 
-  it("registers the POS service worker on mount", () => {
-    expect(source).toContain('navigator.serviceWorker.register("/pos-sw.js")');
+    const { submitOrderV2 } = await import("@/app/pos/actions");
+
+    render(
+      <POSScreen
+        categories={[CATEGORY]}
+        products={[PRODUCT]}
+        variants={VARIANTS}
+        modifiers={[]}
+        bestSellers={[PRODUCT.id]}
+      />
+    );
+
+    // Banner indicates disconnection and no selling
+    expect(
+      screen.getByText("⚠️ Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại")
+    ).toBeInTheDocument();
+
+    // Add item to cart
+    fireEvent.click(screen.getByText("Cà phê đen"));
+    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+    // The three payment buttons are disabled while offline
+    const offlineBtns = screen.getAllByRole("button", { name: /NGOẠI TUYẾN/i });
+    expect(offlineBtns.length).toBeGreaterThanOrEqual(2);
+    offlineBtns.forEach(btn => expect(btn).toBeDisabled());
+
+    const splitBtn = screen.getByRole("button", { name: /Nhiều hình thức/i });
+    expect(splitBtn).toBeDisabled();
+
+    // Enter key does nothing when offline
+    fireEvent.keyDown(window, { key: "Enter" });
+    expect(submitOrderV2).not.toHaveBeenCalled();
+  });
+
+  it("retry: true keeps cart and 'Gửi lại' resends with the same client_request_id and client_captured_at", async () => {
+    const { submitOrderV2 } = await import("@/app/pos/actions");
+    (submitOrderV2 as any)
+      .mockResolvedValueOnce({ success: false, error: "Mất kết nối máy chủ", retry: true })
+      .mockResolvedValueOnce({ success: true, order_id: "ord-1", order_no: "260825001001" });
+
+    render(
+      <POSScreen
+        brandId="BR-1"
+        outletId="OUT-1"
+        categories={[CATEGORY]}
+        products={[PRODUCT]}
+        variants={VARIANTS}
+        modifiers={[]}
+        bestSellers={[PRODUCT.id]}
+      />
+    );
+
+    // Add item to cart
+    fireEvent.click(screen.getByText("Cà phê đen"));
+    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+    // Click TIỀN MẶT and confirm cash payment
+    fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận thanh toán/i }));
+
+    // Wait for failure
+    await waitFor(() => {
+      expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại").length).toBeGreaterThan(0);
+    });
+    expect(screen.queryByText("Mất kết nối máy chủ")).toBeNull();
+    expect(submitOrderV2).toHaveBeenCalledTimes(1);
+
+    const firstPayload = (submitOrderV2 as any).mock.calls[0][0];
+    const firstToken = (submitOrderV2 as any).mock.calls[0][1];
+    expect(firstToken).toBeTruthy();
+    expect(firstPayload.client_captured_at).toBeTruthy();
+
+    // Cart is kept: product is still present
+    const lineHeading = screen.getByRole("heading", { name: "Cà phê đen", level: 4 });
+    expect(lineHeading).toBeInTheDocument();
+    const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+    expect(within(cartRow).getByText(formatNumber(20000))).toBeInTheDocument();
+
+    // Shows "Gửi lại" action button
+    const retryButton = screen.getByRole("button", { name: "Gửi lại" });
+    expect(retryButton).toBeInTheDocument();
+
+    // Click "Gửi lại"
+    fireEvent.click(retryButton);
+
+    await waitFor(() => {
+      expect(submitOrderV2).toHaveBeenCalledTimes(2);
+    });
+
+    const secondPayload = (submitOrderV2 as any).mock.calls[1][0];
+    const secondToken = (submitOrderV2 as any).mock.calls[1][1];
+
+    // Resends with the SAME request token and captured time
+    expect(secondToken).toBe(firstToken);
+    expect(secondPayload.client_captured_at).toBe(firstPayload.client_captured_at);
+  });
+
+  it("call throws (network failure) keeps cart and 'Gửi lại' resends with the same client_request_id", async () => {
+    const { submitOrderV2 } = await import("@/app/pos/actions");
+    (submitOrderV2 as any)
+      .mockRejectedValueOnce(new Error("Network connection dropped"))
+      .mockResolvedValueOnce({ success: true, order_id: "ord-2", order_no: "260825001002" });
+
+    render(
+      <POSScreen
+        brandId="BR-1"
+        outletId="OUT-1"
+        categories={[CATEGORY]}
+        products={[PRODUCT]}
+        variants={VARIANTS}
+        modifiers={[]}
+        bestSellers={[PRODUCT.id]}
+      />
+    );
+
+    // Add item to cart
+    fireEvent.click(screen.getByText("Cà phê đen"));
+    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+    // Click TIỀN MẶT and confirm cash payment
+    fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận thanh toán/i }));
+
+    // Wait for error
+    await waitFor(() => {
+      expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại").length).toBeGreaterThan(0);
+    });
+    expect(screen.queryByText("Network connection dropped")).toBeNull();
+    expect(submitOrderV2).toHaveBeenCalledTimes(1);
+
+    const firstToken = (submitOrderV2 as any).mock.calls[0][1];
+
+    // Cart is kept
+    expect(screen.getByRole("heading", { name: "Cà phê đen", level: 4 })).toBeInTheDocument();
+
+    // "Gửi lại" button is offered
+    const retryButton = screen.getByRole("button", { name: "Gửi lại" });
+    expect(retryButton).toBeInTheDocument();
+
+    // Click "Gửi lại"
+    fireEvent.click(retryButton);
+
+    await waitFor(() => {
+      expect(submitOrderV2).toHaveBeenCalledTimes(2);
+    });
+
+    const secondToken = (submitOrderV2 as any).mock.calls[1][1];
+    expect(secondToken).toBe(firstToken);
+  });
+
+  it("retry: false follows refusal path with server text and no retry button", async () => {
+    const { submitOrderV2 } = await import("@/app/pos/actions");
+    const REFUSED = "Giá hoặc khuyến mãi đã thay đổi. Tải lại trang rồi bấm lại.";
+    (submitOrderV2 as any).mockResolvedValueOnce({
+      success: false,
+      error: REFUSED,
+      retry: false,
+    });
+
+    render(
+      <POSScreen
+        brandId="BR-1"
+        outletId="OUT-1"
+        categories={[CATEGORY]}
+        products={[PRODUCT]}
+        variants={VARIANTS}
+        modifiers={[]}
+        bestSellers={[PRODUCT.id]}
+      />
+    );
+
+    // Add item to cart
+    fireEvent.click(screen.getByText("Cà phê đen"));
+    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+    // Click TIỀN MẶT and confirm cash payment
+    fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Xác nhận thanh toán/i }));
+
+    // Wait for refusal error
+    await waitFor(() => {
+      expect(screen.getAllByText(REFUSED).length).toBeGreaterThan(0);
+    });
+
+    // Cart is kept
+    expect(screen.getByRole("heading", { name: "Cà phê đen", level: 4 })).toBeInTheDocument();
+
+    // Refusal shows no "Gửi lại" or "Thử lại" button
+    expect(screen.queryByRole("button", { name: "Gửi lại" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Thử lại" })).toBeNull();
   });
 });

@@ -6,6 +6,7 @@ import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
 import { CartItemRow } from "./CartItemRow";
 import { formatNumber } from "@/lib/shared/format";
 import { alert, confirm } from "@/lib/shared/dialog";
+import { calculateItemTotal, calculateItemGross, clampDiscount, getRoundNotesAbove } from "./cart-pricing";
 
 interface CartPanelProps {
   cart: any[];
@@ -24,7 +25,6 @@ interface CartPanelProps {
   setPromoCodeInput: (val: string) => void;
   handleApplyPromoCode: () => void;
   handleRemovePromoCode: () => void;
-  appliedPromo: any;
   promoDiscountAmount: number;
   orderManualAmount?: number;
   totalAmount: number;
@@ -37,9 +37,19 @@ interface CartPanelProps {
   isCheckingOut: string | null;
   itemPromoDiscounts: number[];
   isOnline: boolean;
-  processingOrder: any | null;
-  lastCheckoutError: any | null;
-  clearLastCheckoutError: () => void;
+  processingOrder?: any;
+  lastCheckoutError?: any;
+  promotionSets: { promotionIds: string[]; amount: number }[];
+  chosenSetIndex: number;
+  onSelectSet: (idx: number) => void;
+  appliedPromotions: Array<{ id: string; name: string; code: string; amount: number }>;
+  promotions: any[];
+  appliedPromoCode: string | null;
+  isCashStepOpen: boolean;
+  setIsCashStepOpen: (open: boolean) => void;
+  cashTendered: number | null;
+  setCashTendered: (val: number | null) => void;
+  onResendFailedOrder: () => void;
 }
 
 export function CartPanel({
@@ -59,7 +69,6 @@ export function CartPanel({
   setPromoCodeInput,
   handleApplyPromoCode,
   handleRemovePromoCode,
-  appliedPromo,
   promoDiscountAmount,
   orderManualAmount = 0,
   totalAmount,
@@ -74,36 +83,30 @@ export function CartPanel({
   isOnline,
   processingOrder,
   lastCheckoutError,
-  clearLastCheckoutError,
+  promotionSets,
+  chosenSetIndex,
+  onSelectSet,
+  appliedPromotions,
+  promotions,
+  appliedPromoCode,
+  isCashStepOpen,
+  setIsCashStepOpen,
+  cashTendered,
+  setCashTendered,
+  onResendFailedOrder,
 }: CartPanelProps) {
+
   const [isSplitPaymentOpen, setIsSplitPaymentOpen] = useState(false);
   const [splitPayments, setSplitPayments] = useState<{ method: "CASH" | "BANK_TRANSFER", amount: number, reference: string }[]>([]);
   const [splitMethodInput, setSplitMethodInput] = useState<"CASH" | "BANK_TRANSFER">("CASH");
   const [splitAmountInput, setSplitAmountInput] = useState("");
   const [splitReferenceInput, setSplitReferenceInput] = useState("");
 
-  const calculateItemTotal = (item: any) => {
-    const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
-    const baseTotal = (item.unit_price + modsPrice) * item.qty;
-    let discount = 0;
-    if (item.discount_amount > 0) {
-      if (item.discount_type === "PERCENT") {
-        discount = (baseTotal * item.discount_amount) / 100;
-      } else {
-        discount = item.discount_amount;
-      }
-    }
-    return Math.max(0, baseTotal - discount);
-  };
-
   const calculateSubtotal = () => cart.reduce((sum, item) => sum + calculateItemTotal(item), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
 
   const calculateCartBaseTotal = () =>
-    cart.reduce((sum, item) => {
-      const modsPrice = item.modifiers.reduce((mSum: number, m: any) => mSum + Number(m.price), 0);
-      return sum + (item.unit_price + modsPrice) * item.qty;
-    }, 0);
+    cart.reduce((sum, item) => sum + calculateItemGross(item), 0);
 
   const totalSplitEntered = splitPayments.reduce((sum, p) => sum + p.amount, 0);
   const splitRemaining = Math.max(0, totalAmount - totalSplitEntered);
@@ -193,18 +196,21 @@ export function CartPanel({
               <>
                 <button
                   onClick={() => saveDraft(cart, true)}
-                  className="text-xs font-bold text-primary bg-primary-soft hover:bg-primary/20 px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center"
+                  disabled={!!isCheckingOut}
+                  className="text-xs font-bold text-primary bg-primary-soft hover:bg-primary/20 px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center disabled:opacity-50"
                 >
                   Lưu Nháp
                 </button>
                 <button
                   onClick={async () => {
+                    if (isCheckingOut) return;
                     if (await confirm({ title: "Xác nhận xóa", message: "Xoá hết món trong giỏ hàng?", variant: "danger" })) {
                       setCart([]);
                       setActiveDraftId(null);
                     }
                   }}
-                  className="text-xs font-bold text-danger bg-danger/10 hover:bg-danger/20 px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center"
+                  disabled={!!isCheckingOut}
+                  className="text-xs font-bold text-danger bg-danger/10 hover:bg-danger/20 px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center disabled:opacity-50"
                 >
                   Xoá hết
                 </button>
@@ -219,7 +225,7 @@ export function CartPanel({
           </div>
         </div>
 
-      <div className="flex-1 overflow-y-auto bg-page p-3">
+      <div className="flex-1 overflow-y-auto min-h-[120px] bg-page p-3">
         {cart.length === 0 ? (
           processingOrder ? (
             <div className="h-full flex flex-col justify-between">
@@ -276,9 +282,6 @@ export function CartPanel({
                   </div>
                 </div>
               </div>
-              <div className="text-center text-xs text-text-muted py-4 font-medium animate-fade-in">
-                Bạn có thể tạo đơn mới trong khi hệ thống đang xử lý đơn hàng này.
-              </div>
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-text-muted">
@@ -315,27 +318,29 @@ export function CartPanel({
         {lastCheckoutError && (
           <div className="bg-danger/10 border border-danger/30 text-danger p-3 rounded-xl text-xs font-semibold flex items-center justify-between mb-3 animate-fade-in">
             <div className="flex-1 min-w-0">
-              <p className="font-bold">⚠️ Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : "Tiền mặt"})</p>
+              <p className="font-bold">⚠️ Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : lastCheckoutError.method === "SPLIT" ? "Nhiều hình thức" : "Tiền mặt"})</p>
               <p className="text-[11px] text-danger mt-0.5 truncate">{lastCheckoutError.error}</p>
             </div>
-            <button
-              onClick={() => {
-                handleConfirmCheckout(lastCheckoutError.method, lastCheckoutError.processingOrder?.cartInput?.payments);
-                clearLastCheckoutError();
-              }}
-              className="bg-danger text-white font-extrabold px-3 py-1.5 rounded-lg hover:bg-danger active:scale-95 transition min-h-[44px] min-w-[80px] shrink-0 ml-2 shadow-sm flex items-center justify-center text-xs"
-            >
-              Thử lại
-            </button>
+            {lastCheckoutError.retry && (
+              <button
+                type="button"
+                onClick={onResendFailedOrder}
+                disabled={!!isCheckingOut || !isOnline}
+                className="bg-danger text-white font-extrabold px-3 py-1.5 rounded-lg hover:bg-danger active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition min-h-[44px] min-w-[80px] shrink-0 ml-2 shadow-sm flex items-center justify-center text-xs"
+              >
+                Gửi lại
+              </button>
+            )}
           </div>
         )}
 
         {cart.length > 0 ? (
           <>
-            <div className="mb-4 pb-4 border-b border-border">
+            {!isCashStepOpen && (
+              <div className="mb-4 pb-4 border-b border-border">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-text-muted">Khuyến Mãi</span>
-                {appliedPromo && (
+                {appliedPromotions.length > 0 && (
                   <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-md">
                     Đã áp dụng
                   </span>
@@ -347,15 +352,17 @@ export function CartPanel({
                   type="text"
                   placeholder="Ví dụ: GIAM10"
                   value={promoCodeInput}
+                  disabled={!!isCheckingOut}
                   onChange={(e) => {
                     setPromoCodeInput(e.target.value);
                   }}
-                  className="flex-1 px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:border-primary uppercase font-medium h-11"
+                  className="flex-1 px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:border-primary uppercase font-medium h-11 disabled:opacity-50"
                 />
                 <button
                   type="button"
                   onClick={handleApplyPromoCode}
-                  className="px-4 bg-primary-soft text-primary font-bold text-xs rounded-xl hover:bg-primary-soft transition active:scale-95 shrink-0 h-11"
+                  disabled={!!isCheckingOut}
+                  className="px-4 bg-primary-soft text-primary font-bold text-xs rounded-xl hover:bg-primary-soft transition active:scale-95 shrink-0 h-11 disabled:opacity-50"
                 >
                   Áp dụng
                 </button>
@@ -363,26 +370,50 @@ export function CartPanel({
 
               {manualPromoError && <p className="text-danger text-xs mt-1.5 font-semibold">⚠️ {manualPromoError}</p>}
 
-              {appliedPromo && (
-                <div className="mt-3 flex items-center justify-between bg-page border border-border rounded-xl p-2.5">
-                  <div className="flex items-start gap-2 min-w-0">
-                    <span className="text-lg shrink-0 mt-0.5">{appliedPromo.code ? "🎟️" : "⚡"}</span>
+              {appliedPromoCode && (
+                <div className="mt-2.5 flex items-center justify-between bg-page border border-border rounded-xl p-2 px-3 animate-fade-in">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-base shrink-0">🎟️</span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-text-primary truncate">{appliedPromo.name}</p>
-                      <p className="text-[10px] font-medium text-text-muted">
-                        Giảm -{formatNumber(promoDiscountAmount)}
-                      </p>
+                      <p className="text-xs font-bold text-text-primary truncate">Mã: {appliedPromoCode}</p>
                     </div>
                   </div>
-                  {appliedPromo.code && (
-                    <button
-                      type="button"
-                      onClick={handleRemovePromoCode}
-                      className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-full transition-all animate-fade-in-quick"
-                    >
-                      ✕
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={handleRemovePromoCode}
+                    disabled={!!isCheckingOut}
+                    aria-label="Xoá mã giảm giá"
+                    className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-full transition-all disabled:opacity-50"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {promotionSets.length >= 2 && (
+                <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Bộ khuyến mãi">
+                  {promotionSets.map((set, idx) => {
+                    const isSelected = idx === chosenSetIndex;
+                    const names = set.promotionIds
+                      .map((id) => (promotions || []).find((p: any) => p.id === id)?.name || id)
+                      .join(" + ");
+                    return (
+                      <button
+                        key={set.promotionIds.join("-")}
+                        type="button"
+                        onClick={() => onSelectSet(idx)}
+                        disabled={!!isCheckingOut}
+                        aria-pressed={isSelected}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border disabled:opacity-50 ${
+                          isSelected
+                            ? "bg-primary text-on-primary border-primary shadow-sm"
+                            : "bg-surface-card text-text-secondary border-border hover:bg-surface-secondary"
+                        }`}
+                      >
+                        {names}: −{formatNumber(set.amount)}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
@@ -395,10 +426,14 @@ export function CartPanel({
                   <div className="flex rounded-xl overflow-hidden border border-border shrink-0 h-11 bg-surface-card">
                     <button
                       type="button"
+                      disabled={!!isCheckingOut}
                       onClick={() => {
                         setUserCustomDiscountType("VND");
+                        if (userCustomDiscount !== null) {
+                          setUserCustomDiscount(clampDiscount(userCustomDiscount, "VND", calculateSubtotal()));
+                        }
                       }}
-                      className={`px-4 py-2.5 text-xs font-bold transition-colors ${
+                      className={`px-4 py-2.5 text-xs font-bold transition-colors disabled:opacity-50 ${
                         userCustomDiscountType === "VND"
                           ? "bg-primary text-on-primary"
                           : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
@@ -408,10 +443,14 @@ export function CartPanel({
                     </button>
                     <button
                       type="button"
+                      disabled={!!isCheckingOut}
                       onClick={() => {
                         setUserCustomDiscountType("PERCENT");
+                        if (userCustomDiscount !== null) {
+                          setUserCustomDiscount(clampDiscount(userCustomDiscount, "PERCENT", calculateSubtotal()));
+                        }
                       }}
-                      className={`px-4 py-2.5 text-xs font-bold transition-colors ${
+                      className={`px-4 py-2.5 text-xs font-bold transition-colors disabled:opacity-50 ${
                         userCustomDiscountType === "PERCENT"
                           ? "bg-primary text-on-primary"
                           : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
@@ -423,22 +462,26 @@ export function CartPanel({
                   <input
                     aria-label="Giảm giá tùy chỉnh"
                     type="number"
+                    inputMode="numeric"
                     min="0"
                     placeholder="Ví dụ: 10,000"
+                    disabled={!!isCheckingOut}
                     value={userCustomDiscount === 0 || userCustomDiscount === null ? "" : userCustomDiscount}
                     onChange={(e) => {
                       const val = e.target.value === "" ? null : Number(e.target.value);
-                      setUserCustomDiscount(val);
+                      const clamped = clampDiscount(val, userCustomDiscountType, calculateSubtotal());
+                      setUserCustomDiscount(clamped);
                     }}
-                    className="flex-1 w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:border-primary text-right font-medium text-sm h-11"
+                    className="flex-1 w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:border-primary text-right font-medium text-sm h-11 disabled:opacity-50"
                   />
                   {userCustomDiscount !== null && (
                     <button
                       type="button"
+                      disabled={!!isCheckingOut}
                       onClick={() => {
                         setUserCustomDiscount(null);
                       }}
-                      className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-full transition-all"
+                      className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-full transition-all disabled:opacity-50"
                     >
                       ✕
                     </button>
@@ -446,6 +489,7 @@ export function CartPanel({
                 </div>
               </div>
             </div>
+            )}
 
             {userCustomDiscount !== null && (
               <div className="flex justify-between items-center mb-3">
@@ -458,17 +502,19 @@ export function CartPanel({
               </div>
             )}
 
-            {appliedPromo &&
-              (() => {
-                const amount = promoDiscountAmount;
-                if (amount <= 0) return null;
+            {appliedPromotions.length > 0 &&
+              appliedPromotions.map((p) => {
+                if (p.amount <= 0) return null;
                 return (
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-text-secondary text-sm">Khuyến mãi hệ thống</span>
-                    <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={amount} />
+                  <div key={p.id} className="flex justify-between items-center mb-3">
+                    <div className="flex flex-col">
+                      <span className="text-text-secondary text-sm font-medium">{p.name}</span>
+                      <span className="text-[10px] text-text-muted">Khuyến mãi hệ thống</span>
+                    </div>
+                    <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={p.amount} />
                   </div>
                 );
-              })()}
+              })}
 
             <div className="flex justify-between items-center mb-4">
               <span className="text-text-secondary font-medium">Tổng tiền ({totalItems} món)</span>
@@ -482,78 +528,229 @@ export function CartPanel({
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleConfirmCheckout("Tien mat")}
-                disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-success text-white font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-success/90 active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
-              >
-                {!isOnline ? (
-                  <span>NGOẠI TUYẾN</span>
-                ) : isCheckingOut === "Tien mat" ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    <span>ĐANG XỬ LÝ...</span>
-                  </>
-                ) : processingOrder ? (
-                  <span>CHỜ GỬI ĐƠN...</span>
-                ) : (
-                  <>
-                    <span className="text-lg">💵</span>
-                    <span>TIỀN MẶT</span>
-                  </>
+            {isCashStepOpen ? (
+              <div className="bg-surface-secondary/70 border border-border rounded-2xl p-4 space-y-3 animate-fade-in">
+                <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                  <span className="font-extrabold text-sm text-text-primary flex items-center gap-1.5">
+                    <span>💵</span> Thanh toán Tiền mặt
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCashStepOpen(false);
+                      setCashTendered(null);
+                    }}
+                    className="text-xs text-text-muted hover:text-text-primary px-2 py-1 rounded-lg hover:bg-surface-secondary"
+                  >
+                    ✕ Đóng
+                  </button>
+                </div>
+
+                {/* Khách đưa */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label htmlFor="cash-tendered-input" className="text-xs font-bold text-text-secondary uppercase">
+                      Khách đưa
+                    </label>
+                    <span className="text-xs text-text-muted">Cần trả: {formatNumber(totalAmount)}</span>
+                  </div>
+                  <div className="relative flex items-center">
+                    <input
+                      id="cash-tendered-input"
+                      aria-label="Khách đưa"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder={formatNumber(totalAmount)}
+                      value={cashTendered === null ? "" : formatNumber(cashTendered)}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "");
+                        setCashTendered(digits === "" ? null : Number(digits));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (cashTendered !== null && cashTendered >= totalAmount) {
+                            handleConfirmCheckout("Tien mat");
+                            setIsCashStepOpen(false);
+                            setCashTendered(null);
+                          }
+                        }
+                      }}
+                      className="w-full pl-14 pr-3 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary text-right font-black text-lg text-text-primary bg-surface-card h-12"
+                      autoFocus
+                    />
+                    {cashTendered !== null && (
+                      <button
+                        type="button"
+                        onClick={() => setCashTendered(null)}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-text-muted hover:text-danger px-2 py-1 rounded bg-surface-secondary/70 hover:bg-surface-secondary transition-colors"
+                      >
+                        Xoá
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick buttons for round notes above total */}
+                {getRoundNotesAbove(totalAmount).length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {getRoundNotesAbove(totalAmount).map((note) => (
+                      <button
+                        key={note}
+                        type="button"
+                        onClick={() => setCashTendered(note)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                          cashTendered === note
+                            ? "bg-primary text-on-primary border-primary shadow-sm"
+                            : "bg-surface-card text-text-secondary border-border hover:bg-surface-secondary active:scale-95"
+                        }`}
+                      >
+                        {formatNumber(note)}
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </button>
-              <button
-                onClick={() => handleConfirmCheckout("Chuyen khoan")}
-                disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-                className="flex-1 bg-primary text-on-primary font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
-              >
-                {!isOnline ? (
-                  <span>NGOẠI TUYẾN</span>
-                ) : isCheckingOut === "Chuyen khoan" ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    <span>ĐANG XỬ LÝ...</span>
-                  </>
-                ) : processingOrder ? (
-                  <span>CHỜ GỬI ĐƠN...</span>
-                ) : (
-                  <>
-                    <span className="text-lg">💳</span>
-                    <span>CHUYỂN KHOẢN</span>
-                  </>
-                )}
-              </button>
-            </div>
-            
-            <button 
-              onClick={() => {
-                setSplitPayments([]);
-                setSplitAmountInput("");
-                setSplitReferenceInput("");
-                setSplitMethodInput("CASH");
-                setIsSplitPaymentOpen(true);
-              }}
-              disabled={cart.length === 0 || !!isCheckingOut || !!processingOrder || !isOnline}
-              className="mt-2 w-full bg-surface-secondary text-text-primary font-bold text-sm py-3 rounded-2xl shadow-sm hover:bg-border active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 border border-border min-h-[52px]"
-            >
-              <span>💳 💵 Nhiều hình thức (Split Payment)</span>
-            </button>
+
+                {/* Tiền thừa / Còn thiếu live */}
+                <div className="pt-1">
+                  {cashTendered !== null && cashTendered < totalAmount ? (
+                    <div className="text-sm font-bold text-danger flex items-center justify-between bg-danger/10 p-2.5 rounded-xl border border-danger/20">
+                      <span>Khách đưa còn thiếu</span>
+                      <span>{formatNumber(totalAmount - cashTendered)}</span>
+                    </div>
+                  ) : (
+                    <div className="text-sm font-bold text-success flex items-center justify-between bg-success/10 p-2.5 rounded-xl border border-success/20">
+                      <span>Tiền thừa</span>
+                      <span className="text-base font-black">
+                        {formatNumber(Math.max(0, (cashTendered ?? totalAmount) - totalAmount))}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Confirm & Cancel buttons */}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCashStepOpen(false);
+                      setCashTendered(null);
+                    }}
+                    disabled={!!isCheckingOut}
+                    className="px-4 py-3 bg-surface-card border border-border text-text-secondary font-bold text-sm rounded-xl hover:bg-surface-secondary active:scale-95 transition-all min-h-[48px] disabled:opacity-50"
+                  >
+                    Quay lại
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleConfirmCheckout("Tien mat");
+                      setIsCashStepOpen(false);
+                      setCashTendered(null);
+                    }}
+                    disabled={
+                      cart.length === 0 ||
+                      !!isCheckingOut ||
+                      !isOnline ||
+                      cashTendered === null ||
+                      cashTendered < totalAmount
+                    }
+                    className="flex-1 bg-success text-white font-extrabold text-sm py-3 rounded-xl shadow-sm hover:bg-success/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[48px]"
+                  >
+                    {isCheckingOut ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        <span>Đang gửi…</span>
+                      </>
+                    ) : (
+                      <span>Xác nhận thanh toán</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setIsCashStepOpen(true);
+                      setCashTendered(totalAmount);
+                    }}
+                    disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
+                    className="flex-1 bg-success text-white font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-success/90 active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
+                  >
+                    {!isOnline ? (
+                      <span>NGOẠI TUYẾN</span>
+                    ) : isCheckingOut ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        <span>Đang gửi…</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-lg">💵</span>
+                        <span>TIỀN MẶT</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleConfirmCheckout("Chuyen khoan")}
+                    disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
+                    className="flex-1 bg-primary text-on-primary font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
+                  >
+                    {!isOnline ? (
+                      <span>NGOẠI TUYẾN</span>
+                    ) : isCheckingOut ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        <span>Đang gửi…</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-lg">💳</span>
+                        <span>CHUYỂN KHOẢN</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    setSplitPayments([]);
+                    setSplitAmountInput("");
+                    setSplitReferenceInput("");
+                    setSplitMethodInput("CASH");
+                    setIsSplitPaymentOpen(true);
+                  }}
+                  disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
+                  className="mt-2 w-full bg-surface-secondary text-text-primary font-bold text-sm py-3 rounded-2xl shadow-sm hover:bg-border active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 border border-border min-h-[52px]"
+                >
+                  <span>💳 💵 Nhiều hình thức</span>
+                </button>
+              </>
+            )}
           </>
         ) : processingOrder ? (
           <div>
@@ -570,7 +767,7 @@ export function CartPanel({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              <span>ĐANG GỬI ĐƠN HÀNG ({processingOrder.methodLabel})...</span>
+              <span>Đang gửi…</span>
             </div>
           </div>
         ) : null}
@@ -628,6 +825,7 @@ export function CartPanel({
                 </select>
                 <input
                   type="number"
+                  inputMode="numeric"
                   placeholder="Ví dụ: 100,000"
                   value={splitAmountInput}
                   onChange={(e) => setSplitAmountInput(e.target.value)}
@@ -655,7 +853,7 @@ export function CartPanel({
                 setIsSplitPaymentOpen(false);
                 handleConfirmCheckout("SPLIT", splitPayments);
               }}
-              disabled={totalSplitEntered !== totalAmount || cart.length === 0 || !!isCheckingOut}
+              disabled={totalSplitEntered !== totalAmount || cart.length === 0 || !!isCheckingOut || !isOnline}
               className="w-full bg-success text-white font-bold py-3.5 rounded-xl disabled:opacity-50 hover:bg-success/90 transition-colors"
             >
               Xác nhận Thanh toán

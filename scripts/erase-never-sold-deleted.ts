@@ -31,7 +31,6 @@ const SCANS = [
   { table: "order_events", cols: ["delta_json"], key: "id" },
   { table: "promotions", cols: ["applicable_products_json"], key: "id" },
   { table: "pos_drafts", cols: ["cart_json"], key: "id" },
-  { table: "pos_sync_failures", cols: ["cart_payload_json"], key: "id" },
   { table: "dashboard_settings", cols: ["food_product_ids"], key: "id" },
   { table: "modifier_group_products", cols: ["product_id"], key: "group_id" },
   { table: "modifiers", cols: ["product_id"], key: "id" },

@@ -84,7 +84,7 @@ A **valid set** is one promotion, or several that all have "Dùng chung" ticked.
   - an eligible no-code promotion was left out although adding it would still make a valid set (a till opened before that promotion existed) *(khuyến nghị: treated like a changed price; otherwise the server would book less discount than the shop advertises)*;
   - its total differs from the total the till showed.
 
-**Late orders** (`BR-SALE-008`): dish and option prices are taken as of the moment the order was taken, from `product_price_history` (the old price of the first change after that moment). Promotions are taken as they are on arrival, as the owner chose on 2026-10-15. A refused late order lands in `pos_sync_failures` as today and shows on the "Đơn lỗi đồng bộ" page.
+**Late orders** (`BR-SALE-008`): dish (size) prices are taken as of the moment the order was taken, from `product_price_history` (the old price of the first change after that moment). Option prices are taken as they are on arrival: there is no option price history (S7 review 2026-10-15), so a topping price changed between taking and arrival refuses the order like any mismatch. Promotions are taken as they are on arrival, as the owner chose on 2026-10-15. A refused late order lands in `pos_sync_failures` as today and shows on the "Đơn lỗi đồng bộ" page.
 
 ### 4.3 Storage
 

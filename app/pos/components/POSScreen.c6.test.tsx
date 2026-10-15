@@ -18,14 +18,6 @@ vi.mock("@/app/pos/actions", () => ({
   getPOSDrafts: vi.fn(async () => []),
   savePOSDraft: vi.fn(),
   deletePOSDraft: vi.fn(async () => ({ success: true })),
-  reportPosSyncFailure: vi.fn(),
-}));
-
-vi.mock("@/lib/pos/pos-offline-queue", () => ({
-  enqueuePendingOrder: vi.fn(),
-  incrementAttemptCount: vi.fn(),
-  listPendingOrders: vi.fn(async () => []),
-  removePendingOrder: vi.fn(),
 }));
 
 import { getPOSDrafts } from "@/app/pos/actions";

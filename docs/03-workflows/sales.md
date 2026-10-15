@@ -3,7 +3,7 @@
 ```flow-decl
 routes: /pos, /admin/orders, /admin/orders/[id], /admin/orders/[id]/edit, /admin/orders/[id]/void, /admin/promotions, /admin/promotions/new, /admin/promotions/[id], /admin/promotions/[id]/edit
 files: app/pos/actions.ts, lib/sales/void-order-transaction.ts, app/admin/promotions/actions.ts
-tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
+tables: POS_Drafts, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
@@ -38,7 +38,7 @@ zone). "Áp dụng" counts dishes and sizes; the old card's "(N món)" counted s
 **Reviewed, no behaviour change — 2026-09-08:** `app/pos/actions.ts` changed
 (`getPOSBestSellerProductIds` now excludes standalone toppings from quick-add
 via the real `modifiers.product_id` join, BR-CATALOG-003). Nothing this doc
-describes -- `POS_Drafts`, `Pos_Sync_Failures`, the order write path -- is
+describes -- `POS_Drafts`, the order write path -- is
 touched; quick-add best-seller ranking is read-only and outside this flow's
 scope.
 **Reviewed, no behaviour change — 2026-09-07 (Task 21):** a declared source file's comment path reference only -- components/POSScreen.tsx moved to `app/pos/components/POSScreen.tsx`, comment updated by the move helper; no logic changed.
@@ -100,10 +100,10 @@ earlier text said the web app never wrote a completed sale; the code always did.
    sequence — minted under a per-(outlet, date) lock; an edit reuses the original
    group's code, date and outlet rather than the editor's own (`BR-SALE-006`,
    `BR-SALE-002`). A promotion needs a value and a validity window; the till
-   applies only an active promotion whose window covers the sale. A submit that
-   cannot reach the sync path is not lost silently: `/pos` writes a row to
-   `Pos_Sync_Failures` so the failure is visible and recoverable rather than a
-   dropped sale.
+   applies only an active promotion whose window covers the sale. The till does not sell
+   without a network (`BR-SALE-015`): a send that fails keeps the cart and
+   `submitOrderV2` answers `retry: true`, so the till offers "Gửi lại" with the
+   same request token; a rule refusal answers `retry: false`.
 5. **Which data it serves, and which it deliberately does not.** This flow serves
    order capture, order history, and promotions. It deliberately does **not**
    deduct stock or compute cost at sale time: since the
@@ -116,7 +116,7 @@ earlier text said the web app never wrote a completed sale; the code always did.
 ## Where it writes
 
 - `app/pos/actions.ts` writes `POS_Drafts` (insert/update/remove of the
-  in-progress cart) and `Pos_Sync_Failures` (a marker when a submit throws), and
+  in-progress cart) and
   sends the completed sale to `lib/sales/pos-order-transaction.ts`, whose
   `create_pos_order_atomic` RPC writes `orders_v2` with its lines and payments.
 - `lib/sales/void-order-transaction.ts` calls the `void_order_atomic` RPC, whose body

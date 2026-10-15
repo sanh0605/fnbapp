@@ -43,7 +43,6 @@ app/admin/inventory/purchase-orders/actions.ts -> purchase_order_edits (write)
 app/admin/inventory/purchase-orders/actions.ts -> Purchase_Orders (write)
 app/admin/inventory/purchase-orders/actions.ts -> Purchase_Sources (write)
 app/admin/outlets/actions.ts -> Outlets (write)
-app/admin/pos-sync/actions.ts -> Pos_Sync_Failures (write)
 app/admin/products/actions.ts -> Products (write)
 app/admin/products/categories/actions.ts -> Product_Categories (write)
 app/admin/products/modifiers/actions.ts -> Modifiers (write)
@@ -52,7 +51,6 @@ app/admin/promotions/actions.ts -> Promotions (write)
 app/admin/suppliers/actions.ts -> Suppliers (write)
 app/admin/users/actions.ts -> Users (write)
 app/pos/actions.ts -> POS_Drafts (write)
-app/pos/actions.ts -> Pos_Sync_Failures (write)
 lib/stock/manual-issue-transaction.ts -> issue_slips (write)
 lib/stock/manual-issue-transaction.ts -> stock_issues (write)
 lib/products/product-erase-transaction.ts -> product_price_history (write)
@@ -85,8 +83,8 @@ lib/sales/void-order-transaction.ts -> orders_v2 (write)
 
 ## The same relations, grouped by area
 
-**Sales.** `app/pos/actions.ts` writes `POS_Drafts` and `Pos_Sync_Failures` (the
-POS device sync writes the completed sale itself). `lib/sales/void-order-transaction.ts`
+**Sales.** `app/pos/actions.ts` writes `POS_Drafts` (the
+till sends the completed sale to `create_pos_order_atomic`). `lib/sales/void-order-transaction.ts`
 writes `orders_v2` and `order_events`. `app/admin/promotions/actions.ts` writes
 `Promotions`.
 
@@ -127,8 +125,7 @@ item edit page.)
 **Users.** `app/actions/auth.ts` writes `users`; `app/admin/users/actions.ts`
 writes `Users`.
 
-**Operations.** `app/admin/pos-sync/actions.ts` writes `Pos_Sync_Failures`;
-`app/admin/outlets/actions.ts` writes `Outlets`;
+**Operations.** `app/admin/outlets/actions.ts` writes `Outlets`;
 `app/admin/brands/actions.ts` writes `Brands`.
 
 ## Runtime components
@@ -190,6 +187,6 @@ lives in `SYSTEM-OVERVIEW.md`; this section is the runtime shape.
 - No script or admin workflow may rewrite production history merely because it
   can connect to the database. Historical correction requires a separate
   approved dry-run/apply/rollback plan.
-- Non-claims: offline POS capability is UNVERIFIED; multi-brand/outlet/franchise
+- Non-claims: the till does not sell offline (`BR-SALE-015`); multi-brand/outlet/franchise
   is future scope, not the current operating model; Supabase Auth and Supabase
   Storage are not active components.

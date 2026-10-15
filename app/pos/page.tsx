@@ -1,5 +1,7 @@
 import { findAll } from "@/lib/db/tables";
 import POSScreen from "@/app/pos/components/POSScreen";
+import PosOutletChoice from "./components/PosOutletChoice";
+import { getSaigonNowHHMM } from "@/lib/catalog/outlet-hours";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth";
@@ -32,7 +34,12 @@ export default async function POSPage(
 
   // A stopped outlet is not in the picker; refuse a typed or bookmarked link too.
   if (!outlet || outlet.status !== "ACTIVE") {
-    redirect("/admin");
+    // proxy.ts sends STAFF away from /admin, so they pick an outlet here instead of looping.
+    if ((session.user as any)?.role !== "STAFF") redirect("/admin");
+    const choices = outlets
+      .filter((o: any) => o.status === "ACTIVE")
+      .map((o: any) => ({ id: o.id, name: o.name, open_time: o.open_time, close_time: o.close_time }));
+    return <PosOutletChoice outlets={choices} nowHHMM={getSaigonNowHHMM()} />;
   }
 
   const brandId = outlet.brand_id;

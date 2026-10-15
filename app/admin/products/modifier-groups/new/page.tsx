@@ -1,6 +1,6 @@
 import { findAll } from "@/lib/db/tables";
 import { ModifierGroupForm } from "@/app/admin/products/modifier-groups/components/ModifierGroupForm";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import type { DBProductCategory, DBProduct } from "@/types/db";

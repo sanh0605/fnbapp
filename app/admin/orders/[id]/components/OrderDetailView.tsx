@@ -57,6 +57,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
   const currentOrder = detail.order;
   const timeline = detail.timeline || [];
   const events = detail.events || [];
+  const promotions = detail.promotions || [];
 
   const brand = brands.find((b) => b.id === currentOrder.brand_id);
   const orderNo = currentOrder.display_order_no || currentOrder.order_no;
@@ -210,12 +211,21 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                 <span className="text-text-secondary">Tổng gốc</span>
                 <span className="text-text-primary">{formatNumber(currentOrder.gross_total)}</span>
               </div>
-              {currentOrder.promo_discount_total > 0 && (
+              {promotions.length > 0 ? (
+                promotions
+                  .filter((p) => p.amount > 0)
+                  .map((p, idx) => (
+                    <div key={p.promotion_id || idx} className="flex justify-between text-success">
+                      <span>{p.name || p.code || "Khuyến mãi"}</span>
+                      <span>-{formatNumber(p.amount)}</span>
+                    </div>
+                  ))
+              ) : currentOrder.promo_discount_total > 0 ? (
                 <div className="flex justify-between text-success">
                   <span>Khuyến mãi hệ thống</span>
                   <span>-{formatNumber(currentOrder.promo_discount_total)}</span>
                 </div>
-              )}
+              ) : null}
               {currentOrder.manual_item_discount_total > 0 && (
                 <div className="flex justify-between text-danger">
                   <span>Giảm thủ công từng món</span>

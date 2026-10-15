@@ -1,6 +1,6 @@
 import { getProductTypes } from "@/app/admin/products/types/actions";
 import { ProductCategoryForm } from "@/app/admin/products/categories/components/ProductCategoryForm";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 

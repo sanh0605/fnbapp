@@ -49,25 +49,18 @@ editing cannot explain it.
 
 ## 2. POS sync failing
 
-**Symptom.** A sale rung up on a device does not appear in reports, or the POS
-screen reports a send that did not land.
+Removed 2026-10-15 (`BR-SALE-015`): the till no longer queues orders, and the
+sync-failure table and its screen are gone (table dropped by migration `0129`).
 
-**First check.**
-- Open the pos-sync screen at `/admin/pos-sync`
-  (`app/admin/pos-sync/page.tsx`). It lists unresolved rows from the
-  `Pos_Sync_Failures` table so an operator can see which device sends failed.
-- The write and read logic is in `app/admin/pos-sync/actions.ts`
-  (`getPosSyncAttentionItems` reads open failures; failures are recorded when a
-  device send does not land).
+**Symptom.** A sale rung up on the till does not appear in reports, or the till
+shows "Gửi lại".
 
-**Action.**
-- Re-send from the device if the order never reached the server. A resolved
-  failure is cleared with `resolvePosSyncFailure`, which sets `resolved` on the
-  row; do this only once the underlying order is confirmed present.
-- For how this fits the wider operational back-office (outlets, brands, activity
-  log, cache), see `docs/03-workflows/operations.md`.
-- Before counting the sale as lost, verify against `orders_v2` -- a send can fail
-  its acknowledgement yet still have landed. Measure, do not assume.
+**First check.** Verify against `orders_v2` -- a send can fail its acknowledgement
+yet still have landed. Measure, do not assume.
+
+**Action.** Press "Gửi lại" on the till: it resends with the same request token, so
+it cannot write the order twice. For the wider operational back-office, see
+`docs/03-workflows/operations.md`.
 
 ---
 

@@ -12,7 +12,7 @@ import { Alert } from "@/components/ui/Alert";
 import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Plus } from "lucide-react";
 import { confirm } from "@/lib/shared/dialog";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 
 interface ProductFormProps {
   categories: Array<{ id: string; name: string }>;

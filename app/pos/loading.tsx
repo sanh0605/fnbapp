@@ -17,7 +17,7 @@ export default function POSLoading() {
           </div>
         </div>
       </div>
-      <div className="w-96 bg-surface-card flex flex-col border-l border-border shadow-xl shrink-0 z-10">
+      <div className="hidden md:flex md:w-96 bg-surface-card flex-col border-l border-border shadow-xl shrink-0 z-10">
          <div className="h-14 border-b border-border bg-page/50 px-4 flex items-center">
             <div className="h-6 bg-border rounded w-1/2"></div>
          </div>

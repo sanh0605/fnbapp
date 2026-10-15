@@ -4,7 +4,7 @@ import { findAll } from "@/lib/db/tables";
 import { getModifierGroup } from "@/app/admin/products/modifier-groups/actions";
 import { ModifierGroupDetailView } from "./components/ModifierGroupDetailView";
 import type { DBProduct, DBProductCategory } from "@/types/db";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 
 export const dynamic = "force-dynamic";
 

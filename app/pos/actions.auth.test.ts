@@ -36,6 +36,8 @@ vi.mock("next/cache", () => ({
 }));
 
 import * as posActions from "./actions";
+import { PRICE_CHANGED } from "@/lib/sales/order-cart";
+import { InvariantError } from "@/lib/sales/order-types";
 
 const {
   deletePOSDraft,
@@ -59,7 +61,7 @@ describe("POS action authentication", () => {
       items: [{ product_id: "PROD-001", quantity: 1 }],
     } as never);
 
-    expect(result).toEqual({ success: false, error: "Yêu cầu đăng nhập" });
+    expect(result).toEqual({ success: false, error: "Yêu cầu đăng nhập", retry: false });
     expect(mocks.findAll).not.toHaveBeenCalled();
     expect(mocks.getPosInventoryState).not.toHaveBeenCalled();
     expect(mocks.savePosOrderAtomic).not.toHaveBeenCalled();
@@ -85,7 +87,7 @@ describe("POS action authentication", () => {
   });
 
   it("rejects unauthenticated draft deletion before storage mutation", async () => {
-    const result = await deletePOSDraft("DRF-001");
+    const result = await deletePOSDraft("DRF-001", "OUT-001");
 
     expect(result).toEqual({ success: false, error: "Yêu cầu đăng nhập" });
     expect(mocks.remove).not.toHaveBeenCalled();
@@ -178,49 +180,44 @@ describe("POS action authentication", () => {
     expect((posActions as any).getPOSStockStatus).toBeUndefined();
   });
 
-  it("rejects an unauthenticated sync-failure report before writing", async () => {
-    mocks.resolveActor.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
-    const reportPosSyncFailure = (posActions as any).reportPosSyncFailure;
-    expect(reportPosSyncFailure).toBeTypeOf("function");
+  describe("submitOrderV2 -- retry flag", () => {
+    const cart = {
+      outlet_id: "OUT-1",
+      items: [{ product_id: "P1", variant_id: "V1", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
+      shown_total: 1000,
+      promotion_ids: [],
+    } as never;
+    const staff = { ok: true as const, actor: { id: "staff-1", name: "Thu ngân", role: "STAFF" } };
 
-    const result = await reportPosSyncFailure("tok-1", { brand_id: "BR-1" }, "Payment total mismatch");
-
-    expect(result).toEqual({ success: false, error: "Yêu cầu đăng nhập" });
-    expect(mocks.insert).not.toHaveBeenCalled();
-  });
-
-  it("writes an unresolved pos_sync_failures row for an authenticated caller", async () => {
-    mocks.resolveActor.mockResolvedValue({
-      ok: true,
-      actor: { id: "staff-1", name: "Thu ngân", role: "STAFF" },
+    it("a database hiccup keeps the cart: retry true", async () => {
+      mocks.resolveActor.mockResolvedValue(staff);
+      mocks.findAll.mockRejectedValue(new Error("fetch failed"));
+      const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+      expect(await submitOrderV2(cart, "tok-1")).toEqual({ success: false, error: "Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại", retry: true });
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
     });
-    mocks.insert.mockResolvedValue(undefined);
-    const reportPosSyncFailure = (posActions as any).reportPosSyncFailure;
 
-    const result = await reportPosSyncFailure("tok-1", { brand_id: "BR-1" }, "Payment total mismatch");
-
-    expect(result).toEqual({ success: true });
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "Pos_Sync_Failures",
-      expect.objectContaining({
-        request_token: "tok-1",
-        error_message: "Payment total mismatch",
-        resolved: false,
-      }),
-    );
-  });
-
-  it("returns error when insert fails for pos_sync_failures", async () => {
-    mocks.resolveActor.mockResolvedValue({
-      ok: true,
-      actor: { id: "staff-1", name: "Thu ngân", role: "STAFF" },
+    it("a Vietnamese refusal reaches the till unchanged", async () => {
+      mocks.resolveActor.mockResolvedValue(staff);
+      mocks.findAll.mockRejectedValue(new InvariantError(PRICE_CHANGED));
+      expect(await submitOrderV2(cart, "tok-1")).toEqual({ success: false, error: PRICE_CHANGED, retry: false });
     });
-    mocks.insert.mockRejectedValue(new Error("Database write failed"));
-    const reportPosSyncFailure = (posActions as any).reportPosSyncFailure;
 
-    const result = await reportPosSyncFailure("tok-1", { brand_id: "BR-1" }, "Payment total mismatch");
+    it("a closed outlet is a refusal: retry false", async () => {
+      mocks.resolveActor.mockResolvedValue(staff);
+      mocks.findAll.mockImplementation(async (t: string) => t === "Outlets" ? [{ id: "OUT-1", status: "INACTIVE", brand_id: "B" }] : []);
+      expect(await submitOrderV2(cart, "tok-1")).toEqual({ success: false, error: "Điểm bán này đã ngừng hoạt động", retry: false });
+    });
 
-    expect(result).toEqual({ success: false, error: "Database write failed" });
+    it("a rule thrown while building the order is a refusal: retry false", async () => {
+      mocks.resolveActor.mockResolvedValue(staff);
+      mocks.findAll.mockImplementation(async (t: string) => t === "Outlets" ? [{ id: "OUT-1", status: "ACTIVE", brand_id: "B" }] : []);
+      const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+      expect(await submitOrderV2(cart, "tok-1")).toEqual({ success: false, error: "Đơn không hợp lệ — tải lại trang rồi bấm lại.", retry: false });
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining("Unknown brand: B"));
+      spy.mockRestore();
+    });
   });
 });
 

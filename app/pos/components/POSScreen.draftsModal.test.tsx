@@ -25,14 +25,6 @@ vi.mock("@/app/pos/actions", () => ({
   getPOSDrafts: vi.fn(async () => []),
   savePOSDraft: vi.fn(),
   deletePOSDraft: vi.fn(async () => ({ success: true })),
-  reportPosSyncFailure: vi.fn(),
-}));
-
-vi.mock("@/lib/pos/pos-offline-queue", () => ({
-  enqueuePendingOrder: vi.fn(),
-  incrementAttemptCount: vi.fn(),
-  listPendingOrders: vi.fn(async () => []),
-  removePendingOrder: vi.fn(),
 }));
 
 import { getPOSDrafts, deletePOSDraft } from "@/app/pos/actions";
@@ -276,7 +268,7 @@ describe("POSScreen drafts modal", () => {
       await new Promise(resolve => setTimeout(resolve, 0));
     });
 
-    expect(deletePOSDraft).toHaveBeenCalledWith("D1");
+    expect(deletePOSDraft).toHaveBeenCalledWith("D1", "OUT-001");
     expect(document.body.textContent).not.toContain("Draft One");
     expect(document.body.textContent).toContain("Chưa có đơn nháp nào.");
   });

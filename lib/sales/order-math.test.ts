@@ -329,6 +329,14 @@ describe("assertOrderInvariants", () => {
     });
   });
 
+  describe("promotion rows", () => {
+    it("fail when their amounts do not add up to promo_discount_total", () => {
+      const { order, lines } = makeNoDiscountOrder();
+      expect(() => assertOrderInvariants(order, lines, [{ amount: 0 }])).not.toThrow();
+      expect(() => assertOrderInvariants(order, lines, [{ amount: 500 }])).toThrow(/promotions mismatch/);
+    });
+  });
+
   describe("real-world corruption (correctly fails)", () => {
     it("FAILS for raw UCK000094 (5k discrepancy between sum of lines and order total)", () => {
       const { order, lines } = makeUCK000094RawOrder();

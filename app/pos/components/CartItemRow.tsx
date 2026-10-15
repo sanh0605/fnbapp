@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
 import { formatNumber } from "@/lib/shared/format";
+import { calculateItemTotal, calculateItemGross } from "./cart-pricing";
 
 interface CartItemRowProps {
   item: any;
@@ -48,18 +49,8 @@ export function CartItemRow({
     touchStartY.current = null;
   };
 
-  const modsPrice = item.modifiers.reduce((sum: number, m: any) => sum + Number(m.price), 0);
-  const baseTotal = (item.unit_price + modsPrice) * item.qty;
-
-  let discount = 0;
-  if (item.discount_amount > 0) {
-    if (item.discount_type === "PERCENT") {
-      discount = (baseTotal * item.discount_amount) / 100;
-    } else {
-      discount = item.discount_amount;
-    }
-  }
-  const finalTotal = Math.max(0, baseTotal - discount);
+  const baseTotal = calculateItemGross(item);
+  const finalTotal = calculateItemTotal(item);
   const manualItemDiscount = baseTotal - finalTotal;
 
   const currentProduct = products.find((p: any) => p.id === item.product_id);
@@ -82,12 +73,12 @@ export function CartItemRow({
 
       {/* Main Sliding Content */}
       <div
-        className="bg-surface-card p-3 transition-transform duration-300 relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-2 hover:bg-surface-secondary/30 active:bg-surface-secondary/50 transition-colors"
+        className="bg-surface-card p-3 transition-transform duration-300 relative z-10 flex flex-col gap-2 hover:bg-surface-secondary/30 active:bg-surface-secondary/50 transition-colors"
         style={{ transform: isSwiped ? "translateX(-80px)" : "translateX(0)" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Line 1 (Mobile) / Left Content (Desktop) */}
+        {/* Line 1: Thumbnail, Name & Details, and Price */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Photo Thumbnail */}
           {currentProduct?.image_url ? (
@@ -132,65 +123,36 @@ export function CartItemRow({
             )}
           </div>
 
-          {/* Price (Mobile only, hidden on Desktop md) */}
-          <div className="text-right shrink-0 md:hidden">
+          {/* Price */}
+          <div className="text-right shrink-0">
             {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
               <div className="text-[10px] text-text-muted line-through mb-0.5">
                 {formatNumber(baseTotal)}
               </div>
             )}
-            <div className="font-bold text-text-primary text-sm leading-tight">
+            <div className="font-bold text-text-primary text-sm leading-tight tabular-nums">
               {formatNumber(Math.max(0, finalTotal - itemPromoDiscount))}
             </div>
           </div>
         </div>
 
-        {/* Line 2 (Mobile) / Right Content (Desktop) */}
-        <div className="flex items-center justify-between border-t border-border/50 pt-2 mt-1 md:border-t-0 md:pt-0 md:mt-0 md:justify-end md:gap-4 shrink-0">
-          
-          {/* Quantity Controls */}
-          <div className="flex items-center gap-2 bg-surface-secondary rounded-xl p-1">
-            <button
-              onClick={() => changeQty(idx, -1)}
-              className="w-11 h-11 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-all active:scale-95 transform select-none"
-            >
-              -
-            </button>
-            <span className="text-sm font-semibold tabular-nums min-w-[2ch] text-center text-text-primary transition-transform duration-100 active:scale-90 transform select-none">{item.qty}</span>
-            <button
-              onClick={() => changeQty(idx, 1)}
-              className="w-11 h-11 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-all active:scale-95 transform select-none"
-            >
-              +
-            </button>
-          </div>
-
-          {/* Price & Remove (Desktop only) */}
-          <div className="hidden md:flex items-center gap-4 text-right">
-            <div>
-              {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
-                <div className="text-[10px] text-text-muted line-through mb-0.5">
-                  {formatNumber(baseTotal)}
-                </div>
-              )}
-              <div className="font-bold text-text-primary text-sm leading-tight tabular-nums">
-                {formatNumber(Math.max(0, finalTotal - itemPromoDiscount))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => removeFromCart(idx)}
-              className="w-8 h-8 rounded-lg text-text-muted active:text-danger md:hover:text-danger active:bg-danger/10 md:hover:bg-danger/10 transition-colors flex items-center justify-center"
-              aria-label="Xoá"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Mobile Remove Button (left side of Line 2) */}
+        {/* Line 2: Actions & Quantity Controls */}
+        <div className="flex items-center justify-between border-t border-border/50 pt-2 mt-1">
+          {/* Desktop Remove Button */}
           <button
+            type="button"
+            onClick={() => removeFromCart(idx)}
+            className="hidden md:flex w-8 h-8 rounded-lg text-text-muted active:text-danger md:hover:text-danger active:bg-danger/10 md:hover:bg-danger/10 transition-colors items-center justify-center"
+            aria-label="Xoá"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+
+          {/* Mobile Remove Button */}
+          <button
+            type="button"
             onClick={() => {
               if (isSwiped) {
                 setIsSwiped(false);
@@ -202,6 +164,25 @@ export function CartItemRow({
           >
             Xoá
           </button>
+
+          {/* Quantity Controls */}
+          <div className="flex items-center gap-2 bg-surface-secondary rounded-xl p-1">
+            <button
+              type="button"
+              onClick={() => changeQty(idx, -1)}
+              className="w-11 h-11 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-all active:scale-95 transform select-none"
+            >
+              -
+            </button>
+            <span className="text-sm font-semibold tabular-nums min-w-[2ch] text-center text-text-primary transition-transform duration-100 active:scale-90 transform select-none">{item.qty}</span>
+            <button
+              type="button"
+              onClick={() => changeQty(idx, 1)}
+              className="w-11 h-11 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-all active:scale-95 transform select-none"
+            >
+              +
+            </button>
+          </div>
         </div>
       </div>
     </div>

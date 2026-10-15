@@ -45,6 +45,9 @@ function normalizePromotionInput(promoData: Record<string, any>):
   if (discountType === "PERCENT" && discountValue > 100) {
     return { ok: false, error: "Giảm giá theo phần trăm không được vượt quá 100%" };
   }
+  if (type === "ORDER_DISCOUNT" && discountType === "FLAT_PRICE") {
+    return { ok: false, error: "Khuyến mãi cả hoá đơn không có hình thức Đồng giá" };
+  }
   if (!Number.isFinite(minOrderValue) || minOrderValue < 0) {
     return { ok: false, error: "Giá trị đơn tối thiểu phải là số hữu hạn không âm" };
   }
@@ -87,6 +90,8 @@ function normalizePromotionInput(promoData: Record<string, any>):
       end_date: endTimestamp === null ? "" : new Date(endTimestamp).toISOString(),
       applicable_products_json: type === "PRODUCT_DISCOUNT" ? applicableProductsJson : "",
       status,
+      // Left out when the form does not send it, so an edit never resets "Dùng chung".
+      ...(promoData.stackable === undefined ? {} : { stackable: promoData.stackable === true }),
       updated_at: new Date().toISOString(),
     },
   };

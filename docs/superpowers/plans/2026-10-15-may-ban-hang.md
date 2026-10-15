@@ -11,6 +11,9 @@
 - Mọi lần đẩy ở mảng này có thể làm máy bán ngừng nhận đơn: báo chủ quán trước, đẩy ngoài 06–09h, nhắc tải lại máy bán.
 - C10 đi trước ở các file chung (`app/pos/actions.ts`, `POSScreen.tsx`, `CartPanel.tsx`, `ItemConfigModal.tsx`): phiếu ở đây chạy sau S7 và G7.
 - Hai migration (bỏ bảng lỗi đồng bộ và `cart_payload_json` sau khi trang đã gỡ; thêm cột `icon`): số trống kế tiếp lúc viết, duyệt riêng.
+- Thứ tự lên máy chủ (reviewer 2026-10-15): `0130` (cột `icon`) chạy **trước** khi đẩy, vì form nhóm món mới ghi cột này. Bản sao lưu: `0127` → triển khai lại edge function `backup-to-drive` (duyệt riêng) → đẩy → `0129` (bỏ bảng lỗi đồng bộ), để bản sao lưu không đọc bảng đã bỏ.
+- Bước 1–5 nằm chung một cây làm việc: không còn tách được một lần đẩy riêng cho bước 2; đẩy một lần cho cả năm bước.
+- Trước khi đẩy: không máy bán nào đang hiện "đơn chờ gửi" (hàng đợi cũ). Sau khi đẩy: **tải lại mọi máy bán là bước bắt buộc**, không chỉ nhắc — tab cũ chưa tải lại vẫn chạy hàng đợi ngoại tuyến đã gỡ ở máy chủ.
 - Ponytail: xoá trước, thêm sau. Năm cửa kiểm. Test viết trước.
 
 ## Hiện trạng
@@ -34,27 +37,32 @@ Ví dụ: thu ngân gõ "bac xiu" → hiện Bạc xỉu. Đơn 100.000, thu ng�
 
 ## Bước 1 — sau S7 (C10)
 
-- [ ] **S-MB1 (Sonnet):** R8 phần máy chủ (gỡ `summarizePosCheckoutRequestIds`, đường `outOfStockProductIds`, ánh xạ `"SPLIT" ? "CASH" : "CASH"`), R6 máy chủ (STAFF không có điểm bán thấy chọn điểm bán thay vì vòng lặp; tên thương hiệu cho trang đăng nhập đọc từ bảng thương hiệu), R7 nháp kiểm điểm bán. Test `proxy.ts`, nháp sai điểm bán bị từ chối.
-- [ ] **G-MB1 (Gemini):** trang đăng nhập tiếng Việt, bỏ hai dòng chân tiếng Anh, tôn trọng `callbackUrl`; chữ tiếng Anh trên máy bán (`BR-UI-001`); `loading.tsx` cột giỏ có `md:`.
-- [ ] **Opus:** sửa `docs/03-workflows/sales.md` (máy bán có ghi `orders_v2` qua `create_pos_order_atomic`).
+- [x] **S-MB1 (Sonnet):** R8 phần máy chủ (gỡ `summarizePosCheckoutRequestIds`, đường `outOfStockProductIds`, ánh xạ `"SPLIT" ? "CASH" : "CASH"`), R6 máy chủ (STAFF không có điểm bán thấy chọn điểm bán thay vì vòng lặp; tên thương hiệu cho trang đăng nhập đọc từ bảng thương hiệu), R7 nháp kiểm điểm bán. Test `proxy.ts`, nháp sai điểm bán bị từ chối.
+- [x] **G-MB1 (Gemini):** trang đăng nhập tiếng Việt, bỏ hai dòng chân tiếng Anh, tôn trọng `callbackUrl`; chữ tiếng Anh trên máy bán (`BR-UI-001`); `loading.tsx` cột giỏ có `md:`.
+- [x] **Opus:** sửa `docs/03-workflows/sales.md` (máy bán có ghi `orders_v2` qua `create_pos_order_atomic`).
 
-## Bước 2 — R1, một lần đẩy riêng, báo trước
+## Bước 2 — R1, báo trước (đi chung lần đẩy với bước 1–5, xem Global Constraints)
 
-- [ ] **S-MB2:** gỡ hàng đợi, service worker (lần tải đầu sau khi đẩy tự huỷ đăng ký), trang Đồng bộ máy bán, lối vào Tổng quan; `submitOrderV2` trả `{ success:false, retry:true }` khi lỗi ném ra, `retry:false` khi từ chối theo luật. Migration bỏ bảng lỗi đồng bộ và `cart_payload_json`, chạy sau khi đẩy.
-- [ ] **G-MB2:** băng báo "Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại"; nút và Enter cùng tắt khi mất mạng; "Gửi lại" khi `retry:true`.
+- [x] **S-MB2:** gỡ hàng đợi, service worker (lần tải đầu sau khi đẩy tự huỷ đăng ký), trang Đồng bộ máy bán, lối vào Tổng quan; `submitOrderV2` trả `{ success:false, retry:true }` khi lỗi ném ra, `retry:false` khi từ chối theo luật. Migration bỏ bảng lỗi đồng bộ và `cart_payload_json`, chạy sau khi đẩy.
+- [x] **G-MB2:** băng báo "Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại"; nút và Enter cùng tắt khi mất mạng; "Gửi lại" khi `retry:true`.
 
 ## Bước 3
 
-- [ ] **G-MB3:** R5 tìm không dấu, tab bán chạy trống có câu riêng.
-- [ ] **S-MB3 + G-MB3b:** R4 cột `icon` trên nhóm món (migration), ô nhập ở trang nhóm món, `ProductGrid` đọc cột; xoá `lib/pos/pos-category-icons.ts`.
+- [x] **G-MB3:** R5 tìm không dấu, tab bán chạy trống có câu riêng.
+- [x] **S-MB3 + G-MB3b:** R4 cột `icon` trên nhóm món (migration), ô nhập ở trang nhóm món, `ProductGrid` đọc cột; xoá `lib/pos/pos-category-icons.ts`.
 
 ## Bước 4 — sau C10
 
-- [ ] **G-MB4:** R3 chặn ô giảm giá, một hàm chung, xoá năm bản sao và `calculateCartBaseTotal` thừa; R2 bước Khách đưa / Tiền thừa.
+- [x] **G-MB4:** R3 chặn ô giảm giá, một hàm chung, xoá năm bản sao và `calculateCartBaseTotal` thừa; R2 bước Khách đưa / Tiền thừa.
 
 ## Bước 5
 
-- [ ] **G-MB5:** nút Đăng xuất trên máy bán. Chủ quán tự tạo tài khoản STAFF ở Nhân sự cho từng thu ngân.
+- [x] **G-MB5:** nút Đăng xuất trên máy bán. Chủ quán tự tạo tài khoản STAFF ở Nhân sự cho từng thu ngân.
+
+## Sau soát (2026-10-15)
+
+- [x] Hai lần soát độc lập; sửa theo: một đơn lỗi duy nhất và luôn nằm trong giỏ (giỏ khoá khi đang gửi, "Gửi lại" chỉ ở dải lỗi trong giỏ, từ chối theo luật không có nút gửi lại, bán xong xoá hết giảm giá/mã khuyến mãi), Enter không gửi trùng, `callbackUrl` chặn chuyển hướng ra ngoài, máy chủ chỉ trả chữ tiếng Việt cho máy bán.
+- Giới hạn biết trước, chưa sửa: đơn lỗi mạng mà thật ra máy chủ đã lưu, nếu thu ngân sửa giỏ hoặc đổi hình thức trả rồi bấm lại thì ra mã chống trùng mới và có thể ghi hai lần (có từ trước vòng này).
 
 ## O-MB (Opus)
 

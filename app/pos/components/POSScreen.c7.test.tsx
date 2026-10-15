@@ -16,14 +16,6 @@ vi.mock("@/app/pos/actions", () => ({
   getPOSDrafts: vi.fn(async () => []),
   savePOSDraft: vi.fn(async () => ({ success: true, draft: { id: "D_NEW", name: "New Draft" } })),
   deletePOSDraft: vi.fn(async () => ({ success: true })),
-  reportPosSyncFailure: vi.fn(),
-}));
-
-vi.mock("@/lib/pos/pos-offline-queue", () => ({
-  enqueuePendingOrder: vi.fn(),
-  incrementAttemptCount: vi.fn(),
-  listPendingOrders: vi.fn(async () => []),
-  removePendingOrder: vi.fn(),
 }));
 
 vi.mock("@/lib/shared/dialog", () => ({

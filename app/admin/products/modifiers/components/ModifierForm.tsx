@@ -9,7 +9,7 @@ import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Alert } from "@/components/ui/Alert";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBModifier, DBModifierGroup } from "@/types/db";
 import { StandaloneToppingSwitch } from "./StandaloneToppingSwitch";
 

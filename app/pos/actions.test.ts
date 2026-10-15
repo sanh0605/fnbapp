@@ -85,22 +85,9 @@ describe("POS order COGS calculation", () => {
     expect(pageSource).not.toContain("getPOSStockStatus()");
     expect(pageSource).not.toContain('findAll("Recipes")');
     expect(pageSource).not.toContain("pickVariantRecipe");
-    expect(pageSource).not.toContain("outOfStockProductIds=");
     expect(pageSource).not.toContain("getSalesDataV2");
     expect(pageSource).not.toContain("getRealtimeStock");
   });
-});
-
-describe("submitOrderV2 -- a price changed while the till was open (BR-SALE-008)", () => {
-  it.todo(
-    "Máy bán gửi tổng tiền đang hiện; máy chủ tính lại theo giá đang áp dụng lúc nhận đơn, lệch thì từ chối và báo tải lại trang (chủ quán chốt 14/10/2026)",
-  );
-});
-
-describe("submitOrderV2 -- a promotion edited after the order was taken (BR-SALE-008)", () => {
-  it.todo(
-    "Khuyến mãi sửa được dù đã có đơn dùng; đơn gửi trễ không khớp mức khuyến mãi hiện tại thì bị từ chối, thu ngân bấm lại (chủ quán chốt 15/10/2026)",
-  );
 });
 
 const REF: ReferenceData = {
@@ -143,7 +130,7 @@ describe("submitOrderV2 -- whole-order promotion stacks with the cashier discoun
   it("Giảm 10% hóa đơn trên 100.000 rồi giảm tay 5.000 = 85.000", () => {
     const r = buildOrderFromCart({
       ...base,
-      items: [line("P3", "V3")],
+      items: [line("P3", "V3")], promotion_ids: ["ORD-10"],
       manual_order_discount: { value: 5000, type: "VND" },
     }, REF);
     expect(r.order.promo_discount_total).toBe(10000);
@@ -152,14 +139,98 @@ describe("submitOrderV2 -- whole-order promotion stacks with the cashier discoun
   });
 });
 
+// Row shape of the promotions table as the server reads it.
+const promoRow = (p: Record<string, unknown>) => ({
+  id: "P", name: "KM", type: "PRODUCT_DISCOUNT", discount_type: "FLAT_VND", discount_value: "0",
+  applicable_products_json: "", code: "", start_date: "2026-01-01T00:00:00.000Z", end_date: "", status: "ACTIVE",
+  brand_id: "", min_order_value: "0", stackable: false, ...p,
+});
+const REFUSED = "Giá hoặc khuyến mãi đã thay đổi. Tải lại trang rồi bấm lại.";
+
+describe("submitOrderV2 -- a price changed while the till was open (BR-SALE-008)", () => {
+  const order = (shown_total: number, extra: Record<string, unknown> = {}) =>
+    () => buildOrderFromCart({ ...base, items: [line("P1", "V1")], promotion_ids: [], shown_total, ...extra }, { ...REF, promotions: [] });
+
+  it("Máy bán hiện 29.000 nhưng giá đã đổi thành 32.000: máy chủ từ chối và báo tải lại trang", () => {
+    const changed = { ...REF, promotions: [], variants: REF.variants.map(v => v.id === "V1" ? { ...v, price: "32000" } : v) };
+    const call = () => buildOrderFromCart({ ...base, items: [line("P1", "V1")], promotion_ids: [], shown_total: 29000 }, changed);
+    expect(call).toThrow(REFUSED);
+  });
+
+  it("tổng máy bán hiện khớp thì nhận đơn", () => {
+    expect(order(29000)().order.net_total).toBe(29000);
+  });
+
+  it("đơn gửi trễ lấy giá lúc bấm thanh toán từ lịch sử giá: 7h giá 29.000, trưa đổi 32.000, đơn 7h vẫn 29.000", () => {
+    const ref = {
+      ...REF, promotions: [],
+      variants: REF.variants.map(v => v.id === "V1" ? { ...v, price: "32000" } : v),
+      priceHistory: [{ variant_id: "V1", old_price: 29000, new_price: 32000, effective_at: new Date(Date.now() - 60 * 60_000).toISOString() }],
+    };
+    const at = (client_captured_at: string, shown_total: number) =>
+      buildOrderFromCart({ ...base, items: [line("P1", "V1")], promotion_ids: [], shown_total, client_captured_at }, ref).order.net_total;
+    expect(at(new Date(Date.now() - 1 * 60_000).toISOString(), 32000)).toBe(32000);
+    expect(at(new Date(Date.now() - 120 * 60_000).toISOString(), 29000)).toBe(29000);
+  });
+});
+
+describe("submitOrderV2 -- a promotion edited after the order was taken (BR-SALE-008)", () => {
+  it("Khuyến mãi 10% hóa đơn sửa thành 5%: máy bán còn hiện 90.000, máy chủ tính 95.000 nên từ chối", () => {
+    const edited = { ...REF, promotions: [{ ...REF.promotions[0], discount_value: "5" }] };
+    const call = () => buildOrderFromCart({ ...base, items: [line("P3", "V3")], promotion_ids: ["ORD-10"], shown_total: 90000 }, edited);
+    expect(call).toThrow(REFUSED);
+    expect(buildOrderFromCart({ ...base, items: [line("P3", "V3")], promotion_ids: ["ORD-10"], shown_total: 95000 }, edited).order.net_total).toBe(95000);
+  });
+});
+
 describe("submitOrderV2 -- minimum order value after dish discounts (BR-SALE-011)", () => {
-  it.todo(
-    "Đơn tối thiểu so với tổng sau giảm từng món: 4 Bạc xỉu 116.000, giảm 5.000 mỗi ly còn 96.000, khuyến mãi tối thiểu 100.000 không được áp (chủ quán chốt 15/10/2026)",
-  );
+  it("Đơn tối thiểu so với tổng sau giảm từng món: 4 Bạc xỉu 116.000, giảm 5.000 mỗi ly còn 96.000, khuyến mãi tối thiểu 100.000 không được áp", () => {
+    const promotions = [
+      promoRow({ id: "DISH", type: "PRODUCT_DISCOUNT", discount_value: "5000", applicable_products_json: '["V1"]', stackable: true }),
+      promoRow({ id: "BIG", type: "ORDER_DISCOUNT", discount_type: "FLAT_VND", discount_value: "10000", min_order_value: "100000", stackable: true }),
+    ];
+    const r = buildOrderFromCart({
+      ...base, items: [{ ...line("P1", "V1"), qty: 4 }], promotion_ids: ["DISH", "BIG"], shown_total: 96000,
+    }, { ...REF, promotions });
+    expect(r.order.net_total).toBe(96000);
+    expect(r.orderPromotions.map(p => [p.promotion_id, p.amount])).toEqual([["DISH", 20000]]);
+  });
 });
 
 describe("submitOrderV2 -- promotions without a code and the Dùng chung box (BR-SALE-011)", () => {
-  it.todo(
-    "Khuyến mãi không mã tự áp khi đủ điều kiện; hai khuyến mãi chỉ cộng khi cả hai đặt Dùng chung, không thì thu ngân chọn một; máy chủ không tự áp loại cần mã (chủ quán chốt 14/10/2026)",
-  );
+  const dish = (id: string, value: string, stackable: boolean, code = "") =>
+    promoRow({ id, name: id, discount_value: value, applicable_products_json: '["V1","V2"]', stackable, code });
+  const cart = [line("P1", "V1"), line("P2", "V2")]; // 29.000 + 25.000
+  const send = (promotions: any[], promotion_ids: string[], shown_total: number, promo_code?: string) =>
+    () => buildOrderFromCart({ ...base, items: cart, promotion_ids, shown_total, promo_code }, { ...REF, promotions });
+
+  it("hai khuyến mãi cùng Dùng chung cộng lại: 54.000 - 10.000 - 4.000 = 40.000, hai dòng order_promotions", () => {
+    const promotions = [dish("A", "5000", true), dish("B", "2000", true)];
+    const r = send(promotions, ["A", "B"], 40000)();
+    expect(r.order.net_total).toBe(40000);
+    expect(r.orderPromotions.map(p => p.seq)).toEqual([1, 2]);
+    expect(r.order.applied_promotion_id).toBe("A");
+  });
+
+  it("một bên không Dùng chung: gửi cả hai thì từ chối, gửi một bộ thì nhận", () => {
+    const promotions = [dish("A", "5000", true), dish("B", "2000", false)];
+    expect(send(promotions, ["A", "B"], 40000)).toThrow(REFUSED);
+    expect(send(promotions, ["A"], 44000)().order.net_total).toBe(44000);
+  });
+
+  it("bỏ sót khuyến mãi không mã đủ điều kiện thì từ chối", () => {
+    expect(send([dish("A", "5000", false)], [], 54000)).toThrow(REFUSED);
+  });
+
+  it("khuyến mãi cần mã: không mã thì máy chủ không tự áp, gửi id mà thiếu mã thì từ chối, đủ mã thì nhận", () => {
+    const promotions = [dish("C", "5000", false, "KHAI")];
+    expect(send(promotions, [], 54000)().order.net_total).toBe(54000);
+    expect(send(promotions, ["C"], 44000)).toThrow(REFUSED);
+    expect(send(promotions, ["C"], 44000, "khai")().order.net_total).toBe(44000);
+  });
+
+  it("mã gõ sai hoặc hết hiệu lực mà máy bán gửi danh sách rỗng: máy chủ không tự chọn khuyến mãi khác", () => {
+    const promotions = [dish("A", "5000", false)];
+    expect(send(promotions, [], 54000, "SAI")).toThrow(REFUSED);
+  });
 });

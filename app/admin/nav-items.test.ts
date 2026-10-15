@@ -13,6 +13,7 @@ const EXPECTED: [string, [string, string][]][] = [
   ]],
   ["Nhập hàng", [["Phiếu nhập", "/admin/inventory/purchase-orders"], ["Nhà cung cấp", "/admin/suppliers"]]],
   ["Kho", [
+    ["Tồn kho", "/admin/inventory/stock"],
     ["Phiếu xuất", "/admin/inventory/issue-slips"], ["Kiểm kê", "/admin/inventory/stocktake"],
     ["Hàng hoá", "/admin/inventory/items"], ["Tài sản", "/admin/inventory/assets"],
     ["Thời hạn khấu hao", "/admin/inventory/asset-bands"], ["Đơn vị tính", "/admin/inventory/units"],

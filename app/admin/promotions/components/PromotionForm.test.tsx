@@ -298,3 +298,69 @@ describe("PromotionForm -- value boxes (wave K4)", () => {
     expect(JSON.parse(mocks.savePromotion.mock.calls[0][0].applicable_products_json)).toEqual({ "VAR-001": 10000 });
   });
 });
+
+describe("PromotionForm -- stackable and FLAT_PRICE (Phiếu G7)", () => {
+  const renderPromo = (overrides: Partial<DBPromotion> = {}) =>
+    render(
+      <PromotionForm
+        initialData={promoFixture(overrides)}
+        brands={mockBrands}
+        categories={mockCategories}
+        products={mockProducts}
+        variants={mockVariants}
+        returnTo="/admin/promotions"
+      />,
+    );
+
+  it("hides Đồng giá option when type is whole-order and clears it if selected", () => {
+    // Whole order by default
+    renderPromo({ type: "ORDER_DISCOUNT" });
+    const discountTypeSelect = screen.getByLabelText("Hình thức giảm giá");
+    expect(screen.queryByRole("option", { name: "Đồng giá (đ)" })).toBeNull();
+
+    // Switch to PRODUCT_DISCOUNT
+    fireEvent.change(screen.getByLabelText("Đối tượng giảm giá"), { target: { value: "PRODUCT_DISCOUNT" } });
+    expect(screen.getByRole("option", { name: "Đồng giá (đ)" })).toBeInTheDocument();
+
+    // Select FLAT_PRICE
+    fireEvent.change(discountTypeSelect, { target: { value: "FLAT_PRICE" } });
+    expect(discountTypeSelect).toHaveValue("FLAT_PRICE");
+
+    // Switch back to ORDER_DISCOUNT -> FLAT_PRICE is hidden and cleared to PERCENT
+    fireEvent.change(screen.getByLabelText("Đối tượng giảm giá"), { target: { value: "ORDER_DISCOUNT" } });
+    expect(screen.queryByRole("option", { name: "Đồng giá (đ)" })).toBeNull();
+    expect(discountTypeSelect).toHaveValue("PERCENT");
+  });
+
+  it("saves stackable as true when yes is selected and false when no", async () => {
+    mocks.savePromotion.mockResolvedValue({ success: true, data: { id: "PRM-001" } });
+    renderPromo({ stackable: false });
+
+    const stackableSelect = screen.getByLabelText("Dùng chung với khuyến mãi khác");
+    expect(stackableSelect).toHaveValue("no");
+
+    // Change to Có (yes)
+    fireEvent.change(stackableSelect, { target: { value: "yes" } });
+    expect(stackableSelect).toHaveValue("yes");
+
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
+    expect(mocks.savePromotion.mock.calls[0][0].stackable).toBe(true);
+
+    mocks.savePromotion.mockClear();
+    // Change back to Không (no)
+    fireEvent.change(stackableSelect, { target: { value: "no" } });
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
+    expect(mocks.savePromotion.mock.calls[0][0].stackable).toBe(false);
+  });
+
+  it("clears discount value when opening existing whole-order promotion of type FLAT_PRICE", () => {
+    renderPromo({ type: "ORDER_DISCOUNT", discount_type: "FLAT_PRICE", discount_value: "20000" });
+    const discountTypeSelect = screen.getByLabelText("Hình thức giảm giá");
+    expect(discountTypeSelect).toHaveValue("PERCENT");
+    const discountValueInput = screen.getByLabelText("Giá trị giảm giá *");
+    expect((discountValueInput as HTMLInputElement).value).toBe("");
+  });
+});
+

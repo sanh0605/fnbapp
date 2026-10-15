@@ -131,7 +131,23 @@ describe("category product type", () => {
     expect(await updateCategory(form({ id: "CAT-001", name: "Cà phê", type_id: "PT-404" }))).toEqual({ error: "Chọn loại món" });
     expect(mocks.update).not.toHaveBeenCalled();
     expect(await updateCategory(form({ id: "CAT-001", name: "Cà phê", type_id: "PT-001" }))).toEqual({ success: true });
-    expect(mocks.update).toHaveBeenCalledWith("Product_Categories", "CAT-001", { name: "Cà phê", type_id: "PT-001" });
+    expect(mocks.update).toHaveBeenCalledWith("Product_Categories", "CAT-001", { name: "Cà phê", type_id: "PT-001", icon: null });
+  });
+
+  it("stores a trimmed icon, blank becomes null, and over 8 characters is refused", async () => {
+    await saveCategory(form({ name: "Bánh", type_id: "PT-001", icon: " ☕ " }));
+    expect(mocks.insert).toHaveBeenLastCalledWith("Product_Categories", expect.objectContaining({ icon: "☕" }));
+    await saveCategory(form({ name: "Bánh", type_id: "PT-001", icon: "  " }));
+    expect(mocks.insert).toHaveBeenLastCalledWith("Product_Categories", expect.objectContaining({ icon: null }));
+    await updateCategory(form({ id: "CAT-001", name: "Cà phê", type_id: "PT-001", icon: "🍵" }));
+    expect(mocks.update).toHaveBeenLastCalledWith("Product_Categories", "CAT-001", expect.objectContaining({ icon: "🍵" }));
+    mocks.insert.mockClear();
+    mocks.update.mockClear();
+    const tooLong = "123456789";
+    expect(await saveCategory(form({ name: "Bánh", type_id: "PT-001", icon: tooLong }))).toEqual({ error: "Biểu tượng tối đa 8 ký tự" });
+    expect(await updateCategory(form({ id: "CAT-001", name: "Cà phê", type_id: "PT-001", icon: tooLong }))).toEqual({ error: "Biểu tượng tối đa 8 ký tự" });
+    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 });
 

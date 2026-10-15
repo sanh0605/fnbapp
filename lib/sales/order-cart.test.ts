@@ -2,6 +2,9 @@ import { afterAll, afterEach, beforeAll, describe, it, expect, vi } from "vitest
 import { buildOrderFromCart } from "@/lib/sales/order-cart";
 import type { CartInput, ReferenceData } from "@/lib/sales/order-cart";
 
+// The server now takes the promotion set the till sent; these tests send the one promotion in REF.
+const build = (input: CartInput, ref: ReferenceData) => buildOrderFromCart({ promotion_ids: ["PRM-003"], ...input }, ref);
+
 // Real reference data (subset matching WS-1 fixtures)
 const REF: ReferenceData = {
   brands: [{ id: "BR-002", code: "UCK", name: "UCK" }],
@@ -45,7 +48,7 @@ afterAll(() => {
 describe("buildOrderFromCart", () => {
   it("throws on empty cart", () => {
     expect(() =>
-      buildOrderFromCart({
+      build({
         brand_id: "BR-002",
         outlet_id: "OUT-002",
         items: [],
@@ -57,7 +60,7 @@ describe("buildOrderFromCart", () => {
 
   it("throws on unknown variant", () => {
     expect(() =>
-      buildOrderFromCart({
+      build({
         brand_id: "BR-002",
         outlet_id: "OUT-002",
         items: [
@@ -80,7 +83,7 @@ describe("buildOrderFromCart", () => {
       };
 
       expect(() =>
-        buildOrderFromCart({
+        build({
           brand_id: "BR-002",
           outlet_id: "OUT-002",
           items: [
@@ -102,7 +105,7 @@ describe("buildOrderFromCart", () => {
       };
 
       expect(() =>
-        buildOrderFromCart({
+        build({
           brand_id: "BR-002",
           outlet_id: "OUT-002",
           items: [
@@ -114,7 +117,7 @@ describe("buildOrderFromCart", () => {
       ).toThrow(/ngừng bán/);
     });
 
-    it("the message covers both readers: a cashier at checkout, and an admin reading a later offline-sync failure", () => {
+    it("the message tells the cashier the order was not saved and what to do", () => {
       const refWithPausedProduct: ReferenceData = {
         ...REF,
         products: [
@@ -124,7 +127,7 @@ describe("buildOrderFromCart", () => {
       };
 
       try {
-        buildOrderFromCart({
+        build({
           brand_id: "BR-002",
           outlet_id: "OUT-002",
           items: [
@@ -135,21 +138,14 @@ describe("buildOrderFromCart", () => {
         }, refWithPausedProduct);
         throw new Error("expected buildOrderFromCart to throw");
       } catch (err: any) {
-        // The cashier's actionable step (remove the item, retry) and the
-        // admin's (an offline order that already reached the customer needs
-        // manual revenue entry, since it never got saved) both need to be
-        // present -- neither reader gets any other context, see
-        // app/admin/pos-sync/PosSyncClient.tsx, which renders only this
-        // string next to the request token and timestamp.
         expect(err.message).toContain("chưa được lưu");
-        expect(err.message).toContain("ghi nhận doanh thu thủ công");
         expect(err.message).toContain("bỏ món này khỏi đơn rồi thử lại");
       }
     });
 
     it("does not refuse a normal ACTIVE product/variant (no regression)", () => {
       expect(() =>
-        buildOrderFromCart({
+        build({
           brand_id: "BR-002",
           outlet_id: "OUT-002",
           items: [
@@ -163,7 +159,7 @@ describe("buildOrderFromCart", () => {
   });
 
   it("Sữa Dâu standalone: net_total = 25000 (audit headline)", () => {
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -192,7 +188,7 @@ describe("buildOrderFromCart", () => {
   });
 
   it("FLAT_PRICE promo: VAR-024 Trà dâu (27k → 15k target) → promo 12k", () => {
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -222,7 +218,7 @@ describe("buildOrderFromCart", () => {
         applicable_products_json: JSON.stringify(["VAR-031"]),
       }],
     };
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [{
@@ -242,7 +238,7 @@ describe("buildOrderFromCart", () => {
   });
 
   it("manual_item_discount VND: subtracts directly from line", () => {
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -265,7 +261,7 @@ describe("buildOrderFromCart", () => {
   });
 
   it("manual_item_discount PERCENT: converts to VND on gross", () => {
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -292,7 +288,7 @@ describe("buildOrderFromCart", () => {
     // Capacities: Sữa Dâu 25k, Trà dâu 15k → total 40k
     // Manual order discount: 4k
     // Allocations: round(4000 * 25/40) = 2500 (Sữa Dâu), residual 1500 (Trà dâu)
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -311,7 +307,7 @@ describe("buildOrderFromCart", () => {
   });
 
   it("manual_order_discount PERCENT: converts to VND on the total after dish discounts (BR-SALE-009)", () => {
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -327,7 +323,7 @@ describe("buildOrderFromCart", () => {
 
   it("caps manual_item_discount at line capacity (gross - promo)", () => {
     // 35k - 10k promo = 25k capacity. Manual 50k → capped at 25k.
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -349,7 +345,7 @@ describe("buildOrderFromCart", () => {
         end_date: "2025-01-01T00:00:00.000Z", // expired
       }],
     };
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -357,6 +353,7 @@ describe("buildOrderFromCart", () => {
       ],
       payment_method: "CASH",
       actor: { id: "U1", name: "Test" },
+      promotion_ids: [],
     }, expiredPromoRef);
 
     expect(result.order.promo_discount_total).toBe(0);
@@ -364,7 +361,7 @@ describe("buildOrderFromCart", () => {
   });
 
   it("all 7 invariants pass on built order+lines (buildOrderFromCart calls assertOrderInvariants)", () => {
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -385,7 +382,7 @@ describe("buildOrderFromCart", () => {
 
   // Migration 0121 drops these columns; the till must stop sending them.
   it("sends none of the columns migration 0121 drops", () => {
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [{
@@ -407,7 +404,7 @@ describe("buildOrderFromCart", () => {
   });
 
   it("no longer returns resolvedRecipes -- nothing consumed it (section 1.3, 0 results outside the two files that produced it)", () => {
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [{
@@ -429,7 +426,7 @@ describe("buildOrderFromCart", () => {
     // has system promo PRM-003: flat variant price 25k (discount 10k)
     // manual_item_discount: 5000 VND
     // manual_order_discount: 3000 VND
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [
@@ -482,7 +479,7 @@ describe("buildOrderFromCart", () => {
     };
 
     it("returns no payments array when payments is omitted (single payment_method, unchanged behavior)", () => {
-      const result = buildOrderFromCart({
+      const result = build({
         ...singleItemCart,
         payment_method: "CASH",
       }, REF);
@@ -493,7 +490,7 @@ describe("buildOrderFromCart", () => {
 
     it("builds a payments array that sums to net_total when split payments are provided", () => {
       // net_total for this cart is 25000 (see "Sữa Dâu standalone" test above)
-      const result = buildOrderFromCart({
+      const result = build({
         ...singleItemCart,
         payment_method: "CASH",
         payments: [
@@ -515,7 +512,7 @@ describe("buildOrderFromCart", () => {
 
     it("rejects a payments array that doesn't sum to net_total", () => {
       expect(() =>
-        buildOrderFromCart({
+        build({
           ...singleItemCart,
           payment_method: "CASH",
           payments: [
@@ -528,7 +525,7 @@ describe("buildOrderFromCart", () => {
 
     it("rejects a zero or negative payment amount", () => {
       expect(() =>
-        buildOrderFromCart({
+        build({
           ...singleItemCart,
           payment_method: "CASH",
           payments: [
@@ -563,7 +560,7 @@ describe("buildOrderFromCart client_captured_at", () => {
   });
 
   it("uses the client-captured timestamp when within bounds", () => {
-    const result = buildOrderFromCart(
+    const result = build(
       { ...baseInput, client_captured_at: "2026-06-14T10:00:00.000Z" },
       REF,
     );
@@ -572,7 +569,7 @@ describe("buildOrderFromCart client_captured_at", () => {
   });
 
   it("falls back to server time and annotates migration_notes when the client timestamp is out of bounds", () => {
-    const result = buildOrderFromCart(
+    const result = build(
       { ...baseInput, client_captured_at: "2026-05-01T00:00:00.000Z" },
       REF,
     );
@@ -588,7 +585,7 @@ describe("buildOrderFromCart client_captured_at", () => {
     // moment of sale -- even though it is no longer active "now".
     vi.setSystemTime(new Date("2026-07-01T00:00:00.000Z"));
 
-    const result = buildOrderFromCart(
+    const result = build(
       { ...baseInput, client_captured_at: "2026-06-15T00:00:00.000Z" },
       REF,
     );
@@ -598,7 +595,7 @@ describe("buildOrderFromCart client_captured_at", () => {
   });
 
   it("uses server time when client_captured_at is omitted", () => {
-    const result = buildOrderFromCart(baseInput, REF);
+    const result = build(baseInput, REF);
     expect(result.order.created_at).toBe("2026-06-15T00:00:00.000Z");
     expect(result.order.migration_notes).toBe("");
   });
@@ -620,11 +617,11 @@ describe("buildOrderFromCart browser-supplied numbers (C13)", () => {
   });
 
   it.each([0, -1, 1.5, Number.NaN])("refuses quantity %s", qty => {
-    expect(() => buildOrderFromCart(cart(qty, 0), REF)).toThrow("Số lượng món phải là số nguyên dương");
+    expect(() => build(cart(qty, 0), REF)).toThrow("Số lượng món phải là số nguyên dương");
   });
 
   it("refuses a negative per-item discount", () => {
-    expect(() => buildOrderFromCart(cart(1, -5000), REF)).toThrow("Giảm giá món không được âm");
+    expect(() => build(cart(1, -5000), REF)).toThrow("Giảm giá món không được âm");
   });
 });
 
@@ -637,7 +634,7 @@ describe("buildOrderFromCart ignores option groups", () => {
       ...REF,
       modifiers: [{ id: "MOD-004", name: "Trân châu trắng", price: "5000", status: "ACTIVE", group_id: "MG-009", max_qty: 1, is_default: false }],
     };
-    const result = buildOrderFromCart({
+    const result = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [{
@@ -662,7 +659,7 @@ describe("one menu for both brands (BR-CATALOG-006)", () => {
       ...REF,
       products: [{ ...REF.products[1], brand_id: "BR-001" }],
     };
-    const { lines } = buildOrderFromCart({
+    const { lines } = build({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
       items: [{ product_id: "PROD-017", variant_id: "VAR-024", qty: 1, modifiers: [], manual_item_discount: { value: 0, type: "VND" } }],
@@ -680,40 +677,14 @@ describe("buildOrderFromCart pricing is the server's own (C10)", () => {
 
   it("ignores prices and discounts sent by the browser", () => {
     const sent = { ...item, unit_price_snapshot: 1, promo_discount_snapshot: 99999 } as any;
-    const r = buildOrderFromCart({ ...base, items: [sent] }, REF);
+    const r = build({ ...base, items: [sent] }, REF);
     expect(r.lines[0].unit_price).toBe(27000);
     expect(r.order.net_total).toBe(15000);
   });
 
-  it("takes a coded promotion only when its code was sent", () => {
-    const ref = withPromo({ id: "PRM-CODE", code: "KHAI", discount_type: "FLAT_VND", discount_value: "5000", applicable_products_json: JSON.stringify(["VAR-024"]) });
-    const noCode = buildOrderFromCart({ ...base, items: [item], applied_promotion_id: "PRM-CODE" }, ref);
-    expect(noCode.order.promo_discount_total).toBe(0);
-    expect(noCode.order.applied_promotion_id).toBe("");
-    const auto = buildOrderFromCart({ ...base, items: [item] }, ref);
-    expect(auto.order.promo_discount_total).toBe(0);
-    const typed = buildOrderFromCart({ ...base, items: [item], applied_promotion_id: "PRM-CODE", promo_code: " khai " }, ref);
-    expect(typed.order.promo_discount_total).toBe(5000);
-    expect(typed.order.applied_promotion_id).toBe("PRM-CODE");
-  });
-
-  it("with no code sent and two no-code promotions, the bigger discount wins (as the till picks)", () => {
-    const small = { ...REF.promotions[0], id: "PRM-S", discount_type: "FLAT_VND", discount_value: "2000", applicable_products_json: JSON.stringify(["VAR-024"]) };
-    const big = { ...small, id: "PRM-B", discount_value: "5000" };
-    const r = buildOrderFromCart({ ...base, items: [item] }, { ...REF, promotions: [small, big] });
-    expect(r.order.applied_promotion_id).toBe("PRM-B");
-    expect(r.order.promo_discount_total).toBe(5000);
-  });
-
-  it("accepts a stored code with trailing space against the typed code", () => {
-    const ref = withPromo({ id: "PRM-CODE", code: "KHAI ", discount_type: "FLAT_VND", discount_value: "5000", applicable_products_json: JSON.stringify(["VAR-024"]) });
-    const r = buildOrderFromCart({ ...base, items: [item], applied_promotion_id: "PRM-CODE", promo_code: "khai" }, ref);
-    expect(r.order.applied_promotion_id).toBe("PRM-CODE");
-  });
-
   it("books a whole-order promotion into promo_discount (BR-SALE-010)", () => {
     const ref = withPromo({ id: "PRM-ORD", type: "ORDER_DISCOUNT", discount_type: "PERCENT", discount_value: "10", applicable_products_json: "" });
-    const r = buildOrderFromCart({ ...base, items: [item], manual_order_discount: { value: 1000, type: "VND" } }, ref);
+    const r = build({ ...base, items: [item], promotion_ids: ["PRM-ORD"], manual_order_discount: { value: 1000, type: "VND" } }, ref);
     expect(r.order.promo_discount_total).toBe(2700);
     expect(r.order.manual_order_discount).toBe(1000);
     expect(r.order.net_total).toBe(23300);

@@ -34,19 +34,6 @@ vi.mock("@/app/pos/actions", () => ({
   getPOSDrafts: vi.fn(async () => []),
   savePOSDraft: vi.fn(),
   deletePOSDraft: vi.fn(),
-  reportPosSyncFailure: vi.fn(),
-}));
-
-// POSScreen calls listPendingOrders() unconditionally on mount (the offline
-// sync sweep). Its real implementation opens IndexedDB, which jsdom does not
-// implement; POSScreen's own try/catch would swallow the resulting rejection
-// silently, but relying on that incidental behaviour is fragile. Mocked
-// instead so the sweep is a hermetic no-op.
-vi.mock("@/lib/pos/pos-offline-queue", () => ({
-  enqueuePendingOrder: vi.fn(),
-  incrementAttemptCount: vi.fn(),
-  listPendingOrders: vi.fn(async () => []),
-  removePendingOrder: vi.fn(),
 }));
 
 const roots: Root[] = [];

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { priceCart, bestPromotion } from "@/lib/sales/price-cart";
+import { priceCart, eligiblePromotionSets } from "@/lib/sales/price-cart";
 import type { PriceCartItem, PricePromotion } from "@/lib/sales/price-cart";
 
 const catalog = {
@@ -93,27 +93,45 @@ describe("priceCart", () => {
   });
 });
 
-describe("bestPromotion", () => {
-  it("code match wins case-insensitively and trimmed", () => {
-    const pNoCode = promo({ id: "P-AUTO", discount_value: 10000, applicable_products_json: JSON.stringify(["BAC-XIU"]) });
-    const pCode = promo({ id: "P-CODE", code: "SAVE5", discount_value: 5000, applicable_products_json: JSON.stringify(["BAC-XIU"]) });
-    const matched = bestPromotion([pNoCode, pCode], [item("BAC-XIU")], catalog, "  save5 ");
-    expect(matched?.id).toBe("P-CODE");
+
+describe("eligiblePromotionSets (BR-SALE-011)", () => {
+  const AT = "2026-10-15T05:00:00.000Z";
+  const row = (p: Record<string, unknown>) => ({
+    ...promo({ discount_value: 10000, applicable_products_json: JSON.stringify(["TRA-DAU", "TRA-XOAI"]) }),
+    status: "ACTIVE", start_date: "2026-01-01T00:00:00.000Z", end_date: "", brand_id: "", ...p,
+  });
+  const cart = [item("TRA-DAU"), item("TRA-XOAI")];
+  const sets = (rows: any[], code: string | null = null) => eligiblePromotionSets(rows, cart, catalog, AT, "BR-1", code);
+
+  it("two promotions that are both Dùng chung make one set of two", () => {
+    const r = sets([row({ id: "A", stackable: true }), row({ id: "B", stackable: true, discount_value: 5000 })]);
+    expect(r).toEqual([{ promotionIds: ["A", "B"], amount: 30000 }]);
   });
 
-  it("best no-code wins (largest discount, ties: first)", () => {
-    const pSmall = promo({ id: "SMALL", discount_value: 2000, applicable_products_json: JSON.stringify(["BAC-XIU"]) });
-    const pLarge = promo({ id: "LARGE", discount_value: 5000, applicable_products_json: JSON.stringify(["BAC-XIU"]) });
-    const pTie = promo({ id: "TIE", discount_value: 5000, applicable_products_json: JSON.stringify(["BAC-XIU"]) });
-    const best = bestPromotion([pSmall, pLarge, pTie], [item("BAC-XIU")], catalog, null);
-    expect(best?.id).toBe("LARGE");
+  it("one side not Dùng chung: two sets, the bigger first", () => {
+    const r = sets([
+      row({ id: "A", stackable: true, discount_value: 5000 }),
+      row({ id: "B", stackable: false, discount_value: 10000 }),
+    ]);
+    expect(r).toEqual([
+      { promotionIds: ["B"], amount: 20000 },
+      { promotionIds: ["A"], amount: 10000 },
+    ]);
   });
 
-  it("none → null when no promotion gives more than 0 or unmatched code", () => {
-    const pNotApplicable = promo({ id: "OTHER", discount_value: 5000, applicable_products_json: JSON.stringify(["OTHER-DISH"]) });
-    expect(bestPromotion([pNotApplicable], [item("BAC-XIU")], catalog, null)).toBeNull();
-    expect(bestPromotion([pNotApplicable], [item("BAC-XIU")], catalog, "UNKNOWN_CODE")).toBeNull();
-    expect(bestPromotion([], [item("BAC-XIU")], catalog, null)).toBeNull();
+  it("a promotion with a code is left out until its code is typed (any case)", () => {
+    const rows = [row({ id: "C", code: "KHAI" })];
+    expect(sets(rows)).toEqual([]);
+    expect(sets(rows, " khai ")).toEqual([{ promotionIds: ["C"], amount: 20000 }]);
+  });
+
+  it("leaves out inactive, expired, other-brand and below-minimum promotions", () => {
+    expect(sets([
+      row({ id: "OFF", status: "INACTIVE" }),
+      row({ id: "OLD", end_date: "2026-10-01T00:00:00.000Z" }),
+      row({ id: "FUT", start_date: "2026-11-01T00:00:00.000Z" }),
+      row({ id: "BRAND", brand_id: "BR-2" }),
+      row({ id: "MIN", min_order_value: 1000000 }),
+    ])).toEqual([]);
   });
 });
-

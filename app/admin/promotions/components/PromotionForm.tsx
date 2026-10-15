@@ -12,7 +12,7 @@ import { formatNumber } from "@/lib/shared/format";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
 
 interface PromotionFormProps {
@@ -32,7 +32,7 @@ export function PromotionForm({
   variants,
   returnTo: rawReturnTo,
 }: PromotionFormProps) {
-  const returnTo = safeReturnTo(rawReturnTo);
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/promotions");
   const router = useRouter();
   const formId = useId();
   const [name, setName] = useState("");
@@ -40,6 +40,7 @@ export function PromotionForm({
   const [brandId, setBrandId] = useState("");
   const [type, setType] = useState("ORDER_DISCOUNT");
   const [discountType, setDiscountType] = useState("PERCENT");
+  const [stackable, setStackable] = useState(false);
   const [discountValue, setDiscountValue] = useState("");
   const [minOrderValue, setMinOrderValue] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -50,14 +51,26 @@ export function PromotionForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const handleTypeChange = (newType: string) => {
+    setType(newType);
+    if (newType === "ORDER_DISCOUNT" && discountType === "FLAT_PRICE") {
+      setDiscountType("PERCENT");
+      setDiscountValue("");
+    }
+  };
+
   useEffect(() => {
     if (initialData) {
       setName(initialData.name || "");
       setCode(initialData.code || "");
       setBrandId(initialData.brand_id || "");
-      setType(initialData.type || "ORDER_DISCOUNT");
-      setDiscountType(initialData.discount_type || "PERCENT");
-      setDiscountValue(String(initialData.discount_value || ""));
+      const initialType = initialData.type || "ORDER_DISCOUNT";
+      setType(initialType);
+      const initialDiscountType = initialData.discount_type || "PERCENT";
+      const isForcedPercent = initialType === "ORDER_DISCOUNT" && initialDiscountType === "FLAT_PRICE";
+      setDiscountType(isForcedPercent ? "PERCENT" : initialDiscountType);
+      setStackable(initialData.stackable === true);
+      setDiscountValue(isForcedPercent ? "" : String(initialData.discount_value || ""));
       setMinOrderValue(String(initialData.min_order_value || ""));
       
       const getLocalISOTime = (dateString: string) => {
@@ -107,6 +120,7 @@ export function PromotionForm({
       setBrandId("");
       setType("ORDER_DISCOUNT");
       setDiscountType("PERCENT");
+      setStackable(false);
       setDiscountValue("");
       setMinOrderValue("");
       
@@ -165,6 +179,7 @@ export function PromotionForm({
       end_date: endDate ? new Date(endDate + ":00+07:00").toISOString() : "",
       applicable_products_json: applicableProductsJson,
       status,
+      stackable,
     };
 
     const res = await savePromotion(promoPayload);
@@ -270,10 +285,23 @@ export function PromotionForm({
               <Select
                 id={`${formId}-type`}
                 value={type}
-                onChange={(e) => setType(e.target.value)}
+                onChange={(e) => handleTypeChange(e.target.value)}
               >
                 <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
                 <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
+              </Select>
+            </Field>
+          </div>
+
+          <div>
+            <Field label="Dùng chung với khuyến mãi khác" htmlFor={`${formId}-stackable`}>
+              <Select
+                id={`${formId}-stackable`}
+                value={stackable ? "yes" : "no"}
+                onChange={(e) => setStackable(e.target.value === "yes")}
+              >
+                <option value="no">Không</option>
+                <option value="yes">Có</option>
               </Select>
             </Field>
           </div>
@@ -300,7 +328,9 @@ export function PromotionForm({
               >
                 <option value="PERCENT">Phần trăm (%)</option>
                 <option value="FLAT_VND">Số tiền giảm cố định (đ)</option>
-                <option value="FLAT_PRICE">Đồng giá (đ)</option>
+                {type !== "ORDER_DISCOUNT" && (
+                  <option value="FLAT_PRICE">Đồng giá (đ)</option>
+                )}
               </Select>
             </Field>
           </div>

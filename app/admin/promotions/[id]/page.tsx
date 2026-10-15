@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPromotionsData } from "@/app/admin/promotions/actions";
 import { resolveActor } from "@/lib/auth/auth";
-import { safeReturnTo } from "@/app/admin/promotions/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { formatNumber } from "@/lib/shared/format";
 import {
   PromotionDetailView,
@@ -62,8 +62,7 @@ export default async function PromotionDetailPage(
   }
 
   const rawReturnTo = safeReturnTo(
-    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined,
-  );
+    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/promotions");
   const returnTo = rawReturnTo.startsWith("/admin/promotions/")
     ? "/admin/promotions"
     : rawReturnTo;

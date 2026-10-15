@@ -95,4 +95,21 @@ describe("ProductCategoryForm product type", () => {
     render(<ProductCategoryForm types={TYPES} initialData={{ ...sampleCategory, type_id: "PT-002" }} />);
     expect((screen.getByLabelText(/^Loại món/) as HTMLSelectElement).value).toBe("PT-002");
   });
+
+  it("renders the optional Biểu tượng box with maxLength 8 and placeholder", () => {
+    render(<ProductCategoryForm types={TYPES} />);
+    const iconInput = screen.getByLabelText("Biểu tượng") as HTMLInputElement;
+    expect(iconInput).toBeInTheDocument();
+    expect(iconInput.name).toBe("icon");
+    expect(iconInput.placeholder).toBe("Ví dụ: ☕");
+    expect(iconInput.maxLength).toBe(8);
+    expect(iconInput.value).toBe("");
+  });
+
+  it("pre-fills Biểu tượng when editing", () => {
+    render(<ProductCategoryForm types={TYPES} initialData={{ ...sampleCategory, icon: "☕" }} />);
+    const iconInput = screen.getByLabelText("Biểu tượng") as HTMLInputElement;
+    expect(iconInput.value).toBe("☕");
+  });
 });
+

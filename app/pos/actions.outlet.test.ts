@@ -59,6 +59,8 @@ const baseCart = {
     manual_item_discount: { value: 0, type: "VND" as const },
   }],
   payment_method: "CASH" as const,
+  promotion_ids: [] as string[],
+  shown_total: 18000,
 };
 
 describe("submitOrderV2 outlet resolution", () => {
@@ -80,21 +82,31 @@ describe("submitOrderV2 outlet resolution", () => {
   it("rejects checkout with no outlet_id before any read", async () => {
     const result = await submitOrderV2({ ...baseCart, outlet_id: "" } as any);
 
-    expect(result).toEqual({ success: false, error: "Không xác định được điểm bán" });
+    expect(result).toEqual({ success: false, error: "Không xác định được điểm bán", retry: false });
     expect(mocks.findAll).not.toHaveBeenCalled();
   });
 
   it("rejects an unknown outlet_id", async () => {
     const result = await submitOrderV2({ ...baseCart, outlet_id: "OUT-DOES-NOT-EXIST" } as any);
 
-    expect(result).toEqual({ success: false, error: "Điểm bán không tồn tại" });
+    expect(result).toEqual({ success: false, error: "Điểm bán không tồn tại", retry: false });
     expect(mocks.savePosOrderAtomic).not.toHaveBeenCalled();
   });
 
   it("rejects an outlet that was stopped (F1, 2026-10-14 audit) before any write", async () => {
     const result = await submitOrderV2({ ...baseCart, outlet_id: OUTLET_STOPPED.id } as any);
 
-    expect(result).toEqual({ success: false, error: "Điểm bán này đã ngừng hoạt động" });
+    expect(result).toEqual({ success: false, error: "Điểm bán này đã ngừng hoạt động", retry: false });
+    expect(mocks.savePosOrderAtomic).not.toHaveBeenCalled();
+  });
+
+  it("refuses an order from an old till that sends no shown_total or promotion_ids, and tells it to reload", async () => {
+    const { shown_total: _s, ...noTotal } = baseCart;
+    const { promotion_ids: _p, ...noIds } = baseCart;
+    for (const cart of [noTotal, noIds]) {
+      const result = await submitOrderV2(cart as any);
+      expect(result).toEqual({ success: false, error: "Giá hoặc khuyến mãi đã thay đổi. Tải lại trang rồi bấm lại.", retry: false });
+    }
     expect(mocks.savePosOrderAtomic).not.toHaveBeenCalled();
   });
 

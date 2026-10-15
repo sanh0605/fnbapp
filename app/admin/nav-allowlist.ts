@@ -105,11 +105,6 @@ export const NAV_ALLOWLIST: AllowlistEntry[] = [
     reason: "reached from the users list -- legitimately unlinked",
   },
   {
-    route: "/admin/pos-sync",
-    reason:
-      "reached from the Tổng quan page (app/admin/page.tsx links it)",
-  },
-  {
     route: "/admin/clear-cache",
     reason:
       "left the menu 2026-09-29 (spec 2026-09-29-menu-va-khuon-trang-design.md section 2): saves already refresh cached data; kept as a fallback by URL",

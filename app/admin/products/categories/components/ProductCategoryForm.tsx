@@ -8,7 +8,7 @@ import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { TextInput } from "@/components/ui/TextInput";
 import { Alert } from "@/components/ui/Alert";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBProductCategory, DBProductType } from "@/types/db";
 
 interface ProductCategoryFormProps {
@@ -68,6 +68,15 @@ export function ProductCategoryForm({ initialData, types = [], returnTo: rawRetu
               required
               defaultValue={initialData?.name}
               example="Cà phê"
+            />
+          </Field>
+          <Field label="Biểu tượng" htmlFor={`${formId}-icon`}>
+            <TextInput
+              id={`${formId}-icon`}
+              name="icon"
+              maxLength={8}
+              defaultValue={initialData?.icon ?? ""}
+              placeholder="Ví dụ: ☕"
             />
           </Field>
           <Field label="Loại món" htmlFor={`${formId}-type_id`} required>

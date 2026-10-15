@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { findAll } from "@/lib/db/tables";
 import { resolveActor } from "@/lib/auth/auth";
 import { getCategoriesWithCounts } from "@/app/admin/products/categories/actions";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { ProductCategoryDetailView } from "./components/ProductCategoryDetailView";
 import type { DBProduct, DBProductType } from "@/types/db";
 
