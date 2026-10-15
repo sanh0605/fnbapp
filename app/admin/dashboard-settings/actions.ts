@@ -2,7 +2,7 @@
 
 import { findAll, findById, update } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/auth/auth";
+import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { ok, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { updateAudit } from "@/lib/finance/audit-columns";
@@ -31,8 +31,9 @@ function wholeNumber(raw: FormDataEntryValue | null, min: number, max: number): 
   return n >= min && n <= max ? n : null;
 }
 
+// Owner only: it shapes what the manager is measured on.
 export async function saveDashboardSettings(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
+  const auth = await requireOwner();
   if (!auth.ok) return { error: auth.error };
 
   const stale = wholeNumber(formData.get("stale_stocktake_days"), 1, 365);
@@ -48,8 +49,10 @@ export async function saveDashboardSettings(formData: FormData): Promise<ActionR
   try {
     if (foodIds.length > 0) {
       const products = (await findAll("Products")) as DBProduct[];
-      const known = new Set(products.map((p) => p.id));
-      if (foodIds.some((id) => !known.has(id))) return fieldError("food_product_ids", "Món không còn tồn tại");
+      const byId = new Map(products.map((p) => [p.id, p]));
+      if (foodIds.some((id) => !byId.has(id))) return fieldError("food_product_ids", "Món không còn tồn tại");
+      const stopped = foodIds.map((id) => byId.get(id)!).find((p) => p.status !== "ACTIVE");
+      if (stopped) return fieldError("food_product_ids", `Món ${stopped.name} không còn bán, bỏ chọn rồi lưu lại`);
     }
     if (toppingRaw) {
       const types = (await findAll("Product_Types")) as DBProductType[];

@@ -2,12 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
+  requireOwner: vi.fn(),
   findAll: vi.fn(),
   findById: vi.fn(),
   update: vi.fn(),
 }));
 
-vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
+vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireOwner }));
 vi.mock("@/lib/db/tables", () => ({ findAll: mocks.findAll, findById: mocks.findById, update: mocks.update }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
@@ -33,10 +34,11 @@ const valid = (over: Record<string, string> = {}) => {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.requireAdmin.mockResolvedValue({ ok: true, actor });
+  mocks.requireOwner.mockResolvedValue({ ok: true, actor });
   mocks.findById.mockResolvedValue(SETTINGS);
   mocks.findAll.mockImplementation(async (sheet: string) =>
     sheet === "Products"
-      ? [{ id: "PROD-028", name: "Trứng luộc" }, { id: "PROD-027", name: "Khoai lang" }]
+      ? [{ id: "PROD-028", name: "Trứng luộc", status: "ACTIVE" }, { id: "PROD-027", name: "Khoai lang", status: "ACTIVE" }]
       : [{ id: "PT-003", name: "Topping" }],
   );
 });
@@ -68,6 +70,24 @@ describe("saveDashboardSettings", () => {
     const res = await saveDashboardSettings(fd);
     expect(res.field).toBe("food_product_ids");
     expect(res.error).toBe("Món không còn tồn tại");
+  });
+
+  it("rejects a dish that is no longer sold, naming it", async () => {
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Products"
+        ? [{ id: "PROD-028", name: "Trứng luộc", status: "INACTIVE" }, { id: "PROD-027", name: "Khoai lang", status: "ACTIVE" }]
+        : [{ id: "PT-003", name: "Topping" }],
+    );
+    const res = await saveDashboardSettings(valid());
+    expect(res).toEqual({ error: "Món Trứng luộc không còn bán, bỏ chọn rồi lưu lại", field: "food_product_ids" });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("only the owner may save: a manager is refused and nothing is written", async () => {
+    mocks.requireOwner.mockResolvedValue({ ok: false, error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" });
+    const res = await saveDashboardSettings(valid());
+    expect(res).toEqual({ error: "Chỉ Chủ quán mới có quyền thực hiện thao tác này" });
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 
   it("rejects a topping type that does not exist, accepts empty as null", async () => {

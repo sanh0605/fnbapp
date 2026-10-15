@@ -22,7 +22,6 @@ function formatMonth(monthIso: string): string {
 
 export function DashboardView({ data }: { data: DashboardData }) {
   const hasAlerts =
-    (data.posSyncFailureCount || 0) > 0 ||
     (data.negativeStock && data.negativeStock.length > 0) ||
     Boolean(data.stocktake && data.stocktake.stale !== null) ||
     Boolean(data.stocktake && data.stocktake.openTooLong && data.stocktake.openTooLong.length > 0) ||
@@ -39,15 +38,6 @@ export function DashboardView({ data }: { data: DashboardData }) {
           <div className="text-sm text-text-muted">Không có gì cần xử lý</div>
         ) : (
           <div className="space-y-2">
-            {data.posSyncFailureCount > 0 && (
-              <Link
-                href="/admin/pos-sync"
-                className="block p-3 rounded-card border border-warning/30 bg-warning/10 text-text-primary hover:bg-warning/15 transition-colors"
-              >
-                <div>{data.posSyncFailureCount} đơn máy bán hàng gửi lại không được</div>
-              </Link>
-            )}
-
             {data.negativeStock && data.negativeStock.length > 0 && (
               <Link
                 href="/admin/inventory/items"

@@ -29,7 +29,7 @@ export function PnlSummary({ table }: { table: PnlTable }) {
   return (
     <section
       aria-label="Tóm tắt"
-      className={`hidden gap-3 md:grid md:grid-cols-2 ${summary.worstMonth ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}
+      className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${summary.worstMonth ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}
     >
       <Tile
         label={`Doanh thu ${rangeName}`}

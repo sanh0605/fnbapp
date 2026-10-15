@@ -7,6 +7,13 @@ tables:
 brCodes: BR-COGS-005, BR-COGS-007, BR-PNL-001, BR-PNL-002, BR-PNL-003, BR-PNL-004, BR-SALE-007, BR-CASH-009
 ```
 
+**Behaviour change — 2026-10-15 (Báo cáo area, `docs/superpowers/specs/2026-10-15-bao-cao-de-xuat.md`, `BR-UI-017`):**
+- **Doanh số** sits on the report frame. `getSalesDataV2` does all the counting: the pie groups by each line's group as sold, not today's group; the payment table counts payments ("Lượt thanh toán", total row "N lượt thanh toán của M đơn", `BR-SALE-013`); best sellers come split into Nước, Thức ăn and Topping. "Lọc" applies the brand and group picked; changing the range keeps only what was applied.
+- **Hàng đã xuất** takes a month range (default Năm nay), and its tabs keep it. Each month shows two lines, Hàng dùng and Hao hụt, which equal Giá vốn and Hao hụt on Lãi lỗ.
+- **Lãi lỗ** shows its summary on a phone too.
+- **Cài đặt Tổng quan:** a manager sees the settings but cannot save; the dish picker offers dishes in use only.
+- Every report counts one order the same way: completed and not replaced by an edit.
+
 **Behaviour change — 2026-10-14 (new Tổng quan, `BR-UI-007`):** `/admin` no longer has figure boxes, a date filter, comparison lines, the bar chart or Top 5.
 - **Top of the page: "Cần xử lý".** It lists:
   - orders the till failed to resend;
@@ -44,7 +51,7 @@ profit and loss at `/admin/reports/pnl`.
    only). The dashboard and the sales report put one compare line per earlier
    period under each figure card — the same days of the period before, and for a
    single day both the day before and the same weekday a week earlier. The
-   issued-goods report keeps its own tabs. Each screen also offers read-only
+   issued-goods report takes a month range (Năm nay) and keeps its own tabs. Each screen also offers read-only
    controls to sort or expand rows. There is no create, edit, delete, or export-that-writes button
    anywhere in this flow, because the flow writes nothing; any such button would be
    out of place and should never appear. The dashboard at `/admin` presents its

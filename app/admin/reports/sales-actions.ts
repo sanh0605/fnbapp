@@ -19,6 +19,14 @@ import {
   type PnLReportFilters,
 } from "./report-helpers";
 
+export interface BestSeller {
+  product_id: string;
+  name: string;
+  totalQty: number;
+  totalRevenue: number;
+  sizes: Record<string, number>;
+}
+
 export interface SalesReportResult {
   totalRevenue: number;
   totalOrders: number;
@@ -29,14 +37,15 @@ export interface SalesReportResult {
   manualItemDiscount: number;
   manualOrderDiscount: number;
   totalDiscount: number;
-  paymentBreakdown: Array<{ method: string; orderCount: number; revenue: number }>;
-  bestSellers: Array<{
-    product_id: string;
-    name: string;
-    totalQty: number;
-    totalRevenue: number;
-    sizes: Record<string, number>;
-  }>;
+  // One row per method; paymentCount counts payments, so a split order sits in two rows.
+  // paymentOrderCount is the number of orders those payments belong to.
+  paymentBreakdown: Array<{ method: string; paymentCount: number; revenue: number }>;
+  paymentOrderCount: number;
+  // Dishes (not toppings) split by the group written on the sold line: drink groups vs the rest.
+  bestDrinks: BestSeller[];
+  bestFoods: BestSeller[];
+  // Revenue by the line's own group name; toppings are one "Topping" row, a missing group is "Khác".
+  categorySales: Array<{ label: string; amount: number }>;
   bestToppings: Array<{
     modifier_id: string;
     name: string;
@@ -44,8 +53,6 @@ export interface SalesReportResult {
     revenue: number;
   }>;
   uniqueSizes: string[];
-  totalQtyBySize: Record<string, number>;
-  totalQtyAll: number;
   salesByDate: Array<{ label: string; amount: number }>;
   salesByMonth: Array<{ label: string; amount: number }>;
   salesByDayOfWeek: Array<{ label: string; amount: number }>;
@@ -80,7 +87,7 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
   try {
     const queryDateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
     const orders = await findCompletedOrders(queryDateRange, filters);
-    const [orderLines, orderPayments, modifiers, products, outlets] = await Promise.all([
+    const [orderLines, orderPayments, modifiers, outlets, categories, productTypes] = await Promise.all([
       findAllWhereInBatches(
         "Order_Lines_V2",
         "order_id",
@@ -92,8 +99,9 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
         orders.map(order => order.id),
       ),
       findAll("Modifiers"),
-      findAll("Products"),
       findAll("Outlets"),
+      findAll("Product_Categories"),
+      findAll("Product_Types"),
     ]);
 
     // Standalone topping -> linked modifier map, via modifiers.product_id
@@ -141,83 +149,85 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       rows.push(p);
       paymentsByOrder.set(p.order_id, rows);
     }
-    const paymentMap = new Map<string, { orderCount: number; revenue: number }>();
-    const methodsSeenPerOrder = new Set<string>();
+    const paymentMap = new Map<string, { paymentCount: number; revenue: number }>();
     for (const o of ordersForBreakdown) {
       for (const row of effectivePaymentRows(o, paymentsByOrder.get(o.id) || [])) {
-        const method = row.method;
-        if (!paymentMap.has(method)) paymentMap.set(method, { orderCount: 0, revenue: 0 });
-        const bucket = paymentMap.get(method)!;
+        const bucket = paymentMap.get(row.method) ?? { paymentCount: 0, revenue: 0 };
+        bucket.paymentCount += 1;
         bucket.revenue += Number(row.amount) || 0;
-        const dedupeKey = `${o.id}:${method}`;
-        if (!methodsSeenPerOrder.has(dedupeKey)) {
-          methodsSeenPerOrder.add(dedupeKey);
-          bucket.orderCount += 1;
-        }
+        paymentMap.set(row.method, bucket);
       }
     }
     const paymentBreakdown = Array.from(paymentMap.entries())
       .map(([method, v]) => ({ method, ...v }))
       .sort((a, b) => b.revenue - a.revenue);
 
-    const productRows = breakdownRevenueByProduct(typedOrders, typedLines);
     const canonicalModifiers = buildCanonicalModifierLookup(modifiers as any[]);
 
-    const bestSellersMap = new Map<string, any>();
+    // Group by the category written on the sold line (BR-SALE-002), never the dish's group today.
+    const typeIdOfCategory = new Map<string, string>((categories as any[]).map(c => [c.id, c.type_id]));
+    const drinkTypeIds = new Set((productTypes as any[]).filter(t => t.is_drink).map(t => t.id));
+    const categoryName = new Map<string, string>((categories as any[]).map(c => [c.id, c.name]));
+    const linesByCategory = new Map<string, OrderLineV2[]>();
+    for (const l of typedLines) {
+      const categoryOfLine = JSON.parse(l.product_snapshot_json || "{}").category_id || "";
+      const group = linesByCategory.get(categoryOfLine) ?? [];
+      group.push(l);
+      linesByCategory.set(categoryOfLine, group);
+    }
+
+    const drinksMap = new Map<string, BestSeller>();
+    const foodsMap = new Map<string, BestSeller>();
     const bestToppingsMap = new Map<string, any>();
+    const categoryRevenue = new Map<string, number>();
     const uniqueSizesSet = new Set<string>();
+    let toppingRevenue = 0;
 
-    for (const r of productRows) {
-      // Determine topping key: MOD-prefix (add-on) or standalone topping mapped via CAT-007 link
-      let toppingModId: string | null = null;
-      if (r.product_id.startsWith("MOD:")) {
-        toppingModId = r.product_id.replace("MOD:", "");
-      } else if (standaloneToppingToModId.has(r.product_id)) {
-        toppingModId = standaloneToppingToModId.get(r.product_id) || null;
-      }
+    for (const [lineCategoryId, groupLines] of linesByCategory) {
+      const sellersMap = drinkTypeIds.has(typeIdOfCategory.get(lineCategoryId) ?? "") ? drinksMap : foodsMap;
+      for (const r of breakdownRevenueByProduct(typedOrders, groupLines)) {
+        // Topping key: MOD-prefix (add-on) or standalone topping mapped via CAT-007 link
+        let toppingModId: string | null = null;
+        if (r.product_id.startsWith("MOD:")) {
+          toppingModId = r.product_id.replace("MOD:", "");
+        } else if (standaloneToppingToModId.has(r.product_id)) {
+          toppingModId = standaloneToppingToModId.get(r.product_id) || null;
+        }
 
-      if (toppingModId) {
-        const canonical = canonicalModifiers.byId.get(toppingModId)
-          || canonicalModifiers.byName.get(normalizeModifierName(r.product_name))
-          || { id: toppingModId, name: r.product_name };
-        if (!bestToppingsMap.has(canonical.id)) {
-          bestToppingsMap.set(canonical.id, { modifier_id: canonical.id, name: canonical.name, qty: 0, revenue: 0 });
-        }
-        const row = bestToppingsMap.get(canonical.id);
-        row.qty += r.qty;
-        row.revenue += r.revenue;
-      } else {
-        if (!bestSellersMap.has(r.product_id)) {
-          bestSellersMap.set(r.product_id, {
-            product_id: r.product_id,
-            name: r.product_name,
-            totalQty: 0,
-            totalRevenue: 0,
-            sizes: {},
-          });
-        }
-        const row = bestSellersMap.get(r.product_id);
-        row.totalQty += r.qty;
-        row.totalRevenue += r.revenue;
-        if (r.size_name) {
-          row.sizes[r.size_name] = (row.sizes[r.size_name] || 0) + r.qty;
-          uniqueSizesSet.add(r.size_name);
+        if (toppingModId) {
+          const canonical = canonicalModifiers.byId.get(toppingModId)
+            || canonicalModifiers.byName.get(normalizeModifierName(r.product_name))
+            || { id: toppingModId, name: r.product_name };
+          const row = bestToppingsMap.get(canonical.id) ?? { modifier_id: canonical.id, name: canonical.name, qty: 0, revenue: 0 };
+          row.qty += r.qty;
+          row.revenue += r.revenue;
+          bestToppingsMap.set(canonical.id, row);
+          toppingRevenue += r.revenue;
+        } else {
+          const row = sellersMap.get(r.product_id)
+            ?? { product_id: r.product_id, name: r.product_name, totalQty: 0, totalRevenue: 0, sizes: {} };
+          row.totalQty += r.qty;
+          row.totalRevenue += r.revenue;
+          if (r.size_name) {
+            row.sizes[r.size_name] = (row.sizes[r.size_name] || 0) + r.qty;
+            uniqueSizesSet.add(r.size_name);
+          }
+          sellersMap.set(r.product_id, row);
+          const label = categoryName.get(lineCategoryId) ?? "Khác";
+          categoryRevenue.set(label, (categoryRevenue.get(label) ?? 0) + r.revenue);
         }
       }
     }
 
-    const bestSellers = Array.from(bestSellersMap.values()).sort((a, b) => b.totalQty - a.totalQty);
+    const byQtyDesc = (a: BestSeller, b: BestSeller) => b.totalQty - a.totalQty;
+    const bestDrinks = Array.from(drinksMap.values()).sort(byQtyDesc);
+    const bestFoods = Array.from(foodsMap.values()).sort(byQtyDesc);
     const bestToppings = Array.from(bestToppingsMap.values()).sort((a, b) => b.qty - a.qty);
     const uniqueSizes = Array.from(uniqueSizesSet).sort();
-
-    const totalQtyBySize: Record<string, number> = {};
-    let totalQtyAll = 0;
-    for (const item of bestSellers) {
-      for (const [sz, q] of Object.entries(item.sizes)) {
-        totalQtyBySize[sz] = (totalQtyBySize[sz] || 0) + (q as number);
-        totalQtyAll += (q as number);
-      }
-    }
+    const categorySales = [
+      ...Array.from(categoryRevenue, ([label, amount]) => ({ label, amount: Math.round(amount) })),
+      ...(toppingRevenue ? [{ label: "Topping", amount: Math.round(toppingRevenue) }] : []),
+    ];
 
     // Time series (use typedOrders if no category, else filter orders to those containing lines)
     let timeSeriesOrders = typedOrders;
@@ -294,11 +304,12 @@ export async function getSalesDataV2(filters: PnLReportFilters = {}): Promise<Sa
       manualOrderDiscount,
       totalDiscount,
       paymentBreakdown,
-      bestSellers,
+      paymentOrderCount: ordersForBreakdown.length,
+      bestDrinks,
+      bestFoods,
+      categorySales,
       bestToppings,
       uniqueSizes,
-      totalQtyBySize,
-      totalQtyAll,
       salesByDate: sortMap(byDate),
       salesByMonth: sortMap(byMonth),
       salesByDayOfWeek,

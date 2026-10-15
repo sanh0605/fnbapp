@@ -1,7 +1,6 @@
-import { computeIssueCosting, computePeriodIssuedValue, type Purchase, type Issue } from "@/lib/costing/issue-costing";
+import { computeIssueCosting, computePeriodIssuedValueSplit, type Purchase, type Issue, type ClassifiedIssue } from "@/lib/costing/issue-costing";
 import { buildIssueCostingIssues } from "@/lib/costing/issue-costing-inputs";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
-import { toSaigonIsoString } from "@/lib/shared/datetime";
 
 // Plan G. Split out of app/admin/reports/issued/actions.ts (not defined
 // there) because that file is "use server" -- every export from a "use
@@ -19,11 +18,26 @@ export type IssuedItemFigure = {
   closingValueExact: number;
 };
 
-export function computeIssuedItemFigures(purchases: Purchase[], allIssues: Issue[]): IssuedItemFigure[] {
-  return computeIssueCosting(purchases, allIssues).map(r => ({
+// Without a range: everything issued so far. With one: what left inside it (the
+// engine's two-replay subtraction, per item); closing value is as of the range end.
+export function computeIssuedItemFigures(
+  purchases: Purchase[],
+  allIssues: Issue[],
+  startUtc: Date | null = null,
+  endUtc: Date | null = null,
+): IssuedItemFigure[] {
+  const through = computeIssueCosting(
+    purchases,
+    endUtc ? allIssues.filter(i => new Date(i.at).getTime() <= endUtc.getTime()) : allIssues,
+  );
+  const before = new Map(
+    (startUtc ? computeIssueCosting(purchases, allIssues.filter(i => new Date(i.at).getTime() < startUtc.getTime())) : [])
+      .map(r => [r.purchased_item_id, r]),
+  );
+  return through.map(r => ({
     purchasedItemId: r.purchased_item_id,
-    issuedQuantity: r.issued_quantity,
-    issuedValueExact: r.issued_value,
+    issuedQuantity: r.issued_quantity - (before.get(r.purchased_item_id)?.issued_quantity ?? 0),
+    issuedValueExact: r.issued_value - (before.get(r.purchased_item_id)?.issued_value ?? 0),
     closingValueExact: r.closing_value,
   }));
 }
@@ -175,72 +189,34 @@ export function computeIssuedEventFigures(
 
 export type IssuedMonthFigure = {
   yearMonth: string; // "YYYY-MM", Saigon calendar
-  valueExact: number;
+  costExact: number; // Hàng dùng: Lãi lỗ's Giá vốn line
+  shrinkageExact: number; // Hao hụt
 };
 
-function parseYearMonth(ym: string): { year: number; month: number } {
-  const [year, month] = ym.split("-").map(Number);
-  return { year, month }; // month is 1-indexed
-}
-
-function formatYearMonth(year: number, month: number): string {
-  return `${year}-${String(month).padStart(2, "0")}`;
-}
-
 function nextYearMonth(ym: string): string {
-  const { year, month } = parseYearMonth(ym);
-  return month === 12 ? formatYearMonth(year + 1, 1) : formatYearMonth(year, month + 1);
+  const [year, month] = ym.split("-").map(Number);
+  return month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, "0")}`;
 }
 
-function lastDayOfMonth(year: number, month: number): number {
-  // Date.UTC(year, month, 0) -- month here is 1-indexed, so this lands on
-  // day 0 of the month AFTER the one being measured, i.e. the last day of
-  // the target month. Plain UTC arithmetic, no timezone ambiguity.
-  return new Date(Date.UTC(year, month, 0)).getUTCDate();
-}
-
-// Tab "Theo tháng" (Plan G G5, reversing section 4's original "no period
-// filter"). One row per calendar month, in Asia/Saigon terms, from the
-// earliest month with a purchase or an issue through the current month --
-// zero months included, not hidden.
-//
-// Section 3 and 5 still hold: no second cost definition. Each month's value
-// comes from computePeriodIssuedValue, the same function
-// app/admin/reports/pnl-actions.ts already uses for getPnLDataV2's totalCOGS,
-// with Asia/Saigon month boundaries from toSaigonUtcRange (the same helper
-// that file uses for its own date filters) -- no hand-rolled timezone
-// arithmetic.
-//
-// Consecutive months' boundaries are adjacent by construction
-// (toSaigonUtcRange's end is 23:59:59.999, the next month's start is
-// 00:00:00.000 the same instant later), so every purchase/issue falls into
-// exactly one month and the months partition the full range with no gap and
-// no overlap -- which is what makes the section 5-style sum gate hold here
-// too: summed exactly, the months equal the exact grand total.
-export function computeIssuedMonthFigures(purchases: Purchase[], allIssues: Issue[]): IssuedMonthFigure[] {
-  const allTimestamps = [
-    ...purchases.map(p => new Date(p.at).getTime()),
-    ...allIssues.map(i => new Date(i.at).getTime()),
-  ];
-  if (allTimestamps.length === 0) return [];
-
-  const earliestYearMonth = toSaigonIsoString(new Date(Math.min(...allTimestamps))).slice(0, 7);
-  const currentYearMonth = toSaigonIsoString(new Date()).slice(0, 7);
-
-  const months: string[] = [];
-  for (let ym = earliestYearMonth; ym <= currentYearMonth; ym = nextYearMonth(ym)) {
-    months.push(ym);
+// Tab "Theo tháng": one row per whole Saigon month from fromMonth to toMonth ("YYYY-MM"),
+// zero months included. Each month is computePeriodIssuedValueSplit, the call Lãi lỗ makes
+// (lib/reports/profit-and-loss.ts), so Hàng dùng + Hao hụt equals its Giá vốn + Hao hụt.
+// Consecutive months' boundaries are adjacent (toSaigonUtcRange), so the months partition
+// the range with no gap and no overlap.
+export function computeIssuedMonthFigures(
+  purchases: Purchase[],
+  allIssues: ClassifiedIssue[],
+  fromMonth: string,
+  toMonth: string,
+): IssuedMonthFigure[] {
+  const figures: IssuedMonthFigure[] = [];
+  for (let ym = fromMonth; ym <= toMonth; ym = nextYearMonth(ym)) {
+    const [year, month] = ym.split("-").map(Number);
+    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const range = toSaigonUtcRange(`${ym}-01`, `${ym}-${String(lastDay).padStart(2, "0")}`)!;
+    const split = computePeriodIssuedValueSplit(purchases, allIssues, range.startUtc, range.endUtc);
+    figures.push({ yearMonth: ym, costExact: split.cost, shrinkageExact: split.shrinkage });
   }
-
-  const figures: IssuedMonthFigure[] = months.map(ym => {
-    const { year, month } = parseYearMonth(ym);
-    const startDate = `${ym}-01`;
-    const endDate = `${ym}-${String(lastDayOfMonth(year, month)).padStart(2, "0")}`;
-    const range = toSaigonUtcRange(startDate, endDate)!;
-    const valueExact = computePeriodIssuedValue(purchases, allIssues, range.startUtc, range.endUtc);
-    return { yearMonth: ym, valueExact };
-  });
-
   // Newest first -- matches the events tab.
   return figures.reverse();
 }

@@ -13,6 +13,9 @@ import { findAll, findAllNoCache } from "@/lib/db/tables";
 import { getIssuedValueReport } from "./actions";
 import liveSnapshot from "./__fixtures__/2026-08-13-live-snapshot.json";
 
+// Whole months June to September 2026: the snapshot's data all falls in August.
+const RANGE = { preset: "CUSTOM", start: "2026-06", end: "2026-09" } as const;
+
 beforeEach(() => {
   vi.clearAllMocks();
   requireAdminMock.mockResolvedValue({
@@ -32,6 +35,7 @@ describe("getIssuedValueReport", () => {
       if (sheet === "Purchase_Orders") return liveSnapshot.purchaseOrders;
       if (sheet === "Purchase_Order_Lines") return liveSnapshot.purchaseOrderLines;
       if (sheet === "Stock_Issues") return liveSnapshot.stockIssues;
+      if (sheet === "stocktake_sessions") return [];
       throw new Error(`unexpected findAllNoCache sheet: ${sheet}`);
     });
     (findAll as any).mockImplementation((sheet: string) => {
@@ -51,26 +55,26 @@ describe("getIssuedValueReport", () => {
   it("rejects an unauthenticated read before loading any data", async () => {
     requireAdminMock.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
 
-    await expect(getIssuedValueReport()).rejects.toThrow("Yêu cầu đăng nhập");
+    await expect(getIssuedValueReport(RANGE)).rejects.toThrow("Yêu cầu đăng nhập");
     expect(findAllNoCache).not.toHaveBeenCalled();
     expect(findAll).not.toHaveBeenCalled();
   });
 
   it("grand total: 35.616.236đ", async () => {
     mockLiveSnapshot();
-    const report = await getIssuedValueReport();
+    const report = await getIssuedValueReport(RANGE);
     expect(report.grandTotal).toBe(35_616_236);
   });
 
   it("50 purchased items carry a non-zero issued value", async () => {
     mockLiveSnapshot();
-    const report = await getIssuedValueReport();
+    const report = await getIssuedValueReport(RANGE);
     expect(report.items).toHaveLength(50);
   });
 
   it("largest item (Bột cà phê MR.PHIN Robusta Dak Mil): issued and closing value", async () => {
     mockLiveSnapshot();
-    const report = await getIssuedValueReport();
+    const report = await getIssuedValueReport(RANGE);
     const [largest] = report.items;
     expect(largest.name).toBe("Bột cà phê MR.PHIN Robusta Dak Mil");
     // Rounded to the nearest đồng at the display boundary (BR-DATA-005,
@@ -85,7 +89,7 @@ describe("getIssuedValueReport", () => {
 
   it("no item has a negative issued or closing value", async () => {
     mockLiveSnapshot();
-    const report = await getIssuedValueReport();
+    const report = await getIssuedValueReport(RANGE);
     for (const item of report.items) {
       expect(item.issuedValue).toBeGreaterThanOrEqual(0);
       expect(item.closingValue).toBeGreaterThanOrEqual(0);
@@ -94,7 +98,7 @@ describe("getIssuedValueReport", () => {
 
   it("tab 2 has one card per real stocktake session and per real issue slip -- 7 events (1 session + 6 slips), not 59 rows", async () => {
     mockLiveSnapshot();
-    const report = await getIssuedValueReport();
+    const report = await getIssuedValueReport(RANGE);
     expect(report.events).toHaveLength(7);
     expect(report.events.filter(e => e.kind === "STOCKTAKE")).toHaveLength(1);
     expect(report.events.filter(e => e.kind === "MANUAL")).toHaveLength(6);
@@ -107,7 +111,7 @@ describe("getIssuedValueReport", () => {
   // now comes from UOM_Conversions.base_unit instead.
   it("every item card carries a real (non-empty) unit label, not the blank default_unit_id would give", async () => {
     mockLiveSnapshot();
-    const report = await getIssuedValueReport();
+    const report = await getIssuedValueReport(RANGE);
     expect(report.items.length).toBeGreaterThan(0);
     for (const item of report.items) {
       expect(item.unitName).not.toBe("");
@@ -119,26 +123,30 @@ describe("getIssuedValueReport", () => {
 
   it(`stocktake card label carries no session code (CLAUDE.md "Nói chuyện với chủ quán": never read a code to the owner)`, async () => {
     mockLiveSnapshot();
-    const report = await getIssuedValueReport();
+    const report = await getIssuedValueReport(RANGE);
     const stocktakeEvent = report.events.find(e => e.kind === "STOCKTAKE")!;
     expect(stocktakeEvent.label).toBe("Kiểm kê định kỳ");
   });
 
-  // Plan G G5: tab "Theo tháng". June and July read 0đ -- shown, not
-  // hidden -- because nothing had been counted yet, not because nothing was
-  // used. August carries the whole rounded total.
-  it("tab 3 (by month): June and July read 0đ, August carries the rounded grand total", async () => {
+  // Tab "Theo tháng": June and July read 0đ -- shown, not hidden. The snapshot's one count
+  // has no session row here, so its shortage is Hao hụt (a session counts as shrinkage by default).
+  it("tab 3 (by month): every month of the range is a row; Hàng dùng + Hao hụt carries the rounded grand total", async () => {
     mockLiveSnapshot();
-    const report = await getIssuedValueReport();
-    const june = report.months.find(m => m.yearMonth === "2026-06");
-    const july = report.months.find(m => m.yearMonth === "2026-07");
-    const august = report.months.find(m => m.yearMonth === "2026-08");
+    const report = await getIssuedValueReport(RANGE);
+    expect(report.months.map(m => m.yearMonth)).toEqual(["2026-09", "2026-08", "2026-07", "2026-06"]);
+    const august = report.months.find(m => m.yearMonth === "2026-08")!;
+    expect(report.months.filter(m => m.yearMonth !== "2026-08").every(m => m.usedValue === 0 && m.shrinkageValue === 0)).toBe(true);
+    expect(august.usedValue + august.shrinkageValue).toBeGreaterThan(0);
+    expect(report.usedTotal + report.shrinkageTotal).toBeCloseTo(report.grandTotal, 0);
+    expect(report.grandTotal).toBe(35_616_236);
+  });
 
-    expect(june).toBeDefined();
-    expect(july).toBeDefined();
-    expect(june!.value).toBe(0);
-    expect(july!.value).toBe(0);
-    expect(august!.value).toBe(35_616_236);
+  it("a range that ends before the snapshot's data shows no items and no events", async () => {
+    mockLiveSnapshot();
+    const report = await getIssuedValueReport({ preset: "CUSTOM", start: "2026-06", end: "2026-07" });
+    expect(report.grandTotal).toBe(0);
+    expect(report.items).toEqual([]);
+    expect(report.events).toEqual([]);
   });
 });
 
@@ -155,6 +163,7 @@ describe("getIssuedValueReport leaves out equipment and items bought for immedia
         { id: "POL-900", purchase_order_id: "PO-900", purchased_item_id: "SPM-057", base_quantity: 10, subtotal: 10_000 },
         { id: "POL-901", purchase_order_id: "PO-900", purchased_item_id: "SPM-090", base_quantity: 1, subtotal: 500_000 },
       ];
+      if (sheet === "stocktake_sessions") return [];
       if (sheet === "Stock_Issues") return [
         { id: "ISS-00120", purchased_item_id: "SPM-057", issued_at: "2026-09-01T19:24:00Z", base_quantity: 1, source: "MANUAL", issue_slip_id: "ISL-00042" },
         { id: "ISS-00400", purchased_item_id: "SPM-090", issued_at: "2026-09-02T03:00:00Z", base_quantity: 1, source: "MANUAL", issue_slip_id: "ISL-00050" },
@@ -173,7 +182,7 @@ describe("getIssuedValueReport leaves out equipment and items bought for immedia
       return [];
     });
 
-    const report = await getIssuedValueReport();
+    const report = await getIssuedValueReport(RANGE);
 
     expect(report.grandTotal).toBe(0);
     expect(report.items).toEqual([]);

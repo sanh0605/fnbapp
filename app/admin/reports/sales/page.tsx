@@ -12,7 +12,6 @@ import { comparePeriods, compareLabel, percentChange } from "@/lib/reports/compa
 import { CompareLine } from "@/app/admin/reports/components/CompareLine";
 
 import ProductTable from "@/app/admin/reports/components/ProductTable";
-import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Table,
   TableHead,
@@ -23,9 +22,11 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import { OutletBreakdownSection } from "./OutletBreakdownSection";
-import { ChevronDown, AlertCircle } from "lucide-react";
+import { SalesByDaySection } from "./components/SalesByDaySection";
+import { PaymentBreakdownSection } from "./components/PaymentBreakdownSection";
+import { ChevronDown } from "lucide-react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function SalesReportPage(
   props: {
@@ -33,11 +34,10 @@ export default async function SalesReportPage(
   }
 ) {
   const searchParams = await props.searchParams;
-  const [brands, users, categories, productTypes] = await Promise.all([
+  const [brands, users, categories] = await Promise.all([
     findAll("Brands"),
     findAll("Users"),
     findAll("Product_Categories"),
-    findAll("Product_Types"),
   ]);
 
   const today = saigonToday();
@@ -76,30 +76,6 @@ export default async function SalesReportPage(
       : Promise.resolve([]),
   ]);
 
-  // Re-build category chart data
-  // getSalesDataV2 doesn't return category sales directly because it's tricky with product IDs.
-  // Let's compute it quickly from bestSellers.
-  // We map product_id -> category_id. But wait, we don't have products list loaded in getSalesDataV2?
-  // Let's load products to map category.
-  const products = await findAll("Products");
-  const categorySalesMap: Record<string, number> = {};
-  for (const item of data.bestSellers) {
-    const p = (products as any[]).find(x => x.id === item.product_id);
-    const catId = p?.category_id || "unknown";
-    categorySalesMap[catId] = (categorySalesMap[catId] || 0) + item.totalRevenue;
-  }
-  for (const t of data.bestToppings) {
-    categorySalesMap["topping"] = (categorySalesMap["topping"] || 0) + t.revenue;
-  }
-
-  const chartDataCategory = Object.entries(categorySalesMap).map(([catId, amount]) => {
-    const c = (categories as any[]).find(x => x.id === catId);
-    return {
-      label: c ? c.name : (catId === "topping" ? "Topping" : "Khác"),
-      amount: Math.round(amount)
-    };
-  });
-
   const {
     totalRevenue,
     totalOrders,
@@ -110,11 +86,12 @@ export default async function SalesReportPage(
     manualOrderDiscount,
     totalDiscount,
     paymentBreakdown,
-    bestSellers,
+    paymentOrderCount,
+    bestDrinks,
+    bestFoods,
+    categorySales,
     bestToppings,
     uniqueSizes,
-    totalQtyBySize,
-    totalQtyAll,
     salesByDate,
     salesByMonth,
     salesByDayOfWeek,
@@ -122,27 +99,19 @@ export default async function SalesReportPage(
     outletBreakdown,
   } = data;
 
-  const categoryTypeId = new Map<string, string>();
-  for (const c of categories) categoryTypeId.set(c.id, c.type_id);
-  const drinkTypeIds = new Set(productTypes.filter(t => t.is_drink).map(t => t.id));
-
-  const bestDrinks = bestSellers.filter(item => {
-    const p = (products as any[]).find(x => x.id === item.product_id);
-    const typeId = p?.category_id ? categoryTypeId.get(p.category_id) : undefined;
-    return Boolean(typeId && drinkTypeIds.has(typeId));
-  });
-
-  const bestFoods = bestSellers.filter(item => {
-    const p = (products as any[]).find(x => x.id === item.product_id);
-    const typeId = p?.category_id ? categoryTypeId.get(p.category_id) : undefined;
-    return !Boolean(typeId && drinkTypeIds.has(typeId));
-  });
-
   const totalToppingQty = bestToppings.reduce((s, t) => s + t.qty, 0);
   const totalToppingRevenue = bestToppings.reduce((s, t) => s + t.revenue, 0);
 
+  // Build heatmap lookup map once to avoid calling find inside 7x24 loops
+  const heatmapMap = new Map<string, { revenue: number; orderCount: number }>();
+  for (const c of heatmapData) {
+    heatmapMap.set(`${c.dayOfWeek}|${c.hour}`, c);
+  }
+  const maxRevenue = Math.max(...heatmapData.map((c) => c.revenue), 1);
+
   return (
     <div className="space-y-6">
+      {/* 1. Filter bar */}
       <SalesFilter
         brands={brands}
         // A client component: pass only what the staff filter reads, never password_hash (BR-ACCESS-002).
@@ -151,21 +120,10 @@ export default async function SalesReportPage(
         range={range}
         today={today}
         title="Doanh số"
-        subtitle="Phân tích hiệu quả kinh doanh theo thời gian (V2)."
+        subtitle="Phân tích hiệu quả kinh doanh theo thời gian."
       />
 
-      {/* Claude code — spec compliance: note COGS không áp dụng sales report (chỉ P&L) */}
-
-      {data.v2OrderCount === 0 && (
-        <div className="bg-warning-soft text-warning p-4 rounded-xl border border-warning/30 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
-          <div className="text-sm">
-            <strong>Lưu ý:</strong> Không có đơn hàng V2 nào trong khoảng thời gian này. Báo cáo bán hàng đã được chuyển sang dữ liệu V2 (từ 19/06/2026). Dữ liệu V1 cũ không còn hiển thị ở đây.
-          </div>
-        </div>
-      )}
-
-      {/* Stats Cards */}
+      {/* 2. Headline figures (R1 order: three headline cards with compare line and small lines) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
           <div className="text-sm font-medium text-text-secondary mb-1">Tổng doanh thu thuần</div>
@@ -188,7 +146,9 @@ export default async function SalesReportPage(
         </div>
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
           <div className="text-sm font-medium text-text-secondary mb-1">Tổng số đơn</div>
-          <div className="text-3xl font-bold text-text-primary">{totalOrders} <span className="text-sm font-normal text-text-secondary">đơn</span></div>
+          <div className="text-3xl font-bold text-text-primary">
+            {totalOrders} <span className="text-sm font-normal text-text-secondary">đơn</span>
+          </div>
           {current && previous.map((p, i) => (
             <div key={i} className="mt-1">
               <CompareLine
@@ -199,7 +159,7 @@ export default async function SalesReportPage(
           ))}
           {!categoryId && (
             <div className="text-xs text-text-muted mt-2">
-              {paymentBreakdown.map(p => `${p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}: ${p.orderCount}`).join(" • ")}
+              {paymentBreakdown.map(p => `${p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}: ${p.paymentCount}`).join(" • ")}
             </div>
           )}
         </div>
@@ -222,7 +182,25 @@ export default async function SalesReportPage(
         </div>
       </div>
 
-      {/* Discount + Payment breakdown (Claude code — Phase 5.2) */}
+      {/* 3. Three charts (sales by date/dow/hour/month and category pie chart) */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <SalesCharts 
+          salesByDate={salesByDate}
+          salesByDayOfWeek={salesByDayOfWeek}
+          salesByHour={salesByHour}
+          salesByMonth={salesByMonth}
+        />
+        <div className="xl:col-span-1">
+          <CategoryPieChart data={categorySales} />
+        </div>
+      </div>
+
+      {/* 4. Tables in R1 order: by day, by payment method, by outlet, by hour, top Nước / Thức ăn / Topping */}
+      
+      {/* 4.1 Table by day */}
+      <SalesByDaySection salesByDate={salesByDate} totalRevenue={totalRevenue} />
+
+      {/* 4.2 Table by payment method (+ Chi tiết giảm giá) */}
       {categoryId ? (
         <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
           <p className="text-sm text-text-muted">
@@ -230,8 +208,8 @@ export default async function SalesReportPage(
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 bg-surface-card rounded-card p-6 shadow-sm border border-border">
             <h3 className="font-bold text-text-primary text-base mb-3">Chi tiết giảm giá</h3>
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -260,43 +238,18 @@ export default async function SalesReportPage(
               </div>
             </dl>
           </div>
-          <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-            <h3 className="font-bold text-text-primary text-base mb-3">Doanh thu theo phương thức thanh toán</h3>
-            <Table>
-              <TableHead>
-                <TableHeaderCell>Phương thức</TableHeaderCell>
-                <TableHeaderCell>Số đơn</TableHeaderCell>
-                <TableHeaderCell>Doanh thu</TableHeaderCell>
-              </TableHead>
-              <TableBody>
-                {paymentBreakdown.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={3}>
-                      <div className="text-center py-4 text-text-muted">Không có dữ liệu</div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paymentBreakdown.map(p => (
-                    <TableRow key={p.method}>
-                      <TableCell>
-                        {p.method === "CASH" ? "Tiền mặt" : p.method === "BANK_TRANSFER" ? "Chuyển khoản" : p.method}
-                      </TableCell>
-                      <TableCell align="right">{p.orderCount}</TableCell>
-                      <TableCell align="right">{formatNumber(p.revenue)}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+          <div className="lg:col-span-2">
+            <PaymentBreakdownSection
+              title="Doanh thu theo phương thức thanh toán"
+              paymentBreakdown={paymentBreakdown}
+              paymentOrderCount={paymentOrderCount}
+              totalRevenue={totalRevenue}
+            />
           </div>
         </div>
       )}
 
- {/* Outlet breakdown (
-          section 6b). One dataset, two shapes -- cards below md, a table
- from md up:
-          CLAUDE.md "Viết code" forbids a horizontal table on a phone, not on
-          a desktop. */}
+      {/* 4.3 Table by outlet */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6">
         <h3 className="font-bold text-text-primary text-lg mb-1">Doanh thu theo Điểm bán</h3>
         <p className="text-sm text-text-secondary mb-4">
@@ -305,7 +258,7 @@ export default async function SalesReportPage(
         <OutletBreakdownSection outletBreakdown={outletBreakdown} />
       </div>
 
-      {/* Hourly Heatmap Section */}
+      {/* 4.4 Table by hour (Hourly Heatmap Section) */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6">
         <div className="mb-4">
           <h3 className="font-bold text-text-primary text-lg">Ma trận Doanh thu theo Giờ</h3>
@@ -383,45 +336,42 @@ export default async function SalesReportPage(
             </div>
 
             {/* Rows: DOW */}
-            {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map(day => {
-              const maxRevenue = Math.max(...heatmapData.map(c => c.revenue), 1);
-              return (
-                <div key={day} className="flex items-center h-11">
-                  <div className="w-16 shrink-0 text-sm font-semibold text-text-secondary">
-                    {day === "CN" ? "Chủ nhật" : `Thứ ${day.replace("T", "")}`}
-                  </div>
-                  <div className="flex-1 gap-1 h-full" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
-                    {Array.from({ length: 24 }, (_, i) => i).map(hour => {
-                      const cell = heatmapData.find(c => c.dayOfWeek === day && c.hour === hour) || { revenue: 0, orderCount: 0 };
-                      const opacity = maxRevenue > 0 ? (cell.revenue / maxRevenue) : 0;
-                      const scaledOpacity = opacity > 0 ? 0.08 + opacity * 0.87 : 0.03;
-                      
-                      return (
-                        <div
-                          key={hour}
-                          title={`${day}, ${hour}h: ${formatNumber(cell.revenue)} (${cell.orderCount} đơn)`}
-                          className="rounded-md border border-border/50 flex flex-col items-center justify-center transition-transform transition-shadow hover:scale-105 hover:shadow-sm cursor-pointer"
-                          style={{
-                            backgroundColor: cell.revenue > 0 ? `rgb(var(--color-primary-rgb) / ${scaledOpacity})` : 'var(--color-bg-page)',
-                            color: scaledOpacity > 0.5 ? '#ffffff' : 'var(--color-text-primary)',
-                          }}
-                        >
-                          {cell.revenue > 0 && (
-                            <span className="text-[10px] font-black leading-none truncate max-w-full px-0.5">
-                              {cell.revenue >= 1000000 
-                                ? formatCompact(cell.revenue, "tr") 
-                                : cell.revenue >= 1000 
-                                  ? `${Math.round(cell.revenue / 1000)}k` 
-                                  : cell.revenue}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+            {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map(day => (
+              <div key={day} className="flex items-center h-11">
+                <div className="w-16 shrink-0 text-sm font-semibold text-text-secondary">
+                  {day === "CN" ? "Chủ nhật" : `Thứ ${day.replace("T", "")}`}
                 </div>
-              );
-            })}
+                <div className="flex-1 gap-1 h-full" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
+                  {Array.from({ length: 24 }, (_, i) => i).map(hour => {
+                    const cell = heatmapMap.get(`${day}|${hour}`) || { revenue: 0, orderCount: 0 };
+                    const opacity = maxRevenue > 0 ? (cell.revenue / maxRevenue) : 0;
+                    const scaledOpacity = opacity > 0 ? 0.08 + opacity * 0.87 : 0.03;
+                    
+                    return (
+                      <div
+                        key={hour}
+                        title={`${day}, ${hour}h: ${formatNumber(cell.revenue)} (${cell.orderCount} đơn)`}
+                        className="rounded-md border border-border/50 flex flex-col items-center justify-center transition-transform transition-shadow hover:scale-105 hover:shadow-sm cursor-pointer"
+                        style={{
+                          backgroundColor: cell.revenue > 0 ? `rgb(var(--color-primary-rgb) / ${scaledOpacity})` : 'var(--color-bg-page)',
+                          color: scaledOpacity > 0.5 ? '#ffffff' : 'var(--color-text-primary)',
+                        }}
+                      >
+                        {cell.revenue > 0 && (
+                          <span className="text-[10px] font-black leading-none truncate max-w-full px-0.5">
+                            {cell.revenue >= 1000000 
+                              ? formatCompact(cell.revenue, "tr") 
+                              : cell.revenue >= 1000 
+                                ? `${Math.round(cell.revenue / 1000)}k` 
+                                : cell.revenue}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
         
@@ -438,23 +388,10 @@ export default async function SalesReportPage(
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8">
-        <SalesCharts 
-          salesByDate={salesByDate}
-          salesByDayOfWeek={salesByDayOfWeek}
-          salesByHour={salesByHour}
-          salesByMonth={salesByMonth}
-        />
-
-        {/* Category Pie Chart */}
-        <div className="xl:col-span-1">
-          <CategoryPieChart data={chartDataCategory} />
-        </div>
-      </div>
-
-      <div className="mt-8 grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <ProductTable title="Top sale - Nước" items={bestDrinks} uniqueSizes={uniqueSizes} />
-        <ProductTable title="Top sale - Thức ăn" items={bestFoods} uniqueSizes={uniqueSizes} />
+      {/* 4.5 Top Nước / Thức ăn / Topping */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <ProductTable title="Top món - Nước" items={bestDrinks} uniqueSizes={uniqueSizes} />
+        <ProductTable title="Top món - Thức ăn" items={bestFoods} uniqueSizes={uniqueSizes} />
 
         {/* Toppings Table */}
         <div className="xl:col-span-1 bg-surface-card rounded-card shadow-sm border border-border overflow-hidden flex flex-col">

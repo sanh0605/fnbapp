@@ -51,21 +51,8 @@ export interface PnLReportResult {
   manualIssueSlipCount: number;
 }
 
-// No page renders this anymore -- app/admin/reports/pnl/page.tsx was deleted
-// 2026-08-05 (Plan C Task 2b, owner decision).
-// The report is being redesigned as a real financial statement; this function
-// is kept on purpose, not orphaned:
-//   1. It is Plan C's own revenue gate -- June (22.157.000d) and July
-//      (18.661.000d) are read through it before and after every remaining
-//      task, including the deletions.
-//   2. It is the one figure this plan still trusts, after a hand-summed
-//      total proved wrong by about ten million dong on 2026-08-05.
-//   3. It is what the item-31 rebuild starts from.
-// Do not remove as dead code. scripts/audit-lock-bypass-history.ts and
-// scripts/verify-pnl-patterns.ts also call it directly, independent of any
-// page -- both fail silently until someone runs them by hand.
-// scripts/audit-admin-read-guards.test.ts also asserts this function
-// requires admin auth; that one fails loudly, in the suite, on removal.
+// The independent reference computation scripts/verify-pnl-monthly.ts checks Lãi lỗ against
+// (0 mismatches). No page renders it; scripts/verify-cogs.ts also reads it (Gate 2).
 export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLReportResult> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
@@ -106,7 +93,6 @@ export async function getPnLDataV2(filters: PnLReportFilters = {}): Promise<PnLR
     // 1. Filter orders: latest COMPLETED versions only
     const filteredOrders = (orders as any[]).filter(o => {
       if (o.status !== ORDER_STATUS.COMPLETED) return false;
-      if (o.superseded_by && o.superseded_by !== "") return false;
       if (!o.created_at) return false;
 
       if (dateRange) {

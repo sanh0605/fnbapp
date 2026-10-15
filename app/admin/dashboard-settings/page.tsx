@@ -6,14 +6,21 @@ import type { DBProduct } from "@/types/db";
 import { getDashboardSettings } from "./actions";
 import { DashboardSettingsForm } from "./components/DashboardSettingsForm";
 
+import { resolveActor } from "@/lib/auth/auth";
+
 export const dynamic = "force-dynamic";
 
 export default async function DashboardSettingsPage() {
-  const [settings, products, typeRows] = await Promise.all([
+  const [settings, products, typeRows, auth] = await Promise.all([
     getDashboardSettings(),
     findAll("Products") as Promise<DBProduct[]>,
     getProductTypes(),
+    resolveActor(),
   ]);
+
+  const isOwner = Boolean(
+    auth.ok && (auth.actor.role === "ADMIN" || auth.actor.role === "SYSTEM")
+  );
 
   const types = typeRows.map((r) => r.type);
 
@@ -47,6 +54,7 @@ export default async function DashboardSettingsPage() {
         settings={settings}
         products={products}
         types={types}
+        isOwner={isOwner}
       />
     </div>
   );

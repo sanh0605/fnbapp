@@ -61,9 +61,22 @@ describe("DashboardSettingsForm (plan 2026-10-14-tong-quan-moi, Hiện trạng i
     expect((screen.getByLabelText("Trứng luộc") as HTMLInputElement).name).toBe("food_product_ids");
   });
 
-  it("keeps a chosen dish that has since stopped selling", () => {
+  it("keeps a chosen dish that has since stopped selling and marks it as không còn bán", () => {
     render(<DashboardSettingsForm settings={{ ...SETTINGS, food_product_ids: ["PROD-090"] }} products={PRODUCTS} types={TYPES} />);
     expect((screen.getByLabelText("Bánh mì") as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByText(/không còn bán/)).toBeInTheDocument();
+  });
+
+  it("settings save hidden for a manager", () => {
+    render(<DashboardSettingsForm settings={SETTINGS} products={PRODUCTS} types={TYPES} isOwner={false} />);
+    expect(screen.queryByRole("button", { name: "Lưu" })).toBeNull();
+    expect(screen.getByText("Chỉ chủ quán sửa được mục này")).toBeInTheDocument();
+  });
+
+  it("inactive dish not offered if not already chosen", () => {
+    renderForm();
+    expect(screen.queryByLabelText("Bánh mì")).toBeNull();
+    expect(screen.queryByText(/Bánh mì/)).toBeNull();
   });
 
   it("chooses the topping column's type or Không hiện", () => {

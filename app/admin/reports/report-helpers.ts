@@ -18,7 +18,8 @@ export interface PnLReportFilters {
 }
 
 
-export function findCompletedOrders(
+// COMPLETED and not replaced by a later version: the one definition of a counted order.
+export async function findCompletedOrders(
   dateRange: ReturnType<typeof toSaigonUtcRange>,
   reportFilters: PnLReportFilters = {},
 ): Promise<any[]> {
@@ -35,7 +36,7 @@ export function findCompletedOrders(
     filters.gte = { created_at: dateRange.startUtc };
     filters.lte = { created_at: dateRange.endUtc };
   }
-  return findAllWhere("Orders_V2", filters);
+  return (await findAllWhere("Orders_V2", filters)).filter(o => !o.superseded_by);
 }
 
 // Same order set for the full Doanh số report and its compare cards.
@@ -45,7 +46,6 @@ export function selectSalesOrders(orders: any[], filters: PnLReportFilters): any
   const dateRange = toSaigonUtcRange(startDate, endDate);
   return orders.filter(o => {
     if (o.status !== ORDER_STATUS.COMPLETED) return false;
-    if (o.superseded_by && o.superseded_by !== "") return false;
     if (!o.created_at) return false;
     if (dateRange) {
       const d = new Date(o.created_at);
