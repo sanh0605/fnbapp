@@ -170,3 +170,5 @@ spread these in themselves, since the generic `createEntity`/`updateEntity`
 helpers in `lib/db/shared-actions.ts` only stamp `created_at`.
 
 > Measured against source: 2026-09-11.
+
+> Reviewed, no behaviour change — 2026-10-15: dead code removed (getCashEntries and summariseEntries, neither called).

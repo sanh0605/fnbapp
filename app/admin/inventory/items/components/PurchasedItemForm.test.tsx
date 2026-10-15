@@ -92,7 +92,7 @@ async function fireClick(el: Element) {
   });
 }
 
-// FormModal renders through ModalPortal, which mounts its children only
+// SearchableSelect renders through ModalPortal, which mounts its children only
 // after its own effect fires -- one extra tick beyond the triggering click.
 async function flush() {
   await act(async () => {

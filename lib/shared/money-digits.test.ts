@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  toMoneyDigits,
   groupThousands,
   caretAfterFormat,
   removeDigitAcrossDot,
@@ -8,34 +7,6 @@ import {
   normalizeNumberText,
   numberTextToValue,
 } from "./money-digits";
-
-describe("BR-CASH-005 toMoneyDigits", () => {
-  it("keeps only digits, dropping letters, dots, commas, dashes and spaces", () => {
-    expect(toMoneyDigits("150.000đ")).toBe("150000");
-    expect(toMoneyDigits("a")).toBe("");
-    expect(toMoneyDigits(".")).toBe("");
-    expect(toMoneyDigits(",")).toBe("");
-    expect(toMoneyDigits("-")).toBe("");
-    expect(toMoneyDigits(" ")).toBe("");
-  });
-
-  it("strips leading zeros", () => {
-    expect(toMoneyDigits("0")).toBe("");
-    expect(toMoneyDigits("00150")).toBe("150");
-  });
-
-  it("caps at 15 digits, staying under Number.MAX_SAFE_INTEGER", () => {
-    const sixteenDigits = "1234567890123456";
-    const result = toMoneyDigits(sixteenDigits);
-    expect(result).toBe("123456789012345");
-    expect(result.length).toBe(15);
-    expect(Number.isSafeInteger(Number(result))).toBe(true);
-  });
-
-  it("reads an existing entry's amount the same way", () => {
-    expect(toMoneyDigits("1728578")).toBe("1728578");
-  });
-});
 
 describe("BR-CASH-005 groupThousands", () => {
   it("commas every 3 digits from the right, pure string work", () => {

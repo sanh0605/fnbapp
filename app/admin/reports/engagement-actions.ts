@@ -1,7 +1,7 @@
 "use server";
 
-import { findAll, findAllWhereInBatches } from "@/lib/db/tables";
-import { ORDER_STATUS, coerceLineV2 } from "@/lib/sales/order-types";
+import { findAllWhereInBatches } from "@/lib/db/tables";
+import { coerceLineV2 } from "@/lib/sales/order-types";
 import { toSaigonUtcRange, saigonBucketKeys } from "@/lib/shared/report-time";
 import { requireAdmin } from "@/lib/auth/auth";
 import { findCompletedOrders, selectSalesOrders, filterLinesByCategory, type PnLReportFilters } from "./report-helpers";
@@ -68,89 +68,6 @@ export async function getHourlyHeatmapV2(filters: PnLReportFilters = {}): Promis
     // not in the plan's own list (found while re-deriving it). Rethrow
     // instead of a fabricated empty heatmap; app/error.tsx handles it.
     console.error("[getHourlyHeatmapV2]", err);
-    throw err;
-  }
-}
-
-export interface PromotionPerformanceRow {
-  promotion_id: string;
-  name: string;
-  code: string;
-  type: string;
-  appliedCount: number;
-  totalDiscount: number;
-  totalRevenue: number;
-}
-
-export async function getPromotionPerformanceV2(filters: PnLReportFilters = {}): Promise<PromotionPerformanceRow[]> {
-  const auth = await requireAdmin();
-  if (!auth.ok) throw new Error(auth.error);
-
-  try {
-    const dateRange = toSaigonUtcRange(filters.startDate, filters.endDate);
-    const [orders, promotions] = await Promise.all([
-      findCompletedOrders(dateRange, filters),
-      findAll("Promotions"),
-    ]);
-
-    const { startDate, endDate, brandId } = filters;
-    // Claude code — Phase 5.3: Asia/Saigon date bounds.
-    const filteredOrders = (orders as any[]).filter(o => {
-      if (o.status !== ORDER_STATUS.COMPLETED) return false;
-      if (o.superseded_by && o.superseded_by !== "") return false;
-      if (!o.created_at) return false;
-
-      if (dateRange) {
-        const d = new Date(o.created_at);
-        if (d < dateRange.startUtc || d > dateRange.endUtc) return false;
-      }
-      if (brandId && o.brand_id !== brandId) return false;
-
-      return true;
-    });
-
-    const perfMap = new Map<string, PromotionPerformanceRow>();
-    
-    for (const p of promotions as any[]) {
-      perfMap.set(p.id, {
-        promotion_id: p.id,
-        name: p.name || "(Không tên)",
-        code: p.code || "(Tự động)",
-        type: p.type || "PRODUCT_DISCOUNT",
-        appliedCount: 0,
-        totalDiscount: 0,
-        totalRevenue: 0,
-      });
-    }
-
-    for (const o of filteredOrders) {
-      if (!o.applied_promotion_id) continue;
-      const promoId = o.applied_promotion_id;
-      
-      let row = perfMap.get(promoId);
-      if (!row) {
-        row = {
-          promotion_id: promoId,
-          name: `Khuyến mãi #${promoId}`,
-          code: "",
-          type: "",
-          appliedCount: 0,
-          totalDiscount: 0,
-          totalRevenue: 0,
-        };
-        perfMap.set(promoId, row);
-      }
-      
-      row.appliedCount += 1;
-      row.totalDiscount += Number(o.promo_discount_total) || 0;
-      row.totalRevenue += Number(o.net_total) || 0;
-    }
-
-    return Array.from(perfMap.values()).filter(r => r.appliedCount > 0);
-  } catch (err: any) {
-    // not in the plan's own list (found while re-deriving it). Rethrow
-    // instead of a fabricated empty result; app/error.tsx handles it.
-    console.error("[getPromotionPerformanceV2]", err);
     throw err;
   }
 }

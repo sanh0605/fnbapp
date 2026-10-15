@@ -19,7 +19,7 @@ import {
 } from "@/lib/db/tables";
 import { getPnLDataV2 } from "./pnl-actions";
 import { getSalesDataV2, getSalesTotalsV2 } from "./sales-actions";
-import { getHourlyHeatmapV2, getPromotionPerformanceV2 } from "./engagement-actions";
+import { getHourlyHeatmapV2 } from "./engagement-actions";
 import { makeSuaDauStandaloneOrder, makeUCK000094MigratedOrder } from "@/lib/__tests__/fixtures";
 
 beforeEach(() => {
@@ -1388,30 +1388,6 @@ describe("getHourlyHeatmapV2", () => {
     (findAllWhere as any).mockRejectedValue(new Error("db down"));
 
     await expect(getHourlyHeatmapV2({ startDate: "2026-07-01", endDate: "2026-07-02" })).rejects.toThrow("db down");
-  });
-});
-
-// section 5: both required tests. The second guards against the fix
-// becoming "throw on empty" -- a different bug wearing the same diff.
-describe("getPromotionPerformanceV2", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    (findAllWhere as any).mockImplementation((sheet: string) => (
-      (findAllNoCache as any)(sheet)
-    ));
-  });
-
-  it("propagates the failure instead of returning a fabricated empty result", async () => {
-    (findAllWhere as any).mockRejectedValue(new Error("db down"));
-
-    await expect(getPromotionPerformanceV2({})).rejects.toThrow("db down");
-  });
-
-  it("a genuinely empty order/promotion history still resolves with [] and does not throw", async () => {
-    (findAllNoCache as any).mockResolvedValue([]);
-    (findAll as any).mockResolvedValue([]);
-
-    await expect(getPromotionPerformanceV2({})).resolves.toEqual([]);
   });
 });
 
