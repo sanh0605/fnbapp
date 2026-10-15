@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getAssetBands } from "../actions";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { BandDetailView } from "./components/BandDetailView";
 
 export const dynamic = "force-dynamic";

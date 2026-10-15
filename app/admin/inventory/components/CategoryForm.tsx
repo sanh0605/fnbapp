@@ -4,7 +4,7 @@ import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addItemCategory, updateItemCategory } from "@/app/admin/inventory/actions";
 import { alert } from "@/lib/shared/dialog";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";

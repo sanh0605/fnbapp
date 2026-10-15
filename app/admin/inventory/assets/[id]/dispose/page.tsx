@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getAssetItemDetail, findItemIdForAsset } from "@/app/admin/inventory/assets/actions";
 import { DisposeAssetForm } from "@/app/admin/inventory/assets/components/DisposeAssetForm";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 

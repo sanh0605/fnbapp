@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
@@ -381,6 +381,7 @@ describe("startStocktakeSession item list", () => {
 describe("getStocktakeSessionData package lines", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.findAllNoCache.mockResolvedValue([]);
     mocks.requireAdmin.mockResolvedValue({
       ok: true,
       actor: { id: "admin-1", name: "Admin", role: "ADMIN" },
@@ -419,7 +420,7 @@ describe("getStocktakeSessionData package lines", () => {
       return Promise.resolve([]);
     });
 
-    const result = await stocktakeActions.getStocktakeSessionData();
+    const result = await stocktakeActions.getStocktakeSessionData("STK-001");
 
     expect(result?.lines).toHaveLength(1);
     const line = result!.lines[0];
@@ -446,7 +447,7 @@ describe("getStocktakeSessionData package lines", () => {
       return Promise.resolve([]);
     });
 
-    const result = await stocktakeActions.getStocktakeSessionData();
+    const result = await stocktakeActions.getStocktakeSessionData("STK-001");
 
     expect(result?.lines[0].packageLines).toEqual([]);
   });
@@ -516,46 +517,6 @@ describe("reverseConfirmedStocktakeSession (Plan D D14, U1-U6)", () => {
     const result = await stocktakeActions.reverseConfirmedStocktakeSession("STK-004", "Đếm nhầm");
 
     expect(result.error).toContain("đang mở");
-  });
-});
-
-describe("getLastConfirmedStocktakeSession (Plan D D14)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
-  });
-
-  it("returns null when there is no confirmed session at all", async () => {
-    mocks.findAllWhere.mockResolvedValue([]);
-
-    await expect(stocktakeActions.getLastConfirmedStocktakeSession()).resolves.toBeNull();
-  });
-
-  it("reports whether an OPEN session currently blocks reversal (U4)", async () => {
-    mocks.findAllWhere.mockImplementation((table: string, opts: any) => {
-      if (table === "stocktake_sessions" && opts?.eq?.status === "CONFIRMED") {
-        return Promise.resolve([{
-          id: "STK-004",
-          confirmed_by_name: "Admin",
-          confirmed_at: "2026-08-09T10:00:00Z",
-          notes: "",
-        }]);
-      }
-      if (table === "stocktake_sessions" && opts?.eq?.status === "OPEN") {
-        return Promise.resolve([{ id: "STK-006" }]);
-      }
-      return Promise.resolve([]);
-    });
-
-    const result = await stocktakeActions.getLastConfirmedStocktakeSession();
-
-    expect(result).toEqual({
-      id: "STK-004",
-      confirmedByName: "Admin",
-      confirmedAt: "2026-08-09T10:00:00Z",
-      notes: "",
-      hasOpenSessionBlocking: true,
-    });
   });
 });
 
@@ -714,5 +675,112 @@ describe("confirming a stocktake after a late slip (BR-INV-017)", () => {
     expect(result.result?.recomputedLines).toEqual([
       { lineId: "SKL-00001", itemReference: "SPM-001", frozenQty: 10, recomputedQty: 8 },
     ]);
+  });
+});
+
+// Kiểm kê rebuild: list of sessions and the counting-screen data.
+// Prices: SPM-A 100đ/g (1.000 g for 100.000đ), SPM-B 50đ/unit (100 for 5.000đ).
+describe("stocktake list and session data", () => {
+  const tables = {
+    stocktake_sessions: [] as any[],
+    stocktake_lines: [] as any[],
+    Stock_Issues: [] as any[],
+  };
+  const line = (id: string, session: string, item: string, counted: number | null, book: number | null) =>
+    ({ id, session_id: session, item_reference: item, item_type: "PURCHASED_ITEM", counted_qty: counted, theoretical_at_count: book, counted_at: null });
+  const session = (id: string, status: string, extra: any = {}) =>
+    ({ id, status, created_by_name: "Admin", created_at: "2026-09-01T00:00:00Z", confirmed_at: null, confirmed_by_name: null, notes: "", ...extra });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-15T00:00:00Z"));
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+    tables.stocktake_sessions = []; tables.stocktake_lines = []; tables.Stock_Issues = [];
+    const noCache: Record<string, any[]> = {
+      Purchase_Orders: [{ id: "PO-1", status: "COMPLETED", transaction_date: "2026-07-01T00:00:00Z", created_at: "2026-07-01T00:00:00Z" }],
+      Purchase_Order_Lines: [
+        { id: "L-A", purchase_order_id: "PO-1", purchased_item_id: "SPM-A", base_quantity: 1000, subtotal: 100000 },
+        { id: "L-B", purchase_order_id: "PO-1", purchased_item_id: "SPM-B", base_quantity: 100, subtotal: 5000 },
+      ],
+    };
+    mocks.findAllNoCache.mockImplementation((t: string) => Promise.resolve(tables[t as keyof typeof tables] ?? noCache[t] ?? []));
+    mocks.findAllWhere.mockImplementation((t: string, opts: any) => {
+      const rows = (tables[t as keyof typeof tables] ?? []).filter((r: any) =>
+        Object.entries(opts?.eq ?? {}).every(([k, v]) => r[k] === v));
+      return Promise.resolve(rows);
+    });
+    mocks.findAll.mockImplementation((t: string) => Promise.resolve(({
+      Purchased_Items: [
+        { id: "SPM-A", name: "Bột A", item_category_id: "CAT-1", status: "ACTIVE" },
+        { id: "SPM-B", name: "Cốc B", item_category_id: "CAT-2", status: "ACTIVE" },
+      ],
+      Item_Categories: [{ id: "CAT-1", name: "Nguyên liệu" }, { id: "CAT-2", name: "Vật tư tiêu hao" }],
+      Units: [{ id: "U-G", name: "g" }],
+      UOM_Conversions: [],
+    } as Record<string, any[]>)[t] ?? []));
+  });
+  afterEach(() => { vi.useRealTimers(); });
+
+  it("open session: value is quantity off x today's unit cost, short and found apart, blanks ignored", async () => {
+    tables.stocktake_sessions = [session("STK-002", "OPEN")];
+    tables.stocktake_lines = [
+      line("L1", "STK-002", "SPM-A", 800, 1000),  // short 200 g x 100 = 20.000
+      line("L2", "STK-002", "SPM-B", 103, 100),   // found 3 x 50 = 150
+      line("L3", "STK-002", "SPM-B", null, null), // blank
+    ];
+    const [row] = await stocktakeActions.listStocktakeSessions();
+    expect(row).toMatchObject({ id: "STK-002", status: "OPEN", countedLines: 2, totalLines: 3, shortValue: 20000, foundValue: 150, isLatestConfirmed: false });
+  });
+
+  it("reversed session has no value; only the newest confirmed one is the latest; newest code first", async () => {
+    tables.stocktake_sessions = [
+      session("STK-001", "CONFIRMED", { confirmed_at: "2026-08-09T15:02:00Z", confirmed_by_name: "Chủ" }),
+      session("STK-002", "REVERSED", { confirmed_at: "2026-08-20T00:00:00Z" }),
+      session("STK-003", "CONFIRMED", { confirmed_at: "2026-09-10T00:00:00Z", confirmed_by_name: "Chủ" }),
+    ];
+    tables.stocktake_lines = [line("L1", "STK-002", "SPM-A", 800, 1000)];
+    const rows = await stocktakeActions.listStocktakeSessions();
+    expect(rows.map(r => r.id)).toEqual(["STK-003", "STK-002", "STK-001"]);
+    expect(rows.map(r => r.isLatestConfirmed)).toEqual([true, false, false]);
+    expect(rows[1]).toMatchObject({ shortValue: null, foundValue: null });
+  });
+
+  it("confirmed session: value is what the costing engine booked for its rows, short and found not netted", async () => {
+    tables.stocktake_sessions = [session("STK-001", "CONFIRMED", { confirmed_at: "2026-08-09T15:02:00Z", confirmed_by_name: "Chủ" })];
+    tables.stocktake_lines = [line("L1", "STK-001", "SPM-A", 800, 1000), line("L2", "STK-001", "SPM-B", 103, 100)];
+    tables.Stock_Issues = [
+      { id: "ISS-1", purchased_item_id: "SPM-A", issued_at: "2026-08-09T15:02:00Z", base_quantity: 200, source: "STOCKTAKE", session_id: "STK-001" },
+      { id: "ISS-2", purchased_item_id: "SPM-B", issued_at: "2026-08-09T15:02:00Z", base_quantity: -3, source: "STOCKTAKE", session_id: "STK-001" },
+    ];
+    const [row] = await stocktakeActions.listStocktakeSessions();
+    expect(row).toMatchObject({ status: "CONFIRMED", shortValue: 20000, foundValue: 150, isLatestConfirmed: true });
+  });
+
+  it("session data: BLANK for no count, OFF for 0 against a book, MATCH when equal; grouped by category with unit cost", async () => {
+    tables.stocktake_sessions = [session("STK-002", "OPEN")];
+    tables.stocktake_lines = [
+      line("L1", "STK-002", "SPM-A", null, null),
+      line("L2", "STK-002", "SPM-A", 0, 1000),
+      line("L3", "STK-002", "SPM-B", 100, 100),
+    ];
+    const data = await stocktakeActions.getStocktakeSessionData("STK-002");
+    const byId = Object.fromEntries(data!.lines.map(l => [l.id, l]));
+    expect(byId.L1).toMatchObject({ state: "BLANK", groupName: "Nguyên liệu", unitCost: 100, diffValue: null });
+    expect(byId.L2).toMatchObject({ state: "OFF", theoreticalAtCount: 1000, diffValue: -100000 });
+    expect(byId.L3).toMatchObject({ state: "MATCH", groupName: "Vật tư tiêu hao", unitCost: 50, diffValue: 0 });
+  });
+
+  it("session data: carries who confirmed and when; null while still open", async () => {
+    tables.stocktake_sessions = [
+      session("STK-001", "CONFIRMED", { confirmed_at: "2026-08-09T15:02:00Z", confirmed_by_name: "Chủ" }),
+      session("STK-002", "OPEN"),
+    ];
+    expect(await stocktakeActions.getStocktakeSessionData("STK-001")).toMatchObject({ confirmedAt: "2026-08-09T15:02:00Z", confirmedByName: "Chủ" });
+    expect(await stocktakeActions.getStocktakeSessionData("STK-002")).toMatchObject({ confirmedAt: null, confirmedByName: null });
+  });
+
+  it("session data: null for an unknown id", async () => {
+    await expect(stocktakeActions.getStocktakeSessionData("STK-999")).resolves.toBeNull();
   });
 });

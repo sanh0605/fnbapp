@@ -11,7 +11,7 @@ import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { confirm } from "@/lib/shared/dialog";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBPurchasedItem, DBUOMConversion, DBItemCategory, DBUnit } from "@/types/db";
 
 // Batch 1, item B: the part of handleSubmit that decides what goes into

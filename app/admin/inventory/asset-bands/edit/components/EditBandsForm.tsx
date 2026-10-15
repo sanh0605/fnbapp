@@ -14,7 +14,7 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { saveAssetBands } from "../../actions";
 import type { DBAssetDepreciationBand } from "@/types/db";
 

@@ -4,7 +4,7 @@ import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addUnit, updateUnit } from "@/app/admin/inventory/actions";
 import { alert } from "@/lib/shared/dialog";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Button } from "@/components/ui/Button";

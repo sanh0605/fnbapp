@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getAssetItemDetail, findItemIdForAsset } from "../actions";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { AssetItemDetailView } from "./components/AssetItemDetailView";
 
 export const dynamic = "force-dynamic";

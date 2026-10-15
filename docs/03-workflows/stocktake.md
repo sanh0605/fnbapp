@@ -1,11 +1,13 @@
 # Stocktake flow
 
 ```flow-decl
-routes: /admin/inventory/stocktake, /admin/inventory/stocktake/[id], /admin/inventory/stocktake/[id]/edit
+routes: /admin/inventory/stocktake, /admin/inventory/stocktake/[id], /admin/inventory/stocktake/[id]/edit, /admin/inventory/stocktake/[id]/cancel
 files: lib/stock/stocktake-transaction.ts
 tables: stocktake_sessions, stocktake_lines, stock_issues
-brCodes: BR-INV-007, BR-COGS-007, BR-INV-010, BR-INV-011, BR-INV-012
+brCodes: BR-INV-007, BR-COGS-007, BR-INV-010, BR-INV-011, BR-INV-012, BR-INV-022
 ```
+
+**Behaviour change — 2026-10-15 (Kiểm kê rebuilt, `BR-INV-022`):** `/admin/inventory/stocktake` lists every session (code, time, state, lines counted, shortfall and found value apart, "tạm tính" while open); `/[id]` is the counting screen for an open session (tabs Tất cả / Chưa đếm / Lệch / Khớp, accent-blind search, lines grouped by Phân loại hàng) and the detail page otherwise; undoing is the page `/[id]/cancel`, no popup. Phiếu xuất no longer lists stocktake rows. The six database functions are unchanged; `getLastConfirmedStocktakeSession` is removed.
 
 **Behaviour change — 2026-10-15 (Kho đợt 1, K1):** the stocktake actions' refusals are in Vietnamese (counts changed since the preview, no preview yet, another count already open). Migration `0122` (ran on the server 2026-10-15, owner approved) makes editing a confirmed count refuse a change that would leave an item below zero on any day after the count, using `issue_stock_headroom`.
 
@@ -44,15 +46,13 @@ function called from `lib/stock/stocktake-transaction.ts`.
    cancelled by the owner or a manager, which deletes it and its counted lines
    outright; no cancelled state is kept (`BR-INV-010`).
 
-2. **Buttons per screen, and when to hide them.** The stocktake screen at
-   `/admin/inventory/stocktake` has a button to start (open) a new session, entry
-   fields to record the counted quantity per material while a session is open, and a
-   button to close the session. The close button should not be available until a
-   session is open, and starting a new session should not be offered while one is
-   still open — the two states are mutually exclusive, so only the button matching
-   the current state should show. A confirmed session's own page at
-   `/admin/inventory/stocktake/[id]` lists its lines and shows a Sửa button only to the
-   owner, only while editing is allowed; otherwise the owner sees one grey line saying
+2. **Buttons per screen, and when to hide them.** The list at
+   `/admin/inventory/stocktake` has "Tạo phiên kiểm kê", disabled with the open
+   session's code and a link while one is open. An open session's page
+   `/admin/inventory/stocktake/[id]` holds the count boxes, "Xem trước" then an
+   inline yes/no "Xác nhận", and "Huỷ phiên" (inline yes/no). A confirmed session's own page at
+   `/admin/inventory/stocktake/[id]` lists its lines and shows "Sửa số đếm" and "Hoàn tác"
+   (to the page `/[id]/cancel`) only to the owner, only on the newest confirmed session; otherwise the owner sees one grey line saying
    why. The edit page has one number box per line, Lưu and Bỏ, no reason box and no
    confirmation popup.
 

@@ -33,9 +33,9 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
 - **Where the change lands (1b).** Editing a counted quantity on a confirmed stocktake rewrites that count's shortfall or found-goods row **on the count's own date**, not today. The owner was told beforehand that this means a month's cost of goods, and so its profit report, changes after he may already have read it. This is a deliberate exception to the "corrections land today" pattern of `BR-INV-009`, and applies to stocktakes and, since 2026-09-29, to quantity changes in an issue slip's "Chỉnh sửa" (`BR-INV-013`).
 - **Who may edit (2a).** The owner only — `requireOwner()`, the same guard as undoing a confirmed stocktake, and for the same reason: the person being checked must not be able to change the check.
-- **Where a shortfall shows (3a).** A stocktake shortfall appears in the issue-slip list alongside ordinary slips, labelled "Kiểm kê". Opening it opens the stocktake; it carries no cancel button there. It stays a separate source (`STOCKTAKE`) for cost purposes, so `BR-COGS-007`'s split of cost of goods from loss is unchanged.
+- **Where a shortfall shows (3a).** *Superseded 2026-10-15 by `BR-INV-022`: stocktake rows show only on the Kiểm kê page.* A stocktake shortfall appears in the issue-slip list alongside ordinary slips, labelled "Kiểm kê". Opening it opens the stocktake; it carries no cancel button there. It stays a separate source (`STOCKTAKE`) for cost purposes, so `BR-COGS-007`'s split of cost of goods from loss is unchanged.
 - **How that row behaves** (owner 2026-09-29, *"1A 2A 3A"*, answered with STK-001 as the example: 49 items short, none found):
-  - No separate issue slip (no `ISL-` code) is created for a shortfall. The list row is the stocktake itself (`STK-…`), so nothing is recorded twice. It leaves the list only when the stocktake is undone.
+  - *The list placement in this bullet is superseded by `BR-INV-022` (2026-10-15); the rest stands.* No separate issue slip (no `ISL-` code) is created for a shortfall. The list row is the stocktake itself (`STK-…`), so nothing is recorded twice. It leaves the list only when the stocktake is undone.
   - A stocktake that found only surplus and nothing short does not appear in the issue-slip list. Found goods are seen on the stocktake page.
   - When a stocktake has both, the row's value is the shortfall only; found goods are not netted against it.
 
@@ -66,7 +66,7 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
 ### BR-INV-022 — The count list is grouped by Phân loại hàng, and stocktake rows live on the Kiểm kê page, not in Phiếu xuất
 
-**Status:** `APPROVED` — owner 2026-10-15, Kho area audit questions Q8 and Q9. Not built yet: the Kiểm kê rebuild (`docs/superpowers/specs/2026-10-15-kho-de-xuat.md`).
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit questions Q8 and Q9. Built 2026-10-15 on the branch `feat/khuon-chung-ban-hang-kho`, not yet pushed (`docs/superpowers/specs/2026-10-15-kiem-ke-design.md`): a list of sessions, a counting screen grouped by category with tabs, undo as the page `/admin/inventory/stocktake/[id]/cancel`. Checked before building: the Hàng đã xuất report reads stock issue rows itself and keeps them.
 
 - **Grouping** (Q8, *"Theo loại hàng"*): the items to count are grouped under their existing category. Measured that day: Nguyên liệu 50 items and Vật tư tiêu hao 19. He chose this over a new list of places in the shop, which would need a new page and 69 items assigned by hand.
 - **Where count differences show** (Q9, *"Chỉ ở trang Kiểm kê"*): once Kiểm kê has its own list, the Phiếu xuất list shows only slips staff wrote. `STK-001`'s 49 difference rows show on the Kiểm kê page. Stock and Giá vốn do not change. Before building, check that the "Hàng đã xuất" report does not lose those rows.

@@ -58,16 +58,15 @@ const defaultPageData: IssueSlipListPage = {
 };
 
 describe("IssueSlipsClient", () => {
-  it("hiện đúng nhãn ba loại và bấm dòng STK đi /admin/inventory/stocktake", () => {
+  it("hiện đúng nhãn hai loại, không còn nhãn Kiểm kê", () => {
     const pageData: IssueSlipListPage = {
       ...defaultPageData,
       rows: [
         { id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", reason: "Hư hỏng", dateText: "29/09", createdByName: "admin", value: 100 },
-        { id: "STK-01", href: "/admin/inventory/stocktake", kind: "STOCKTAKE", reason: "", dateText: "28/09", createdByName: "admin", value: 50 },
         { id: "ISL-02", href: "/admin/inventory/issue-slips/ISL-02", kind: "CANCELLED", reason: "Sai sót", dateText: "27/09", createdByName: "admin", value: 0 },
       ],
-      total: 3,
-      lastIndex: 3,
+      total: 2,
+      lastIndex: 2,
       firstIndex: 1,
     };
     render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={pageData} />);
@@ -77,22 +76,18 @@ describe("IssueSlipsClient", () => {
 
     // Should render badges for desktop table (1x each)
     expect(tableScope.getAllByText("Phiếu xuất")).toHaveLength(1);
-    expect(tableScope.getAllByText("Kiểm kê")).toHaveLength(1);
+    expect(tableScope.queryByText("Kiểm kê")).toBeNull();
     expect(tableScope.getAllByText("Đã huỷ")).toHaveLength(1);
-
-    // Desktop uses sr-only text "Xem chi tiết STK-01" for the link covering the row
-    const deskLink = tableScope.getByRole("link", { name: "Xem chi tiết STK-01" });
-    expect(deskLink.getAttribute("href")).toBe("/admin/inventory/stocktake");
   });
 
-  it("Loại có đúng bốn lựa chọn", () => {
+  it("Loại có đúng ba lựa chọn", () => {
     render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={defaultPageData} />);
     const typeSelect = screen.getByLabelText("Loại");
     const options = Array.from(typeSelect.querySelectorAll("option"));
     
-    expect(options).toHaveLength(4);
-    expect(options.map(o => o.textContent)).toEqual(["Tất cả", "Phiếu xuất", "Kiểm kê", "Đã huỷ"]);
-    expect(options.map(o => o.getAttribute("value"))).toEqual(["ALL", "SLIP", "STOCKTAKE", "CANCELLED"]);
+    expect(options).toHaveLength(3);
+    expect(options.map(o => o.textContent)).toEqual(["Tất cả", "Phiếu xuất", "Đã huỷ"]);
+    expect(options.map(o => o.getAttribute("value"))).toEqual(["ALL", "SLIP", "CANCELLED"]);
   });
 
   // BR-UI-003 / BR-UI-005 and Review Focus 4 (wave K3).
@@ -101,7 +96,7 @@ describe("IssueSlipsClient", () => {
       ...defaultPageData,
       rows: [
         { id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", reason: "Hư hỏng", dateText: "29/09", createdByName: "admin", value: 100 },
-        { id: "STK-01", href: "/admin/inventory/stocktake", kind: "STOCKTAKE", reason: "", dateText: "28/09", createdByName: "admin", value: 50 },
+        { id: "ISL-03", href: "/admin/inventory/issue-slips/ISL-03", kind: "SLIP", reason: "Hết hạn", dateText: "28/09", createdByName: "admin", value: 50 },
       ],
       total: 2,
       firstIndex: 1,
@@ -120,7 +115,7 @@ describe("IssueSlipsClient", () => {
       }
     });
 
-    it("a slip row opens with returnTo carrying the active filter; the stocktake row is unchanged", () => {
+    it("a slip row opens with returnTo carrying the active filter", () => {
       searchParams.set("kind", "SLIP");
       searchParams.set("page", "2");
       render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
@@ -129,7 +124,6 @@ describe("IssueSlipsClient", () => {
       const url = new URL(slip, "http://x");
       expect(url.pathname).toBe("/admin/inventory/issue-slips/ISL-01");
       expect(url.searchParams.get("returnTo")).toBe("/admin/inventory/issue-slips?kind=SLIP&page=2");
-      expect(table.getByRole("link", { name: "Xem chi tiết STK-01" }).getAttribute("href")).toBe("/admin/inventory/stocktake");
     });
 
     it("the phone list is cards, one per row, with no table", () => {
@@ -138,7 +132,7 @@ describe("IssueSlipsClient", () => {
       expect(phone).toBeTruthy();
       expect(phone.querySelector("table")).toBeNull();
       expect(phone.textContent).toContain("ISL-01");
-      expect(phone.textContent).toContain("STK-01");
+      expect(phone.textContent).toContain("ISL-03");
     });
   });
 
