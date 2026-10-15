@@ -47,7 +47,7 @@ Ví dụ: tuỳ chọn Dâu sấy `MOD-007` đổi từ `DELETED` sang `INACTIVE
 - [ ] Test trước: `deleteModifierAction` với tuỳ chọn chưa bán → xoá hẳn, chỉ chủ quán (vai khác bị từ chối); đã bán → từ chối "Tuỳ chọn {tên} đã có trong đơn; chọn Ngừng dùng thay vì xoá."; không bao giờ ghi `DELETED`. `deleteProductCategory` → xoá hẳn, chỉ chủ quán. Nêu rõ đỏ vì giá trị sai hay thiếu hàm.
 - [ ] Sửa hai hàm; gỡ `softDeleteEntity` nếu không còn ai gọi.
 - [ ] Nếu tuỳ chọn chưa có hàm đổi `ACTIVE`/`INACTIVE` thì thêm `setModifierStatus(formData)` cùng kiểu `setSupplierStatus` (Kho bước 4); có rồi thì dùng lại.
-- [ ] Script `scripts/retire-deleted-leftovers.ts` theo skill `fnbapp-bulk-data-change`: `MOD-007` → `INACTIVE`; `U-001` → `INACTIVE`, tên "gram (cũ)". Chạy thử in 2 dòng; chưa `--apply`.
+- [ ] Script `scripts/retire-deleted-leftovers.ts` theo skill `fnbapp-bulk-data-change`: xoá hẳn hai dòng `MOD-007` và `U-001` (chủ quán 2026-10-15 "Xoá hẳn"), chỉ khi chưa bán và không nơi nào tham chiếu. Chạy thử in 2 dòng; chưa `--apply`.
 - [ ] Migration `supabase/migrations/0125_drop_deleted_status.sql`: với từng luật trong 13, đọc định nghĩa hiện tại, viết lại không có `DELETED`. Chưa chạy. Test chữ migration trong `tests/migrations/` canh 13 luật.
 - [ ] Bỏ các bộ lọc `!== "DELETED"`, `=== "DELETED"`, `DELETED_` trong code máy chủ và trang (`page.tsx`, `actions.ts`, `lib/`); giữ đúng nghĩa ở `standalone-topping-links.ts` (câu 6).
 - [ ] `npx tsc --noEmit`, `npx vitest run`. Không commit.
