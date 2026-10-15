@@ -32,6 +32,10 @@ describe("0131: disposal proceeds", () => {
     expect(sql).toContain("on conflict (id) do nothing");
   });
 
+  it("ends with a check that fails loudly when no group carries the flag", () => {
+    expect(sql).toMatch(/do \$\$[\s\S]*not exists \(select 1 from public\.cash_categories where is_asset_disposal\)[\s\S]*raise exception[\s\S]*\$\$;\s*$/);
+  });
+
   it("dispose_asset_atomic is security definer, fixed search_path, service_role only", () => {
     expect(sql).toMatch(/security definer\s+set search_path to 'public'/);
     expect(sql).toMatch(/revoke all on function public\.dispose_asset_atomic\([^)]*\) from public, anon, authenticated;/);

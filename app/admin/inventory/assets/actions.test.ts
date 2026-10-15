@@ -282,6 +282,11 @@ describe("disposeAsset -- section 3.3", () => {
       mocks.findAllNoCache.mockImplementation(findAllMockFor([CA_DONG], []));
     });
 
+    it("stores no reason as null, not an empty string", async () => {
+      await disposeAsset(fd({ ...base, proceeds: "0" }));
+      expect(mocks.disposeAssetAtomic).toHaveBeenCalledWith(expect.objectContaining({ reason: null }));
+    });
+
     it("refuses an empty amount box, writing nothing", async () => {
       const res = await disposeAsset(fd({ ...base, proceeds: "" }));
       expect(res.error).toBe("Nhập số tiền thu được, bỏ đi thì nhập 0");
@@ -308,7 +313,7 @@ describe("disposeAsset -- section 3.3", () => {
       const res = await disposeAsset(fd({ ...base, proceeds: "1200000", payment_method: "CASH", bank_account_id: "BA-001" }));
       expect(res.error).toBeUndefined();
       expect(mocks.disposeAssetAtomic).toHaveBeenCalledWith({
-        id: "TL-100", asset_id: "TS-002", quantity: 1, disposed_date: "2026-05-15", reason: "",
+        id: "TL-100", asset_id: "TS-002", quantity: 1, disposed_date: "2026-05-15", reason: null,
         actor_id: "admin-1", actor_name: "Admin",
         amount: 1_200_000, entry_id: "CE-100", payment_method: "CASH", bank_account_id: null,
         note: "Thanh lý TL-100: Ca đong × 1",

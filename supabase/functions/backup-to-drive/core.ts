@@ -61,8 +61,9 @@ export const BACKUP_TABLES = [
   // References cash_categories, and cash_entries.monthly_item_id references
   // it, so it sits between them. Added 2026-10-14 with migration 0109.
   "monthly_expense_items",
-  // References cash_categories (category_id) and bank_accounts
-  // (bank_account_id), so it must come after both for
+  // References cash_categories (category_id), bank_accounts
+  // (bank_account_id) and asset_disposals (asset_disposal_id, migration 0131;
+  // listed earlier), so it must come after all three for
   // lib/db/backup-restore.ts's parent-first restore order to resolve. See
   // supabase/migrations/0101_cash_book.sql lines 60 and 64.
   //

@@ -119,3 +119,12 @@ $$;
 
 revoke all on function public.dispose_asset_atomic(text, text, integer, date, text, text, text, bigint, text, text, text, text) from public, anon, authenticated;
 grant execute on function public.dispose_asset_atomic(text, text, integer, date, text, text, text, bigint, text, text, text, text) to service_role;
+
+-- A skipped seed (name collision) must fail the migration, not leave disposals with money refused.
+do $$
+begin
+  if not exists (select 1 from public.cash_categories where is_asset_disposal) then
+    raise exception 'Không tạo được nhóm Thu thanh lý tài sản: đã có nhóm đang dùng trùng tên. Đổi tên nhóm đó rồi chạy lại.';
+  end if;
+end
+$$;

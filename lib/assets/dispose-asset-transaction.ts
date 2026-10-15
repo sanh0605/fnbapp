@@ -5,7 +5,7 @@ export interface DisposeAssetInput {
   asset_id: string;
   quantity: number;
   disposed_date: string;
-  reason: string;
+  reason: string | null;
   actor_id: string;
   actor_name: string;
   // 0 = no proceeds row; the entry fields are then null.

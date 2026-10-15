@@ -7,6 +7,8 @@ tables: asset_disposals, asset_depreciation_bands, cash_entries
 brCodes: BR-COGS-008
 ```
 
+**Behaviour change — 2026-10-16 (thanh lý tài sản thu tiền, migration `0131`, `BR-COGS-008`):** `disposeAsset` now needs the amount received (0 is valid) and, when above 0, how it came in; it records the disposal and its cash-book income row through `dispose_asset_atomic`. A disposal with no reason is stored with a NULL reason, as before.
+
 **Behaviour change — 2026-10-15 (Kho đợt 2, S1):** Thanh lý refuses an asset marked `INACTIVE` and a quantity that is not a whole number above 0, and reads the asset and its disposals fresh, not from the cache. Migration `0123` (ran on the server 2026-10-15, owner approved) adds a trigger on `asset_disposals` that locks the asset row and refuses a disposal past what is left, so two people disposing at once cannot overshoot, plus checks on asset status, disposal quantity and band term and range.
 
 **Behaviour change — 2026-10-14 (audit A4, plan `docs/superpowers/plans/2026-10-14-khung-khau-hao.md`):** bands are edited as one table at `/admin/inventory/asset-bands/edit`, reached from "Sửa khung" on the list or "Sửa" on a band's page, and saved together by `saveAssetBands` through `replace_asset_depreciation_bands` (migration `0118`, ran on the server 2026-10-14, owner approved "Chạy cả 4"). Each row takes "Từ giá" and "Số tháng"; "Đến dưới" is the next row's "Từ giá", so the price line never has a gap or overlap. A manager may change prices and months and add rows; removing a row needs `ADMIN`. `createAssetBand`, `updateAssetBand`, `deleteAssetBand`, the `new` page, the `[id]/edit` page and the Xoá buttons are gone: each single step left a gap or overlap and was refused.

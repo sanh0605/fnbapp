@@ -172,9 +172,13 @@ export async function updateCashEntry(formData: FormData): Promise<ActionRespons
     const r = parseCashEntry(readCashEntryInput(formData));
     if (r.ok === false) return fail(r.error);
 
-    // BR-COGS-008: the row an asset disposal wrote stays in the disposal-proceeds group.
+    // BR-COGS-008: the row an asset disposal wrote keeps its group and date, so the money
+    // and the disposal's depreciation stay in the same month.
     if (existing.asset_disposal_id && r.value.category_id !== existing.category_id) {
       return fail("Dòng này ghi từ thanh lý tài sản, không đổi nhóm được");
+    }
+    if (existing.asset_disposal_id && r.value.entry_date !== String(existing.entry_date).slice(0, 10)) {
+      return fail("Dòng này ghi từ thanh lý tài sản, không đổi ngày được");
     }
 
     const refError = await checkRefs(r.value, existing);

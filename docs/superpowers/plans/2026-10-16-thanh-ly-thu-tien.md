@@ -69,7 +69,7 @@ Chỉ ghi số tiền ở **một chỗ**: dòng thu trong sổ thu chi. Lần t
    - Ngừng dùng thì vẫn cho (câu 7).
    - Không thêm giao diện khoá; máy chủ từ chối là đủ.
 3. **Dòng thu sinh từ thanh lý.**
-   - Ở `updateCashEntry` không đổi được nhóm; báo "Dòng này ghi từ thanh lý tài sản, không đổi nhóm được". Số tiền, cách nhận và ghi chú vẫn sửa được.
+   - Ở `updateCashEntry` không đổi được nhóm và ngày (để tiền thu và khấu hao của lần thanh lý luôn nằm cùng một tháng); báo "Dòng này ghi từ thanh lý tài sản, không đổi nhóm được" hoặc "…không đổi ngày được". Số tiền, cách nhận và ghi chú vẫn sửa được.
    - Thêm một test: sửa dòng thì `asset_disposal_id` vẫn còn. Đã đọc: `update` chỉ ghi các cột được gửi lên, `tables.ts:595`.
    - Xoá hẳn dòng thu (chỉ chủ quán làm được) thì lần thanh lý đọc thành 0đ. Chấp nhận, vì đó là ý người xoá.
    - Dòng gõ tay vào nhóm này vẫn tính vào "Thu thanh lý tài sản" ở lãi lỗ, nhưng không hiện ở trang tài sản. Cố ý như vậy, và đó cũng là cách sửa nhầm ở câu 6.

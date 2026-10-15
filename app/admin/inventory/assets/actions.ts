@@ -280,7 +280,7 @@ export async function disposeAsset(formData: FormData): Promise<ActionResponse> 
   const asset_id = formData.get("asset_id") as string;
   const quantity = Number(formData.get("quantity"));
   const disposed_date = formData.get("disposed_date") as string;
-  const reason = (formData.get("reason") as string) || "";
+  const reason = (formData.get("reason") as string) || null;
 
   if (!asset_id) return fail("Thiếu tài sản");
   if (!Number.isInteger(quantity) || quantity <= 0) return fail("Số lượng thanh lý phải là số nguyên lớn hơn 0");
