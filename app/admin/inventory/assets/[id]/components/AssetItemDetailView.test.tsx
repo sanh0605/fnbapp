@@ -184,4 +184,99 @@ describe("AssetItemDetailView", () => {
     expect(screen.queryByRole("link", { name: "Thanh lý" })).toBeNull();
     expect(screen.getAllByText("Đã thanh lý hết").length).toBeGreaterThan(0);
   });
+
+  it("renders 'Thu được' in Thanh lý table and phone cards for cash, transfer, null, and cancelled cases", () => {
+    const detailWithDisposals: AssetItemDetail = {
+      ...BINH_BOM_DETAIL,
+      disposals: [
+        {
+          id: "TL-001",
+          assetId: "TS-004",
+          lotAcquiredDate: "2026-04-04",
+          quantity: 1,
+          disposedDate: "2026-07-02",
+          reason: "Bỏ đi",
+          charge: 0,
+          proceeds: null,
+        },
+        {
+          id: "TL-002",
+          assetId: "TS-004",
+          lotAcquiredDate: "2026-04-04",
+          quantity: 1,
+          disposedDate: "2026-07-03",
+          reason: "Bán lại tiền mặt",
+          charge: 0,
+          proceeds: {
+            amount: 1200000,
+            paymentMethod: "CASH",
+            bankAccountName: null,
+            status: "ACTIVE",
+          },
+        },
+        {
+          id: "TL-003",
+          assetId: "TS-004",
+          lotAcquiredDate: "2026-04-04",
+          quantity: 1,
+          disposedDate: "2026-07-04",
+          reason: "Bán lại chuyển khoản",
+          charge: 0,
+          proceeds: {
+            amount: 1200000,
+            paymentMethod: "BANK_TRANSFER",
+            bankAccountName: "Vietcombank",
+            status: "ACTIVE",
+          },
+        },
+        {
+          id: "TL-004",
+          assetId: "TS-004",
+          lotAcquiredDate: "2026-04-04",
+          quantity: 1,
+          disposedDate: "2026-07-05",
+          reason: "Bán lại đã huỷ",
+          charge: 0,
+          proceeds: {
+            amount: 1200000,
+            paymentMethod: "CASH",
+            bankAccountName: null,
+            status: "CANCELLED",
+          },
+        },
+      ],
+    };
+
+    render(<AssetItemDetailView detail={detailWithDisposals} returnTo={returnTo} />);
+
+    // Desktop table header
+    expect(screen.getByRole("columnheader", { name: "Thu được" })).toBeInTheDocument();
+
+    // Case 1: null -> 0đ
+    expect(screen.getAllByText("0đ").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Thu được: 0đ").length).toBeGreaterThan(0);
+
+    // Case 2: CASH -> 1,200,000đ · Tiền mặt
+    expect(screen.getAllByText("1,200,000đ · Tiền mặt").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Thu được: 1,200,000đ · Tiền mặt").length).toBeGreaterThan(0);
+
+    // Case 3: BANK_TRANSFER -> 1,200,000đ · Vietcombank
+    expect(screen.getAllByText("1,200,000đ · Vietcombank").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Thu được: 1,200,000đ · Vietcombank").length).toBeGreaterThan(0);
+
+    // Case 4: CANCELLED -> amount struck through plus " (đã huỷ)"
+    const cancelledTexts = screen.getAllByText((_content, element) => {
+      return (
+        element?.textContent === "1,200,000đ · Tiền mặt (đã huỷ)" ||
+        element?.textContent === "Thu được: 1,200,000đ · Tiền mặt (đã huỷ)"
+      );
+    });
+    expect(cancelledTexts.length).toBeGreaterThan(0);
+
+    // Verify struck-through amount
+    const struckAmounts = screen
+      .getAllByText("1,200,000đ")
+      .filter((el) => el.classList.contains("line-through"));
+    expect(struckAmounts.length).toBeGreaterThan(0);
+  });
 });

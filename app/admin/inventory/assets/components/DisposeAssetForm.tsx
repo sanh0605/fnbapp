@@ -8,6 +8,7 @@ import { NumberInput } from "@/components/ui/NumberInput";
 import { DayInput } from "@/components/ui/DayInput";
 import { TextInput } from "@/components/ui/TextInput";
 import { Field } from "@/components/ui/Field";
+import { Select } from "@/components/ui/Select";
 import { formatNumber } from "@/lib/shared/format";
 import { toSaigonIsoString, formatDateTimeFull } from "@/lib/shared/datetime";
 import { safeReturnTo } from "@/lib/shared/return-to";
@@ -26,6 +27,7 @@ export function DisposeAssetForm({
   lots,
   initialLotId,
   returnTo: rawReturnTo,
+  bankAccounts = [],
 }: DisposeAssetFormProps) {
   const returnTo = safeReturnTo(rawReturnTo, "/admin/inventory/assets");
   const formId = useId();
@@ -41,7 +43,10 @@ export function DisposeAssetForm({
   const [error, setError] = useState<string | null>(null);
   const [dateError, setDateError] = useState("");
   const [quantityError, setQuantityError] = useState("");
+  const [proceedsError, setProceedsError] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [proceeds, setProceeds] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "BANK_TRANSFER">("CASH");
   const [disposedDate, setDisposedDate] = useState(() =>
     toSaigonIsoString(new Date()).slice(0, 10),
   );
@@ -92,6 +97,10 @@ export function DisposeAssetForm({
       setDateError("Ngày không hợp lệ");
       return;
     }
+    if (proceeds === "") {
+      setProceedsError("Nhập số tiền thu được, bỏ đi thì nhập 0");
+      return;
+    }
     const formData = new FormData(e.currentTarget);
     savingRef.current = true;
     setLoading(true);
@@ -117,6 +126,9 @@ export function DisposeAssetForm({
   if (!selectedLot) {
     return null;
   }
+
+  const isProceedsPositive = Number(proceeds) > 0;
+  const hasNoBankAccounts = bankAccounts.length === 0;
 
   return (
     <div className="bg-surface-card rounded-2xl border border-border p-6">
@@ -205,6 +217,65 @@ export function DisposeAssetForm({
           />
           <input type="hidden" name="disposed_date" value={disposedDate} />
         </div>
+
+        <Field label="Số tiền thu được" htmlFor={`${formId}-proceeds`}>
+          <NumberInput
+            id={`${formId}-proceeds`}
+            name="proceeds"
+            decimals={0}
+            min={0}
+            example="150,000"
+            hint="Bán lại được bao nhiêu thì nhập bấy nhiêu; bỏ đi thì nhập 0."
+            error={proceedsError}
+            value={proceeds === "" ? null : Number(proceeds)}
+            onValueChange={(v) => {
+              setProceeds(v === null ? "" : String(v));
+              setProceedsError("");
+            }}
+          />
+        </Field>
+
+        {isProceedsPositive && (
+          <Field
+            label="Nhận vào"
+            htmlFor={`${formId}-payment_method`}
+            hint={hasNoBankAccounts ? "Chưa có tài khoản ngân hàng" : undefined}
+          >
+            <Select
+              id={`${formId}-payment_method`}
+              name="payment_method"
+              value={paymentMethod}
+              onChange={(e) =>
+                setPaymentMethod(
+                  e.target.value === "BANK_TRANSFER" ? "BANK_TRANSFER" : "CASH"
+                )
+              }
+            >
+              <option value="CASH">Tiền mặt</option>
+              <option value="BANK_TRANSFER" disabled={hasNoBankAccounts}>
+                Chuyển khoản
+              </option>
+            </Select>
+          </Field>
+        )}
+
+        {isProceedsPositive && paymentMethod === "BANK_TRANSFER" && (
+          <Field label="Tài khoản" htmlFor={`${formId}-bank_account_id`} required>
+            <Select
+              id={`${formId}-bank_account_id`}
+              name="bank_account_id"
+              required
+              defaultValue=""
+            >
+              <option value="" disabled>Chọn tài khoản</option>
+              {bankAccounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
 
         <Field
           label="Lý do"

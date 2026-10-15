@@ -17,11 +17,32 @@ import {
 } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
-import type { AssetItemDetail } from "@/lib/assets/asset-items";
+import type { AssetItemDetail, AssetItemDisposal } from "@/lib/assets/asset-items";
 
 export interface AssetItemDetailViewProps {
   detail: AssetItemDetail;
   returnTo: string;
+}
+
+function renderProceeds(proceeds: AssetItemDisposal["proceeds"]) {
+  if (!proceeds) {
+    return "0đ";
+  }
+  const amountStr = `${formatNumber(Math.round(proceeds.amount))}đ`;
+  const methodStr =
+    proceeds.paymentMethod === "BANK_TRANSFER"
+      ? proceeds.bankAccountName || "Chuyển khoản"
+      : "Tiền mặt";
+
+  if (proceeds.status === "CANCELLED") {
+    return (
+      <span>
+        <span className="line-through">{amountStr}</span> · {methodStr} (đã huỷ)
+      </span>
+    );
+  }
+
+  return `${amountStr} · ${methodStr}`;
 }
 
 function formatMonth(monthStr: string): string {
@@ -231,6 +252,7 @@ export function AssetItemDetailView({
                   <TableHeaderCell>Ngày</TableHeaderCell>
                   <TableHeaderCell>Lần mua</TableHeaderCell>
                   <TableHeaderCell>Số lượng</TableHeaderCell>
+                  <TableHeaderCell>Thu được</TableHeaderCell>
                   <TableHeaderCell>Lý do</TableHeaderCell>
                   <TableHeaderCell>Tiền dồn vào chi phí</TableHeaderCell>
                 </TableHead>
@@ -242,6 +264,7 @@ export function AssetItemDetailView({
                         {formatDateTimeFull(d.lotAcquiredDate)} ({d.assetId})
                       </TableCell>
                       <TableCell align="right">{d.quantity}</TableCell>
+                      <TableCell>{renderProceeds(d.proceeds)}</TableCell>
                       <TableCell>{d.reason || "—"}</TableCell>
                       <TableCell align="right">
                         {formatNumber(Math.round(d.charge))}đ
@@ -266,6 +289,9 @@ export function AssetItemDetailView({
                   </div>
                   <div className="text-xs text-text-secondary">
                     Lần mua: {formatDateTimeFull(d.lotAcquiredDate)} ({d.assetId}) · Số lượng: {d.quantity}
+                  </div>
+                  <div className="text-xs text-text-secondary">
+                    Thu được: {renderProceeds(d.proceeds)}
                   </div>
                   <div className="text-xs text-text-muted">
                     Lý do: {d.reason || "—"}
