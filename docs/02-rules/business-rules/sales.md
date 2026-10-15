@@ -164,7 +164,9 @@ Every edit rebuilt the order from today's catalog. The new version credited the 
 
 **Status:** `APPROVED` — owner 2026-10-15, chose *"Mỗi thu ngân một tài khoản"* after seeing 714 orders in 30 days all under one account and no logout on the till. Built 2026-10-15 (Máy bán hàng proposal R6, Q2): Đăng xuất on the till, outlet picker for STAFF; the STAFF accounts themselves are the owner's to create. `BR-U-003` stays open for the full role matrix; this fixes one row of it.
 
-- The owner creates a Nhân viên (STAFF) account per cashier in Nhân sự. STAFF opens the till only; `/admin` stays closed to it (owner decision 2026-07-22).
+**Correction 2026-10-16 (owner):** the one account is a real person. All 720 orders from 2026-09-16 to 2026-10-15 were sold by Tài Chí Tuyền (`tuyen2612`, MANAGER), and owner 2026-10-16 says *"Chỉ Tuyền bán"*. The proposal wrongly read "one account" as "a shared account". Nothing is to be created now. The rule applies the day a second person sells: that person gets their own account and never uses someone else's.
+
+- Each person who sells has their own account. A cashier who is not a manager gets a Nhân viên (STAFF) account in Nhân sự. STAFF opens the till only; `/admin` stays closed to it (owner decision 2026-07-22).
 - The till has a Đăng xuất button. The order keeps the seller's name as today (`created_by_name`), so Doanh số filtered by Nhân viên shows who sold.
 - A STAFF login with no outlet sees the outlet picker, never a redirect loop.
 
