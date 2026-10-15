@@ -50,4 +50,4 @@ Kết quả S2 (2026-10-15, `2b0db1ee`): 129.503 → 128.328 dòng (−1.175); `
 ## O3 (Opus)
 
 - [x] Soát diff: mỗi thứ xoá có grep 0; không chữ nào chủ quán thấy bị đổi.
-- [ ] Ghi số trước/sau vào kế hoạch chung; hỏi chủ quán duyệt đẩy.
+- [x] Ghi số trước/sau vào kế hoạch chung; hỏi chủ quán duyệt đẩy. Đã đẩy 2026-10-15 (`d46953bb`).

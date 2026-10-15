@@ -147,3 +147,30 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 - **On a phone** a box or button stays 44 px, a thumb's width.
 - Text size is unchanged: 14 px.
 - A form with few boxes puts them two to a row on a computer and one per row on a phone (`BR-UI-012`).
+
+### BR-UI-015 — One footer on every create and edit form, always in reach
+
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation (*"Đúng, làm vậy"*: pending design questions take the recommended option, reviewed together at the end). Spec `docs/superpowers/specs/2026-10-15-khuon-chung-design.md` section 2.1. Not built yet: Tạo món and Sửa món first, the other forms as their area is audited.
+
+- Counted 2026-10-15: the last button of a form reads "Bỏ" 27 times, "Tạo" 20, "Lưu" 3, "Cập nhật" 7, plus "Lưu món", "Lưu thông tin", "Lưu Nhân Sự", "Lưu Thương Hiệu", "Lưu Quy Đổi". 0 forms keep the button in view on a long page.
+- **A create page** ends with "Tạo" (`BR-UI-002`) and "Bỏ"; **an edit page** with "Lưu thay đổi" and "Bỏ thay đổi". A page with its own act keeps its word ("Ghi phiếu", "Xác nhận huỷ", "Lưu nháp").
+- **The bar stays at the bottom of the screen** while the form is longer than the screen; on a phone it sits above the bottom menu.
+- **Typing in any box shows "Có thay đổi chưa lưu"** on the bar. Leaving the page is not blocked: that would need the browser's own box, which `BR-DATA-007` rules out.
+- Source: Shopify's save bar (https://polaris.shopify.com/components/deprecated/contextual-save-bar).
+
+### BR-UI-016 — Lists that run past one page have a search box; an empty list says which kind of empty
+
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation, as `BR-UI-015`. Spec section 2.2. Not built yet; each area adds it as it is audited.
+
+- Counted 2026-10-15: 16 of 33 lists have a search box.
+- A list that can pass 20 rows gets a box that finds by code or name, first in the filter card, kept in the page address. Short fixed lists (Điểm bán, Thương hiệu, Đơn vị tính) do not.
+- Nothing created yet: "Chưa có … nào" with "Tạo". Rows exist but the filter matches none: "Không có dòng nào khớp bộ lọc" with "Xoá lọc".
+- Sources: KiotViet FnB finds by code or name (https://www.kiotviet.vn/huong-dan-su-dung-kiotviet/fnb-hang-hoa/kiem-kho/); Shopify shows its empty state only when nothing exists (https://shopify.dev/docs/api/app-home/patterns/templates/resource-index).
+
+### BR-UI-017 — Report pages share one frame
+
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation, as `BR-UI-015`. Spec section 2.3. Not built yet: the Báo cáo area (step 6 of plan A).
+
+- Top to bottom: the title; one filter bar (date range per `BR-UI-007`, outlet where the report can split by outlet); the headline figures for the range; the detail table with its total row (`BR-UI-004`).
+- Exporting to a file is left out until someone keeping the books asks for it.
+- Sources: Toast (https://support.toasttab.com/en/article/Getting-Started-with-Analytics-and-Reports), Square (https://squareup.com/help/ca/en/article/5072).
