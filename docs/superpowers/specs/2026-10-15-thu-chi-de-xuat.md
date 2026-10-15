@@ -7,7 +7,9 @@ This page covers master-plan rows 6c, 6d and Kế hoạch A step 5 (`docs/superp
 
 Two read-only audits ran on 2026-10-15 against the live server and the branch `chore/next-16`: data structure and balances (SQL through the management API), screens and server code (every non-test file under `app/admin/finance` and `lib/finance`). Every number below was measured that day. Re-measure before use.
 
-Owner instruction the same day, given to fnbapp-d7 and confirmed to fnbapp-f5: *"Tạm làm tất cả theo em khuyến nghị, rồi tất cả những gì em đã khuyến nghị thì tổng hợp lại cho anh khi có kết quả cuối."* So every open design choice below takes the recommendation and is marked "chọn theo khuyến nghị, chủ quán uỷ quyền 2026-10-15". Two things are not covered by that authorisation and stay as questions: one revisits a choice he made on 2026-10-04, the other needs a fact only he knows. Pushes, migrations and data writes still need his yes each time.
+Owner instruction the same day, given to fnbapp-d7 and confirmed to fnbapp-f5: *"Tạm làm tất cả theo em khuyến nghị, rồi tất cả những gì em đã khuyến nghị thì tổng hợp lại cho anh khi có kết quả cuối."* So every open design choice below takes the recommendation and is marked "chọn theo khuyến nghị, chủ quán uỷ quyền 2026-10-15". Two things were not covered by that authorisation and were asked: Q1 revisited a choice he made on 2026-10-04 (answered the same day: keep as is), Q2 needs a fact only he knows. Pushes, migrations and data writes still need his yes each time.
+
+Critiqued by fnbapp-f5 on 2026-10-15; its six points are folded in below (copy-order payment, `BR-UI-015` to `BR-UI-017`, the shared `safeReturnTo`, the balance check after the Shopee write, no fixed migration number).
 
 ## Hiện trạng
 
@@ -44,6 +46,7 @@ Owner instruction the same day, given to fnbapp-d7 and confirmed to fnbapp-f5: *
    - Balances today (2026-10-15), counting from zero on 2026-03-26 as the owner chose on 2026-10-04 ("1b"): **Tiền mặt −3.593.751đ, Ngân hàng 31.485.578đ, Tổng 27.891.827đ.** Month ends: cash went negative in June (−5.606.495đ), July −15.528.644đ, September −7.351.887đ.
    - Why the split is off: 203 of 203 purchase orders are "Tiền mặt" (102.917.248đ), 876 completed sales are "Chuyển khoản" (29.712.000đ), and 0 transfers were ever recorded. So money that arrived by transfer never leaves the bank side, and money that left the bank never leaves the cash side. The owner saw the September figures before choosing "2b" (no back-filling) on 2026-10-04.
    - **It is still drifting after that choice.** Since 2026-10-04: 263 sales, 91 of them by transfer; 5 purchase orders (860.000đ), all "Tiền mặt"; 0 transfers. Nothing on the screen tells the owner the cash figure is a book figure.
+   - The 5 orders since 2026-10-04 (PO-199 to PO-203) are all source "Mua ngoài", supplier "Không rõ", 10.000đ to 300.000đ: street purchases, so "Tiền mặt" is probably right. Each repeats an item set bought 8 to 29 times before, so they may be copies ("Nhân bản"); a copy carries the source order's payment method, which the owner chose on 2026-10-06 (`BR-INV-016`, "2a", after being offered "blank"). Not reopened here. The drift since 2026-10-04 is therefore the 91 transfer sales with no withdrawal recorded, not the purchases.
    - The 53 Shopee purchase orders (26.048.237đ, 2026-03-26 to 2026-09-30, imported from his sheet on 2026-08-27) are all "Tiền mặt". Moving them to "Chuyển khoản" on ACB would make September read cash +18.696.350đ, bank 1.924.341đ, total unchanged 20.620.691đ. Example: PO-195, 30/09/2026, Bột cà phê MR.PHIN Robusta Dak Mil from Phương Vy Official Store, 2.443.400đ.
    - Lãi lỗ reads hand rows and their groups only (never payment method, accounts, transfers or day rows). Changing a group's "tính vào lãi lỗ", "tính là doanh thu" or side re-classifies every past month there.
    - Legal: at under 1 tỷ a year of revenue the shop is in the no-VAT, no-PIT group of Thông tư 152/2025/TT-BTC, which requires only the sales book S1a-HKD. No cash-book form is required. The ledger is a management tool and can take any shape.
@@ -71,24 +74,24 @@ Not seen:
   - the shared list, detail, form and time-filter templates the screens already wear;
   - the three-way amount check.
 - **Wrong at the root, so fix before anything else:**
-  1. **The cash figure is wrong and the screen does not say so.** −3.593.751đ in the drawer is impossible, and it keeps drifting because no screen leads the owner to record a deposit, a withdrawal, or a transfer-paid purchase. KiotViet, Sapo and Toast all anchor the book to a counted figure: KiotViet FnB keeps a "Số dư đầu kỳ" per fund (cash, each bank account) and a "Tổng quỹ = Tiền mặt + Ngân hàng"; Toast closes every drawer on "Expected Closeout Cash" against "Actual Closeout Cash" and shows the "Cash Overage/Shortage". Direction, see Q1: a "Kiểm quỹ" row that records what was counted and lets the book continue from it. Until then: the Tiền mặt card says "theo sổ" and, when negative, "sổ chưa ghi tiền gửi ngân hàng".
+  1. **The cash figure is wrong and the screen does not say so.** −3.593.751đ in the drawer is impossible, and it keeps drifting because no screen leads the owner to record a deposit, a withdrawal, or a transfer-paid purchase. KiotViet, Sapo and Toast all anchor the book to a counted figure: KiotViet FnB keeps a "Số dư đầu kỳ" per fund (cash, each bank account) and a "Tổng quỹ = Tiền mặt + Ngân hàng"; Toast closes every drawer on "Expected Closeout Cash" against "Actual Closeout Cash" and shows the "Cash Overage/Shortage". Proposed as Q1: a "Kiểm quỹ" row that records what was counted and lets the book continue from it. **Owner 2026-10-15: "Giữ nguyên"** (option c, after seeing −3.593.751đ and the three options). So the book keeps counting from zero, nothing is typed in, and the only change is the caption: the Tiền mặt card says "theo sổ" and, when negative, "sổ chưa ghi tiền gửi ngân hàng". Recorded under `BR-CASH-007`.
   2. **Server checks are thinner than the Kho side.** A hand row saves with a future date, a retired group, a Thu group as an expense, or a date before the book starts; the database key is the only guard. 0 rows are affected today, so this is prevention, not repair.
   3. **Monthly items were bolted on without the cross-checks** the other entities have: side change, retirement and deletion of a group ignore them; the delete button and the server disagree. 0 rows today, so fix before the owner creates the first one.
 
 ## Owner decisions
 
-Two questions, asked once at the end with the summary. Everything else is taken by recommendation.
+Two questions, asked one at a time on 2026-10-15. Q1: the owner chose (c). Q2: the owner chose (a). Everything else is taken by recommendation.
 
 | # | Question | Options | Recommendation | Source |
 |---|---|---|---|---|
-| Q1 | On 2026-10-04 the owner chose to count balances from zero with no opening amount ("1b"). The cash figure now reads −3.593.751đ and keeps drifting. Add "Kiểm quỹ": a page where he types the counted drawer cash and the bank balance on a date; the book shows "theo sổ", "đếm được", "lệch", and continues from the counted figure? | (a) yes, build Kiểm quỹ (one new table, four steps); (b) only a one-time opening balance per fund, typed in settings; (c) leave as is | **(a).** A one-time figure drifts again within a month (it did in 11 days). A count can be repeated whenever the drawer is emptied. The difference stays out of Thu, Chi and Lãi lỗ, on its own line, because today's difference is a bookkeeping gap, not a loss. Not auto-taken: it revisits his 2026-10-04 choice | KiotViet FnB sổ quỹ (số dư đầu kỳ per fund, Tổng quỹ); Toast cash drawer reports (expected vs actual, overage/shortage) |
-| Q2 | Were the 53 Shopee purchase orders (26.048.237đ) paid from the ACB account? | (a) yes: one data write moves all 53 to "Chuyển khoản · ACB - Phin Di"; (b) he changes them one by one in Sửa phiếu; (c) no, leave | **(a) if yes.** Lãi lỗ does not change; only the cash/bank split of March to September does. Not auto-taken: it needs his fact. If Q1 is (a), the count fixes today's split anyway and Q2 only improves the monthly history | Kho page Q6 |
+| Q1 | On 2026-10-04 the owner chose to count balances from zero with no opening amount ("1b"). The cash figure now reads −3.593.751đ and keeps drifting. Add "Kiểm quỹ": a page where he types the counted drawer cash and the bank balance on a date; the book shows "theo sổ", "đếm được", "lệch", and continues from the counted figure? | (a) yes, build Kiểm quỹ (one new table, four steps); (b) only a one-time opening balance per fund, typed in settings; (c) leave as is | **(a).** A one-time figure drifts again within a month (it did in 11 days). A count can be repeated whenever the drawer is emptied. The difference stays out of Thu, Chi and Lãi lỗ, on its own line, because today's difference is a bookkeeping gap, not a loss. Not auto-taken: it revisits his 2026-10-04 choice. **Answer 2026-10-15: (c) Giữ nguyên.** Kiểm quỹ is not built; only the "theo sổ" caption goes in | KiotViet FnB sổ quỹ (số dư đầu kỳ per fund, Tổng quỹ); Toast cash drawer reports (expected vs actual, overage/shortage) |
+| Q2 | Were the 53 Shopee purchase orders (26.048.237đ) paid from the ACB account? | (a) yes: one data write moves all 53 to "Chuyển khoản · ACB - Phin Di"; (b) he changes them one by one in Sửa phiếu; (c) no, leave | **(a) if yes.** Lãi lỗ does not change; only the cash/bank split of March to September does. Not auto-taken: it needs his fact. With Q1 at (c) this write is the only correction the split will get. **Answer 2026-10-15: (a), paid through ACB; move all 53.** The write itself still waits for his "Ghi thật" after the dry run | Kho page Q6 |
 
 Taken by recommendation (chọn theo khuyến nghị, chủ quán uỷ quyền 2026-10-15):
 
 | # | Choice | Taken | Why |
 |---|---|---|---|
-| R1 | Cash-flow report "Báo cáo lưu chuyển tiền tệ" (master plan section 4) | A "Theo tháng" view of the ledger: one row per month with Đầu kỳ, Thu bán hàng, Thu ghi tay (by group), Chi nhập hàng, Chi ghi tay (by group), Cuối kỳ, cash and bank apart. No legal template: the shop's group needs none. Built from `summariseCashBook` per month, no new table | Both regimes the memory names (TT152/2025 for households, TT58/2026 for micro companies) require no cash-flow statement at this size; the figures already exist |
+| R1 | Cash-flow report "Báo cáo lưu chuyển tiền tệ" (master plan section 4) | A "Theo tháng" view of the ledger: one row per month with Đầu kỳ, Thu bán hàng, Thu ghi tay (by group), Chi nhập hàng, Chi ghi tay (by group), Cuối kỳ, cash and bank apart. No legal template: the shop's group needs none. Built from `summariseCashBook` per month, no new table; it is a report page, so it wears the report frame `BR-UI-017` (`docs/superpowers/specs/2026-10-15-khuon-chung-design.md` section 2.3: the `BR-UI-007` range bar, the headline figures on top, a table with a total row) | Both regimes the memory names (TT152/2025 for households, TT58/2026 for micro companies) require no cash-flow statement at this size; the figures already exist |
 | R2 | Paying one purchase order several ways (Kho Q5) | Not built until a real order needs it. 0 of 203 orders do | A new table and a four-step design for a case that has not happened |
 | R3 | Excel export of the ledger (KiotViet and Sapo export S6/S7 forms) | Not now. The list already shows totals; no form is required | Revenue under the threshold |
 | R4 | "Người nộp / nhận" field (KiotViet, Sapo have it) | Drop the column instead. 0 of 41 rows use it, 0 readers | The note carries it today ("Ngoại giao - CAKV") |
@@ -107,42 +110,38 @@ Taken by recommendation (chọn theo khuyến nghị, chủ quán uỷ quyền 2
 | Purchase day row link carries the account (`&account=`), and the purchase-order list filters on it | Sonnet | no | none |
 | `sideOf` in `cash-flow.ts` and the check script agree: CASH is cash, BANK_TRANSFER is bank, anything else is refused at write time, so neither needs a default | Sonnet | no | none |
 | Khoản chi hằng tháng list and page on the shared templates: code descending, Đang dùng default, Mã column, "Chỉnh sửa", inline confirm on Ngừng dùng, shared delete button, no emoji | Gemini | no | none |
+| The five forms (hand row, transfer, group, account, monthly item) take the shared footer `BR-UI-015` (`FormActionBar`: "Tạo" / "Bỏ", "Lưu thay đổi" / "Bỏ thay đổi") and leave the debt list in `components/ui/form-action-bar.guard.test.ts`; Sổ thu chi, which runs past one page, gets the search box `BR-UI-016` | Gemini | no | none |
 | Chuyển tiền page: "Xoá hẳn", "Ghi sổ lúc" | Gemini | no | none |
 | Hand-row page and ledger show the monthly item ("Khoản chi hằng tháng: Tiền điện") | Gemini | no | none |
 | Tiền mặt card: "theo sổ"; when negative, the line "sổ chưa ghi tiền gửi ngân hàng" (`Alert`, not a hand-drawn box); R5 caption | Gemini | no | none |
 | 10 hand-drawn error boxes onto `Alert`; `CategoryForm` and `BankAccountForm` get the try/catch and double-tap guard the other three forms have | Gemini | no | none |
 | Dead code: `cash_entries.payer` readers (none) and the import script line; `cashBookRowTotals.net` and `.count`; unused props `canDelete`, `categories`, `accounts` on `CashBookClient`, `canDelete` on the two other clients; exports with no importer (`AuditCreateColumns`, `AuditUpdateColumns`, `CashBookRowKind`, `CashBookRowTotals`, `CashEntryFields`, `CashTransferFields`, `CashBookTotals`, `CASH_END` or use it) | Sonnet | no | none |
-| Duplication: the 5 finance `safeReturnTo` copies (2 files, 3 inline) onto the one shared helper the Kho and Bán hàng rows also need (13 copies in `app/`); the four edit-page "isOwnDetail / listReturnTo / detailHref" blocks into one | Sonnet | no | none |
+| Duplication: the 5 finance `safeReturnTo` copies (2 files, 3 inline) are part of the 13 in `app/`; **done once for all three areas by fnbapp-f5** (one helper in `lib/shared`, see the master plan), not here. Thu chi's own: the four edit-page "isOwnDetail / listReturnTo / detailHref" blocks into one | Sonnet | no | none |
 | Whole-table reads: `categories/[id]/edit` loads every hand row to learn `hasEntries`; `getMonthlyItems` loads every hand row for two callers that use only `.item`. Count queries instead | Sonnet | no | none |
 | R1 "Theo tháng" view of the ledger: a tab beside the list, table on a computer, month cards on a phone; `summariseCashBook` per month | Sonnet + Gemini | no | none |
 | Docs: `docs/03-workflows/cash-book.md` five answers (Q3 names `getCashEntries`, removed 2026-10-15; Q5 names `summariseEntries`, removed); `BR-CASH-007` gains the "theo sổ" caption; `BR-CASH-009` gains the group cross-checks; the Kho page's Q6 points here | Opus | no | none |
 
-### Design direction: Kiểm quỹ (only if Q1 is (a))
+### Kiểm quỹ: not built
 
-New table and screen, so it gets its own design page and plan (four steps):
-- `/admin/finance/counts`: a list of counts, code `KQ-xxx`, date, fund (Tiền mặt or an account), "theo sổ", "đếm được", "lệch", who. Newest code first. "Tạo" opens a page that shows the book figure for the chosen fund and date and asks for the counted amount, digits only.
-- A count writes one row (`cash_counts`: id, count_date, bank_account_id null for cash, book_amount, counted_amount, note, status, audit columns). `summariseCashBook` treats the row as a movement of `counted − book` on that fund, dated that day, in neither Tổng thu nor Tổng chi nor Lãi lỗ, shown on its own line "Lệch kiểm quỹ" under the cards and as a ledger row of kind "Kiểm quỹ". Cancel like a hand row; "Xoá hẳn" ADMIN only.
-- The owner's first count sets the book to the drawer and the bank app. Each later count shows the real overage or shortage since the last one.
-- Sources: KiotViet FnB sổ quỹ (https://www.kiotviet.vn/huong-dan-su-dung-kiotviet/so-quy-web-fnb/so-quy/, Tiền mặt / Ngân hàng / Tổng quỹ, số dư đầu kỳ per fund); Toast cash drawer reports (https://support.toasttab.com/en/article/Cash-Drawer-Reports-Overview, Expected vs Actual Closeout Cash, Cash Overage/Shortage).
+The owner chose "Giữ nguyên" on 2026-10-15. The design that was offered (a `cash_counts` table, a list of counts with "theo sổ / đếm được / lệch", the difference outside Thu, Chi and Lãi lỗ) is dropped; it is in git history under commit `66756145` should he come back to it. Sources that were tried: KiotViet FnB sổ quỹ (https://www.kiotviet.vn/huong-dan-su-dung-kiotviet/so-quy-web-fnb/so-quy/), Toast cash drawer reports (https://support.toasttab.com/en/article/Cash-Drawer-Reports-Overview).
 
 ## Data writes, each needs the owner's approval to run
 
-1. Q2 (a): 53 purchase orders with source Shopee, `payment_method` → `BANK_TRANSFER`, `bank_account_id` → BA-001. Dry run prints the 53 ids and 26.048.237đ; `--apply` writes; re-read shows 0 Shopee orders still "Tiền mặt". Lãi lỗ before and after: identical (`verify-pnl-monthly` 0 mismatches). Script under `scripts/`, so written by Sonnet and reviewed, never by hand.
+1. Q2 (a): 53 purchase orders with source Shopee, `payment_method` → `BANK_TRANSFER`, `bank_account_id` → the id of "ACB - Phin Di" read from `bank_accounts` at run time (measured 2026-10-15: BA-001, the only account, ACTIVE). Dry run prints the 53 ids and 26.048.237đ; `--apply` writes; re-read shows 0 Shopee orders still "Tiền mặt". Checks after the write: `verify-pnl-monthly` 0 mismatches (Lãi lỗ untouched), and the month-end balances from `summariseCashBook` before and after match the figures predicted here (September: cash −7.351.887đ → +18.696.350đ, bank 27.972.578đ → 1.924.341đ, total 20.620.691đ unchanged; October 15: cash −3.593.751đ → 22.454.486đ, bank 31.485.578đ → 5.437.341đ, total 27.891.827đ unchanged). Script under `scripts/`, so written by Sonnet and reviewed, never by hand.
 2. Nothing else. 0 cancelled rows, 0 orphan links, 0 future dates.
 
 ## Structure work, one migration batch
 
 The till is not exposed. Order "code stops reading → migration → code stops sending" applies only to `payer`, which nothing reads or sends except the import script's `null`.
 
-- Drop `cash_entries.payer` (null on 41 of 41, 0 readers).
-- `cash_counts` if Q1 is (a), with its own `RESTRICT` key to `bank_accounts`, amount checks (`counted_amount >= 0`), status check.
+- Drop `cash_entries.payer` (null on 41 of 41, 0 readers). Migration number: the next free one when the file is written; 0125 is reserved for dropping DELETED (`docs/superpowers/plans/2026-10-15-bo-deleted.md`).
 - No other dead column: `bank_name` and `account_number` are set on 1 of 1 and shown; `monthly_item_id` is new; `updated_by_*` are written on every edit and kept for the audit even though no screen shows them. `cash_transfers.note` is NOT NULL '' while `cash_entries.note` is nullable: left as is, 0 rows either way.
 
 ## Order of work
 
 1. Root 2 and root 3 (server checks, monthly-item cross-checks), R6, R7. Small, tests first; protects the first monthly item the owner creates.
 2. Dead code, duplication, whole-table reads, `sideOf`. No visible change.
-3. Screen clean-up on the existing templates (Khoản chi hằng tháng, Chuyển tiền, error boxes, "theo sổ" caption, monthly item shown, day-row link). Waits for the common template (6c) that fnbapp-f5 is settling; only the differences above are Thu chi's own.
-4. R1 "Theo tháng" view.
-5. Q1 (a): Kiểm quỹ, four steps. Q2 (a): the data write, approved separately.
-6. The migration batch (`payer`, and `cash_counts` if Q1 is (a)), approved separately, then the push.
+3. Screen clean-up on the common template (`BR-UI-015` footers, `BR-UI-016` search, Khoản chi hằng tháng, Chuyển tiền, error boxes, "theo sổ" caption, monthly item shown, day-row link). The template itself (6c) is fnbapp-f5's; only the differences above are Thu chi's own.
+4. R1 "Theo tháng" view on the report frame `BR-UI-017`.
+5. Q2 (a): the data write, approved separately.
+6. The migration `payer` (next free number), approved separately, then the push.
