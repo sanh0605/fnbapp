@@ -50,13 +50,13 @@ scope.
 
 This flow covers selling: the till screen at `/pos` where an order is built and
 sent, the order history at `/admin/orders`, and the promotion catalog at
-`/admin/promotions`. The key thing to understand is that **the web app is not
-where a completed sale is written.** The `/pos` screen only persists drafts and
-records a failure marker when a submit does not go through; the finished,
-`COMPLETED` order arrives in `orders_v2` through the POS device sync, not through
-these server actions. Voids are the one order-lifecycle write the web app makes,
-and they run through the `void_order_atomic` database function called from
-`lib/sales/void-order-transaction.ts`.
+`/admin/promotions`. The till writes the completed sale itself: `submitOrderV2`
+(`app/pos/actions.ts`) prices the cart on the server and calls the
+`create_pos_order_atomic` database function through
+`lib/sales/pos-order-transaction.ts`, which writes the `COMPLETED` order, its lines
+and payments in one transaction. Voids run through the `void_order_atomic` database
+function called from `lib/sales/void-order-transaction.ts`. (Corrected 2026-10-15:
+earlier text said the web app never wrote a completed sale; the code always did.)
 
 ## Five-question current-state description
 
@@ -106,9 +106,7 @@ and they run through the `void_order_atomic` database function called from
    dropped sale.
 5. **Which data it serves, and which it deliberately does not.** This flow serves
    order capture, order history, and promotions. It deliberately does **not**
-   write the completed sale from the web app — that is the POS device sync's job;
-   the web `/pos` action only touches `POS_Drafts` and `Pos_Sync_Failures`. It
-   deliberately does **not** deduct stock or compute cost at sale time: since the
+   deduct stock or compute cost at sale time: since the
    2026-08-07 cutover a sale records no cost of goods, which is measured later when
    stock leaves the warehouse (see `docs/03-workflows/stock-issue.md`). And it does
    not re-derive revenue for the earliest months: money received before 2026-07-19
@@ -117,16 +115,15 @@ and they run through the `void_order_atomic` database function called from
 
 ## Where it writes
 
-- `app/pos/actions.ts` writes only `POS_Drafts` (insert/update/remove of the
-  in-progress cart) and `Pos_Sync_Failures` (a marker when a submit does not sync).
-  It does not write `orders_v2`.
+- `app/pos/actions.ts` writes `POS_Drafts` (insert/update/remove of the
+  in-progress cart) and `Pos_Sync_Failures` (a marker when a submit throws), and
+  sends the completed sale to `lib/sales/pos-order-transaction.ts`, whose
+  `create_pos_order_atomic` RPC writes `orders_v2` with its lines and payments.
 - `lib/sales/void-order-transaction.ts` calls the `void_order_atomic` RPC, whose body
   writes `orders_v2` and `order_events` — the two write relations the generated
   map attributes to this file.
 - `app/admin/promotions/actions.ts` writes `Promotions`.
 
-The completed sale itself lands in `orders_v2` via the POS device sync path, which
-is outside this flow's declared files; the supersede/void model above governs how
-those rows are versioned once they arrive.
+The supersede/void model above governs how those rows are versioned once written.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md
