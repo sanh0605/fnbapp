@@ -7,7 +7,7 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004
 ```
 
-**Behaviour change — 2026-10-15 (Kho đợt 2, S2):** adding or editing an item writes the item, its conversions and the assets it retires in one Postgres transaction, `save_purchased_item_atomic` (migration `0124`, written, not yet run; this code is held until it runs). A removed conversion that a purchase line uses is set `INACTIVE` inside that transaction, any other is deleted; the A6 note below about a partial save no longer applies.
+**Behaviour change — 2026-10-15 (Kho đợt 2, S2):** adding or editing an item writes the item, its conversions and the assets it retires in one Postgres transaction, `save_purchased_item_atomic` (migration `0124`, ran on the server 2026-10-15 with the owner's approval, then this code was pushed). A removed conversion that a purchase line uses is set `INACTIVE` inside that transaction, any other is deleted; the A6 note below about a partial save no longer applies.
 
 **Behaviour change — 2026-10-15 (Kho đợt 2, S3):** the six old item and conversion actions in `app/admin/inventory/actions.ts`, still callable but used by no screen, are deleted; one of them still rewrote purchase lines.
 
