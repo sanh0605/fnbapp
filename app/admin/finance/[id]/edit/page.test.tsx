@@ -59,14 +59,14 @@ describe("EditCashEntryPage", () => {
 
   it("calls notFound when entry id is unknown", async () => {
     await expect(
-      EditCashEntryPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      EditCashEntryPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("calls notFound when entry is cancelled", async () => {
     await expect(
-      EditCashEntryPage({ params: { id: "CE-CANCELLED" }, searchParams: {} }),
+      EditCashEntryPage({ params: Promise.resolve({ id: "CE-CANCELLED" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
@@ -74,8 +74,8 @@ describe("EditCashEntryPage", () => {
   it("passes returnTo unchanged to form when returnTo is this record's own detail path", async () => {
     const returnTo = "/admin/finance/CE-001?returnTo=%2Fadmin%2Ffinance%3Fpreset%3DTHIS_MONTH";
     const element = await EditCashEntryPage({
-      params: { id: "CE-001" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "CE-001" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);
@@ -87,8 +87,8 @@ describe("EditCashEntryPage", () => {
   it("builds detail URL with encoded list returnTo when returnTo is a list URL", async () => {
     const returnTo = "/admin/finance?preset=THIS_MONTH";
     const element = await EditCashEntryPage({
-      params: { id: "CE-001" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "CE-001" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);

@@ -7,13 +7,14 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditSupplierPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function EditSupplierPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const rawReturnTo = safeReturnTo(searchParams?.returnTo);
   const listReturnTo = rawReturnTo.startsWith("/admin/suppliers/") ? "/admin/suppliers" : rawReturnTo;
   const suppliers = await getSuppliers();

@@ -53,7 +53,7 @@ export function PromotionDetailView({
   applicableItems,
   canDelete,
   returnTo,
-}: PromotionDetailViewProps): JSX.Element {
+}: PromotionDetailViewProps) {
   const currentDetailUrl = `/admin/promotions/${encodeURIComponent(promo.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/promotions/${encodeURIComponent(promo.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
 

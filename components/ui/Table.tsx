@@ -37,7 +37,7 @@ export function Table({
   "aria-label"?: string;
   statement?: boolean;
   pinHead?: boolean;
-}): JSX.Element {
+}) {
   const frame = statement ? "overflow-x-auto" : "overflow-x-auto bg-surface-card border border-border rounded-card";
   const scroll = pinHead ? "max-h-[528px] overflow-y-auto" : "";
   return (
@@ -51,7 +51,7 @@ export function Table({
   );
 }
 
-export function TableHead({ children }: { children: React.ReactNode }): JSX.Element {
+export function TableHead({ children }: { children: React.ReactNode }) {
   const { statement } = React.useContext(TableContext);
   const band = statement
     ? "bg-surface-secondary text-xs text-text-secondary"
@@ -73,7 +73,7 @@ export function TableHeaderCell({
   stick?: TableStick;
   "aria-label"?: string;
   colSpan?: number;
-}): JSX.Element {
+}) {
   const { statement, pinHead } = React.useContext(TableContext);
   const headBg = statement ? "bg-surface-secondary" : "bg-page";
   const stickClasses = getStickClasses(stick, headBg);
@@ -103,7 +103,7 @@ export function TableHeaderCell({
   );
 }
 
-export function TableBody({ children }: { children: React.ReactNode }): JSX.Element {
+export function TableBody({ children }: { children: React.ReactNode }) {
   return <tbody className="divide-y divide-border">{children}</tbody>;
 }
 
@@ -113,7 +113,7 @@ export function TableRow({
 }: {
   children: React.ReactNode;
   look?: TableRowLook;
-}): JSX.Element {
+}) {
   const { statement } = React.useContext(TableContext);
   let rowClass = statement ? "" : "hover:bg-page/60";
   if (look === "subtotal") {
@@ -143,7 +143,7 @@ export function TableRowHeader({
   indent?: boolean;
   colSpan?: number;
   className?: string;
-}): JSX.Element {
+}) {
   const { look } = React.useContext(TableRowContext);
   const stickBg = getRowStickBg(look);
   const stickClasses = getStickClasses(stick, stickBg);
@@ -186,7 +186,7 @@ export function TableCell({
   tight?: boolean;
   /** Statement only: the Tổng column. List rows stay normal weight (BR-UI-003). */
   strong?: boolean;
-}): JSX.Element {
+}) {
   const { statement } = React.useContext(TableContext);
   const { look } = React.useContext(TableRowContext);
   const stickBg = getRowStickBg(look);
@@ -220,7 +220,7 @@ export function TableCell({
   );
 }
 
-export function TableTotalRow({ children }: { children: React.ReactNode }): JSX.Element {
+export function TableTotalRow({ children }: { children: React.ReactNode }) {
   return (
     <tbody>
       <tr className="bg-primary-soft">{children}</tr>
@@ -236,7 +236,7 @@ export function TotalCard({
   title?: string;
   items: { label: string; value: React.ReactNode }[];
   className?: string;
-}): JSX.Element {
+}) {
   return (
     <div className={`bg-primary-soft rounded-card p-4 space-y-2 ${className}`.trim()}>
       {title && <div className="text-sm font-medium text-text-primary">{title}</div>}

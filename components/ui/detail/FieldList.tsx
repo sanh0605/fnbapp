@@ -9,7 +9,7 @@ export interface FieldListProps {
   fields: Field[];
 }
 
-export function FieldList({ fields }: FieldListProps): JSX.Element {
+export function FieldList({ fields }: FieldListProps) {
   return (
     <div className="bg-surface-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
       {fields.map((field, idx) => {

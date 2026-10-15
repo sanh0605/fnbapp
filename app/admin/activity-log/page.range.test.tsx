@@ -29,7 +29,7 @@ describe("activity log page time filter (BR-UI-007)", () => {
   afterEach(() => vi.useRealTimers());
 
   it("opens on Tháng này: whole Saigon days", async () => {
-    const tree = await ActivityLogPage({ searchParams: {} });
+    const tree = await ActivityLogPage({ searchParams: Promise.resolve({}) });
     const arg = getActivityLogEvents.mock.calls[0][0];
     expect(arg.from).toBe("2026-09-30T17:00:00.000Z");
     expect(arg.to).toBe("2026-10-31T16:59:59.999Z");
@@ -37,7 +37,7 @@ describe("activity log page time filter (BR-UI-007)", () => {
   });
 
   it("a typed word is searched on every day", async () => {
-    const tree = await ActivityLogPage({ searchParams: { q: "Huỷ", type: "ORDER" } });
+    const tree = await ActivityLogPage({ searchParams: Promise.resolve({ q: "Huỷ", type: "ORDER" }) });
     const arg = getActivityLogEvents.mock.calls[0][0];
     expect(arg.from).toBeUndefined();
     expect(arg.to).toBeUndefined();

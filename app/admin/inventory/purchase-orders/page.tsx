@@ -6,11 +6,12 @@ import { readRangeParams } from "@/lib/shared/date-range-params";
 
 export const dynamic = "force-dynamic";
 
-export default async function PurchaseOrdersPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function PurchaseOrdersPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const getParam = (key: string) => {
     const val = searchParams?.[key];
     return typeof val === "string" ? val : Array.isArray(val) ? val[0] : undefined;

@@ -1,6 +1,6 @@
 import React from "react";
 
-export function RoleBadge({ role }: { role: string }): JSX.Element {
+export function RoleBadge({ role }: { role: string }) {
   const colorClass =
     role === "ADMIN"
       ? "bg-danger/10 text-danger-active border-danger/20"

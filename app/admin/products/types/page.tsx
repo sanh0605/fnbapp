@@ -4,11 +4,12 @@ import ProductTypesClient from "./components/ProductTypesClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductTypesPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; page?: string };
-}) {
+export default async function ProductTypesPage(
+  props: {
+    searchParams?: Promise<{ q?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const rows = await getProductTypes();
   return (
     <Suspense fallback={<div>Đang tải...</div>}>

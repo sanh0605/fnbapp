@@ -8,13 +8,14 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditUserPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function EditUserPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const rawReturnTo = safeReturnTo(
     typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined
   );

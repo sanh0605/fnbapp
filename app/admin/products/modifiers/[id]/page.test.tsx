@@ -55,15 +55,15 @@ describe("ModifierDetailPage", () => {
 
   it("calls notFound when modifier id is unknown", async () => {
     await expect(
-      ModifierDetailPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      ModifierDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("passes plain linked product and does not pass function props to Client Component", async () => {
     const element = await ModifierDetailPage({
-      params: { id: "MOD-001" },
-      searchParams: { returnTo: "/admin/products/modifiers?q=tran" },
+      params: Promise.resolve({ id: "MOD-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/products/modifiers?q=tran" }),
     });
 
     expect(notFoundMock).not.toHaveBeenCalled();
@@ -80,8 +80,8 @@ describe("ModifierDetailPage", () => {
 
   it("passes null product for unlinked modifier and no function props", async () => {
     const element = await ModifierDetailPage({
-      params: { id: "MOD-002" },
-      searchParams: {},
+      params: Promise.resolve({ id: "MOD-002" }),
+      searchParams: Promise.resolve({}),
     });
 
     expect(notFoundMock).not.toHaveBeenCalled();

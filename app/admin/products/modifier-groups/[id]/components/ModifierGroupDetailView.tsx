@@ -40,7 +40,7 @@ export function ModifierGroupDetailView({
   allCategories,
   canDelete,
   returnTo,
-}: ModifierGroupDetailViewProps): JSX.Element {
+}: ModifierGroupDetailViewProps) {
   const router = useRouter();
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

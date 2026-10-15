@@ -38,7 +38,7 @@ export function CashEntryDetailView({
   accounts,
   returnTo,
   canDelete,
-}: CashEntryDetailViewProps): JSX.Element {
+}: CashEntryDetailViewProps) {
   const router = useRouter();
   const [cancelLoading, setCancelLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);

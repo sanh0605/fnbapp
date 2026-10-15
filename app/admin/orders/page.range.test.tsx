@@ -29,7 +29,7 @@ describe("orders page time filter (BR-UI-007)", () => {
   afterEach(() => vi.useRealTimers());
 
   it("opens on Tháng này: whole Saigon days 01/10 to 31/10", async () => {
-    const tree = await OrdersPage({ searchParams: {} });
+    const tree = await OrdersPage({ searchParams: Promise.resolve({}) });
     const arg = getOrdersV2.mock.calls[0][0];
     expect(arg.from).toBe("2026-09-30T17:00:00.000Z");
     expect(arg.to).toBe("2026-10-31T16:59:59.999Z");
@@ -41,12 +41,12 @@ describe("orders page time filter (BR-UI-007)", () => {
 
   it("at 06:30 on 01/10 Saigon (23:30 UTC on 30/09) Tháng này is October", async () => {
     vi.setSystemTime(new Date("2026-09-30T23:30:00Z"));
-    await OrdersPage({ searchParams: {} });
+    await OrdersPage({ searchParams: Promise.resolve({}) });
     expect(getOrdersV2.mock.calls[0][0].from).toBe("2026-09-30T17:00:00.000Z");
   });
 
   it("a Sổ thu chi day link (from/to, no range) shows that day only and keeps the payment filter", async () => {
-    const tree = await OrdersPage({ searchParams: { from: "2026-10-05", to: "2026-10-05", payment: "Tien mat" } });
+    const tree = await OrdersPage({ searchParams: Promise.resolve({ from: "2026-10-05", to: "2026-10-05", payment: "Tien mat" }) });
     const arg = getOrdersV2.mock.calls[0][0];
     expect(arg.from).toBe("2026-10-04T17:00:00.000Z");
     expect(arg.to).toBe("2026-10-05T16:59:59.999Z");
@@ -55,7 +55,7 @@ describe("orders page time filter (BR-UI-007)", () => {
   });
 
   it("a typed search looks through every day; the range stays on the address", async () => {
-    const tree = await OrdersPage({ searchParams: { q: "PHD000123", range: "LAST_MONTH", brand: "B1" } });
+    const tree = await OrdersPage({ searchParams: Promise.resolve({ q: "PHD000123", range: "LAST_MONTH", brand: "B1" }) });
     const arg = getOrdersV2.mock.calls[0][0];
     expect(arg.from).toBeUndefined();
     expect(arg.to).toBeUndefined();
@@ -67,7 +67,7 @@ describe("orders page time filter (BR-UI-007)", () => {
   });
 
   it("spaces alone are not a search", async () => {
-    await OrdersPage({ searchParams: { q: "   " } });
+    await OrdersPage({ searchParams: Promise.resolve({ q: "   " }) });
     expect(getOrdersV2.mock.calls[0][0].from).toBe("2026-09-30T17:00:00.000Z");
   });
 });

@@ -30,7 +30,7 @@ export default function IssueSlipDetailClient({
   detail,
   items,
   returnTo = "/admin/inventory/issue-slips",
-}: IssueSlipDetailClientProps): JSX.Element {
+}: IssueSlipDetailClientProps) {
   const router = useRouter();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [draft, setDraft] = useState<DraftLine[]>([]);

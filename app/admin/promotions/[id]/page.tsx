@@ -10,13 +10,14 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function PromotionDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function PromotionDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [{ promotions, brands, products, variants }, auth] = await Promise.all([
     getPromotionsData(),
     resolveActor(),

@@ -35,7 +35,7 @@ export function cellTone(row: PnlRow, value: number | null): string {
 
 // The numbers of the footnotes that name a column or a line, e.g. "1,3" --
 // joined with a comma, never run together ("13" would read as thirteen).
-export function NoteMarks({ numbers }: { numbers: number[] }): JSX.Element | null {
+export function NoteMarks({ numbers }: { numbers: number[] }) {
   if (numbers.length === 0) return null;
   return <sup className="ml-0.5 text-[10.5px] font-bold text-primary">{numbers.join(",")}</sup>;
 }

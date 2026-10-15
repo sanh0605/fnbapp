@@ -60,7 +60,7 @@ describe("VoidOrderPage (access and validation)", () => {
   it("redirects to /login if user is not authenticated", async () => {
     vi.mocked(getServerSession).mockResolvedValueOnce(null);
 
-    await expect(VoidOrderPage({ params: { id: "ORD-1" } })).rejects.toThrow("redirect:/login");
+    await expect(VoidOrderPage({ params: Promise.resolve({ id: "ORD-1" }) })).rejects.toThrow("redirect:/login");
     expect(redirect).toHaveBeenCalledWith("/login");
   });
 
@@ -69,7 +69,7 @@ describe("VoidOrderPage (access and validation)", () => {
       user: { name: "Staff", role: "STAFF" },
     });
 
-    await expect(VoidOrderPage({ params: { id: "ORD-1" } })).rejects.toThrow("redirect:/admin/orders/ORD-1");
+    await expect(VoidOrderPage({ params: Promise.resolve({ id: "ORD-1" }) })).rejects.toThrow("redirect:/admin/orders/ORD-1");
   });
 
   it("calls notFound() if order does not exist", async () => {
@@ -78,7 +78,7 @@ describe("VoidOrderPage (access and validation)", () => {
     });
     vi.mocked(getOrderDetailV2).mockResolvedValueOnce(null);
 
-    await expect(VoidOrderPage({ params: { id: "NONEXISTENT" } })).rejects.toThrow("notFound");
+    await expect(VoidOrderPage({ params: Promise.resolve({ id: "NONEXISTENT" }) })).rejects.toThrow("notFound");
     expect(notFound).toHaveBeenCalled();
   });
 
@@ -88,7 +88,7 @@ describe("VoidOrderPage (access and validation)", () => {
     });
     vi.mocked(getOrderDetailV2).mockResolvedValueOnce(makeDetail("VOIDED") as any);
 
-    render(await VoidOrderPage({ params: { id: "ORD-1" } }));
+    render(await VoidOrderPage({ params: Promise.resolve({ id: "ORD-1" }) }));
     expect(screen.getByText("Đơn này không huỷ được")).toBeDefined();
     expect(screen.queryByTestId("void-order-form")).toBeNull();
   });
@@ -99,7 +99,7 @@ describe("VoidOrderPage (access and validation)", () => {
     });
     vi.mocked(getOrderDetailV2).mockResolvedValueOnce(makeDetail("COMPLETED") as any);
 
-    render(await VoidOrderPage({ params: { id: "ORD-1" } }));
+    render(await VoidOrderPage({ params: Promise.resolve({ id: "ORD-1" }) }));
     expect(screen.getByRole("heading", { name: "Huỷ đơn 261013001001" })).toBeDefined();
     expect(screen.getByTestId("void-order-form")).toBeDefined();
   });

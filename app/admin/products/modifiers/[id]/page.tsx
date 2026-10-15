@@ -7,13 +7,14 @@ import type { DBModifierGroup, DBProduct } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function ModifierDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function ModifierDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [{ modifiers }, allProducts, groups] = await Promise.all([
     getModifiersData(),
     findAll("Products") as Promise<DBProduct[]>,

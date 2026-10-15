@@ -547,7 +547,7 @@ function deserializeRow(
 
 function touchRevalidate(sheetName: string) {
   try {
-    revalidateTag(getCacheTag(sheetName));
+    revalidateTag(getCacheTag(sheetName), { expire: 0 });
   } catch {
     // Ignore if not in Next.js context (scripts).
   }

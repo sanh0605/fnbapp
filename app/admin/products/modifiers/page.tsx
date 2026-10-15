@@ -6,11 +6,12 @@ import ModifiersClient from "@/app/admin/products/modifiers/components/Modifiers
 
 export const dynamic = "force-dynamic";
 
-export default async function ModifiersPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; page?: string };
-}) {
+export default async function ModifiersPage(
+  props: {
+    searchParams?: Promise<{ q?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [{ modifiers }, products, groups] = await Promise.all([
     getModifiersData(),
     findAll("Products") as Promise<any[]>,

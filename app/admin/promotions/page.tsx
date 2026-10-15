@@ -5,11 +5,12 @@ import { resolveActor } from "@/lib/auth/auth";
 
 export const dynamic = "force-dynamic";
 
-export default async function PromotionsPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; status?: string; type?: string; page?: string };
-}) {
+export default async function PromotionsPage(
+  props: {
+    searchParams?: Promise<{ q?: string; status?: string; type?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [{ promotions, brands, products, variants, categories }, auth] = await Promise.all([
     getPromotionsData(),
     resolveActor(),

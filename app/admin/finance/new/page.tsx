@@ -9,11 +9,12 @@ import { toSaigonIsoString } from "@/lib/shared/datetime";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewCashEntryPage({
-  searchParams,
-}: {
-  searchParams?: { returnTo?: string; monthlyItem?: string; month?: string };
-}) {
+export default async function NewCashEntryPage(
+  props: {
+    searchParams?: Promise<{ returnTo?: string; monthlyItem?: string; month?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance");
   const initialMonthlyItemId =
     typeof searchParams?.monthlyItem === "string" ? searchParams.monthlyItem : undefined;

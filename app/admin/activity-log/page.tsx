@@ -16,11 +16,12 @@ function toEndOfDayIso(dateOnly: string): string {
   return toSaigonUtcRange(dateOnly, dateOnly)!.endUtc.toISOString();
 }
 
-export default async function ActivityLogPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function ActivityLogPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const getParam = (key: string) => {
     const value = searchParams?.[key];
     return typeof value === "string" ? value : Array.isArray(value) ? value[0] : undefined;

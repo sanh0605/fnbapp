@@ -32,7 +32,7 @@ function formatMonth(monthStr: string): string {
 export function AssetItemDetailView({
   detail,
   returnTo,
-}: AssetItemDetailViewProps): JSX.Element {
+}: AssetItemDetailViewProps) {
   const detailUrl = `/admin/inventory/assets/${encodeURIComponent(detail.item.itemId)}?returnTo=${encodeURIComponent(returnTo)}`;
   const disposeHref = `/admin/inventory/assets/${encodeURIComponent(detail.item.itemId)}/dispose?returnTo=${encodeURIComponent(detailUrl)}`;
 

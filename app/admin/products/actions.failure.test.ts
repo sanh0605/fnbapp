@@ -66,8 +66,8 @@ describe("saveProduct atomic persistence", () => {
     // revalidatePath never touches. Today (pre-fix) this is a wrong VALUE,
     // not a missing function: saveProduct already existed and already
     // called revalidatePath, it just never called revalidateTag at all.
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
   });
 
   it("leaves no partial create state after rollback and permits retry", async () => {

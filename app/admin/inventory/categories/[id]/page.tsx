@@ -7,13 +7,14 @@ import type { DBItemCategory, DBPurchasedItem } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function CategoryDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function CategoryDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [categories, items, auth] = await Promise.all([
     findAll("Item_Categories") as Promise<DBItemCategory[]>,
     findAll("Purchased_Items") as Promise<DBPurchasedItem[]>,

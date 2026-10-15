@@ -130,7 +130,7 @@ export function DateRangeButton(props: {
   disabled?: boolean;
   disabledHint?: string; // shown under the button when disabled
   align?: "left" | "right";
-}): JSX.Element {
+}) {
   const { value, onChange, today, mode = "day", disabled = false, disabledHint, align = "left" } = props;
 
   const [isOpen, setIsOpen] = useState(false);

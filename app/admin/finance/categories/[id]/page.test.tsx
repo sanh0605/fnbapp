@@ -31,15 +31,15 @@ describe("CategoryDetailPage", () => {
 
   it("calls notFound when category id is unknown", async () => {
     await expect(
-      CategoryDetailPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      CategoryDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("does not pass function props to Client Component", async () => {
     const element = await CategoryDetailPage({
-      params: { id: "CFC-001" },
-      searchParams: { returnTo: "/admin/finance/categories" },
+      params: Promise.resolve({ id: "CFC-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/finance/categories" }),
     });
 
     const props = element.props;

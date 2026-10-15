@@ -1,11 +1,6 @@
 import { PageHeader } from "@/components/ui/PageHeader";
-import { revalidateTag } from "next/cache";
 
 export default async function ClearCachePage() {
-  revalidateTag("sheets-Product_Variants");
-  revalidateTag("sheets-Products");
-  revalidateTag("sheets-Product_Price_History");
-
   return (
     <div className="space-y-6">
       <PageHeader 

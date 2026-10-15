@@ -28,7 +28,7 @@ export function BrandDetailView({
   outlets,
   canDelete,
   returnTo,
-}: BrandDetailViewProps): JSX.Element {
+}: BrandDetailViewProps) {
   const currentDetailUrl = `/admin/brands/${encodeURIComponent(brand.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/brands/${encodeURIComponent(brand.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
 

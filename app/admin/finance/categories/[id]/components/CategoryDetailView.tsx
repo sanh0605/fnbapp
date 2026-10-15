@@ -28,7 +28,7 @@ export function CategoryDetailView({
   category,
   returnTo,
   canDelete,
-}: CategoryDetailViewProps): JSX.Element {
+}: CategoryDetailViewProps) {
   const router = useRouter();
   const [statusLoading, setStatusLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);

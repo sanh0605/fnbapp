@@ -7,11 +7,12 @@ import { saigonToday } from "@/lib/shared/datetime";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewCashTransferPage({
-  searchParams,
-}: {
-  searchParams?: { returnTo?: string };
-}) {
+export default async function NewCashTransferPage(
+  props: {
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance");
   const today = saigonToday();
   const accounts = await getBankAccounts();

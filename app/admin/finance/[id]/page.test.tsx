@@ -51,15 +51,15 @@ describe("CashEntryDetailPage", () => {
 
   it("calls notFound when entry id is unknown", async () => {
     await expect(
-      CashEntryDetailPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      CashEntryDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("does not pass function props to Client Component", async () => {
     const element = await CashEntryDetailPage({
-      params: { id: "CE-001" },
-      searchParams: { returnTo: "/admin/finance" },
+      params: Promise.resolve({ id: "CE-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/finance" }),
     });
 
     const props = element.props;

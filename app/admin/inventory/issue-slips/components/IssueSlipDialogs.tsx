@@ -12,7 +12,7 @@ export function IssueSlipDialogs({
   isOpen,
   cancelHref,
   onClose,
-}: IssueSlipDialogsProps): JSX.Element | null {
+}: IssueSlipDialogsProps) {
   if (!isOpen) return null;
 
   return (

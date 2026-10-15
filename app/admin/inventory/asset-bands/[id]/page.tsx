@@ -5,13 +5,14 @@ import { BandDetailView } from "./components/BandDetailView";
 
 export const dynamic = "force-dynamic";
 
-export default async function BandDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function BandDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const bands = await getAssetBands();
 
   const band = bands.find((b) => b.id === params.id);

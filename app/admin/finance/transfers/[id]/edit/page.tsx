@@ -10,13 +10,14 @@ import type { DBCashTransfer } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditCashTransferPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function EditCashTransferPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance");
 
   const [transfer, accounts] = await Promise.all([

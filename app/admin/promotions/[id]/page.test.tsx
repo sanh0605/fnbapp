@@ -68,15 +68,15 @@ describe("PromotionDetailPage", () => {
 
   it("calls notFound when promotion id is unknown", async () => {
     await expect(
-      PromotionDetailPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      PromotionDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("does not pass function props to Client Component", async () => {
     const element = await PromotionDetailPage({
-      params: { id: "PRM-004" },
-      searchParams: { returnTo: "/admin/promotions" },
+      params: Promise.resolve({ id: "PRM-004" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/promotions" }),
     });
 
     const props = element.props;

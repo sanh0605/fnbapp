@@ -20,7 +20,7 @@ describe("NewCashTransferPage", () => {
 
   it("does not pass function props to Client Component", async () => {
     const element = await NewCashTransferPage({
-      searchParams: { returnTo: "/admin/finance" },
+      searchParams: Promise.resolve({ returnTo: "/admin/finance" }),
     });
 
     const props = element.props;

@@ -75,15 +75,15 @@ describe("ProductDetailPage", () => {
 
   it("calls notFound when product id is unknown", async () => {
     await expect(
-      ProductDetailPage({ params: { id: "UNKNOWN-ID" }, searchParams: {} }),
+      ProductDetailPage({ params: Promise.resolve({ id: "UNKNOWN-ID" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("renders a DELETED product without calling notFound", async () => {
     const element = await ProductDetailPage({
-      params: { id: "PROD-099" },
-      searchParams: {},
+      params: Promise.resolve({ id: "PROD-099" }),
+      searchParams: Promise.resolve({}),
     });
     expect(notFoundMock).not.toHaveBeenCalled();
     expect(element).toBeDefined();
@@ -92,17 +92,17 @@ describe("ProductDetailPage", () => {
   });
 
   it("shows the category name, and the fallback when the category is missing", async () => {
-    const ok: any = await ProductDetailPage({ params: { id: "PROD-005" }, searchParams: {} });
+    const ok: any = await ProductDetailPage({ params: Promise.resolve({ id: "PROD-005" }), searchParams: Promise.resolve({}) });
     expect(ok.props.categoryName).toBe("Giải trí");
     mockProducts.push({ ...mockProducts[0], id: "PROD-X", category_id: "CAT-GONE" });
-    const gone: any = await ProductDetailPage({ params: { id: "PROD-X" }, searchParams: {} });
+    const gone: any = await ProductDetailPage({ params: Promise.resolve({ id: "PROD-X" }), searchParams: Promise.resolve({}) });
     expect(gone.props.categoryName).toBe("Chưa phân loại");
   });
 
   it("does not pass function props to Client Component", async () => {
     const element = await ProductDetailPage({
-      params: { id: "PROD-005" },
-      searchParams: { returnTo: "/admin/products?q=matcha" },
+      params: Promise.resolve({ id: "PROD-005" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/products?q=matcha" }),
     });
 
     const props = element.props;
@@ -112,18 +112,18 @@ describe("ProductDetailPage", () => {
   // BR-ACCESS-003: "Xoá vĩnh viễn" is offered to ADMIN only; the list no
   // longer offers it, so the detail page is where canDelete is computed.
   it("passes canDelete true for ADMIN and false for MANAGER", async () => {
-    const asAdmin: any = await ProductDetailPage({ params: { id: "PROD-099" }, searchParams: {} });
+    const asAdmin: any = await ProductDetailPage({ params: Promise.resolve({ id: "PROD-099" }), searchParams: Promise.resolve({}) });
     expect(asAdmin.props.canDelete).toBe(true);
 
     resolveActorMock.mockResolvedValue({ ok: true, actor: { role: "MANAGER" } });
-    const asManager: any = await ProductDetailPage({ params: { id: "PROD-099" }, searchParams: {} });
+    const asManager: any = await ProductDetailPage({ params: Promise.resolve({ id: "PROD-099" }), searchParams: Promise.resolve({}) });
     expect(asManager.props.canDelete).toBe(false);
   });
 
   // F3 (2026-10-14 audit): a never-sold dish linked to a topping cannot be
   // erased (modifiers.product_id is RESTRICT), so the button is not offered.
   it("passes canDelete false for a never-sold dish that is linked to a topping, even for ADMIN", async () => {
-    const element: any = await ProductDetailPage({ params: { id: "PROD-TOP" }, searchParams: {} });
+    const element: any = await ProductDetailPage({ params: Promise.resolve({ id: "PROD-TOP" }), searchParams: Promise.resolve({}) });
     expect(element.props.canDelete).toBe(false);
   });
 });

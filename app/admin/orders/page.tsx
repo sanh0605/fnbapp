@@ -17,11 +17,12 @@ function toEndOfDayIso(dateOnly: string): string {
   return toSaigonUtcRange(dateOnly, dateOnly)!.endUtc.toISOString();
 }
 
-export default async function OrdersPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function OrdersPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const getParam = (key: string) => {
     const val = searchParams?.[key];
     return typeof val === "string" ? val : Array.isArray(val) ? val[0] : undefined;

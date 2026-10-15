@@ -13,7 +13,7 @@ describe("activity log page day window (A2)", () => {
   });
 
   it("filtering 15/09/2026 spans Saigon 00:00:00 to 23:59:59.999", async () => {
-    await ActivityLogPage({ searchParams: { from: "2026-09-15", to: "2026-09-15" } });
+    await ActivityLogPage({ searchParams: Promise.resolve({ from: "2026-09-15", to: "2026-09-15" }) });
     const arg = getActivityLogEvents.mock.calls[0][0];
     expect(arg.from).toBe("2026-09-14T17:00:00.000Z");
     expect(arg.to).toBe("2026-09-15T16:59:59.999Z");

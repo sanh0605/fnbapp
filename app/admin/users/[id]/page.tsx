@@ -6,13 +6,14 @@ import { UserDetailView } from "./components/UserDetailView";
 
 export const dynamic = "force-dynamic";
 
-export default async function UserDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function UserDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [user, auth] = await Promise.all([
     getUserById(params.id),
     resolveActor(),

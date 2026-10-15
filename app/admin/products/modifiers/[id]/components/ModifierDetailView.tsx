@@ -34,7 +34,7 @@ export function ModifierDetailView({
   allowStandalone,
   groupSelectionMode,
   returnTo,
-}: ModifierDetailViewProps): JSX.Element {
+}: ModifierDetailViewProps) {
   const currentDetailUrl = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/products/modifiers/${encodeURIComponent(modifier.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
 

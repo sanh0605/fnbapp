@@ -19,7 +19,7 @@ export function MoneyInput({
   required,
   example,
   ...ariaProps
-}: MoneyInputProps): JSX.Element {
+}: MoneyInputProps) {
   return (
     <NumberInput
       id={id}

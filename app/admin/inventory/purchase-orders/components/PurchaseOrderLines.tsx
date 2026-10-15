@@ -27,7 +27,7 @@ export function PurchaseOrderLines({
   addLine,
   removeLine,
   updateLine,
-}: PurchaseOrderLinesProps): JSX.Element {
+}: PurchaseOrderLinesProps) {
   return (
     <div className="mb-6">
       <div className="flex justify-between items-end mb-4">

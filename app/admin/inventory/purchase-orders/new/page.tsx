@@ -8,11 +8,12 @@ import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewPurchaseOrderPage({
-  searchParams,
-}: {
-  searchParams?: { copyFrom?: string };
-}) {
+export default async function NewPurchaseOrderPage(
+  props: {
+    searchParams?: Promise<{ copyFrom?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const copyFrom = searchParams?.copyFrom;
 
   const [suppliers, items, conversions, allUnits, sources, allBankAccounts, copySeed] = await Promise.all([

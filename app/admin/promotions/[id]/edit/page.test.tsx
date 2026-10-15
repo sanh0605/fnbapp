@@ -35,7 +35,7 @@ describe("EditPromotionPage", () => {
 
   it("calls notFound when promotion id is unknown", async () => {
     await expect(
-      EditPromotionPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      EditPromotionPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
@@ -43,8 +43,8 @@ describe("EditPromotionPage", () => {
   it("passes returnTo unchanged to form when returnTo is this record's own detail path", async () => {
     const returnTo = "/admin/promotions/PRM-004?returnTo=%2Fadmin%2Fpromotions%3Fq%3Dgiam";
     const element = await EditPromotionPage({
-      params: { id: "PRM-004" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "PRM-004" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);
@@ -56,8 +56,8 @@ describe("EditPromotionPage", () => {
   it("builds detail URL with encoded list returnTo when returnTo is a list URL", async () => {
     const returnTo = "/admin/promotions?q=giam";
     const element = await EditPromotionPage({
-      params: { id: "PRM-004" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "PRM-004" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);

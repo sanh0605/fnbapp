@@ -32,7 +32,7 @@ export function ProductCategoryDetailView({
   dishCount,
   dishes,
   returnTo,
-}: ProductCategoryDetailViewProps): JSX.Element {
+}: ProductCategoryDetailViewProps) {
   const currentDetailUrl = `/admin/products/categories/${encodeURIComponent(category.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/products/categories/${encodeURIComponent(category.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
   const count = dishCount !== undefined ? dishCount : dishes.length;

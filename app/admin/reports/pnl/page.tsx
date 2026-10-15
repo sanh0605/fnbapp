@@ -25,11 +25,12 @@ function formatMonth(ym: string): string {
 // docs/superpowers/specs/2026-10-09-bo-loc-thoi-gian-design.md.
 // Lãi lỗ uses the shared Looker-style time filter in whole months (BR-UI-007),
 // opening on Năm nay (January to this month) and supporting custom month spans.
-export default async function ProfitAndLossPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function ProfitAndLossPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const today = saigonToday();
   const range = readMonthRangeParams(searchParams ?? {}, today);
   const { table, brandNames } = await getProfitAndLossReport(range);

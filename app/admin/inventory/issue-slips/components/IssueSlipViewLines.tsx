@@ -16,7 +16,7 @@ export interface IssueSlipViewLinesProps {
   detail: IssueSlipDetail;
 }
 
-export function IssueSlipViewLines({ detail }: IssueSlipViewLinesProps): JSX.Element {
+export function IssueSlipViewLines({ detail }: IssueSlipViewLinesProps) {
   return (
     <>
       {/* Desktop view */}

@@ -33,7 +33,7 @@ describe("EditOutletPage", () => {
 
   it("calls notFound when outlet id is unknown", async () => {
     await expect(
-      EditOutletPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      EditOutletPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
@@ -41,8 +41,8 @@ describe("EditOutletPage", () => {
   it("passes returnTo unchanged to form when returnTo is this record's own detail path", async () => {
     const returnTo = "/admin/outlets/OUT-001?returnTo=%2Fadmin%2Foutlets%3Fq%3D1";
     const element = await EditOutletPage({
-      params: { id: "OUT-001" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "OUT-001" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);
@@ -54,8 +54,8 @@ describe("EditOutletPage", () => {
   it("builds detail URL with encoded list returnTo when returnTo is a list URL", async () => {
     const returnTo = "/admin/outlets?q=1";
     const element = await EditOutletPage({
-      params: { id: "OUT-001" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "OUT-001" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);

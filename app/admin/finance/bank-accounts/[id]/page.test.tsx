@@ -31,15 +31,15 @@ describe("BankAccountDetailPage", () => {
 
   it("calls notFound when account id is unknown", async () => {
     await expect(
-      BankAccountDetailPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      BankAccountDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("does not pass function props to Client Component", async () => {
     const element = await BankAccountDetailPage({
-      params: { id: "BA-001" },
-      searchParams: { returnTo: "/admin/finance/bank-accounts" },
+      params: Promise.resolve({ id: "BA-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/finance/bank-accounts" }),
     });
 
     const props = element.props;

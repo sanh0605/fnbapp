@@ -8,13 +8,14 @@ import type { DBItemCategory } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditCategoryPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function EditCategoryPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const category = (await findById("Item_Categories", params.id)) as DBItemCategory | null;
   if (!category) {
     notFound();

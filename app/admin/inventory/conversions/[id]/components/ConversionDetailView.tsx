@@ -27,7 +27,7 @@ export function ConversionDetailView({
   purchaseOrderLinesCount,
   returnTo,
   canDelete,
-}: ConversionDetailViewProps): JSX.Element {
+}: ConversionDetailViewProps) {
   const isUsed = purchaseOrderLinesCount > 0;
   const verb = isUsed ? "Ngừng dùng" : "Xoá";
   const confirmMsg = isUsed

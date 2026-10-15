@@ -10,13 +10,14 @@ import { VoidOrderForm } from "./components/VoidOrderForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function VoidOrderPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function VoidOrderPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const session = await getServerSession(authOptions);
   if (!session) {
     redirect("/login");

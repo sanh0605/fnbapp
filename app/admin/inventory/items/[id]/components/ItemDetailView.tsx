@@ -41,7 +41,7 @@ export function ItemDetailView({
   stock,
   returnTo,
   canDelete,
-}: ItemDetailViewProps): JSX.Element {
+}: ItemDetailViewProps) {
   const isNonInventory =
     item.is_non_inventory === true || (item.is_non_inventory as any) === "true";
 

@@ -25,13 +25,14 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function PurchaseOrderDetail({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { edit?: string; returnTo?: string; assetWarning?: string };
-}) {
+export default async function PurchaseOrderDetail(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ edit?: string; returnTo?: string; assetWarning?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const session = await getServerSession(authOptions);
   if (!session) {
     redirect("/login");

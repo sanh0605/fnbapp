@@ -59,7 +59,7 @@ export default function BankAccountsClient({
   initialSearch,
   initialStatus,
   initialPage,
-}: BankAccountsClientProps): JSX.Element {
+}: BankAccountsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawSort = searchParams?.get("sort");

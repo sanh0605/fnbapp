@@ -20,7 +20,7 @@ export function Field({
   error,
   required,
   children,
-}: FieldProps): JSX.Element {
+}: FieldProps) {
   return (
     <div>
       <label htmlFor={htmlFor} className="block text-[13px] font-medium text-text-primary mb-1">

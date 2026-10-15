@@ -155,7 +155,7 @@ export async function addConversion(formData: FormData): Promise<ActionResponse>
     // duplicate addConversion/updateConversion in
     // app/admin/inventory/actions.ts was counted instead of this, the real,
     // live one) -- fixed here as the same class of bug, not a new one.
-    revalidateTag(getCacheTag("UOM_Conversions"));
+    revalidateTag(getCacheTag("UOM_Conversions"), { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -208,7 +208,7 @@ export async function updateConversion(formData: FormData): Promise<ActionRespon
     }
 
     await update(SHEET, id, { purchased_item_id, purchased_unit, conversion_rate, base_unit, purchase_only });
-    revalidateTag(getCacheTag("UOM_Conversions"));
+    revalidateTag(getCacheTag("UOM_Conversions"), { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -232,7 +232,7 @@ export async function deleteConversionAction(formData: FormData): Promise<Action
     } else {
       await remove(SHEET, id);
     }
-    revalidateTag(getCacheTag("UOM_Conversions"));
+    revalidateTag(getCacheTag("UOM_Conversions"), { expire: 0 });
     revalidatePath(PATH);
     // Lets the caller tell "deleted" from "only switched off".
     return isReferenced ? ok({ deactivated: true }) : ok();

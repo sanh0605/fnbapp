@@ -13,7 +13,7 @@ export interface MoneySummaryProps {
   };
 }
 
-export function MoneySummary({ lines, total }: MoneySummaryProps): JSX.Element {
+export function MoneySummary({ lines, total }: MoneySummaryProps) {
   return (
     <div className="bg-surface-card border border-border rounded-card p-4 space-y-2">
       {lines.map((line, index) => (

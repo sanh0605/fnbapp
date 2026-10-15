@@ -226,7 +226,7 @@ describe("addConversion/updateConversion/deleteConversionAction -- revalidate sh
     }));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"), { expire: 0 });
   });
 
   it("updateConversion revalidates sheets-UOM_Conversions", async () => {
@@ -244,14 +244,14 @@ describe("addConversion/updateConversion/deleteConversionAction -- revalidate sh
     }));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"), { expire: 0 });
   });
 
   it("deleteConversionAction revalidates sheets-UOM_Conversions", async () => {
     const res = await deleteConversionAction(formData({ id: "QD-1" }));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"), { expire: 0 });
   });
 });
 

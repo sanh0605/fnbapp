@@ -29,7 +29,7 @@ describe("purchase orders page time filter (BR-UI-007)", () => {
   afterEach(() => vi.useRealTimers());
 
   it("Tháng trước is September", async () => {
-    const tree = await PurchaseOrdersPage({ searchParams: { range: "LAST_MONTH" } });
+    const tree = await PurchaseOrdersPage({ searchParams: Promise.resolve({ range: "LAST_MONTH" }) });
     const arg = getPurchaseOrdersPage.mock.calls[0][0];
     expect(arg.from).toBe("2026-09-01");
     expect(arg.to).toBe("2026-09-30");
@@ -37,7 +37,7 @@ describe("purchase orders page time filter (BR-UI-007)", () => {
   });
 
   it("a typed name is searched on every day, the supplier filter still applies", async () => {
-    const tree = await PurchaseOrdersPage({ searchParams: { q: "sữa tươi", supplier: "NCC-001" } });
+    const tree = await PurchaseOrdersPage({ searchParams: Promise.resolve({ q: "sữa tươi", supplier: "NCC-001" }) });
     const arg = getPurchaseOrdersPage.mock.calls[0][0];
     expect(arg.from).toBeUndefined();
     expect(arg.to).toBeUndefined();
@@ -46,7 +46,7 @@ describe("purchase orders page time filter (BR-UI-007)", () => {
   });
 
   it("a Sổ thu chi purchase link keeps its day and payment", async () => {
-    await PurchaseOrdersPage({ searchParams: { range: "CUSTOM", from: "2026-09-16", to: "2026-09-16", pay: "BANK_TRANSFER" } });
+    await PurchaseOrdersPage({ searchParams: Promise.resolve({ range: "CUSTOM", from: "2026-09-16", to: "2026-09-16", pay: "BANK_TRANSFER" }) });
     const arg = getPurchaseOrdersPage.mock.calls[0][0];
     expect(arg.from).toBe("2026-09-16");
     expect(arg.to).toBe("2026-09-16");

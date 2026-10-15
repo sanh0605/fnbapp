@@ -18,7 +18,7 @@ export function RemoveRecordButton({
   confirmMessage,
   remove,
   afterHref,
-}: RemoveRecordButtonProps): JSX.Element {
+}: RemoveRecordButtonProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);

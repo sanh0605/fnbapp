@@ -5,11 +5,12 @@ import MonthlyItemsClient from "./components/MonthlyItemsClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function MonthlyItemsPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; status?: string; page?: string };
-}) {
+export default async function MonthlyItemsPage(
+  props: {
+    searchParams?: Promise<{ q?: string; status?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [items, categories] = await Promise.all([
     getMonthlyItems(),
     getCashCategories(),

@@ -55,7 +55,7 @@ describe("EditUserPage", () => {
 
   it("calls notFound when user id is unknown", async () => {
     await expect(
-      EditUserPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      EditUserPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
@@ -63,8 +63,8 @@ describe("EditUserPage", () => {
   it("passes returnTo unchanged to form when returnTo is this record's own detail path", async () => {
     const returnTo = "/admin/users/USR-002?returnTo=%2Fadmin%2Fusers%3Fq%3D1";
     const element = await EditUserPage({
-      params: { id: "USR-002" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "USR-002" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);
@@ -76,8 +76,8 @@ describe("EditUserPage", () => {
   it("builds detail URL with encoded list returnTo when returnTo is a list URL", async () => {
     const returnTo = "/admin/users?q=1";
     const element = await EditUserPage({
-      params: { id: "USR-002" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "USR-002" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);
@@ -96,8 +96,8 @@ describe("EditUserPage", () => {
 
     await expect(
       EditUserPage({
-        params: { id: "USR-001" },
-        searchParams: {},
+        params: Promise.resolve({ id: "USR-001" }),
+        searchParams: Promise.resolve({}),
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
@@ -110,8 +110,8 @@ describe("EditUserPage", () => {
     });
 
     const element = await EditUserPage({
-      params: { id: "USR-001" },
-      searchParams: {},
+      params: Promise.resolve({ id: "USR-001" }),
+      searchParams: Promise.resolve({}),
     });
 
     const children = React.Children.toArray(element.props.children);

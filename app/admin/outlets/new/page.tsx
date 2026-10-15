@@ -8,11 +8,12 @@ import type { DBOutlet, DBBrand } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewOutletPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function NewOutletPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined);
   const [outlets, brands] = await Promise.all([
     getOutlets() as Promise<DBOutlet[]>,

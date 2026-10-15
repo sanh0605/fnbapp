@@ -26,8 +26,8 @@ vi.mock("@/lib/auth/auth", () => ({
 describe("CategoryDetailPage", () => {
   it("does not pass function props to Client Component", async () => {
     const element = await CategoryDetailPage({
-      params: { id: "NHH-001" },
-      searchParams: { returnTo: "/admin/inventory/categories" },
+      params: Promise.resolve({ id: "NHH-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/inventory/categories" }),
     });
 
     const props = element.props;

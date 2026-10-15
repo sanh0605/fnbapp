@@ -64,11 +64,12 @@ function MonthCard({ yearMonth, value }: { yearMonth: string; value: number }) {
   );
 }
 
-export default async function IssuedValueReportPage({
-  searchParams,
-}: {
-  searchParams: { tab?: string };
-}) {
+export default async function IssuedValueReportPage(
+  props: {
+    searchParams: Promise<{ tab?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const report = await getIssuedValueReport();
   const requestedTab = searchParams?.tab;
   const activeTab: Tab =

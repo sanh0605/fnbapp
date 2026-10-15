@@ -186,3 +186,5 @@ because the map emits both; see `docs/01-system/SYSTEM-MAP.md` (and SYSTEM-OVERV
 for the naming trap explained once.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md
+
+> Reviewed, no behaviour change — 2026-10-15: Next 16 upgrade only; page params became async and revalidateTag gained its expire argument.

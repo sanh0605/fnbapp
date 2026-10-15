@@ -25,7 +25,7 @@ export function getVarianceText(counted: number | null, book: number | null): st
   return "";
 }
 
-export function StocktakeDetailView({ detail }: { detail: Detail }): JSX.Element {
+export function StocktakeDetailView({ detail }: { detail: Detail }) {
   let actions: React.ReactNode = null;
   if (detail.editBlock === null) {
     actions = (

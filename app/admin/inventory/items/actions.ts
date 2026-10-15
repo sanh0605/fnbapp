@@ -173,8 +173,8 @@ export async function addPurchasedItem(formData: FormData): Promise<ActionRespon
     // section 2: Purchased_Items and UOM_Conversions are cached 10 min,
     // keyed by table -- Đơn nhập, Phiếu xuất kho, Kiểm kê all read them
     // through that cache, not this screen's path.
-    revalidateTag(getCacheTag("Purchased_Items"));
-    revalidateTag(getCacheTag("UOM_Conversions"));
+    revalidateTag(getCacheTag("Purchased_Items"), { expire: 0 });
+    revalidateTag(getCacheTag("UOM_Conversions"), { expire: 0 });
     revalidatePath("/admin/inventory/items");
     revalidatePath("/admin/inventory/conversions");
     return ok();
@@ -314,8 +314,8 @@ export async function updatePurchasedItem(formData: FormData): Promise<ActionRes
       retireAssetIds: assetsToRetire.map(a => a.id),
     });
 
-    revalidateTag(getCacheTag("Purchased_Items"));
-    revalidateTag(getCacheTag("UOM_Conversions"));
+    revalidateTag(getCacheTag("Purchased_Items"), { expire: 0 });
+    revalidateTag(getCacheTag("UOM_Conversions"), { expire: 0 });
     revalidatePath("/admin/inventory/items");
     revalidatePath("/admin/inventory/conversions");
     if (assetsToRetire.length > 0) {
@@ -362,7 +362,7 @@ export async function deletePurchasedItemAction(formData: FormData): Promise<Act
     }
 
     await remove(SHEET, id);
-    revalidateTag(getCacheTag("Purchased_Items"));
+    revalidateTag(getCacheTag("Purchased_Items"), { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

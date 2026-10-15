@@ -390,7 +390,7 @@ describe("updateMany", () => {
     expect(result[0]).toMatchObject({ id: "POL-001", unit: "gram" });
     expect(result[1]).toMatchObject({ id: "POL-002", name: "New two", unit: "gram" });
     expect(mocks.supabaseUpdate).toHaveBeenCalledTimes(2);
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Purchase_Order_Lines");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Purchase_Order_Lines", { expire: 0 });
   });
 
   it("returns empty array for empty input without calling Supabase", async () => {

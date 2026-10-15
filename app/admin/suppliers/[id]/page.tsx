@@ -7,13 +7,14 @@ import { SupplierDetailView } from "./components/SupplierDetailView";
 
 export const dynamic = "force-dynamic";
 
-export default async function SupplierDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string; poPage?: string };
-}) {
+export default async function SupplierDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string; poPage?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [suppliers, auth, orders] = await Promise.all([
     getSuppliers(),
     resolveActor(),

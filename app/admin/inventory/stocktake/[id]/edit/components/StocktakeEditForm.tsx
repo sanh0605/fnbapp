@@ -13,7 +13,7 @@ import {
 import { getVarianceText } from "@/app/admin/inventory/stocktake/[id]/components/StocktakeDetailView";
 
 
-export function StocktakeEditForm({ detail }: { detail: Detail }): JSX.Element {
+export function StocktakeEditForm({ detail }: { detail: Detail }) {
   const router = useRouter();
   const savingRef = useRef(false);
   const [loading, setLoading] = useState(false);

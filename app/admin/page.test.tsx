@@ -71,7 +71,7 @@ describe("admin dashboard clock (A6)", () => {
   afterEach(() => vi.useRealTimers());
 
   it("shows the update time in Saigon, not 7 hours behind", async () => {
-    const tree = await AdminDashboard({ searchParams: {} });
+    const tree = await AdminDashboard({ searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join("");
     expect(text).toContain("Cập nhật lúc: 06:30:00");
   });
@@ -79,13 +79,13 @@ describe("admin dashboard clock (A6)", () => {
 
 describe("admin dashboard drops old controls (BR-UI-007)", () => {
   it("renders no DateRangeUrlButton or CompareLine", async () => {
-    const tree = await AdminDashboard({ searchParams: {} });
+    const tree = await AdminDashboard({ searchParams: Promise.resolve({}) });
     expect(elementsOf(tree, DateRangeUrlButton)).toHaveLength(0);
     expect(elementsOf(tree, CompareLine)).toHaveLength(0);
   });
 
   it("renders PageHeader with title and link to dashboard settings", async () => {
-    const tree = await AdminDashboard({ searchParams: {} });
+    const tree = await AdminDashboard({ searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join("|");
     expect(text).toContain("Tổng quan");
     expect(text).toContain("Việc cần xử lý và bán hàng 7 ngày qua.");
@@ -93,7 +93,7 @@ describe("admin dashboard drops old controls (BR-UI-007)", () => {
   });
 
   it("renders DashboardView with loaded data", async () => {
-    const tree = await AdminDashboard({ searchParams: {} });
+    const tree = await AdminDashboard({ searchParams: Promise.resolve({}) });
     const views = elementsOf(tree, DashboardView);
     expect(views).toHaveLength(1);
     expect(views[0].props.data).toEqual(MOCK_DATA);

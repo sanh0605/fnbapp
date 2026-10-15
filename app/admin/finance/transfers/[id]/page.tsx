@@ -7,13 +7,14 @@ import { CashTransferDetailView } from "./components/CashTransferDetailView";
 
 export const dynamic = "force-dynamic";
 
-export default async function CashTransferDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function CashTransferDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [transfer, accounts, auth] = await Promise.all([
     getCashTransfer(params.id),
     getBankAccounts(),

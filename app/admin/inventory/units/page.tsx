@@ -5,11 +5,12 @@ import type { DBUnit } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function UnitsPage({
-  searchParams,
-}: {
-  searchParams?: { page?: string };
-}) {
+export default async function UnitsPage(
+  props: {
+    searchParams?: Promise<{ page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [allUnits, auth] = await Promise.all([
     findAll("Units") as Promise<DBUnit[]>,
     resolveActor(),

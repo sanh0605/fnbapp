@@ -4,11 +4,12 @@ import { resolveActor } from "@/lib/auth/auth";
 
 export const dynamic = "force-dynamic";
 
-export default async function SuppliersPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; page?: string };
-}) {
+export default async function SuppliersPage(
+  props: {
+    searchParams?: Promise<{ q?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [suppliers, auth] = await Promise.all([getSuppliers(), resolveActor()]);
   // BR-ACCESS-003: permanent deletion is ADMIN only -- hiding the button is
   // courtesy, the server-side requireOwner() in deleteSupplierAction is

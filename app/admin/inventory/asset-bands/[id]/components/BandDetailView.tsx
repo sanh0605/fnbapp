@@ -16,7 +16,7 @@ export interface BandDetailViewProps {
 export function BandDetailView({
   band,
   returnTo,
-}: BandDetailViewProps): JSX.Element {
+}: BandDetailViewProps) {
   const detailUrl = `/admin/inventory/asset-bands/${encodeURIComponent(band.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/inventory/asset-bands/edit?returnTo=${encodeURIComponent(detailUrl)}`;
 

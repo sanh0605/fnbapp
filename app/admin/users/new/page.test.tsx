@@ -25,7 +25,7 @@ describe("NewUserPage", () => {
       actor: { id: "USR-001", name: "admin", role: "ADMIN" },
     });
 
-    const element = await NewUserPage({ searchParams: {} });
+    const element = await NewUserPage({ searchParams: Promise.resolve({}) });
     const children = React.Children.toArray(element.props.children);
     const formChild: any = children.find((c: any) => c.props?.canGrantAdmin !== undefined);
     expect(formChild).toBeDefined();
@@ -38,7 +38,7 @@ describe("NewUserPage", () => {
       actor: { id: "USR-002", name: "manager", role: "MANAGER" },
     });
 
-    const element = await NewUserPage({ searchParams: {} });
+    const element = await NewUserPage({ searchParams: Promise.resolve({}) });
     const children = React.Children.toArray(element.props.children);
     const formChild: any = children.find((c: any) => c.props?.canGrantAdmin !== undefined);
     expect(formChild).toBeDefined();

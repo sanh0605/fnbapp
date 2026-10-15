@@ -24,7 +24,7 @@ export function OutletDetailView({
   outlet,
   brandName,
   returnTo,
-}: OutletDetailViewProps): JSX.Element {
+}: OutletDetailViewProps) {
   const router = useRouter();
   const [retireLoading, setRetireLoading] = useState(false);
   const [reactivateLoading, setReactivateLoading] = useState(false);

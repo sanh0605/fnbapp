@@ -59,7 +59,7 @@ export default function UsersClient({
   initialSearch,
   initialRole,
   initialPage,
-}: UsersClientProps): JSX.Element {
+}: UsersClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawSort = searchParams?.get("sort");

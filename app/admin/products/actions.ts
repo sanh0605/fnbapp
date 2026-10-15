@@ -161,9 +161,9 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     // 10-minute catalog TTL after a save here. The manual "Xoá Cache" button
     // (app/admin/clear-cache/page.tsx) already calls these same two tags;
     // this makes that automatic on the write, not a new mechanism.
-    revalidateTag("sheets-Products");
-    revalidateTag("sheets-Product_Variants");
-    revalidateTag("sheets-Modifier_Group_Products");
+    revalidateTag("sheets-Products", { expire: 0 });
+    revalidateTag("sheets-Product_Variants", { expire: 0 });
+    revalidateTag("sheets-Modifier_Group_Products", { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -206,8 +206,8 @@ async function setStatus(formData: FormData, status: "ACTIVE" | "INACTIVE"): Pro
     await setProductStatusAtomic(id, status);
     // POS reads these two tables through a cache tag, not this screen's path
     // (the owner hit a stale POS right after a resume, 2026-08-31).
-    revalidateTag("sheets-Products");
-    revalidateTag("sheets-Product_Variants");
+    revalidateTag("sheets-Products", { expire: 0 });
+    revalidateTag("sheets-Product_Variants", { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -239,8 +239,8 @@ export async function eraseProduct(formData: FormData): Promise<ActionResponse> 
     // same fix as the other three actions above -- an erased (never-sold)
     // product must stop being offered on POS without waiting on the cache
     // TTL, same as a paused or resumed one.
-    revalidateTag("sheets-Products");
-    revalidateTag("sheets-Product_Variants");
+    revalidateTag("sheets-Products", { expire: 0 });
+    revalidateTag("sheets-Product_Variants", { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

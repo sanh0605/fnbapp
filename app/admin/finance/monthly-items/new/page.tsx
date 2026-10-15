@@ -11,11 +11,12 @@ function safeReturnTo(raw: string | undefined | null, fallback: string = "/admin
   return fallback;
 }
 
-export default async function NewMonthlyItemPage({
-  searchParams,
-}: {
-  searchParams?: { returnTo?: string };
-}) {
+export default async function NewMonthlyItemPage(
+  props: {
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(searchParams?.returnTo);
   const categories = await getCashCategories();
 
