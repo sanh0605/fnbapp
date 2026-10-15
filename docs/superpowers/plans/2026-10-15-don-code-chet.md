@@ -38,14 +38,16 @@ Thêm cho việc này:
 
 ## Phiếu S2 (Sonnet)
 
-- [ ] Xoá `components/ui/DeleteConfirmModal.tsx` (51 dòng), `components/ui/FormModal.tsx` (146), `components/ui/LoadingButton.tsx` (45); sửa chú thích nhắc tên chúng nếu chú thích thành sai (`app/admin/no-popups.test.ts:7`, `PurchasedItemForm.test.tsx:95`).
-- [ ] Xoá `getCashEntries` (`app/admin/finance/actions.ts`; giữ `getCashEntriesThrough` đang dùng) và test của nó; xoá `summariseEntries` (`lib/finance/cash-entry-rules.ts`) nếu ngoài test chỉ còn chú thích nhắc; sửa chú thích `actions.ts:151`.
-- [ ] Xoá `getPromotionPerformanceV2` (`app/admin/reports/engagement-actions.ts`) và test của nó.
-- [ ] Trong `lib/shared/money-digits.ts`: xoá hàm export không ai import (kể cả qua `number-edit.ts`), cùng test của hàm đó.
-- [ ] `tests/migrations/`: mỗi file, ghi một dòng "canh gì — còn sống / đã gỡ ở migration nào". Xoá file canh thứ đã gỡ hẳn. Bảng kết quả để trong báo cáo.
-- [ ] Năm cửa kiểm; đo lại số dòng và lint; một commit `chore(cleanup): …` kèm số trước/sau.
+- [x] Xoá `components/ui/DeleteConfirmModal.tsx` (51 dòng), `components/ui/FormModal.tsx` (146), `components/ui/LoadingButton.tsx` (45); sửa chú thích nhắc tên chúng nếu chú thích thành sai (`app/admin/no-popups.test.ts:7`, `PurchasedItemForm.test.tsx:95`).
+- [x] Xoá `getCashEntries` (`app/admin/finance/actions.ts`; giữ `getCashEntriesThrough` đang dùng) và test của nó; xoá `summariseEntries` (`lib/finance/cash-entry-rules.ts`) nếu ngoài test chỉ còn chú thích nhắc; sửa chú thích `actions.ts:151`.
+- [x] Xoá `getPromotionPerformanceV2` (`app/admin/reports/engagement-actions.ts`) và test của nó.
+- [x] Trong `lib/shared/money-digits.ts`: xoá hàm export không ai import (kể cả qua `number-edit.ts`), cùng test của hàm đó.
+- [x] `tests/migrations/`: mỗi file, ghi một dòng "canh gì — còn sống / đã gỡ ở migration nào". Xoá file canh thứ đã gỡ hẳn. Bảng kết quả để trong báo cáo.
+- [x] Năm cửa kiểm; đo lại số dòng và lint; một commit `chore(cleanup): …` kèm số trước/sau.
+
+Kết quả S2 (2026-10-15, `2b0db1ee`): 129.503 → 128.328 dòng (−1.175); `tests/migrations` 65 → 49 file, 3.964 → 3.307 dòng (16 file canh thứ đã gỡ, đối chiếu máy chủ: 0 dòng trên 24 đối tượng đã bỏ); lint 98 → 97; vitest 477 file, 3.697 test xanh. `money-digits.ts` chỉ bỏ `toMoneyDigits`, `toMoneyDigitsUncapped`.
 
 ## O3 (Opus)
 
-- [ ] Soát diff: mỗi thứ xoá có grep 0; không chữ nào chủ quán thấy bị đổi.
+- [x] Soát diff: mỗi thứ xoá có grep 0; không chữ nào chủ quán thấy bị đổi.
 - [ ] Ghi số trước/sau vào kế hoạch chung; hỏi chủ quán duyệt đẩy.
