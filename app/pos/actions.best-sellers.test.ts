@@ -55,7 +55,6 @@ function makeOrder(id: string) {
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
-    currency: "VND",
     gross_total: 10000,
     promo_discount_total: 0,
     manual_item_discount_total: 0,
@@ -65,7 +64,6 @@ function makeOrder(id: string) {
     applied_promotion_snapshot_json: "",
     pos_snapshot_json: "{}",
     payment_method: "CASH",
-    payment_ref: "",
     migration_notes: "",
   };
 }
@@ -86,10 +84,7 @@ function makeLine(orderId: string, lineId: string, productId: string, name: stri
     manual_item_discount: 0,
     order_discount_allocation: 0,
     net_line_total: 10000 * qty,
-    cost_at_sale: 0,
-    recipe_snapshot_json: "{}",
     promo_discount_reason: "",
-    manual_discount_reason: "",
     modifiers_snapshot_json: "[]",
   };
 }

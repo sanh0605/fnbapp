@@ -7,6 +7,8 @@ tables: POS_Drafts, Pos_Sync_Failures, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
+**Reviewed, no behaviour change — 2026-10-15 (Bán hàng đợt 3, A4b):** `app/pos/actions.ts` comment only: `cost_at_sale` is no longer mentioned, because migration `0121` drops the column.
+
 **Behaviour change — 2026-10-15 (Bán hàng đợt 2, design in `docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`):**
 - Huỷ đơn is its own page, `/admin/orders/[id]/void`, with a required reason, instead of a popup (`BR-DATA-007`). The page refuses an order that is not COMPLETED, and so does `voidOrderV2`; the database stays idempotent for a retry.
 - `voidOrderV2` answers in Vietnamese and no longer passes raw database text.

@@ -264,3 +264,54 @@ describe("restoreBundleToTarget", () => {
     });
   });
 });
+describe("rows from a bundle taken before migration 0121", () => {
+  const insertsOf = (calls: Array<{ table: string; rows: unknown[] }>, table: string) =>
+    calls.filter(c => c.table === table).flatMap(c => c.rows);
+
+  it("drops the retired columns and turns empty link text into null", async () => {
+    const calls: Array<{ table: string; rows: unknown[] }> = [];
+    const client = fakeClient((table, rows) => (calls.push({ table, rows }), { error: null }));
+    const bundle = fakeBundle({
+      orders_v2: [{ id: "o1", version: 1, currency: "VND", payment_ref: "", parent_order_id: "", superseded_by: "", voided_by_id: "", applied_promotion_id: "PRM-003" }],
+      order_lines_v2: [{ id: "l1", qty: 1, cost_at_sale: 0, recipe_snapshot_json: {}, manual_discount_reason: "" }],
+      order_events: [{ id: "e1", previous_order_id: "" }],
+      products: [{ id: "P1", description: null, brand_id: null, sort_order: 0 }],
+      product_variants: [{ id: "V1", sort_order: 0 }],
+      modifiers: [{ id: "M1", group_id: "MG-1", sort_order: 0 }],
+    });
+
+    await restoreBundleToTarget(bundle, client, ["orders_v2", "order_lines_v2", "order_events", "products", "product_variants", "modifiers"], 500);
+
+    expect(insertsOf(calls, "orders_v2")).toEqual([{ id: "o1", version: 1, parent_order_id: null, superseded_by: null, voided_by_id: null, applied_promotion_id: "PRM-003" }]);
+    expect(insertsOf(calls, "order_lines_v2")).toEqual([{ id: "l1", qty: 1 }]);
+    expect(insertsOf(calls, "order_events")).toEqual([{ id: "e1", previous_order_id: null }]);
+    expect(insertsOf(calls, "products")).toEqual([{ id: "P1" }]);
+    expect(insertsOf(calls, "product_variants")).toEqual([{ id: "V1" }]);
+    expect(insertsOf(calls, "modifiers")).toEqual([{ id: "M1", group_id: "MG-1" }]);
+  });
+
+  it("inserts orders oldest version first and links superseded_by afterwards, since the two rows point at each other", async () => {
+    const order: string[] = [];
+    const client = {
+      from: () => ({
+        insert: (rows: Array<{ id: string; superseded_by: unknown }>) => {
+          rows.forEach(r => order.push(`insert ${r.id} superseded_by=${r.superseded_by}`));
+          return Promise.resolve({ error: null });
+        },
+        update: (values: { superseded_by: string }) => ({
+          eq: (_col: string, id: string) => (order.push(`update ${id} -> ${values.superseded_by}`), Promise.resolve({ error: null })),
+        }),
+      }),
+    } as any;
+    const bundle = fakeBundle({
+      orders_v2: [
+        { id: "new", version: 2, parent_order_id: "old", superseded_by: "" },
+        { id: "old", version: 1, parent_order_id: "", superseded_by: "new" },
+      ],
+    });
+
+    await restoreBundleToTarget(bundle, client, ["orders_v2"], 500);
+
+    expect(order).toEqual(["insert old superseded_by=null", "insert new superseded_by=null", "update old -> new"]);
+  });
+});

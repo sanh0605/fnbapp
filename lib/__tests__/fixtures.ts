@@ -91,10 +91,7 @@ function buildLine(orderId: string, spec: LineSpec): OrderLineV2 {
     manual_item_discount: manualItem,
     order_discount_allocation: spec.order_discount_allocation,
     net_line_total: net,
-    cost_at_sale: 0, // not tracked in fixtures; migration script will populate
-    recipe_snapshot_json: "{}", // not tracked in fixtures; migration script will populate
     promo_discount_reason: spec.line_discount > 0 ? "PRM-003" : "",
-    manual_discount_reason: "",
   };
 }
 
@@ -134,7 +131,6 @@ export function makeSuaDauStandaloneOrder(): { order: OrderV2; lines: OrderLineV
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
-    currency: "VND",
     gross_total: 35000,
     promo_discount_total: 10000,
     manual_item_discount_total: 0,
@@ -144,7 +140,6 @@ export function makeSuaDauStandaloneOrder(): { order: OrderV2; lines: OrderLineV
     applied_promotion_snapshot_json: JSON.stringify(PRM_003_SNAPSHOT),
     pos_snapshot_json: "{}",
     payment_method: "CASH",
-    payment_ref: "",
     migration_notes: "",
   };
 
@@ -212,7 +207,6 @@ function buildUCK000094Order(netTotal: number, migrationNotes: string): OrderV2 
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
-    currency: "VND",
     gross_total: UCK000094_GROSS_TOTAL,
     promo_discount_total: UCK000094_PROMO_TOTAL,
     manual_item_discount_total: 0,
@@ -222,7 +216,6 @@ function buildUCK000094Order(netTotal: number, migrationNotes: string): OrderV2 
     applied_promotion_snapshot_json: JSON.stringify(PRM_003_SNAPSHOT),
     pos_snapshot_json: "{}",
     payment_method: "BANK_TRANSFER",
-    payment_ref: "",
     migration_notes: migrationNotes,
   };
 }
@@ -291,7 +284,6 @@ function buildPHD000540Order(orderDiscount: number, migrationNotes: string): Ord
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
-    currency: "VND",
     gross_total: 21000,
     promo_discount_total: 3000,
     manual_item_discount_total: 0,
@@ -301,7 +293,6 @@ function buildPHD000540Order(orderDiscount: number, migrationNotes: string): Ord
     applied_promotion_snapshot_json: JSON.stringify(PRM_003_SNAPSHOT),
     pos_snapshot_json: "{}",
     payment_method: "CASH",
-    payment_ref: "",
     migration_notes: migrationNotes,
   };
 }
@@ -363,7 +354,6 @@ export function makeNoDiscountOrder(): { order: OrderV2; lines: OrderLineV2[] } 
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
-    currency: "VND",
     gross_total: 60000,
     promo_discount_total: 0,
     manual_item_discount_total: 0,
@@ -373,7 +363,6 @@ export function makeNoDiscountOrder(): { order: OrderV2; lines: OrderLineV2[] } 
     applied_promotion_snapshot_json: "",
     pos_snapshot_json: "{}",
     payment_method: "CASH",
-    payment_ref: "",
     migration_notes: "",
   };
   return { order, lines: [line] };
@@ -439,7 +428,6 @@ export function makeCapacityCapOrder(): { order: OrderV2; lines: OrderLineV2[] }
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
-    currency: "VND",
     gross_total: 50000,
     promo_discount_total: 25000,
     manual_item_discount_total: 0,
@@ -449,7 +437,6 @@ export function makeCapacityCapOrder(): { order: OrderV2; lines: OrderLineV2[] }
     applied_promotion_snapshot_json: "",
     pos_snapshot_json: "{}",
     payment_method: "CASH",
-    payment_ref: "",
     migration_notes: "",
   };
   return { order, lines: [lineA, lineB] };

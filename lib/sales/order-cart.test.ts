@@ -383,23 +383,8 @@ describe("buildOrderFromCart", () => {
     expect(result.lines.length).toBe(2);
   });
 
-  // section 2:
-  // recipe_snapshot_json stopped being written 2026-09-01 -- no longer even
-  // the inert no-recipe shell this test used to assert (Phase 2 had already
-  // emptied its content; this task stops writing it at all). An empty
-  // string, not "{}" or a JSON shell -- it round-trips through
-  // parseJsonColumns (pos-order-transaction.ts/order-edit-transaction.ts)
-  // to {}, matching the column's own NOT NULL default. Confirmed red on
-  // the pre-fix code before this change: the old assertion (JSON.parse
-  // producing the empty-ingredients shell) still passed then, since the
-  // write side hadn't changed -- this replacement asserts the opposite
-  // value on purpose, not a missing function.
-  it("recipe_snapshot_json is an empty string -- no shell, no recipe, nothing written", () => {
-    const refWithModifier: ReferenceData = {
-      ...REF,
-      modifiers: [{ id: "MOD-004", name: "Trân châu trắng", price: "5000", status: "ACTIVE" }],
-    };
-
+  // Migration 0121 drops these columns; the till must stop sending them.
+  it("sends none of the columns migration 0121 drops", () => {
     const result = buildOrderFromCart({
       brand_id: "BR-002",
       outlet_id: "OUT-002",
@@ -407,14 +392,18 @@ describe("buildOrderFromCart", () => {
         product_id: "PROD-024",
         variant_id: "VAR-031",
         qty: 1,
-        modifiers: [{ modifier_id: "MOD-004", modifier_qty: 1 }],
-        manual_item_discount: { value: 0, type: "VND" },
+        modifiers: [],
+        manual_item_discount: { value: 1000, type: "VND" },
       }],
       payment_method: "CASH",
       actor: { id: "U1", name: "Test" },
-    }, refWithModifier);
+    }, REF);
 
-    expect(result.lines[0].recipe_snapshot_json).toBe("");
+    expect(result.order).not.toHaveProperty("currency");
+    expect(result.order).not.toHaveProperty("payment_ref");
+    for (const key of ["cost_at_sale", "recipe_snapshot_json", "manual_discount_reason"]) {
+      expect(result.lines[0]).not.toHaveProperty(key);
+    }
   });
 
   it("no longer returns resolvedRecipes -- nothing consumed it (section 1.3, 0 results outside the two files that produced it)", () => {

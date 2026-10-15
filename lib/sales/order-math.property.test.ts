@@ -39,10 +39,7 @@ describe("Property tests", () => {
               manual_item_discount: manualItem,
               order_discount_allocation: 0,
               net_line_total: 0,
-              cost_at_sale: 0,
-              recipe_snapshot_json: "{}",
               promo_discount_reason: "",
-              manual_discount_reason: "",
             });
           }
 
@@ -72,7 +69,6 @@ describe("Property tests", () => {
             voided_at: "",
             voided_by_id: "",
             void_reason: "",
-            currency: "VND",
             gross_total: lines.reduce((s, l) => s + l.gross_line_total, 0),
             promo_discount_total: lines.reduce((s, l) => s + l.promo_discount, 0),
             manual_item_discount_total: lines.reduce((s, l) => s + l.manual_item_discount, 0),
@@ -85,7 +81,6 @@ describe("Property tests", () => {
             applied_promotion_snapshot_json: "",
             pos_snapshot_json: "{}",
             payment_method: "CASH",
-            payment_ref: "",
             migration_notes: "",
           };
 
