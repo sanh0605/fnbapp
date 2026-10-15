@@ -46,15 +46,15 @@ describe("ProductCategoryDetailPage", () => {
 
   it("calls notFound when category id is unknown", async () => {
     await expect(
-      ProductCategoryDetailPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      ProductCategoryDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("excludes DELETED dishes from the dishes passed to view", async () => {
     const element = await ProductCategoryDetailPage({
-      params: { id: "CAT-001" },
-      searchParams: {},
+      params: Promise.resolve({ id: "CAT-001" }),
+      searchParams: Promise.resolve({}),
     });
 
     expect(notFoundMock).not.toHaveBeenCalled();
@@ -66,8 +66,8 @@ describe("ProductCategoryDetailPage", () => {
 
   it("does not pass function props to Client Component", async () => {
     const element = await ProductCategoryDetailPage({
-      params: { id: "CAT-001" },
-      searchParams: { returnTo: "/admin/products/categories?q=ca" },
+      params: Promise.resolve({ id: "CAT-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/products/categories?q=ca" }),
     });
 
     const props = element.props;

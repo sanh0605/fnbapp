@@ -23,7 +23,7 @@ export function UserDetailView({
   returnTo,
   canDelete,
   canGrantAdmin = true,
-}: UserDetailViewProps): JSX.Element {
+}: UserDetailViewProps) {
   const currentDetailUrl = `/admin/users/${encodeURIComponent(user.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/users/${encodeURIComponent(user.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
   const canEdit = canGrantAdmin || user.role !== "ADMIN";

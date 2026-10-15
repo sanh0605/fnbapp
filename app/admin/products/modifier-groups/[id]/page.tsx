@@ -8,13 +8,14 @@ import { safeReturnTo } from "@/app/admin/products/components/return-to";
 
 export const dynamic = "force-dynamic";
 
-export default async function ModifierGroupDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function ModifierGroupDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [groupData, auth, allProducts, allCategories] = await Promise.all([
     getModifierGroup(params.id),
     resolveActor(),

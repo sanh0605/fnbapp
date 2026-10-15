@@ -14,7 +14,7 @@ export function FilterCard({
   onApply,
   onClear,
   showClear,
-}: FilterCardProps): JSX.Element {
+}: FilterCardProps) {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") {
       const target = e.target as HTMLElement;

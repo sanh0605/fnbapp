@@ -7,12 +7,13 @@ import { getPOSBestSellerProductIds } from "./actions";
 
 export const dynamic = 'force-dynamic';
 
-export default async function POSPage({
-  searchParams,
-}: {
-  params: any;
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
+export default async function POSPage(
+  props: {
+    params: Promise<any>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await getServerSession(authOptions);
 
   if (!session) {

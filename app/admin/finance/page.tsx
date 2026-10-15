@@ -11,11 +11,12 @@ export const dynamic = "force-dynamic";
 
 const readParam = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-export default async function FinancePage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function FinancePage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const today = saigonToday();
   const range = readRangeParams(searchParams ?? {}, today, "THIS_MONTH");
 

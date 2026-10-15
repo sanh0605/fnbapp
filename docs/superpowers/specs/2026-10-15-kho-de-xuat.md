@@ -72,7 +72,7 @@ Not seen:
 
 ## Owner decisions, asked one at a time
 
-None asked yet. The owner said he will come back to them.
+Asked 2026-10-15. Q1, Q2, Q3, Q4, Q8, Q9 and Q10: he took the recommendation. Q7: he chose (c), counting when needed (`BR-INV-021`). Recorded as `BR-CATALOG-007` (Q3), `BR-INV-019` (Q1, Q2), `BR-INV-020` (Q4), `BR-INV-021` (Q7), `BR-INV-022` (Q8, Q9) and `BR-INV-023` (Q10). Not asked yet: Q5 waits until paying one purchase several ways is built; Q6 is asked in the Thu chi area.
 
 | # | Question | Options | Recommendation | Source |
 |---|---|---|---|---|

@@ -13,13 +13,14 @@ function safeReturnTo(raw: string | undefined | null, fallback: string = "/admin
   return fallback;
 }
 
-export default async function EditMonthlyItemPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function EditMonthlyItemPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const rawReturnTo = safeReturnTo(searchParams?.returnTo);
 
   const [item, categories] = await Promise.all([

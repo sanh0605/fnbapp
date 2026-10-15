@@ -56,7 +56,7 @@ export function EditBandsForm({
   bands,
   returnTo: rawReturnTo,
   canRemove = false,
-}: EditBandsFormProps): JSX.Element {
+}: EditBandsFormProps) {
   const router = useRouter();
   const returnTo = safeReturnTo(rawReturnTo, "/admin/inventory/asset-bands");
 

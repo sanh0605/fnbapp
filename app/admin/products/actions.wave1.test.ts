@@ -142,7 +142,7 @@ describe("Nhóm tuỳ chọn ticks on the dish form", () => {
     fd.append("option_group_ids", "MG-002");
     await saveProduct(fd);
     expect(mocks.saveProductAtomic.mock.calls[0][0].optionGroupIds).toEqual(["MG-001", "MG-002"]);
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifier_Group_Products");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifier_Group_Products", { expire: 0 });
   });
 
   it("sends an empty list when the tick list was shown and every group is unticked", async () => {

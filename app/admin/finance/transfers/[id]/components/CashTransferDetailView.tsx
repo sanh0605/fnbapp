@@ -28,7 +28,7 @@ export function CashTransferDetailView({
   accounts,
   returnTo,
   canDelete,
-}: CashTransferDetailViewProps): JSX.Element {
+}: CashTransferDetailViewProps) {
   const router = useRouter();
   const [cancelLoading, setCancelLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);

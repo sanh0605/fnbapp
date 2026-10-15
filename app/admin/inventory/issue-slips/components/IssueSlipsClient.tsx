@@ -69,7 +69,7 @@ export default function IssueSlipsClient({
   range,
   today,
   searching = false,
-}: IssueSlipsClientProps): JSX.Element {
+}: IssueSlipsClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

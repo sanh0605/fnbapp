@@ -7,13 +7,14 @@ import { safeReturnTo } from "@/app/admin/products/components/return-to";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditProductTypePage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function EditProductTypePage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const rawReturnTo = safeReturnTo(
     searchParams?.returnTo,
     "/admin/products/types",

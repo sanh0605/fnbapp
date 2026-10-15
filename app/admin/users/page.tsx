@@ -5,11 +5,12 @@ import UsersClient from "./components/UsersClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function UsersPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; role?: string; page?: string };
-}) {
+export default async function UsersPage(
+  props: {
+    searchParams?: Promise<{ q?: string; role?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [users, auth] = await Promise.all([getUsers(), resolveActor()]);
   const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
   const canGrantAdmin = Boolean(

@@ -155,3 +155,5 @@ cost path (`BR-COGS-005`).
 > Reviewed, 2026-09-29: the list page calls getPurchaseOrdersPage to support server-side search, filters by status, supplier, and whole Saigon days; it sorts newest slip first, shows 20 per page, and tracks the page number in the URL.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md
+
+> Reviewed, no behaviour change — 2026-10-15: Next 16 upgrade only; page params became async and revalidateTag gained its expire argument.

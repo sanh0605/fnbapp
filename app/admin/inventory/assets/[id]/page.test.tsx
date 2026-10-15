@@ -98,8 +98,8 @@ describe("AssetDetailPage", () => {
     mockGetAssetItemDetail.mockResolvedValue(MOCK_DETAIL);
 
     const element = await AssetDetailPage({
-      params: { id: "SPM-BINH" },
-      searchParams: { returnTo: "/admin/inventory/assets" },
+      params: Promise.resolve({ id: "SPM-BINH" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/inventory/assets" }),
     });
 
     const props = element.props;
@@ -113,8 +113,8 @@ describe("AssetDetailPage", () => {
 
     await expect(
       AssetDetailPage({
-        params: { id: "TS-004" },
-        searchParams: { returnTo: "/admin/inventory/assets" },
+        params: Promise.resolve({ id: "TS-004" }),
+        searchParams: Promise.resolve({ returnTo: "/admin/inventory/assets" }),
       }),
     ).rejects.toThrow("NEXT_REDIRECT");
 
@@ -129,8 +129,8 @@ describe("AssetDetailPage", () => {
 
     await expect(
       AssetDetailPage({
-        params: { id: "TS-999" },
-        searchParams: { returnTo: "/admin/inventory/assets" },
+        params: Promise.resolve({ id: "TS-999" }),
+        searchParams: Promise.resolve({ returnTo: "/admin/inventory/assets" }),
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
@@ -142,8 +142,8 @@ describe("AssetDetailPage", () => {
 
     await expect(
       AssetDetailPage({
-        params: { id: "SPM-UNKNOWN" },
-        searchParams: { returnTo: "/admin/inventory/assets" },
+        params: Promise.resolve({ id: "SPM-UNKNOWN" }),
+        searchParams: Promise.resolve({ returnTo: "/admin/inventory/assets" }),
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
 

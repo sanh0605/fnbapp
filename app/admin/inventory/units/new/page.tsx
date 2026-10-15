@@ -5,11 +5,12 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
-export default function NewUnitPage({
-  searchParams,
-}: {
-  searchParams?: { returnTo?: string };
-}) {
+export default async function NewUnitPage(
+  props: {
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/inventory/units");
 
   return (

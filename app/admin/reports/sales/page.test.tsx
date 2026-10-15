@@ -37,18 +37,18 @@ describe("sales report default range (A8)", () => {
   it("defaults to the Saigon month: 06:10 on 01/10 is the whole of October", async () => {
     // 2026-09-30T23:10:00Z = 01/10/2026 06:10 Saigon
     vi.setSystemTime(new Date("2026-09-30T23:10:00Z"));
-    await SalesReportPage({ searchParams: {} });
+    await SalesReportPage({ searchParams: Promise.resolve({}) });
     expect(getSalesDataV2.mock.calls[0][0]).toMatchObject({ startDate: "2026-10-01", endDate: "2026-10-31" });
   });
 
   it("06:30 on 15/09 gives 01/09 to 30/09", async () => {
     vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
-    await SalesReportPage({ searchParams: {} });
+    await SalesReportPage({ searchParams: Promise.resolve({}) });
     expect(getSalesDataV2.mock.calls[0][0]).toMatchObject({ startDate: "2026-09-01", endDate: "2026-09-30" });
   });
 
   it("renders Vietnamese-only labels without '(Net)' or '(Heatmap)'", async () => {
-    const tree = await SalesReportPage({ searchParams: {} });
+    const tree = await SalesReportPage({ searchParams: Promise.resolve({}) });
     const json = JSON.stringify(tree);
     expect(json).toContain("Tổng doanh thu thuần");
     expect(json).not.toContain("(Net)");
@@ -71,7 +71,7 @@ describe("Doanh số compare cards (BR-UI-007)", () => {
   afterEach(() => vi.useRealTimers());
 
   it("Tháng này on 09/10 compares with 01/09 – 09/09 under the same filters", async () => {
-    const tree = await SalesReportPage({ searchParams: { brandId: "B1", staffName: "An", categoryId: "CAT-DRINKS" } });
+    const tree = await SalesReportPage({ searchParams: Promise.resolve({ brandId: "B1", staffName: "An", categoryId: "CAT-DRINKS" }) });
     expect(getSalesDataV2.mock.calls[0][0]).toMatchObject({ startDate: "2026-10-01", endDate: "2026-10-31", brandId: "B1" });
     expect(getSalesTotalsV2).toHaveBeenCalledTimes(1);
     expect(getSalesTotalsV2.mock.calls[0][0]).toEqual({
@@ -81,7 +81,7 @@ describe("Doanh số compare cards (BR-UI-007)", () => {
   });
 
   it("Hôm nay compares twice: 08/10 and Friday 02/10", async () => {
-    const tree = await SalesReportPage({ searchParams: { range: "TODAY", brandId: "B1" } });
+    const tree = await SalesReportPage({ searchParams: Promise.resolve({ range: "TODAY", brandId: "B1" }) });
     expect(getSalesDataV2.mock.calls[0][0]).toMatchObject({ startDate: "2026-10-09", endDate: "2026-10-09" });
     const calls = getSalesTotalsV2.mock.calls.map(c => c[0]);
     expect(calls).toEqual([
@@ -94,12 +94,12 @@ describe("Doanh số compare cards (BR-UI-007)", () => {
   });
 
   it("a range wholly in the future fetches nothing to compare", async () => {
-    await SalesReportPage({ searchParams: { range: "CUSTOM", from: "2026-11-01", to: "2026-11-05" } });
+    await SalesReportPage({ searchParams: Promise.resolve({ range: "CUSTOM", from: "2026-11-01", to: "2026-11-05" }) });
     expect(getSalesTotalsV2).not.toHaveBeenCalled();
   });
 
   it("an old ?start=&end= link is no longer read; the page opens on Tháng này", async () => {
-    await SalesReportPage({ searchParams: { start: "2026-09-01", end: "2026-09-05" } });
+    await SalesReportPage({ searchParams: Promise.resolve({ start: "2026-09-01", end: "2026-09-05" }) });
     expect(getSalesDataV2.mock.calls[0][0]).toMatchObject({ startDate: "2026-10-01", endDate: "2026-10-31" });
   });
 });
@@ -115,7 +115,7 @@ describe("Doanh số never sends account secrets to the browser (BR-ACCESS-002)"
         ? [{ id: "U-1", name: "Chủ quán", username: "admin", status: "ACTIVE", role: "ADMIN", password_hash: "$2b$10$secret-hash" }]
         : [],
     );
-    const json = JSON.stringify(await SalesReportPage({ searchParams: {} }));
+    const json = JSON.stringify(await SalesReportPage({ searchParams: Promise.resolve({}) }));
     expect(json).not.toContain("secret-hash");
     expect(json).not.toContain("password_hash");
     expect(json).toContain('"username":"admin"');
@@ -181,7 +181,7 @@ describe("Doanh số drink vs food split reads Product_Types (audit B10)", () =>
       ],
     });
 
-    const tree = await SalesReportPage({ searchParams: {} });
+    const tree = await SalesReportPage({ searchParams: Promise.resolve({}) });
     const foodTable = findElement(tree, (el) => el?.props?.title === "Top sale - Thức ăn");
     const drinkTable = findElement(tree, (el) => el?.props?.title === "Top sale - Nước");
 
@@ -214,7 +214,7 @@ describe("Doanh số Vietnamese labels (audit B11)", () => {
     getHourlyHeatmapV2.mockResolvedValue([]);
     getSalesTotalsV2.mockResolvedValue({ totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 });
 
-    const tree = await SalesReportPage({ searchParams: {} });
+    const tree = await SalesReportPage({ searchParams: Promise.resolve({}) });
     const json = JSON.stringify(tree);
     expect(json).toContain("Trước giảm giá:");
     expect(json).toContain("Doanh thu trước giảm giá");
@@ -246,7 +246,7 @@ describe("Doanh số dish category filter hides order-level figures (audit B3)",
   afterEach(() => vi.useRealTimers());
 
   it("with categoryId set, discount and payment sections and order-level card lines are hidden and explanatory notice is present", async () => {
-    const tree = await SalesReportPage({ searchParams: { categoryId: "CAT-CAFE" } });
+    const tree = await SalesReportPage({ searchParams: Promise.resolve({ categoryId: "CAT-CAFE" }) });
     const json = JSON.stringify(tree);
 
     expect(json).not.toContain("Chi tiết giảm giá");
@@ -258,7 +258,7 @@ describe("Doanh số dish category filter hides order-level figures (audit B3)",
   });
 
   it("without categoryId, discount and payment sections and order-level card lines are present and explanatory notice is absent", async () => {
-    const tree = await SalesReportPage({ searchParams: {} });
+    const tree = await SalesReportPage({ searchParams: Promise.resolve({}) });
     const json = JSON.stringify(tree);
 
     expect(json).toContain("Chi tiết giảm giá");

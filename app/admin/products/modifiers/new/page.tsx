@@ -7,11 +7,12 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewModifierPage({
-  searchParams,
-}: {
-  searchParams?: { returnTo?: string };
-}) {
+export default async function NewModifierPage(
+  props: {
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const groups = (await findAll("Modifier_Groups")) as DBModifierGroup[];
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/products/modifiers");
 

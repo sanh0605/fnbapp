@@ -70,7 +70,7 @@ function getConvertedQuantityText(
   return `${qtyFormatted} ${item.unitName}`;
 }
 
-export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.Element {
+export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
   const router = useRouter();
   const [lines, setLines] = useState<DraftLine[]>([emptyLine()]);
   const [issuedAtLocal, setIssuedAtLocal] = useState(() => toSaigonIsoString(new Date()).slice(0, 16));

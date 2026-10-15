@@ -154,3 +154,17 @@ A manual issue slip entered by mistake is never deleted and never edited. It is 
 - **Cancelling a whole issue slip**, beside the existing per-line reversal — settles I11 (Plan D §5 I11). Reverses every not-yet-reversed line of a slip in one call, one reason. Same `requireAdmin()` level as the existing per-line reversal, deliberately not raised to owner-only — an issue slip records waste or internal use, not a check on the person who counted.
 
 Implemented `supabase/migrations/0062_reverse_confirmed_stocktake_and_issue_slip.sql`; full case list in the plan's §5 "Undoing a confirmed count or a whole issue slip" (U1-U13).
+
+### BR-INV-019 — The Tồn kho page shows quantity, value and last-count date, and an automatic "đủ dùng khoảng X ngày"
+
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit questions Q1 and Q2. Not built yet: Kho step 5, a new screen that goes through all four steps (`docs/superpowers/specs/2026-10-15-kho-de-xuat.md`).
+
+- **What each row shows** (Q1, *"Số lượng + tiền + ngày kiểm"*): the quantity on hand, what it is worth, and the date of the item's last stocktake count, or "chưa kiểm lần nào". The total value sits at the top. He was shown, measured that morning: a total of 18.118.999đ, and "Ly Uchako 700ml — 1.650 ly — 2.053.982đ — chưa kiểm lần nào". He chose this over two extra filters ("chưa kiểm bao giờ", "lâu chưa xuất") and over quantity only.
+- **"Sắp hết" is worked out, never typed** (Q2, *"Tự tính đủ dùng X ngày"*): stock on hand divided by the item's issue slips over the last 30 days. Example shown: Bột cà phê truyền thống Phin Đậm, 2.500 g left, 8.000 g issued in 30 days, about 9 days. He chose this over setting a minimum on each of about 69 items, as on 2026-09-28. He was told an item staff never issue shows blank.
+
+### BR-INV-023 — Purchase-unit conversions are edited only on the item's own page
+
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit question Q10, *"Bỏ trang Bảng quy đổi"*. Not built yet (`docs/superpowers/specs/2026-10-15-kho-de-xuat.md`).
+
+- The standalone "Bảng quy đổi" page, reached from a button on Hàng hoá, goes. It edited the same rows as the item page under a different delete rule.
+- The "Quy đổi" column on the Hàng hoá list stays, read-only.

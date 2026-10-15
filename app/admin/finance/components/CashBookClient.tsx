@@ -144,7 +144,7 @@ export default function CashBookClient({
   initialKind,
   initialStatus,
   initialPage,
-}: CashBookClientProps): JSX.Element {
+}: CashBookClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawSort = searchParams?.get("sort");

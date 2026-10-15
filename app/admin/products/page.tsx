@@ -4,11 +4,12 @@ import ProductsClient from "./ProductsClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductsPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; category?: string; status?: string; page?: string };
-}) {
+export default async function ProductsPage(
+  props: {
+    searchParams?: Promise<{ q?: string; category?: string; status?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const { enhancedProducts, activeCategories } = await loadProductRows();
 
   return (

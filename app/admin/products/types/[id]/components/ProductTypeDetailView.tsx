@@ -23,7 +23,7 @@ export function ProductTypeDetailView({
   categoryNames,
   canDelete,
   returnTo,
-}: ProductTypeDetailViewProps): JSX.Element {
+}: ProductTypeDetailViewProps) {
   const router = useRouter();
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

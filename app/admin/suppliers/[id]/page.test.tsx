@@ -40,8 +40,8 @@ vi.mock("@/lib/auth/auth", () => ({
 describe("SupplierDetailPage", () => {
   it("does not pass function props to Client Component", async () => {
     const element = await SupplierDetailPage({
-      params: { id: "NCC-029" },
-      searchParams: { returnTo: "/admin/suppliers?q=vina" },
+      params: Promise.resolve({ id: "NCC-029" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/suppliers?q=vina" }),
     });
 
     const props = element.props;
@@ -49,7 +49,7 @@ describe("SupplierDetailPage", () => {
   });
 
   it("lists every order of the supplier, cancelled included (the default list hides them)", async () => {
-    await SupplierDetailPage({ params: { id: "NCC-029" }, searchParams: { poPage: "2" } });
+    await SupplierDetailPage({ params: Promise.resolve({ id: "NCC-029" }), searchParams: Promise.resolve({ poPage: "2" }) });
 
     expect(getPurchaseOrdersPage).toHaveBeenCalledWith({ supplier: "NCC-029", page: "2", status: "ALL" });
   });

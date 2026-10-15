@@ -71,8 +71,8 @@ describe("pauseProduct / resumeProduct -- one atomic call", () => {
     expect(mocks.setProductStatusAtomic).toHaveBeenCalledWith("PROD-1", "INACTIVE");
     expect(mocks.update).not.toHaveBeenCalled();
     // POS reads these two tables through a cache tag, not this screen's path.
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
   });
 
   it("resuming makes one call and no separate row writes", async () => {
@@ -81,8 +81,8 @@ describe("pauseProduct / resumeProduct -- one atomic call", () => {
     expect(res.error).toBeUndefined();
     expect(mocks.setProductStatusAtomic).toHaveBeenCalledWith("PROD-1", "ACTIVE");
     expect(mocks.update).not.toHaveBeenCalled();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
   });
 
   it("a failed call reports the error and does not pretend to succeed", async () => {
@@ -132,8 +132,8 @@ describe("eraseProduct -- section 5.3/3, refusal tested with the Test1 fixture s
     expect(mocks.revalidatePath).toHaveBeenCalled();
     // section 3:
     // the fourth and last of the four actions -- same fix, same reason.
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
   });
 
   // "A delete path whose refusal nobody tested is a delete path that will

@@ -29,7 +29,7 @@ const optionsOf = (options: DBModifier[], groupId: string) => options.filter((o)
 const inUseMessage = (options: DBModifier[]) => `Nhóm còn tuỳ chọn: ${options.map((o) => o.name).join(", ")}.`;
 
 function refresh() {
-  for (const sheet of [SHEET, LINKS, OPTIONS]) revalidateTag(getCacheTag(sheet));
+  for (const sheet of [SHEET, LINKS, OPTIONS]) revalidateTag(getCacheTag(sheet), { expire: 0 });
   revalidatePath(PATH);
 }
 

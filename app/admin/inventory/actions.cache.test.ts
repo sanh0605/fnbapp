@@ -78,35 +78,35 @@ describe("Units/Item_Categories actions -- revalidate the table tag, not just th
     const res = await addUnit(formData({ name: "Chiếc" }));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Units"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Units"), { expire: 0 });
   });
 
   it("updateUnit revalidates sheets-Units", async () => {
     const res = await updateUnit(formData({ id: "U-001", name: "Chiếc" }));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Units"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Units"), { expire: 0 });
   });
 
   it("deleteUnit revalidates sheets-Units", async () => {
     const res = await deleteUnit(formData({ id: "U-001" }));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Units"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Units"), { expire: 0 });
   });
 
   it("addItemCategory revalidates sheets-Item_Categories", async () => {
     const res = await addItemCategory(formData({ name: "Bao bì", system_type: "CONSUMABLE" }));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Item_Categories"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Item_Categories"), { expire: 0 });
   });
 
   it("updateItemCategory revalidates sheets-Item_Categories", async () => {
     const res = await updateItemCategory(formData({ id: "NHH-001", name: "Bao bì", system_type: "CONSUMABLE" }));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Item_Categories"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Item_Categories"), { expire: 0 });
   });
 
   it("deleteItemCategory revalidates sheets-Item_Categories", async () => {
@@ -117,6 +117,6 @@ describe("Units/Item_Categories actions -- revalidate the table tag, not just th
     const res = await deleteItemCategory(formData({ id: "NHH-001" }));
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Item_Categories"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Item_Categories"), { expire: 0 });
   });
 });

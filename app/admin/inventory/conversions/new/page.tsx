@@ -6,11 +6,12 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewConversionPage({
-  searchParams,
-}: {
-  searchParams?: { returnTo?: string };
-}) {
+export default async function NewConversionPage(
+  props: {
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/inventory/conversions");
   const { items, conversions, units } = await getConversionsData();
 

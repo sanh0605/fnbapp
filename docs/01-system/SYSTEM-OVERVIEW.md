@@ -88,8 +88,6 @@ mã nguồn trực tiếp nếu cần chi tiết.
   trường production), lưu góp ý "trỏ và ghi chú" của chủ quán vào một tệp
   Markdown ở gốc repo, không nằm trong git (`lib/dev-feedback/ui-feedback-store.ts` đọc/ghi
   tệp này).
-- `app/api/revalidate/route.ts` — chỉ admin gọi được, buộc Next.js tính lại
-  cache của các trang đọc dữ liệu Sheets khi cache cũ.
 
 ## Kho mã chia theo vùng
 

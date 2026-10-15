@@ -66,7 +66,7 @@ describe("CancelIssueSlipPage", () => {
       throw new Error("NEXT_REDIRECT");
     });
 
-    await expect(CancelIssueSlipPage({ params: { id: "ISL-00076" } })).rejects.toThrow(
+    await expect(CancelIssueSlipPage({ params: Promise.resolve({ id: "ISL-00076" }) })).rejects.toThrow(
       "NEXT_REDIRECT"
     );
 
@@ -81,7 +81,7 @@ describe("CancelIssueSlipPage", () => {
       throw new Error("NEXT_NOT_FOUND");
     });
 
-    await expect(CancelIssueSlipPage({ params: { id: "ISL-99999" } })).rejects.toThrow(
+    await expect(CancelIssueSlipPage({ params: Promise.resolve({ id: "ISL-99999" }) })).rejects.toThrow(
       "NEXT_NOT_FOUND"
     );
     expect(notFound).toHaveBeenCalled();
@@ -100,7 +100,7 @@ describe("CancelIssueSlipPage", () => {
       canEdit: true,
     });
 
-    const tree = await CancelIssueSlipPage({ params: { id: "ISL-00076" } });
+    const tree = await CancelIssueSlipPage({ params: Promise.resolve({ id: "ISL-00076" }) });
     const text = collectText(tree as ReactNode).join(" ").replace(/\s+/g, " ");
 
     expect(text).toContain("Huỷ phiếu ISL-00076");
@@ -122,7 +122,7 @@ describe("CancelIssueSlipPage", () => {
       canEdit: false,
     });
 
-    const tree = await CancelIssueSlipPage({ params: { id: "ISL-00076" } });
+    const tree = await CancelIssueSlipPage({ params: Promise.resolve({ id: "ISL-00076" }) });
     const text = collectText(tree as ReactNode).join(" ").replace(/\s+/g, " ");
 
     expect(text).toContain("Huỷ phiếu ISL-00076");

@@ -40,7 +40,7 @@ export function SupplierDetailView({
   orders,
   returnTo,
   canDelete,
-}: SupplierDetailViewProps): JSX.Element {
+}: SupplierDetailViewProps) {
   const poPageHref = (p: number): string => {
     const base = `/admin/suppliers/${encodeURIComponent(supplier.id)}?returnTo=${encodeURIComponent(returnTo)}`;
     return p > 1 ? `${base}&poPage=${p}` : base;

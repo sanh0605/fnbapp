@@ -29,7 +29,7 @@ export async function addItemCategory(formData: FormData): Promise<ActionRespons
     // section 2: Item_Categories is cached 30 min, keyed by table, and other
     // screens (Hàng Mua Vào, Kiểm kê...) read it through that cache.
     // revalidatePath below only refreshes this screen.
-    revalidateTag(getCacheTag("Item_Categories"));
+    revalidateTag(getCacheTag("Item_Categories"), { expire: 0 });
     revalidatePath("/admin/inventory/categories");
     return ok();
   } catch (error: unknown) {
@@ -60,7 +60,7 @@ export async function updateItemCategory(formData: FormData): Promise<ActionResp
     }
 
     await update("Item_Categories", id, { name, system_type });
-    revalidateTag(getCacheTag("Item_Categories"));
+    revalidateTag(getCacheTag("Item_Categories"), { expire: 0 });
     revalidatePath("/admin/inventory/categories");
     return ok();
   } catch (error: unknown) {
@@ -88,7 +88,7 @@ export async function deleteItemCategory(formData: FormData): Promise<ActionResp
     }
 
     await remove("Item_Categories", id);
-    revalidateTag(getCacheTag("Item_Categories"));
+    revalidateTag(getCacheTag("Item_Categories"), { expire: 0 });
     revalidatePath("/admin/inventory/categories");
     return ok();
   } catch (error: unknown) {
@@ -119,7 +119,7 @@ export async function addUnit(formData: FormData): Promise<ActionResponse> {
     });
     // section 2: Units is cached 30 min, keyed by table -- Hàng Mua Vào,
     // Phiếu xuất kho, Kiểm kê all read it through that cache, not this path.
-    revalidateTag(getCacheTag("Units"));
+    revalidateTag(getCacheTag("Units"), { expire: 0 });
     revalidatePath("/admin/inventory/units");
     return ok();
   } catch (error: unknown) {
@@ -142,7 +142,7 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
     await update("Units", id, { name, description });
-    revalidateTag(getCacheTag("Units"));
+    revalidateTag(getCacheTag("Units"), { expire: 0 });
     revalidatePath("/admin/inventory/units");
     return ok();
   } catch (error: unknown) {
@@ -213,7 +213,7 @@ export async function deleteUnit(formData: FormData): Promise<ActionResponse> {
     }
 
     await remove("Units", id);
-    revalidateTag(getCacheTag("Units"));
+    revalidateTag(getCacheTag("Units"), { expire: 0 });
     revalidatePath("/admin/inventory/units");
     return ok();
   } catch (error: unknown) {

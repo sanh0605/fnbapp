@@ -46,7 +46,7 @@ export function PurchaseOrderTotals({
   bankAccounts,
   paymentError,
   setPaymentError,
-}: PurchaseOrderTotalsProps): JSX.Element {
+}: PurchaseOrderTotalsProps) {
   return (
     <>
       <div className="w-full mb-6 space-y-3 bg-surface-card rounded-xl shadow-sm border border-border p-5">

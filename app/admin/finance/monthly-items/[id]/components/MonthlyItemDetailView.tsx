@@ -25,7 +25,7 @@ export function MonthlyItemDetailView({
   entryCount,
   canDelete,
   returnTo,
-}: MonthlyItemDetailViewProps): JSX.Element {
+}: MonthlyItemDetailViewProps) {
   const router = useRouter();
   const [statusLoading, setStatusLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);

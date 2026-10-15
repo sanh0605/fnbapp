@@ -6,11 +6,12 @@ import type { DBProductType } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductCategoriesPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; page?: string };
-}) {
+export default async function ProductCategoriesPage(
+  props: {
+    searchParams?: Promise<{ q?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [{ categories, counts }, types] = await Promise.all([
     getCategoriesWithCounts(),
     findAll("Product_Types") as Promise<DBProductType[]>,

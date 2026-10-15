@@ -136,7 +136,7 @@ writes `Users`.
 Folded here from the former ARCHITECTURE.md. Conceptual "what the shop is"
 lives in `SYSTEM-OVERVIEW.md`; this section is the runtime shape.
 
-- **Browser.** Next.js 14 and React 18 render the POS, login, settings, and
+- **Browser.** Next.js 16 and React 19 render the POS, login, settings, and
   admin surfaces. Client Components handle interaction and receive data from
   Server Components or Server Actions. The browser is untrusted: service-role
   keys and backup tokens must never cross it.
@@ -158,7 +158,7 @@ lives in `SYSTEM-OVERVIEW.md`; this section is the runtime shape.
 
 - **Auth.** NextAuth Credentials takes username/password, compares the bcrypt
   hash on the matching Supabase user row, and issues a signed session carrying
-  identity and technical role. `middleware.ts` protects `/admin/**` and
+  identity and technical role. `proxy.ts` protects `/admin/**` and
   `/pos/**`; STAFF users are redirected away from admin.
 - **Read.** A Server Component or Server Action calls Supabase with server
   credentials, shapes the data for the UI, and must strip sensitive fields

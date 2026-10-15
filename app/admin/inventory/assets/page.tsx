@@ -5,11 +5,12 @@ import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 
 export const dynamic = "force-dynamic";
 
-export default async function AssetsPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; all?: string; page?: string; sort?: string; dir?: string };
-}) {
+export default async function AssetsPage(
+  props: {
+    searchParams?: Promise<{ q?: string; all?: string; page?: string; sort?: string; dir?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const items = await getAssetItemsData();
 
   return (

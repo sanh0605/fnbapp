@@ -172,8 +172,8 @@ describe("DisposeAssetPage", () => {
     mockGetAssetItemDetail.mockResolvedValue(COC_DONG_DETAIL);
 
     const element = await DisposeAssetPage({
-      params: { id: "SPM-COC" },
-      searchParams: { returnTo: "/admin/inventory/assets/SPM-COC" },
+      params: Promise.resolve({ id: "SPM-COC" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/inventory/assets/SPM-COC" }),
     });
 
     expect(element).toBeDefined();
@@ -185,8 +185,8 @@ describe("DisposeAssetPage", () => {
 
     await expect(
       DisposeAssetPage({
-        params: { id: "TS-030" },
-        searchParams: { returnTo: "/admin/inventory/assets" },
+        params: Promise.resolve({ id: "TS-030" }),
+        searchParams: Promise.resolve({ returnTo: "/admin/inventory/assets" }),
       }),
     ).rejects.toThrow("NEXT_REDIRECT");
 
@@ -200,8 +200,8 @@ describe("DisposeAssetPage", () => {
     mockGetAssetItemDetail.mockResolvedValue(COC_DONG_DETAIL);
 
     const element = await DisposeAssetPage({
-      params: { id: "SPM-COC" },
-      searchParams: { lot: "TS-030" },
+      params: Promise.resolve({ id: "SPM-COC" }),
+      searchParams: Promise.resolve({ lot: "TS-030" }),
     });
 
     const formProps = findFormProps(element);
@@ -214,8 +214,8 @@ describe("DisposeAssetPage", () => {
     mockGetAssetItemDetail.mockResolvedValue(COC_DONG_DETAIL);
 
     const element = await DisposeAssetPage({
-      params: { id: "SPM-COC" },
-      searchParams: { lot: "TS-025" }, // TS-025 has remainingQuantity === 0
+      params: Promise.resolve({ id: "SPM-COC" }),
+      searchParams: Promise.resolve({ lot: "TS-025" }), // TS-025 has remainingQuantity === 0
     });
 
     const formProps = findFormProps(element);
@@ -228,8 +228,8 @@ describe("DisposeAssetPage", () => {
     mockGetAssetItemDetail.mockResolvedValue(COC_DONG_DETAIL);
 
     const element = await DisposeAssetPage({
-      params: { id: "SPM-COC" },
-      searchParams: {},
+      params: Promise.resolve({ id: "SPM-COC" }),
+      searchParams: Promise.resolve({}),
     });
 
     const formProps = findFormProps(element);
@@ -242,7 +242,7 @@ describe("DisposeAssetPage", () => {
 
     await expect(
       DisposeAssetPage({
-        params: { id: "SPM-UNKNOWN" },
+        params: Promise.resolve({ id: "SPM-UNKNOWN" }),
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
@@ -254,7 +254,7 @@ describe("DisposeAssetPage", () => {
 
     await expect(
       DisposeAssetPage({
-        params: { id: "SPM-CU" },
+        params: Promise.resolve({ id: "SPM-CU" }),
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
 

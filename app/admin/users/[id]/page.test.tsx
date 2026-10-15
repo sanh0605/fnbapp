@@ -40,15 +40,15 @@ describe("UserDetailPage", () => {
 
   it("calls notFound when user id is unknown", async () => {
     await expect(
-      UserDetailPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      UserDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("does not pass function props to Client Component", async () => {
     const element = await UserDetailPage({
-      params: { id: "USR-001" },
-      searchParams: { returnTo: "/admin/users" },
+      params: Promise.resolve({ id: "USR-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/users" }),
     });
 
     const props = element.props;
@@ -57,8 +57,8 @@ describe("UserDetailPage", () => {
 
   it("passes canGrantAdmin to UserDetailView", async () => {
     const element = await UserDetailPage({
-      params: { id: "USR-001" },
-      searchParams: { returnTo: "/admin/users" },
+      params: Promise.resolve({ id: "USR-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/users" }),
     });
 
     expect(element.props.canGrantAdmin).toBe(true);

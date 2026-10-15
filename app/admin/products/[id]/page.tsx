@@ -7,13 +7,14 @@ import { ProductDetailView } from "./components/ProductDetailView";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function ProductDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const [product, auth, allOptionGroups, optionGroupLinks] = await Promise.all([
     loadProductRow(params.id),
     resolveActor(),

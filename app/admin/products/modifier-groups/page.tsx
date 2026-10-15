@@ -4,11 +4,12 @@ import ModifierGroupsClient from "./components/ModifierGroupsClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function ModifierGroupsPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; page?: string };
-}) {
+export default async function ModifierGroupsPage(
+  props: {
+    searchParams?: Promise<{ q?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const rows = await getModifierGroups();
   return (
     <Suspense fallback={<div>Đang tải...</div>}>

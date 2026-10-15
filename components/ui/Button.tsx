@@ -25,7 +25,7 @@ const variantStyles: Record<Variant, string> = {
 const baseStyle =
   "relative inline-flex items-center justify-center gap-2 min-h-[44px] md:min-h-[40px] px-4 rounded-button text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-50 disabled:pointer-events-none";
 
-export function Button(props: ButtonProps): JSX.Element {
+export function Button(props: ButtonProps) {
   const { variant = "primary", loading = false, className = "", children } = props;
   const classes = `${baseStyle} ${variantStyles[variant]} ${className}`.trim();
 

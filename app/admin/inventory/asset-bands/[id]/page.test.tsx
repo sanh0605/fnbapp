@@ -71,8 +71,8 @@ describe("BandDetailPage", () => {
 
     await expect(
       BandDetailPage({
-        params: { id: "KH-NONEXISTENT" },
-        searchParams: { returnTo: "/admin/inventory/asset-bands" },
+        params: Promise.resolve({ id: "KH-NONEXISTENT" }),
+        searchParams: Promise.resolve({ returnTo: "/admin/inventory/asset-bands" }),
       }),
     ).rejects.toThrow();
 
@@ -87,8 +87,8 @@ describe("BandDetailPage", () => {
     });
 
     const element = await BandDetailPage({
-      params: { id: "KH-001" },
-      searchParams: { returnTo: "/admin/inventory/asset-bands" },
+      params: Promise.resolve({ id: "KH-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/inventory/asset-bands" }),
     });
 
     const props = element.props;

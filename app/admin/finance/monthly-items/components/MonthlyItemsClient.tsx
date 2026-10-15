@@ -58,7 +58,7 @@ export default function MonthlyItemsClient({
   initialSearch,
   initialStatus,
   initialPage,
-}: MonthlyItemsClientProps): JSX.Element {
+}: MonthlyItemsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawSort = searchParams?.get("sort");

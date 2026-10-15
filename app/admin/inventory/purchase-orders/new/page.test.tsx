@@ -99,7 +99,7 @@ describe("NewPurchaseOrderPage copyFrom (BR-INV-016)", () => {
     };
     getPurchaseOrderCopySeed.mockResolvedValueOnce(sampleSeed);
 
-    const tree = await NewPurchaseOrderPage({ searchParams: { copyFrom: "PO-147" } });
+    const tree = await NewPurchaseOrderPage({ searchParams: Promise.resolve({ copyFrom: "PO-147" }) });
     const text = collectText(tree as ReactNode).join(" ").replace(/\s+/g, " ");
 
     expect(getPurchaseOrderCopySeed).toHaveBeenCalledWith("PO-147");
@@ -118,7 +118,7 @@ describe("NewPurchaseOrderPage copyFrom (BR-INV-016)", () => {
   it("with an unknown code it shows 'Không tìm thấy phiếu PO-999 để nhân bản.'", async () => {
     getPurchaseOrderCopySeed.mockResolvedValueOnce(null);
 
-    const tree = await NewPurchaseOrderPage({ searchParams: { copyFrom: "PO-999" } });
+    const tree = await NewPurchaseOrderPage({ searchParams: Promise.resolve({ copyFrom: "PO-999" }) });
     const text = collectText(tree as ReactNode).join(" ").replace(/\s+/g, " ");
 
     expect(getPurchaseOrderCopySeed).toHaveBeenCalledWith("PO-999");

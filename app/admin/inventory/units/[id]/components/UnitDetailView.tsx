@@ -19,7 +19,7 @@ export function UnitDetailView({
   unit,
   returnTo,
   canDelete,
-}: UnitDetailViewProps): JSX.Element {
+}: UnitDetailViewProps) {
   const editHref = `/admin/inventory/units/${encodeURIComponent(unit.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`;
 
   const fields: Field[] = [

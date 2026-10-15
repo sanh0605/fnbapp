@@ -19,7 +19,7 @@ describe("orders page day window (A1)", () => {
   });
 
   it("filtering 15/09/2026 spans Saigon 00:00:00 to 23:59:59.999, so a 06:30 order is inside", async () => {
-    await OrdersPage({ searchParams: { from: "2026-09-15", to: "2026-09-15" } });
+    await OrdersPage({ searchParams: Promise.resolve({ from: "2026-09-15", to: "2026-09-15" }) });
     const arg = getOrdersV2.mock.calls[0][0];
     expect(arg.from).toBe("2026-09-14T17:00:00.000Z");
     expect(arg.to).toBe("2026-09-15T16:59:59.999Z");
@@ -30,7 +30,7 @@ describe("orders page day window (A1)", () => {
   });
 
   it("passes status=VOIDED to getOrdersV2 when status query param is VOIDED", async () => {
-    await OrdersPage({ searchParams: { status: "VOIDED" } });
+    await OrdersPage({ searchParams: Promise.resolve({ status: "VOIDED" }) });
     const arg = getOrdersV2.mock.calls[0][0];
     expect(arg.status).toBe("VOIDED");
   });

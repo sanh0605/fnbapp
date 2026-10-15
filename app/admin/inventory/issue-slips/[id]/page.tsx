@@ -4,13 +4,14 @@ import IssueSlipDetailClient from "../components/IssueSlipDetailClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function IssueSlipDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string };
-}) {
+export default async function IssueSlipDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const detail = await getIssueSlipDetail(params.id);
   if (!detail) {
     notFound();

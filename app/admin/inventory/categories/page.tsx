@@ -5,11 +5,12 @@ import type { DBItemCategory } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function CategoriesPage({
-  searchParams,
-}: {
-  searchParams?: { page?: string };
-}) {
+export default async function CategoriesPage(
+  props: {
+    searchParams?: Promise<{ page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [categories, auth] = await Promise.all([
     findAll("Item_Categories") as Promise<DBItemCategory[]>,
     resolveActor(),

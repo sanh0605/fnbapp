@@ -29,7 +29,7 @@ describe("issue slips page time filter (BR-UI-007)", () => {
   afterEach(() => vi.useRealTimers());
 
   it("opens on Tháng này", async () => {
-    const tree = await IssueSlipsPage({ searchParams: {} });
+    const tree = await IssueSlipsPage({ searchParams: Promise.resolve({}) });
     const arg = getIssueSlipsPage.mock.calls[0][0];
     expect(arg.from).toBe("2026-10-01");
     expect(arg.to).toBe("2026-10-31");
@@ -40,7 +40,7 @@ describe("issue slips page time filter (BR-UI-007)", () => {
   });
 
   it("a typed code from September is searched on every day, other filters still apply", async () => {
-    const tree = await IssueSlipsPage({ searchParams: { q: "ISL-00053", kind: "MANUAL" } });
+    const tree = await IssueSlipsPage({ searchParams: Promise.resolve({ q: "ISL-00053", kind: "MANUAL" }) });
     const arg = getIssueSlipsPage.mock.calls[0][0];
     expect(arg.from).toBeUndefined();
     expect(arg.to).toBeUndefined();

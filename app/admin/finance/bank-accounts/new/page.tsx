@@ -5,7 +5,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
-export default function NewBankAccountPage({ searchParams }: { searchParams?: { returnTo?: string } }) {
+export default async function NewBankAccountPage(props: { searchParams?: Promise<{ returnTo?: string }> }) {
+  const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance/bank-accounts");
   return (
     <div className="space-y-6">

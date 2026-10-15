@@ -15,7 +15,7 @@ vi.mock("@/app/admin/products/components/ProductForm", () => ({ default: () => n
 
 describe("NewProductPage", () => {
   it("loads only the groups and categories the form needs, not every dish", async () => {
-    const element: any = await NewProductPage({ searchParams: {} });
+    const element: any = await NewProductPage({ searchParams: Promise.resolve({}) });
     const form: any = React.Children.toArray(element.props.children).find((c: any) => c.props?.categories);
     expect(loadProductRows).not.toHaveBeenCalled();
     expect(form.props.categories).toEqual([{ id: "CAT-002", name: "Giải trí", status: "ACTIVE" }]);

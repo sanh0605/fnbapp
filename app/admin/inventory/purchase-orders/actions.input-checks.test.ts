@@ -125,7 +125,7 @@ describe("cancelPurchaseOrder", () => {
   it("also refreshes the asset list's cache tag", async () => {
     const res = await cancelPurchaseOrder({ id: "PO-147", reason: "Nhập trùng" });
     expect(res.success).toBe(true);
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-assets");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-assets", { expire: 0 });
   });
 });
 

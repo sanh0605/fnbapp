@@ -44,7 +44,7 @@ export function ProductDetailView({
   canDelete,
   linkedModifierId,
   optionGroupNames,
-}: ProductDetailViewProps): JSX.Element {
+}: ProductDetailViewProps) {
   const router = useRouter();
   const [actionError, setActionError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);

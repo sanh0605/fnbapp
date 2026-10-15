@@ -105,7 +105,7 @@ export function NumberInput({
   zeroIsEmpty,
   disabled,
   ...ariaProps
-}: NumberInputProps): JSX.Element {
+}: NumberInputProps) {
   const [text, setText] = useState<string>(() =>
     seedText(value, defaultValue, decimals, zeroIsEmpty)
   );

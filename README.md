@@ -12,7 +12,7 @@ protocol is in [`CLAUDE.md`](CLAUDE.md).
 
 Verified against `package.json`:
 
-- **Next.js** `^14.2.3` (App Router), **React** `^18`, **TypeScript** `^5`,
+- **Next.js** `^16.4.1` (App Router), **React** `^19.3.1`, **TypeScript** `^5`,
   **Tailwind CSS** `^3.4.1`.
 - **NextAuth** `^4.24.14` (Credentials provider); credentials are checked
   against user data in Supabase Postgres.
@@ -23,8 +23,6 @@ Verified against `package.json`:
   **fake-indexeddb** for tests; `@vitest/coverage-v8` for coverage.
 - **vite-node** `^6` runs the TypeScript maintenance scripts and doc gates.
 - **husky** `^9.1.7` installs the pre-commit hook.
-- **googleapis** `^137` drives scheduled full-database snapshots to Google
-  Sheets/Drive.
 - Utility libraries: `date-fns`, `lucide-react`, `react-datepicker`,
   `bcryptjs`.
 
@@ -46,7 +44,7 @@ Verified against `package.json`:
 
 ### Prerequisites
 
-- Node.js compatible with Next.js 14.
+- Node.js compatible with Next.js 16 (20.9 or later).
 - npm.
 - Access to approved development environment values. Never copy production
   secrets into documentation or commit them.
@@ -62,7 +60,7 @@ npm run build      # next build — production build
 npm start          # next start — serve a production build
 npm test           # vitest run — full test suite once
 npm run test:watch # vitest — watch mode
-npm run lint       # next lint
+npm run lint       # eslint .
 npm run gen:docs   # regenerate docs/generated/system-map.md
 ```
 

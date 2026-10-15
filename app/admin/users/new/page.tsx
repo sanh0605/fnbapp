@@ -6,11 +6,12 @@ import { resolveActor } from "@/lib/auth/auth";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewUserPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function NewUserPage(
+  props: {
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const auth = await resolveActor();
   const canGrantAdmin = Boolean(
     auth.ok && (auth.actor.role === "ADMIN" || auth.actor.role === "SYSTEM")

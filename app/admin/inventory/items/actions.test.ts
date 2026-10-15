@@ -499,8 +499,8 @@ describe("addPurchasedItem/updatePurchasedItem/deletePurchasedItemAction -- reva
     const res = await actions.addPurchasedItem(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"));
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"), { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"), { expire: 0 });
   });
 
   it("updatePurchasedItem revalidates sheets-Purchased_Items and sheets-UOM_Conversions", async () => {
@@ -512,8 +512,8 @@ describe("addPurchasedItem/updatePurchasedItem/deletePurchasedItemAction -- reva
     const res = await actions.updatePurchasedItem(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"));
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"), { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("UOM_Conversions"), { expire: 0 });
   });
 
   it("deletePurchasedItemAction revalidates sheets-Purchased_Items", async () => {
@@ -527,7 +527,7 @@ describe("addPurchasedItem/updatePurchasedItem/deletePurchasedItemAction -- reva
     const res = await actions.deletePurchasedItemAction(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"));
+    expect(mocks.revalidateTag).toHaveBeenCalledWith(getCacheTag("Purchased_Items"), { expire: 0 });
   });
 });
 

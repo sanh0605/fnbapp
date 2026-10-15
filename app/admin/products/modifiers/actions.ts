@@ -70,15 +70,15 @@ export async function saveModifierAction(formData: FormData): Promise<ActionResp
       modifier: { id, name, price, group_id, is_default: isDefault, max_qty: group.selection_mode === "MANY" ? maxQty : null },
     });
     if (isEdit) {
-      revalidateTag("sheets-Products");
-      revalidateTag("sheets-Product_Variants");
+      revalidateTag("sheets-Products", { expire: 0 });
+      revalidateTag("sheets-Product_Variants", { expire: 0 });
     }
 
     // Opus code review, 2026-09-08 (finding 2): Modifiers.product_id now
     // drives both the P&L/sales report merge and the POS quick-add
     // exclusion -- a stale Modifiers cache is a stale link, not just a stale
     // name/price. revalidatePath(PATH) below does not clear this tag-keyed cache.
-    revalidateTag(getCacheTag("Modifiers"));
+    revalidateTag(getCacheTag("Modifiers"), { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -103,7 +103,7 @@ export async function deleteModifierAction(formData: FormData): Promise<ActionRe
       }
     }
     await update(MODIFIER_SHEET, id, { status: "DELETED" });
-    revalidateTag(getCacheTag("Modifiers"));
+    revalidateTag(getCacheTag("Modifiers"), { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -130,9 +130,9 @@ export async function createStandaloneToppingAction(modifierId: string): Promise
 
   try {
     await createStandaloneToppingProductAtomic({ modifierId });
-    revalidateTag("sheets-Products");
-    revalidateTag("sheets-Product_Variants");
-    revalidateTag(getCacheTag("Modifiers"));
+    revalidateTag("sheets-Products", { expire: 0 });
+    revalidateTag("sheets-Product_Variants", { expire: 0 });
+    revalidateTag(getCacheTag("Modifiers"), { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -157,8 +157,8 @@ export async function toggleToppingStandalone(productId: string, enabled: boolea
       return fail(`Món "${product.name || productId}" không gắn với topping nào nên không bật/tắt bán độc lập được.`);
     }
     await setProductStatusAtomic(productId, enabled ? "ACTIVE" : "INACTIVE");
-    revalidateTag("sheets-Products");
-    revalidateTag("sheets-Product_Variants");
+    revalidateTag("sheets-Products", { expire: 0 });
+    revalidateTag("sheets-Product_Variants", { expire: 0 });
     revalidatePath("/pos");
     revalidatePath(PATH);
     return ok();

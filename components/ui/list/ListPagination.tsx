@@ -12,7 +12,7 @@ export function ListPagination({
   slice,
   unit,
   pageHref,
-}: ListPaginationProps): JSX.Element {
+}: ListPaginationProps) {
   const { page, pageCount, firstIndex, lastIndex, total } = slice;
   const paginationPages = pageWindow(page, pageCount);
 

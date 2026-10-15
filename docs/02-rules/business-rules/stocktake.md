@@ -55,3 +55,18 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 - **When the stocktake is confirmed,** each counted line's book quantity is worked out again as of the moment it was counted, from every movement dated before that moment, including slips and purchase orders entered after the count. The shortfall or found goods come from that figure. In the example: book 8, counted 8, nothing written.
 - **No recount is needed.** The preview shown before "Xác nhận" lists each line whose book figure was recomputed, with the figure at the count and the recomputed one (screen being built separately).
 - The book figure is still frozen when the line is counted (`theoretical_at_count`, migration `0092`), but `apply_stocktake_session_atomic` (`0115`) no longer writes from it: it recomputes and stores the new figure on the line. A reversal row (a slip cancelled, a stocktake undone) counts from its original's date, so a slip cancelled after the count nets out.
+
+### BR-INV-021 — No fixed counting schedule; the shop counts when it needs to
+
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit question Q7, *"Giữ như hiện, khi nào cần thì đếm"*.
+
+- He was offered about 10 high-use items weekly plus a full count monthly (recommended), or a full count monthly. He chose neither.
+- He was told the cost: on 2026-10-15 the only count, `STK-001`, was 67 days old, and stock and Hao hụt grow less reliable the longer nothing is counted. The same holds for the Tồn kho page's "đủ dùng khoảng X ngày" (`BR-INV-019`); its last-count date shows how stale each figure is.
+- The app sets no reminder and no schedule.
+
+### BR-INV-022 — The count list is grouped by Phân loại hàng, and stocktake rows live on the Kiểm kê page, not in Phiếu xuất
+
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit questions Q8 and Q9. Not built yet: the Kiểm kê rebuild (`docs/superpowers/specs/2026-10-15-kho-de-xuat.md`).
+
+- **Grouping** (Q8, *"Theo loại hàng"*): the items to count are grouped under their existing category. Measured that day: Nguyên liệu 50 items and Vật tư tiêu hao 19. He chose this over a new list of places in the shop, which would need a new page and 69 items assigned by hand.
+- **Where count differences show** (Q9, *"Chỉ ở trang Kiểm kê"*): once Kiểm kê has its own list, the Phiếu xuất list shows only slips staff wrote. `STK-001`'s 49 difference rows show on the Kiểm kê page. Stock and Giá vốn do not change. Before building, check that the "Hàng đã xuất" report does not lose those rows.

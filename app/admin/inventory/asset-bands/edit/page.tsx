@@ -7,11 +7,12 @@ import { EditBandsForm } from "./components/EditBandsForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditAssetBandsPage({
-  searchParams,
-}: {
-  searchParams?: { returnTo?: string };
-}) {
+export default async function EditAssetBandsPage(
+  props: {
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const auth = await requireAdmin();
   if (!auth.ok) {
     throw new Error(auth.error);

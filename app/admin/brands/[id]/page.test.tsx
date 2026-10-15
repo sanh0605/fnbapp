@@ -42,22 +42,22 @@ describe("BrandDetailPage", () => {
 
   it("calls notFound when brand id is unknown", async () => {
     await expect(
-      BrandDetailPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      BrandDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("calls notFound when brand status is DELETED", async () => {
     await expect(
-      BrandDetailPage({ params: { id: "BR-003" }, searchParams: {} }),
+      BrandDetailPage({ params: Promise.resolve({ id: "BR-003" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("does not pass function props to Client Component", async () => {
     const element = await BrandDetailPage({
-      params: { id: "BR-001" },
-      searchParams: { returnTo: "/admin/brands" },
+      params: Promise.resolve({ id: "BR-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/brands" }),
     });
 
     const props = element.props;

@@ -25,8 +25,8 @@ describe("purchase order action integration", () => {
   });
 
   it("invalidates purchase and inventory caches after a successful save", () => {
-    expect(source).toContain('revalidateTag("sheets-Purchase_Orders")');
-    expect(source).toContain('revalidateTag("sheets-Purchase_Order_Lines")');
+    expect(source).toContain('revalidateTag("sheets-Purchase_Orders", { expire: 0 })');
+    expect(source).toContain('revalidateTag("sheets-Purchase_Order_Lines", { expire: 0 })');
   });
 
   // section 2,

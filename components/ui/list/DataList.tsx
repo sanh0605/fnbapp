@@ -124,7 +124,7 @@ export function DataList<T>({
   removal,
   totals,
   empty,
-}: DataListProps<T>): JSX.Element {
+}: DataListProps<T>) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isMobileSelecting, setIsMobileSelecting] = useState(false);

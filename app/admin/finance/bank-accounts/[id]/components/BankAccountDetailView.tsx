@@ -26,7 +26,7 @@ export function BankAccountDetailView({
   account,
   returnTo,
   canDelete,
-}: BankAccountDetailViewProps): JSX.Element {
+}: BankAccountDetailViewProps) {
   const router = useRouter();
   const [statusLoading, setStatusLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);

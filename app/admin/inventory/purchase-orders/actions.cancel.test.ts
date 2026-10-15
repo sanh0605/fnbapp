@@ -70,7 +70,7 @@ describe("cancelPurchaseOrder", () => {
   it("revalidates the list, the order, assets, finance and P&L after a cancel", async () => {
     mocks.cancelAtomic.mockResolvedValue({ cancelled: true, retiredAssetIds: [] });
     await cancelPurchaseOrder({ id: "PO-147", reason: "Nhập trùng" });
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Purchase_Orders");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Purchase_Orders", { expire: 0 });
     const paths = mocks.revalidatePath.mock.calls.map(c => c[0]);
     expect(paths).toEqual(expect.arrayContaining([
       "/admin/inventory/purchase-orders", "/admin/inventory/purchase-orders/PO-147",

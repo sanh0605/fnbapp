@@ -35,7 +35,7 @@ export function CategoryDetailView({
   itemCount,
   returnTo,
   canDelete,
-}: CategoryDetailViewProps): JSX.Element {
+}: CategoryDetailViewProps) {
   const editHref = `/admin/inventory/categories/${encodeURIComponent(category.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`;
 
   const fields: Field[] = [

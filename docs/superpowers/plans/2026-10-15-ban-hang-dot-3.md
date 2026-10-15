@@ -110,5 +110,5 @@ Opus: reviews each ticket, applies the `lib/db/tables.ts` lines A4 lists, runs t
 1. ~~Run data write 1 (`--apply`).~~ **Ran 2026-10-15** with the owner's approval ("Ghi thật"): 37 of 55 price-history rows moved off 0đ (28 to the size's first sale price, 9 to today's price); re-read 0 of 55 at 0đ, and a second dry run finds 0 to change. `product_price_history` has no trigger (queried live).
 2. ~~Run data write 3 (`--apply`).~~ **Ran 2026-10-15** ("Ghi thật"): erased PROD-007, PROD-008, PROD-010 (3 sizes, 3 price-history rows) and CAT-003 Cacao; kept MOD-007 Dâu sấy, named in order 260624002014's snapshot. A second dry run finds 0 to erase on 45 dishes, 6 categories, 10 options. The four tables carry only `BEFORE UPDATE` touch triggers, which a delete does not fire (queried live).
 3. Push A1, A2, A3, A4a (no migration, the till unchanged).
-4. Run migration 0121, outside opening hours. This one can stop the till if it goes wrong, so the owner is told beforehand.
-5. Push A4b's code, right after 4.
+4. ~~Run migration 0121, outside opening hours.~~ **Ran 2026-10-15 at about 10:40** (owner chose "Chạy ngay bây giờ" while the shop was quiet), through `db push --include-all`, which listed 0121 alone. Re-measured just before: 3,507 orders, 0 drafts, 0 orphans on the four new links. After: 0 dead columns left, 0 empty-text links, 5 foreign keys on `orders_v2`. This one can stop the till if it goes wrong, so the owner is told beforehand.
+5. ~~Push A4b~~ **Pushed right after** (`4de33911`), built first (bwt52). Push A4b's code, right after 4.

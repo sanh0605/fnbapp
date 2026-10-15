@@ -6,7 +6,7 @@ export interface ListPageHeaderProps {
   action?: React.ReactNode;
 }
 
-export function ListPageHeader({ group, title, action }: ListPageHeaderProps): JSX.Element {
+export function ListPageHeader({ group, title, action }: ListPageHeaderProps) {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div>

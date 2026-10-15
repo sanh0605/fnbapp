@@ -50,13 +50,13 @@ describe("EditProductPage", () => {
 
   it("calls notFound when product id is unknown", async () => {
     await expect(
-      EditProductPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      EditProductPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("loads the one dish, never the whole list", async () => {
-    const element = await EditProductPage({ params: { id: "PROD-005" }, searchParams: {} });
+    const element = await EditProductPage({ params: Promise.resolve({ id: "PROD-005" }), searchParams: Promise.resolve({}) });
     const formChild: any = React.Children.toArray(element.props.children).find((c: any) => c.props?.categories);
     expect(loadProductRow).toHaveBeenCalledWith("PROD-005");
     expect(loadProductRows).not.toHaveBeenCalled();
@@ -64,7 +64,7 @@ describe("EditProductPage", () => {
   });
 
   it("hands the form the groups and only this dish's ticked ones", async () => {
-    const element = await EditProductPage({ params: { id: "PROD-005" }, searchParams: {} });
+    const element = await EditProductPage({ params: Promise.resolve({ id: "PROD-005" }), searchParams: Promise.resolve({}) });
     const children = React.Children.toArray(element.props.children);
     const formChild: any = children.find((c: any) => c.props?.selectedOptionGroupIds !== undefined);
     expect(formChild.props.optionGroups).toHaveLength(2);
@@ -74,8 +74,8 @@ describe("EditProductPage", () => {
   it("passes returnTo unchanged to form when returnTo is this record's own detail path", async () => {
     const returnTo = "/admin/products/PROD-005?returnTo=%2Fadmin%2Fproducts%3Fstatus%3DINACTIVE";
     const element = await EditProductPage({
-      params: { id: "PROD-005" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "PROD-005" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);
@@ -87,8 +87,8 @@ describe("EditProductPage", () => {
   it("builds detail URL with encoded list returnTo when returnTo is a list URL", async () => {
     const returnTo = "/admin/products?status=INACTIVE";
     const element = await EditProductPage({
-      params: { id: "PROD-005" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "PROD-005" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);

@@ -7,11 +7,12 @@ import type { DBProductCategory, DBProduct } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewModifierGroupPage({
-  searchParams,
-}: {
-  searchParams?: { returnTo?: string };
-}) {
+export default async function NewModifierGroupPage(
+  props: {
+    searchParams?: Promise<{ returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/products/modifier-groups");
 
   const [categories, products] = await Promise.all([

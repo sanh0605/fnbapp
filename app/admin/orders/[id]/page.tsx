@@ -6,13 +6,14 @@ import { OrderDetailView } from "./components/OrderDetailView";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrderDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
+export default async function OrderDetailPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const returnToRaw = typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined;
   const returnTo = safeReturnTo(returnToRaw);
 

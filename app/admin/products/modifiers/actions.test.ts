@@ -109,8 +109,8 @@ describe("saveModifierAction edit path", () => {
 
     await saveModifierAction(editFormData());
 
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
   });
 
   it("surfaces the RPC's trap error instead of a generic failure", async () => {
@@ -137,7 +137,7 @@ describe("saveModifierAction edit path", () => {
 
     await saveModifierAction(editFormData());
 
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers", { expire: 0 });
   });
 });
 
@@ -170,7 +170,7 @@ describe("saveModifierAction new-modifier path", () => {
       isEdit: false,
       modifier: { id: "MOD-099", name: "Trân châu đen", price: 5000, group_id: "MG-001", is_default: false, max_qty: null },
     });
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers", { expire: 0 });
   });
 
   it("refuses an option sold on its own in a group that does not allow it", async () => {
@@ -221,7 +221,7 @@ describe("deleteModifierAction", () => {
     const result = await deleteModifierAction(fd);
 
     expect(result.success).toBe(true);
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers", { expire: 0 });
   });
 
   // The linked dish would otherwise stay on the till with no option behind it.
@@ -273,8 +273,8 @@ describe("toggleToppingStandalone", () => {
       expect(res.error).toBeUndefined();
       expect(mocks.setProductStatusAtomic).toHaveBeenCalledWith("PROD-031", status);
       expect(mocks.update).not.toHaveBeenCalled();
-      expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
-      expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
+      expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+      expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
     },
   );
 
@@ -319,9 +319,9 @@ describe("createStandaloneToppingAction", () => {
 
     expect(result.success).toBe(true);
     expect(mocks.createStandaloneToppingProductAtomic).toHaveBeenCalledWith({ modifierId: "MOD-009" });
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products");
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants");
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Products", { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Product_Variants", { expire: 0 });
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-Modifiers", { expire: 0 });
   });
 
   it("surfaces the RPC's refusal (e.g. non-Thêm-Topping group) as a plain failure, not a thrown error", async () => {

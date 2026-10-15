@@ -23,7 +23,7 @@ interface CancelIssueSlipFormProps {
   detailHref: string;
 }
 
-export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormProps): JSX.Element {
+export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormProps) {
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

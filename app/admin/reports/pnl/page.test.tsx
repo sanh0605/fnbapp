@@ -40,7 +40,7 @@ describe("Lãi lỗ page time filter", () => {
   afterEach(() => vi.useRealTimers());
 
   it("opens on Năm nay, January to this month, and the button shows it in months", async () => {
-    const tree = await ProfitAndLossPage({ searchParams: {} });
+    const tree = await ProfitAndLossPage({ searchParams: Promise.resolve({}) });
     expect(getProfitAndLossReport).toHaveBeenCalledWith({ preset: "THIS_YEAR", start: "2026-01", end: "2026-10" });
     const button = elementsOf(tree, DateRangeUrlButton)[0];
     expect(button.props.mode).toBe("month");
@@ -49,12 +49,12 @@ describe("Lãi lỗ page time filter", () => {
   });
 
   it("an old ?year=2025 link opens January to December 2025", async () => {
-    await ProfitAndLossPage({ searchParams: { year: "2025" } });
+    await ProfitAndLossPage({ searchParams: Promise.resolve({ year: "2025" }) });
     expect(getProfitAndLossReport).toHaveBeenCalledWith({ preset: "CUSTOM", start: "2025-01", end: "2025-12" });
   });
 
   it("a span with no figures says which months are empty", async () => {
-    const tree = await ProfitAndLossPage({ searchParams: { range: "CUSTOM", from: "2025-07", to: "2026-06" } });
+    const tree = await ProfitAndLossPage({ searchParams: Promise.resolve({ range: "CUSTOM", from: "2025-07", to: "2026-06" }) });
     expect(JSON.stringify(tree)).toContain("Từ 07/2025 đến 06/2026 chưa có số liệu nào.");
   });
 });

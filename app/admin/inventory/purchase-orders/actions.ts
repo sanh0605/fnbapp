@@ -351,7 +351,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     if (assets) {
       // The SQL write bypasses the insert()/update() helpers that used to drop
       // this 2-minute cache; without it the next edit plans from stale assets.
-      revalidateTag(getCacheTag("assets"));
+      revalidateTag(getCacheTag("assets"), { expire: 0 });
       revalidatePath("/admin/inventory/assets");
     }
 
@@ -378,8 +378,8 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
       }
     }
 
-    revalidateTag("sheets-Purchase_Orders");
-    revalidateTag("sheets-Purchase_Order_Lines");
+    revalidateTag("sheets-Purchase_Orders", { expire: 0 });
+    revalidateTag("sheets-Purchase_Order_Lines", { expire: 0 });
     revalidatePath("/admin/inventory/purchase-orders");
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
     return ok({ po_id });
@@ -490,8 +490,8 @@ export async function cancelPurchaseOrder(input: { id: string; reason: string })
     if (outcome.cancelled === false) {
       return fail(outcome.blocked.map(describeCancelBlocker).join("\n"));
     }
-    revalidateTag("sheets-Purchase_Orders");
-    revalidateTag(getCacheTag("assets"));
+    revalidateTag("sheets-Purchase_Orders", { expire: 0 });
+    revalidateTag(getCacheTag("assets"), { expire: 0 });
     revalidatePath(PATH);
     revalidatePath(`${PATH}/${input.id}`);
     revalidatePath("/admin/inventory/assets");

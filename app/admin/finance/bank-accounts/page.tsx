@@ -5,11 +5,12 @@ import BankAccountsClient from "./components/BankAccountsClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function BankAccountsPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; status?: string; page?: string };
-}) {
+export default async function BankAccountsPage(
+  props: {
+    searchParams?: Promise<{ q?: string; status?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [accounts, auth] = await Promise.all([
     getBankAccounts(),
     resolveActor(),

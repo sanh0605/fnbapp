@@ -69,7 +69,7 @@ export default function CategoriesClient({
   initialSearch,
   initialStatus,
   initialPage,
-}: CategoriesClientProps): JSX.Element {
+}: CategoriesClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawSort = searchParams?.get("sort");

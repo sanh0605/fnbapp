@@ -181,7 +181,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
       ledgerRows: [],
     });
     await savePurchaseOrder(buildFormData());
-    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-assets");
+    expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-assets", { expire: 0 });
 
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
@@ -189,7 +189,7 @@ describe("savePurchaseOrder -- asset creation on completing an EQUIPMENT purchas
     mockFindAll();
     mocks.savePurchaseOrderAtomic.mockResolvedValue({ purchaseOrderId: "PO-001" });
     await savePurchaseOrder(buildFormData("DRAFT"));
-    expect(mocks.revalidateTag).not.toHaveBeenCalledWith("sheets-assets");
+    expect(mocks.revalidateTag).not.toHaveBeenCalledWith("sheets-assets", { expire: 0 });
   });
 
   it("creates no asset for a RAW-only order", async () => {

@@ -6,11 +6,12 @@ import type { DBOutlet, DBBrand } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function OutletsPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; status?: string; page?: string };
-}) {
+export default async function OutletsPage(
+  props: {
+    searchParams?: Promise<{ q?: string; status?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [outlets, brands] = await Promise.all([
     getOutlets() as Promise<DBOutlet[]>,
     getBrands() as Promise<DBBrand[]>,

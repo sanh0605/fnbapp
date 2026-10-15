@@ -7,13 +7,14 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
-export default async function DisposeAssetPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { returnTo?: string; lot?: string };
-}) {
+export default async function DisposeAssetPage(
+  props: {
+    params: Promise<{ id: string }>;
+    searchParams?: Promise<{ returnTo?: string; lot?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   if (params.id.startsWith("TS-")) {
     const itemId = await findItemIdForAsset(params.id);
     if (!itemId) {

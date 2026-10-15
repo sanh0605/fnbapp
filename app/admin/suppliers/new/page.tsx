@@ -5,11 +5,12 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
-export default function NewSupplierPage({
-  searchParams,
-}: {
-  searchParams?: { from?: string; name?: string; returnTo?: string };
-}) {
+export default async function NewSupplierPage(
+  props: {
+    searchParams?: Promise<{ from?: string; name?: string; returnTo?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const fromPo = searchParams?.from === "po";
   const returnTo = fromPo
     ? safePoReturnTo(searchParams?.returnTo)

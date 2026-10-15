@@ -23,7 +23,7 @@ interface VoidOrderFormProps {
   detailHref: string;
 }
 
-export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps): JSX.Element {
+export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -114,7 +114,7 @@ describe("purchase order header dates (A10)", () => {
       created_at: "2026-09-14T23:30:00Z",
       transaction_date: "2026-09-15",
     });
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-1" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-1" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join("");
     expect(text).toContain("Ngày tạo: 15/09/2026 06:30:00");
     expect(text).toContain("Ngày giao dịch: 15/09/2026 00:00:00");
@@ -127,7 +127,7 @@ describe("purchase order header dates (A10)", () => {
       payment_method: "CASH",
       created_at: "2026-09-15T00:00:00Z",
     });
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-181" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-181" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join("");
     expect(text).toContain("Trả bằng: Tiền mặt");
   });
@@ -139,7 +139,7 @@ describe("purchase order header dates (A10)", () => {
       created_at: "2026-09-14T23:30:00Z",
       transaction_date: null,
     });
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-1" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-1" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join("");
     expect(text).toContain("Ngày giao dịch: —");
     expect(text).not.toContain("N/A");
@@ -162,7 +162,7 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
       created_at: "2026-10-01T00:00:00Z",
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-065" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-065" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ").replace(/\s+/g, " ");
 
     expect(text).toContain("Đã huỷ");
@@ -173,7 +173,7 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
     expect(text).not.toContain("MOCK_PURCHASE_ORDER_FORM");
 
     // With searchParams.edit = "1" as ADMIN, it still shows no form
-    const treeWithEdit = await PurchaseOrderDetail({ params: { id: "PO-065" }, searchParams: { edit: "1" } });
+    const treeWithEdit = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-065" }), searchParams: Promise.resolve({ edit: "1" }) });
     const textWithEdit = collectText(treeWithEdit as ReactNode).join(" ");
     expect(textWithEdit).not.toContain("MOCK_PURCHASE_ORDER_FORM");
   });
@@ -186,7 +186,7 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
       created_at: "2026-10-01T00:00:00Z",
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-147" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).not.toContain("Huỷ phiếu");
@@ -203,7 +203,7 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
       created_at: "2026-10-01T00:00:00Z",
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-147" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).toContain("MOCK_PURCHASE_ORDER_FORM");
@@ -214,7 +214,7 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
     getServerSession.mockResolvedValueOnce({ user: { role: "STAFF" } });
     findById.mockResolvedValue({ id: "PO-147", status: "DRAFT", created_at: "2026-10-01T00:00:00Z" });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-147" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).toContain("MOCK_PURCHASE_ORDER_FORM");
@@ -224,7 +224,7 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
   it("An ADMIN editing a completed order (?edit=1) sees no Huỷ phiếu while the form shows", async () => {
     findById.mockResolvedValue({ id: "PO-147", status: "COMPLETED", created_at: "2026-10-01T00:00:00Z" });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: { edit: "1" } });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-147" }), searchParams: Promise.resolve({ edit: "1" }) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).toContain("MOCK_PURCHASE_ORDER_FORM");
@@ -239,7 +239,7 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
       created_at: "2026-10-01T00:00:00Z",
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-147" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).toContain("Huỷ phiếu");
@@ -263,7 +263,7 @@ describe("purchase order clone link (BR-INV-016)", () => {
       created_at: "2026-10-01T00:00:00Z",
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-147" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).toContain("Nhân bản");
@@ -283,7 +283,7 @@ describe("purchase order clone link (BR-INV-016)", () => {
       created_at: "2026-10-01T00:00:00Z",
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-147" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).toContain("Nhân bản");
@@ -300,7 +300,7 @@ describe("purchase order clone link (BR-INV-016)", () => {
       created_at: "2026-10-01T00:00:00Z",
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-147" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).not.toContain("Nhân bản");
@@ -316,7 +316,7 @@ describe("purchase order clone link (BR-INV-016)", () => {
       created_at: "2026-10-01T00:00:00Z",
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-147" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-147" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).toContain("MOCK_PURCHASE_ORDER_FORM");
@@ -336,21 +336,21 @@ describe("purchase order back link (returnTo)", () => {
 
   it("follows a returnTo inside the purchase-order list", async () => {
     const tree = await PurchaseOrderDetail({
-      params: { id: "PO-065" },
-      searchParams: { returnTo: "/admin/inventory/purchase-orders?status=CANCELLED&page=2" },
+      params: Promise.resolve({ id: "PO-065" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/inventory/purchase-orders?status=CANCELLED&page=2" }),
     });
     expect(findLink(tree as ReactNode, "Phiếu nhập")?.href).toBe("/admin/inventory/purchase-orders?status=CANCELLED&page=2");
   });
 
   it("ignores a returnTo that leaves the purchase-order list", async () => {
     for (const bad of ["https://evil.example/x", "//evil.example", "/admin/users", "/admin/inventory/purchase-orders-x"]) {
-      const tree = await PurchaseOrderDetail({ params: { id: "PO-065" }, searchParams: { returnTo: bad } });
+      const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-065" }), searchParams: Promise.resolve({ returnTo: bad }) });
       expect(findLink(tree as ReactNode, "Phiếu nhập")?.href).toBe("/admin/inventory/purchase-orders");
     }
   });
 
   it("with no returnTo goes back to the bare list", async () => {
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-065" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-065" }), searchParams: Promise.resolve({}) });
     expect(findLink(tree as ReactNode, "Phiếu nhập")?.href).toBe("/admin/inventory/purchase-orders");
   });
 });
@@ -367,13 +367,13 @@ describe("purchase order asset warning (BR-COGS-008)", () => {
 
   it("?assetWarning=1 shows that the assets were not written", async () => {
     findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED", created_at: "2026-09-20T00:00:00Z" });
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-100" }, searchParams: { assetWarning: "1" } as any });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-100" }), searchParams: Promise.resolve({ assetWarning: "1" }) as any });
     expect(collectText(tree as ReactNode).join("")).toContain(warning);
   });
 
   it("without it the page says nothing about assets", async () => {
     findById.mockResolvedValue({ id: "PO-100", status: "COMPLETED", created_at: "2026-09-20T00:00:00Z" });
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-100" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-100" }), searchParams: Promise.resolve({}) });
     expect(collectText(tree as ReactNode).join("")).not.toContain(warning);
   });
 });
@@ -400,7 +400,7 @@ describe("purchase order supplier name display", () => {
       return [];
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-1" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-1" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
     expect(text).toContain("Nhà cung cấp");
     expect(text).toContain("Công ty Cà Phê");
@@ -414,7 +414,7 @@ describe("purchase order supplier name display", () => {
       created_at: "2026-09-15T00:00:00Z",
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-1" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-1" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
     expect(text).toContain("Nhà cung cấp");
     expect(text).toContain("Không rõ");
@@ -450,7 +450,7 @@ describe("purchase order stocktake lock (BR-INV-018)", () => {
       assets: [],
     });
 
-    const tree = await PurchaseOrderDetail({ params: { id: "PO-100" }, searchParams: {} });
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-100" }), searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).not.toContain("Sửa phiếu");

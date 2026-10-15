@@ -62,7 +62,7 @@ describe("CancelPurchaseOrderPage", () => {
     // next/navigation's redirect throws; the page relies on that to stop.
     redirect.mockImplementationOnce(() => { throw new Error("NEXT_REDIRECT"); });
 
-    await expect(CancelPurchaseOrderPage({ params: { id: "PO-147" } })).rejects.toThrow("NEXT_REDIRECT");
+    await expect(CancelPurchaseOrderPage({ params: Promise.resolve({ id: "PO-147" }) })).rejects.toThrow("NEXT_REDIRECT");
 
     expect(redirect).toHaveBeenCalledWith("/admin/inventory/purchase-orders/PO-147");
     expect(getPurchaseOrderCancelView).not.toHaveBeenCalled();
@@ -72,7 +72,7 @@ describe("CancelPurchaseOrderPage", () => {
     getServerSession.mockResolvedValueOnce({ user: { role: "ADMIN" } });
     getPurchaseOrderCancelView.mockResolvedValueOnce({ state: "missing-migration" });
 
-    const tree = await CancelPurchaseOrderPage({ params: { id: "PO-147" } });
+    const tree = await CancelPurchaseOrderPage({ params: Promise.resolve({ id: "PO-147" }) });
     const text = collectText(tree as ReactNode).join(" ");
 
     expect(text).toContain("Chưa cập nhật dữ liệu, chưa huỷ được phiếu.");
@@ -96,7 +96,7 @@ describe("CancelPurchaseOrderPage", () => {
       assets: [],
     });
 
-    const tree = await CancelPurchaseOrderPage({ params: { id: "PO-147" } });
+    const tree = await CancelPurchaseOrderPage({ params: Promise.resolve({ id: "PO-147" }) });
     const text = collectText(tree as ReactNode).join(" ").replace(/\s+/g, " ");
 
     expect(text).toContain("Huỷ phiếu nhập PO-147");

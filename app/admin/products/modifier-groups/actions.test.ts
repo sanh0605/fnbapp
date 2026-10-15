@@ -113,7 +113,7 @@ describe("saveModifierGroup", () => {
       productIds: ["PROD-001", "PROD-002"],
     });
     for (const sheet of ["Modifier_Groups", "Modifier_Group_Products", "Modifiers"]) {
-      expect(mocks.revalidateTag).toHaveBeenCalledWith(`sheets-${sheet}`);
+      expect(mocks.revalidateTag).toHaveBeenCalledWith(`sheets-${sheet}`, { expire: 0 });
     }
   });
 

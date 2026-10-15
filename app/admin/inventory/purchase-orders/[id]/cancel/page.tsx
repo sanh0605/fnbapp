@@ -8,11 +8,12 @@ import CancelPurchaseOrderForm from "./components/CancelPurchaseOrderForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function CancelPurchaseOrderPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function CancelPurchaseOrderPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
   if (!session) {
     redirect("/login");

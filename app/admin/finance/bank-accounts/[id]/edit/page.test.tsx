@@ -29,7 +29,7 @@ describe("EditBankAccountPage", () => {
 
   it("calls notFound when account id is unknown", async () => {
     await expect(
-      EditBankAccountPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      EditBankAccountPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
@@ -37,8 +37,8 @@ describe("EditBankAccountPage", () => {
   it("passes returnTo unchanged to form when returnTo is this record's own detail path", async () => {
     const returnTo = "/admin/finance/bank-accounts/BA-001?returnTo=%2Fadmin%2Ffinance%2Fbank-accounts%3Fq%3D1";
     const element = await EditBankAccountPage({
-      params: { id: "BA-001" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "BA-001" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);
@@ -50,8 +50,8 @@ describe("EditBankAccountPage", () => {
   it("builds detail URL with encoded list returnTo when returnTo is a list URL", async () => {
     const returnTo = "/admin/finance/bank-accounts?q=1";
     const element = await EditBankAccountPage({
-      params: { id: "BA-001" },
-      searchParams: { returnTo },
+      params: Promise.resolve({ id: "BA-001" }),
+      searchParams: Promise.resolve({ returnTo }),
     });
 
     const children = React.Children.toArray(element.props.children);

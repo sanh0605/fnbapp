@@ -38,15 +38,15 @@ describe("OutletDetailPage", () => {
 
   it("calls notFound when outlet id is unknown", async () => {
     await expect(
-      OutletDetailPage({ params: { id: "UNKNOWN" }, searchParams: {} }),
+      OutletDetailPage({ params: Promise.resolve({ id: "UNKNOWN" }), searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalled();
   });
 
   it("does not pass function props to Client Component", async () => {
     const element = await OutletDetailPage({
-      params: { id: "OUT-001" },
-      searchParams: { returnTo: "/admin/outlets" },
+      params: Promise.resolve({ id: "OUT-001" }),
+      searchParams: Promise.resolve({ returnTo: "/admin/outlets" }),
     });
 
     const props = element.props;

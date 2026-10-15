@@ -17,7 +17,7 @@ export function DetailHeader({
   subtitle,
   badge,
   actions,
-}: DetailHeaderProps): JSX.Element {
+}: DetailHeaderProps) {
   return (
     <div className="space-y-3">
       <div>

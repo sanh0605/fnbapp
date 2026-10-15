@@ -79,7 +79,7 @@ export function IssueSlipEditLines({
   handleUnitChange,
   handleQtyChange,
   addLine,
-}: IssueSlipEditLinesProps): JSX.Element {
+}: IssueSlipEditLinesProps) {
   return (
     <>
       {/* Desktop view */}
