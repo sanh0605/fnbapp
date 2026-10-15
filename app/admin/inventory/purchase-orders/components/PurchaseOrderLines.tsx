@@ -1,6 +1,7 @@
 "use client";
 
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { formatNumber } from "@/lib/shared/format";
@@ -36,13 +37,13 @@ export function PurchaseOrderLines({
       {lines.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed border-border rounded-xl bg-surface-secondary flex flex-col items-center justify-center">
           <p className="text-text-muted mb-4">Chưa có mặt hàng nào.</p>
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={addLine}
-            className="text-primary-active bg-primary-soft/50 hover:bg-primary-soft px-6 py-2.5 rounded-lg text-sm font-medium transition"
           >
-            + Thêm Mặt Hàng Đầu Tiên
-          </button>
+            + Thêm mặt hàng đầu tiên
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -59,14 +60,15 @@ export function PurchaseOrderLines({
                 key={index}
                 className="p-4 border border-border rounded-xl relative bg-surface-secondary/50"
               >
-                <button
+                <Button
                   type="button"
+                  variant="delete"
                   onClick={() => removeLine(index)}
                   aria-label="Xoá dòng"
-                  className="absolute top-4 right-4 text-text-muted hover:text-danger min-h-[44px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
+                  className="absolute top-4 right-4 min-h-[44px] md:min-h-[40px] min-w-[44px] p-0"
                 >
                   ✕
-                </button>
+                </Button>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                   <div className="md:col-span-3">
@@ -81,7 +83,7 @@ export function PurchaseOrderLines({
                       value={line.purchased_item_id}
                       onChange={(val) => updateLine(index, "purchased_item_id", val)}
                       options={items.map((i: any) => ({ id: i.id, label: i.name }))}
-                      placeholder="-- Chọn Hàng --"
+                      placeholder="Chọn hàng"
                     />
                   </div>
 
@@ -180,13 +182,14 @@ export function PurchaseOrderLines({
             );
           })}
 
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={addLine}
-            className="mt-4 w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition"
+            className="mt-4 w-full"
           >
-            + Thêm Mặt Hàng
-          </button>
+            + Thêm mặt hàng
+          </Button>
         </div>
       )}
     </div>

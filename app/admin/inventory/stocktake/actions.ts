@@ -276,6 +276,14 @@ export async function getStocktakeSessionData(): Promise<StocktakeSessionView | 
   };
 }
 
+// The database raises these two in English; turn them into what the owner can act on.
+function describeStocktakeError(error: unknown): ActionResponse {
+  const raw = error instanceof Error ? error.message : String(error);
+  if (raw.includes("plan changed")) return fail("Số liệu vừa thay đổi. Bấm Xem trước lại rồi xác nhận.");
+  if (raw.includes("already open")) return fail("Đang có một phiếu kiểm kê mở. Xong hoặc huỷ phiếu đó rồi mới mở phiếu mới được.");
+  return describeActionError(error);
+}
+
 export async function startStocktakeSession(notes?: string): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
@@ -329,7 +337,7 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
-    return describeActionError(error);
+    return describeStocktakeError(error);
   }
 }
 
@@ -388,7 +396,7 @@ export async function confirmStocktakeSession(
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
   if (!expectedPlanHash.trim()) {
-    return fail("Stocktake preview is required before confirmation");
+    return fail("Cần xem trước rồi mới xác nhận được. Bấm Xem trước lại.");
   }
 
   try {
@@ -405,7 +413,7 @@ export async function confirmStocktakeSession(
     revalidatePath(PATH);
     return ok({ result });
   } catch (error: unknown) {
-    return describeActionError(error);
+    return describeStocktakeError(error);
   }
 }
 

@@ -32,8 +32,8 @@ export async function addItemCategory(formData: FormData): Promise<ActionRespons
     revalidateTag(getCacheTag("Item_Categories"));
     revalidatePath("/admin/inventory/categories");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -45,17 +45,26 @@ export async function updateItemCategory(formData: FormData): Promise<ActionResp
   const name = formData.get("name") as string;
   const system_type = formData.get("system_type") as string;
 
+  if (!name?.trim()) return fail("Vui lòng nhập tên loại");
+
   try {
     const existingCategories = (await findAll("Item_Categories")) as any[];
     const conflict = findDuplicateActiveName(existingCategories, name, id);
     if (conflict) return fail(duplicateNameErrorMessage(conflict));
 
+    // Past Giá vốn follows the category's system_type; changing it would re-cost issued stock of closed months (cogs.md).
+    if (existingCategories.find(c => c.id === id)?.system_type !== system_type) {
+      const itemIds = ((await findAll("Purchased_Items")) as any[]).filter(p => p.item_category_id === id).map(p => p.id);
+      const issued = itemIds.length > 0 && (await findAllWhere("Stock_Issues", { in: { purchased_item_id: itemIds } })).length > 0;
+      if (issued) return fail("Loại này đã có hàng xuất kho. Đổi sang loại khác sẽ làm sai giá vốn các tháng trước.");
+    }
+
     await update("Item_Categories", id, { name, system_type });
     revalidateTag(getCacheTag("Item_Categories"));
     revalidatePath("/admin/inventory/categories");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -87,238 +96,6 @@ export async function deleteItemCategory(formData: FormData): Promise<ActionResp
   }
 }
 
-// --- PURCHASED ITEMS (Hàng Hoá Mua Vào) ---
-// Not touched by:
-// confirmed dead (grep across app/ and components/, no import found anywhere)
-// -- the real, live screen imports addPurchasedItem/updatePurchasedItem from
-// app/admin/inventory/items/actions.ts instead, which is what the plan's own
-// section 1.3 also names separately. Adding revalidateTag to a function that
-// never runs would fix nothing; noted here rather than silently ignored or
-// deleted (out of this task's scope).
-export async function addPurchasedItem(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return fail(auth.error);
-
-  const name = formData.get("name") as string;
-  const item_category_id = formData.get("item_category_id") as string;
-  const base_ingredient_id = formData.get("base_ingredient_id") as string;
-  const unitsJson = formData.get("units_json") as string;
-  const base_unit = formData.get("base_unit") as string;
-
-  if (!name || !item_category_id) return fail("Vui lòng nhập Tên và chọn Phân loại");
-
-  try {
-    const id = await generateNewId("Purchased_Items", "SPM");
-    await insert("Purchased_Items", { 
-      id, 
-      name, 
-      item_category_id, 
-      base_ingredient_id: base_ingredient_id || "" 
-    });
-
-    // Nếu có chọn nhóm nguyên liệu và có truyền array units thì tạo quy đổi luôn
-    if (base_ingredient_id && unitsJson && base_unit) {
-      const units = JSON.parse(unitsJson);
-      for (const u of units) {
-        if (u.name && u.conversion_rate) {
-          const convId = await generateNewId("UOM_Conversions", "QD");
-          await insert("UOM_Conversions", {
-            id: convId,
-            purchased_item_id: id,
-            purchased_unit: u.name,
-            base_unit: base_unit,
-            conversion_rate: u.conversion_rate
-          });
-        }
-      }
-    }
-
-    revalidatePath("/admin/inventory/items");
-    revalidatePath("/admin/inventory/conversions");
-    return ok();
-  } catch (error: any) {
-    return fail(error.message);
-  }
-}
-
-export async function updatePurchasedItem(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return fail(auth.error);
-
-  const id = formData.get("id") as string;
-  const name = formData.get("name") as string;
-  const item_category_id = formData.get("item_category_id") as string;
-  const base_ingredient_id = formData.get("base_ingredient_id") as string;
-  const unitsJson = formData.get("units_json") as string;
-  const base_unit = formData.get("base_unit") as string;
-  const update_history = formData.get("update_history") === "true";
-
-  try {
-    await update("Purchased_Items", id, { 
-      name, 
-      item_category_id, 
-      base_ingredient_id: base_ingredient_id || "" 
-    });
-
-    if (base_ingredient_id && unitsJson && base_unit) {
-      const newUnits = JSON.parse(unitsJson);
-      
-      const allConversions = await findAll("UOM_Conversions");
-      const existingConversions = allConversions.filter((c: any) => c.purchased_item_id === id);
-      
-      const newUnitIds: string[] = [];
-      for (const u of newUnits) {
-        if (!u.name || !u.conversion_rate) continue;
-        
-        if (u.id) {
-          if (update_history) {
-            const oldConv = existingConversions.find((c: any) => c.id === u.id);
-            if (oldConv && oldConv.purchased_unit !== u.name) {
-              const poLines = await findAll("Purchase_Order_Lines");
-              const linesToUpdate = poLines.filter((p: any) => p.purchased_item_id === id && p.unit === oldConv.purchased_unit);
-              for (const line of linesToUpdate) {
-                 await update("Purchase_Order_Lines", line.id, { ...line, unit: u.name });
-              }
-            }
-          }
-          // Cập nhật record cũ
-          await update("UOM_Conversions", u.id, {
-            purchased_item_id: id,
-            purchased_unit: u.name,
-            base_unit: base_unit,
-            conversion_rate: u.conversion_rate
-          });
-          newUnitIds.push(u.id);
-        } else {
-          // Tạo mới record
-          const convId = await generateNewId("UOM_Conversions", "QD");
-          await insert("UOM_Conversions", {
-            id: convId,
-            purchased_item_id: id,
-            purchased_unit: u.name,
-            base_unit: base_unit,
-            conversion_rate: u.conversion_rate
-          });
-          newUnitIds.push(convId);
-        }
-      }
-
-      // Xoá những record đã bị xoá khỏi UI
-      for (const ex of existingConversions) {
-        if (!newUnitIds.includes(ex.id)) {
-          await remove("UOM_Conversions", ex.id);
-        }
-      }
-    }
-
-    revalidatePath("/admin/inventory/items");
-    revalidatePath("/admin/inventory/conversions");
-    return ok();
-  } catch (error: any) {
-    return fail(error.message);
-  }
-}
-
-export async function deletePurchasedItem(formData: FormData): Promise<ActionResponse> {
-  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
-  const auth = await requireOwner();
-  if (!auth.ok) return fail(auth.error);
-
-  const id = formData.get("id") as string;
-  try {
-    await remove("Purchased_Items", id);
-    revalidatePath("/admin/inventory/items");
-    return ok();
-  } catch (error: any) {
-    return fail(error.message);
-  }
-}
-
-// --- UOM CONVERSIONS (Bảng Quy Đổi) ---
-// Same as above: dead, unreferenced anywhere. The real, live screen imports
-// addConversion/updateConversion from app/admin/inventory/conversions/actions.ts
-// (a DIFFERENT file the plan's own section 1.3 measurement missed entirely
-// -- fixed there instead, see that file's own note).
-export async function addConversion(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return fail(auth.error);
-
-  const purchased_item_id = formData.get("purchased_item_id") as string;
-  const purchased_unit = formData.get("purchased_unit") as string;
-  const conversion_rate = formData.get("conversion_rate") as string;
-  const base_unit = formData.get("base_unit") as string;
-
-  if (!purchased_item_id || !purchased_unit || !conversion_rate || !base_unit) 
-    return fail("Thiếu thông tin quy đổi");
-
-  try {
-    const id = await generateNewId("UOM_Conversions", "QD");
-    await insert("UOM_Conversions", { 
-      id, 
-      purchased_item_id, 
-      purchased_unit, 
-      base_unit, 
-      conversion_rate 
-    });
-    revalidatePath("/admin/inventory/conversions");
-    return ok();
-  } catch (error: any) {
-    return fail(error.message);
-  }
-}
-
-export async function updateConversion(formData: FormData): Promise<ActionResponse> {
-  const auth = await requireAdmin();
-  if (!auth.ok) return fail(auth.error);
-
-  const id = formData.get("id") as string;
-  const purchased_item_id = formData.get("purchased_item_id") as string;
-  const purchased_unit = formData.get("purchased_unit") as string;
-  const conversion_rate = formData.get("conversion_rate") as string;
-  const base_unit = formData.get("base_unit") as string;
-  const update_history = formData.get("update_history") === "true";
-
-  try {
-    if (update_history) {
-      const allConvs = await findAll("UOM_Conversions");
-      const oldConv = allConvs.find((c: any) => c.id === id);
-      if (oldConv && oldConv.purchased_unit !== purchased_unit) {
-        const poLines = await findAll("Purchase_Order_Lines");
-        const linesToUpdate = poLines.filter((p: any) => p.purchased_item_id === purchased_item_id && p.unit === oldConv.purchased_unit);
-        for (const line of linesToUpdate) {
-           await update("Purchase_Order_Lines", line.id, { ...line, unit: purchased_unit });
-        }
-      }
-    }
-
-    await update("UOM_Conversions", id, { 
-      purchased_item_id, 
-      purchased_unit, 
-      base_unit, 
-      conversion_rate 
-    });
-    revalidatePath("/admin/inventory/conversions");
-    return ok();
-  } catch (error: any) {
-    return fail(error.message);
-  }
-}
-
-export async function deleteConversion(formData: FormData): Promise<ActionResponse> {
-  // BR-ACCESS-003: permanent deletion is ADMIN only (owner decision 2026-09-08).
-  const auth = await requireOwner();
-  if (!auth.ok) return fail(auth.error);
-
-  const id = formData.get("id") as string;
-  try {
-    await remove("UOM_Conversions", id);
-    revalidatePath("/admin/inventory/conversions");
-    return ok();
-  } catch (error: any) {
-    return fail(error.message);
-  }
-}
-
 // --- UNITS (Đơn vị) ---
 export async function addUnit(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
@@ -345,8 +122,8 @@ export async function addUnit(formData: FormData): Promise<ActionResponse> {
     revalidateTag(getCacheTag("Units"));
     revalidatePath("/admin/inventory/units");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 
@@ -368,8 +145,8 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
     revalidateTag(getCacheTag("Units"));
     revalidatePath("/admin/inventory/units");
     return ok();
-  } catch (error: any) {
-    return fail(error.message);
+  } catch (error: unknown) {
+    return describeActionError(error);
   }
 }
 

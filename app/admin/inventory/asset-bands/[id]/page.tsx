@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { getAssetBands } from "../actions";
-import { resolveActor } from "@/lib/auth/auth";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
 import { BandDetailView } from "./components/BandDetailView";
 
@@ -13,17 +12,13 @@ export default async function BandDetailPage({
   params: { id: string };
   searchParams?: { returnTo?: string };
 }) {
-  const [bands, auth] = await Promise.all([
-    getAssetBands(),
-    resolveActor(),
-  ]);
+  const bands = await getAssetBands();
 
   const band = bands.find((b) => b.id === params.id);
   if (!band) {
     notFound();
   }
 
-  const canDelete = auth.ok && auth.actor.role === "ADMIN";
   const rawReturnTo = safeReturnTo(
     searchParams?.returnTo,
     "/admin/inventory/asset-bands",
@@ -36,7 +31,6 @@ export default async function BandDetailPage({
     <BandDetailView
       band={band}
       returnTo={returnTo}
-      canDelete={canDelete}
     />
   );
 }

@@ -98,7 +98,7 @@ async function saveDraftAndRead(): Promise<FormData> {
 describe("PurchaseOrderForm number boxes (wave K3)", () => {
   it("Số lượng is a text box with the decimal keypad; typing 12 saves the line's quantity as \"12\"", async () => {
     renderForm();
-    fireEvent.click(screen.getByText("+ Thêm Mặt Hàng Đầu Tiên"));
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
     const qty = screen.getByLabelText("Số lượng") as HTMLInputElement;
     expect(qty.type).toBe("text");
     expect(qty.inputMode).toBe("decimal");
@@ -110,7 +110,7 @@ describe("PurchaseOrderForm number boxes (wave K3)", () => {
 
   it("Thành tiền shows 1500000 as 1,500,000 and saves the line's subtotal as \"1500000\"", async () => {
     renderForm();
-    fireEvent.click(screen.getByText("+ Thêm Mặt Hàng Đầu Tiên"));
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
     const sub = screen.getByLabelText("Thành tiền (đ)") as HTMLInputElement;
     expect(sub.inputMode).toBe("numeric");
     fireEvent.change(sub, { target: { value: "1500000" } });
@@ -185,7 +185,7 @@ describe("PurchaseOrderForm save buttons (owner 2026-10-08, BR-INV-015)", () => 
 describe("PurchaseOrderForm empty quantity (BR-UI-009)", () => {
   it("a new line's Số lượng starts empty with \"Ví dụ: 2\"", () => {
     renderForm();
-    fireEvent.click(screen.getByText("+ Thêm Mặt Hàng Đầu Tiên"));
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
     const qty = screen.getByLabelText("Số lượng") as HTMLInputElement;
     expect(qty.value).toBe("");
     expect(qty.placeholder).toBe("Ví dụ: 2");
@@ -207,7 +207,7 @@ describe("PurchaseOrderForm empty quantity (BR-UI-009)", () => {
 
   it("a draft may still be saved with Số lượng empty", async () => {
     renderForm();
-    fireEvent.click(screen.getByText("+ Thêm Mặt Hàng Đầu Tiên"));
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
     const fd = await saveDraftAndRead();
     expect(JSON.parse(fd.get("lines_json") as string)[0].quantity).toBe("");
   });

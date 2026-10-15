@@ -95,34 +95,4 @@ describe("BandDetailPage", () => {
     expect(props).toBeDefined();
     expect(Object.values(props).every((v) => typeof v !== "function")).toBe(true);
   });
-
-  it("sets canDelete to false for non-ADMIN", async () => {
-    mockGetAssetBands.mockResolvedValue(SAMPLE_BANDS);
-    mockResolveActor.mockResolvedValue({
-      ok: true,
-      actor: { role: "STAFF" },
-    });
-
-    const element = await BandDetailPage({
-      params: { id: "KH-001" },
-      searchParams: { returnTo: "/admin/inventory/asset-bands" },
-    });
-
-    expect(element.props.canDelete).toBe(false);
-  });
-
-  it("sets canDelete to true for ADMIN", async () => {
-    mockGetAssetBands.mockResolvedValue(SAMPLE_BANDS);
-    mockResolveActor.mockResolvedValue({
-      ok: true,
-      actor: { role: "ADMIN" },
-    });
-
-    const element = await BandDetailPage({
-      params: { id: "KH-001" },
-      searchParams: { returnTo: "/admin/inventory/asset-bands" },
-    });
-
-    expect(element.props.canDelete).toBe(true);
-  });
 });

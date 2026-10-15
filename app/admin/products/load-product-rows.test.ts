@@ -21,14 +21,9 @@ vi.mock("@/lib/db/tables", () => {
     findAllWhere,
     findAllWhereInBatches: async (name: string, col: string, vs: any[]) =>
       findAllWhere(name, { in: { [col]: vs } }),
-    findOrderLineProductAndVariantIds: async () => {
+    findSoldModifierIds: async () => {
       db.idScans++;
-      const lines = db.tables["Order_Lines_V2"];
-      return {
-        productIds: lines.map(l => l.product_id).filter(Boolean),
-        variantIds: lines.map(l => l.variant_id).filter(Boolean),
-        modifierIds: db.tables["__soldModifiers"].map(m => m),
-      };
+      return db.tables["__soldModifiers"].map(m => m);
     },
   };
 });

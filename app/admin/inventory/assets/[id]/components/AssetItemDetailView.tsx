@@ -16,16 +16,12 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import type { AssetItemDetail } from "@/lib/assets/asset-items";
 
 export interface AssetItemDetailViewProps {
   detail: AssetItemDetail;
   returnTo: string;
-}
-
-function formatDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  return y && m && d ? `${d}/${m}/${y}` : dateStr;
 }
 
 function formatMonth(monthStr: string): string {
@@ -134,7 +130,7 @@ export function AssetItemDetailView({
                       <TableCell>
                         <span className="font-mono text-primary">{lot.id}</span>
                       </TableCell>
-                      <TableCell>{formatDate(lot.acquiredDate)}</TableCell>
+                      <TableCell>{formatDateTimeFull(lot.acquiredDate)}</TableCell>
                       <TableCell>
                         {lot.purchaseOrderId ? (
                           <Link
@@ -172,7 +168,7 @@ export function AssetItemDetailView({
                       {lot.id}
                     </span>
                     <span className="text-xs text-text-secondary">
-                      {formatDate(lot.acquiredDate)}
+                      {formatDateTimeFull(lot.acquiredDate)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -241,9 +237,9 @@ export function AssetItemDetailView({
                 <TableBody>
                   {detail.disposals.map((d) => (
                     <TableRow key={d.id}>
-                      <TableCell>{formatDate(d.disposedDate)}</TableCell>
+                      <TableCell>{formatDateTimeFull(d.disposedDate)}</TableCell>
                       <TableCell>
-                        {formatDate(d.lotAcquiredDate)} ({d.assetId})
+                        {formatDateTimeFull(d.lotAcquiredDate)} ({d.assetId})
                       </TableCell>
                       <TableCell align="right">{d.quantity}</TableCell>
                       <TableCell>{d.reason || "—"}</TableCell>
@@ -262,14 +258,14 @@ export function AssetItemDetailView({
                 <div key={d.id} className="p-4 space-y-1 text-sm">
                   <div className="flex items-center justify-between">
                     <span className="text-text-primary">
-                      {formatDate(d.disposedDate)}
+                      {formatDateTimeFull(d.disposedDate)}
                     </span>
                     <span className="text-text-primary">
                       {formatNumber(Math.round(d.charge))}đ
                     </span>
                   </div>
                   <div className="text-xs text-text-secondary">
-                    Lần mua: {formatDate(d.lotAcquiredDate)} ({d.assetId}) · Số lượng: {d.quantity}
+                    Lần mua: {formatDateTimeFull(d.lotAcquiredDate)} ({d.assetId}) · Số lượng: {d.quantity}
                   </div>
                   <div className="text-xs text-text-muted">
                     Lý do: {d.reason || "—"}

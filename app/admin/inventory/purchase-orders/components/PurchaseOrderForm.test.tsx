@@ -5,14 +5,20 @@ import PurchaseOrderForm from "./PurchaseOrderForm";
 import type { DBBankAccount, DBPurchaseOrder, DBPurchasedItem, DBSupplier, DBPurchaseSource, DBUOMConversion, DBUnit, DBPurchaseOrderLine } from "@/types/db";
 import type { PurchaseOrderCopySeed } from "@/lib/purchasing/purchase-order-copy";
 
-const { mockSavePurchaseOrder, router } = vi.hoisted(() => ({
+if (typeof Element.prototype.scrollIntoView !== "function") {
+  Element.prototype.scrollIntoView = () => {};
+}
+
+const { mockSavePurchaseOrder, mockAddPurchaseSource, mockAlert, router } = vi.hoisted(() => ({
   mockSavePurchaseOrder: vi.fn(),
+  mockAddPurchaseSource: vi.fn(),
+  mockAlert: vi.fn(),
   router: { push: vi.fn(), replace: vi.fn(), refresh: vi.fn() },
 }));
 
 vi.mock("../actions", () => ({
   savePurchaseOrder: mockSavePurchaseOrder,
-  addPurchaseSource: vi.fn(),
+  addPurchaseSource: mockAddPurchaseSource,
 }));
 
 let mockSearchParams = new URLSearchParams();
@@ -24,7 +30,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/lib/shared/dialog", () => ({
-  alert: vi.fn(),
+  alert: mockAlert,
   confirm: vi.fn(),
 }));
 
@@ -562,7 +568,7 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
         />
       );
       // A new order starts with no line; open one first.
-      fireEvent.click(screen.getByText("+ Thêm Mặt Hàng Đầu Tiên"));
+      fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
 
       const subtotalInput = screen.getByLabelText("Thành tiền (đ)");
       const quantityInput = screen.getByLabelText("Số lượng");
@@ -664,3 +670,108 @@ describe("PurchaseOrderForm two columns (owner 2026-10-10)", () => {
     }
   });
 });
+
+describe("PurchaseOrderForm source picker (BR-DATA-007, K4)", () => {
+  it("does not render the + Thêm button with window.prompt", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+    expect(screen.queryByRole("button", { name: "+ Thêm" })).toBeNull();
+  });
+
+  it("marks Nguồn nhập hàng field as required", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+    const shared = screen.getByTestId("form-shared");
+    const sourceLabel = within(shared).getByText("Nguồn nhập hàng");
+    expect(sourceLabel).toBeInTheDocument();
+    expect(sourceLabel.parentElement?.textContent).toContain("*");
+  });
+
+  it("creates a new source with onCreateNew and selects it on success", async () => {
+    mockAddPurchaseSource.mockResolvedValueOnce({
+      success: true,
+      data: { id: "SRC-TIKTOK", name: "Tiktok Shop" },
+    });
+
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    const sourceCombobox = screen.getByRole("combobox", { name: "Ví dụ: Shopee, Lazada..." });
+    fireEvent.click(sourceCombobox);
+
+    const searchInput = screen.getByRole("textbox", { name: "Tìm trong danh sách" });
+    fireEvent.change(searchInput, { target: { value: "Tiktok Shop" } });
+
+    const createBtn = screen.getByRole("button", { name: '+ Thêm "Tiktok Shop"' });
+    fireEvent.mouseDown(createBtn);
+
+    await waitFor(() => {
+      expect(mockAddPurchaseSource).toHaveBeenCalledWith("Tiktok Shop");
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Tiktok Shop")).toBeInTheDocument();
+    });
+  });
+
+  it("shows alert error when adding source fails", async () => {
+    mockAddPurchaseSource.mockResolvedValueOnce({
+      success: false,
+      error: "Tên nguồn không hợp lệ",
+    });
+
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    const sourceCombobox = screen.getByRole("combobox", { name: "Ví dụ: Shopee, Lazada..." });
+    fireEvent.click(sourceCombobox);
+
+    const searchInput = screen.getByRole("textbox", { name: "Tìm trong danh sách" });
+    fireEvent.change(searchInput, { target: { value: "Tên Lỗi" } });
+    const createBtn = screen.getByRole("button", { name: '+ Thêm "Tên Lỗi"' });
+    fireEvent.mouseDown(createBtn);
+
+    await waitFor(() => {
+      expect(mockAlert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Lỗi",
+          message: "Lỗi: Tên nguồn không hợp lệ",
+          variant: "danger",
+        })
+      );
+    });
+  });
+});
+

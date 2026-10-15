@@ -175,7 +175,7 @@ export async function deleteSupplierAction(formData: FormData): Promise<ActionRe
   if (!auth.ok) return fail(auth.error);
 
   const id = formData.get("id") as string;
-  if (!id) return fail("ID khong hop le");
+  if (!id) return fail("ID không hợp lệ");
 
   // Refuse up front with a readable reason; the RESTRICT foreign key would
   // otherwise only surface a generic error.

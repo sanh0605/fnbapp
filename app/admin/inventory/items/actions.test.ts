@@ -742,3 +742,89 @@ describe("getItemStockById -- current stock text per item", () => {
     expect(mocks.computeOnHandByPurchasedItem).not.toHaveBeenCalled();
   });
 });
+
+// Past Giá vốn follows an item's costed state; moving an issued item out of it would rewrite closed months.
+describe("updatePurchasedItem -- an issued item cannot leave costing, and a conversion rate must be above 0", () => {
+  const refusal = "Hàng này đã có phiếu xuất. Đổi loại sẽ làm sai giá vốn các tháng trước.";
+  let issues: any[];
+  let currentItem: any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin" } });
+    issues = [{ id: "ISS-1" }];
+    currentItem = { id: "SPM-001", name: "Bột cà phê", item_category_id: "NHH-001", is_non_inventory: false };
+    mocks.findAll.mockImplementation((sheet: string) => {
+      if (sheet === "Purchased_Items") return Promise.resolve([currentItem]);
+      if (sheet === "Item_Categories") {
+        return Promise.resolve([
+          { id: "NHH-001", system_type: "RAW" },
+          { id: "NHH-009", system_type: "EQUIPMENT" },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+    mocks.findAllWhere.mockImplementation((sheet: string) => Promise.resolve(sheet === "Stock_Issues" ? issues : []));
+    mocks.generateNewId.mockResolvedValue("QD-999");
+  });
+
+  function form(category: string, nonInventory = false, units?: unknown[]): FormData {
+    const f = new FormData();
+    f.set("id", "SPM-001");
+    f.set("name", "Bột cà phê");
+    f.set("item_category_id", category);
+    f.set("is_non_inventory", String(nonInventory));
+    if (units) {
+      f.set("base_unit", "U-G");
+      f.set("units_json", JSON.stringify(units));
+    }
+    return f;
+  }
+
+  it("refuses moving an issued item into an EQUIPMENT category", async () => {
+    const res = await actions.updatePurchasedItem(form("NHH-009"));
+    expect(res.error).toBe(refusal);
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses ticking 'không tính tồn kho' on an issued item", async () => {
+    const res = await actions.updatePurchasedItem(form("NHH-001", true));
+    expect(res.error).toBe(refusal);
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("saves the same move when the item has no issue rows", async () => {
+    issues = [];
+    const res = await actions.updatePurchasedItem(form("NHH-009"));
+    expect(res.error).toBeUndefined();
+  });
+
+  it("refuses taking an issued item back into costing: leaving EQUIPMENT, or unticking 'không tính tồn kho'", async () => {
+    currentItem = { ...currentItem, item_category_id: "NHH-009" };
+    expect((await actions.updatePurchasedItem(form("NHH-001"))).error).toBe(refusal);
+    currentItem = { ...currentItem, item_category_id: "NHH-001", is_non_inventory: true };
+    expect((await actions.updatePurchasedItem(form("NHH-001", false))).error).toBe(refusal);
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("does not refuse an item that is already outside costing and stays there (Khăn lau đa năng)", async () => {
+    currentItem = { ...currentItem, item_category_id: "NHH-009" };
+    const res = await actions.updatePurchasedItem(form("NHH-009"));
+    expect(res.error).toBeUndefined();
+  });
+
+  it.each(["0", "-5", "abc", ""])("refuses conversion rate %j", async (rate) => {
+    const res = await actions.updatePurchasedItem(form("NHH-001", false, [{ name: "U-BAO", conversion_rate: rate }]));
+    expect(res.error).toBe("Hệ số quy đổi phải là số lớn hơn 0.");
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it("addPurchasedItem refuses a conversion rate of 0 before writing anything", async () => {
+    const f = form("NHH-001", false, [{ name: "U-BAO", conversion_rate: "0" }]);
+    f.delete("id");
+    const res = await actions.addPurchasedItem(f);
+    expect(res.error).toBe("Hệ số quy đổi phải là số lớn hơn 0.");
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+});

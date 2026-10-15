@@ -4,6 +4,7 @@ import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addPurchasedItem, updatePurchasedItem } from "../actions";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
@@ -264,7 +265,7 @@ export function PurchasedItemForm({
       const approved = await confirm({
         title: "Tên gần giống một mục đã có",
         message: (res as any).needsDuplicateWarning.message,
-        okText: "Món khác",
+        okText: "Hàng khác",
         cancelText: "Tôi gõ nhầm",
         variant: "warning",
       });
@@ -309,9 +310,7 @@ export function PurchasedItemForm({
     <div className="bg-surface-card rounded-2xl border border-border p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
-            {error}
-          </div>
+          <Alert variant="danger">{error}</Alert>
         )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -380,7 +379,7 @@ export function PurchasedItemForm({
             <div className="pt-4 border-t border-border space-y-4">
               <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
                 {isEquipment ? (
-                  <>Đây là nhóm <strong>Dụng Cụ</strong>. Chọn đơn vị gốc để hệ thống ghi đúng số lượng khi mua theo lốc/thùng (VD: 1 Combo 10 Chai = 10 cái).</>
+                  <>Đây là nhóm <strong>Dụng cụ</strong>. Chọn đơn vị gốc để hệ thống ghi đúng số lượng khi mua theo lốc/thùng (VD: 1 Combo 10 Chai = 10 cái).</>
                 ) : (
                   <>Đây là nhóm <strong>Vật Tư Tiêu Hao</strong>. Chọn đơn vị gốc để hệ thống biết cách quy đổi và đếm tồn kho.</>
                 )}
@@ -573,7 +572,7 @@ function ConversionRowsSection({
                     options={unitOptions}
                     value={u.name}
                     onChange={(val) => updateUnitRow(idx, "name", val)}
-                    placeholder="VD: Bao 10kg"
+                    placeholder="Ví dụ: Bao 10kg"
                   />
                 </Field>
               </div>

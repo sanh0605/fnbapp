@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin, requireOwner: mocks.requireAdmin })); // a completed-order edit asks for the owner; this test acts as one
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  findAllNoCache: mocks.findAll,
   findById: mocks.findById,
   insert: mocks.insert,
   update: mocks.update,

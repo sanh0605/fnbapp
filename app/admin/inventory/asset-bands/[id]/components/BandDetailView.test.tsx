@@ -50,7 +50,7 @@ beforeEach(() => {
 describe("BandDetailView", () => {
   it("renders band details, title and back link", () => {
     const returnTo = "/admin/inventory/asset-bands";
-    render(<BandDetailView band={BAND} returnTo={returnTo} canDelete={false} />);
+    render(<BandDetailView band={BAND} returnTo={returnTo} />);
 
     // Header back link
     const backLink = screen.getByRole("link", { name: /Thời hạn khấu hao/ });
@@ -69,7 +69,7 @@ describe("BandDetailView", () => {
 
   it("'Sửa' href goes to /admin/inventory/asset-bands/edit with returnTo = detail url", () => {
     const returnTo = "/admin/inventory/asset-bands";
-    render(<BandDetailView band={BAND} returnTo={returnTo} canDelete={false} />);
+    render(<BandDetailView band={BAND} returnTo={returnTo} />);
 
     const editLink = screen.getByRole("link", { name: "Sửa" });
     const detailUrl = `/admin/inventory/asset-bands/${BAND.id}?returnTo=${encodeURIComponent(returnTo)}`;
@@ -78,8 +78,8 @@ describe("BandDetailView", () => {
     expect(editLink).toHaveAttribute("href", expectedEditHref);
   });
 
-  it("does not render 'Xoá' button even when canDelete is true", () => {
-    render(<BandDetailView band={BAND} returnTo="/admin/inventory/asset-bands" canDelete={true} />);
+  it("does not render a Xoá button", () => {
+    render(<BandDetailView band={BAND} returnTo="/admin/inventory/asset-bands" />);
     expect(screen.queryByRole("button", { name: /Xoá/ })).toBeNull();
   });
 });

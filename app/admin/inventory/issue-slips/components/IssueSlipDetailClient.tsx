@@ -11,7 +11,7 @@ import { initialUnitQuantity, toBaseQuantity, buildIssueUnitOptions } from "@/li
 import type { EditDraftLine } from "@/lib/stock/issue-slip-edit-diff";
 import type { IssueSlipDetail } from "@/lib/stock/issue-slip-detail";
 import type { IssueSlipItemView } from "../actions";
-import { editIssueSlip, cancelIssueSlip } from "../actions";
+import { editIssueSlip } from "../actions";
 import { IssueSlipEditLines, type DraftLine } from "./IssueSlipEditLines";
 import { IssueSlipViewLines } from "./IssueSlipViewLines";
 import { IssueSlipDialogs } from "./IssueSlipDialogs";
@@ -34,8 +34,7 @@ export default function IssueSlipDetailClient({
   const router = useRouter();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [draft, setDraft] = useState<DraftLine[]>([]);
-  const [dialog, setDialog] = useState<"cancel" | "empty" | null>(null);
-  const [reason, setReason] = useState("");
+  const [showEmptyDialog, setShowEmptyDialog] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
   const [nextNewId, setNextNewId] = useState(1);
@@ -82,7 +81,7 @@ export default function IssueSlipDetailClient({
     const next = draft.map((l) => (l.selected ? { ...l, removed: true, selected: false } : l));
     setDraft(next);
     if (next.filter((l) => !l.removed && (l.issueId !== null || l.purchasedItemId)).length === 0) {
-      setDialog("empty");
+      setShowEmptyDialog(true);
     }
   }
 
@@ -181,7 +180,7 @@ export default function IssueSlipDetailClient({
   async function save() {
     const activeLines = draft.filter((l) => !l.removed && (l.issueId !== null || l.purchasedItemId));
     if (activeLines.length === 0) {
-      setDialog("empty");
+      setShowEmptyDialog(true);
       return;
     }
 
@@ -203,28 +202,6 @@ export default function IssueSlipDetailClient({
         setDraft([]);
       }
     });
-  }
-
-  async function handleConfirmCancel() {
-    if (!reason.trim()) return;
-    setServerError(null);
-    startTransition(async () => {
-      const res = await cancelIssueSlip({ slipId: detail.id, reason: reason.trim() });
-      if (res.error) {
-        setServerError(res.error);
-        setDialog(null);
-      } else {
-        router.refresh();
-        setDialog(null);
-        setMode("view");
-        setDraft([]);
-      }
-    });
-  }
-
-  function handleAskReason() {
-    setDialog("cancel");
-    setReason("");
   }
 
   const visibleLines = draft.filter((l) => !l.removed);
@@ -258,6 +235,11 @@ export default function IssueSlipDetailClient({
 
   const saveDisabled =
     visibleLines.filter((l) => l.issueId !== null || l.purchasedItemId).length === 0 || !changed;
+
+  const cancelHref =
+    returnTo !== "/admin/inventory/issue-slips"
+      ? `/admin/inventory/issue-slips/${detail.id}/cancel?returnTo=${encodeURIComponent(returnTo)}`
+      : `/admin/inventory/issue-slips/${detail.id}/cancel`;
 
   return (
     <div className="space-y-6 flex flex-col h-full bg-surface-background">
@@ -304,7 +286,7 @@ export default function IssueSlipDetailClient({
               <Button variant="secondary" onClick={startEdit}>
                 Chỉnh sửa
               </Button>
-              <Button variant="delete" onClick={handleAskReason}>
+              <Button variant="delete" href={cancelHref}>
                 Huỷ phiếu
               </Button>
             </div>
@@ -315,12 +297,10 @@ export default function IssueSlipDetailClient({
       {serverError && <Alert variant="danger">{serverError}</Alert>}
 
       {detail.lock && (
-        <div className="flex gap-2.5 items-start max-w-lg p-3 rounded-lg bg-warning/10 text-warning-active text-sm leading-relaxed">
-          <span>
-            Phiếu nằm trước lần kiểm kê ngày {detail.lock.dateText} nên không sửa được. Sai lệch sẽ
-            được bù ở lần kiểm kê sau.
-          </span>
-        </div>
+        <Alert variant="warning" className="max-w-lg">
+          Phiếu nằm trước lần kiểm kê ngày {detail.lock.dateText} nên không sửa được. Sai lệch sẽ
+          được bù ở lần kiểm kê sau.
+        </Alert>
       )}
 
       {mode === "view" && <IssueSlipViewLines detail={detail} />}
@@ -370,14 +350,9 @@ export default function IssueSlipDetailClient({
       )}
 
       <IssueSlipDialogs
-        dialog={dialog}
-        slipId={detail.id}
-        reason={reason}
-        onReasonChange={setReason}
-        isPending={isPending}
-        onClose={() => setDialog(null)}
-        onAskReason={handleAskReason}
-        onConfirmCancel={handleConfirmCancel}
+        isOpen={showEmptyDialog}
+        cancelHref={cancelHref}
+        onClose={() => setShowEmptyDialog(false)}
       />
     </div>
   );

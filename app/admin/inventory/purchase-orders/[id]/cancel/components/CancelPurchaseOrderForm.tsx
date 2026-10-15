@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatDecimal, formatNumber } from "@/lib/shared/format";
 import { cancelPurchaseOrder, type PurchaseOrderCancelView } from "@/app/admin/inventory/purchase-orders/actions";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import {
   Table,
@@ -106,7 +107,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                     className="p-3 rounded-lg border border-border bg-surface-card flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-text-primary truncate">{line.itemName}</p>
+                      <p className="font-medium text-text-primary break-words">{line.itemName}</p>
                       <p className="text-xs text-text-muted">
                         {formatDecimal(Number(line.quantity), { maxDigits: 3 })} · {line.unitName} · {formatNumber(line.unitPrice)}
                       </p>
@@ -228,11 +229,11 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
         {/* Cancel Card or Blocked Block */}
         {isBlocked ? (
           <div className="order-4 space-y-4">
-            <div className="p-4 rounded-xl border border-danger/40 bg-danger/10 text-danger text-sm space-y-2">
+            <Alert variant="warning" className="space-y-2">
               {blockedMessages.map((msg, idx) => (
                 <p key={idx}>{msg}</p>
               ))}
-            </div>
+            </Alert>
             <div>
               <Button
                 href={detailHref}
@@ -250,11 +251,11 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
             </p>
 
             {errorLines.length > 0 && (
-              <div className="p-4 rounded-xl border border-danger/40 bg-danger/10 text-danger text-sm space-y-1">
+              <Alert variant="danger" className="space-y-1">
                 {errorLines.map((line, idx) => (
                   <p key={idx}>{line}</p>
                 ))}
-              </div>
+              </Alert>
             )}
 
             <div className="space-y-1.5">

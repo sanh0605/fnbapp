@@ -54,7 +54,7 @@ Applies from the issue-based COGS path (Plan B, parallel path).
 
 ### BR-INV-007 — Count sealed packages only; cost is recognised when a package is opened
 
-**Status:** `APPROVED` — owner decision 2026-08-07. **Not yet implemented** — Plan D builds it. Recorded here on decision, per `CLAUDE.md` "Luật dữ liệu", not on delivery.
+**Status:** `APPROVED` — owner decision 2026-08-07. **Built** by Plan D: the count screen takes whole sealed packages only and refuses a fraction (`StocktakeLineCards.tsx`). Checked 2026-10-15.
 
 A stocktake counts only packages that are still sealed. An opened package is not counted and not estimated. The owner's own example: the 100 g bag of `Dâu sấy` is finished, the 500 g bag is open and in use, the 1 kg bag is sealed — only the 1 kg line gets a number.
 
@@ -76,7 +76,7 @@ This is the edge Sonnet named while reviewing `BR-INV-007`: an item that always 
 
 ### BR-INV-008 — Counting more than expected is recorded as goods found, not refused
 
-**Status:** `APPROVED` — owner decision 2026-08-07. **Implemented 2026-08-08** (Plan D D5b, `0056_found_stock.sql`): the `stock_issues.base_quantity` constraint now accepts a negative value (the `NaN` guard kept alongside it), `save_stocktake_line_atomic` no longer refuses the found-stock range, and the negative issue row carries a Vietnamese note explaining itself. Verified live against real `Dâu sấy` data inside a rolled-back transaction — nothing persisted; see the plan's D5b entry for the five checks. No screen writes this yet — that is Plan D D7.
+**Status:** `APPROVED` — owner decision 2026-08-07. **Implemented 2026-08-08** (Plan D D5b, `0056_found_stock.sql`): the `stock_issues.base_quantity` constraint now accepts a negative value (the `NaN` guard kept alongside it), `save_stocktake_line_atomic` no longer refuses the found-stock range, and the negative issue row carries a Vietnamese note explaining itself. Verified live against real `Dâu sấy` data inside a rolled-back transaction — nothing persisted; see the plan's D5b entry for the five checks. The count screen writes it since Plan D D7. Live 2026-10-15: STK-001 wrote 49 rows, none of them goods found.
 
 When a count exceeds the theoretical quantity but stays within everything ever purchased, the system accepts it and records **hàng tìm lại được**: the quantity returns to stock at the weighted average it left at, which leaves the average unchanged and closes the discrepancy permanently.
 

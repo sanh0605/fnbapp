@@ -96,5 +96,3 @@ export function CategoryForm({ initialData, returnTo: rawReturnTo }: CategoryFor
   );
 }
 
-// Aliased export for backward compatibility
-export { CategoryForm as ItemCategoryForm };

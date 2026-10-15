@@ -11,7 +11,9 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { MoneySummary } from "@/components/ui/MoneySummary";
-import { FieldList } from "@/components/ui/detail/FieldList";
+import { Alert } from "@/components/ui/Alert";
+import { fetchPurchaseOrderCancelCheck } from "@/lib/purchasing/purchase-order-cancel-transaction";
+import { describeCancelBlocker } from "@/lib/purchasing/purchase-order-cancel";
 import {
   Table,
   TableHead,
@@ -76,11 +78,26 @@ export default async function PurchaseOrderDetail({
     isDraft,
   });
 
-  const canEditOrder = po.status === "COMPLETED" && isAdmin && !showForm;
+  let stocktakeBlockerMessage: string | null = null;
+  if (!isCancelled) {
+    try {
+      const cancelCheck = await fetchPurchaseOrderCancelCheck(params.id);
+      const stocktakeBlocker = cancelCheck.blocked.find((b) => b.code === "STOCKTAKE");
+      if (stocktakeBlocker) {
+        stocktakeBlockerMessage = describeCancelBlocker(stocktakeBlocker);
+      }
+    } catch {
+      // Ignored if check fails or migration not applied
+    }
+  }
+
+  const isLockedByStocktake = Boolean(stocktakeBlockerMessage);
+  const canEditOrder = po.status === "COMPLETED" && isAdmin && !showForm && !isLockedByStocktake;
   const canCancel =
     (role === "ADMIN" || role === "MANAGER") &&
     !isCancelled &&
-    ((po.status === "COMPLETED" && !showForm) || isDraft);
+    ((po.status === "COMPLETED" && !showForm) || isDraft) &&
+    !isLockedByStocktake;
   const canClone = (role === "ADMIN" || role === "MANAGER") && !showForm;
 
   const actions = (
@@ -131,18 +148,15 @@ export default async function PurchaseOrderDetail({
   );
 
   const subtitle = `Ngày tạo: ${formatDateTimeFull(po.created_at)} | Ngày giao dịch: ${
-    po.transaction_date ? formatDateTimeFull(po.transaction_date) : "N/A"
+    po.transaction_date ? formatDateTimeFull(po.transaction_date) : "—"
   }`;
 
   return (
     <div className="space-y-6">
       {searchParams?.assetWarning === "1" && (
-        <div
-          role="status"
-          className="p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium"
-        >
+        <Alert variant="warning">
           Phiếu đã lưu, nhưng tài sản sinh từ phiếu này chưa ghi được. Mở trang Tài sản để kiểm lại; sửa phiếu lần sau không tự ghi bù.
-        </div>
+        </Alert>
       )}
       <DetailHeader
         backHref={returnTo}
@@ -153,19 +167,23 @@ export default async function PurchaseOrderDetail({
         actions={actions}
       />
 
+      {stocktakeBlockerMessage && (
+        <Alert variant="warning">{stocktakeBlockerMessage}</Alert>
+      )}
+
       {isCancelled && (
-        <div className="p-4 rounded-xl border border-border bg-surface-secondary/50 text-text-secondary text-sm">
+        <Alert variant="info">
           Lý do huỷ: {po.cancel_reason} · Huỷ bởi {po.cancelled_by_name} lúc{" "}
           {formatDateTimeFull(po.cancelled_at)}
-        </div>
+        </Alert>
       )}
 
       {showForm ? (
         <>
           {!isDraft && (
-            <div className="p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium">
+            <Alert variant="warning">
               Sửa phiếu đã hoàn thành sẽ ghi lại tồn kho và giá vốn của phiếu này. Kiểm tra kỹ trước khi lưu.
-            </div>
+            </Alert>
           )}
           <PurchaseOrderForm
             suppliers={allSuppliers}
@@ -187,7 +205,7 @@ export default async function PurchaseOrderDetail({
 
               {poLines.length === 0 ? (
                 <div className="p-6 text-center text-text-muted">
-                  Phiếu nhập kho này được tạo tự động từ hệ thống cũ (Tồn kho đầu kỳ). Vui lòng xem chi tiết ở báo cáo Tồn Kho.
+                  Phiếu nhập kho này được tạo tự động từ hệ thống cũ (Tồn kho đầu kỳ).
                 </div>
               ) : (
                 <>
@@ -294,8 +312,14 @@ export default async function PurchaseOrderDetail({
 
             <div className="space-y-2">
               <h3 className="text-base font-semibold text-text-primary">Thông tin chứng từ</h3>
-              <FieldList
-                fields={[
+              <div className="bg-surface-card border border-border rounded-card p-4 space-y-2">
+                {[
+                  {
+                    label: "Nhà cung cấp",
+                    value:
+                      allSuppliers.find((s: any) => s.id === po.supplier_id)?.name ||
+                      "Không rõ",
+                  },
                   {
                     label: "Mã hoá đơn",
                     value: po.supplier_invoice_code || "Không có",
@@ -307,8 +331,13 @@ export default async function PurchaseOrderDetail({
                       po.source_id ||
                       "Không xác định",
                   },
-                ]}
-              />
+                ].map((field) => (
+                  <div key={field.label} className="flex justify-between items-start gap-2">
+                    <span className="text-sm text-text-secondary shrink-0">{field.label}</span>
+                    <span className="text-sm text-text-primary text-right break-words min-w-0">{field.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-2">

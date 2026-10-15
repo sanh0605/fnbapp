@@ -4,6 +4,7 @@ import { useState, useMemo, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addConversion, updateConversion } from "../actions";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -119,9 +120,7 @@ export function ConversionForm({
     <div className="bg-surface-card rounded-2xl border border-border p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
-            {error}
-          </div>
+          <Alert variant="danger">{error}</Alert>
         )}
 
         <Field label="Hàng hoá" htmlFor={`${formId}-selectedItemId`}>
@@ -141,7 +140,7 @@ export function ConversionForm({
               options={unitOptions}
               value={selectedUnitName}
               onChange={setSelectedUnitName}
-              placeholder="VD: Thùng 24 lon"
+              placeholder="Ví dụ: Thùng 24 lon"
             />
           </Field>
           <Field label="Tỷ lệ quy đổi" htmlFor={`${formId}-conversionRate`}>

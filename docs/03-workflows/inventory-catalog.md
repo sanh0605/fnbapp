@@ -7,6 +7,10 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004
 ```
 
+**Behaviour change — 2026-10-15 (Kho đợt 2, S3):** the six old item and conversion actions in `app/admin/inventory/actions.ts`, still callable but used by no screen, are deleted; one of them still rewrote purchase lines.
+
+**Behaviour change — 2026-10-15 (Kho đợt 1, K2):** an item that already has issue rows cannot move into or out of costing (a category of another kind, or the non-inventory flag), and a category whose items have issue rows cannot change kind. Giá vốn reads each item's current classification, so such a move would rewrite past months (`docs/02-rules/business-rules/cogs.md`). The conversion rate must be above 0. Category errors come back in Vietnamese instead of raw database text.
+
 **Behaviour change — 2026-10-14 (audit A5):** changing a conversion's purchase unit (`updateConversion`) or an item's unit (`updatePurchasedItem`) no longer rewrites the unit label on old purchase-order lines; `update_history` is no longer read, and the "cập nhật lịch sử" box is gone from both forms. Old lines keep the unit they were bought in.
 
 **Behaviour change — 2026-10-14 (audit A6):** `updatePurchasedItem` (`app/admin/inventory/items/actions.ts`) now runs every refusal, including "conversion already used", before its first write, so a refused save writes nothing. The writes still span four tables outside one Postgres function; a failure part-way through the writes themselves can still leave a partial save.
@@ -115,11 +119,10 @@ The declared files write `Purchased_Items` (the catalogue rows),
 declared files. `app/admin/inventory/items/actions.ts` also writes `assets`, only to
 mark an item's assets `INACTIVE` (above); the assets flow owns that table.
 
-**Cross-flow note:** `app/admin/inventory/actions.ts` also writes
-`Purchase_Order_Lines`. That belongs to the purchasing flow and is documented
-there; it is not one of this catalog flow's declared tables. Editing a conversion with history update
-also rewrites the affected `Purchase_Order_Lines` units so past purchases stay
-consistent with the corrected conversion (`app/admin/inventory/actions.ts`).
+**Cross-flow note:** nothing in this flow writes `Purchase_Order_Lines`. Editing a
+conversion leaves past purchases as they were saved (A5). The old copies of the item
+and conversion actions in `app/admin/inventory/actions.ts`, one of which still
+rewrote purchase lines, are removed in Kho đợt 2 (2026-10-15).
 
 **Deletion is protected, not free.** Foreign keys from `uom_conversions`,
 `purchase_order_lines` and `stock_issues` into `purchased_items` are set to

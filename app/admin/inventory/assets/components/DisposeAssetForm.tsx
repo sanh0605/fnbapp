@@ -2,21 +2,17 @@
 
 import { useId, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { DayInput } from "@/components/ui/DayInput";
 import { TextInput } from "@/components/ui/TextInput";
 import { Field } from "@/components/ui/Field";
 import { formatNumber } from "@/lib/shared/format";
-import { toSaigonIsoString } from "@/lib/shared/datetime";
+import { toSaigonIsoString, formatDateTimeFull } from "@/lib/shared/datetime";
 import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
 import { disposeAsset, previewDisposalCharge } from "../actions";
 import type { AssetLotView } from "@/lib/assets/asset-items";
-
-function formatDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split("-");
-  return y && m && d ? `${d}/${m}/${y}` : dateStr;
-}
 
 export interface DisposeAssetFormProps {
   lots: AssetLotView[];
@@ -124,13 +120,9 @@ export function DisposeAssetForm({
     <div className="bg-surface-card rounded-2xl border border-border p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div
-            role="alert"
-            aria-live="polite"
-            className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20"
-          >
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
         {/* Lot selection */}
@@ -165,7 +157,7 @@ export function DisposeAssetForm({
                       className="w-4 h-4 text-primary focus:ring-primary cursor-pointer"
                     />
                     <span className="text-sm font-medium">
-                      Mua {formatDate(lot.acquiredDate)} · giá một cái {formatNumber(Math.round(lot.unitCost))}đ · còn {lot.remainingQuantity}
+                      Mua {formatDateTimeFull(lot.acquiredDate)} · giá một cái {formatNumber(Math.round(lot.unitCost))}đ · còn {lot.remainingQuantity}
                     </span>
                   </label>
                 );
@@ -174,7 +166,7 @@ export function DisposeAssetForm({
           </div>
         ) : (
           <div className="text-sm text-text-secondary">
-            Mua {formatDate(selectedLot.acquiredDate)} · giá một cái {formatNumber(Math.round(selectedLot.unitCost))}đ · còn {selectedLot.remainingQuantity}
+            Mua {formatDateTimeFull(selectedLot.acquiredDate)} · giá một cái {formatNumber(Math.round(selectedLot.unitCost))}đ · còn {selectedLot.remainingQuantity}
           </div>
         )}
 

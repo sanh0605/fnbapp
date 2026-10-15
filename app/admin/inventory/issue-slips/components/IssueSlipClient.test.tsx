@@ -634,7 +634,7 @@ describe("IssueSlipClient -- removes Lý do and Chi tiết fields", () => {
     expect(container.textContent).not.toContain("Chi tiết (không bắt buộc)");
   });
 
-  it("submits the RPC with note: ''", async () => {
+  it("sends no note (BR-INV-014)", async () => {
     mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const block = getLineBlocks(container)[0];
@@ -646,7 +646,7 @@ describe("IssueSlipClient -- removes Lý do and Chi tiết fields", () => {
 
     expect(mocks.createIssueSlip).toHaveBeenCalledTimes(1);
     const call = mocks.createIssueSlip.mock.calls[0][0];
-    expect(call.note).toBe("");
+    expect(call).not.toHaveProperty("note");
   });
 });
 

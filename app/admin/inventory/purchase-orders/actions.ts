@@ -1,9 +1,10 @@
 "use server";
 
-import { findAll, findById, insert, generateNewId, getCacheTag } from "@/lib/db/tables";
+import { findAll, findAllNoCache, findById, insert, generateNewId, getCacheTag } from "@/lib/db/tables";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
+import { findDuplicateActiveName } from "@/lib/shared/duplicate-name-guard";
 import { parsePurchaseOrderPayment } from "@/lib/purchasing/purchase-order-payment";
 import type { DBBankAccount, DBPurchaseOrder, DBSupplier, DBPurchaseSource, DBPurchasedItem, DBItemCategory } from "@/types/db";
 import { buildPurchaseOrderWritePlan } from "@/lib/purchasing/purchase-order-write-plan";
@@ -100,6 +101,18 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
   const voucher_amount = Number(formData.get("voucher_amount") || 0);
   const discount_amount = Number(formData.get("discount_amount") || 0);
 
+  // Money columns are whole đồng and never below 0 (migration 0123 enforces it too).
+  for (const [label, amount] of [
+    ["Tổng tiền hàng", subtotal_amount],
+    ["Phí vận chuyển", shipping_fee],
+    ["Thuế", tax_amount],
+    ["Voucher", voucher_amount],
+    ["Chiết khấu", discount_amount],
+  ] as const) {
+    if (amount < 0) return fail(`${label} không được âm.`);
+    if (!Number.isInteger(amount)) return fail(`${label} phải là số đồng nguyên.`);
+  }
+
   const effectiveDate = transaction_date ? new Date(transaction_date).toISOString() : new Date().toISOString();
 
   // section 3: the client-side form validates this same field beside
@@ -113,6 +126,9 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
 
   try {
     const lines = JSON.parse(linesJson);
+
+    const negativeIndex = lines.findIndex((line: { quantity?: string | number }) => Number(line.quantity) < 0);
+    if (negativeIndex >= 0) return fail(`Dòng ${negativeIndex + 1}: Số lượng không được âm`);
 
     // BR-UI-009: the page stops an empty quantity, but a request can still
     // arrive without it. Refused before any write, in Vietnamese.
@@ -140,6 +156,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     }
 
     const total_amount = subtotal_amount + shipping_fee + tax_amount - voucher_amount - discount_amount;
+    if (total_amount < 0) return fail("Tổng tiền đơn không được âm. Kiểm tra lại chiết khấu và voucher.");
     const [purchasedItems, conversions, itemCategories] = await Promise.all([
       findAll("Purchased_Items"),
       findAll("UOM_Conversions"),
@@ -156,7 +173,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     if (id) {
       const [existingPo, existingLines] = await Promise.all([
         findById("Purchase_Orders", id),
-        findAll("Purchase_Order_Lines") as Promise<RawPurchaseOrderLine[]>,
+        findAllNoCache("Purchase_Order_Lines") as Promise<RawPurchaseOrderLine[]>,
       ]);
       previousPo = existingPo;
       // BR-INV-015: a cancelled order is never edited. Refused before any
@@ -255,9 +272,9 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     let reconcilePlan: Extract<AssetReconcilePlan, { kind: "apply" }> | null = null;
     if (id && previousPo?.status === "COMPLETED" && status === "COMPLETED") {
       const [allAssets, disposals, reconcileBands] = await Promise.all([
-        findAll("assets") as Promise<any[]>,
-        findAll("asset_disposals") as Promise<any[]>,
-        findAll("asset_depreciation_bands") as unknown as Promise<Band[]>,
+        findAllNoCache("assets") as Promise<any[]>,
+        findAllNoCache("asset_disposals") as Promise<any[]>,
+        findAllNoCache("asset_depreciation_bands") as unknown as Promise<Band[]>,
       ]);
       const storedIds = new Set(storedLines.map(l => l.id));
       const result = planAssetReconcile({
@@ -300,7 +317,7 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     if (becomesCompletedNow) {
       const equipmentLines = buildEquipmentLines();
       if (equipmentLines.length > 0) {
-        const bands = (await findAll("asset_depreciation_bands")) as unknown as Band[];
+        const bands = (await findAllNoCache("asset_depreciation_bands")) as unknown as Band[];
         // Throws (and so refuses the whole save) when an equipment line has no
         // usable quantity or no depreciation band for its price.
         const assetPlans = planAssetsFromCompletedOrder({
@@ -367,6 +384,10 @@ export async function savePurchaseOrder(formData: FormData): Promise<ActionRespo
     revalidatePath(`/admin/inventory/purchase-orders/${po_id}`);
     return ok({ po_id });
   } catch (error: unknown) {
+    // The database raises this one in English.
+    if (error instanceof Error && error.message.includes("already exists")) {
+      return fail("Mã phiếu nhập này đã có rồi. Tải lại trang rồi lưu lại.");
+    }
     return describeActionError(error);
   }
 }
@@ -470,6 +491,7 @@ export async function cancelPurchaseOrder(input: { id: string; reason: string })
       return fail(outcome.blocked.map(describeCancelBlocker).join("\n"));
     }
     revalidateTag("sheets-Purchase_Orders");
+    revalidateTag(getCacheTag("assets"));
     revalidatePath(PATH);
     revalidatePath(`${PATH}/${input.id}`);
     revalidatePath("/admin/inventory/assets");
@@ -506,15 +528,20 @@ export async function addPurchaseSource(name: string): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
-  if (!name) return fail("Vui lòng nhập tên nguồn");
+  const trimmed = name.trim();
+  if (!trimmed) return fail("Vui lòng nhập tên nguồn");
+  if (trimmed.length > 100) return fail("Tên nguồn tối đa 100 ký tự");
   try {
+    const existing = findDuplicateActiveName((await findAll("Purchase_Sources")) as DBPurchaseSource[], trimmed);
+    if (existing) return ok({ data: { id: existing.id, name: existing.name } });
+
     const id = await generateNewId("Purchase_Sources", "SRC");
     await insert("Purchase_Sources", {
       id,
-      name,
+      name: trimmed,
       created_at: new Date().toISOString()
     });
-    return ok({ id });
+    return ok({ data: { id, name: trimmed } });
   } catch (error: unknown) {
     return describeActionError(error);
   }

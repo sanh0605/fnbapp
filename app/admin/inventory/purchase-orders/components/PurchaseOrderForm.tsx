@@ -7,6 +7,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { draftKey, saveDraft, takeDraft, type PoDraftState } from "./po-draft";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
@@ -60,7 +61,6 @@ function formatLinesWithConversions(rawLines: any[], conversions: DBUOMConversio
       unit: line.unit || "",
       quantity: Number(line.quantity) > 0 ? String(line.quantity) : "",
       subtotal: line.subtotal || 0,
-      is_new_unit: false,
       conversion_id: matchedConv?.id || "",
       conversion_rate: matchedConv?.conversion_rate || "",
     };
@@ -83,7 +83,7 @@ interface PurchaseOrderFormProps {
 
 export default function PurchaseOrderForm({
   suppliers,
-  sources = [],
+  sources: initialSources = [],
   items,
   conversions,
   units = [],
@@ -100,6 +100,7 @@ export default function PurchaseOrderForm({
   const po = initialData?.po || ({} as Partial<DBPurchaseOrder>);
   const initialLines = initialData?.lines;
 
+  const [sources, setSources] = useState<DBPurchaseSource[]>(initialSources);
   const [loading, setLoading] = useState(false);
   const savingRef = useRef(false);
   const [supplierId, setSupplierId] = useState(initialData?.po?.supplier_id || copySeed?.supplier_id || "");
@@ -188,7 +189,6 @@ export default function PurchaseOrderForm({
       unit: "",
       quantity: "",
       subtotal: 0,
-      is_new_unit: false,
       conversion_rate: "",
     }]);
   };
@@ -203,7 +203,6 @@ export default function PurchaseOrderForm({
 
     if (field === "purchased_item_id") {
       newLines[index].unit = "";
-      newLines[index].is_new_unit = false;
       newLines[index].conversion_id = "";
       newLines[index].conversion_rate = "";
     }
@@ -289,12 +288,9 @@ export default function PurchaseOrderForm({
   return (
     <>
       {restoreFailed && (
-        <div
-          role="status"
-          className="mb-6 p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium"
-        >
+        <Alert variant="warning" className="mb-6">
           Không khôi phục được phiếu đang nhập dở
-        </div>
+        </Alert>
       )}
       <div
         data-testid="form-layout"
@@ -356,35 +352,39 @@ export default function PurchaseOrderForm({
             </Field>
           </div>
           <div>
-            <Field label="Nguồn nhập hàng" htmlFor={`${formId}-sourceId`}>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <SearchableSelect
-                    id={`${formId}-sourceId`}
-                    value={sourceId}
-                    onChange={(val) => setSourceId(val)}
-                    options={sources.map((s: any) => ({ id: s.id, label: s.name }))}
-                    placeholder="Ví dụ: Shopee, Lazada..."
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={async () => {
-                    const name = window.prompt("Nhập tên nguồn mới (VD: Tiktok Shop):");
-                    if (name && name.trim()) {
-                      const res = await addPurchaseSource(name.trim());
-                      if (res.success) {
-                        await alert({ title: "Thiếu thông tin", message: "Đã thêm nguồn thành công! Vui lòng tải lại trang để cập nhật danh sách.", variant: "warning" });
-                      } else {
-                        await alert({ title: "Lỗi", message: "Lỗi: " + res.error, variant: "danger" });
-                      }
+            <Field label="Nguồn nhập hàng" htmlFor={`${formId}-sourceId`} required>
+              <SearchableSelect
+                id={`${formId}-sourceId`}
+                value={sourceId}
+                onChange={(val) => setSourceId(val)}
+                options={sources.map((s: any) => ({ id: s.id, label: s.name }))}
+                placeholder="Ví dụ: Shopee, Lazada..."
+                onCreateNew={async (searchTerm) => {
+                  try {
+                    const res = await addPurchaseSource(searchTerm);
+                    if (res.success && (res as any).data) {
+                      const newSource = (res as any).data;
+                      setSources((prev) => {
+                        if (prev.some((s: any) => s.id === newSource.id)) return prev;
+                        return [...prev, newSource];
+                      });
+                      setSourceId(newSource.id);
+                    } else {
+                      await alert({
+                        title: "Lỗi",
+                        message: "Lỗi: " + (res.error || "Không thêm được nguồn nhập hàng"),
+                        variant: "danger",
+                      });
                     }
-                  }}
-                >
-                  + Thêm
-                </Button>
-              </div>
+                  } catch {
+                    await alert({
+                      title: "Lỗi",
+                      message: "Không thêm được nguồn nhập hàng. Kiểm tra mạng rồi bấm lại.",
+                      variant: "danger",
+                    });
+                  }
+                }}
+              />
             </Field>
           </div>
           <div>
@@ -475,12 +475,6 @@ export default function PurchaseOrderForm({
           </div>
         </div>
       </div>
-
-      <datalist id="units-list">
-        {units.map((u: any) => (
-          <option key={u.id} value={u.name} />
-        ))}
-      </datalist>
     </>
   );
 }

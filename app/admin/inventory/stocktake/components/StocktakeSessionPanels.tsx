@@ -7,7 +7,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { formatNumber } from "@/lib/shared/format";
-import { formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { confirm } from "@/lib/shared/dialog";
 import type { StocktakeApplyResult } from "@/lib/stock/stocktake-transaction";
 import {
@@ -62,7 +62,7 @@ export function LastConfirmedSessionPanel({ session }: { session: RecentConfirme
         </Button>
       </div>
       <p className="text-xs text-text-secondary">
-        {session.id} &middot; áp dụng bởi {session.confirmedByName} lúc {formatDateTime(session.confirmedAt)}
+        {session.id} &middot; áp dụng bởi {session.confirmedByName} lúc {formatDateTimeFull(session.confirmedAt)}
         {session.notes && ` · ${session.notes}`}
       </p>
       {error && <Alert variant="danger">{error}</Alert>}

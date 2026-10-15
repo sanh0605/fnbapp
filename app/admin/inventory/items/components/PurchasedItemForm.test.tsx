@@ -528,7 +528,7 @@ describe("PurchasedItemForm -- asset removal confirmation on category change (Ta
     expect(mocks.confirm).toHaveBeenNthCalledWith(1, {
       title: "Tên gần giống một mục đã có",
       message: "Tên gần giống một mục đã có: Hộp topping",
-      okText: "Món khác",
+      okText: "Hàng khác",
       cancelText: "Tôi gõ nhầm",
       variant: "warning",
     });

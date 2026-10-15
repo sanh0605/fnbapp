@@ -63,17 +63,15 @@ export async function deleteBrand(formData: FormData): Promise<ActionResponse> {
 
   try {
     // Every row counts, whatever its status: the foreign keys refuse any row.
-    const [brands, outlets, promotions, products, orders] = await Promise.all([
+    const [brands, outlets, promotions, orders] = await Promise.all([
       findAll(SHEET) as Promise<{ id: string; name: string }[]>,
       findAllWhere("Outlets", { eq: { brand_id: id } }),
       findAllWhere("Promotions", { eq: { brand_id: id } }),
-      findAllWhere("Products", { eq: { brand_id: id } }),
       findAllWhere("Orders_V2", { eq: { brand_id: id } }),
     ]);
     const parts = [
       [outlets.length, "điểm bán"],
       [promotions.length, "khuyến mãi"],
-      [products.length, "món"],
       [orders.length, "đơn hàng"],
     ]
       .filter(([n]) => (n as number) > 0)

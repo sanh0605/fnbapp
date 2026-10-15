@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/Badge";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { formatNumber } from "@/lib/shared/format";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { AssetItemCard } from "./AssetItemCard";
 import { assetItemTotals, type AssetItemRow } from "@/lib/assets/asset-items";
 
@@ -139,11 +140,11 @@ export default function AssetsClient({
         header: "Mua gần nhất",
         secondary: true,
         sortValue: (asset) => asset.latestAcquiredDate,
-        render: (asset) => {
-          const [y, m, d] = asset.latestAcquiredDate.split("-");
-          const formatted = y && m && d ? `${d}/${m}/${y}` : asset.latestAcquiredDate;
-          return <span className="text-text-secondary">{formatted}</span>;
-        },
+        render: (asset) => (
+          <span className="text-text-secondary">
+            {formatDateTimeFull(asset.latestAcquiredDate)}
+          </span>
+        ),
       },
     ],
     [],
@@ -218,7 +219,7 @@ export default function AssetsClient({
               onChange={(e) => setShowAll(e.target.checked)}
               className="rounded border-border text-primary focus:ring-primary w-4 h-4 cursor-pointer"
             />
-            <span>Hiện cả món đã thanh lý hết</span>
+            <span>Hiện cả tài sản đã thanh lý hết</span>
           </label>
         </div>
       </FilterCard>

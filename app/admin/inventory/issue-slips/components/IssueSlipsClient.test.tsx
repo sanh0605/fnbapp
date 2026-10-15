@@ -76,7 +76,7 @@ describe("IssueSlipsClient", () => {
     const tableScope = within(table);
 
     // Should render badges for desktop table (1x each)
-    expect(tableScope.getAllByText("Phiếu xuất · Hư hỏng")).toHaveLength(1);
+    expect(tableScope.getAllByText("Phiếu xuất")).toHaveLength(1);
     expect(tableScope.getAllByText("Kiểm kê")).toHaveLength(1);
     expect(tableScope.getAllByText("Đã huỷ")).toHaveLength(1);
 

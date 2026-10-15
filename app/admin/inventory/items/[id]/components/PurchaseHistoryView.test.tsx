@@ -55,7 +55,7 @@ describe("PurchaseHistoryView", () => {
     expect(po1Links.length).toBeGreaterThan(0);
   });
 
-  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z: renders 15/09/2026", () => {
+  it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z: renders 15/09/2026 00:00:00", () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-09-14T23:30:00Z"));
     try {
@@ -73,7 +73,7 @@ describe("PurchaseHistoryView", () => {
       ];
 
       render(<PurchaseHistoryView rows={rows} itemName="Cà phê Robusta" />);
-      expect(screen.getAllByText("15/09/2026").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("15/09/2026 00:00:00").length).toBeGreaterThan(0);
     } finally {
       vi.useRealTimers();
     }

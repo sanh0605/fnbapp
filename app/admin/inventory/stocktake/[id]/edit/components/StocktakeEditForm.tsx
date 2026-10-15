@@ -3,6 +3,7 @@
 import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { formatNumber } from "@/lib/shared/format";
 import {
@@ -110,13 +111,7 @@ export function StocktakeEditForm({ detail }: { detail: Detail }): JSX.Element {
       </div>
 
       {error && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20"
-        >
-          {error}
-        </div>
+        <Alert variant="danger">{error}</Alert>
       )}
 
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">

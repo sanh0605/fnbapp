@@ -38,6 +38,5 @@ export function normalizeLineV2(row: any): any {
     manual_item_discount: Number(row.manual_item_discount) || 0,
     order_discount_allocation: Number(row.order_discount_allocation) || 0,
     net_line_total: Number(row.net_line_total) || 0,
-    cost_at_sale: Number(row.cost_at_sale) || 0,
   };
 }

@@ -217,7 +217,6 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
     try {
       const res = await createIssueSlip({
         issuedAtIso: issuedAt.toISOString(),
-        note: "",
         lines: payloadLines,
       });
       if (res.error || !res.result) {
@@ -339,14 +338,15 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
                       </TableCell>
                       <TableCell>
                         {lines.length > 1 && (
-                          <button
+                          <Button
                             type="button"
+                            variant="delete"
                             onClick={() => removeLine(index)}
-                            className="text-text-muted hover:text-danger p-2 transition-colors inline-flex items-center justify-center rounded-lg min-h-[44px] md:min-h-[40px] min-w-[44px]"
+                            className="min-h-[44px] md:min-h-[40px] min-w-[44px] p-0"
                             aria-label="Xoá dòng"
                           >
                             ✕
-                          </button>
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>
@@ -354,13 +354,14 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
                 })}
                 <TableRow>
                   <TableCell colSpan={7}>
-                    <button
+                    <Button
                       type="button"
+                      variant="secondary"
                       onClick={addLine}
-                      className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px] md:min-h-[40px]"
+                      className="w-full"
                     >
                       + Thêm mặt hàng
-                    </button>
+                    </Button>
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -444,14 +445,15 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
             return (
               <div key={index} className="p-4 border border-border rounded-xl relative bg-surface-secondary/50">
                 {lines.length > 1 && (
-                  <button
+                  <Button
                     type="button"
+                    variant="delete"
                     onClick={() => removeLine(index)}
-                    className="absolute top-2 right-2 text-text-muted hover:text-danger p-2 min-h-[44px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
+                    className="absolute top-2 right-2 min-h-[44px] md:min-h-[40px] min-w-[44px] p-0"
                     aria-label="Xoá dòng"
                   >
                     ✕
-                  </button>
+                  </Button>
                 )}
                 <div className="pr-8">
                   <label className="block text-xs font-medium text-text-muted mb-1">Mặt hàng</label>
@@ -523,13 +525,14 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }): JSX.
         </div>
 
         {/* Add line button */}
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={addLine}
-          className="w-full text-center text-primary-active bg-primary-soft/50 border border-dashed border-primary/30 hover:bg-primary-soft hover:border-primary/40 py-3 rounded-xl text-sm font-medium transition min-h-[44px] md:min-h-[40px]"
+          className="w-full"
         >
           + Thêm mặt hàng
-        </button>
+        </Button>
 
         {/* Action buttons */}
         <div className="space-y-3 pt-2">

@@ -169,6 +169,11 @@ describe("deleteSupplierAction -- refuses a supplier that already has purchase o
     mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "owner-1", name: "Owner" } });
   });
 
+  it("says a missing id in Vietnamese with diacritics", async () => {
+    const res = await deleteSupplierAction(new FormData());
+    expect(res.error).toBe("ID không hợp lệ");
+  });
+
   it("names the supplier and the order count, and does not call remove", async () => {
     mockTables(
       [{ id: "NCC-029", name: "Vinamilk" }],

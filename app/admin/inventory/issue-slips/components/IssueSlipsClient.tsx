@@ -39,11 +39,11 @@ export interface IssueSlipsClientProps {
   searching?: boolean;
 }
 
-function renderKindBadge(kind: IssueSlipKind, reason: string) {
+function renderKindBadge(kind: IssueSlipKind) {
   if (kind === "SLIP") {
     return (
       <Badge variant="neutral">
-        {reason ? `Phiếu xuất · ${reason}` : "Phiếu xuất"}
+        Phiếu xuất
       </Badge>
     );
   }
@@ -158,7 +158,7 @@ export default function IssueSlipsClient({
       {
         key: "kind",
         header: "Loại",
-        render: (row) => renderKindBadge(row.kind, row.reason),
+        render: (row) => renderKindBadge(row.kind),
       },
       {
         key: "createdByName",
@@ -193,7 +193,7 @@ export default function IssueSlipsClient({
         <div className="text-xs text-text-secondary">
           {row.dateText} · {row.createdByName}
         </div>
-        <div>{renderKindBadge(row.kind, row.reason)}</div>
+        <div>{renderKindBadge(row.kind)}</div>
       </div>
     </div>
   );

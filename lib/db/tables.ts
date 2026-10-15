@@ -129,7 +129,6 @@ const JSON_COLUMNS_BY_TABLE: Record<string, Set<string>> = {
     'product_snapshot_json',
     'variant_snapshot_json',
     'modifiers_snapshot_json',
-    'recipe_snapshot_json',
   ]),
   order_events: new Set(['delta_json']),
   promotions: new Set(['applicable_products_json']),
@@ -260,71 +259,26 @@ export const findAll = (sheetName: string) => {
   )(sheetName);
 };
 
-// products-page cache overflow fix (2026-09-07): the only
-// caller of findAll("Order_Lines_V2") (app/admin/products/page.tsx) reads
-// nothing but product_id and variant_id from every row, to know which
-// products were ever sold. The full 20-column table pushed the unstable_cache
-// entry to 3.0 MB, over Next's 2 MB ceiling -- every render threw and the
-// cache never populated. This selects only the id columns it actually needs.
-async function findOrderLineProductAndVariantIdsNoCache(): Promise<{ productIds: string[]; variantIds: string[]; modifierIds: string[] }> {
-  const supabase = getSupabaseClient();
-  const tableName = normalizeTableName('Order_Lines_V2');
-  const productIds = new Set<string>();
-  const variantIds = new Set<string>();
-  let lastId: string | null = null;
-  while (true) {
-    const currentLastId = lastId;
-    const { data, error } = await withReadRetry(() => {
-      let query: any = supabase
-        .from(tableName)
-        .select('id, product_id, variant_id')
-        .order("id", { ascending: true })
-        .limit(PAGE_SIZE);
-      if (currentLastId !== null) {
-        query = query.gt("id", currentLastId);
-      }
-      return query;
-    }, `findOrderLineProductAndVariantIds`);
-    if (error) {
-      throw new Error(`findOrderLineProductAndVariantIds: ${error.message}`);
-    }
-    if (!data || data.length === 0) break;
-    for (const row of data) {
-      if (row.product_id) productIds.add(row.product_id);
-      if (row.variant_id) variantIds.add(row.variant_id);
-    }
-    if (data.length < PAGE_SIZE) break;
-    lastId = String(data[data.length - 1]?.id ?? "");
-  }
-
-  // BR-CATALOG-003: a topping sold as an add-on lives only in
-  // modifiers_snapshot_json, invisible to the product_id/variant_id scan
-  // above. find_sold_modifier_ids() does that scan in Postgres and returns
-  // ids only -- pulling the jsonb payload into Node here would reintroduce
-  // the cache-size problem this function exists to fix.
-  const { data: modifierData, error: modifierError } = await withReadRetry(
-    () => supabase.rpc('find_sold_modifier_ids'),
-    'findOrderLineProductAndVariantIds(modifiers)',
+// BR-CATALOG-003: a topping sold as an add-on lives only in
+// modifiers_snapshot_json. find_sold_modifier_ids() scans it in Postgres and
+// returns ids only -- pulling the jsonb payload into Node would regrow the
+// cache entry that overflowed Next's 2 MB ceiling (commit b954af2).
+async function findSoldModifierIdsNoCache(): Promise<string[]> {
+  const { data, error } = await withReadRetry(
+    () => getSupabaseClient().rpc('find_sold_modifier_ids'),
+    'findSoldModifierIds',
   );
-  if (modifierError) {
-    throw new Error(`findOrderLineProductAndVariantIds(modifiers): ${modifierError.message}`);
-  }
-
-  return { productIds: [...productIds], variantIds: [...variantIds], modifierIds: modifierData ?? [] };
+  if (error) throw new Error(`findSoldModifierIds: ${error.message}`);
+  return data ?? [];
 }
 
-export const findOrderLineProductAndVariantIds = (): Promise<{ productIds: string[]; variantIds: string[]; modifierIds: string[] }> => {
-  if (process.env.CLI_MODE === 'true') {
-    return findOrderLineProductAndVariantIdsNoCache();
-  }
-
+export const findSoldModifierIds = (): Promise<string[]> => {
+  if (process.env.CLI_MODE === 'true') return findSoldModifierIdsNoCache();
   const sheetName = 'Order_Lines_V2';
-  const tag = getCacheTag(sheetName);
-  const reval = getRevalidation(sheetName);
   return unstable_cache(
-    findOrderLineProductAndVariantIdsNoCache,
-    ['sheets-findall', sheetName, 'ids'],
-    { revalidate: reval, tags: [tag] }
+    findSoldModifierIdsNoCache,
+    ['sheets-findall', sheetName, 'sold-modifier-ids'],
+    { revalidate: getRevalidation(sheetName), tags: [getCacheTag(sheetName)] }
   )();
 };
 

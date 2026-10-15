@@ -6,8 +6,6 @@ import { describe, expect, it } from "vitest";
 // create, edit and cancel. Only ADMIN may destroy a row for good.
 const HARD_DELETE_ACTIONS: Array<[string, string]> = [
   ["app/admin/inventory/actions.ts", "deleteItemCategory"],
-  ["app/admin/inventory/actions.ts", "deletePurchasedItem"],
-  ["app/admin/inventory/actions.ts", "deleteConversion"],
   ["app/admin/inventory/actions.ts", "deleteUnit"],
   ["app/admin/inventory/conversions/actions.ts", "deleteConversionAction"],
   ["app/admin/inventory/items/actions.ts", "deletePurchasedItemAction"],
@@ -44,7 +42,6 @@ const HARD_DELETE_ACTIONS: Array<[string, string]> = [
 // edit/create flow, not a row the user picked to destroy.
 const EXEMPTIONS: Array<[string, string, string]> = [
   ["app/pos/actions.ts", "deletePOSDraft", "the owner's stated exception -- a draft is scratch state, never history"],
-  ["app/admin/inventory/actions.ts", "updatePurchasedItem", "sibling-conversion cleanup inside an edit, not a user-picked delete"],
   ["app/admin/inventory/items/actions.ts", "updatePurchasedItem", "sibling-conversion cleanup inside an edit, not a user-picked delete"],
 ];
 
@@ -227,10 +224,8 @@ describe("permanent deletion is ADMIN only", () => {
     expect(source).not.toContain("requireOwner");
   });
 
-  it("leaves the two sibling-conversion cleanups alone -- those are edits", () => {
-    // Tightening these would stop a MANAGER editing an item at all.
-    expect(head(read("app/admin/inventory/actions.ts"), "updatePurchasedItem"))
-      .toContain("requireAdmin()");
+  it("leaves the item edit's conversion cleanup alone -- it is an edit", () => {
+    // Tightening this would stop a MANAGER editing an item at all.
     expect(head(read("app/admin/inventory/items/actions.ts"), "updatePurchasedItem"))
       .toContain("requireAdmin()");
   });
