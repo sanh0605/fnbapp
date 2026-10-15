@@ -7,6 +7,8 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004
 ```
 
+**Behaviour change — 2026-10-15 (Kho đợt 2, S2):** adding or editing an item writes the item, its conversions and the assets it retires in one Postgres transaction, `save_purchased_item_atomic` (migration `0124`, written, not yet run; this code is held until it runs). A removed conversion that a purchase line uses is set `INACTIVE` inside that transaction, any other is deleted; the A6 note below about a partial save no longer applies.
+
 **Behaviour change — 2026-10-15 (Kho đợt 2, S3):** the six old item and conversion actions in `app/admin/inventory/actions.ts`, still callable but used by no screen, are deleted; one of them still rewrote purchase lines.
 
 **Behaviour change — 2026-10-15 (Kho đợt 1, K2):** an item that already has issue rows cannot move into or out of costing (a category of another kind, or the non-inventory flag), and a category whose items have issue rows cannot change kind. Giá vốn reads each item's current classification, so such a move would rewrite past months (`docs/02-rules/business-rules/cogs.md`). The conversion rate must be above 0. Category errors come back in Vietnamese instead of raw database text.

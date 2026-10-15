@@ -15,7 +15,10 @@ const mocks = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
   revalidateTag: vi.fn(),
   computeOnHandByPurchasedItem: vi.fn(),
+  saveItem: vi.fn(),
 }));
+
+vi.mock("@/lib/catalog/purchased-item-transaction", () => ({ savePurchasedItemAtomic: mocks.saveItem }));
 
 vi.mock("@/lib/stock/purchased-item-onhand", () => ({
   computeOnHandByPurchasedItem: mocks.computeOnHandByPurchasedItem,
@@ -46,6 +49,10 @@ import { getCacheTag } from "@/lib/db/tables";
 // OPEN-ITEMS 69: this is the exact production incident that started the
 // plan -- the owner opened Hàng Mua Vào and it said "Chưa có hàng hoá" while
 // 145 rows sat untouched. Both required tests from section 5.
+beforeEach(() => {
+  mocks.saveItem.mockResolvedValue("SPM-999");
+});
+
 describe("getItemsData -- the production incident this plan exists to fix", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -97,13 +104,11 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
     const res = await actions.addPurchasedItem(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "UOM_Conversions",
+    expect(mocks.saveItem).toHaveBeenCalledWith(
       expect.objectContaining({
-        purchased_item_id: "SPM-999",
-        purchased_unit: "U-BAO",
-        base_unit: "U-G",
-        conversion_rate: "500",
+        itemId: null,
+        baseUnit: "U-G",
+        conversions: [{ name: "U-BAO", conversion_rate: "500" }],
       }),
     );
   });
@@ -118,9 +123,8 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
     const res = await actions.addPurchasedItem(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "UOM_Conversions",
-      expect.objectContaining({ base_unit: "U-ML", conversion_rate: "1000" }),
+    expect(mocks.saveItem).toHaveBeenCalledWith(
+      expect.objectContaining({ baseUnit: "U-ML", conversions: [{ name: "U-HOP", conversion_rate: "1000" }] }),
     );
   });
 
@@ -129,7 +133,7 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
   // removed from the UI in step 1 (2026-09-01), and the column itself is
   // dropped by this task's migration (not yet applied). Creation must
   // still succeed, and never carry the key.
-  it("creates a RAW item and never writes base_ingredient_id, even if a stray field is submitted", async () => {
+  it("creates a RAW item and never sends base_ingredient_id, even if a stray field is submitted", async () => {
     const formData = new FormData();
     formData.set("name", "Trứng gà mới");
     formData.set("item_category_id", "NHH-001");
@@ -140,16 +144,10 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
     const res = await actions.addPurchasedItem(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "Purchased_Items",
-      expect.not.objectContaining({ base_ingredient_id: expect.anything() }),
-    );
-    const [, payload] = mocks.insert.mock.calls.find(([sheet]) => sheet === "Purchased_Items")!;
-    expect(Object.prototype.hasOwnProperty.call(payload, "base_ingredient_id")).toBe(false);
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "UOM_Conversions",
-      expect.objectContaining({ base_unit: "U-QUA", conversion_rate: "10" }),
-    );
+    const [input] = mocks.saveItem.mock.calls[0];
+    expect(Object.prototype.hasOwnProperty.call(input, "base_ingredient_id")).toBe(false);
+    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(input.conversions).toEqual([{ name: "U-HOP", conversion_rate: "10" }]);
   });
 
   it("EQUIPMENT with neither field sent creates no conversion at all", async () => {
@@ -160,7 +158,19 @@ describe("addPurchasedItem -- gate 3 of 4, a consumable's conversions are no lon
     const res = await actions.addPurchasedItem(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).not.toHaveBeenCalledWith("UOM_Conversions", expect.anything());
+    expect(mocks.saveItem).toHaveBeenCalledWith(expect.objectContaining({ conversions: null }));
+  });
+
+  it("reports a database refusal in Vietnamese", async () => {
+    mocks.saveItem.mockRejectedValue(new Error('save_purchased_item_atomic: Đã có hàng hoá đang dùng tên "Trứng gà". Hãy chọn tên khác.'));
+    const formData = new FormData();
+    formData.set("name", "Trứng gà");
+    formData.set("item_category_id", "NHH-001");
+
+    const res = await actions.addPurchasedItem(formData);
+
+    expect(res.error).toContain("Đã có hàng hoá đang dùng tên");
+    expect(mocks.insert).not.toHaveBeenCalled();
   });
 });
 
@@ -192,9 +202,8 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
     const res = await actions.updatePurchasedItem(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "UOM_Conversions",
-      expect.objectContaining({ purchased_item_id: "SPM-043", base_unit: "U-G", conversion_rate: "500" }),
+    expect(mocks.saveItem).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: "SPM-043", baseUnit: "U-G", conversions: [{ name: "U-BAO", conversion_rate: "500" }] }),
     );
   });
 
@@ -205,7 +214,7 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
   // item's group link on every unrelated edit (name, category, unit...).
   // This proves the update payload never carries that key at all, so the
   // existing column value is left untouched by this partial update.
-  it("never includes base_ingredient_id in the update payload, even for a RAW item", async () => {
+  it("never sends base_ingredient_id, even for a RAW item", async () => {
     const formData = new FormData();
     formData.set("id", "SPM-EXISTING-RAW");
     formData.set("name", "Sữa tươi Vinamilk");
@@ -215,13 +224,9 @@ describe("updatePurchasedItem -- gate 4 of 4, same relaxation on the update path
     const res = await actions.updatePurchasedItem(formData);
 
     expect(res.error).toBeUndefined();
-    expect(mocks.update).toHaveBeenCalledWith(
-      "Purchased_Items",
-      "SPM-EXISTING-RAW",
-      expect.not.objectContaining({ base_ingredient_id: expect.anything() }),
-    );
-    const [, , payload] = mocks.update.mock.calls[0];
-    expect(Object.prototype.hasOwnProperty.call(payload, "base_ingredient_id")).toBe(false);
+    const [input] = mocks.saveItem.mock.calls[0];
+    expect(input.itemId).toBe("SPM-EXISTING-RAW");
+    expect(Object.prototype.hasOwnProperty.call(input, "base_ingredient_id")).toBe(false);
   });
 });
 
@@ -270,7 +275,7 @@ describe("updatePurchasedItem -- the unit lock (2026-08-29, no database backstop
 
     expect(res.error).toContain("trái");
     expect(res.error).toMatch(/Không thể đổi đơn vị gốc/);
-    expect(mocks.update).not.toHaveBeenCalledWith("Purchased_Items", "SPM-TRAITAC", expect.anything());
+    expect(mocks.saveItem).not.toHaveBeenCalled();
   });
 
   // The gap identified while critiquing the plan: not a live exposure today
@@ -363,8 +368,33 @@ describe("updatePurchasedItem -- every refusal comes before the first write (aud
     const res = await actions.updatePurchasedItem(fd);
 
     expect(res.error).toBe("Một quy đổi đã được dùng trong phiếu nhập lịch sử. Hãy tạo quy đổi mới thay vì sửa trực tiếp.");
+    expect(mocks.saveItem).not.toHaveBeenCalled();
+  });
+
+  it("saves the rows in one call: renamed, new and removed conversions travel together", async () => {
+    const fd = new FormData();
+    fd.set("id", "SPM-1");
+    fd.set("name", "Bột cà phê");
+    fd.set("item_category_id", "NHH-001");
+    fd.set("base_unit", "U-G");
+    fd.set("units_json", JSON.stringify([
+      { id: "QD-1", name: "Thùng", conversion_rate: "30" },
+      { name: "Gói", conversion_rate: "5" },
+    ])); // QD-2 is left out: the function removes or retires it
+
+    const res = await actions.updatePurchasedItem(fd);
+
+    expect(res.error).toBeUndefined();
+    expect(mocks.saveItem).toHaveBeenCalledTimes(1);
+    expect(mocks.saveItem).toHaveBeenCalledWith(expect.objectContaining({
+      itemId: "SPM-1",
+      baseUnit: "U-G",
+      conversions: [
+        { id: "QD-1", name: "Thùng", conversion_rate: "30" },
+        { name: "Gói", conversion_rate: "5" },
+      ],
+    }));
     expect(mocks.update).not.toHaveBeenCalled();
-    expect(mocks.updateMany).not.toHaveBeenCalled();
     expect(mocks.insert).not.toHaveBeenCalled();
     expect(mocks.remove).not.toHaveBeenCalled();
   });
@@ -392,7 +422,7 @@ describe("addPurchasedItem -- level 2, diacritic-stripped warning (Batch 1 follo
     expect(res.error).toBeUndefined();
     expect(res.needsDuplicateWarning).toBeTruthy();
     expect(res.needsDuplicateWarning.conflictId).toBe("SPM-043");
-    expect(mocks.insert).not.toHaveBeenCalledWith("Purchased_Items", expect.anything());
+    expect(mocks.saveItem).not.toHaveBeenCalled();
 
     // "tôi gõ nhầm" -- no resubmission with the confirmation flag, so
     // nothing beyond the warning above is needed to prove decline.
@@ -406,7 +436,7 @@ describe("addPurchasedItem -- level 2, diacritic-stripped warning (Batch 1 follo
     formData.set("item_category_id", "NHH-001");
     const warned: any = await actions.addPurchasedItem(formData);
     expect(warned.needsDuplicateWarning).toBeTruthy();
-    expect(mocks.insert).not.toHaveBeenCalledWith("Purchased_Items", expect.anything());
+    expect(mocks.saveItem).not.toHaveBeenCalled();
 
     const confirmedFormData = new FormData();
     confirmedFormData.set("name", "Thạch dứa");
@@ -415,13 +445,8 @@ describe("addPurchasedItem -- level 2, diacritic-stripped warning (Batch 1 follo
     const saved: any = await actions.addPurchasedItem(confirmedFormData);
 
     expect(saved.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "Purchased_Items",
-      expect.objectContaining({
-        name: "Thạch dứa",
-        duplicate_warning_confirmed: true,
-        duplicate_warning_confirmed_by: "Admin",
-      }),
+    expect(mocks.saveItem).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: null, name: "Thạch dứa", warningConfirmedBy: "Admin" }),
     );
   });
 
@@ -632,16 +657,18 @@ describe("updatePurchasedItem -- retiring assets when the item leaves EQUIPMENT"
     expect(res.needsAssetRemoval).toEqual({
       message: "Đổi sang loại này sẽ gỡ 1 tài sản khỏi trang Tài sản: TS-067 Hộp đựng topping liền nắp, 200 cái, 80,352đ. Khấu hao đã tính cho các tháng trước cũng bỏ theo. Tiếp tục?",
     });
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.saveItem).not.toHaveBeenCalled();
   });
 
-  it("with asset_removal_confirmed=true saves the item first, then sets the asset INACTIVE", async () => {
+  it("with asset_removal_confirmed=true saves the item and retires the asset in one call", async () => {
     const res: any = await actions.updatePurchasedItem(form("NHH-002", "true"));
 
     expect(res.error).toBeUndefined();
     expect(res.success).toBe(true);
-    expect(mocks.update).toHaveBeenNthCalledWith(1, "Purchased_Items", "SPM-134", expect.objectContaining({ item_category_id: "NHH-002" }));
-    expect(mocks.update).toHaveBeenNthCalledWith(2, "assets", "TS-067", { status: "INACTIVE" });
+    expect(mocks.saveItem).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: "SPM-134", categoryId: "NHH-002", retireAssetIds: ["TS-067"] }),
+    );
+    expect(mocks.update).not.toHaveBeenCalled();
     expect(mocks.remove).not.toHaveBeenCalled();
   });
 
@@ -649,7 +676,7 @@ describe("updatePurchasedItem -- retiring assets when the item leaves EQUIPMENT"
     const res: any = await actions.updatePurchasedItem(form("NHH-002", "false"));
 
     expect(res.needsAssetRemoval).toBeTruthy();
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.saveItem).not.toHaveBeenCalled();
   });
 
   it("refuses the whole save when an asset already has a disposal, even if confirmed", async () => {
@@ -659,15 +686,15 @@ describe("updatePurchasedItem -- retiring assets when the item leaves EQUIPMENT"
 
     expect(res.error).toBe("Không đổi loại được: tài sản TS-067 của món này đã có lần thanh lý. Giữ loại Thiết bị.");
     expect(res.needsAssetRemoval).toBeUndefined();
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.saveItem).not.toHaveBeenCalled();
   });
 
   it("saves normally, touching no asset, when the category stays equipment", async () => {
     const res: any = await actions.updatePurchasedItem(form("NHH-009"));
 
     expect(res.success).toBe(true);
-    expect(mocks.update).toHaveBeenCalledTimes(1);
-    expect(mocks.update).toHaveBeenCalledWith("Purchased_Items", "SPM-134", expect.anything());
+    expect(mocks.saveItem).toHaveBeenCalledTimes(1);
+    expect(mocks.saveItem).toHaveBeenCalledWith(expect.objectContaining({ itemId: "SPM-134", retireAssetIds: [] }));
   });
 
   it("saves normally when the item has no assets", async () => {
@@ -676,7 +703,7 @@ describe("updatePurchasedItem -- retiring assets when the item leaves EQUIPMENT"
     const res: any = await actions.updatePurchasedItem(form("NHH-002"));
 
     expect(res.success).toBe(true);
-    expect(mocks.update).toHaveBeenCalledTimes(1);
+    expect(mocks.saveItem).toHaveBeenCalledTimes(1);
   });
 
   it("an already INACTIVE asset is neither asked about nor touched", async () => {
@@ -686,7 +713,7 @@ describe("updatePurchasedItem -- retiring assets when the item leaves EQUIPMENT"
     const res: any = await actions.updatePurchasedItem(form("NHH-002"));
 
     expect(res.success).toBe(true);
-    expect(mocks.update).toHaveBeenCalledTimes(1);
+    expect(mocks.saveItem).toHaveBeenCalledTimes(1);
   });
 
   it("a refused duplicate name still writes nothing and reaches no asset", async () => {
@@ -698,7 +725,7 @@ describe("updatePurchasedItem -- retiring assets when the item leaves EQUIPMENT"
     const res: any = await actions.updatePurchasedItem(form("NHH-002"));
 
     expect(res.error).toBeTruthy();
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.saveItem).not.toHaveBeenCalled();
   });
 });
 
@@ -784,13 +811,13 @@ describe("updatePurchasedItem -- an issued item cannot leave costing, and a conv
   it("refuses moving an issued item into an EQUIPMENT category", async () => {
     const res = await actions.updatePurchasedItem(form("NHH-009"));
     expect(res.error).toBe(refusal);
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.saveItem).not.toHaveBeenCalled();
   });
 
   it("refuses ticking 'không tính tồn kho' on an issued item", async () => {
     const res = await actions.updatePurchasedItem(form("NHH-001", true));
     expect(res.error).toBe(refusal);
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.saveItem).not.toHaveBeenCalled();
   });
 
   it("saves the same move when the item has no issue rows", async () => {
@@ -804,7 +831,7 @@ describe("updatePurchasedItem -- an issued item cannot leave costing, and a conv
     expect((await actions.updatePurchasedItem(form("NHH-001"))).error).toBe(refusal);
     currentItem = { ...currentItem, item_category_id: "NHH-001", is_non_inventory: true };
     expect((await actions.updatePurchasedItem(form("NHH-001", false))).error).toBe(refusal);
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.saveItem).not.toHaveBeenCalled();
   });
 
   it("does not refuse an item that is already outside costing and stays there (Khăn lau đa năng)", async () => {
@@ -816,7 +843,7 @@ describe("updatePurchasedItem -- an issued item cannot leave costing, and a conv
   it.each(["0", "-5", "abc", ""])("refuses conversion rate %j", async (rate) => {
     const res = await actions.updatePurchasedItem(form("NHH-001", false, [{ name: "U-BAO", conversion_rate: rate }]));
     expect(res.error).toBe("Hệ số quy đổi phải là số lớn hơn 0.");
-    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.saveItem).not.toHaveBeenCalled();
     expect(mocks.insert).not.toHaveBeenCalled();
   });
 
