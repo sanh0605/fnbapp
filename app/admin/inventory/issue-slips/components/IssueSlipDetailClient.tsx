@@ -297,12 +297,10 @@ export default function IssueSlipDetailClient({
       {serverError && <Alert variant="danger">{serverError}</Alert>}
 
       {detail.lock && (
-        <div className="flex gap-2.5 items-start max-w-lg p-3 rounded-lg bg-warning/10 text-warning-active text-sm leading-relaxed">
-          <span>
-            Phiếu nằm trước lần kiểm kê ngày {detail.lock.dateText} nên không sửa được. Sai lệch sẽ
-            được bù ở lần kiểm kê sau.
-          </span>
-        </div>
+        <Alert variant="warning" className="max-w-lg">
+          Phiếu nằm trước lần kiểm kê ngày {detail.lock.dateText} nên không sửa được. Sai lệch sẽ
+          được bù ở lần kiểm kê sau.
+        </Alert>
       )}
 
       {mode === "view" && <IssueSlipViewLines detail={detail} />}

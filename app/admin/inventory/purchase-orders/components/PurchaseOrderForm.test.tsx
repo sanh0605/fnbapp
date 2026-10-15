@@ -568,7 +568,7 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
         />
       );
       // A new order starts with no line; open one first.
-      fireEvent.click(screen.getByText("+ Thêm Mặt Hàng Đầu Tiên"));
+      fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
 
       const subtotalInput = screen.getByLabelText("Thành tiền (đ)");
       const quantityInput = screen.getByLabelText("Số lượng");

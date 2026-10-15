@@ -7,6 +7,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { draftKey, saveDraft, takeDraft, type PoDraftState } from "./po-draft";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
@@ -60,7 +61,6 @@ function formatLinesWithConversions(rawLines: any[], conversions: DBUOMConversio
       unit: line.unit || "",
       quantity: Number(line.quantity) > 0 ? String(line.quantity) : "",
       subtotal: line.subtotal || 0,
-      is_new_unit: false,
       conversion_id: matchedConv?.id || "",
       conversion_rate: matchedConv?.conversion_rate || "",
     };
@@ -189,7 +189,6 @@ export default function PurchaseOrderForm({
       unit: "",
       quantity: "",
       subtotal: 0,
-      is_new_unit: false,
       conversion_rate: "",
     }]);
   };
@@ -204,7 +203,6 @@ export default function PurchaseOrderForm({
 
     if (field === "purchased_item_id") {
       newLines[index].unit = "";
-      newLines[index].is_new_unit = false;
       newLines[index].conversion_id = "";
       newLines[index].conversion_rate = "";
     }
@@ -290,12 +288,9 @@ export default function PurchaseOrderForm({
   return (
     <>
       {restoreFailed && (
-        <div
-          role="status"
-          className="mb-6 p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium"
-        >
+        <Alert variant="warning" className="mb-6">
           Không khôi phục được phiếu đang nhập dở
-        </div>
+        </Alert>
       )}
       <div
         data-testid="form-layout"
@@ -480,12 +475,6 @@ export default function PurchaseOrderForm({
           </div>
         </div>
       </div>
-
-      <datalist id="units-list">
-        {units.map((u: any) => (
-          <option key={u.id} value={u.name} />
-        ))}
-      </datalist>
     </>
   );
 }

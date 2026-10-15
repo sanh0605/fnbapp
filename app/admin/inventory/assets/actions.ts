@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllWhere, findAllWhereInBatches, insert, generateNewId } from "@/lib/db/tables";
+import { findAll, findAllNoCache, findAllWhere, findAllWhereInBatches, insert, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
@@ -263,16 +263,18 @@ export async function disposeAsset(formData: FormData): Promise<ActionResponse> 
   const reason = (formData.get("reason") as string) || "";
 
   if (!asset_id) return fail("Thiếu tài sản");
-  if (!Number.isFinite(quantity) || quantity <= 0) return fail("Số lượng không hợp lệ");
+  if (!Number.isInteger(quantity) || quantity <= 0) return fail("Số lượng thanh lý phải là số nguyên lớn hơn 0");
   if (!disposed_date) return fail("Vui lòng chọn ngày");
 
   try {
+    // Fresh rows, not the cached list: the remaining quantity must not be stale.
     const [assets, disposals] = await Promise.all([
-      findAll(ASSETS_SHEET) as Promise<DBAsset[]>,
-      findAll(DISPOSALS_SHEET) as Promise<DBAssetDisposal[]>,
+      findAllNoCache(ASSETS_SHEET) as Promise<DBAsset[]>,
+      findAllNoCache(DISPOSALS_SHEET) as Promise<DBAssetDisposal[]>,
     ]);
     const asset = assets.find(a => a.id === asset_id);
     if (!asset) return fail("Không tìm thấy tài sản");
+    if (asset.status === "INACTIVE") return fail("Tài sản đã ngừng dùng, không thanh lý được");
 
     const existingDisposals = disposals.filter(d => d.asset_id === asset_id);
     const disposedQuantity = existingDisposals.reduce((sum, d) => sum + Number(d.quantity), 0);

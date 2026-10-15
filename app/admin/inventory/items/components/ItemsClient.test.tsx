@@ -107,7 +107,6 @@ describe("ItemsClient", () => {
         items={ITEMS}
         conversions={CONVERSIONS}
         units={UNITS}
-        unitLockedItemIds={[]}
         stockById={{}}
         canDelete={false}
       />,
@@ -136,7 +135,6 @@ describe("ItemsClient", () => {
         items={ITEMS}
         conversions={CONVERSIONS}
         units={UNITS}
-        unitLockedItemIds={[]}
         stockById={{}}
         canDelete={false}
       />,
@@ -153,7 +151,6 @@ describe("ItemsClient", () => {
         items={ITEMS}
         conversions={CONVERSIONS}
         units={UNITS}
-        unitLockedItemIds={[]}
         stockById={{}}
         canDelete={false}
       />,
@@ -170,7 +167,6 @@ describe("ItemsClient", () => {
         items={ITEMS}
         conversions={CONVERSIONS}
         units={UNITS}
-        unitLockedItemIds={[]}
         stockById={{}}
         canDelete={false}
       />,
@@ -187,7 +183,6 @@ describe("ItemsClient", () => {
         items={ITEMS}
         conversions={CONVERSIONS}
         units={UNITS}
-        unitLockedItemIds={[]}
         stockById={{}}
         canDelete={true}
       />,
@@ -205,7 +200,6 @@ describe("ItemsClient", () => {
         items={ITEMS}
         conversions={CONVERSIONS}
         units={UNITS}
-        unitLockedItemIds={[]}
         stockById={{}}
         canDelete={false}
       />,
@@ -257,7 +251,6 @@ describe("ItemsClient", () => {
         items={items}
         conversions={[]}
         units={UNITS}
-        unitLockedItemIds={[]}
         stockById={stockById}
         canDelete={false}
       />,
@@ -324,7 +317,6 @@ describe("ItemsClient", () => {
         items={items}
         conversions={[]}
         units={UNITS}
-        unitLockedItemIds={[]}
         stockById={stockById}
         canDelete={false}
       />,

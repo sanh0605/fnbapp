@@ -16,9 +16,11 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  findAllNoCache: mocks.findAll,
   findById: mocks.findById,
   insert: mocks.insert,
   generateNewId: mocks.generateNewId,
+  getCacheTag: (t: string) => `sheets-${t}`,
 }));
 vi.mock("@/lib/purchasing/purchase-order-transaction", () => ({
   savePurchaseOrderAtomic: mocks.savePurchaseOrderAtomic,

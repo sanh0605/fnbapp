@@ -34,7 +34,7 @@ describe("buildIssueSlipDetail", () => {
 
   it("a slip dated before STK-001 is locked, not editable", () => {
     const d = buildIssueSlipDetail({ ...input, slip: { ...slip, issued_at: "2026-07-09T14:49:00Z" } });
-    expect(d.lock).toMatchObject({ sessionId: "STK-001", dateText: "09/08/2026" });
+    expect(d.lock).toMatchObject({ sessionId: "STK-001", dateText: "09/08/2026 22:02:00" });
     expect(d.canEdit).toBe(false);
   });
 

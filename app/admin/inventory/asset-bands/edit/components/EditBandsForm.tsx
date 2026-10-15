@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { NumberInput } from "@/components/ui/NumberInput";
 import {
   Table,
@@ -206,13 +207,7 @@ export function EditBandsForm({
     <div className="bg-surface-card rounded-2xl border border-border p-6 space-y-6">
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div
-            role="alert"
-            aria-live="polite"
-            className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20"
-          >
-            {error}
-          </div>
+          <Alert variant="danger">{error}</Alert>
         )}
 
         {/* Desktop view: Table */}

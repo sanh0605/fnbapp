@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   findAll: vi.fn(),
+  findAllNoCache: vi.fn(),
   findAllWhere: vi.fn(),
   findAllWhereInBatches: vi.fn(),
   insert: vi.fn(),
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  findAllNoCache: mocks.findAllNoCache,
   findAllWhere: mocks.findAllWhere,
   findAllWhereInBatches: mocks.findAllWhereInBatches,
   insert: mocks.insert,
@@ -171,7 +173,7 @@ describe("disposeAsset -- section 3.3", () => {
   }
 
   it("inserts a disposal row, never touching assets.quantity", async () => {
-    mocks.findAll.mockImplementation(findAllMockFor([CA_DONG], []));
+    mocks.findAllNoCache.mockImplementation(findAllMockFor([CA_DONG], []));
 
     const res = await disposeAsset(
       fd({ asset_id: "TS-002", quantity: "1", disposed_date: "2026-05-15", reason: "Vỡ" }),
@@ -185,7 +187,7 @@ describe("disposeAsset -- section 3.3", () => {
   });
 
   it("refuses a disposal exceeding the remaining quantity, naming the number remaining", async () => {
-    mocks.findAll.mockImplementation(
+    mocks.findAllNoCache.mockImplementation(
       findAllMockFor(
         [{ ...ASSET, quantity: 8 }],
         [{ id: "TL-001", asset_id: "TS-001", quantity: 5, disposed_date: "2026-02-01" }],
@@ -202,14 +204,14 @@ describe("disposeAsset -- section 3.3", () => {
     const res = await disposeAsset(fd({ asset_id: "TS-001", quantity: "0", disposed_date: "2026-03-01" }));
 
     expect(res.error).toBeTruthy();
-    expect(mocks.findAll).not.toHaveBeenCalled();
+    expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
 
   it("refuses a missing date", async () => {
     const res = await disposeAsset(fd({ asset_id: "TS-001", quantity: "1", disposed_date: "" }));
 
     expect(res.error).toBeTruthy();
-    expect(mocks.findAll).not.toHaveBeenCalled();
+    expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
 
   // section 3.3/4. Today (pre-fix), buildAssetSchedule silently clamps a
@@ -217,7 +219,7 @@ describe("disposeAsset -- section 3.3", () => {
   // is a wrong VALUE (the insert happens, res.error is undefined), not a
   // missing check, since disposeAsset already validated other fields.
   it("refuses a future disposal date before ever writing a row", async () => {
-    mocks.findAll.mockImplementation(findAllMockFor([CA_DONG], []));
+    mocks.findAllNoCache.mockImplementation(findAllMockFor([CA_DONG], []));
 
     const res = await disposeAsset(fd({ asset_id: "TS-002", quantity: "1", disposed_date: "2099-01-01" }));
 
@@ -230,7 +232,7 @@ describe("disposeAsset -- section 3.3", () => {
   // year/month, not day) and writes the row -- the gap this plan's
   // critique found that the plan itself did not name.
   it("refuses a disposal dated earlier in the same month as acquisition", async () => {
-    mocks.findAll.mockImplementation(findAllMockFor([{ ...CA_DONG, acquired_date: "2026-03-20" }], []));
+    mocks.findAllNoCache.mockImplementation(findAllMockFor([{ ...CA_DONG, acquired_date: "2026-03-20" }], []));
 
     const res = await disposeAsset(fd({ asset_id: "TS-002", quantity: "1", disposed_date: "2026-03-05" }));
 
@@ -243,7 +245,7 @@ describe("disposeAsset -- section 3.3", () => {
   // what the owner actually does. A guard that refused this would be
   // worse than no guard.
   it("accepts and writes a valid backdate, months before today", async () => {
-    mocks.findAll.mockImplementation(findAllMockFor([CA_DONG], [])); // acquired 2026-03-01
+    mocks.findAllNoCache.mockImplementation(findAllMockFor([CA_DONG], [])); // acquired 2026-03-01
 
     const res = await disposeAsset(
       fd({ asset_id: "TS-002", quantity: "1", disposed_date: "2026-05-15", reason: "Vỡ hôm trước, ghi trễ" }),
@@ -254,6 +256,23 @@ describe("disposeAsset -- section 3.3", () => {
       "asset_disposals",
       expect.objectContaining({ asset_id: "TS-002", disposed_date: "2026-05-15" }),
     );
+  });
+
+  // TS-067 is the one INACTIVE asset on the server (measured 2026-10-15).
+  it("refuses to dispose an INACTIVE asset, writing nothing", async () => {
+    mocks.findAllNoCache.mockImplementation(findAllMockFor([{ ...CA_DONG, id: "TS-067", status: "INACTIVE" }], []));
+
+    const res = await disposeAsset(fd({ asset_id: "TS-067", quantity: "1", disposed_date: "2026-05-15" }));
+
+    expect(res.error).toBe("Tài sản đã ngừng dùng, không thanh lý được");
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it("refuses a quantity that is not a whole number", async () => {
+    const res = await disposeAsset(fd({ asset_id: "TS-001", quantity: "1.5", disposed_date: "2026-03-01" }));
+
+    expect(res.error).toBe("Số lượng thanh lý phải là số nguyên lớn hơn 0");
+    expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
 });
 

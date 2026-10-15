@@ -249,9 +249,9 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
     expect(radio030!.checked).toBe(true);
     expect(radio057!.checked).toBe(false);
 
-    // Each lot reads "Mua dd/mm/yyyy · giá một cái …đ · còn N"
-    expect(container.textContent).toContain("Mua 08/04/2026 · giá một cái 17,500đ · còn 2");
-    expect(container.textContent).toContain("Mua 01/07/2026 · giá một cái 13,785đ · còn 4");
+    // Each lot reads "Mua dd/mm/yyyy HH:mm:ss · giá một cái …đ · còn N"
+    expect(container.textContent).toContain("Mua 08/04/2026 00:00:00 · giá một cái 17,500đ · còn 2");
+    expect(container.textContent).toContain("Mua 01/07/2026 00:00:00 · giá một cái 13,785đ · còn 4");
   });
 
   it("does not render a radio picker when there is only a single lot", async () => {
@@ -267,7 +267,7 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
 
     const radios = container.querySelectorAll('input[type="radio"]');
     expect(radios.length).toBe(0);
-    expect(container.textContent).toContain("Mua 04/04/2026");
+    expect(container.textContent).toContain("Mua 04/04/2026 00:00:00");
     expect(container.textContent).toContain("còn 1");
   });
 

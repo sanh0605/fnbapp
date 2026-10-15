@@ -154,12 +154,9 @@ export default async function PurchaseOrderDetail({
   return (
     <div className="space-y-6">
       {searchParams?.assetWarning === "1" && (
-        <div
-          role="status"
-          className="p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium"
-        >
+        <Alert variant="warning">
           Phiếu đã lưu, nhưng tài sản sinh từ phiếu này chưa ghi được. Mở trang Tài sản để kiểm lại; sửa phiếu lần sau không tự ghi bù.
-        </div>
+        </Alert>
       )}
       <DetailHeader
         backHref={returnTo}
@@ -175,18 +172,18 @@ export default async function PurchaseOrderDetail({
       )}
 
       {isCancelled && (
-        <div className="p-4 rounded-xl border border-border bg-surface-secondary/50 text-text-secondary text-sm">
+        <Alert variant="info">
           Lý do huỷ: {po.cancel_reason} · Huỷ bởi {po.cancelled_by_name} lúc{" "}
           {formatDateTimeFull(po.cancelled_at)}
-        </div>
+        </Alert>
       )}
 
       {showForm ? (
         <>
           {!isDraft && (
-            <div className="p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium">
+            <Alert variant="warning">
               Sửa phiếu đã hoàn thành sẽ ghi lại tồn kho và giá vốn của phiếu này. Kiểm tra kỹ trước khi lưu.
-            </div>
+            </Alert>
           )}
           <PurchaseOrderForm
             suppliers={allSuppliers}
@@ -208,7 +205,7 @@ export default async function PurchaseOrderDetail({
 
               {poLines.length === 0 ? (
                 <div className="p-6 text-center text-text-muted">
-                  Phiếu nhập kho này được tạo tự động từ hệ thống cũ (Tồn kho đầu kỳ). Vui lòng xem chi tiết ở báo cáo Tồn Kho.
+                  Phiếu nhập kho này được tạo tự động từ hệ thống cũ (Tồn kho đầu kỳ).
                 </div>
               ) : (
                 <>

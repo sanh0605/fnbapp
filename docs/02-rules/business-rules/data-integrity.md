@@ -87,7 +87,7 @@ If a post-apply invariant fails, stop further writes and compare against the app
 
 ### BR-DATA-007 — On admin screens, anything with an input or for viewing is its own page; only yes/no and error boxes remain
 
-**Status:** `APPROVED` — owner decision 2026-09-30. **Not built yet**; its own plan, screen group by screen group. Counted 2026-09-30: 91 popup or browser-dialog uses in 38 files under `app/` (POS included in that count).
+**Status:** `APPROVED` — owner decision 2026-09-30. Counted 2026-09-30: 91 popup or browser-dialog uses in 38 files under `app/` (POS included in that count). **Built** screen group by screen group through 2026-10-15; `app/admin/no-popups.test.ts` fails on any new popup and lists each file still allowed one, with its reason. Huỷ đơn, Huỷ phiếu nhập and Huỷ phiếu xuất are pages.
 
 *"hệ thống sẽ không bao giờ được sử dụng dạng popups. Tất cả đều phải áp dụng cách chuyển trang"*, then on the scope questions: *"1B 2B"*.
 

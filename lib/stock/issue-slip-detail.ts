@@ -1,5 +1,5 @@
 import { displayMoney } from "@/lib/reports/display-rounding";
-import { formatDate, formatDateTimeFull } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import type { PackageLine } from "@/lib/stock/stocktake-package-lines";
 import {
   activeSlipLines, reversedIssueIds, slipCancellation, stocktakeLock,
@@ -58,7 +58,7 @@ export function buildIssueSlipDetail(input: {
 
   const cancellation = cancel ? { at: cancel.at, dateText: formatDateTimeFull(cancel.at), reason: cancel.reason } : null;
   const lock = lockRaw
-    ? { sessionId: lockRaw.sessionId, confirmedAt: lockRaw.confirmedAt, dateText: formatDate(lockRaw.confirmedAt) }
+    ? { sessionId: lockRaw.sessionId, confirmedAt: lockRaw.confirmedAt, dateText: formatDateTimeFull(lockRaw.confirmedAt) }
     : null;
   return {
     id: slip.id, issuedAt: slip.issued_at, dateText: formatDateTimeFull(slip.issued_at),

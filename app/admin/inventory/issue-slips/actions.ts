@@ -15,6 +15,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/auth";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
+import { CANCEL_REASON_MAX } from "@/lib/purchasing/purchase-order-cancel";
 import {
   createIssueSlipAtomic,
   cancelIssueSlipAtomic,
@@ -292,7 +293,6 @@ export async function getIssueUnitCostsAt(
 // re-derived here.
 export async function createIssueSlip(input: {
   issuedAtIso: string;
-  note: string;
   lines: Array<{ purchasedItemId: string; baseQuantity: number }>;
 }): Promise<ActionResponse & { result?: IssueSlipResult }> {
   const auth = await requireAdmin();
@@ -316,7 +316,7 @@ export async function createIssueSlip(input: {
   try {
     const result = await createIssueSlipAtomic({
       issuedAt,
-      note: input.note,
+      note: "", // BR-INV-014: a slip carries no note; the rpc still takes the argument
       createdById: auth.actor.id,
       createdByName: auth.actor.name,
       lines: input.lines,
@@ -324,6 +324,10 @@ export async function createIssueSlip(input: {
     revalidatePath(PATH);
     return ok({ result });
   } catch (error: unknown) {
+    // The database raises this one in English.
+    if (error instanceof Error && error.message.includes("cannot be in the future")) {
+      return fail("Thời điểm xuất không được ở tương lai.");
+    }
     return describeActionError(error);
   }
 }
@@ -342,6 +346,9 @@ export async function cancelIssueSlip(input: {
   if (!auth.ok) return fail(auth.error);
   if (!input.reason.trim()) {
     return fail("Lý do huỷ phiếu là bắt buộc");
+  }
+  if (input.reason.trim().length > CANCEL_REASON_MAX) {
+    return fail(`Lý do huỷ tối đa ${CANCEL_REASON_MAX} ký tự`);
   }
 
   try {

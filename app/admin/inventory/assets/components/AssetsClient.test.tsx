@@ -117,7 +117,7 @@ describe("AssetsClient", () => {
     expect(screen.getAllByText("Cốc đong 100ml").length).toBeGreaterThan(0);
     expect(screen.getAllByText("6 / 8 cái").length).toBeGreaterThan(0);
     expect(screen.getAllByText("2 cái").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("01/07/2026").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("01/07/2026 00:00:00").length).toBeGreaterThan(0);
 
     // Bình bơm: còn 1 / mua 2, đã thanh lý 1, giá trị còn lại 145.860đ, mua gần nhất 04/04/2026
     expect(screen.getAllByText("SPM-BINH").length).toBeGreaterThan(0);
@@ -125,7 +125,7 @@ describe("AssetsClient", () => {
     expect(screen.getAllByText("1 / 2 cái").length).toBeGreaterThan(0);
     expect(screen.getAllByText("1 cái").length).toBeGreaterThan(0);
     expect(screen.getAllByText("145,860đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("04/04/2026").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("04/04/2026 00:00:00").length).toBeGreaterThan(0);
 
     // Ca đong: 0 thanh lý renders as '—'
     expect(screen.getAllByText("SPM-CA").length).toBeGreaterThan(0);

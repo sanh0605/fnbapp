@@ -11,7 +11,6 @@ import type { DBAssetDepreciationBand } from "@/types/db";
 export interface BandDetailViewProps {
   band: DBAssetDepreciationBand;
   returnTo: string;
-  canDelete?: boolean;
 }
 
 export function BandDetailView({

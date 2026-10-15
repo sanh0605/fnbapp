@@ -131,7 +131,7 @@ describe("AssetItemDetailView", () => {
     render(<AssetItemDetailView detail={BINH_BOM_DETAIL} returnTo={returnTo} />);
 
     expect(screen.getAllByText("TS-004").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("04/04/2026").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("04/04/2026 00:00:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("205,920đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("24 tháng").length).toBeGreaterThan(0);
 
@@ -143,7 +143,7 @@ describe("AssetItemDetailView", () => {
   it("renders 'Thanh lý' table showing 171,600đ disposal charge and dash '—' for empty reason", () => {
     render(<AssetItemDetailView detail={BINH_BOM_DETAIL} returnTo={returnTo} />);
 
-    expect(screen.getAllByText("02/07/2026").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("02/07/2026 00:00:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("171,600đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });

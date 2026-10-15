@@ -18,6 +18,7 @@ vi.mock("@/lib/auth/auth", () => ({
 }));
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
+  findAllNoCache: mocks.findAll,
   findById: mocks.findById,
   insert: mocks.insert,
   generateNewId: mocks.generateNewId,

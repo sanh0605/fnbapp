@@ -4,6 +4,7 @@ import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addSupplier, editSupplier } from "../actions";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { confirm } from "@/lib/shared/dialog";
@@ -47,7 +48,7 @@ export function SupplierForm({
       const approved = await confirm({
         title: "Tên gần giống một mục đã có",
         message: (res as any).needsDuplicateWarning.message,
-        okText: "Món khác",
+        okText: "Nhà cung cấp khác",
         cancelText: "Tôi gõ nhầm",
         variant: "warning",
       });
@@ -77,13 +78,7 @@ export function SupplierForm({
     <div className="bg-surface-card rounded-2xl border border-border p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div
-            role="alert"
-            aria-live="polite"
-            className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20 font-medium"
-          >
-            {error}
-          </div>
+          <Alert variant="danger">{error}</Alert>
         )}
 
         <Field label="Tên nhà cung cấp" htmlFor={`${formId}-name`} required>

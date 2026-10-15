@@ -248,7 +248,6 @@ describe("createIssueSlip", () => {
   it("refuses an empty line list before ever calling the RPC", async () => {
     const res = await issueSlipActions.createIssueSlip({
       issuedAtIso: "2026-08-08T09:00:00.000Z",
-      note: "",
       lines: [],
     });
     expect(res).toEqual({ error: "Phiếu cần ít nhất một dòng" });
@@ -258,7 +257,6 @@ describe("createIssueSlip", () => {
   it("refuses a non-positive quantity on any line, naming which one, before ever calling the RPC", async () => {
     const res = await issueSlipActions.createIssueSlip({
       issuedAtIso: "2026-08-08T09:00:00.000Z",
-      note: "",
       lines: [
         { purchasedItemId: "SPM-033", baseQuantity: 500 },
         { purchasedItemId: "SPM-014", baseQuantity: 0 },
@@ -271,7 +269,6 @@ describe("createIssueSlip", () => {
   it("refuses a line with no item chosen, before ever calling the RPC", async () => {
     const res = await issueSlipActions.createIssueSlip({
       issuedAtIso: "2026-08-08T09:00:00.000Z",
-      note: "",
       lines: [{ purchasedItemId: "", baseQuantity: 500 }],
     });
     expect(res).toEqual({ error: "Dòng 1: chưa chọn mặt hàng" });
@@ -281,7 +278,6 @@ describe("createIssueSlip", () => {
   it("refuses an unparseable timestamp before ever calling the RPC", async () => {
     const res = await issueSlipActions.createIssueSlip({
       issuedAtIso: "not-a-date",
-      note: "Hao hụt",
       lines: [{ purchasedItemId: "SPM-033", baseQuantity: 500 }],
     });
     expect(res).toEqual({ error: "Thời điểm xuất không hợp lệ" });
@@ -303,7 +299,6 @@ describe("createIssueSlip", () => {
 
     const res = await issueSlipActions.createIssueSlip({
       issuedAtIso: "2026-08-08T09:00:00.000Z",
-      note: "Hao hụt",
       lines: [
         { purchasedItemId: "SPM-033", baseQuantity: 500 },
         { purchasedItemId: "SPM-014", baseQuantity: 200 },
@@ -314,7 +309,7 @@ describe("createIssueSlip", () => {
     expect(res.result?.slipId).toBe("ISL-00001");
     expect(res.result?.lines).toHaveLength(2);
     expect(mocks.createIssueSlipAtomic).toHaveBeenCalledWith(expect.objectContaining({
-      note: "Hao hụt",
+      note: "",
       createdById: "admin-1",
       createdByName: "Admin",
       lines: [
@@ -332,7 +327,6 @@ describe("createIssueSlip", () => {
 
     const res = await issueSlipActions.createIssueSlip({
       issuedAtIso: "2026-08-08T09:00:00.000Z",
-      note: "",
       lines: [
         { purchasedItemId: "SPM-033", baseQuantity: 500 },
         { purchasedItemId: "SPM-033", baseQuantity: 5000 },
@@ -342,12 +336,31 @@ describe("createIssueSlip", () => {
     expect(res.error).toContain("Dòng 2");
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
+
+  it("turns the database's English future-time refusal into Vietnamese", async () => {
+    mocks.createIssueSlipAtomic.mockRejectedValue(
+      new Error("p_issued_at (2099-01-01 00:00:00+00) cannot be in the future"),
+    );
+
+    const res = await issueSlipActions.createIssueSlip({
+      issuedAtIso: "2099-01-01T00:00:00.000Z",
+      lines: [{ purchasedItemId: "SPM-033", baseQuantity: 500 }],
+    });
+
+    expect(res.error).toBe("Thời điểm xuất không được ở tương lai.");
+  });
 });
 
 describe("cancelIssueSlip (Plan D D14, U9-U12)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+  });
+
+  it("refuses a reason over 500 characters, before ever calling the RPC", async () => {
+    const res = await issueSlipActions.cancelIssueSlip({ slipId: "ISL-00003", reason: "x".repeat(501) });
+    expect(res.error).toBe("Lý do huỷ tối đa 500 ký tự");
+    expect(mocks.cancelIssueSlipAtomic).not.toHaveBeenCalled();
   });
 
   it("U12: MANAGER is accepted -- same requireAdmin() level as the per-line reversal, not owner-only", async () => {

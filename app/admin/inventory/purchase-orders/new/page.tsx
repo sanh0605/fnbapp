@@ -3,6 +3,7 @@ import { getPurchaseOrderCopySeed } from "../actions";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import Link from "next/link";
 import { BackLink } from "@/components/ui/BackLink";
+import { Alert } from "@/components/ui/Alert";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
@@ -36,10 +37,7 @@ export default async function NewPurchaseOrderPage({
       />
 
       {copyFrom && copySeed && (
-        <div
-          role="status"
-          className="p-4 rounded-xl border border-primary/30 bg-primary/10 text-text-primary text-sm"
-        >
+        <Alert variant="info">
           Nhân bản từ phiếu{" "}
           <Link
             href={`/admin/inventory/purchase-orders/${encodeURIComponent(copyFrom)}`}
@@ -47,16 +45,13 @@ export default async function NewPurchaseOrderPage({
           >
             {copyFrom}
           </Link>
-        </div>
+        </Alert>
       )}
 
       {copyFrom && !copySeed && (
-        <div
-          role="status"
-          className="p-4 rounded-xl border border-warning/40 bg-warning/10 text-warning-active text-sm font-medium"
-        >
+        <Alert variant="warning">
           Không tìm thấy phiếu {copyFrom} để nhân bản.
-        </div>
+        </Alert>
       )}
 
       <PurchaseOrderForm 

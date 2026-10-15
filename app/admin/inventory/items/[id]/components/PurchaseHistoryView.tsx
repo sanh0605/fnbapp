@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { getPriceTrend, type ItemPurchaseHistoryRow } from "@/lib/purchasing/item-purchase-history";
 
 interface PurchaseHistoryViewProps {
@@ -45,7 +45,7 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
               <TableRow key={`${row.poId}-${idx}`}>
                 <TableCell>
                   <span className="whitespace-nowrap text-text-secondary">
-                    {row.date ? formatDate(row.date) : "---"}
+                    {row.date ? formatDateTimeFull(row.date) : "---"}
                   </span>
                 </TableCell>
                 <TableCell>{row.supplierName}</TableCell>
@@ -78,7 +78,7 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
           <div key={`${row.poId}-${idx}`} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm space-y-2">
             <div className="flex justify-between items-center text-sm">
               <span className="text-text-secondary">
-                {row.date ? formatDate(row.date) : "---"}
+                {row.date ? formatDateTimeFull(row.date) : "---"}
               </span>
               <Link
                 href={`/admin/inventory/purchase-orders/${row.poId}`}

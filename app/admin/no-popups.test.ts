@@ -14,7 +14,6 @@ const ALLOWED: Record<string, string> = {
   "app/admin/layout.tsx":
     "the admin frame itself (fixed inset-0 shell) and the Chọn điểm bán outlet picker that opens the POS, which belongs to the exempt POS flow (chủ quán chốt 09/10/2026)",
   "app/admin/components/MoreSheet.tsx": "phone menu sheet, navigation not an input box",
-  "app/admin/inventory/components/InventoryForms.tsx": "ActionGroup asks yes/no before deleting",
   // Moved out of IssueSlipDetailClient.tsx unchanged when it was split (wave K3).
   "app/admin/inventory/issue-slips/components/IssueSlipDialogs.tsx":
     "yes/no only: cancel the slip when every line is removed (BR-INV-014)",

@@ -23,7 +23,6 @@ interface ItemsClientProps {
   items: DBPurchasedItem[];
   conversions: DBUOMConversion[];
   units: DBUnit[];
-  unitLockedItemIds: string[];
   stockById: Record<string, ItemStockDisplay>;
   canDelete: boolean;
   initialSearch?: string;
