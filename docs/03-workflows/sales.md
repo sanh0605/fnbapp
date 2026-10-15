@@ -7,6 +7,8 @@ tables: POS_Drafts, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
+**Reviewed, no behaviour change to selling — 2026-10-16:** `app/admin/promotions/actions.ts` now refuses a non-integer `min_order_value` with a Vietnamese message (the column becomes bigint in migration `0132`); no order or till logic changed.
+
 **Reviewed, no behaviour change — 2026-10-15 (Bán hàng đợt 3, A4b):** `app/pos/actions.ts` comment only: `cost_at_sale` is no longer mentioned, because migration `0121` drops the column.
 
 **Behaviour change — 2026-10-15 (Bán hàng đợt 2, design in `docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`):**

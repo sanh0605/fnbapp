@@ -59,6 +59,13 @@ describe("savePromotion -- Dùng chung and whole-order promotions (BR-SALE-011)"
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
+  it("refuses a fractional minimum order value before it reaches the bigint column", async () => {
+    const r = await savePromotion(form({ min_order_value: 1500.5 }));
+    expect(r.error).toContain("số nguyên");
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
   it("writes stackable when the form sends it and leaves it alone when it does not", async () => {
     await savePromotion(form({ stackable: true }));
     expect(mocks.update.mock.calls[0][2]).toMatchObject({ stackable: true });

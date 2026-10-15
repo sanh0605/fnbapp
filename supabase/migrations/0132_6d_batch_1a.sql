@@ -7,6 +7,7 @@
 -- arguments, so code that does not know this file keeps working; the new refusals only turn
 -- into Vietnamese messages once the code in the same commit (lib/shared/action-error.ts) is
 -- live, and until then they show the generic message.
+-- It does not depend on 0131; it runs after it only to keep the order.
 --
 -- What it does:
 --   1. Drops the dead function get_my_role() and the duplicate index idx_users_username.
@@ -82,7 +83,7 @@ alter table public.stock_issues
   );
 -- Replaces the plain idx_stock_issues_reverses: one issue is reversed at most once.
 drop index if exists public.idx_stock_issues_reverses;
-create unique index ux_stock_issues_reverses on public.stock_issues (reverses_issue_id)
+create unique index if not exists ux_stock_issues_reverses on public.stock_issues (reverses_issue_id)
   where reverses_issue_id is not null;
 
 alter table public.assets
@@ -110,7 +111,7 @@ alter table public.asset_depreciation_bands
 alter table public.products
   alter column category_id set not null;
 
-create unique index ux_product_categories_active_name on public.product_categories (
+create unique index if not exists ux_product_categories_active_name on public.product_categories (
   lower(regexp_replace(btrim(normalize(replace(name, chr(160), ' '), NFC)), '\s+', ' ', 'g'))
 ) where status = 'ACTIVE';
 

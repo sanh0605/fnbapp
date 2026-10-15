@@ -99,12 +99,12 @@ describe("describeActionError: 0132 constraint refusals", () => {
     const sql = readFileSync("supabase/migrations/0132_6d_batch_1a.sql", "utf8").replace(/^\s*--.*$/gm, "");
     const names = [
       ...[...sql.matchAll(/add constraint (\w+)/g)].map(m => m[1]),
-      ...[...sql.matchAll(/create unique index (\w+)/g)].map(m => m[1]),
+      ...[...sql.matchAll(/create unique index (?:if not exists )?(\w+)/g)].map(m => m[1]),
     ];
     expect(names.length).toBe(16);
     for (const name of names) {
       const raw = `violates constraint "${name}"`;
-      expect(describeActionError(new Error(raw)).error, name).toMatch(/[^\x00-\x7F]/);
+      expect(describeActionError(new Error(raw)).error, name).not.toMatch(/Có lỗi xảy ra/);
     }
   });
 });
