@@ -188,3 +188,13 @@ Until then the option form offered four names written into the code and the till
 - Every dish sells at every outlet. Checked 2026-10-15: the till and the server's cart builder never filtered dishes by brand. The `brand_id` checks in `POSScreen.tsx` and `lib/sales/order-cart.ts` read `promotions.brand_id`. A test on each side now pins this.
 - The column `products.brand_id` goes in the structure migration batch (`docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`).
 - A promotion keeps its own brand (`promotions.brand_id`). That is unchanged.
+
+### BR-CATALOG-007 — A supplier is stopped, not deleted; only a supplier with no purchase order can be deleted
+
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit question Q3. He chose *"Ngừng + xoá nhà chưa dùng"* over "never delete". Not built yet: Kho step 4 (`docs/superpowers/specs/2026-10-15-kho-de-xuat.md`).
+
+**What he was shown.** On 2026-10-15 there were 48 suppliers, all `ACTIVE`. 2 had no purchase order: The Garden Tea & Coffee and Circle K. The screen let him delete those two. It had no way to stop using the other 46.
+
+- Each supplier gets "Ngừng hợp tác" and "Hợp tác lại". A stopped supplier is not offered when entering a purchase order. Its past orders keep showing its name.
+- "Xoá" shows only on a supplier with no purchase order, the same as for a dish never sold. The database's `RESTRICT` key still refuses the rest.
+- This follows KiotViet's "Ngừng hoạt động" for suppliers.
