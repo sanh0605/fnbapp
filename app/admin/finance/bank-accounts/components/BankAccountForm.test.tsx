@@ -84,9 +84,38 @@ describe("BankAccountForm account number keeps its leading zero (wave K5)", () =
   it("posts account_number=0071001234567 unchanged", async () => {
     vi.mocked(updateBankAccount).mockResolvedValue({ error: null } as never);
     render(<BankAccountForm account={ACCOUNT} />);
-    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await vi.waitFor(() => expect(updateBankAccount).toHaveBeenCalled());
     const sent = vi.mocked(updateBankAccount).mock.calls[0][0] as FormData;
     expect(sent.get("account_number")).toBe("0071001234567");
+  });
+});
+
+describe("BankAccountForm submission guards", () => {
+  it("prevents double submission on slow network", async () => {
+    const { addBankAccount } = await import("../actions");
+    vi.mocked(addBankAccount).mockClear();
+    vi.mocked(addBankAccount).mockResolvedValue({} as any);
+
+    const { container } = render(<BankAccountForm returnTo="/admin/finance/bank-accounts" />);
+    fireEvent.change(screen.getByLabelText(/^Tên gợi nhớ/), { target: { value: "Tài khoản test" } });
+
+    fireEvent.submit(container.querySelector("form")!);
+    fireEvent.submit(container.querySelector("form")!);
+    await Promise.resolve();
+
+    expect(addBankAccount).toHaveBeenCalledTimes(1);
+  });
+
+  it("handles network error with friendly message in Alert", async () => {
+    const { addBankAccount } = await import("../actions");
+    vi.mocked(addBankAccount).mockClear();
+    vi.mocked(addBankAccount).mockRejectedValue(new Error("Network down"));
+
+    const { container } = render(<BankAccountForm returnTo="/admin/finance/bank-accounts" />);
+    fireEvent.change(screen.getByLabelText(/^Tên gợi nhớ/), { target: { value: "Tài khoản test" } });
+
+    fireEvent.submit(container.querySelector("form")!);
+    expect(await screen.findByText("Không lưu được. Kiểm tra mạng rồi bấm lại.")).toBeInTheDocument();
   });
 });

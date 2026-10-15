@@ -93,6 +93,10 @@ export function PromotionDetailView({
           : "—",
     },
     {
+      label: "Dùng chung với khuyến mãi khác",
+      value: promo.stackable ? "Có" : "Không",
+    },
+    {
       label: "Bắt đầu",
       value: formatPromotionDate(promo.start_date),
     },

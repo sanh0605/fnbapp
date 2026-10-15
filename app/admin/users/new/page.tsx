@@ -1,5 +1,5 @@
 import { UserForm } from "@/app/admin/users/components/UserForm";
-import { safeReturnTo } from "@/app/admin/users/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { resolveActor } from "@/lib/auth/auth";
@@ -16,7 +16,7 @@ export default async function NewUserPage(
   const canGrantAdmin = Boolean(
     auth.ok && (auth.actor.role === "ADMIN" || auth.actor.role === "SYSTEM")
   );
-  const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined);
+  const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/users");
   return (
     <div className="space-y-6">
       <BackLink href={returnTo} label="Nhân sự" />

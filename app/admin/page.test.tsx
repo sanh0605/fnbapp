@@ -5,7 +5,6 @@ import type { DashboardData } from "@/lib/dashboard/dashboard-data";
 // vi.mock is hoisted above plain consts, so the data must be hoisted too.
 const { MOCK_DATA } = vi.hoisted(() => ({
   MOCK_DATA: {
-    posSyncFailureCount: 0,
     negativeStock: [],
     stocktake: { stale: null, openTooLong: [] },
     reminders: [],

@@ -43,6 +43,7 @@ export interface DBPromotion {
   start_date: string;
   end_date: string;
   applicable_products_json?: string;
+  stackable?: boolean;
   status: "ACTIVE" | "INACTIVE" | "DELETED";
   created_at: string;
 }
@@ -69,6 +70,8 @@ export interface DBProductCategory {
   status: string;
   // product_types.id; NOT NULL in the database since migration 0109.
   type_id: string;
+  // Emoji on the till card; null = none (migration 0130).
+  icon?: string | null;
 }
 
 export interface DBProductType {
@@ -372,7 +375,6 @@ export interface DBCashEntry {
   bank_account_id: string | null;
   // monthly_expense_items.id this row settles; null for an ordinary row.
   monthly_item_id: string | null;
-  payer: string | null;
   note: string | null;
   status: "ACTIVE" | "CANCELLED";
   created_at: string;

@@ -20,7 +20,6 @@ function row(day: string, revenue: number, avg: number, cups: number, egg: numbe
 }
 
 const QUIET: DashboardData = {
-  posSyncFailureCount: 0,
   negativeStock: [],
   stocktake: { stale: null, openTooLong: [] },
   reminders: [],
@@ -39,7 +38,6 @@ const QUIET: DashboardData = {
 
 const BUSY: DashboardData = {
   ...QUIET,
-  posSyncFailureCount: 2,
   negativeStock: [{ id: "NL-001", name: "Sữa đặc", qty: -2 }],
   stocktake: {
     stale: { lastConfirmedDay: "2026-08-09", daysSince: 66 },
@@ -52,12 +50,6 @@ describe("DashboardView alerts (owner 2026-10-14: alerts first)", () => {
   it("says there is nothing to look at when every alert is quiet", () => {
     render(<DashboardView data={QUIET} />);
     expect(screen.getByText("Không có gì cần xử lý")).toBeInTheDocument();
-  });
-
-  it("links the POS failure alert to /admin/pos-sync with the count", () => {
-    render(<DashboardView data={BUSY} />);
-    const link = screen.getByText(/2 đơn máy bán hàng gửi lại không được/).closest("a")!;
-    expect(link.getAttribute("href")).toBe("/admin/pos-sync");
   });
 
   it("names each negative item by its real name and links to the item list", () => {

@@ -2,11 +2,14 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
+import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
+import { confirm } from "@/lib/shared/dialog";
 import { formatNumber } from "@/lib/shared/format";
 import { setMonthlyItemStatus, deleteMonthlyItem } from "../../actions";
 import type { DBMonthlyExpenseItem, DBCashCategory } from "@/types/db";
@@ -28,8 +31,6 @@ export function MonthlyItemDetailView({
 }: MonthlyItemDetailViewProps) {
   const router = useRouter();
   const [statusLoading, setStatusLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const currentDetailUrl = `/admin/finance/monthly-items/${encodeURIComponent(item.id)}?returnTo=${encodeURIComponent(returnTo)}`;
@@ -38,9 +39,21 @@ export function MonthlyItemDetailView({
 
   const handleToggleStatus = async () => {
     setActionError(null);
+    const nextStatus = item.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const approved = await confirm({
+      title: nextStatus === "INACTIVE" ? "Ngừng dùng khoản chi" : "Dùng lại khoản chi",
+      message:
+        nextStatus === "INACTIVE"
+          ? `Ngừng dùng khoản chi "${item.name}"? Khoản này sẽ không còn được nhắc nhở ở Tổng quan mỗi tháng.`
+          : `Dùng lại khoản chi "${item.name}"?`,
+      okText: nextStatus === "INACTIVE" ? "Ngừng dùng" : "Dùng lại",
+      cancelText: "Huỷ",
+      variant: nextStatus === "INACTIVE" ? "warning" : "info",
+    });
+    if (!approved) return;
+
     setStatusLoading(true);
     try {
-      const nextStatus = item.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
       const fd = new FormData();
       fd.set("id", item.id);
       fd.set("status", nextStatus);
@@ -52,24 +65,6 @@ export function MonthlyItemDetailView({
       }
     } finally {
       setStatusLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    setActionError(null);
-    setDeleteLoading(true);
-    try {
-      const fd = new FormData();
-      fd.set("id", item.id);
-      const res = await deleteMonthlyItem(fd);
-      if (res?.error) {
-        setActionError(res.error);
-      } else {
-        router.push(returnTo);
-        router.refresh();
-      }
-    } finally {
-      setDeleteLoading(false);
     }
   };
 
@@ -90,71 +85,47 @@ export function MonthlyItemDetailView({
 
   const headerActions = (
     <div className="flex flex-col gap-2">
-      {confirmingDelete ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-text-secondary">Xoá khoản này?</span>
-          <Button
-            type="button"
-            variant="delete"
-            loading={deleteLoading}
-            onClick={handleDelete}
-          >
-            Xoá
-          </Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button href={editHref} variant="secondary">
+          Chỉnh sửa
+        </Button>
+        {item.status === "ACTIVE" ? (
           <Button
             type="button"
             variant="secondary"
-            disabled={deleteLoading}
-            onClick={() => {
-              setConfirmingDelete(false);
-              setActionError(null);
-            }}
+            onClick={handleToggleStatus}
+            loading={statusLoading}
           >
-            Bỏ
+            Ngừng dùng
           </Button>
-        </div>
-      ) : (
-        <div className="flex flex-wrap items-center gap-2">
-          <Button href={editHref} variant="secondary">
-            Sửa
+        ) : (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleToggleStatus}
+            loading={statusLoading}
+          >
+            Dùng lại
           </Button>
-          {item.status === "ACTIVE" ? (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleToggleStatus}
-              loading={statusLoading}
-            >
-              Ngừng dùng
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleToggleStatus}
-              loading={statusLoading}
-            >
-              Dùng lại
-            </Button>
-          )}
-          {canDelete && entryCount === 0 && (
-            <Button
-              type="button"
-              variant="delete"
-              onClick={() => setConfirmingDelete(true)}
-            >
-              Xoá
-            </Button>
-          )}
-        </div>
-      )}
+        )}
+        {canDelete && entryCount === 0 && (
+          <RemoveRecordButton
+            verb="Xoá"
+            name={item.name}
+            confirmMessage={`Xoá khoản chi "${item.name}"? Không thể hoàn tác.`}
+            remove={async () => {
+              const fd = new FormData();
+              fd.set("id", item.id);
+              return await deleteMonthlyItem(fd);
+            }}
+            afterHref={returnTo}
+          />
+        )}
+      </div>
       {actionError && (
-        <div
-          role="alert"
-          className="text-sm font-medium text-danger bg-danger/10 border border-danger/20 rounded-lg p-3"
-        >
+        <Alert variant="danger">
           {actionError}
-        </div>
+        </Alert>
       )}
     </div>
   );

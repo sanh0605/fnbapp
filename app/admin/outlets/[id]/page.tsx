@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getOutlets } from "@/app/admin/outlets/actions";
 import { getBrands } from "@/app/admin/brands/actions";
-import { safeReturnTo } from "@/app/admin/outlets/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { OutletDetailView } from "./components/OutletDetailView";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
@@ -29,8 +29,7 @@ export default async function OutletDetailPage(
   const brandName = brand ? brand.name : outlet.brand_id;
 
   const rawReturnTo = safeReturnTo(
-    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined,
-  );
+    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/outlets");
   const returnTo = rawReturnTo.startsWith("/admin/outlets/")
     ? "/admin/outlets"
     : rawReturnTo;

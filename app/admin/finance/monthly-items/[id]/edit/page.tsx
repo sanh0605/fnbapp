@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { getCashCategories } from "@/app/admin/finance/categories/actions";
 import { getMonthlyItem } from "../../actions";
 import { MonthlyItemForm } from "../../components/MonthlyItemForm";
@@ -8,12 +9,6 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
-function safeReturnTo(raw: string | undefined | null, fallback: string = "/admin/finance/monthly-items"): string {
-  if (!raw) return fallback;
-  if (raw.startsWith("/admin/finance/monthly-items")) return raw;
-  return fallback;
-}
-
 export default async function EditMonthlyItemPage(
   props: {
     params: Promise<{ id: string }>;
@@ -22,7 +17,7 @@ export default async function EditMonthlyItemPage(
 ) {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const rawReturnTo = safeReturnTo(searchParams?.returnTo);
+  const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance/monthly-items");
 
   const [item, categories] = await Promise.all([
     getMonthlyItem(params.id),
@@ -40,7 +35,7 @@ export default async function EditMonthlyItemPage(
       <DetailHeader
         backHref={detailHref}
         backLabel={item.name}
-        title="Sửa khoản chi hằng tháng"
+        title="Chỉnh sửa"
         subtitle={item.name}
       />
       <MonthlyItemForm

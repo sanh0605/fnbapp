@@ -3,29 +3,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   findAll: vi.fn(),
   findAllWhere: vi.fn(),
+  findAllWhereInBatches: vi.fn(),
   findById: vi.fn(),
   onHand: vi.fn(),
-  failureCount: vi.fn(),
 }));
 
 vi.mock("@/lib/db/tables", () => ({
   findAll: mocks.findAll,
   findAllWhere: mocks.findAllWhere,
+  findAllWhereInBatches: mocks.findAllWhereInBatches,
   findById: mocks.findById,
 }));
 vi.mock("@/lib/stock/purchased-item-onhand", () => ({ computeOnHandByPurchasedItem: mocks.onHand }));
-vi.mock("@/lib/db/supabase", () => ({
-  getSupabaseClient: () => ({
-    from: (table: string) => ({
-      select: () => ({
-        eq: async (col: string, val: boolean) => {
-          mocks.failureCount(table, col, val);
-          return { count: 3, error: null };
-        },
-      }),
-    }),
-  }),
-}));
 
 import { getDashboardData } from "./dashboard-data";
 
@@ -36,15 +25,16 @@ const SETTINGS = {
 
 const TABLES: Record<string, unknown[]> = {
   Purchased_Items: [{ id: "PI-1", name: "Sữa" }, { id: "PI-2", name: "Đường" }],
-  Stocktake_Sessions: [],
   Monthly_Expense_Items: [
     { id: "KCT-001", name: "Tiền điện", cash_category_id: "CFC-001", status: "ACTIVE", created_at: "2026-09-01T03:00:00Z" },
     { id: "KCT-002", name: "Tiền nhà", cash_category_id: "CFC-001", status: "INACTIVE", created_at: "2026-09-01T03:00:00Z" },
   ],
   Cash_Entries: [
+    { id: "CE-0", monthly_item_id: "KCT-001", entry_date: "2026-08-31", status: "ACTIVE" }, // before the item existed
     { id: "CE-1", monthly_item_id: null, entry_date: "2026-09-10", status: "ACTIVE" },
     { id: "CE-2", monthly_item_id: "KCT-001", entry_date: "2026-10-02", status: "ACTIVE" },
   ],
+  Stocktake_Sessions: [] as any[],
   Product_Categories: [
     { id: "CAT-001", name: "Cà phê", status: "ACTIVE", type_id: "PT-001" },
     { id: "CAT-003", name: "Cacao", status: "DELETED", type_id: "PT-001" },
@@ -73,7 +63,17 @@ beforeEach(() => {
   mocks.findById.mockResolvedValue(SETTINGS);
   mocks.onHand.mockResolvedValue(new Map([["PI-1", -5], ["PI-2", 3]]));
   mocks.findAll.mockImplementation(async (sheet: string) => TABLES[sheet] ?? []);
-  mocks.findAllWhere.mockImplementation(async (sheet: string) => {
+  mocks.findAllWhereInBatches.mockImplementation(async (sheet: string, _col: string, ids: string[]) =>
+    ((TABLES[sheet] ?? []) as Array<{ id: string }>).filter((r) => ids.includes(r.id)),
+  );
+  TABLES.Stocktake_Sessions = [];
+  mocks.findAllWhere.mockImplementation(async (sheet: string, filter: any) => {
+    if (sheet === "Cash_Entries") {
+      return (TABLES.Cash_Entries as any[]).filter((e) => e.entry_date >= filter.gte.entry_date);
+    }
+    if (sheet === "Stocktake_Sessions") {
+      return (TABLES.Stocktake_Sessions as any[]).filter((r) => filter.in.status.includes(r.status));
+    }
     if (sheet === "Orders_V2") {
       return [
         // 23:30 Saigon on 13/10 is 16:30Z on 13/10.
@@ -102,12 +102,6 @@ describe("getDashboardData", () => {
     expect(mocks.findAllWhere).toHaveBeenCalledWith("Order_Lines_V2", expected);
   });
 
-  it("counts unresolved pos sync failures", async () => {
-    const data = await getDashboardData();
-    expect(data.posSyncFailureCount).toBe(3);
-    expect(mocks.failureCount).toHaveBeenCalledWith("pos_sync_failures", "resolved", false);
-  });
-
   it("lists negative stock with item names", async () => {
     expect((await getDashboardData()).negativeStock).toEqual([{ id: "PI-1", name: "Sữa", qty: -5 }]);
   });
@@ -121,6 +115,33 @@ describe("getDashboardData", () => {
     expect(reminders).toEqual([
       { itemId: "KCT-001", itemName: "Tiền điện", month: "2026-09", cashCategoryId: "CFC-001" },
     ]);
+  });
+
+  it("reads hand rows only from the month of the oldest active monthly item, and none when there is none", async () => {
+    await getDashboardData();
+    expect(mocks.findAllWhere).toHaveBeenCalledWith("Cash_Entries", { gte: { entry_date: "2026-09-01" } });
+    mocks.findAllWhere.mockClear();
+    TABLES.Monthly_Expense_Items = [{ ...(TABLES.Monthly_Expense_Items[0] as object), status: "INACTIVE" }];
+    await getDashboardData();
+    expect(mocks.findAllWhere.mock.calls.map((c) => c[0])).not.toContain("Cash_Entries");
+  });
+
+  it("reads only open and confirmed stocktakes, and still flags a stale count and an open one", async () => {
+    TABLES.Stocktake_Sessions = [
+      { id: "S1", status: "CONFIRMED", created_at: "2026-08-01T03:00:00Z", confirmed_at: "2026-08-02T03:00:00Z", reversed_at: null },
+      { id: "S2", status: "OPEN", created_at: "2026-10-10T03:00:00Z", confirmed_at: null, reversed_at: null },
+      { id: "S3", status: "CANCELLED", created_at: "2026-10-12T03:00:00Z", confirmed_at: null, reversed_at: null },
+    ];
+    const { stocktake } = await getDashboardData();
+    expect(mocks.findAllWhere).toHaveBeenCalledWith("Stocktake_Sessions", { in: { status: ["OPEN", "CONFIRMED"] } });
+    expect(stocktake.stale).toEqual({ lastConfirmedDay: "2026-08-02", daysSince: 73 });
+    expect(stocktake.openTooLong.map((s) => s.id)).toEqual(["S2"]);
+  });
+
+  it("asks for the names of the negative items and the food dishes only", async () => {
+    await getDashboardData();
+    expect(mocks.findAllWhereInBatches).toHaveBeenCalledWith("Purchased_Items", "id", ["PI-1"]);
+    expect(mocks.findAllWhereInBatches).toHaveBeenCalledWith("Products", "id", ["PROD-028", "PROD-099"]);
   });
 
   it("builds seven rows and counts the 23:30 order on 13/10, once, with parsed snapshots", async () => {

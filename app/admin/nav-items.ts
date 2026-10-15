@@ -34,6 +34,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     name: "Kho", icon: Package, children: [
+      { name: "Tồn kho", href: "/admin/inventory/stock" },
       { name: "Phiếu xuất", href: "/admin/inventory/issue-slips" },
       { name: "Kiểm kê", href: "/admin/inventory/stocktake" },
       { name: "Hàng hoá", href: "/admin/inventory/items" },

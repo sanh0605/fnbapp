@@ -8,7 +8,8 @@ import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { confirm } from "@/lib/shared/dialog";
-import { safeReturnTo, safePoReturnTo } from "./return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
+import { safePoReturnTo } from "./return-to";
 import type { DBSupplier } from "@/types/db";
 
 interface SupplierFormProps {
@@ -24,7 +25,7 @@ export function SupplierForm({
   returnMode = "list",
   initialName,
 }: SupplierFormProps) {
-  const returnTo = returnMode === "po" ? safePoReturnTo(rawReturnTo) : safeReturnTo(rawReturnTo);
+  const returnTo = returnMode === "po" ? safePoReturnTo(rawReturnTo) : safeReturnTo(rawReturnTo, "/admin/suppliers");
 
   const isEdit = !!initialData;
   const formId = useId();

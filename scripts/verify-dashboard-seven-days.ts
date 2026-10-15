@@ -6,7 +6,8 @@ process.env.CLI_MODE = "true";
  * Read-only check of lib/dashboard/seven-day-table.ts against the table the
  * owner confirmed (spec docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md, section 3).
  * Reads live orders and lines, builds 2026-10-08..2026-10-13, compares every
- * cell. No writes.
+ * cell. No writes. The dates are fixed on purpose: they are the owner's confirmed example (spec
+ * 2026-10-14), so the script must not follow today's date.
  *
  * Run: npx vite-node scripts/verify-dashboard-seven-days.ts
  */

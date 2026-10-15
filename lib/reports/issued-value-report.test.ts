@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/reports/issued-value-report";
-import { buildIssueCostingPurchases, buildIssueCostingIssues } from "@/lib/costing/issue-costing-inputs";
+import { computeProfitAndLoss } from "@/lib/reports/profit-and-loss";
+import { buildIssueCostingPurchases, buildIssueCostingIssues, buildClassifiedIssues, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
 import type { Purchase, Issue } from "@/lib/costing/issue-costing";
 import liveSnapshot from "@/app/admin/reports/issued/__fixtures__/2026-08-13-live-snapshot.json";
 
@@ -92,6 +93,9 @@ describe("computeIssuedEventFigures: the section 5 sum gate", () => {
 // holds regardless of what "today" is when the test runs -- every month
 // after the fixture's real data reads 0đ (nothing to add), so the sum
 // stays exact no matter how far in the future this suite is run.
+const classified = (issues: Issue[]) => issues.map(i => ({ ...i, isShrinkage: false }));
+const total = (f: { costExact: number; shrinkageExact: number }) => f.costExact + f.shrinkageExact;
+
 describe("computeIssuedMonthFigures: the G5 sum gate", () => {
   it("real snapshot (2026-08-13): sum of exact per-month values equals the exact per-item grand total", () => {
     const purchases = buildIssueCostingPurchases(liveSnapshot.purchaseOrders as any[], liveSnapshot.purchaseOrderLines as any[]);
@@ -100,8 +104,8 @@ describe("computeIssuedMonthFigures: the G5 sum gate", () => {
     const itemFigures = computeIssuedItemFigures(purchases, allIssues);
     const grandTotalExact = itemFigures.reduce((sum, f) => sum + f.issuedValueExact, 0);
 
-    const monthFigures = computeIssuedMonthFigures(purchases, allIssues);
-    const sumOfMonthValuesExact = monthFigures.reduce((sum, f) => sum + f.valueExact, 0);
+    const monthFigures = computeIssuedMonthFigures(purchases, classified(allIssues), "2026-06", "2026-10");
+    const sumOfMonthValuesExact = monthFigures.reduce((sum, f) => sum + total(f), 0);
 
     expect(sumOfMonthValuesExact).toBeCloseTo(grandTotalExact, 6);
   });
@@ -109,7 +113,7 @@ describe("computeIssuedMonthFigures: the G5 sum gate", () => {
   it("real snapshot: zero months are present, not hidden -- June and July read 0đ, August carries the whole total", () => {
     const purchases = buildIssueCostingPurchases(liveSnapshot.purchaseOrders as any[], liveSnapshot.purchaseOrderLines as any[]);
     const allIssues = buildIssueCostingIssues(liveSnapshot.stockIssues as any[]);
-    const monthFigures = computeIssuedMonthFigures(purchases, allIssues);
+    const monthFigures = computeIssuedMonthFigures(purchases, classified(allIssues), "2026-06", "2026-10");
 
     const june = monthFigures.find(f => f.yearMonth === "2026-06");
     const july = monthFigures.find(f => f.yearMonth === "2026-07");
@@ -117,15 +121,15 @@ describe("computeIssuedMonthFigures: the G5 sum gate", () => {
 
     expect(june).toBeDefined();
     expect(july).toBeDefined();
-    expect(june!.valueExact).toBe(0);
-    expect(july!.valueExact).toBe(0);
-    expect(august!.valueExact).toBeCloseTo(35_616_235.842, 2);
+    expect(total(june!)).toBe(0);
+    expect(total(july!)).toBe(0);
+    expect(total(august!)).toBeCloseTo(35_616_235.842, 2);
   });
 
   it("real snapshot: months are newest first", () => {
     const purchases = buildIssueCostingPurchases(liveSnapshot.purchaseOrders as any[], liveSnapshot.purchaseOrderLines as any[]);
     const allIssues = buildIssueCostingIssues(liveSnapshot.stockIssues as any[]);
-    const monthFigures = computeIssuedMonthFigures(purchases, allIssues);
+    const monthFigures = computeIssuedMonthFigures(purchases, classified(allIssues), "2026-06", "2026-10");
 
     const yearMonths = monthFigures.map(f => f.yearMonth);
     const sorted = [...yearMonths].sort().reverse();
@@ -148,7 +152,7 @@ describe("computeIssuedMonthFigures: the G5 sum gate", () => {
     const itemFigures = computeIssuedItemFigures(purchases, allIssues);
     const grandTotalExact = itemFigures.reduce((sum, f) => sum + f.issuedValueExact, 0);
 
-    const monthFigures = computeIssuedMonthFigures(purchases, allIssues);
+    const monthFigures = computeIssuedMonthFigures(purchases, classified(allIssues), "2026-02", "2026-03");
     const feb = monthFigures.find(f => f.yearMonth === "2026-02")!;
     const mar = monthFigures.find(f => f.yearMonth === "2026-03")!;
 
@@ -156,10 +160,10 @@ describe("computeIssuedMonthFigures: the G5 sum gate", () => {
     expect(mar).toBeDefined();
     // 10/unit rate: R1 (10 units, still February) = 100; R2 (20 units, now
     // March) = 200. Neither event's value leaked into the other's month.
-    expect(feb.valueExact).toBeCloseTo(100, 6);
-    expect(mar.valueExact).toBeCloseTo(200, 6);
+    expect(total(feb)).toBeCloseTo(100, 6);
+    expect(total(mar)).toBeCloseTo(200, 6);
 
-    const sumOfMonthValuesExact = monthFigures.reduce((sum, f) => sum + f.valueExact, 0);
+    const sumOfMonthValuesExact = monthFigures.reduce((sum, f) => sum + total(f), 0);
     expect(sumOfMonthValuesExact).toBeCloseTo(grandTotalExact, 6);
   });
 });
@@ -228,5 +232,57 @@ describe("computeIssuedEventFigures: per-item replay equals the full replay per 
       return delta;
     });
     expect(got.map(f => f.valueExact)).toEqual(expected);
+  });
+});
+
+// Báo cáo plan root 2: each month's Hàng dùng + Hao hụt is Lãi lỗ's Giá vốn + Hao hụt for that month.
+describe("computeIssuedMonthFigures: Hàng dùng and Hao hụt tie to Lãi lỗ", () => {
+  const po = (id: string, at: string) => ({
+    id, status: "COMPLETED", transaction_date: at, created_at: at,
+    shipping_fee: 0, tax_amount: 0, voucher_amount: 0, discount_amount: 0,
+  });
+  const data = {
+    purchasedItems: [{ id: "SPM-001", name: "Sữa tươi", item_category_id: "NHH-001", is_non_inventory: false }],
+    itemCategories: [{ id: "NHH-001", system_type: "RAW" }],
+    purchaseOrders: [po("PO-1", "2026-07-01T03:00:00Z")],
+    // 100đ per unit
+    purchaseOrderLines: [{ id: "POL-1", purchase_order_id: "PO-1", purchased_item_id: "SPM-001", base_quantity: 1000, subtotal: 100_000 }],
+    stocktakeSessions: [{ id: "STK-001", is_shrinkage: false }, { id: "STK-003", is_shrinkage: true }],
+    stockIssues: [
+      { id: "ISS-1", purchased_item_id: "SPM-001", issued_at: "2026-07-10T03:00:00Z", base_quantity: 200, source: "MANUAL", issue_slip_id: "ISL-1" },
+      { id: "ISS-2", purchased_item_id: "SPM-001", issued_at: "2026-08-09T03:00:00Z", base_quantity: 300, source: "STOCKTAKE", session_id: "STK-001" },
+      { id: "ISS-3", purchased_item_id: "SPM-001", issued_at: "2026-08-20T03:00:00Z", base_quantity: 100, source: "STOCKTAKE", session_id: "STK-003" },
+    ],
+  };
+  const purchases = buildIssueCostingPurchases(data.purchaseOrders, data.purchaseOrderLines);
+  const issues = buildClassifiedIssues(selectCostedIssues(data.stockIssues, data.purchasedItems, data.itemCategories), data.stocktakeSessions);
+
+  it("a counted shortage goes to Hao hụt, a slip and a not-shrinkage count to Hàng dùng", () => {
+    const months = computeIssuedMonthFigures(purchases, issues, "2026-07", "2026-08");
+    expect(months.map(m => m.yearMonth)).toEqual(["2026-08", "2026-07"]); // newest first
+    expect(months[1].costExact).toBeCloseTo(20_000, 6);
+    expect(months[1].shrinkageExact).toBeCloseTo(0, 6);
+    expect(months[0].costExact).toBeCloseTo(30_000, 6);
+    expect(months[0].shrinkageExact).toBeCloseTo(10_000, 6);
+  });
+
+  it("each month equals the Giá vốn and Hao hụt Lãi lỗ shows for it", () => {
+    const pnl = computeProfitAndLoss({
+      fromMonth: "2026-07", toMonth: "2026-08", today: "2026-09-11",
+      orders: [], cashEntries: [], cashCategories: [], assets: [], assetDisposals: [], firstPaymentAt: null,
+      ...data,
+    });
+    for (const m of computeIssuedMonthFigures(purchases, issues, "2026-07", "2026-08")) {
+      const p = pnl.months.find(x => x.month === m.yearMonth)!;
+      expect(m.costExact).toBeCloseTo(p.cogsExact, 6);
+      expect(m.shrinkageExact).toBeCloseTo(p.shrinkageExact, 6);
+    }
+  });
+
+  it("items over a range count only what left inside it", () => {
+    const items = computeIssuedItemFigures(purchases, issues, new Date("2026-08-01T00:00:00Z"), new Date("2026-08-31T00:00:00Z"));
+    expect(items).toHaveLength(1);
+    expect(items[0].issuedQuantity).toBe(400);
+    expect(items[0].issuedValueExact).toBeCloseTo(40_000, 6);
   });
 });

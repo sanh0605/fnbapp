@@ -93,7 +93,10 @@ export default function CategoriesClient({
         header: "Tên nhóm",
         sortValue: (cat) => cat.name,
         render: (cat) => (
-          <div className="text-text-primary">{cat.name}</div>
+          <div className="text-text-primary">
+            {cat.icon ? <span className="mr-1.5">{cat.icon}</span> : null}
+            {cat.name}
+          </div>
         ),
       },
       {
@@ -172,6 +175,7 @@ export default function CategoriesClient({
         <div className="flex justify-between items-start gap-2">
           <div>
             <div className="text-text-primary text-base leading-tight">
+              {cat.icon ? <span className="mr-1.5">{cat.icon}</span> : null}
               {cat.name}
             </div>
             <div className="font-mono text-xs text-primary mt-0.5">

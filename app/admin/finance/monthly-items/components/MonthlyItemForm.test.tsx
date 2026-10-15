@@ -85,13 +85,13 @@ describe("MonthlyItemForm", () => {
     expect(select.value).toBe("CFC-003");
   });
 
-  it("create button says 'Tạo' on new form and 'Cập nhật' on edit form", () => {
+  it("create button says 'Tạo' on new form and 'Lưu thay đổi' on edit form", () => {
     const { unmount } = render(<MonthlyItemForm categories={CATEGORIES} />);
     expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
     unmount();
 
     render(<MonthlyItemForm item={SAMPLE_ITEM} categories={CATEGORIES} />);
-    expect(screen.getByRole("button", { name: "Cập nhật" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
   });
 
   it("submits createMonthlyItem and stays disabled after success", async () => {
@@ -104,7 +104,7 @@ describe("MonthlyItemForm", () => {
     await vi.waitFor(() => expect(createMonthlyItem).toHaveBeenCalledTimes(1));
     expect(push).toHaveBeenCalledWith("/admin/finance/monthly-items");
     expect(refresh).toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Tạo" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Đang lưu…" })).toBeDisabled();
 
     // Second tap does nothing
     fireEvent.submit(container.querySelector("form")!);

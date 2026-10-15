@@ -69,10 +69,11 @@ const sampleTransfer: DBCashTransfer = {
   note: "Chuyển tiền két vào ACB",
   status: "ACTIVE",
   created_by_name: "admin",
+  created_at: "2026-09-10T14:30:00Z",
 } as unknown as DBCashTransfer;
 
 describe("CashTransferDetailView", () => {
-  it("renders fields properly including Mã, Ngày, Số tiền, Từ, Đến, Ghi chú, Trạng thái, Người tạo", () => {
+  it("renders fields properly including Mã, Ngày, Số tiền, Từ, Đến, Ghi chú, Trạng thái, Người tạo, Ghi sổ lúc", () => {
     render(
       <CashTransferDetailView
         transfer={sampleTransfer}
@@ -90,6 +91,7 @@ describe("CashTransferDetailView", () => {
     expect(screen.getAllByText("Chuyển tiền két vào ACB").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
     expect(screen.getAllByText("admin").length).toBeGreaterThan(0);
+    expect(screen.getByText("Ghi sổ lúc")).toBeInTheDocument();
   });
 
   it("shows Chỉnh sửa and Huỷ buttons when transfer is active", () => {
@@ -134,7 +136,7 @@ describe("CashTransferDetailView", () => {
     expect(screen.queryByRole("button", { name: /^Xoá/i })).toBeNull();
   });
 
-  it("ADMIN sees Xoá (canDelete=true)", () => {
+  it("ADMIN sees Xoá hẳn (canDelete=true)", () => {
     render(
       <CashTransferDetailView
         transfer={sampleTransfer}
@@ -144,7 +146,7 @@ describe("CashTransferDetailView", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /^Xoá/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Xoá hẳn" })).toBeInTheDocument();
   });
 
   it("clicking Huỷ prompts confirmation and calls cancelCashTransfer", async () => {

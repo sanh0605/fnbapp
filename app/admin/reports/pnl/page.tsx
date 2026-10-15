@@ -2,7 +2,7 @@ import { getProfitAndLossReport } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { DateRangeUrlButton } from "@/components/ui/DateRangeUrlButton";
-import { saigonToday } from "@/lib/shared/datetime";
+import { saigonToday, formatMonthLabel } from "@/lib/shared/datetime";
 import { readMonthRangeParams } from "@/lib/shared/date-range-params";
 import { PnlSummary } from "./components/PnlSummary";
 import { PnlChart } from "./components/PnlChart";
@@ -15,11 +15,6 @@ export const dynamic = "force-dynamic";
 function joinBrandNames(names: string[]): string {
   if (names.length <= 1) return names[0] ?? "";
   return `${names.slice(0, -1).join(", ")} và ${names[names.length - 1]}`;
-}
-
-function formatMonth(ym: string): string {
-  const [y, m] = ym.split("-");
-  return `${m}/${y}`;
 }
 
 // docs/superpowers/specs/2026-10-09-bo-loc-thoi-gian-design.md.
@@ -47,7 +42,7 @@ export default async function ProfitAndLossPage(
         actions={<DateRangeUrlButton mode="month" value={range} today={today} />}
       />
       {table.months.length === 0 ? (
-        <EmptyState title={`Từ ${formatMonth(range.start)} đến ${formatMonth(range.end)} chưa có số liệu nào.`} />
+        <EmptyState title={`Từ ${formatMonthLabel(range.start)} đến ${formatMonthLabel(range.end)} chưa có số liệu nào.`} />
       ) : (
         <>
           <PnlSummary table={table} />

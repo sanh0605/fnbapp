@@ -2,7 +2,7 @@ import { getCashCategories } from "../categories/actions";
 import { getBankAccounts } from "../bank-accounts/actions";
 import { getMonthlyItems } from "@/app/admin/finance/monthly-items/actions";
 import { CashEntryForm } from "../components/CashEntryForm";
-import { safeReturnTo } from "../components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { toSaigonIsoString } from "@/lib/shared/datetime";

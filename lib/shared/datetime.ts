@@ -124,3 +124,8 @@ export function formatVnDayWithWeekday(isoDay: string): string {
   const weekday = probe.toLocaleDateString("vi-VN", { weekday: "long", timeZone: SAIGON_TZ });
   return `${weekday}, ${m[3]}/${m[2]}/${m[1]}`;
 }
+
+/** "2026-09" -> "09/2026". */
+export function formatMonthLabel(yearMonth: string): string {
+  return `${yearMonth.slice(5, 7)}/${yearMonth.slice(0, 4)}`;
+}

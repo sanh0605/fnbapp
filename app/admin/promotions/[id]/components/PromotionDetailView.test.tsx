@@ -147,4 +147,35 @@ describe("PromotionDetailView", () => {
 
     expect(screen.queryByRole("button", { name: /^Xoá/i })).toBeNull();
   });
+
+  it("shows 'Dùng chung với khuyến mãi khác' field (Có when stackable true, Không when false)", () => {
+    const { unmount } = render(
+      <PromotionDetailView
+        promo={{ ...samplePromo, stackable: true }}
+        brandName="Uchako"
+        applicableItems={sampleItems}
+        canDelete={false}
+        returnTo="/admin/promotions"
+      />,
+    );
+
+    expect(screen.getByText("Dùng chung với khuyến mãi khác")).toBeInTheDocument();
+    expect(screen.getByText("Có")).toBeInTheDocument();
+
+    unmount();
+
+    render(
+      <PromotionDetailView
+        promo={{ ...samplePromo, stackable: false }}
+        brandName="Uchako"
+        applicableItems={sampleItems}
+        canDelete={false}
+        returnTo="/admin/promotions"
+      />,
+    );
+
+    expect(screen.getByText("Dùng chung với khuyến mãi khác")).toBeInTheDocument();
+    expect(screen.getByText("Không")).toBeInTheDocument();
+  });
 });
+

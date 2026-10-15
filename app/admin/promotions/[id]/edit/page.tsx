@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPromotionsData } from "@/app/admin/promotions/actions";
 import { PromotionForm } from "@/app/admin/promotions/components/PromotionForm";
-import { safeReturnTo } from "@/app/admin/promotions/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
@@ -15,7 +15,7 @@ export default async function EditPromotionPage(
 ) {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const rawReturnTo = safeReturnTo(searchParams?.returnTo);
+  const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/promotions");
 
   const { promotions, brands, products, variants, categories } =
     await getPromotionsData();

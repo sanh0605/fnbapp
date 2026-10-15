@@ -1,6 +1,6 @@
 import { getPromotionsData } from "@/app/admin/promotions/actions";
 import { PromotionForm } from "@/app/admin/promotions/components/PromotionForm";
-import { safeReturnTo } from "@/app/admin/promotions/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 
@@ -12,7 +12,7 @@ export default async function NewPromotionPage(
   }
 ) {
   const searchParams = await props.searchParams;
-  const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined);
+  const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/promotions");
   const { brands, products, variants, categories } = await getPromotionsData();
 
   const activeVariants = variants.filter((v) => v.status !== "DELETED");

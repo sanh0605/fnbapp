@@ -21,19 +21,11 @@ vi.mock("@/app/pos/actions", () => ({
   getPOSDrafts: vi.fn().mockResolvedValue([]),
   savePOSDraft: vi.fn(),
   deletePOSDraft: vi.fn(),
-  reportPosSyncFailure: vi.fn(),
 }));
 
 vi.mock("@/lib/shared/dialog", () => ({
   alert: vi.fn(),
   confirm: vi.fn(),
-}));
-
-vi.mock("@/lib/pos/pos-offline-queue", () => ({
-  listPendingOrders: vi.fn().mockReturnValue([]),
-  enqueuePendingOrder: vi.fn(),
-  incrementAttemptCount: vi.fn(),
-  removePendingOrder: vi.fn(),
 }));
 
 afterEach(() => {

@@ -1,30 +1,44 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within, act } from "@testing-library/react";
 import React from "react";
-import POSScreen from "./POSScreen";
-import { formatNumber } from "@/lib/shared/format";
-import type { OptionGroup, OptionRow, GroupLink } from "@/lib/sales/option-groups";
 
-vi.mock("@/app/pos/actions", () => ({
-  submitOrderV2: vi.fn(),
-  getPOSDrafts: vi.fn().mockResolvedValue([]),
-  savePOSDraft: vi.fn(),
-  deletePOSDraft: vi.fn(),
-  reportPosSyncFailure: vi.fn(),
+const { signOutMock } = vi.hoisted(() => ({
+  signOutMock: vi.fn(),
 }));
 
-vi.mock("@/lib/pos/pos-offline-queue", () => ({
-  enqueuePendingOrder: vi.fn(),
-  incrementAttemptCount: vi.fn(),
-  listPendingOrders: vi.fn().mockResolvedValue([]),
-  removePendingOrder: vi.fn(),
+vi.mock("next-auth/react", () => ({
+  signOut: signOutMock,
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ children, href, ...props }: any) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
+vi.mock("@/app/pos/actions", () => ({
+  submitOrderV2: vi.fn().mockResolvedValue({ success: true }),
+  getPOSDrafts: vi.fn().mockResolvedValue([]),
+  savePOSDraft: vi.fn().mockResolvedValue({ success: true }),
+  deletePOSDraft: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 vi.mock("@/lib/shared/dialog", () => ({
   alert: vi.fn(),
-  confirm: vi.fn(),
+  confirm: vi.fn().mockResolvedValue(true),
 }));
+
+import { submitOrderV2, savePOSDraft } from "@/app/pos/actions";
+import { confirm } from "@/lib/shared/dialog";
+import POSScreen from "./POSScreen";
 
 afterEach(() => {
   cleanup();
@@ -32,415 +46,598 @@ afterEach(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(confirm).mockResolvedValue(true);
+  vi.mocked(submitOrderV2).mockReset();
+  vi.mocked(submitOrderV2).mockResolvedValue({ success: true } as any);
+  vi.mocked(savePOSDraft).mockReset();
+  vi.mocked(savePOSDraft).mockResolvedValue({
+    success: true,
+    draft: { id: "draft-1", name: "Draft", cart_json: "[]" },
+  } as any);
 });
 
-const categories = [{ id: "CAT-1", name: "Đồ uống" }, { id: "CAT-2", name: "Đồ ăn" }];
-const products = [
-  { id: "TRA", name: "Trà sữa", category_id: "CAT-1" },
-  { id: "KHOAI", name: "Khoai lang", category_id: "CAT-2" },
-];
-const variants = [
-  { id: "V-TRA", product_id: "TRA", size_name: "Ly", price: 20000 },
-  { id: "V-KHOAI", product_id: "KHOAI", size_name: "Phần", price: 15000 },
-];
-const optionGroups: OptionGroup[] = [
-  { id: "MG-1", name: "Thêm Topping", selection_mode: "MANY", max_total: 3, allow_standalone: true, sort_order: 50, status: "ACTIVE" },
-];
-const optionGroupLinks: GroupLink[] = [
-  { group_id: "MG-1", product_id: "TRA" },
-];
-const modifiers: OptionRow[] = [
-  { id: "T1", name: "Trân châu trắng", price: 5000, status: "ACTIVE", group_id: "MG-1", is_default: false, max_qty: 2, product_id: null },
-];
+describe("POSScreen (Step 3 & 5)", () => {
+  const sampleProducts = [
+    { id: "P1", name: "Bạc xỉu", category_id: "CAT-1", status: "ACTIVE" },
+    { id: "P2", name: "Đường đen sữa tươi", category_id: "CAT-1", status: "ACTIVE" },
+    { id: "P3", name: "Trà đào", category_id: "CAT-2", status: "ACTIVE" },
+  ];
 
-describe("POSScreen option group integration", () => {
-  it("opens modal with option groups for linked drink dish, but not for unlinked dish", () => {
-    render(
-      <POSScreen
-        categories={categories}
-        products={products}
-        variants={variants}
-        modifiers={modifiers}
-        optionGroups={optionGroups}
-        optionGroupLinks={optionGroupLinks}
-        bestSellers={["TRA", "KHOAI"]}
-      />
-    );
+  const sampleCategories = [
+    { id: "CAT-1", name: "Cà phê", icon: "☕" },
+    { id: "CAT-2", name: "Trà", icon: "🍵" },
+  ];
 
-    // Click Trà sữa
-    const traBtn = screen.getByText("Trà sữa");
-    fireEvent.click(traBtn);
+  const sampleVariants = [
+    { id: "V1", product_id: "P1", size_name: "M", price: 29000 },
+    { id: "V2", product_id: "P2", size_name: "M", price: 35000 },
+    { id: "V3", product_id: "P3", size_name: "M", price: 30000 },
+  ];
 
-    // Trà sữa should show Thêm Topping
-    expect(screen.getByText("Thêm Topping")).toBeInTheDocument();
-    expect(screen.getByText("Trân châu trắng")).toBeInTheDocument();
+  const defaultProps = {
+    categories: sampleCategories,
+    products: sampleProducts,
+    variants: sampleVariants,
+    modifiers: [],
+    optionGroups: [],
+    optionGroupLinks: [],
+    promotions: [],
+    outletId: "OUT-1",
+    brandId: "BR-1",
+    bestSellers: ["P1", "P2", "P3"],
+  };
 
-    // Close modal
-    const closeBtn = screen.getByRole("button", { name: "Đóng" });
-    fireEvent.click(closeBtn);
+  describe("R5: Search without accents", () => {
+    it("typing 'bac xiu' finds 'Bạc xỉu'", () => {
+      render(<POSScreen {...defaultProps} />);
 
-    // Click Khoai lang
-    const khoaiBtn = screen.getByText("Khoai lang");
-    fireEvent.click(khoaiBtn);
+      const searchInput = screen.getByPlaceholderText("Ví dụ: Trà đào");
+      fireEvent.change(searchInput, { target: { value: "bac xiu" } });
 
-    // Khoai lang has no links, so no option group is shown
-    expect(screen.queryByText("Thêm Topping")).toBeNull();
-    expect(screen.queryByText("Trân châu trắng")).toBeNull();
-  });
-});
+      expect(screen.getByText("Bạc xỉu")).toBeInTheDocument();
+      expect(screen.queryByText("Đường đen sữa tươi")).toBeNull();
+      expect(screen.queryByText("Trà đào")).toBeNull();
+    });
 
-describe("one menu for both brands (BR-CATALOG-006)", () => {
-  it("shows a dish whose brand differs from the outlet's brand", () => {
-    render(
-      <POSScreen
-        brandId="BR-002"
-        categories={categories}
-        products={[{ id: "TRA", name: "Trà sữa", category_id: "CAT-1", brand_id: "BR-001" }]}
-        variants={variants}
-        modifiers={[]}
-        optionGroups={[]}
-        optionGroupLinks={[]}
-        bestSellers={["TRA"]}
-      />
-    );
+    it("typing 'DUONG' finds 'Đường đen sữa tươi'", () => {
+      render(<POSScreen {...defaultProps} />);
 
-    expect(screen.getByText("Trà sữa")).toBeInTheDocument();
-  });
-});
+      const searchInput = screen.getByPlaceholderText("Ví dụ: Trà đào");
+      fireEvent.change(searchInput, { target: { value: "DUONG" } });
 
-describe("priceCart in POS till (Phiếu G6)", () => {
-  it("BR-SALE-010: one line 100.000đ, whole-order promotion 10%, cashier's whole-order discount 5.000đ → total shows 85.000", async () => {
-    render(
-      <POSScreen
-        brandId="BR-001"
-        outletId="OUT-001"
-        categories={[{ id: "CAT-1", name: "Đồ uống" }]}
-        products={[{ id: "TRA-LON", name: "Trà lớn", category_id: "CAT-1", brand_id: "BR-001" }]}
-        variants={[{ id: "V-TRA-LON", product_id: "TRA-LON", size_name: "L", price: 100000 }]}
-        modifiers={[]}
-        optionGroups={[]}
-        optionGroupLinks={[]}
-        promotions={[
-          {
-            id: "PR-ORD-10",
-            name: "Giảm 10% cả đơn",
-            type: "ORDER_DISCOUNT",
-            discount_type: "PERCENT",
-            discount_value: 10,
-            status: "ACTIVE",
-            start_date: "2020-01-01T00:00:00.000Z",
-            end_date: "2030-01-01T00:00:00.000Z",
-            min_order_value: 0,
-            brand_id: "",
-            code: "",
-          },
-        ]}
-        bestSellers={["TRA-LON"]}
-      />
-    );
-
-    // Open Trà lớn modal and add to cart
-    fireEvent.click(screen.getByText("Trà lớn"));
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
-
-    // Cart shows promotion
-    expect(screen.getByText("Khuyến mãi hệ thống")).toBeInTheDocument();
-
-    // Enter cashier's whole-order discount 5.000
-    const customDiscountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
-    fireEvent.change(customDiscountInput, { target: { value: "5000" } });
-
-    // Both discounts show and stack
-    expect(screen.getByText("Giảm giá Hoá đơn")).toBeInTheDocument();
-    expect(screen.getByText("Khuyến mãi hệ thống")).toBeInTheDocument();
-
-    // Total shows 85.000
-    expect(screen.getAllByText(formatNumber(85000)).length).toBeGreaterThan(0);
+      expect(screen.getByText("Đường đen sữa tươi")).toBeInTheDocument();
+      expect(screen.queryByText("Bạc xỉu")).toBeNull();
+      expect(screen.queryByText("Trà đào")).toBeNull();
+    });
   });
 
-  it("BR-SALE-009: Bạc xỉu 29.000 with a 4.000đ dish discount + Cà phê sữa 25.000, cashier's 10% whole order → 45.000", async () => {
-    render(
-      <POSScreen
-        brandId="BR-001"
-        outletId="OUT-001"
-        categories={[{ id: "CAT-1", name: "Đồ uống" }]}
-        products={[
-          { id: "P-BX", name: "Bạc xỉu", category_id: "CAT-1", brand_id: "BR-001" },
-          { id: "P-CPS", name: "Cà phê sữa", category_id: "CAT-1", brand_id: "BR-001" },
-        ]}
-        variants={[
-          { id: "V-BX", product_id: "P-BX", size_name: "M", price: 29000 },
-          { id: "V-CPS", product_id: "P-CPS", size_name: "M", price: 25000 },
-        ]}
-        modifiers={[]}
-        optionGroups={[]}
-        optionGroupLinks={[]}
-        promotions={[]}
-        bestSellers={["P-BX", "P-CPS"]}
-      />
-    );
+  describe("Step 5: Đăng xuất on the till", () => {
+    it("renders 'Đăng xuất' button in header", () => {
+      render(<POSScreen {...defaultProps} />);
+      const logoutBtn = screen.getByRole("button", { name: "Đăng xuất" });
+      expect(logoutBtn).toBeInTheDocument();
+    });
 
-    // Add Bạc xỉu with 4.000 manual dish discount
-    fireEvent.click(screen.getByText("Bạc xỉu"));
-    const dishDiscountInput = screen.getByLabelText("Giảm giá sản phẩm");
-    fireEvent.change(dishDiscountInput, { target: { value: "4000" } });
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+    it("calls signOut({ callbackUrl: '/login' }) when cart is empty", async () => {
+      render(<POSScreen {...defaultProps} />);
+      const logoutBtn = screen.getByRole("button", { name: "Đăng xuất" });
+      fireEvent.click(logoutBtn);
 
-    // Add Cà phê sữa with no discount
-    fireEvent.click(screen.getByText("Cà phê sữa"));
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      await waitFor(() => {
+        expect(signOutMock).toHaveBeenCalledWith({ callbackUrl: "/login" });
+      });
+    });
 
-    // Switch order discount type to %
-    const percentButtons = screen.getAllByRole("button", { name: "%" });
-    fireEvent.click(percentButtons[percentButtons.length - 1]);
+    it("does NOT log out if cart is not empty and shows 'Lưu nháp hoặc thanh toán trước khi đăng xuất'", async () => {
+      render(<POSScreen {...defaultProps} />);
 
-    // Enter 10%
-    const customDiscountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
-    fireEvent.change(customDiscountInput, { target: { value: "10" } });
+      // Click on a product to open modal, then add to cart
+      const productCard = screen.getByText("Bạc xỉu");
+      fireEvent.click(productCard);
 
-    // Total shows 45.000
-    expect(screen.getAllByText(formatNumber(45000)).length).toBeGreaterThan(0);
+      const addBtn = screen.getByRole("button", { name: /THÊM/i });
+      fireEvent.click(addBtn);
+
+      // Cart now has items
+      const logoutBtn = screen.getByRole("button", { name: "Đăng xuất" });
+      fireEvent.click(logoutBtn);
+
+      // Must not call signOut
+      expect(signOutMock).not.toHaveBeenCalled();
+
+      // Must display message
+      expect(screen.getByText("Lưu nháp hoặc thanh toán trước khi đăng xuất")).toBeInTheDocument();
+    });
   });
 
-  it("BR-SALE-011: Bạc xỉu ×4 = 116.000 with a 5.000đ dish discount per cup typed by the cashier, whole-order promotion min 100.000 → total 96.000", async () => {
-    render(
-      <POSScreen
-        brandId="BR-001"
-        outletId="OUT-001"
-        categories={[{ id: "CAT-1", name: "Đồ uống" }]}
-        products={[{ id: "P-BX", name: "Bạc xỉu", category_id: "CAT-1", brand_id: "BR-001" }]}
-        variants={[{ id: "V-BX", product_id: "P-BX", size_name: "M", price: 29000 }]}
-        modifiers={[]}
-        optionGroups={[]}
-        optionGroupLinks={[]}
-        promotions={[
-          {
-            id: "PR-ORD-MIN100",
-            name: "Giảm 10% đơn từ 100k",
-            type: "ORDER_DISCOUNT",
-            discount_type: "PERCENT",
-            discount_value: 10,
-            status: "ACTIVE",
-            start_date: "2020-01-01T00:00:00.000Z",
-            end_date: "2030-01-01T00:00:00.000Z",
-            min_order_value: 100000,
-            brand_id: "",
-            code: "",
-          },
-        ]}
-        bestSellers={["P-BX"]}
-      />
-    );
+  describe("Enter key cash flow (BR-SALE-018)", () => {
+    it("pressing Enter twice quickly sends one order", async () => {
+      render(<POSScreen {...defaultProps} />);
 
-    // Open Bạc xỉu modal
-    fireEvent.click(screen.getByText("Bạc xỉu"));
-
-    // Increase qty to 4 (click '+' button 3 times)
-    const plusBtn = screen.getByRole("button", { name: "+" });
-    fireEvent.click(plusBtn);
-    fireEvent.click(plusBtn);
-    fireEvent.click(plusBtn);
-
-    // Cashier types 5.000/cup dish discount = 20.000
-    const dishDiscountInput = screen.getByLabelText("Giảm giá sản phẩm");
-    fireEvent.change(dishDiscountInput, { target: { value: "20000" } });
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
-
-    // Promotion min order value is 100.000; base after dish discount is 96.000 < 100.000, so does not apply
-    expect(screen.queryByText("Khuyến mãi hệ thống")).toBeNull();
-    expect(screen.getAllByText(formatNumber(96000)).length).toBeGreaterThan(0);
-  });
-
-  it("A coded promotion sends promo_code in the submit payload", async () => {
-    const { submitOrderV2 } = await import("@/app/pos/actions");
-    (submitOrderV2 as any).mockResolvedValue({ success: true });
-
-    render(
-      <POSScreen
-        brandId="BR-001"
-        outletId="OUT-001"
-        categories={[{ id: "CAT-1", name: "Đồ uống" }]}
-        products={[{ id: "P-BX", name: "Bạc xỉu", category_id: "CAT-1", brand_id: "BR-001" }]}
-        variants={[{ id: "V-BX", product_id: "P-BX", size_name: "M", price: 29000 }]}
-        modifiers={[]}
-        optionGroups={[]}
-        optionGroupLinks={[]}
-        promotions={[
-          {
-            id: "PR-CODE",
-            name: "Mã khai trương",
-            type: "ORDER_DISCOUNT",
-            discount_type: "FLAT_VND",
-            discount_value: 5000,
-            status: "ACTIVE",
-            start_date: "2020-01-01T00:00:00.000Z",
-            end_date: "2030-01-01T00:00:00.000Z",
-            min_order_value: 0,
-            brand_id: "",
-            code: "KHAITRUONG",
-          },
-        ]}
-        bestSellers={["P-BX"]}
-      />
-    );
-
-    // Add Bạc xỉu to cart
-    fireEvent.click(screen.getByText("Bạc xỉu"));
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
-
-    // Type promo code
-    const promoCodeInput = screen.getByLabelText("Mã giảm giá");
-    fireEvent.change(promoCodeInput, { target: { value: "KHAITRUONG" } });
-    fireEvent.click(screen.getByRole("button", { name: "Áp dụng" }));
-
-    // Promotion is applied
-    expect(screen.getByText("Mã khai trương")).toBeInTheDocument();
-
-    // Confirm checkout via Tiền mặt
-    fireEvent.click(screen.getByText("TIỀN MẶT"));
-
-    expect(submitOrderV2).toHaveBeenCalled();
-    const submittedPayload = (submitOrderV2 as any).mock.calls[0][0];
-    expect(submittedPayload.applied_promotion_id).toBe("PR-CODE");
-    expect(submittedPayload.promo_code).toBe("KHAITRUONG");
-  });
-
-  it("ItemConfigModal shows promotion price from priceCart for a single item", () => {
-    render(
-      <POSScreen
-        brandId="BR-001"
-        outletId="OUT-001"
-        categories={[{ id: "CAT-1", name: "Đồ uống" }]}
-        products={[{ id: "TRA-LON", name: "Trà lớn", category_id: "CAT-1", brand_id: "BR-001" }]}
-        variants={[{ id: "V-TRA-LON", product_id: "TRA-LON", size_name: "L", price: 100000 }]}
-        modifiers={[]}
-        optionGroups={[]}
-        optionGroupLinks={[]}
-        promotions={[
-          {
-            id: "PR-ORD-10",
-            name: "Giảm 10% cả đơn",
-            type: "ORDER_DISCOUNT",
-            discount_type: "PERCENT",
-            discount_value: 10,
-            status: "ACTIVE",
-            start_date: "2020-01-01T00:00:00.000Z",
-            end_date: "2030-01-01T00:00:00.000Z",
-            min_order_value: 0,
-            brand_id: "",
-            code: "",
-          },
-        ]}
-        bestSellers={["TRA-LON"]}
-      />
-    );
-
-    // Add first item so appliedPromo is active
-    fireEvent.click(screen.getByText("Trà lớn"));
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
-
-    // Open modal again for another item - appliedPromo is Giảm 10% cả đơn
-    fireEvent.click(screen.getAllByText("Trà lớn")[0]);
-    expect(screen.getByRole("button", { name: new RegExp(`THÊM - ${formatNumber(90000)}`, "i") })).toBeInTheDocument();
-    expect(screen.getByText(`Gốc: ${formatNumber(100000)}`)).toBeInTheDocument();
-  });
-
-  it("a promotion whose end date is in the past at pricing time is not applied", () => {
-    vi.useFakeTimers();
-    try {
-      vi.setSystemTime(new Date("2026-06-01T10:00:00.000Z"));
-
-      render(
-        <POSScreen
-          brandId="BR-001"
-          outletId="OUT-001"
-          categories={[{ id: "CAT-1", name: "Đồ uống" }]}
-          products={[{ id: "TRA-LON", name: "Trà lớn", category_id: "CAT-1", brand_id: "BR-001" }]}
-          variants={[{ id: "V-TRA-LON", product_id: "TRA-LON", size_name: "L", price: 100000 }]}
-          modifiers={[]}
-          optionGroups={[]}
-          optionGroupLinks={[]}
-          promotions={[
-            {
-              id: "PR-EXP",
-              name: "Khuyến mãi hết hạn",
-              type: "ORDER_DISCOUNT",
-              discount_type: "PERCENT",
-              discount_value: 10,
-              status: "ACTIVE",
-              start_date: "2026-06-01T00:00:00.000Z",
-              end_date: "2026-06-01T11:00:00.000Z",
-              min_order_value: 0,
-              brand_id: "",
-              code: "",
-            },
-          ]}
-          bestSellers={["TRA-LON"]}
-        />
-      );
-
-      // Advance time past the promotion's end date
-      vi.setSystemTime(new Date("2026-06-01T12:00:00.000Z"));
-
-      // Open Trà lớn modal and add to cart (pricing memo runs at current system time)
-      fireEvent.click(screen.getByText("Trà lớn"));
+      // Add item to cart
+      fireEvent.click(screen.getByText("Bạc xỉu"));
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
-      // Promotion is not applied because end_date is in the past
-      expect(screen.queryByText("Khuyến mãi hệ thống")).toBeNull();
-      expect(screen.getAllByText(formatNumber(100000)).length).toBeGreaterThan(0);
-    } finally {
-      vi.useRealTimers();
-    }
+      fireEvent.keyDown(window, { key: "Enter" });
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(submitOrderV2).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it("Enter while sending sends nothing", async () => {
+      let resolveSubmit: (val: any) => void;
+      vi.mocked(submitOrderV2).mockImplementationOnce(
+        () => new Promise((resolve) => { resolveSubmit = resolve; }) as any
+      );
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      // First Enter: starts checkout
+      fireEvent.keyDown(window, { key: "Enter" });
+      await waitFor(() => {
+        expect(submitOrderV2).toHaveBeenCalledTimes(1);
+      });
+
+      // Second Enter while sending: does not even ask
+      fireEvent.keyDown(window, { key: "Enter" });
+      expect(confirm).toHaveBeenCalledTimes(1);
+      expect(submitOrderV2).toHaveBeenCalledTimes(1);
+
+      resolveSubmit!({ success: true });
+    });
+
+    it("Enter while offline sends nothing", async () => {
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent(window, new Event("offline"));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+      expect(confirm).not.toHaveBeenCalled();
+      expect(submitOrderV2).not.toHaveBeenCalled();
+    });
+
+    it("Enter with confirm resolving false sends nothing", async () => {
+      vi.mocked(confirm).mockResolvedValueOnce(false);
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
+      await act(async () => {});
+      expect(submitOrderV2).not.toHaveBeenCalled();
+    });
+
+    it("Enter while the item modal is open (a product card clicked so ItemConfigModal shows) sends nothing and does not call confirm", () => {
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      expect(screen.getByRole("button", { name: /THÊM/i })).toBeInTheDocument();
+
+      (document.activeElement as HTMLElement)?.blur?.();
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(submitOrderV2).not.toHaveBeenCalled();
+    });
   });
 
-  it("100,000 order, a 10% whole-order promotion, cashier 10% → the line shows 9,000 and the total is 81,000", () => {
-    render(
-      <POSScreen
-        brandId="BR-001"
-        outletId="OUT-001"
-        categories={[{ id: "CAT-1", name: "Đồ uống" }]}
-        products={[{ id: "TRA-LON", name: "Trà lớn", category_id: "CAT-1", brand_id: "BR-001" }]}
-        variants={[{ id: "V-TRA-LON", product_id: "TRA-LON", size_name: "L", price: 100000 }]}
-        modifiers={[]}
-        optionGroups={[]}
-        optionGroupLinks={[]}
-        promotions={[
-          {
-            id: "PR-ORD-10",
-            name: "Giảm 10% cả đơn",
-            type: "ORDER_DISCOUNT",
-            discount_type: "PERCENT",
-            discount_value: 10,
-            status: "ACTIVE",
-            start_date: "2020-01-01T00:00:00.000Z",
-            end_date: "2030-01-01T00:00:00.000Z",
-            min_order_value: 0,
-            brand_id: "",
-            code: "",
-          },
-        ]}
-        bestSellers={["TRA-LON"]}
-      />
-    );
+  describe("Item 1: Enter sends exactly once, blank cart sends nothing", () => {
+    it("firing Enter calls submitOrderV2 exactly once", async () => {
+      render(<POSScreen {...defaultProps} />);
 
-    // Add 100,000 item to cart
-    fireEvent.click(screen.getByText("Trà lớn"));
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
-    // Switch custom discount to %
-    const percentButtons = screen.getAllByRole("button", { name: "%" });
-    fireEvent.click(percentButtons[percentButtons.length - 1]);
+      fireEvent.keyDown(window, { key: "Enter" });
 
-    // Cashier types 10%
-    const customDiscountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
-    fireEvent.change(customDiscountInput, { target: { value: "10" } });
+      await waitFor(() => {
+        expect(submitOrderV2).toHaveBeenCalledTimes(1);
+      });
+    });
 
-    // The "Giảm giá Hoá đơn" line shows 9,000 (10% of 90,000 remaining after 10% promo)
-    expect(screen.getByText("Giảm giá Hoá đơn")).toBeInTheDocument();
-    expect(screen.getAllByText(new RegExp(formatNumber(9000))).length).toBeGreaterThan(0);
+    it("Enter on blank cart sends nothing", async () => {
+      render(<POSScreen {...defaultProps} />);
 
-    // Total shows 81,000
-    expect(screen.getAllByText(new RegExp(formatNumber(81000))).length).toBeGreaterThan(0);
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(submitOrderV2).not.toHaveBeenCalled();
+    });
+
+    it("Enter with focus on a button does not send order", async () => {
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      const draftBtn = screen.getByRole("button", { name: "Lưu Nháp" });
+      draftBtn.focus();
+      expect(document.activeElement).toBe(draftBtn);
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(submitOrderV2).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("G-MB fix 4: One failed order, lives in the cart", () => {
+    it("while submitOrderV2 is pending, clicking a product card adds nothing to the cart", async () => {
+      let resolveFirstCall: (value: any) => void;
+      const pendingPromise = new Promise((resolve) => {
+        resolveFirstCall = resolve;
+      });
+      vi.mocked(submitOrderV2).mockImplementationOnce(() => pendingPromise as any);
+
+      render(<POSScreen {...defaultProps} />);
+
+      // Add Bạc xỉu to cart
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      // Checkout
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(submitOrderV2).toHaveBeenCalledTimes(1);
+      });
+
+      // Cart is empty while checking out
+      expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
+
+      // Click product card while checkout is pending
+      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+
+      // Product modal does not open and nothing is added to cart
+      expect(screen.queryByRole("button", { name: /THÊM/i })).toBeNull();
+      expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
+
+      resolveFirstCall!({ success: true });
+      await waitFor(() => {
+        expect(screen.getByText("Thanh toán thành công!")).toBeInTheDocument();
+      });
+    });
+
+    it("thrown failure puts the line back into the cart panel with its manual discount", async () => {
+      vi.mocked(submitOrderV2).mockRejectedValueOnce(new Error("Network exploded"));
+
+      render(<POSScreen {...defaultProps} />);
+
+      // Add Bạc xỉu with manual discount
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      const discountInput = screen.getByLabelText("Giảm giá sản phẩm");
+      fireEvent.change(discountInput, { target: { value: "5000" } });
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      // Set manual order discount: 3,000
+      const orderDiscountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(orderDiscountInput, { target: { value: "3000" } });
+
+      // Pay with cash
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại")[0]).toBeInTheDocument();
+      });
+
+      // The line is back in the cart panel (level-4 heading)
+      const lineHeading = screen.getByRole("heading", { name: "Bạc xỉu", level: 4 });
+      expect(lineHeading).toBeInTheDocument();
+
+      // Manual discount badge is preserved in the cart row
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText(/Thu ngân/i)).toBeInTheDocument();
+      expect(within(cartRow).getByText(/5,000/i)).toBeInTheDocument();
+
+      // Order discount is preserved
+      expect((screen.getByLabelText("Giảm giá tùy chỉnh") as HTMLInputElement).value).toBe("3000");
+    });
+
+    it("retry:true strip Gửi lại resends with same token and client_captured_at; success resets all so next cart has no discount", async () => {
+      vi.mocked(submitOrderV2)
+        .mockResolvedValueOnce({ success: false, retry: true, error: "Network timeout" } as any)
+        .mockResolvedValueOnce({ success: true } as any);
+
+      const samplePromo = {
+        id: "PROMO-1",
+        code: "SALE10",
+        name: "Giảm 10k",
+        status: "ACTIVE",
+        start_date: "2020-01-01",
+        type: "ORDER_DISCOUNT",
+        discount_amount: 10000,
+        brand_id: "BR-1",
+      };
+
+      render(<POSScreen {...defaultProps} promotions={[samplePromo]} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      // Apply promo code: SALE10
+      const promoInput = screen.getByLabelText("Mã giảm giá");
+      fireEvent.change(promoInput, { target: { value: "SALE10" } });
+      fireEvent.click(screen.getByRole("button", { name: "Áp dụng" }));
+      expect(screen.getByText("Mã: SALE10")).toBeInTheDocument();
+
+      // Set manual order discount: 5,000
+      const orderDiscountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(orderDiscountInput, { target: { value: "5000" } });
+
+      // Checkout
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      // First call failed
+      await waitFor(() => {
+        expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại")[0]).toBeInTheDocument();
+      });
+      expect(submitOrderV2).toHaveBeenCalledTimes(1);
+
+      const firstCallArgs = vi.mocked(submitOrderV2).mock.calls[0];
+      const firstPayload = firstCallArgs[0];
+      const firstToken = firstCallArgs[1];
+
+      // Click the STRIP button
+      const stripResendBtn = screen.getByRole("button", { name: "Gửi lại" });
+      fireEvent.click(stripResendBtn);
+
+      await waitFor(() => {
+        expect(submitOrderV2).toHaveBeenCalledTimes(2);
+      });
+
+      const secondCallArgs = vi.mocked(submitOrderV2).mock.calls[1];
+      const secondPayload = secondCallArgs[0];
+      const secondToken = secondCallArgs[1];
+
+      expect(secondToken).toBe(firstToken);
+      expect(secondPayload.client_captured_at).toBe(firstPayload.client_captured_at);
+
+      // Success clears cart
+      await waitFor(() => {
+        expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
+      });
+
+      // Next cart: add Đường đen sữa tươi
+      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      // Check that next cart has no discount applied and no promo code carried over
+      const newOrderDiscountInput = screen.getByLabelText("Giảm giá tùy chỉnh") as HTMLInputElement;
+      expect(newOrderDiscountInput.value).toBe("");
+      expect(screen.queryByText("Giảm giá Hoá đơn")).toBeNull();
+      expect(screen.queryByText(/Mã: SALE10/)).toBeNull();
+      expect((screen.getByLabelText("Mã giảm giá") as HTMLInputElement).value).toBe("");
+    });
+
+    it("retry:false shows server text in strip, no Gửi lại/Thử lại button in strip, no toast button", async () => {
+      const REFUSAL_TEXT = "Món Bạc xỉu đã hết hàng";
+      vi.mocked(submitOrderV2).mockResolvedValueOnce({
+        success: false,
+        retry: false,
+        error: REFUSAL_TEXT,
+      } as any);
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(screen.getAllByText(REFUSAL_TEXT)[0]).toBeInTheDocument();
+      });
+
+      // Cart line is back in cart panel
+      expect(screen.getByRole("heading", { name: "Bạc xỉu", level: 4 })).toBeInTheDocument();
+
+      // No Gửi lại or Thử lại button anywhere
+      expect(screen.queryByRole("button", { name: "Gửi lại" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "Thử lại" })).toBeNull();
+    });
+
+    it("two quick clicks on strip Gửi lại calls submitOrderV2 once more, not twice", async () => {
+      let resolveSecondCall: (value: any) => void;
+      const secondCallPromise = new Promise((resolve) => {
+        resolveSecondCall = resolve;
+      });
+
+      vi.mocked(submitOrderV2)
+        .mockResolvedValueOnce({ success: false, retry: true, error: "Network timeout" } as any)
+        .mockImplementationOnce(() => secondCallPromise as any);
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại")[0]).toBeInTheDocument();
+      });
+      expect(submitOrderV2).toHaveBeenCalledTimes(1);
+
+      const resendBtn = screen.getByRole("button", { name: "Gửi lại" });
+      // Two quick clicks
+      fireEvent.click(resendBtn);
+      fireEvent.click(resendBtn);
+
+      expect(submitOrderV2).toHaveBeenCalledTimes(2);
+
+      resolveSecondCall!({ success: true });
+      await waitFor(() => {
+        expect(screen.getByText("Thanh toán thành công!")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("Item 3: No raw English error in front of cashier (BR-UI-001)", () => {
+    it("shows Vietnamese message on thrown network error or retry:true, never raw error", async () => {
+      vi.mocked(submitOrderV2).mockRejectedValueOnce(new Error("Failed to fetch"));
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại").length).toBeGreaterThan(0);
+      });
+      expect(screen.queryByText("Failed to fetch")).toBeNull();
+    });
+
+    it("keeps showing server's Vietnamese error text on retry:false refusal", async () => {
+      vi.mocked(submitOrderV2).mockResolvedValueOnce({
+        success: false,
+        retry: false,
+        error: "Món Bạc xỉu đã hết hàng",
+      } as any);
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(screen.getAllByText("Món Bạc xỉu đã hết hàng").length).toBeGreaterThan(0);
+      });
+      expect(screen.queryByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại")).toBeNull();
+    });
+  });
+
+  describe("Item 10: Search vs tabs highlighting", () => {
+    it("highlights no tab while search box has text even when dish is outside active tab", () => {
+      render(<POSScreen {...defaultProps} />);
+
+      // Active tab starts at BEST_SELLERS
+      const bestSellersBtn = screen.getByRole("button", { name: "🔥 Bán chạy" });
+      expect(bestSellersBtn.className).toContain("bg-primary");
+
+      // Search for "Trà đào" (which is in CAT-2, not in CAT-1 or active tab)
+      const searchInput = screen.getByPlaceholderText("Ví dụ: Trà đào");
+      fireEvent.change(searchInput, { target: { value: "tra dao" } });
+
+      // Trà đào is visible
+      expect(screen.getByText("Trà đào")).toBeInTheDocument();
+
+      // No tab should be highlighted with bg-primary
+      expect(screen.getByRole("button", { name: "🔥 Bán chạy" }).className).not.toContain("bg-primary");
+      expect(screen.getByRole("button", { name: "Tất cả món" }).className).not.toContain("bg-primary");
+      expect(screen.getByRole("button", { name: "Cà phê" }).className).not.toContain("bg-primary");
+      expect(screen.getByRole("button", { name: "Trà" }).className).not.toContain("bg-primary");
+    });
+  });
+
+  describe("G-MB fix 5: Last gaps after fix 4", () => {
+    it("strip shown after a retry:true failure disappears when clicking Xoá hết (no Gửi lại button)", async () => {
+      vi.mocked(submitOrderV2).mockResolvedValueOnce({
+        success: false,
+        retry: true,
+        error: "Network timeout",
+      } as any);
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Gửi lại" })).toBeInTheDocument();
+      });
+
+      // Click "Xoá hết"
+      const clearAllBtn = screen.getByRole("button", { name: "Xoá hết" });
+      fireEvent.click(clearAllBtn);
+
+      await waitFor(() => {
+        expect(screen.queryByRole("button", { name: "Gửi lại" })).toBeNull();
+      });
+    });
+
+    it("strip shown after a retry:true failure disappears when saving draft (no Gửi lại button)", async () => {
+      vi.mocked(submitOrderV2).mockResolvedValueOnce({
+        success: false,
+        retry: true,
+        error: "Network timeout",
+      } as any);
+      vi.mocked(savePOSDraft).mockResolvedValueOnce({
+        success: true,
+        draft: { id: "draft-new", name: "Draft", cart_json: "[]" },
+      } as any);
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Gửi lại" })).toBeInTheDocument();
+      });
+
+      // Click "Lưu Nháp"
+      const saveDraftBtn = screen.getByRole("button", { name: "Lưu Nháp" });
+      fireEvent.click(saveDraftBtn);
+
+      await waitFor(() => {
+        expect(screen.queryByRole("button", { name: "Gửi lại" })).toBeNull();
+      });
+    });
+
+    it("focus on a button does not block Escape closing modal or '+' opening cart", () => {
+      render(<POSScreen {...defaultProps} />);
+
+      const productBtn = screen.getByText("Bạc xỉu").closest("button")!;
+      productBtn.focus();
+      expect(document.activeElement).toBe(productBtn);
+
+      // Open item config modal
+      fireEvent.click(productBtn);
+      expect(screen.getByRole("button", { name: /THÊM/i })).toBeInTheDocument();
+
+      // Ensure focus is on a button
+      productBtn.focus();
+
+      // Press Escape -> item modal closes
+      fireEvent.keyDown(window, { key: "Escape" });
+      expect(screen.queryByRole("button", { name: /THÊM/i })).toBeNull();
+
+      // Focus a button again
+      productBtn.focus();
+      expect(document.activeElement).toBe(productBtn);
+
+      // Before pressing '+', the phone cart sheet is closed
+      const cartContainer = () => screen.getByRole("heading", { name: /Hoá Đơn/i }).closest("div.fixed")!;
+      expect(cartContainer().className).toContain("translate-y-full");
+
+      // Press '+' -> cart opens (phone)
+      fireEvent.keyDown(window, { key: "+" });
+      expect(cartContainer().className).toContain("translate-y-0");
+      expect(cartContainer().className).not.toContain("translate-y-full");
+    });
   });
 });

@@ -66,7 +66,7 @@ export function toPricePromotion(p: any): PricePromotion {
     discount_value: Number(p.discount_value),
     applicable_products_json: p.applicable_products_json || "",
     min_order_value: Number(p.min_order_value) || 0,
-    stackable: false,
+    stackable: p.stackable === true,
   };
 }
 
@@ -158,30 +158,47 @@ export function priceCart(
   return { lines, applied, total: lines.reduce((s, l) => s + l.net, 0) };
 }
 
-export function bestPromotion(
-  eligible: any[],
-  items: PriceCartItem[],
-  catalog: PriceCartCatalog,
-  code: string | null,
-): any | null {
-  const trimmed = code?.trim();
-  if (trimmed) {
-    const match = eligible.find(
-      (p) => (p.code ?? "").trim().toLowerCase() === trimmed.toLowerCase(),
-    );
-    return match ?? null;
-  }
-  let best: any | null = null;
-  let maxDiscount = 0;
-  for (const p of eligible) {
-    if (p.code && p.code.trim()) continue;
-    const res = priceCart(items, catalog, [toPricePromotion(p)], null);
-    const amount = res.applied.reduce((sum, a) => sum + a.amount, 0);
-    if (amount > maxDiscount) {
-      maxDiscount = amount;
-      best = p;
-    }
-  }
-  return best;
+
+// Open for the sale moment and the brand: ACTIVE, inside its dates (spec 4.2).
+export function isOpenFor(p: any, at: string, brandId: string): boolean {
+  const now = new Date(at);
+  if (p.status !== "ACTIVE" || new Date(p.start_date) > now) return false;
+  if (p.end_date && new Date(p.end_date) < now) return false;
+  return !p.brand_id || p.brand_id === brandId;
 }
 
+interface PromotionSet { promotionIds: string[]; amount: number }
+
+// The valid sets for a cart (spec 4.2): each promotion not marked Dùng chung alone, and all the
+// Dùng chung ones together. Biggest discount first. Coded promotions count only once their code is typed.
+export function eligiblePromotionSets(
+  promotions: any[],
+  items: PriceCartItem[],
+  catalog: PriceCartCatalog,
+  at: string,
+  brandId: string,
+  code: string | null,
+): PromotionSet[] {
+  const typed = code?.trim().toLowerCase() ?? "";
+  const amountOf = (set: any[]) =>
+    priceCart(items, catalog, set.map(toPricePromotion), null).applied.reduce((s, a) => s + a.amount, 0);
+  const eligible = promotions.filter(
+    (p) => isOpenFor(p, at, brandId)
+      && (!String(p.code ?? "").trim() || String(p.code).trim().toLowerCase() === typed)
+      && amountOf([p]) > 0,
+  );
+  const shared = eligible.filter((p) => p.stackable === true);
+  const groups = [...eligible.filter((p) => p.stackable !== true).map((p) => [p]), ...(shared.length ? [shared] : [])];
+  return groups
+    .map((g) => ({ promotionIds: g.map((p) => p.id as string), amount: amountOf(g) }))
+    .sort((a, b) => b.amount - a.amount);
+}
+
+// A late order is priced at its own moment: the old price of the first change after that moment.
+export function priceAsOf(history: any[], variantId: string, current: number, at: string): number {
+  const t = new Date(at).getTime();
+  const next = history
+    .filter((h) => h.variant_id === variantId && h.old_price != null && new Date(h.effective_at).getTime() > t)
+    .sort((a, b) => new Date(a.effective_at).getTime() - new Date(b.effective_at).getTime())[0];
+  return next ? Number(next.old_price) : current;
+}

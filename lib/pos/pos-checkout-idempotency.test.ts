@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  resolvePosCheckoutAttempt,
-  summarizePosCheckoutRequestIds,
-} from "./pos-checkout-idempotency";
+import { resolvePosCheckoutAttempt } from "./pos-checkout-idempotency";
 
 const baseCheckout = {
   brand_id: "BR-001",
@@ -78,24 +75,5 @@ describe("resolvePosCheckoutAttempt", () => {
 
     expect(changedCart.requestToken).toBe("request-2");
     expect(changedPayment.requestToken).toBe("request-3");
-  });
-});
-
-describe("summarizePosCheckoutRequestIds", () => {
-  it("separates legacy orders and reports duplicate request keys", () => {
-    expect(summarizePosCheckoutRequestIds([
-      { id: "ord-legacy", client_request_id: null },
-      { id: "ord-1", client_request_id: "request-1" },
-      { id: "ord-2", client_request_id: " request-1 " },
-      { id: "ord-3", client_request_id: "request-2" },
-    ])).toEqual({
-      totalOrders: 4,
-      ordersWithRequestId: 3,
-      legacyOrdersWithoutRequestId: 1,
-      duplicateRequestIds: [{
-        requestId: "request-1",
-        orderIds: ["ord-1", "ord-2"],
-      }],
-    });
   });
 });

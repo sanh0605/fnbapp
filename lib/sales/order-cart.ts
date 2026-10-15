@@ -17,7 +17,7 @@ import {
   buildPromotionSnapshot,
 } from "@/lib/sales/order-snapshot";
 import { assertOrderInvariants } from "@/lib/sales/order-math";
-import { bestPromotion, priceCart, toPricePromotion } from "@/lib/sales/price-cart";
+import { eligiblePromotionSets, priceAsOf, priceCart, toPricePromotion } from "@/lib/sales/price-cart";
 import type { PriceCartCatalog, PriceCartItem, PricePromotion } from "@/lib/sales/price-cart";
 import { InvariantError, ORDER_STATUS, PAYMENT_METHOD } from "@/lib/sales/order-types";
 import { resolveCapturedAt } from "@/lib/sales/pos-captured-at";
@@ -61,13 +61,16 @@ export interface CartInput {
   // must sum to exactly the order's net_total.
   payments?: CartPaymentInput[];
   manual_order_discount?: { value: number; type: "VND" | "PERCENT" } | null;
-  applied_promotion_id?: string | null; // explicit override; else auto-resolve
+  applied_promotion_id?: string | null; // sent by the till, ignored: the server takes promotion_ids
   promo_code?: string; // a promotion with a code applies only when this matches it
+  // What the till chose and showed (BR-SALE-008). The POS action refuses a request without them.
+  promotion_ids?: string[];
+  shown_total?: number;
   actor: { id: string; name: string };
   // Captured client-side (new Date()) at the moment "Thanh toán" is
-  // pressed, before any network call -- preserved across offline queueing
-  // and retries so the recorded sale time is always when the button was
-  // pressed, not when the request reached the server. Optional and
+  // pressed, before any network call -- preserved across "Gửi lại" so the
+  // recorded sale time is when the button was pressed, not when the
+  // request reached the server. Optional and
   // defaults to server time for any caller that doesn't send it.
   client_captured_at?: string;
 }
@@ -86,6 +89,22 @@ export interface ReferenceData {
   categories: any[];
   modifiers: any[];
   promotions: any[];
+  // product_price_history rows: a late order is priced at the price of its own moment.
+  priceHistory?: any[];
+}
+
+export const PRICE_CHANGED = "Giá hoặc khuyến mãi đã thay đổi. Tải lại trang rồi bấm lại.";
+
+export interface BuiltOrderPromotion {
+  promotion_id: string;
+  seq: number;
+  name: string;
+  code: string;
+  type: string;
+  discount_type: string;
+  discount_value: number;
+  stackable: boolean;
+  amount: number;
 }
 
 export interface BuildOrderResult {
@@ -93,6 +112,7 @@ export interface BuildOrderResult {
   lines: OrderLineV2[];
   resolvedPromotion: PromotionSnapshot | null;
   payments: BuiltPayment[]; // empty when the order uses a single payment_method
+  orderPromotions: BuiltOrderPromotion[]; // one per promotion that took money off
 }
 
 export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildOrderResult {
@@ -106,6 +126,9 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   const { createdAt, rejected: capturedAtRejected } = resolveCapturedAt(input.client_captured_at);
   const orderId = `ord-${crypto.randomUUID()}`;
 
+  if (ref.priceHistory) {
+    ref = { ...ref, variants: ref.variants.map(v => ({ ...v, price: priceAsOf(ref.priceHistory!, v.id, Number(v.price), createdAt) })) };
+  }
   const prepared = input.items.map(item => prepareLine(item, ref));
   const items = input.items.map((item, i) => ({
     variant_id: item.variant_id,
@@ -119,11 +142,29 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   };
 
   // Resolve promotion (auto or explicit) against the true sale time, not
-  // the clock at whatever moment this function actually runs -- for an
-  // order queued offline and synced later, those can differ by hours.
-  const candidate = resolvePromotion(input, ref, createdAt, items, catalog);
-  const priced = priceCart(items, catalog, candidate ? [toPricePromotion(candidate)] : [], input.manual_order_discount ?? null);
-  const resolvedPromo = priced.applied.length > 0 ? candidate : null;
+  // the clock at whatever moment this function actually runs -- a "Gửi lại"
+  // can arrive later.
+  const candidates = resolvePromotions(input, ref, createdAt, items, catalog);
+  const priced = priceCart(items, catalog, candidates.map(toPricePromotion), input.manual_order_discount ?? null);
+  if (input.shown_total !== undefined && input.shown_total !== priced.total) {
+    throw new InvariantError(PRICE_CHANGED);
+  }
+  const orderPromotions = priced.applied.map((a, i): BuiltOrderPromotion => {
+    const p = candidates.find(c => c.id === a.promotionId);
+    return {
+      promotion_id: a.promotionId,
+      seq: i + 1,
+      name: String(p.name || ""),
+      code: p.code || "",
+      type: p.type === "ORDER_DISCOUNT" ? "ORDER_DISCOUNT" : "PRODUCT_DISCOUNT",
+      discount_type: p.discount_type,
+      discount_value: Number(p.discount_value),
+      stackable: p.stackable === true,
+      amount: a.amount,
+    };
+  });
+  // The first promotion that took money keeps the two legacy order columns filled.
+  const resolvedPromo = candidates.find(c => c.id === priced.applied[0]?.promotionId) ?? null;
   const promoSnapshot = resolvedPromo ? buildPromotionSnapshot(resolvedPromo) : null;
 
   const lines: OrderLineV2[] = prepared.map((p, i) => {
@@ -210,13 +251,14 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
   };
 
   // Guardian: assert all 7 invariants before returning
-  assertOrderInvariants(order, lines);
+  assertOrderInvariants(order, lines, orderPromotions);
 
   return {
     order,
     lines,
     resolvedPromotion: promoSnapshot,
     payments,
+    orderPromotions,
   };
 }
 
@@ -225,27 +267,15 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
 // ============================================================
 
 
-// A promotion with a code is taken only when its code was sent; with none named, the best no-code one wins.
-function resolvePromotion(input: CartInput, ref: ReferenceData, asOf: string, items: PriceCartItem[], catalog: PriceCartCatalog): any | null {
-  const now = new Date(asOf);
-  const eligible = ref.promotions.filter(p => {
-    if (p.status !== "ACTIVE") return false;
-    const start = new Date(p.start_date);
-    const end = p.end_date ? new Date(p.end_date) : null;
-    if (start > now) return false;
-    if (end && end < now) return false;
-    if (p.brand_id && p.brand_id !== input.brand_id) return false;
-    return true;
-  });
-
-  if (input.applied_promotion_id) {
-    const p = eligible.find(p => p.id === input.applied_promotion_id);
-    if (!p) return null;
-    if (p.code && String(p.code).trim().toLowerCase() !== (input.promo_code || "").trim().toLowerCase()) return null;
-    return p;
-  }
-
-  return bestPromotion(eligible, items, catalog, null);
+// The sent set must be exactly one of the valid sets, never re-picked here (BR-SALE-008).
+function resolvePromotions(input: CartInput, ref: ReferenceData, asOf: string, items: PriceCartItem[], catalog: PriceCartCatalog): any[] {
+  if (input.promotion_ids === undefined) return []; // the POS action refuses such a request before this
+  const sent = Array.isArray(input.promotion_ids) ? [...input.promotion_ids].sort().join("|") : null;
+  const sets = eligiblePromotionSets(ref.promotions, items, catalog, asOf, input.brand_id, input.promo_code ?? null);
+  const set = sets.find(s => [...s.promotionIds].sort().join("|") === sent);
+  // Nothing sent is right only when nothing was eligible.
+  if (!set && (sets.length > 0 || sent !== "")) throw new InvariantError(PRICE_CHANGED);
+  return set ? ref.promotions.filter(p => set.promotionIds.includes(p.id)) : [];
 }
 
 function prepareLine(item: CartItemInput, ref: ReferenceData) {
@@ -257,13 +287,8 @@ function prepareLine(item: CartItemInput, ref: ReferenceData) {
 
   // section 5.4/5b: this is the one choke point shared by POS checkout and
   // order-edit, so the "must not sell a paused product" guarantee belongs
-  // here -- app/pos/page.tsx filtering status === "ACTIVE" only secures
-  // what the screen offers, not a stale cart or an order queued offline
-  // before the pause took effect. The message serves two readers: a
-  // cashier seeing this immediately at checkout, and whoever later reads
-  // Pos_Sync_Failures.error_message for an order that failed sync after
-  // the item was paused mid-queue -- it covers both outcomes rather than
-  // assuming one.
+  // here -- app/pos/page.tsx filtering
+  // status === "ACTIVE" only secures what the screen offers, not a stale cart.
   if (product.status !== "ACTIVE" || variant.status !== "ACTIVE") {
     throw new InvariantError(
       `Món "${product.name} (${variant.size_name})" đã ngừng bán nên đơn này chưa được lưu. `

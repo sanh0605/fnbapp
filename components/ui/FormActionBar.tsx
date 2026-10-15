@@ -36,7 +36,9 @@ export function FormActionBar({
 
   const primaryLabel = loading
     ? "Đang lưu…"
-    : (mode === "edit" ? "Lưu thay đổi" : "Tạo");
+    : mode === "edit"
+    ? "Lưu thay đổi"
+    : "Tạo";
 
   const secondaryLabel = mode === "edit" ? "Bỏ thay đổi" : "Bỏ";
 
@@ -53,6 +55,7 @@ export function FormActionBar({
           type="button"
           variant="secondary"
           onClick={onCancel}
+          disabled={loading}
           className="w-full md:w-auto"
         >
           {secondaryLabel}
@@ -61,6 +64,7 @@ export function FormActionBar({
           type="submit"
           variant="primary"
           loading={loading}
+          disabled={loading}
           className="w-full md:w-auto"
         >
           {primaryLabel}

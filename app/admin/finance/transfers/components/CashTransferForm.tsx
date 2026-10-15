@@ -3,13 +3,14 @@
 import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addCashTransfer, updateCashTransfer } from "../actions";
-import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import { DayInput } from "@/components/ui/DayInput";
 import { Field } from "@/components/ui/Field";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { MoneyInput } from "@/components/ui/MoneyInput";
 import { Select } from "@/components/ui/Select";
 import { TextInput } from "@/components/ui/TextInput";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBBankAccount, DBCashTransfer } from "@/types/db";
 
 interface CashTransferFormProps {
@@ -25,7 +26,7 @@ export function CashTransferForm({
   today,
   returnTo: rawReturnTo,
 }: CashTransferFormProps) {
-  const returnTo = safeReturnTo(rawReturnTo, "/admin/finance");
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/finance", { detail: ["/admin/finance/transfers"] });
   const isEdit = !!transfer;
   const formId = useId();
   const router = useRouter();
@@ -99,13 +100,9 @@ export function CashTransferForm({
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div
-            role="alert"
-            aria-live="polite"
-            className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20"
-          >
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -178,29 +175,17 @@ export function CashTransferForm({
                 name="note"
                 defaultValue={transfer?.note ?? ""}
                 placeholder="Ví dụ: nộp tiền vào tài khoản"
+                maxLength={500}
               />
             </Field>
           </div>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật" : "Lưu"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

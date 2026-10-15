@@ -86,8 +86,8 @@ a 5.000đ topping stores 27.000đ — which is why `verify-revenue` reconciles.
 
 **Open, deliberately not decided here:** *Hộp sữa chua* (`MOD-009`, created
 2026-08-28) has no `CAT-007` product, so it cannot be sold standalone and has
-nothing to link to. `Dâu sấy` has two modifier rows, `MOD-007` (stopped, `INACTIVE` since the DELETED status went, plan `2026-10-15-bo-deleted.md`) and
-`MOD-008` (ACTIVE), which must both point at `PROD-035`; the ACTIVE one governs the link. And `CAT-007` is
+nothing to link to. `Dâu sấy` had a second, never-sold modifier row `MOD-007`, erased 2026-10-15 (owner "Xoá hẳn");
+`MOD-008` (ACTIVE) alone points at `PROD-035`. And `CAT-007` is
 hard-coded in `toggleToppingStandalone` rather than being a column a screen can
 edit, against the rule that anything the owner may want to change belongs in
 data.
@@ -191,7 +191,7 @@ Until then the option form offered four names written into the code and the till
 
 ### BR-CATALOG-007 — A supplier is stopped, not deleted; only a supplier with no purchase order can be deleted
 
-**Status:** `APPROVED` — owner 2026-10-15, Kho area audit question Q3. He chose *"Ngừng + xoá nhà chưa dùng"* over "never delete". Built 2026-10-15 on the branch feat/khuon-chung-ban-hang-kho (Kho step 4, `docs/superpowers/plans/2026-10-15-kho-buoc-4-ngung-dung.md`), not yet pushed.
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit question Q3. He chose *"Ngừng + xoá nhà chưa dùng"* over "never delete". Built and pushed 2026-10-15 (Kho step 4).
 
 **What he was shown.** On 2026-10-15 there were 48 suppliers, all `ACTIVE`. 2 had no purchase order: The Garden Tea & Coffee and Circle K. The screen let him delete those two. It had no way to stop using the other 46.
 

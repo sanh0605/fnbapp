@@ -8,7 +8,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { formatDecimal } from "@/lib/shared/format";
 import type { DBPurchasedItem, DBUnit, DBUOMConversion } from "@/types/db";
 

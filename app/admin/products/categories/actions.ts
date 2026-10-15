@@ -42,6 +42,12 @@ async function typeExists(typeId: string): Promise<boolean> {
   return types.some(t => t.id === typeId);
 }
 
+// Blank means no icon on the till card (spec R4); one emoji can be several code units.
+function readIcon(formData: FormData): { icon: string | null; error?: string } {
+  const icon = ((formData.get("icon") as string) || "").trim();
+  return icon.length > 8 ? { icon: null, error: "Biểu tượng tối đa 8 ký tự" } : { icon: icon || null };
+}
+
 export async function saveCategory(formData: FormData): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
@@ -49,6 +55,8 @@ export async function saveCategory(formData: FormData): Promise<ActionResponse> 
   const name = formData.get("name") as string;
   if (!name) return fail("Vui lòng nhập tên danh mục");
   const type_id = ((formData.get("type_id") as string) || "").trim();
+  const { icon, error: iconError } = readIcon(formData);
+  if (iconError) return fail(iconError);
 
   try {
     if (!(await typeExists(type_id))) return fail("Chọn loại món");
@@ -56,7 +64,7 @@ export async function saveCategory(formData: FormData): Promise<ActionResponse> 
     if (duplicate) return fail(duplicateNameErrorMessage(duplicate));
     const id = await generateNewId(SHEET, "CAT");
     const created_at = new Date().toISOString();
-    await insert(SHEET, { id, name, type_id, status: "ACTIVE", created_at });
+    await insert(SHEET, { id, name, type_id, icon, status: "ACTIVE", created_at });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -72,12 +80,14 @@ export async function updateCategory(formData: FormData): Promise<ActionResponse
   const name = formData.get("name") as string;
   if (!id || !name) return fail("Dữ liệu không hợp lệ");
   const type_id = ((formData.get("type_id") as string) || "").trim();
+  const { icon, error: iconError } = readIcon(formData);
+  if (iconError) return fail(iconError);
 
   try {
     if (!(await typeExists(type_id))) return fail("Chọn loại món");
     const duplicate = findDuplicateActiveName((await findAll(SHEET)) as DBProductCategory[], name, id);
     if (duplicate) return fail(duplicateNameErrorMessage(duplicate));
-    await update(SHEET, id, { name, type_id });
+    await update(SHEET, id, { name, type_id, icon });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

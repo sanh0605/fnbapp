@@ -76,6 +76,7 @@ export default function PurchaseOrdersClient({
       (searchParams.get("status") && searchParams.get("status") !== "ACTIVE") ||
       (searchParams.get("supplier") && searchParams.get("supplier") !== "ALL") ||
       (searchParams.get("pay") && searchParams.get("pay") !== "ALL") ||
+      searchParams.get("account") ||
       (searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
       searchParams.get("from") ||
       searchParams.get("to")
@@ -110,6 +111,7 @@ export default function PurchaseOrdersClient({
     params.delete("status");
     params.delete("supplier");
     params.delete("pay");
+    params.delete("account");
     params.delete("page");
     router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname, { scroll: false });
   }

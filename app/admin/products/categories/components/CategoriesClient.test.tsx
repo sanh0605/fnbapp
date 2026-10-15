@@ -179,4 +179,20 @@ describe("CategoriesClient", () => {
     expect(screen.getAllByText("Loại món").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đồ uống").length).toBeGreaterThan(0);
   });
+
+  it("renders category icon next to name in table and mobile card", () => {
+    const categoriesWithIcon: DBProductCategory[] = [
+      { id: "CAT-001", name: "Cà phê", status: "ACTIVE", type_id: "PT-001", icon: "☕" },
+      { id: "CAT-002", name: "Trà sữa", status: "ACTIVE", type_id: "PT-001", icon: null },
+    ];
+    render(
+      <CategoriesClient
+        categories={categoriesWithIcon}
+        counts={sampleCounts}
+      />,
+    );
+
+    expect(screen.getAllByText("☕").length).toBeGreaterThan(0);
+  });
 });
+

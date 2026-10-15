@@ -14,7 +14,7 @@ describe("Google Drive backup core", () => {
   it("pins the complete 40-table snapshot policy", () => {
     // 35 -> 38 on 2026-10-14: product_types, dashboard_settings and
     // monthly_expense_items from migration 0109; 38 -> 40: modifier_groups and
-    // modifier_group_products from migration 0119.
+    // modifier_group_products from migration 0119; 40 -> 41: order_promotions from migration 0127. 41 -> 40: pos_sync_failures dropped by migration 0129 (BR-SALE-015).
     expect(BACKUP_TABLES).toHaveLength(40);
     expect(new Set(BACKUP_TABLES).size).toBe(40);
     expect(BACKUP_TABLES).toContain("orders_v2");
@@ -46,11 +46,11 @@ describe("Google Drive backup core", () => {
   it("covers every persisted table except deliberately derived ones", () => {
     for (const table of [
       "order_payments",
+      "order_promotions",
       "stocktake_sessions",
       "stocktake_lines",
       "stock_issues",
       "purchase_order_edits",
-      "pos_sync_failures",
       "outlets",
       "asset_depreciation_bands",
       "assets",

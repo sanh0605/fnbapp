@@ -50,11 +50,12 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `order_events` | Nhật ký thao tác đơn hàng | Ghi mỗi lần một đơn được tạo, sửa, huỷ, hoặc mở lại |
 | `order_lines_v2` | Dòng đơn hàng | Từng món trong một đơn: tên món, cỡ, số lượng, giá |
 | `order_payments` | Chi tiết thanh toán | Từng phương thức thanh toán của một đơn, cho trường hợp trả nhiều phương thức |
+| `order_promotions` | Khuyến mãi đã áp | Từng khuyến mãi đã áp cho một đơn, kèm số tiền nó giảm; tên và mức giảm chép lúc bán |
 | `orders_v2` | Đơn hàng | Phần đầu của một đơn: mã đơn, điểm bán, tổng tiền, trạng thái |
 | `outlets` | Điểm bán | Một chỗ bán hàng thực tế; kho dùng chung, không tách theo điểm bán |
 | `pos_drafts` | Giỏ hàng tạm | Giỏ hàng đang thao tác trên máy bán hàng, trước khi đặt thành đơn chính thức |
-| `pos_sync_failures` | hạ tầng/kỹ thuật | Đơn từ máy bán hàng gửi lên bị lỗi đồng bộ ở lần thử ngầm, chờ admin xử lý tay |
-| `product_categories` | Nhóm món | Danh mục phân loại món trong thực đơn; từ migration `0109` mỗi nhóm có cột `type_id` (bắt buộc) chỉ loại món |
+| `pos_sync_failures` | hạ tầng/kỹ thuật | bỏ ở migration `0129`: máy bán hàng không còn bán ngoại tuyến nên không còn đơn gửi lỗi để ghi lại |
+| `product_categories` | Nhóm món | Danh mục phân loại món trong thực đơn; từ migration `0109` mỗi nhóm có cột `type_id` (bắt buộc) chỉ loại món; từ migration `0130` có cột `icon` (chữ tượng hình hiện trên thẻ món ở máy bán hàng, để trống = không hiện) |
 | `product_price_history` | Lịch sử đổi giá | Mỗi lần đổi giá một cỡ món, kèm giá cũ/mới và lý do |
 | `product_types` | Loại món | Thức uống, Thức ăn, Topping; mỗi nhóm món thuộc đúng một loại, loại Thức uống (`is_drink`) là thứ Tổng quan đếm thành ly (migration `0109`) |
 | `product_variants` | Cỡ món | Một cỡ/biến thể của một món, mỗi cỡ có giá riêng |

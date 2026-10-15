@@ -7,7 +7,7 @@ tables: Products, products, product_variants, product_price_history, Product_Cat
 brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-007
 ```
 
-**Behaviour change — 2026-10-15 (no "Đã xoá" status, plan `docs/superpowers/plans/2026-10-15-bo-deleted.md`; migration `0125` not yet run):** "Xoá" on an option erases it for good, `ADMIN` only, and only if it was never sold; a sold option is refused and offers "Ngừng dùng"/"Dùng lại" on its page instead. "Xoá" on an empty dish group erases it, `ADMIN` only. The dish list loses its "Đã xoá" filter; the old dish refusal for that state goes with it. Sizes removed on Sửa món still take the old state until a later change of `save_product_atomic`. One live option per standalone dish: "Dùng lại" is refused while another option runs that dish, and stopping an option stops the dish only when no other live option runs it (`0126`, not yet run).
+**Behaviour change — 2026-10-15 (no "Đã xoá" status; pushed and migrations `0125`, `0126` run the same day):** "Xoá" on an option erases it for good, `ADMIN` only, and only if it was never sold; a sold option is refused and offers "Ngừng dùng"/"Dùng lại" on its page instead. "Xoá" on an empty dish group erases it, `ADMIN` only. The dish list loses its "Đã xoá" filter; the old dish refusal for that state goes with it. Sizes removed on Sửa món still take the old state until a later change of `save_product_atomic`. One live option per standalone dish: "Dùng lại" is refused while another option runs that dish, and stopping an option stops the dish only when no other live option runs it (`0126`).
 
 **Behaviour change — 2026-10-15 (Bán hàng đợt 2, design in `docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`):**
 - Deleting an option whose standalone dish is on sale is refused, with the dish named. Turn "Bán độc lập" off first.
@@ -34,6 +34,8 @@ brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-
 - Every Nhóm món now has a required "Loại món". The migration set Cà phê, Giải trí, Cacao, Trà and Yogurt to Thức uống, Thức ăn to Thức ăn, and Topping to Topping.
 - A type can be deleted only by the owner (`requireOwner()`), and only while no group uses it. A refusal names the groups, for example "Loại món đang được dùng ở nhóm: Cà phê, Trà.".
 - Tổng quan counts a cup by this mark (`BR-SALE-007`).
+
+**Behaviour change — 2026-10-15 (Biểu tượng nhóm món, `BR-SALE-017`, migration `0130`, runs before the push):** the Nhóm món form has a "Biểu tượng" box. The emoji shows on the dish cards at the till; blank means no icon (no default cup). Trimmed; more than 8 characters is refused with "Biểu tượng tối đa 8 ký tự". The till no longer guesses an icon from the group name. The return-to links on the dish pages go through the shared `safeReturnTo`.
 
 **Reviewed, no behaviour change — 2026-10-14:** `app/admin/products/modifiers/actions.ts` one message spelled "Thiếu mã tuỳ chọn" instead of "tùy" (`BR-UI-001`); no logic changed.
 

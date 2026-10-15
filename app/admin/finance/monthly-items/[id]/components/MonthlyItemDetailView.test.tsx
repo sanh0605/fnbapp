@@ -28,6 +28,11 @@ vi.mock("../../actions", () => ({
   deleteMonthlyItem: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock("@/lib/shared/dialog", () => ({
+  confirm: vi.fn().mockResolvedValue(true),
+  alert: vi.fn(),
+}));
+
 afterEach(() => {
   cleanup();
 });
@@ -79,7 +84,7 @@ describe("MonthlyItemDetailView", () => {
     expect(screen.getAllByText("3 dòng").length).toBeGreaterThan(0);
   });
 
-  it("shows Sửa button linking to edit page", () => {
+  it("shows Chỉnh sửa button linking to edit page", () => {
     render(
       <MonthlyItemDetailView
         item={SAMPLE_ITEM}
@@ -90,11 +95,14 @@ describe("MonthlyItemDetailView", () => {
       />,
     );
 
-    const editLink = screen.getByRole("link", { name: "Sửa" });
+    const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
     expect(editLink.getAttribute("href")).toContain("/admin/finance/monthly-items/KCT-001/edit");
   });
 
-  it("shows Ngừng dùng button when ACTIVE and toggles status", async () => {
+  it("shows Ngừng dùng button when ACTIVE and asks confirm before toggling status", async () => {
+    const { confirm } = await import("@/lib/shared/dialog");
+    vi.mocked(confirm).mockResolvedValue(true);
+
     render(
       <MonthlyItemDetailView
         item={SAMPLE_ITEM}
@@ -107,6 +115,7 @@ describe("MonthlyItemDetailView", () => {
 
     const toggleBtn = screen.getByRole("button", { name: "Ngừng dùng" });
     fireEvent.click(toggleBtn);
+    await vi.waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
     await vi.waitFor(() => expect(setMonthlyItemStatus).toHaveBeenCalledTimes(1));
     const formData = vi.mocked(setMonthlyItemStatus).mock.calls[0][0] as FormData;
     expect(formData.get("id")).toBe("KCT-001");
@@ -114,7 +123,10 @@ describe("MonthlyItemDetailView", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
-  it("shows Dùng lại button when INACTIVE", async () => {
+  it("shows Dùng lại button when INACTIVE and asks confirm before toggling status", async () => {
+    const { confirm } = await import("@/lib/shared/dialog");
+    vi.mocked(confirm).mockResolvedValue(true);
+
     render(
       <MonthlyItemDetailView
         item={{ ...SAMPLE_ITEM, status: "INACTIVE" }}
@@ -127,6 +139,7 @@ describe("MonthlyItemDetailView", () => {
 
     const toggleBtn = screen.getByRole("button", { name: "Dùng lại" });
     fireEvent.click(toggleBtn);
+    await vi.waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
     await vi.waitFor(() => expect(setMonthlyItemStatus).toHaveBeenCalledTimes(1));
     const formData = vi.mocked(setMonthlyItemStatus).mock.calls[0][0] as FormData;
     expect(formData.get("status")).toBe("ACTIVE");
@@ -169,7 +182,10 @@ describe("MonthlyItemDetailView", () => {
     expect(screen.getByRole("button", { name: "Xoá" })).toBeInTheDocument();
   });
 
-  it("clicking Xoá confirms inline 'Xoá khoản này?' without modal, and Bỏ cancels", () => {
+  it("clicking Xoá confirms with dialog, and cancelling does not delete", async () => {
+    const { confirm } = await import("@/lib/shared/dialog");
+    vi.mocked(confirm).mockResolvedValue(false);
+
     render(
       <MonthlyItemDetailView
         item={SAMPLE_ITEM}
@@ -181,17 +197,15 @@ describe("MonthlyItemDetailView", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Xoá" }));
-    expect(screen.getByText("Xoá khoản này?")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
-
-    // Cancel
-    fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
-    expect(screen.queryByText("Xoá khoản này?")).toBeNull();
+    expect(confirm).toHaveBeenCalledTimes(1);
     expect(deleteMonthlyItem).not.toHaveBeenCalled();
   });
 
-  it("confirming inline delete calls deleteMonthlyItem and navigates to returnTo on success", async () => {
+  it("confirming delete calls deleteMonthlyItem and navigates to returnTo on success", async () => {
+    const { confirm } = await import("@/lib/shared/dialog");
+    vi.mocked(confirm).mockResolvedValue(true);
     vi.mocked(deleteMonthlyItem).mockResolvedValue({ success: true } as never);
+
     render(
       <MonthlyItemDetailView
         item={SAMPLE_ITEM}
@@ -202,7 +216,6 @@ describe("MonthlyItemDetailView", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Xoá" }));
     fireEvent.click(screen.getByRole("button", { name: "Xoá" }));
 
     await vi.waitFor(() => expect(deleteMonthlyItem).toHaveBeenCalledTimes(1));
@@ -213,9 +226,12 @@ describe("MonthlyItemDetailView", () => {
   });
 
   it("shows server refusal error in role='alert' when delete is refused", async () => {
+    const { confirm } = await import("@/lib/shared/dialog");
+    vi.mocked(confirm).mockResolvedValue(true);
     vi.mocked(deleteMonthlyItem).mockResolvedValue({
       error: "Khoản này đã có dòng trong sổ thu chi, chỉ ngừng dùng được.",
     } as never);
+
     render(
       <MonthlyItemDetailView
         item={SAMPLE_ITEM}
@@ -226,7 +242,6 @@ describe("MonthlyItemDetailView", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Xoá" }));
     fireEvent.click(screen.getByRole("button", { name: "Xoá" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(

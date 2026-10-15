@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { findAll, findAllWhere } from "@/lib/db/tables";
 import { loadProductRow } from "@/app/admin/products/load-product-rows";
 import ProductForm from "@/app/admin/products/components/ProductForm";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 

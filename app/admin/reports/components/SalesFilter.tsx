@@ -58,28 +58,48 @@ function SalesFilterInner({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [brandId, setBrandId] = useState(searchParams.get("brandId") || "");
-  const [staffName, setStaffName] = useState(searchParams.get("staffName") || "");
-  const [categoryId, setCategoryId] = useState(searchParams.get("categoryId") || "");
+  const urlBrand = searchParams?.get("brandId") || "";
+  const urlStaff = searchParams?.get("staffName") || "";
+  const urlCat = searchParams?.get("categoryId") || "";
+
+  const [brandId, setBrandId] = useState(urlBrand);
+  const [staffName, setStaffName] = useState(urlStaff);
+  const [categoryId, setCategoryId] = useState(urlCat);
   const [isPending, startTransition] = useTransition();
+
+  React.useEffect(() => {
+    setBrandId(urlBrand);
+  }, [urlBrand]);
+
+  React.useEffect(() => {
+    setStaffName(urlStaff);
+  }, [urlStaff]);
+
+  React.useEffect(() => {
+    setCategoryId(urlCat);
+  }, [urlCat]);
 
   const handleRangeChange = (next: RangeValue) => {
     const params = new URLSearchParams(searchParams ? searchParams.toString() : "");
     writeRangeParams(params, next);
     params.delete("start");
     params.delete("end");
-    if (brandId) {
-      params.set("brandId", brandId);
+    const appliedBrandId = searchParams?.get("brandId");
+    const appliedStaffName = searchParams?.get("staffName");
+    const appliedCategoryId = searchParams?.get("categoryId");
+
+    if (appliedBrandId) {
+      params.set("brandId", appliedBrandId);
     } else {
       params.delete("brandId");
     }
-    if (staffName) {
-      params.set("staffName", staffName);
+    if (appliedStaffName) {
+      params.set("staffName", appliedStaffName);
     } else {
       params.delete("staffName");
     }
-    if (categoryId) {
-      params.set("categoryId", categoryId);
+    if (appliedCategoryId) {
+      params.set("categoryId", appliedCategoryId);
     } else {
       params.delete("categoryId");
     }
@@ -90,12 +110,16 @@ function SalesFilterInner({
 
   const handleFilter = () => {
     const params = new URLSearchParams();
-    const currentRange = searchParams.get("range");
-    const currentFrom = searchParams.get("from");
-    const currentTo = searchParams.get("to");
-    if (currentRange) params.set("range", currentRange);
-    if (currentFrom) params.set("from", currentFrom);
-    if (currentTo) params.set("to", currentTo);
+    const currentRange = searchParams?.get("range");
+    const currentFrom = searchParams?.get("from");
+    const currentTo = searchParams?.get("to");
+    if (currentRange) {
+      params.set("range", currentRange);
+      if (currentFrom) params.set("from", currentFrom);
+      if (currentTo) params.set("to", currentTo);
+    } else if (range) {
+      writeRangeParams(params, range);
+    }
 
     if (brandId) params.set("brandId", brandId);
     if (staffName) params.set("staffName", staffName);

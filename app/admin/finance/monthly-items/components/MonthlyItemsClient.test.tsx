@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import React from "react";
 import MonthlyItemsClient from "./MonthlyItemsClient";
@@ -93,13 +93,15 @@ describe("MonthlyItemsClient", () => {
     expect(createBtn.getAttribute("href")).toContain("/admin/finance/monthly-items/new");
   });
 
-  it("renders table columns with correct values and links", () => {
-    render(<MonthlyItemsClient items={SAMPLE_ITEMS} categories={CATEGORIES} />);
+  it("renders table columns with correct values, Mã column and links when status=ALL", () => {
+    render(<MonthlyItemsClient items={SAMPLE_ITEMS} categories={CATEGORIES} initialStatus="ALL" />);
+    expect(screen.getAllByText("KCT-001").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Tiền điện").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chi phí cố định").length).toBeGreaterThan(0);
     expect(screen.getAllByText("5").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
 
+    expect(screen.getAllByText("KCT-002").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Tiền nước").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Vận hành").length).toBeGreaterThan(0);
     expect(screen.getAllByText("0").length).toBeGreaterThan(0);
@@ -109,6 +111,12 @@ describe("MonthlyItemsClient", () => {
       l.getAttribute("href")?.startsWith("/admin/finance/monthly-items/KCT-001"),
     );
     expect(rowLinks.length).toBeGreaterThan(0);
+  });
+
+  it("defaults to ACTIVE status filter, hiding inactive items", () => {
+    render(<MonthlyItemsClient items={SAMPLE_ITEMS} categories={CATEGORIES} />);
+    expect(screen.getAllByText("Tiền điện").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Tiền nước")).toBeNull();
   });
 
   it("status filter filters items", () => {
@@ -122,5 +130,38 @@ describe("MonthlyItemsClient", () => {
     );
     expect(screen.getAllByText("Tiền điện").length).toBeGreaterThan(0);
     expect(screen.queryByText("Tiền nước")).toBeNull();
+  });
+
+  it("clearing filters resets status to ACTIVE and clears search", () => {
+    mockSearchParams = new URLSearchParams("status=INACTIVE&q=nước");
+    render(
+      <MonthlyItemsClient
+        items={SAMPLE_ITEMS}
+        categories={CATEGORIES}
+        initialStatus="INACTIVE"
+        initialSearch="nước"
+      />,
+    );
+    const clearBtn = screen.getByRole("button", { name: "Xoá lọc" });
+    fireEvent.click(clearBtn);
+    expect(replace).toHaveBeenCalledWith("/admin/finance/monthly-items", { scroll: false });
+  });
+
+  it("shows empty state when no items match the filter", () => {
+    render(
+      <MonthlyItemsClient
+        items={SAMPLE_ITEMS}
+        categories={CATEGORIES}
+        initialSearch="không tồn tại"
+      />,
+    );
+    expect(screen.getByText("Không có khoản chi nào khớp bộ lọc")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Xoá lọc" })[0]).toBeInTheDocument();
+  });
+
+  it("shows empty state when there are no monthly items created yet", () => {
+    render(<MonthlyItemsClient items={[]} categories={CATEGORIES} />);
+    expect(screen.getByText("Chưa có khoản chi hằng tháng nào")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Xoá lọc" })).toBeNull();
   });
 });

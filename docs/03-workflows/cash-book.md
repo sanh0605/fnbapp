@@ -2,7 +2,7 @@
 
 ```flow-decl
 routes: /admin/finance/categories, /admin/finance/bank-accounts, /admin/finance, /admin/finance/new, /admin/finance/[id], /admin/finance/[id]/edit, /admin/finance/categories/new, /admin/finance/categories/[id], /admin/finance/categories/[id]/edit, /admin/finance/bank-accounts/new, /admin/finance/bank-accounts/[id], /admin/finance/bank-accounts/[id]/edit, /admin/finance/transfers/new, /admin/finance/transfers/[id], /admin/finance/transfers/[id]/edit, /admin/finance/monthly-items, /admin/finance/monthly-items/new, /admin/finance/monthly-items/[id], /admin/finance/monthly-items/[id]/edit
-files: app/admin/finance/monthly-items/actions.ts, app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, app/admin/finance/transfers/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts, lib/finance/cash-transfer-rules.ts, lib/finance/cash-flow.ts, lib/finance/cash-book-daily.ts, lib/finance/cash-book-rows.ts
+files: app/admin/finance/monthly-items/actions.ts, app/admin/finance/categories/actions.ts, app/admin/finance/bank-accounts/actions.ts, app/admin/finance/actions.ts, app/admin/finance/transfers/actions.ts, lib/finance/audit-columns.ts, lib/finance/cash-entry-rules.ts, lib/finance/cash-transfer-rules.ts, lib/finance/cash-flow.ts, lib/finance/cash-book-daily.ts, lib/finance/cash-book-rows.ts, lib/finance/cash-book-months.ts
 tables: Cash_Categories, Bank_Accounts, Cash_Entries, Cash_Transfers, Monthly_Expense_Items
 brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-CASH-005, BR-CASH-006, BR-CASH-007, BR-CASH-008, BR-CASH-009
 ```
@@ -11,6 +11,7 @@ brCodes: BR-ACCESS-003, BR-CASH-001, BR-CASH-002, BR-CASH-003, BR-CASH-004, BR-C
 - **Server checks.** A hand row's date must be a real day, not after today (Sài Gòn time) and not before 2026-03-26. Its group and account must exist and be `ACTIVE` or already its own. The note holds at most 500 characters. A transfer's accounts follow the same rule.
 - **Monthly items.** A group cannot switch Thu/Chi or stop while a monthly item uses it, and a monthly item that has rows keeps its group. "Dùng lại" is refused while its group is stopped. "Xoá" counts rows in every state.
 - **Purchase links.** A purchase-date row opens the purchase-order list filtered to that account. An unknown payment method is refused when written.
+- **Screens (G-TC1, G-TC2).** The five forms share one footer ("Tạo" / "Bỏ", "Lưu thay đổi" / "Bỏ thay đổi", `BR-UI-015`) and show errors inline. Sổ thu chi gains a search box and a "Theo tháng" tab (`?view=months`). Column `cash_entries.payer`, never shown, is dropped by migration `0128` after the push.
 
 **Behaviour change — 2026-10-14 (Khoản chi hằng tháng, migration `0109`, `BR-CASH-009`):**
 - **The list.** A new list `/admin/finance/monthly-items` under Thu chi holds the owner's recurring expenses, such as Tiền điện. Each belongs to one active expense group.
@@ -107,11 +108,16 @@ the two settings screens where they still apply.
    carries the same name.
 
 3. **What each list contains, and what is excluded.** The ledger reads one
-   date range at a time (`getCashEntries(start, end)`, filtered server-side
-   on `entry_date`), then narrows the table by status — Đang dùng by
-   default, Đã huỷ, or Tất cả; a cancelled row keeps its badge and drops out
-   of the totals, which always cover the whole range — newest `entry_date`
-   first, then newest id, 20 rows a page. The range is picked with the shared
+   date range at a time (`getFinancePageData(start, end)`): hand rows, sales
+   and purchase days and transfers, built into one row list by
+   `buildCashBookRows` (`lib/finance/cash-book-rows.ts`). It then narrows the
+   table by status — Đang dùng by default, Đã huỷ, or Tất cả; a cancelled row
+   keeps its badge and drops out of the totals, which always cover the whole
+   range — and by a search box over date, group, note and monthly item
+   (`BR-UI-016`), newest date first, 20 rows a page. The "Theo tháng" tab
+   (`?view=months`, `getCashBookMonths`) shows one row per month with
+   Đầu kỳ, money in and out by kind and group, and Cuối kỳ, cash and bank
+   apart (`BR-UI-017`). The range is picked with the shared
    time filter button (`BR-UI-007`) and written on the URL as `range`, plus
    `from`/`to` for Tuỳ chọn. A hand-edited range that is not two real calendar
    dates written `YYYY-MM-DD`, in order, falls back to "Tháng này"
@@ -149,15 +155,11 @@ the two settings screens where they still apply.
    serves money the owner physically paid out (chi), other money he
    received that is not a sale (thu khác), and capital he put in himself
    (vốn góp) — never a POS sale, which the sales/orders flow already
-   records. `summariseEntries` (also in `cash-entry-rules.ts`) turns a page
-   of entries into `totalExpense`, `totalIncome` and `incomeOutsidePnl`
-   (capital contributions and similar `affects_pnl: false` income) —
-   deliberately three separate numbers, never netted into one, so the
-   screen never implies a false "extra profit" figure by adding money that
-   is not revenue. `incomeOutsidePnl` shows as a line inside the income
-   total, not as a third card. Under the totals, one line per category gives
-   its amount for the range; an entry whose category is missing from the
-   list shows as a warning line instead of vanishing. The one dated
+   records as its own day row. `summariseCashBook` (`lib/finance/cash-flow.ts`)
+   gives the Đầu kỳ and Cuối kỳ cards, cash and bank apart and together,
+   over the whole book ("cả sổ, mọi loại"); `cashBookRowTotals` gives the
+   total row over the rows the filter keeps, leaving out cancelled rows and
+   transfers. Money in and money out stay two numbers, never netted. The one dated
    exception to "never a sale" is the owner's two lost-revenue rows, dated
    2026-04-30 since the owner moved them on 2026-09-11 (`BR-CASH-001`).
 

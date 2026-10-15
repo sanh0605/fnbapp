@@ -164,6 +164,7 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
     revalidateTag("sheets-Products", { expire: 0 });
     revalidateTag("sheets-Product_Variants", { expire: 0 });
     revalidateTag("sheets-Modifier_Group_Products", { expire: 0 });
+    revalidateTag("sheets-Product_Price_History", { expire: 0 });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {

@@ -85,6 +85,7 @@ function makeDetail(
     },
     timeline: [],
     events: [],
+    promotions: [],
   };
 }
 
@@ -309,3 +310,40 @@ describe("OrderDetailView payment parts (BR-SALE-013, owner 2026-10-14 C12)", ()
     expect(screen.queryByText(/•/)).toBeNull();
   });
 });
+
+describe("OrderDetailView promotions (Phiếu G7)", () => {
+  it("order page shows two promotion lines", () => {
+    const detail: OrderDetailV2Result = {
+      ...makeDetail("COMPLETED", {
+        gross_total: 54000,
+        promo_discount_total: 25100,
+        net_total: 28900,
+      }),
+      promotions: [
+        {
+          promotion_id: "PRM-1",
+          seq: 1,
+          name: "202607 - GIẢM 10K",
+          code: "",
+          amount: 20000,
+        },
+        {
+          promotion_id: "PRM-2",
+          seq: 2,
+          name: "KHAITRUONG",
+          code: "KHAITRUONG",
+          amount: 5100,
+        },
+      ],
+    };
+
+    render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
+
+    expect(screen.getByText("202607 - GIẢM 10K")).toBeInTheDocument();
+    expect(screen.getByText("-20,000")).toBeInTheDocument();
+    expect(screen.getByText("KHAITRUONG")).toBeInTheDocument();
+    expect(screen.getByText("-5,100")).toBeInTheDocument();
+    expect(screen.queryByText("Khuyến mãi hệ thống")).toBeNull();
+  });
+});
+

@@ -1,6 +1,6 @@
 import { getAssetBands } from "../actions";
 import { requireAdmin } from "@/lib/auth/auth";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { EditBandsForm } from "./components/EditBandsForm";

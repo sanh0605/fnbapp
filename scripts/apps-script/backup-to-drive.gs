@@ -12,8 +12,9 @@ const EXPECTED_TABLES = [
   "assets", "asset_disposals", "uom_conversions", "product_price_history",
   "orders_v2", "order_lines_v2", "order_events", "purchase_orders",
   "purchase_order_lines", "pos_drafts", "users", "order_payments",
+  "order_promotions",
   "stocktake_sessions", "stocktake_lines", "issue_slips", "stock_issues",
-  "purchase_order_edits", "pos_sync_failures", "cash_categories",
+  "purchase_order_edits", "cash_categories",
   "bank_accounts", "monthly_expense_items", "cash_entries", "cash_transfers",
 ];
 const DAILY_RETENTION_COUNT = 180;

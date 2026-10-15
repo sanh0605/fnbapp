@@ -6,8 +6,8 @@ import { revalidatePath } from "next/cache";
 import { resolveActor } from "@/lib/auth/auth";
 import crypto from "node:crypto";
 
-import { buildOrderFromCart } from "@/lib/sales/order-cart";
-import { EVENT_TYPE, ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/sales/order-types";
+import { PRICE_CHANGED, buildOrderFromCart } from "@/lib/sales/order-cart";
+import { EVENT_TYPE, InvariantError, ORDER_STATUS, coerceOrderV2, coerceLineV2 } from "@/lib/sales/order-types";
 import { savePosOrderAtomic } from "@/lib/sales/pos-order-transaction";
 import { breakdownRevenueByProduct } from "@/lib/reports/report-v2-allocators";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
@@ -21,6 +21,8 @@ export type SubmitOrderV2Result = {
 } | {
   success: false;
   error: string;
+  // true: the cart is kept and the till offers "Gửi lại" with the same request token
+  retry: boolean;
 };
 
 export type PosBestSellerFilters = {
@@ -37,19 +39,19 @@ export async function submitOrderV2(
   try {
     // 1. Validate input
     if (!input.items || input.items.length === 0) {
-      return { success: false, error: "Giỏ hàng trống" };
+      return { success: false, error: "Giỏ hàng trống", retry: false };
     }
     if (!input.outlet_id) {
-      return { success: false, error: "Không xác định được điểm bán" };
+      return { success: false, error: "Không xác định được điểm bán", retry: false };
     }
 
     // 2. Require a real session, or the explicit CLI_MODE system actor.
     const auth = await resolveActor();
-    if (!auth.ok) return { success: false, error: auth.error };
+    if (!auth.ok) return { success: false, error: auth.error, retry: false };
     const actor = auth.actor;
 
     // 3. Load reference data (cached where possible)
-    const [outlets, brands, products, variants, categories, modifiers, promotions] = await Promise.all([
+    const [outlets, brands, products, variants, categories, modifiers, promotions, priceHistory] = await Promise.all([
       findAll("Outlets"),
       findAll("Brands"),
       findAll("Products"),
@@ -57,6 +59,7 @@ export async function submitOrderV2(
       findAll("Product_Categories"),
       findAll("Modifiers"),
       findAll("Promotions"),
+      findAll("Product_Price_History"),
     ]);
 
     // section 5/6:
@@ -65,17 +68,21 @@ export async function submitOrderV2(
     // buildOrderFromCart (and its promotion filtering) ever sees it.
     const outlet = outlets.find((o: any) => o.id === input.outlet_id);
     if (!outlet) {
-      return { success: false, error: "Điểm bán không tồn tại" };
+      return { success: false, error: "Điểm bán không tồn tại", retry: false };
     }
     // F1: a stopped outlet must not take orders (the stop dialog promises it).
     if (outlet.status !== "ACTIVE") {
-      return { success: false, error: "Điểm bán này đã ngừng hoạt động" };
+      return { success: false, error: "Điểm bán này đã ngừng hoạt động", retry: false };
+    }
+    // An old till page sends no shown total or promotion set: refuse it like a mismatch (BR-SALE-008).
+    if (input.shown_total === undefined || input.promotion_ids === undefined) {
+      return { success: false, error: PRICE_CHANGED, retry: false };
     }
     const resolvedInput = { ...input, brand_id: outlet.brand_id };
 
     // 4. Build order + lines + snapshots (pure function, internally asserts invariants)
     const built = buildOrderFromCart({ ...resolvedInput, actor }, {
-      brands, products, variants, categories, modifiers, promotions,
+      brands, products, variants, categories, modifiers, promotions, priceHistory,
     });
     const saleTime = built.order.created_at;
 
@@ -115,7 +122,7 @@ export async function submitOrderV2(
     // 7. Persist the complete bill in one database transaction.
     const saved = await savePosOrderAtomic({
       outletCode,
-      order: built.order,
+      order: { ...built.order, promotions: built.orderPromotions },
       lines: built.lines,
       event,
       clientRequestId: requestToken,
@@ -139,7 +146,14 @@ export async function submitOrderV2(
       order_no: saved.orderNo,
     };
   } catch (err: any) {
-    return { success: false, error: err?.message || String(err) };
+    // A thrown rule (InvariantError) is a refusal; anything else is a network or database hiccup the till may resend.
+    // Staff never see English (BR-UI-001): only Vietnamese rule texts (they carry diacritics) pass; the rest is logged, not shown.
+    console.error(`submitOrderV2 failed: ${err?.message ?? err}`);
+    if (!(err instanceof InvariantError)) {
+      return { success: false, error: "Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại", retry: true };
+    }
+    const vietnamese = /[^\x00-\x7F]/.test(err.message);
+    return { success: false, error: vietnamese ? err.message : "Đơn không hợp lệ — tải lại trang rồi bấm lại.", retry: false };
   }
 }
 
@@ -259,6 +273,10 @@ export async function savePOSDraft(draft: {
       const allDrafts = await findAllNoCache("POS_Drafts");
       const existing = allDrafts.find((d: any) => d.id === draft.id);
       if (existing) {
+        // R7: a draft belongs to the outlet it was started at.
+        if (existing.outlet_id !== draft.outlet_id) {
+          return { success: false as const, error: "Nháp này thuộc điểm bán khác" };
+        }
         const updated = await update("POS_Drafts", draft.id, {
           name: draft.name,
           cart_json: draft.cart_json,
@@ -287,37 +305,19 @@ export async function savePOSDraft(draft: {
   }
 }
 
-export async function deletePOSDraft(draftId: string) {
+export async function deletePOSDraft(draftId: string, outletId: string) {
   try {
     const auth = await resolveActor();
     if (!auth.ok) return { success: false as const, error: auth.error };
+
+    const existing = (await findAllNoCache("POS_Drafts")).find((d: any) => d.id === draftId);
+    if (existing && existing.outlet_id !== outletId) {
+      return { success: false as const, error: "Nháp này thuộc điểm bán khác" };
+    }
 
     await remove("POS_Drafts", draftId);
     return { success: true as const };
   } catch (err: any) {
     return { success: false as const, error: err?.message || String(err) };
-  }
-}
-
-export async function reportPosSyncFailure(
-  requestToken: string,
-  cartInput: CartInput,
-  error?: string,
-): Promise<{ success: boolean; error?: string }> {
-  const auth = await resolveActor();
-  if (!auth.ok) return { success: false, error: auth.error };
-
-  try {
-    await insert("Pos_Sync_Failures", {
-      id: `psf-${crypto.randomUUID()}`,
-      request_token: requestToken,
-      cart_payload_json: JSON.stringify(cartInput),
-      error_message: error || "Unknown error",
-      resolved: false,
-    });
-
-    return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err?.message || String(err) };
   }
 }

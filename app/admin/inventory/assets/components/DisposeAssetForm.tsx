@@ -10,7 +10,7 @@ import { TextInput } from "@/components/ui/TextInput";
 import { Field } from "@/components/ui/Field";
 import { formatNumber } from "@/lib/shared/format";
 import { toSaigonIsoString, formatDateTimeFull } from "@/lib/shared/datetime";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { disposeAsset, previewDisposalCharge } from "../actions";
 import type { AssetLotView } from "@/lib/assets/asset-items";
 

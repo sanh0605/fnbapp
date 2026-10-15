@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 
 interface UserFormProps {
   returnTo?: string;
@@ -15,7 +15,7 @@ interface UserFormProps {
 }
 
 export function UserForm({ returnTo: rawReturnTo, canGrantAdmin = true }: UserFormProps = {}) {
-  const returnTo = safeReturnTo(rawReturnTo);
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/users");
   const formId = useId();
   const router = useRouter();
   const [loading, setLoading] = useState(false);

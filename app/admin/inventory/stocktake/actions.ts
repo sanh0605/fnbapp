@@ -1,6 +1,6 @@
 "use server";
 
-import { findAll, findAllWhere } from "@/lib/db/tables";
+import { findAll, findAllNoCache, findAllWhere } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
@@ -18,6 +18,10 @@ import {
 } from "@/lib/stock/stocktake-transaction";
 import { buildPackageLines, type PackageLine, type PurchasedItemConversion } from "@/lib/stock/stocktake-package-lines";
 import { filterByC17 } from "@/lib/stock/purchased-item-onhand";
+import { buildIssueCostingPurchases, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
+import { computeIssueLineValues } from "@/lib/costing/issue-line-values";
+import { computeUnitCostsAt } from "@/lib/costing/unit-cost-at";
+import { displayMoney } from "@/lib/reports/display-rounding";
 
 const PATH = "/admin/inventory/stocktake";
 
@@ -35,6 +39,17 @@ export interface StocktakeLineView {
   // before D6 (kept alive per C8/C16) has no conversions to show and falls
   // back to the old single base-unit input.
   packageLines: PackageLine[];
+  // Phân loại hàng name, for grouping.
+  groupName: string;
+  // BLANK = not counted (BR-INV-011), OFF = counted and different from the
+  // book, MATCH = counted and equal. Derived on read, never stored.
+  state: "BLANK" | "OFF" | "MATCH";
+  // Cost per base unit now (exact); null when the item has no price yet.
+  unitCost: number | null;
+  // Counted - book in whole đồng, negative = short. OPEN: difference x unitCost
+  // now (provisional). CONFIRMED: what the costing engine booked for the line.
+  // REVERSED, uncounted, or no price: null.
+  diffValue: number | null;
 }
 
 export interface StocktakeSessionView {
@@ -42,19 +57,10 @@ export interface StocktakeSessionView {
   status: "OPEN" | "CONFIRMED" | "REVERSED";
   createdByName: string;
   createdAt: string;
+  confirmedAt: string | null;
+  confirmedByName: string | null;
   notes: string;
   lines: StocktakeLineView[];
-}
-
-// Plan D D14: the last CONFIRMED session, shown so the owner can undo it
-// (U1-U6) even after no session is OPEN any more. Lightweight -- reversal is
-// whole-session, so there is nothing to show per line.
-export interface RecentConfirmedStocktakeSessionView {
-  id: string;
-  confirmedByName: string;
-  confirmedAt: string;
-  notes: string;
-  hasOpenSessionBlocking: boolean;
 }
 
 async function loadItemNameMaps() {
@@ -124,43 +130,6 @@ async function loadPackageLinesByPurchasedItem(
     byPurchasedItem.set(line.purchasedItemId, list);
   }
   return byPurchasedItem;
-}
-
-// Plan D D14, U1-U6: the most recently CONFIRMED session, so it can be
-// undone even after it stops being the OPEN session shown above. Read-only
-// -- requireAdmin() is enough to see it (both ADMIN and MANAGER already see
-// everything else on this screen); the stricter owner-only guard applies
-// only to the reversal action itself.
-export async function getLastConfirmedStocktakeSession(): Promise<RecentConfirmedStocktakeSessionView | null> {
-  const auth = await requireAdmin();
-  if (!auth.ok) throw new Error(auth.error);
-
-  // Production bug 2026-08-09: this used order.column = "confirmed_at".
-  // findAllWhere (lib/db/tables.ts) only supports 'id' or 'created_at' and
-  // throws on anything else -- every load of this page failed, regardless
-  // of data. created_at is not a workaround, it is equivalent here: at most
-  // one session can ever be OPEN at a time (idx_stocktake_sessions_one_open,
-  // 0036), so a session cannot even be created until the previous one has
-  // left OPEN status -- created_at order among sessions already matches
-  // confirmed_at order for the ones that reach CONFIRMED.
-  const [confirmedSessions, openSessions] = await Promise.all([
-    findAllWhere<any>("stocktake_sessions", {
-      eq: { status: "CONFIRMED" },
-      order: { column: "created_at", ascending: false },
-      limit: 1,
-    }),
-    findAllWhere<any>("stocktake_sessions", { eq: { status: "OPEN" }, limit: 1 }),
-  ]);
-  const session = confirmedSessions[0];
-  if (!session) return null;
-
-  return {
-    id: session.id,
-    confirmedByName: session.confirmed_by_name,
-    confirmedAt: session.confirmed_at,
-    notes: session.notes ?? "",
-    hasOpenSessionBlocking: openSessions.length > 0,
-  };
 }
 
 // BR-INV-012: why the edit button is not offered. Checked in this order.
@@ -238,41 +207,162 @@ export async function getStocktakeDetail(id: string): Promise<StocktakeDetailVie
   };
 }
 
-export async function getStocktakeSessionData(): Promise<StocktakeSessionView | null> {
+// Purchases and stock issues for the money columns, priced by the same costing
+// engine as Phiếu xuất and the reports (no second cost definition).
+async function loadStocktakeCosting() {
+  const [issues, purchaseOrders, purchaseOrderLines, maps] = await Promise.all([
+    findAllNoCache("Stock_Issues"),
+    findAllNoCache("Purchase_Orders"),
+    findAllNoCache("Purchase_Order_Lines"),
+    loadItemNameMaps(),
+  ]);
+  const purchases = buildIssueCostingPurchases(purchaseOrders as any[], purchaseOrderLines as any[]);
+  const costedIssues = selectCostedIssues(issues as any[], maps.purchasedItems, maps.itemCategories).map((r: any) => ({
+    id: r.id as string,
+    purchased_item_id: r.purchased_item_id as string,
+    at: r.issued_at as string,
+    base_quantity: Number(r.base_quantity) || 0,
+    source: r.source as "STOCKTAKE" | "MANUAL",
+  }));
+  return { issues: issues as any[], purchases, costedIssues, maps };
+}
+
+// Value the engine booked for a session's stocktake rows, summed per item
+// (positive = shortfall, negative = found goods: the sign of its row).
+function bookedValueByItem(lineValues: Map<string, number>, issues: any[], sessionId: string) {
+  const byItem = new Map<string, number>();
+  for (const i of issues) {
+    if (i.source !== "STOCKTAKE" || i.session_id !== sessionId || !lineValues.has(i.id)) continue;
+    byItem.set(i.purchased_item_id, (byItem.get(i.purchased_item_id) ?? 0) + lineValues.get(i.id)!);
+  }
+  return byItem;
+}
+
+export interface StocktakeListRow {
+  id: string;
+  status: "OPEN" | "CONFIRMED" | "REVERSED";
+  at: string; // confirmed time, or start time while counting
+  personName: string;
+  countedLines: number;
+  totalLines: number;
+  // Whole đồng, never netted against each other. OPEN: provisional (cost now);
+  // CONFIRMED: booked by the engine; REVERSED: null.
+  shortValue: number | null;
+  foundValue: number | null;
+  isLatestConfirmed: boolean;
+}
+
+// Every session, newest code first. Cancelled sessions do not exist (BR-INV-010).
+export async function listStocktakeSessions(): Promise<StocktakeListRow[]> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const openSessions = await findAllWhere<any>("stocktake_sessions", { eq: { status: "OPEN" }, limit: 1 });
-  const session = openSessions[0];
+  const [sessions, lines, { issues, purchases, costedIssues }] = await Promise.all([
+    findAllNoCache("stocktake_sessions") as Promise<any[]>,
+    findAllNoCache("stocktake_lines") as Promise<any[]>,
+    loadStocktakeCosting(),
+  ]);
+  const lineValues = computeIssueLineValues(purchases, costedIssues);
+  const unitCosts = computeUnitCostsAt(purchases, costedIssues, new Date().toISOString(), lines.map(l => l.item_reference));
+  const latestConfirmed = sessions
+    .filter(s => s.status === "CONFIRMED")
+    .reduce<any>((best, s) => (!best || String(s.confirmed_at) > String(best.confirmed_at) ? s : best), null)?.id;
+
+  return sessions
+    .map((s): StocktakeListRow => {
+      const own = lines.filter(l => l.session_id === s.id);
+      let shortExact: number | null = null;
+      let foundExact: number | null = null;
+      if (s.status === "CONFIRMED") {
+        const booked = [...bookedValueByItem(lineValues, issues, s.id).values()];
+        shortExact = booked.filter(v => v > 0).reduce((a, b) => a + b, 0);
+        foundExact = -booked.filter(v => v < 0).reduce((a, b) => a + b, 0);
+      } else if (s.status === "OPEN") {
+        shortExact = 0;
+        foundExact = 0;
+        for (const l of own) {
+          if (l.counted_qty === null || l.theoretical_at_count === null) continue;
+          const diff = (Number(l.counted_qty) - Number(l.theoretical_at_count)) * (unitCosts.get(l.item_reference) ?? 0);
+          if (diff < 0) shortExact -= diff; else foundExact += diff;
+        }
+      }
+      return {
+        id: s.id,
+        status: s.status,
+        at: s.confirmed_at ?? s.created_at,
+        personName: s.confirmed_by_name ?? s.created_by_name,
+        countedLines: own.filter(l => l.counted_qty !== null).length,
+        totalLines: own.length,
+        shortValue: shortExact === null ? null : displayMoney(shortExact),
+        foundValue: foundExact === null ? null : displayMoney(foundExact),
+        isLatestConfirmed: s.id === latestConfirmed,
+      };
+    })
+    .sort((a, b) => b.id.localeCompare(a.id, undefined, { numeric: true }));
+}
+
+// One session of any status, for the counting screen and the detail page.
+// null only when the id is unknown.
+export async function getStocktakeSessionData(id: string): Promise<StocktakeSessionView | null> {
+  const auth = await requireAdmin();
+  if (!auth.ok) throw new Error(auth.error);
+
+  const session = (await findAllWhere<any>("stocktake_sessions", { eq: { id }, limit: 1 }))[0];
   if (!session) return null;
 
-  const [lines, { nameById, unitNameById, unitNameByItemId }] = await Promise.all([
-    findAllWhere<any>("stocktake_lines", { eq: { session_id: session.id } }),
-    loadItemNameMaps(),
+  const [lines, costing] = await Promise.all([
+    findAllWhere<any>("stocktake_lines", { eq: { session_id: id } }),
+    loadStocktakeCosting(),
   ]);
+  const { nameById, unitNameById, unitNameByItemId, purchasedItems, itemCategories } = costing.maps;
   const packageLinesByPurchasedItem = await loadPackageLinesByPurchasedItem(nameById, unitNameById);
+  const categoryNameById = new Map<string, string>(itemCategories.map(c => [c.id, c.name]));
+  const categoryIdByItem = new Map<string, string>(purchasedItems.map(p => [p.id, p.item_category_id]));
+  const unitCosts = computeUnitCostsAt(
+    costing.purchases, costing.costedIssues, new Date().toISOString(), lines.map(l => l.item_reference),
+  );
+  const booked = session.status === "CONFIRMED"
+    ? bookedValueByItem(computeIssueLineValues(costing.purchases, costing.costedIssues), costing.issues, id)
+    : null;
 
   return {
     id: session.id,
     status: session.status,
     createdByName: session.created_by_name,
     createdAt: session.created_at,
+    confirmedAt: session.confirmed_at ?? null,
+    confirmedByName: session.confirmed_by_name ?? null,
     notes: session.notes ?? "",
     lines: lines
-      .map(line => ({
-        id: line.id,
-        itemReference: line.item_reference,
-        itemType: line.item_type as StocktakeItemType,
-        itemName: nameById.get(line.item_reference) ?? line.item_reference,
-        unitName: unitNameByItemId.get(line.item_reference) ?? "",
-        countedQty: line.counted_qty !== null ? Number(line.counted_qty) : null,
-        theoreticalAtCount: line.theoretical_at_count !== null ? Number(line.theoretical_at_count) : null,
-        countedAt: line.counted_at,
-        packageLines: line.item_type === "PURCHASED_ITEM"
-          ? (packageLinesByPurchasedItem.get(line.item_reference) ?? [])
-          : [],
-      }))
-      .sort((a, b) => a.itemName.localeCompare(b.itemName, "vi")),
+      .map((line): StocktakeLineView => {
+        const counted = line.counted_qty !== null ? Number(line.counted_qty) : null;
+        const book = line.theoretical_at_count !== null ? Number(line.theoretical_at_count) : null;
+        const unitCost = unitCosts.get(line.item_reference) ?? null;
+        let diffValue: number | null = null;
+        if (counted !== null && book !== null && session.status === "OPEN" && unitCost !== null) {
+          diffValue = displayMoney((counted - book) * unitCost);
+        } else if (counted !== null && booked) {
+          diffValue = displayMoney(-(booked.get(line.item_reference) ?? 0));
+        }
+        return {
+          id: line.id,
+          itemReference: line.item_reference,
+          itemType: line.item_type as StocktakeItemType,
+          itemName: nameById.get(line.item_reference) ?? line.item_reference,
+          unitName: unitNameByItemId.get(line.item_reference) ?? "",
+          countedQty: counted,
+          theoreticalAtCount: book,
+          countedAt: line.counted_at,
+          packageLines: line.item_type === "PURCHASED_ITEM"
+            ? (packageLinesByPurchasedItem.get(line.item_reference) ?? [])
+            : [],
+          groupName: categoryNameById.get(categoryIdByItem.get(line.item_reference) ?? "") ?? "",
+          state: counted === null ? "BLANK" : counted === book ? "MATCH" : "OFF",
+          unitCost,
+          diffValue,
+        };
+      })
+      .sort((a, b) => a.groupName.localeCompare(b.groupName, "vi") || a.itemName.localeCompare(b.itemName, "vi")),
   };
 }
 

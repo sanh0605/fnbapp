@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { findAll } from "@/lib/db/tables";
 import { resolveActor } from "@/lib/auth/auth";
-import { safeReturnTo } from "@/app/admin/brands/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import {
   BrandDetailView,
   type BrandOutletItem,
@@ -38,8 +38,7 @@ export default async function BrandDetailPage(
     .map((o) => ({ id: o.id, name: o.name }));
 
   const rawReturnTo = safeReturnTo(
-    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined,
-  );
+    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/brands");
   const returnTo = rawReturnTo.startsWith("/admin/brands/")
     ? "/admin/brands"
     : rawReturnTo;

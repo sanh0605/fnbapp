@@ -7,7 +7,7 @@ import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { useRouter } from "next/navigation";
-import { safeReturnTo } from "./return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBUser } from "@/types/db";
 
 interface EditUserFormProps {
@@ -21,7 +21,7 @@ export default function EditUserForm({
   returnTo: rawReturnTo,
   canGrantAdmin = true,
 }: EditUserFormProps) {
-  const returnTo = safeReturnTo(rawReturnTo);
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/users");
   const formId = useId();
   const router = useRouter();
   const [loading, setLoading] = useState(false);

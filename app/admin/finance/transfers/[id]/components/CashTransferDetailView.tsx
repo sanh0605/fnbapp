@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDate, formatDateTime } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { confirm } from "@/lib/shared/dialog";
 import { cancelCashTransfer, deleteCashTransfer } from "@/app/admin/finance/transfers/actions";
@@ -101,6 +102,10 @@ export function CashTransferDetailView({
           ? transfer.created_by_name
           : "—",
     },
+    {
+      label: "Ghi sổ lúc",
+      value: transfer.created_at ? formatDateTime(transfer.created_at) : "—",
+    },
   ];
 
   const headerActions = (
@@ -123,7 +128,7 @@ export function CashTransferDetailView({
         )}
         {canDelete && (
           <RemoveRecordButton
-            verb="Xoá"
+            verb="Xoá hẳn"
             name={transfer.id}
             confirmMessage={`Xoá hẳn dòng chuyển tiền ${transfer.id}? Không thể hoàn tác.`}
             remove={async () => {
@@ -136,12 +141,9 @@ export function CashTransferDetailView({
         )}
       </div>
       {actionError && (
-        <div
-          role="alert"
-          className="text-sm font-medium text-danger bg-danger/10 border border-danger/20 rounded-lg p-3"
-        >
+        <Alert variant="danger">
           {actionError}
-        </div>
+        </Alert>
       )}
     </div>
   );

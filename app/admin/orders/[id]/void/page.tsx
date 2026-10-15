@@ -5,7 +5,7 @@ import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { Button } from "@/components/ui/Button";
 import { getOrderDetailV2 } from "@/app/admin/orders/order-detail-actions";
-import { safeReturnTo } from "@/app/admin/orders/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { VoidOrderForm } from "./components/VoidOrderForm";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +34,7 @@ export default async function VoidOrderPage(
   }
 
   const returnToRaw = typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined;
-  const returnTo = safeReturnTo(returnToRaw);
+  const returnTo = safeReturnTo(returnToRaw, "/admin/orders", { listOnly: true });
   const detailHref = `${orderHref}?returnTo=${encodeURIComponent(returnTo)}`;
   const order = detail.order;
   const orderCode = order.display_order_no || order.order_no;

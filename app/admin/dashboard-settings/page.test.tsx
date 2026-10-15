@@ -5,6 +5,7 @@ import DashboardSettingsPage from "./page";
 import { getDashboardSettings } from "./actions";
 import { findAll } from "@/lib/db/tables";
 import { getProductTypes } from "@/app/admin/products/types/actions";
+import { resolveActor } from "@/lib/auth/auth";
 
 vi.mock("./actions", () => ({
   getDashboardSettings: vi.fn(),
@@ -19,6 +20,10 @@ vi.mock("@/app/admin/products/types/actions", () => ({
   getProductTypes: vi.fn(),
 }));
 
+vi.mock("@/lib/auth/auth", () => ({
+  resolveActor: vi.fn(),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
@@ -26,6 +31,10 @@ vi.mock("next/navigation", () => ({
 afterEach(() => cleanup());
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(resolveActor).mockResolvedValue({
+    ok: true,
+    actor: { id: "USR-001", name: "Chủ quán", role: "ADMIN" },
+  });
 });
 
 const SETTINGS = {
@@ -75,5 +84,21 @@ describe("DashboardSettingsPage", () => {
 
     const alert = screen.getByRole("alert");
     expect(alert).toHaveTextContent("Chưa có dòng cài đặt. Báo lại cho người làm phần mềm.");
+  });
+
+  it("a manager sees 'Chỉ chủ quán sửa được mục này'", async () => {
+    vi.mocked(resolveActor).mockResolvedValue({
+      ok: true,
+      actor: { id: "USR-002", name: "Quản lý", role: "MANAGER" },
+    });
+    vi.mocked(getDashboardSettings).mockResolvedValue(SETTINGS as any);
+    vi.mocked(findAll).mockResolvedValue(PRODUCTS as any);
+    vi.mocked(getProductTypes).mockResolvedValue(TYPE_ROWS as any);
+
+    const jsx = await DashboardSettingsPage();
+    render(jsx);
+
+    expect(screen.getByText("Chỉ chủ quán sửa được mục này")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Lưu" })).toBeNull();
   });
 });

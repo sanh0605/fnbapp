@@ -17,7 +17,6 @@ import POSScreen from "./POSScreen";
 
 const mocks = vi.hoisted(() => ({
   submitOrderV2: vi.fn(),
-  enqueuePendingOrder: vi.fn(),
 }));
 
 vi.mock("@/app/pos/actions", () => ({
@@ -25,14 +24,6 @@ vi.mock("@/app/pos/actions", () => ({
   getPOSDrafts: vi.fn(async () => []),
   savePOSDraft: vi.fn(),
   deletePOSDraft: vi.fn(),
-  reportPosSyncFailure: vi.fn(),
-}));
-
-vi.mock("@/lib/pos/pos-offline-queue", () => ({
-  enqueuePendingOrder: mocks.enqueuePendingOrder,
-  incrementAttemptCount: vi.fn(),
-  listPendingOrders: vi.fn(async () => []),
-  removePendingOrder: vi.fn(),
 }));
 
 const roots: Root[] = [];
@@ -142,22 +133,5 @@ describe("POSScreen checkout success toast", () => {
     expect(messages.some(m => m.includes("Thanh toán thành công"))).toBe(true);
     expect(messages.some(m => m.includes("260825001001"))).toBe(false);
     expect(messages.some(m => m.includes("Mã đơn"))).toBe(false);
-  });
-
-  it("leaves the offline-queued toast's own wording untouched", async () => {
-    // submitOrderV2 rejects (network failure) -- handleConfirmCheckout's
-    // catch block queues the order instead, a different message entirely.
-    // Covered in the same file so a future edit cannot quietly collapse the
-    // two messages into one, per the plan's own instruction.
-    mocks.submitOrderV2.mockRejectedValue(new Error("network unreachable"));
-    mocks.enqueuePendingOrder.mockResolvedValue(undefined);
-
-    await addOneItemToCart();
-    await clickButtonWithText("TIỀN MẶT");
-    await flush();
-
-    const messages = toastMessages();
-    expect(messages).toContain("Đã lưu đơn hàng, sẽ gửi khi có mạng trở lại.");
-    expect(messages.some(m => m.includes("Thanh toán thành công"))).toBe(false);
   });
 });

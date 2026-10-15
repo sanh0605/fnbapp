@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 
 export const dynamic = "force-dynamic";
 

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
 import { getCashTransfer } from "../../actions";
 import { CashTransferForm } from "../../components/CashTransferForm";
-import { safeReturnTo } from "../../components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { editBackHref } from "@/lib/finance/detail-href";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
@@ -19,7 +19,7 @@ export default async function EditCashTransferPage(
 ) {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance");
+  const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance", { detail: ["/admin/finance/transfers"] });
 
   const [transfer, accounts] = await Promise.all([
     getCashTransfer(params.id) as Promise<DBCashTransfer | null>,

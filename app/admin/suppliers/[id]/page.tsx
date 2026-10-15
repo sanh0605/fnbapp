@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getSuppliers } from "../actions";
 import { getPurchaseOrdersPage } from "@/app/admin/inventory/purchase-orders/actions";
 import { resolveActor } from "@/lib/auth/auth";
-import { safeReturnTo } from "../components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { SupplierDetailView } from "./components/SupplierDetailView";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,7 @@ export default async function SupplierDetailPage(
   }
 
   const canDelete = auth.ok && auth.actor.role === "ADMIN";
-  const rawReturnTo = safeReturnTo(searchParams?.returnTo);
+  const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/suppliers");
   const returnTo = rawReturnTo.startsWith("/admin/suppliers/")
     ? "/admin/suppliers"
     : rawReturnTo;

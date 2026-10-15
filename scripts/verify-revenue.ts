@@ -90,6 +90,8 @@ const KNOWN_MONTHLY_BASELINES: Record<string, MonthlyBaseline | undefined> = {
   "2026-06": { revenue: 22_157_000, orderCount: 793 },
   "2026-07": { revenue: 18_661_000, orderCount: 664 },
   "2026-08": { revenue: 17_682_000, orderCount: 644 },
+  // 2026-10-15: app figures, the owner keeps no outside record for September
+  "2026-09": { revenue: 15_442_000, orderCount: 624 },
 };
 
 async function main(): Promise<void> {

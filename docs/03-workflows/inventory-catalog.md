@@ -1,11 +1,13 @@
 # Inventory catalog flow
 
 ```flow-decl
-routes: /admin/inventory/items, /admin/inventory/categories, /admin/inventory/units, /admin/inventory/conversions, /admin/inventory/items/new, /admin/inventory/items/[id]/edit, /admin/inventory/items/[id], /admin/inventory/categories/[id], /admin/inventory/units/[id], /admin/inventory/conversions/[id], /admin/inventory/categories/new, /admin/inventory/categories/[id]/edit, /admin/inventory/units/new, /admin/inventory/units/[id]/edit, /admin/inventory/conversions/new, /admin/inventory/conversions/[id]/edit
+routes: /admin/inventory/stock, /admin/inventory/items, /admin/inventory/categories, /admin/inventory/units, /admin/inventory/conversions, /admin/inventory/items/new, /admin/inventory/items/[id]/edit, /admin/inventory/items/[id], /admin/inventory/categories/[id], /admin/inventory/units/[id], /admin/inventory/conversions/[id], /admin/inventory/categories/new, /admin/inventory/categories/[id]/edit, /admin/inventory/units/new, /admin/inventory/units/[id]/edit, /admin/inventory/conversions/new, /admin/inventory/conversions/[id]/edit
 files: app/admin/inventory/actions.ts, app/admin/inventory/items/actions.ts, app/admin/inventory/conversions/actions.ts
 tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
-brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004
+brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004, BR-INV-019
 ```
+
+**Behaviour change — 2026-10-15 (Kho step 5, `BR-INV-019`):** new read-only page `/admin/inventory/stock` (Tồn kho), first in the Kho menu: per tracked item the quantity, value (the costing engine's closing value), "đủ dùng khoảng X ngày" and the last count date, total at the top (`getStockOnHand` in `app/admin/inventory/stock/actions.ts`, `lib/stock/stock-on-hand.ts`). Writes nothing.
 
 **Behaviour change — 2026-10-15 (Kho step 4, `BR-CATALOG-007`):** an item's page has "Ngừng dùng" / "Dùng lại" (`setPurchasedItemStatus` in `app/admin/inventory/items/actions.ts`, ADMIN and MANAGER, writes `status` only and refreshes the item cache). A stopped item is no longer offered on a new purchase order; everything else that lists items is unchanged. See `purchasing.md` for the purchase order side.
 

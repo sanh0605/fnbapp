@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getItemsData, getItemPurchaseHistory, getItemStockById } from "../actions";
 import { resolveActor } from "@/lib/auth/auth";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { ItemDetailView } from "./components/ItemDetailView";
 
 export const dynamic = "force-dynamic";

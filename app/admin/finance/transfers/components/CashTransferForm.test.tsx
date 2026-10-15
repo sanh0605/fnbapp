@@ -73,7 +73,7 @@ describe("CashTransferForm", () => {
     fireEvent.change(visibleAmount, { target: { value: "500000" } });
 
     // Submit form
-    const submitBtn = screen.getByRole("button", { name: "Lưu" });
+    const submitBtn = screen.getByRole("button", { name: "Tạo" });
     fireEvent.click(submitBtn);
 
     expect(
@@ -99,7 +99,7 @@ describe("CashTransferForm", () => {
     const visibleAmount = screen.getByPlaceholderText("Ví dụ: 500,000");
     fireEvent.change(visibleAmount, { target: { value: "500000" } });
 
-    const submitBtn = screen.getByRole("button", { name: "Lưu" });
+    const submitBtn = screen.getByRole("button", { name: "Tạo" });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
@@ -117,10 +117,10 @@ describe("CashTransferForm", () => {
     fireEvent.change(screen.getByLabelText(/^Đến( \*)?$/), { target: { value: "BA-001" } });
     fireEvent.change(screen.getByPlaceholderText("Ví dụ: 500,000"), { target: { value: "500000" } });
 
-    fireEvent.click(screen.getByRole("button", { name: "Lưu" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/finance"));
 
-    expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Đang lưu…" })).toBeDisabled();
     fireEvent.submit(container.querySelector("form")!);
     await Promise.resolve();
     expect(addCashTransferMock).toHaveBeenCalledTimes(1);

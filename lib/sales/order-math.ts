@@ -140,7 +140,7 @@ export function allocateLineRevenue(line: LineForAllocation): AllocatedRevenue {
  *
  * Throws InvariantError on the first violation.
  */
-export function assertOrderInvariants(order: OrderV2, lines: OrderLineV2[]): void {
+export function assertOrderInvariants(order: OrderV2, lines: OrderLineV2[], promotions?: { amount: number }[]): void {
   if (lines.length === 0) {
     throw new InvariantError("order has no lines");
   }
@@ -183,5 +183,11 @@ export function assertOrderInvariants(order: OrderV2, lines: OrderLineV2[]): voi
 
   if (Math.abs(sumNet - order.net_total) > 1) {
     throw new InvariantError(`net_total mismatch: lines sum to ${sumNet}, order.net_total=${order.net_total}`);
+  }
+
+  // I8: the promotions that took money add up to the order's promotion total.
+  const sumPromotions = promotions?.reduce((s, p) => s + p.amount, 0);
+  if (sumPromotions !== undefined && sumPromotions !== order.promo_discount_total) {
+    throw new InvariantError(`promotions mismatch: promotions sum to ${sumPromotions}, order.promo_discount_total=${order.promo_discount_total}`);
   }
 }

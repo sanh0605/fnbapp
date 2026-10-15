@@ -1,5 +1,4 @@
-import { findAll, findAllWhere, findById } from "@/lib/db/tables";
-import { getSupabaseClient } from "@/lib/db/supabase";
+import { findAll, findAllWhere, findAllWhereInBatches, findById } from "@/lib/db/tables";
 import { computeOnHandByPurchasedItem } from "@/lib/stock/purchased-item-onhand";
 import { saigonToday } from "@/lib/shared/datetime";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
@@ -11,7 +10,6 @@ import type {
 } from "@/types/db";
 
 export interface DashboardData {
-  posSyncFailureCount: number;
   negativeStock: Array<{ id: string; name: string; qty: number }>;
   stocktake: StocktakeAlerts;
   reminders: MonthlyReminder[];
@@ -43,24 +41,34 @@ export async function getDashboardData(): Promise<DashboardData> {
   const since = { gte: { created_at: oldestDayStartIso(now) } };
 
   const [
-    failures, onHand, purchasedItems, sessions, settings, monthlyItems, cashEntries,
-    rawOrders, rawLines, categories, types, products,
+    onHand, sessions, settings, monthlyItems,
+    rawOrders, rawLines, categories, types,
   ] = await Promise.all([
-    getSupabaseClient().from("pos_sync_failures").select("*", { count: "exact", head: true }).eq("resolved", false),
     computeOnHandByPurchasedItem(),
-    findAll("Purchased_Items") as Promise<Array<{ id: string; name: string }>>,
-    findAll("Stocktake_Sessions") as Promise<any[]>,
+    // A cancelled count raises no alert, so it is not read.
+    findAllWhere<any>("Stocktake_Sessions", { in: { status: ["OPEN", "CONFIRMED"] } }),
     findById("Dashboard_Settings", "1") as Promise<DBDashboardSettings | null>,
     findAll("Monthly_Expense_Items") as Promise<DBMonthlyExpenseItem[]>,
-    findAll("Cash_Entries") as Promise<DBCashEntry[]>,
     findAllWhere<any>("Orders_V2", since),
     findAllWhere<any>("Order_Lines_V2", since),
     findAll("Product_Categories") as Promise<DBProductCategory[]>,
     findAll("Product_Types") as Promise<DBProductType[]>,
-    findAll("Products") as Promise<DBProduct[]>,
   ]);
 
   if (!settings) throw new Error("Chưa có dòng cài đặt Tổng quan (dashboard_settings id 1)");
+
+  // A reminder starts at its item's creation month, so no earlier hand row can matter.
+  const oldestItemMonth = monthlyItems
+    .filter((i) => i.status === "ACTIVE")
+    .map((i) => saigonToday(new Date(i.created_at)).slice(0, 7))
+    .sort()[0];
+  const [cashEntries, purchasedItems, products] = await Promise.all([
+    oldestItemMonth
+      ? findAllWhere<DBCashEntry>("Cash_Entries", { gte: { entry_date: `${oldestItemMonth}-01` } })
+      : Promise.resolve([] as DBCashEntry[]),
+    findAllWhereInBatches<{ id: string; name: string }>("Purchased_Items", "id", [...onHand].filter(([, qty]) => qty < 0).map(([id]) => id)),
+    findAllWhereInBatches<DBProduct>("Products", "id", settings.food_product_ids),
+  ]);
 
   const orders = rawOrders.map((o) => ({
     id: o.id,
@@ -101,7 +109,6 @@ export async function getDashboardData(): Promise<DashboardData> {
     : null;
 
   return {
-    posSyncFailureCount: failures.count ?? 0,
     negativeStock: negativeStockItems(onHand, new Map(purchasedItems.map((i) => [i.id, i.name]))),
     stocktake: computeStocktakeAlerts({
       today,

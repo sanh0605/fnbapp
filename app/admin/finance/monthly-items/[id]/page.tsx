@@ -1,16 +1,11 @@
 import { notFound } from "next/navigation";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { resolveActor } from "@/lib/auth/auth";
 import { getCashCategories } from "@/app/admin/finance/categories/actions";
 import { getMonthlyItems } from "../actions";
 import { MonthlyItemDetailView } from "./components/MonthlyItemDetailView";
 
 export const dynamic = "force-dynamic";
-
-function safeReturnTo(raw: string | undefined | null, fallback: string = "/admin/finance/monthly-items"): string {
-  if (!raw) return fallback;
-  if (raw.startsWith("/admin/finance/monthly-items")) return raw;
-  return fallback;
-}
 
 export default async function MonthlyItemDetailPage(
   props: {
@@ -35,7 +30,7 @@ export default async function MonthlyItemDetailPage(
   const category = categories.find((c) => c.id === item.cash_category_id);
   const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
 
-  const rawReturnTo = safeReturnTo(searchParams?.returnTo);
+  const rawReturnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance/monthly-items");
   const returnTo = rawReturnTo.startsWith(`/admin/finance/monthly-items/${encodeURIComponent(item.id)}`)
     ? "/admin/finance/monthly-items"
     : rawReturnTo;

@@ -13,6 +13,7 @@ interface DashboardSettingsFormProps {
   settings: DBDashboardSettings;
   products: DBProduct[];
   types: DBProductType[];
+  isOwner?: boolean;
 }
 
 const KNOWN_FIELDS = new Set([
@@ -27,6 +28,7 @@ export function DashboardSettingsForm({
   settings,
   products,
   types,
+  isOwner = true,
 }: DashboardSettingsFormProps) {
   const formId = useId();
   const router = useRouter();
@@ -204,6 +206,7 @@ export function DashboardSettingsForm({
                 {foodProducts.map((p) => {
                   const isChecked = selectedFoodIds.includes(p.id);
                   const checkboxId = `${formId}-food-${p.id}`;
+                  const isInactive = p.status !== "ACTIVE";
                   return (
                     <label
                       key={p.id}
@@ -215,7 +218,9 @@ export function DashboardSettingsForm({
                         id={checkboxId}
                         name="food_product_ids"
                         value={p.id}
+                        aria-label={p.name}
                         checked={isChecked}
+                        disabled={!isOwner}
                         onChange={() => {
                           setSelectedFoodIds((prev) =>
                             prev.includes(p.id)
@@ -230,7 +235,12 @@ export function DashboardSettingsForm({
                         }}
                         className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                       />
-                      <span className="text-sm text-text-primary">{p.name}</span>
+                      <span className="text-sm text-text-primary">
+                        {p.name}
+                        {isInactive && (
+                          <span className="ml-1 text-xs text-danger font-medium"> (không còn bán)</span>
+                        )}
+                      </span>
                     </label>
                   );
                 })}
@@ -239,7 +249,10 @@ export function DashboardSettingsForm({
           </div>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-4 border-t border-border">
+          {!isOwner && (
+            <p className="text-sm text-text-muted mr-auto">Chỉ chủ quán sửa được mục này</p>
+          )}
           <Button
             type="button"
             variant="secondary"
@@ -248,14 +261,16 @@ export function DashboardSettingsForm({
           >
             Bỏ
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            Lưu
-          </Button>
+          {isOwner && (
+            <Button
+              type="submit"
+              variant="primary"
+              loading={loading}
+              className="w-full sm:w-auto"
+            >
+              Lưu
+            </Button>
+          )}
         </div>
       </form>
     </div>

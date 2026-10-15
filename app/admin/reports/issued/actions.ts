@@ -2,9 +2,12 @@
 
 import { findAll, findAllNoCache } from "@/lib/db/tables";
 import { requireAdmin } from "@/lib/auth/auth";
-import { buildIssueCostingPurchases, buildIssueCostingIssues, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
+import { buildIssueCostingPurchases, buildIssueCostingIssues, buildClassifiedIssues, selectCostedIssues } from "@/lib/costing/issue-costing-inputs";
 import { computeIssuedItemFigures, computeIssuedEventFigures, computeIssuedMonthFigures } from "@/lib/reports/issued-value-report";
 import { displayMoney } from "@/lib/reports/display-rounding";
+import { toSaigonUtcRange } from "@/lib/shared/report-time";
+import type { RangeValue } from "@/lib/shared/date-range-params";
+import { endOfMonth } from "@/lib/shared/date-range-presets";
 
 export interface IssuedItemRow {
   purchasedItemId: string;
@@ -26,11 +29,16 @@ export interface IssuedEventRow {
 
 export interface IssuedMonthRow {
   yearMonth: string;
-  value: number;
+  usedValue: number; // Hàng dùng
+  shrinkageValue: number; // Hao hụt
 }
 
+// Everything is for the whole months of the range. grandTotal = usedTotal + shrinkageTotal,
+// before rounding; each total is rounded from its own exact sum, like Lãi lỗ's total column.
 export interface IssuedValueReport {
   grandTotal: number;
+  usedTotal: number;
+  shrinkageTotal: number;
   items: IssuedItemRow[];
   events: IssuedEventRow[];
   months: IssuedMonthRow[];
@@ -42,14 +50,15 @@ export interface IssuedValueReport {
 // functions app/admin/reports/pnl-actions.ts uses for totalCOGS. No second cost
 // definition lives here; this file only fetches, names, and rounds for
 // display.
-export async function getIssuedValueReport(): Promise<IssuedValueReport> {
+export async function getIssuedValueReport(range: RangeValue): Promise<IssuedValueReport> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [purchaseOrders, purchaseOrderLines, stockIssues, purchasedItems, units, conversions, itemCategories] = await Promise.all([
+  const [purchaseOrders, purchaseOrderLines, stockIssues, stocktakeSessions, purchasedItems, units, conversions, itemCategories] = await Promise.all([
     findAllNoCache("Purchase_Orders"),
     findAllNoCache("Purchase_Order_Lines"),
     findAllNoCache("Stock_Issues"),
+    findAllNoCache("stocktake_sessions"),
     findAll("Purchased_Items"),
     findAll("Units"),
     findAll("UOM_Conversions"),
@@ -63,6 +72,8 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
   // same fix, from the one shared function.
   const costedIssues = selectCostedIssues(stockIssues as any[], purchasedItems as any[], itemCategories as any[]);
   const allIssues = buildIssueCostingIssues(costedIssues);
+  // Whole months in Saigon time, the same span Lãi lỗ reads.
+  const span = toSaigonUtcRange(`${range.start}-01`, endOfMonth(`${range.end}-01`))!;
 
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
@@ -82,7 +93,7 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
     }
   }
 
-  const itemFigures = computeIssuedItemFigures(purchases, allIssues);
+  const itemFigures = computeIssuedItemFigures(purchases, allIssues, span.startUtc, span.endUtc);
   const items: IssuedItemRow[] = itemFigures
     .filter(f => Math.abs(f.issuedValueExact) > 0.005)
     .map(f => ({
@@ -101,7 +112,10 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
   // unfiltered stockIssues here, so an equipment or bought-for-immediate-use
   // issue slip would still show up in the by-event list even though it is
   // excluded everywhere else on this page.
-  const eventFigures = computeIssuedEventFigures(costedIssues, purchases, nameById);
+  const eventFigures = computeIssuedEventFigures(costedIssues, purchases, nameById).filter(f => {
+    const at = new Date(f.at).getTime();
+    return at >= span.startUtc.getTime() && at <= span.endUtc.getTime();
+  });
   const events: IssuedEventRow[] = eventFigures.map(f => ({
     key: f.key,
     kind: f.kind,
@@ -111,11 +125,15 @@ export async function getIssuedValueReport(): Promise<IssuedValueReport> {
     value: displayMoney(f.valueExact),
   }));
 
-  const monthFigures = computeIssuedMonthFigures(purchases, allIssues);
+  const classifiedIssues = buildClassifiedIssues(costedIssues, stocktakeSessions as any[]);
+  const monthFigures = computeIssuedMonthFigures(purchases, classifiedIssues, range.start, range.end);
   const months: IssuedMonthRow[] = monthFigures.map(f => ({
     yearMonth: f.yearMonth,
-    value: displayMoney(f.valueExact),
+    usedValue: displayMoney(f.costExact),
+    shrinkageValue: displayMoney(f.shrinkageExact),
   }));
+  const usedTotal = displayMoney(monthFigures.reduce((sum, f) => sum + f.costExact, 0));
+  const shrinkageTotal = displayMoney(monthFigures.reduce((sum, f) => sum + f.shrinkageExact, 0));
 
-  return { grandTotal, items, events, months };
+  return { grandTotal, usedTotal, shrinkageTotal, items, events, months };
 }

@@ -52,4 +52,12 @@ describe("PnlSummary", () => {
     expect(region).toContain("Doanh thu trong khoảng đã chọn");
     expect(region).toContain("đến 11/09/2026");
   });
+
+  it("renders on mobile (not hidden) so the summary figures show stacked on phone (R7)", () => {
+    const figures = pnlFigures2026();
+    render(<PnlSummary table={buildPnlTable(figures, "2026-09-11", "năm nay")} />);
+    const region = screen.getByRole("region", { name: "Tóm tắt" });
+    expect(region.className).not.toContain("hidden");
+    expect(region.className).toContain("grid-cols-1");
+  });
 });

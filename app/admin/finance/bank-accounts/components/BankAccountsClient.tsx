@@ -18,7 +18,6 @@ import type { DBBankAccount } from "@/types/db";
 
 export interface BankAccountsClientProps {
   accounts: DBBankAccount[];
-  canDelete?: boolean;
   initialSearch?: string;
   initialStatus?: string;
   initialPage?: string;

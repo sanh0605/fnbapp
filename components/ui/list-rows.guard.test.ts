@@ -19,6 +19,7 @@ function sources(dir: string): string[] {
 const SUMMARY_BOLD: Record<string, number> = {
   // opening/closing balance boxes (title + three figures) and the Tổng chi / Tổng thu boxes
   "app/admin/finance/components/CashBookClient.tsx": 6,
+  "app/admin/inventory/stock/components/StockOnHandClient.tsx": 1,
 };
 
 const root = process.cwd();

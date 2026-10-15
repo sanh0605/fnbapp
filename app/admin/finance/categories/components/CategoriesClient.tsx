@@ -18,7 +18,6 @@ import type { DBCashCategory } from "@/types/db";
 
 export interface CategoriesClientProps {
   categories: DBCashCategory[];
-  canDelete?: boolean;
   initialSearch?: string;
   initialStatus?: string;
   initialPage?: string;

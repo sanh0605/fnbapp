@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { findAll } from "@/lib/db/tables";
 import { resolveActor } from "@/lib/auth/auth";
-import { safeReturnTo } from "@/app/admin/inventory/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { UnitDetailView } from "./components/UnitDetailView";
 import type { DBUnit } from "@/types/db";
 

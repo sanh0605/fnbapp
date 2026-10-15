@@ -235,4 +235,18 @@ describe("PurchaseOrdersClient", () => {
     expect(screen.getAllByText("Tổng (không tính huỷ, nháp)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("12,345,678").length).toBeGreaterThan(0);
   });
+
+  it("recognises account parameter in URL, showing Xoá lọc and deleting account on clear", () => {
+    searchParams.set("account", "BA-001");
+    try {
+      render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={pageData} />);
+      const clearBtn = screen.getAllByRole("button", { name: "Xoá lọc" })[0];
+      expect(clearBtn).toBeTruthy();
+
+      fireEvent.click(clearBtn);
+      expect(replace).toHaveBeenCalledWith(expect.not.stringContaining("account="), expect.anything());
+    } finally {
+      searchParams.delete("account");
+    }
+  });
 });

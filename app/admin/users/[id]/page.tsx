@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { resolveActor } from "@/lib/auth/auth";
 import { getUserById } from "@/app/admin/users/actions";
-import { safeReturnTo } from "@/app/admin/users/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { UserDetailView } from "./components/UserDetailView";
 
 export const dynamic = "force-dynamic";
@@ -29,8 +29,7 @@ export default async function UserDetailPage(
   );
 
   const rawReturnTo = safeReturnTo(
-    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined
-  );
+    typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/users");
   const returnTo = rawReturnTo.startsWith("/admin/users/")
     ? "/admin/users"
     : rawReturnTo;

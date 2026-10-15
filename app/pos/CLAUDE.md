@@ -2,7 +2,7 @@
 
 Nhân viên chỉ dùng màn hình này; quán ngừng bán nếu nó hỏng.
 
-- **Phải chạy khi mất mạng:** hàng đợi ngoại tuyến `lib/pos/pos-offline-queue.ts`, service worker `public/pos-sw.js` (test ở `tests/public/`). Sửa gì cũng phải giữ đường ngoại tuyến.
+- **Không bán khi mất mạng** (`BR-SALE-015`): không có hàng đợi ngoại tuyến. Lỗi mạng khi gửi thì giữ giỏ và hiện "Gửi lại" với cùng mã yêu cầu (`submitOrderV2` trả `retry`); `public/pos-sw.js` chỉ là công tắc tự gỡ service worker cũ (test ở `tests/public/`).
 - **Thanh toán idempotent** (`lib/pos/pos-checkout-idempotency.ts`): bấm hai lần không ra hai đơn.
 - **Bán không trừ kho, không tính giá vốn** (từ 2026-08-07). Đừng thêm.
 - Điểm bán lấy từ đường dẫn; mã đơn đánh theo điểm bán + ngày (`BR-SALE-006`). Số điểm bán là dữ liệu, không phải hằng số.

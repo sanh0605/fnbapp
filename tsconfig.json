@@ -39,6 +39,7 @@
     "node_modules",
     "scratch",
     "scratchpad",
+    ".worktrees",
     "supabase"
   ]
 }

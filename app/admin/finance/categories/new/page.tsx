@@ -1,5 +1,5 @@
 import { CategoryForm } from "../components/CategoryForm";
-import { safeReturnTo } from "../../components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 

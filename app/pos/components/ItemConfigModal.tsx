@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatNumber } from "@/lib/shared/format";
 import { OptionGroupPicker } from "@/components/ui/OptionGroupPicker";
 import type { ProductOptionGroup } from "@/lib/sales/option-groups";
-import { priceCart, toPricePromotion, bestPromotion } from "@/lib/sales/price-cart";
+import { priceCart, toPricePromotion, eligiblePromotionSets } from "@/lib/sales/price-cart";
+import { clampDiscount, calculateItemGross } from "./cart-pricing";
 
 export type ItemConfigSubmission = {
   variant: any;
@@ -19,7 +20,8 @@ interface ItemConfigModalProps {
   variants: any[];
   groups?: ProductOptionGroup[];
   promoVariantsMap: Map<string, number>;
-  eligiblePromotions?: any[];
+  promotions: any[];
+  brandId: string;
   appliedPromoCode?: string | null;
   initialLine: any | null;
   isEditing: boolean;
@@ -32,7 +34,8 @@ export function ItemConfigModal({
   variants,
   groups = [],
   promoVariantsMap,
-  eligiblePromotions,
+  promotions,
+  brandId,
   appliedPromoCode,
   initialLine,
   isEditing,
@@ -56,6 +59,16 @@ export function ItemConfigModal({
   const [itemDiscountType, setItemDiscountType] = useState<"VND" | "PERCENT">(() =>
     initialLine ? initialLine.discount_type || "VND" : "VND"
   );
+
+  const lineSubtotal = calculateItemGross({
+    unit_price: Number(selectedVariant?.price || 0),
+    qty: selectedQty,
+    modifiers: selectedModifiers,
+  });
+
+  useEffect(() => {
+    setItemDiscount((prev) => clampDiscount(prev, itemDiscountType, lineSubtotal) ?? 0);
+  }, [lineSubtotal, itemDiscountType]);
 
   const addToCart = () => {
     if (!selectedVariant) return;
@@ -93,15 +106,26 @@ export function ItemConfigModal({
       }
     : { variants: [], modifiers: [] };
 
-  const promoToApply = eligiblePromotions
-    ? bestPromotion(eligiblePromotions, singleItem, singleCatalog, appliedPromoCode ?? null)
-    : null;
+  const sets = promotions.length > 0
+    ? eligiblePromotionSets(
+        promotions,
+        singleItem,
+        singleCatalog,
+        new Date().toISOString(),
+        brandId,
+        appliedPromoCode ?? null
+      )
+    : [];
+  const bestSet = sets[0];
+  const promoToApply = bestSet
+    ? promotions.filter((p: any) => bestSet.promotionIds.includes(p.id)).map(toPricePromotion)
+    : [];
 
   const priced = selectedVariant
     ? priceCart(
         singleItem,
         singleCatalog,
-        promoToApply ? [toPricePromotion(promoToApply)] : [],
+        promoToApply,
         null
       )
     : null;
@@ -169,12 +193,14 @@ export function ItemConfigModal({
             <div className="flex items-center gap-2 flex-1">
               <div className="flex rounded-lg overflow-hidden border border-border shrink-0 h-10">
                 <button
+                  type="button"
                   onClick={() => setItemDiscountType("VND")}
                   className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-warning/10 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                 >
                   VNĐ
                 </button>
                 <button
+                  type="button"
                   onClick={() => setItemDiscountType("PERCENT")}
                   className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-warning/10 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                 >
@@ -184,10 +210,15 @@ export function ItemConfigModal({
               <input
                 aria-label="Giảm giá sản phẩm"
                 type="number"
+                inputMode="numeric"
                 min="0"
                 placeholder="Ví dụ: 2"
                 value={itemDiscount || ""}
-                onChange={(e) => setItemDiscount(Number(e.target.value))}
+                onChange={(e) => {
+                  const val = e.target.value === "" ? 0 : Number(e.target.value);
+                  const clamped = clampDiscount(val, itemDiscountType, lineSubtotal) ?? 0;
+                  setItemDiscount(clamped);
+                }}
                 className="flex-1 w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-focus-ring outline-none h-10 text-right"
               />
             </div>

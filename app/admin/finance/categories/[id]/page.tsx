@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { resolveActor } from "@/lib/auth/auth";
 import { getCashCategories } from "@/app/admin/finance/categories/actions";
-import { safeReturnTo } from "@/app/admin/finance/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { CategoryDetailView } from "./components/CategoryDetailView";
 
 export const dynamic = "force-dynamic";

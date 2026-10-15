@@ -25,6 +25,7 @@ export interface OrderDetailV2Result {
     superseded_by: string;
   }>;
   events: OrderEvent[];
+  promotions: Array<{ promotion_id: string; seq: number; name: string; code: string; amount: number }>;
 }
 
 // ============================================================
@@ -57,9 +58,10 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
   const chainOrders = Array.from(chainById.values());
   chainOrders.sort((a, b) => Number(a.version) - Number(b.version));
 
-  const [orderLines, paymentRows, products, variants, events] = await Promise.all([
+  const [orderLines, paymentRows, promotionRows, products, variants, events] = await Promise.all([
     findAllWhereInBatches("Order_Lines_V2", "order_id", [orderId]),
     findAllWhereInBatches("Order_Payments", "order_id", [orderId]),
+    findAllWhereInBatches("Order_Promotions", "order_id", [orderId]),
     findAll("Products"),
     findAll("Product_Variants"),
     findAllWhereInBatches(
@@ -103,6 +105,10 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
     new Date(b.event_at).getTime() - new Date(a.event_at).getTime(),
   );
 
+  const promotions = (promotionRows as any[])
+    .map(r => ({ promotion_id: r.promotion_id, seq: Number(r.seq) || 0, name: r.name || "", code: r.code || "", amount: Number(r.amount) || 0 }))
+    .sort((a, b) => a.seq - b.seq);
+
   return {
     order: {
       id: current.id,
@@ -134,5 +140,6 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
       superseded_by: o.superseded_by || "",
     })),
     events: events as OrderEvent[],
+    promotions,
   };
 }

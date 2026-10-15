@@ -24,7 +24,7 @@ vi.mock("@/lib/db/tables", () => ({
   remove: mocks.remove,
 }));
 
-import { getPOSDrafts, savePOSDraft } from "./actions";
+import { deletePOSDraft, getPOSDrafts, savePOSDraft } from "./actions";
 
 const AUTHENTICATED = { ok: true as const, actor: { id: "staff-1", name: "Thu ngân" } };
 
@@ -94,5 +94,51 @@ describe("savePOSDraft", () => {
       "POS_Drafts",
       expect.objectContaining({ brand_id: "BR-001", outlet_id: "OUT-001" }),
     );
+  });
+
+  // R7: a draft of OUT-001 must not be overwritten from OUT-002's till.
+  it("refuses to update a draft that belongs to another outlet and leaves the row untouched", async () => {
+    mocks.findAllNoCache.mockResolvedValue([{ id: "drf-1", outlet_id: "OUT-001", brand_id: "BR-001", name: "Ca sáng" }]);
+
+    const res = await savePOSDraft({ id: "drf-1", name: "Đè", cart_json: "[]", brand_id: "BR-002", outlet_id: "OUT-002" });
+
+    expect(res).toEqual({ success: false, error: "Nháp này thuộc điểm bán khác" });
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it("still updates a draft from its own outlet", async () => {
+    mocks.findAllNoCache.mockResolvedValue([{ id: "drf-1", outlet_id: "OUT-001", brand_id: "BR-001", name: "Ca sáng" }]);
+    mocks.update.mockResolvedValue({ id: "drf-1" });
+
+    const res = await savePOSDraft({ id: "drf-1", name: "Mới", cart_json: "[]", brand_id: "BR-001", outlet_id: "OUT-001" });
+
+    expect(res.success).toBe(true);
+    expect(mocks.update).toHaveBeenCalledWith("POS_Drafts", "drf-1", expect.objectContaining({ name: "Mới" }));
+  });
+});
+
+describe("deletePOSDraft", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.resolveActor.mockResolvedValue(AUTHENTICATED);
+  });
+
+  it("refuses to delete a draft that belongs to another outlet and leaves the row untouched", async () => {
+    mocks.findAllNoCache.mockResolvedValue([{ id: "drf-1", outlet_id: "OUT-001" }]);
+
+    const res = await deletePOSDraft("drf-1", "OUT-002");
+
+    expect(res).toEqual({ success: false, error: "Nháp này thuộc điểm bán khác" });
+    expect(mocks.remove).not.toHaveBeenCalled();
+  });
+
+  it("deletes a draft from its own outlet", async () => {
+    mocks.findAllNoCache.mockResolvedValue([{ id: "drf-1", outlet_id: "OUT-001" }]);
+
+    const res = await deletePOSDraft("drf-1", "OUT-001");
+
+    expect(res).toEqual({ success: true });
+    expect(mocks.remove).toHaveBeenCalledWith("POS_Drafts", "drf-1");
   });
 });

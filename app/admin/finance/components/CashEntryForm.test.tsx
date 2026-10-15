@@ -121,7 +121,7 @@ describe("CashEntryForm day box (wave K5)", () => {
     fireEvent.submit(container.querySelector("form")!);
     await vi.waitFor(() => expect(push).toHaveBeenCalledTimes(1));
 
-    expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Đang lưu…" })).toBeDisabled();
     fireEvent.submit(container.querySelector("form")!);
     await Promise.resolve();
     expect(addCashEntry).toHaveBeenCalledTimes(1);

@@ -88,10 +88,10 @@ describe("SalesFilter time filter (BR-UI-007)", () => {
   });
 });
 
-// Final review: a range chosen after changing a box without "Lọc" used the
-// address's brand, so the page showed another brand under a box reading MR.PHIN.
-describe("SalesFilter range keeps the boxes on screen", () => {
-  it("MR.PHIN chosen, no Lọc, then Hôm nay: the page opens on Hôm nay for MR.PHIN", () => {
+// Plan 2026-10-15 (Ticket G-BC, spec root 1): changing the date range carries
+// only the choices already applied with "Lọc" (read from the URL), not unapplied picks.
+describe("SalesFilter range carries only applied URL choices", () => {
+  it("MR.PHIN chosen in dropdown, no Lọc, then Hôm nay: the URL carries the applied brandId (BRD-2), not unapplied BRD-1", () => {
     mockSearchParams.set("brandId", "BRD-2");
     render(
       <SalesFilter
@@ -107,18 +107,25 @@ describe("SalesFilter range keeps the boxes on screen", () => {
     fireEvent.click(within(screen.getByTestId("range-panel-desktop")).getByRole("button", { name: "Hôm nay" }));
     const q = pushed();
     expect(q.get("range")).toBe("TODAY");
-    expect(q.get("brandId")).toBe("BRD-1");
+    expect(q.get("brandId")).toBe("BRD-2");
   });
 
-  it("a box set back to Tất cả is dropped from the address", () => {
-    mockSearchParams.set("brandId", "BRD-2");
+  it("MR.PHIN chosen in dropdown with no prior brand in URL, no Lọc, then Hôm nay: brandId is not carried", () => {
     render(
-      <SalesFilter brands={[{ id: "BRD-2", name: "Uchako", status: "ACTIVE" }]} users={[]} categories={[]} range={THIS_MONTH} today={TODAY} />,
+      <SalesFilter
+        brands={[{ id: "BRD-1", name: "MR.PHIN", status: "ACTIVE" }, { id: "BRD-2", name: "Uchako", status: "ACTIVE" }]}
+        users={[]}
+        categories={[]}
+        range={THIS_MONTH}
+        today={TODAY}
+      />,
     );
-    fireEvent.change(screen.getByLabelText(/^Thương hiệu/), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText(/^Thương hiệu/), { target: { value: "BRD-1" } });
     fireEvent.click(screen.getByTestId("range-button"));
     fireEvent.click(within(screen.getByTestId("range-panel-desktop")).getByRole("button", { name: "Hôm nay" }));
-    expect(pushed().get("brandId")).toBeNull();
+    const q = pushed();
+    expect(q.get("range")).toBe("TODAY");
+    expect(q.get("brandId")).toBeNull();
   });
 });
 

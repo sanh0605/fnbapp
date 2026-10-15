@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { Field } from "@/components/ui/Field";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { formatNumber } from "@/lib/shared/format";
 import type { MonthlyItemRow } from "../actions";
 import type { DBCashCategory } from "@/types/db";
@@ -30,8 +29,8 @@ const VALID_STATUSES = ["ACTIVE", "INACTIVE", "ALL"] as const;
 type MonthlyItemStatusFilter = (typeof VALID_STATUSES)[number];
 
 function parseStatus(raw: string | null | undefined): MonthlyItemStatusFilter {
-  if (raw === "ACTIVE" || raw === "INACTIVE") return raw;
-  return "ALL";
+  if (raw === "INACTIVE" || raw === "ALL") return raw;
+  return "ACTIVE";
 }
 
 function listUrl(
@@ -44,7 +43,7 @@ function listUrl(
   const p = new URLSearchParams();
   const trimmed = search.trim();
   if (trimmed) p.set("q", trimmed);
-  if (status && status !== "ALL") p.set("status", status);
+  if (status && status !== "ACTIVE") p.set("status", status);
   if (page > 1) p.set("page", String(page));
   if (sort) p.set("sort", sort);
   if (dir) p.set("dir", dir);
@@ -103,6 +102,16 @@ export default function MonthlyItemsClient({
   const columns: DataColumn<MonthlyItemRow>[] = useMemo(
     () => [
       {
+        key: "id",
+        header: "Mã",
+        sortValue: (r) => r.item.id,
+        render: (r) => (
+          <span className="font-mono text-xs text-primary transition-colors">
+            {r.item.id}
+          </span>
+        ),
+      },
+      {
         key: "name",
         header: "Tên khoản",
         sortValue: (r) => r.item.name,
@@ -147,7 +156,7 @@ export default function MonthlyItemsClient({
   );
 
   const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
-  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "name");
+  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
   const sortParam = rawSort ? sortKey : undefined;
   const dirParam = rawSort ? sortDir : undefined;
 
@@ -190,11 +199,13 @@ export default function MonthlyItemsClient({
     });
   };
 
+  const hasAnyFilter = Boolean(search || status !== "ACTIVE");
+
   const handleClearFilter = () => {
     setSearch("");
-    setStatus("ALL");
+    setStatus("ACTIVE");
     setPage(1);
-    router.replace(listUrl("", "ALL", 1, sortParam, dirParam), {
+    router.replace(listUrl("", "ACTIVE", 1, sortParam, dirParam), {
       scroll: false,
     });
   };
@@ -260,7 +271,7 @@ export default function MonthlyItemsClient({
       <FilterCard
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
-        showClear={Boolean(search || status !== "ALL")}
+        showClear={hasAnyFilter}
       >
         <div className="shrink-0 w-full md:w-64">
           <Field label="Tìm khoản chi" htmlFor="monthly-items-search">
@@ -279,9 +290,9 @@ export default function MonthlyItemsClient({
               value={status}
               onChange={(e) => setStatus(parseStatus(e.target.value))}
             >
-              <option value="ALL">Tất cả</option>
               <option value="ACTIVE">Đang dùng</option>
               <option value="INACTIVE">Ngừng dùng</option>
+              <option value="ALL">Tất cả</option>
             </Select>
           </Field>
         </div>
@@ -302,11 +313,24 @@ export default function MonthlyItemsClient({
           href: (k, d) => listUrl(search, status, 1, k, d),
         }}
         empty={
-          <EmptyState
-            icon="📅"
-            title="Chưa có khoản chi hằng tháng nào"
-            description="Thêm khoản chi để theo dõi các chi phí cố định mỗi tháng."
-          />
+          <div className="bg-surface-card rounded-2xl border border-border p-8 text-center space-y-3">
+            <div className="text-text-secondary text-sm">
+              {hasAnyFilter
+                ? "Không có khoản chi nào khớp bộ lọc"
+                : "Chưa có khoản chi hằng tháng nào"}
+            </div>
+            {hasAnyFilter && (
+              <div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleClearFilter}
+                >
+                  Xoá lọc
+                </Button>
+              </div>
+            )}
+          </div>
         }
       />
 

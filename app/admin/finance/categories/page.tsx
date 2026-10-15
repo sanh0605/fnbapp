@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { resolveActor } from "@/lib/auth/auth";
 import { getCashCategories } from "./actions";
 import CategoriesClient from "./components/CategoriesClient";
 
@@ -11,17 +10,12 @@ export default async function CashCategoriesPage(
   }
 ) {
   const searchParams = await props.searchParams;
-  const [categories, auth] = await Promise.all([
-    getCashCategories(),
-    resolveActor(),
-  ]);
-  const canDelete = Boolean(auth.ok && auth.actor.role === "ADMIN");
+  const categories = await getCashCategories();
 
   return (
     <Suspense fallback={<div>Đang tải...</div>}>
       <CategoriesClient
         categories={categories}
-        canDelete={canDelete}
         initialSearch={searchParams?.q}
         initialStatus={searchParams?.status}
         initialPage={searchParams?.page}

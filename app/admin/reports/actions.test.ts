@@ -799,7 +799,8 @@ describe("getSalesDataV2", () => {
 
     expect(result.totalRevenue).toBe(0);
     expect(result.totalOrders).toBe(0);
-    expect(result.bestSellers).toEqual([]);
+    expect(result.bestDrinks).toEqual([]);
+    expect(result.bestFoods).toEqual([]);
   });
 
   it("merges historical duplicate toppings into the latest active modifier id", async () => {
@@ -966,7 +967,7 @@ describe("getSalesDataV2", () => {
 
     const result = await getSalesDataV2({});
 
-    expect(result.bestSellers.find(p => p.product_id === "PROD-033")).toBeUndefined();
+    expect([...result.bestDrinks, ...result.bestFoods].find(p => p.product_id === "PROD-033")).toBeUndefined();
     const toppingRow = result.bestToppings.find(t => t.name === "Kem muối phô mai");
     expect(toppingRow).toBeDefined();
     expect(toppingRow?.modifier_id).toBe("MOD-033");
@@ -1054,7 +1055,7 @@ describe("getSalesDataV2", () => {
     const result = await getSalesDataV2({});
 
     expect(result.bestToppings.find(t => t.name === "Đào miếng")).toBeUndefined();
-    const sellerRow = result.bestSellers.find(p => p.product_id === "PROD-099");
+    const sellerRow = result.bestFoods.find(p => p.product_id === "PROD-099");
     expect(sellerRow).toBeDefined();
     expect(sellerRow?.totalQty).toBe(1);
   });
@@ -1110,8 +1111,8 @@ describe("getSalesDataV2", () => {
     );
     const cash = result.paymentBreakdown.find(b => b.method === "CASH");
     const bank = result.paymentBreakdown.find(b => b.method === "BANK_TRANSFER");
-    expect(cash).toMatchObject({ orderCount: 1, revenue: 15000 });
-    expect(bank).toMatchObject({ orderCount: 1, revenue: 10000 });
+    expect(cash).toMatchObject({ paymentCount: 1, revenue: 15000 });
+    expect(bank).toMatchObject({ paymentCount: 1, revenue: 10000 });
     // The order's full net_total is still represented across the split, not
     // double-counted under one method.
     const totalAttributed = result.paymentBreakdown.reduce((s, b) => s + b.revenue, 0);
@@ -1137,7 +1138,7 @@ describe("getSalesDataV2", () => {
     expect(result.paymentBreakdown).toHaveLength(1);
     expect(result.paymentBreakdown[0]).toMatchObject({
       method: fixture.order.payment_method,
-      orderCount: 1,
+      paymentCount: 1,
       revenue: fixture.order.net_total,
     });
   });
@@ -1156,7 +1157,7 @@ describe("getSalesDataV2", () => {
     const result = await getSalesDataV2({ startDate: "2026-06-01", endDate: "2026-06-30" });
 
     expect(result.paymentBreakdown).toEqual([
-      { method: "CASH", orderCount: 1, revenue: order.net_total },
+      { method: "CASH", paymentCount: 1, revenue: order.net_total },
     ]);
   });
 
@@ -1214,6 +1215,84 @@ describe("getSalesDataV2", () => {
 //. Chart buckets
 // (Theo Ngay/Thang/Thu/Gio) must key off the Saigon calendar date, not the
 // UTC one toISOString()/getDay()/getHours() produced before this fix.
+describe("getSalesDataV2 payments and dish groups (Báo cáo plan, R1/R2)", () => {
+  const base = makeSuaDauStandaloneOrder();
+  const orderOf = (id: string) => ({ ...base.order, id, order_no: id, superseded_by: "" });
+  const lineOf = (orderId: string) => ({ ...base.lines[0], id: `ol-${orderId}`, order_id: orderId });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (findAll as any).mockResolvedValue([]);
+    (findAllNoCache as any).mockResolvedValue([]);
+  });
+
+  // 06/10/2026: order 261006002002 paid 9.000 cash + 9.000 transfer sits in both rows.
+  it("counts payments per method, and says how many orders they belong to", async () => {
+    const [o1, o2, o3] = ["o1", "o2", "o3"].map(orderOf);
+    (findAllWhere as any).mockResolvedValue([o1, o2, o3]);
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => {
+      if (sheet === "Order_Lines_V2") return [o1, o2, o3].map(o => lineOf(o.id));
+      if (sheet === "Order_Payments") {
+        return [
+          { order_id: "o1", method: "CASH", amount: 25000 },
+          { order_id: "o2", method: "BANK_TRANSFER", amount: 25000 },
+          { order_id: "o3", method: "CASH", amount: 12500 },
+          { order_id: "o3", method: "BANK_TRANSFER", amount: 12500 },
+        ];
+      }
+      return [];
+    });
+
+    const result = await getSalesDataV2({});
+
+    expect(result.totalOrders).toBe(3);
+    expect(result.paymentOrderCount).toBe(3);
+    expect(result.paymentBreakdown.find(b => b.method === "CASH")).toMatchObject({ paymentCount: 2, revenue: 37500 });
+    expect(result.paymentBreakdown.find(b => b.method === "BANK_TRANSFER")).toMatchObject({ paymentCount: 2, revenue: 37500 });
+    expect(result.paymentBreakdown.reduce((n, b) => n + b.paymentCount, 0)).toBe(4);
+  });
+
+  it("groups a sold line by the group written on the line, not the dish's group today", async () => {
+    const o = orderOf("o1");
+    (findAllWhere as any).mockResolvedValue([o]);
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => (sheet === "Order_Lines_V2" ? [lineOf("o1")] : []));
+    (findAll as any).mockImplementation((sheet: string) => {
+      if (sheet === "Product_Categories") {
+        return [
+          { id: "CAT-DRINKS", name: "Đồ uống", type_id: "TYPE-DRINK" },
+          { id: "CAT-MOVED", name: "Bánh", type_id: "TYPE-FOOD" },
+        ];
+      }
+      if (sheet === "Product_Types") return [{ id: "TYPE-DRINK", is_drink: true }, { id: "TYPE-FOOD", is_drink: false }];
+      // The dish moved to another group after this sale.
+      if (sheet === "Products") return [{ id: "PROD-024", category_id: "CAT-MOVED" }];
+      return [];
+    });
+
+    const result = await getSalesDataV2({});
+
+    expect(result.categorySales).toEqual([{ label: "Đồ uống", amount: 25000 }]);
+    expect(result.bestDrinks.map(p => p.product_id)).toEqual(["PROD-024"]);
+    expect(result.bestFoods).toEqual([]);
+  });
+
+  // Moved from the page test (audit B10): the drink/food split reads Product_Types.is_drink.
+  it("lands a dish whose group's type is not a drink in bestFoods", async () => {
+    (findAllWhere as any).mockResolvedValue([orderOf("o1")]);
+    (findAllWhereInBatches as any).mockImplementation((sheet: string) => (sheet === "Order_Lines_V2" ? [lineOf("o1")] : []));
+    (findAll as any).mockImplementation((sheet: string) => {
+      if (sheet === "Product_Categories") return [{ id: "CAT-DRINKS", name: "Bánh ngọt", type_id: "TYPE-FOOD" }];
+      if (sheet === "Product_Types") return [{ id: "TYPE-FOOD", is_drink: false }];
+      return [];
+    });
+
+    const result = await getSalesDataV2({});
+
+    expect(result.bestFoods.map(p => p.product_id)).toEqual(["PROD-024"]);
+    expect(result.bestDrinks).toEqual([]);
+  });
+});
+
 describe("getSalesDataV2 chart bucketing (Asia/Ho_Chi_Minh)", () => {
   beforeEach(() => {
     vi.clearAllMocks();

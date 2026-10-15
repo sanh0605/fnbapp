@@ -17,8 +17,8 @@ import SalesReportPage from "./page";
 const EMPTY = {
   v2OrderCount: 0, totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, grossRevenue: 0,
   systemPromotionDiscount: 0, manualItemDiscount: 0, manualOrderDiscount: 0, totalDiscount: 0,
-  paymentBreakdown: [], bestSellers: [], bestToppings: [], uniqueSizes: [], totalQtyBySize: {},
-  totalQtyAll: 0, salesByDate: [], salesByMonth: [], salesByDayOfWeek: [], salesByHour: [], outletBreakdown: [],
+  paymentBreakdown: [], paymentOrderCount: 0, bestDrinks: [], bestFoods: [], categorySales: [],
+  bestToppings: [], uniqueSizes: [], salesByDate: [], salesByMonth: [], salesByDayOfWeek: [], salesByHour: [], outletBreakdown: [],
 };
 
 describe("sales report default range (A8)", () => {
@@ -122,87 +122,6 @@ describe("Doanh số never sends account secrets to the browser (BR-ACCESS-002)"
   });
 });
 
-function findElement(node: any, predicate: (el: any) => boolean): any {
-  if (!node) return null;
-  if (predicate(node)) return node;
-  const children = node.props?.children;
-  if (Array.isArray(children)) {
-    for (const child of children) {
-      const found = findElement(child, predicate);
-      if (found) return found;
-    }
-  } else if (children && typeof children === "object") {
-    return findElement(children, predicate);
-  }
-  return null;
-}
-
-describe("Doanh số drink vs food split reads Product_Types (audit B10)", () => {
-  beforeEach(() => {
-    getSalesDataV2.mockReset();
-    getHourlyHeatmapV2.mockReset();
-    getHourlyHeatmapV2.mockResolvedValue([]);
-    getSalesTotalsV2.mockReset();
-    getSalesTotalsV2.mockResolvedValue({ totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 });
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-10-09T09:00:00Z"));
-  });
-  afterEach(() => vi.useRealTimers());
-
-  it("lands a product in a non-CAT-006 category whose type has is_drink=false into the foods list", async () => {
-    const { findAll } = await import("@/lib/db/tables");
-    vi.mocked(findAll).mockImplementation(async (sheet: string) => {
-      if (sheet === "Product_Categories") {
-        return [
-          { id: "CAT-BANH", name: "Bánh ngọt", type_id: "TYPE-FOOD" },
-          { id: "CAT-CAFE", name: "Cà phê", type_id: "TYPE-DRINK" },
-        ];
-      }
-      if (sheet === "Product_Types") {
-        return [
-          { id: "TYPE-FOOD", name: "Đồ ăn", is_drink: false },
-          { id: "TYPE-DRINK", name: "Đồ uống", is_drink: true },
-        ];
-      }
-      if (sheet === "Products") {
-        return [
-          { id: "PROD-CROISSANT", name: "Bánh sừng bò", category_id: "CAT-BANH" },
-          { id: "PROD-LATTE", name: "Latte đá", category_id: "CAT-CAFE" },
-        ];
-      }
-      return [];
-    });
-
-    getSalesDataV2.mockResolvedValue({
-      ...EMPTY,
-      bestSellers: [
-        { product_id: "PROD-CROISSANT", totalRevenue: 45000, totalQty: 1, sizes: {} },
-        { product_id: "PROD-LATTE", totalRevenue: 55000, totalQty: 1, sizes: {} },
-      ],
-    });
-
-    const tree = await SalesReportPage({ searchParams: Promise.resolve({}) });
-    const foodTable = findElement(tree, (el) => el?.props?.title === "Top sale - Thức ăn");
-    const drinkTable = findElement(tree, (el) => el?.props?.title === "Top sale - Nước");
-
-    expect(foodTable).not.toBeNull();
-    expect(drinkTable).not.toBeNull();
-
-    // PROD-CROISSANT has category CAT-BANH (which is NOT CAT-006) and type TYPE-FOOD with is_drink=false.
-    // It must land in bestFoods ("Top sale - Thức ăn"), NOT bestDrinks ("Top sale - Nước").
-    expect(foodTable.props.items).toEqual(
-      expect.arrayContaining([expect.objectContaining({ product_id: "PROD-CROISSANT" })])
-    );
-    expect(drinkTable.props.items).not.toEqual(
-      expect.arrayContaining([expect.objectContaining({ product_id: "PROD-CROISSANT" })])
-    );
-    // PROD-LATTE has category CAT-CAFE and type TYPE-DRINK with is_drink=true.
-    expect(drinkTable.props.items).toEqual(
-      expect.arrayContaining([expect.objectContaining({ product_id: "PROD-LATTE" })])
-    );
-  });
-});
-
 describe("Doanh số Vietnamese labels (audit B11)", () => {
   it("uses 'Trước giảm giá:' and 'Doanh thu trước giảm giá' instead of 'Gross'", async () => {
     getSalesDataV2.mockResolvedValue({
@@ -233,7 +152,7 @@ describe("Doanh số dish category filter hides order-level figures (audit B3)",
       grossRevenue: 100000,
       totalRevenue: 90000,
       totalDiscount: 10000,
-      paymentBreakdown: [{ method: "CASH", orderCount: 2, revenue: 90000 }],
+      paymentBreakdown: [{ method: "CASH", paymentCount: 2, revenue: 90000 }],
       systemPromotionDiscount: 5000,
     });
     getHourlyHeatmapV2.mockReset();

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { findAll, findSoldModifierIds } from "@/lib/db/tables";
 import { resolveActor } from "@/lib/auth/auth";
 import { getModifiersData } from "@/app/admin/products/modifiers/actions";
-import { safeReturnTo } from "@/app/admin/products/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { ModifierDetailView } from "./components/ModifierDetailView";
 import type { DBModifierGroup, DBProduct } from "@/types/db";
 

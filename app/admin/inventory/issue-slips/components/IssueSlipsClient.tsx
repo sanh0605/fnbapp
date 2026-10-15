@@ -47,13 +47,6 @@ function renderKindBadge(kind: IssueSlipKind) {
       </Badge>
     );
   }
-  if (kind === "STOCKTAKE") {
-    return (
-      <Badge variant="processing">
-        Kiểm kê
-      </Badge>
-    );
-  }
   if (kind === "CANCELLED") {
     return (
       <Badge variant="neutral">
@@ -247,7 +240,6 @@ export default function IssueSlipsClient({
             >
               <option value="ALL">Tất cả</option>
               <option value="SLIP">Phiếu xuất</option>
-              <option value="STOCKTAKE">Kiểm kê</option>
               <option value="CANCELLED">Đã huỷ</option>
             </Select>
           </Field>

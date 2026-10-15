@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { findAll } from "@/lib/db/tables";
 import { getOrderDetailV2 } from "@/app/admin/orders/order-detail-actions";
-import { safeReturnTo } from "@/app/admin/orders/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { OrderDetailView } from "./components/OrderDetailView";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export default async function OrderDetailPage(
   const searchParams = await props.searchParams;
   const params = await props.params;
   const returnToRaw = typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined;
-  const returnTo = safeReturnTo(returnToRaw);
+  const returnTo = safeReturnTo(returnToRaw, "/admin/orders", { listOnly: true });
 
   const [detail, brands] = await Promise.all([
     getOrderDetailV2(params.id),

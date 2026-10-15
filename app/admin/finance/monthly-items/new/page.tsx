@@ -1,15 +1,10 @@
 import { getCashCategories } from "@/app/admin/finance/categories/actions";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { MonthlyItemForm } from "../components/MonthlyItemForm";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
-
-function safeReturnTo(raw: string | undefined | null, fallback: string = "/admin/finance/monthly-items"): string {
-  if (!raw) return fallback;
-  if (raw.startsWith("/admin/finance/monthly-items")) return raw;
-  return fallback;
-}
 
 export default async function NewMonthlyItemPage(
   props: {
@@ -17,7 +12,7 @@ export default async function NewMonthlyItemPage(
   }
 ) {
   const searchParams = await props.searchParams;
-  const returnTo = safeReturnTo(searchParams?.returnTo);
+  const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance/monthly-items");
   const categories = await getCashCategories();
 
   return (

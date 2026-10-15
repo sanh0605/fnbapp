@@ -1,4 +1,5 @@
 import { formatDecimal, formatNumber } from "@/lib/shared/format";
+import { formatMonthLabel as monthLabel } from "@/lib/shared/datetime";
 import { displayMoney } from "./display-rounding";
 import type { PnlFigures, PnlSource, PnlSourceKind } from "./profit-and-loss";
 
@@ -109,10 +110,6 @@ function dateLabel(date: string | null): string | null {
   if (!date) return null;
   const [y, m, d] = date.split("-");
   return `${d}/${m}/${y}`;
-}
-
-function monthLabel(month: string): string {
-  return `${month.slice(5, 7)}/${month.slice(0, 4)}`;
 }
 
 function toCellSource(s: PnlSource): PnlCellSource {

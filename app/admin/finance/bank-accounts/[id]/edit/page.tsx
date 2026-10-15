@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBankAccounts } from "../../actions";
 import { BankAccountForm } from "../../components/BankAccountForm";
-import { safeReturnTo } from "@/app/admin/finance/components/return-to";
+import { safeReturnTo } from "@/lib/shared/return-to";
 import { editBackHref } from "@/lib/finance/detail-href";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
