@@ -47,3 +47,10 @@ Asked the same day, after `BR-INV-015`: *"anh có thể duplicate từ phiếu �
 - **New orders too** (owner 2026-10-14, *"Chặn luôn, giống Sửa/Huỷ"*, after being shown 30 Trứng gà delivered 05/08, counted on the shelf on 09/08 as found goods, then entered today as a new order: the book would gain the 30 eggs twice). Creating a completed order, or completing a draft, dated on or before the last confirmed stocktake is refused the same way, naming the stocktake. Saving a draft stays allowed. Built 2026-10-14 (migration 0116, ran on the server 2026-10-14, owner approved "Chạy cả 4").
 - To change such an order, undo the stocktakes from the newest back first, as for editing a stocktake (`BR-INV-012`).
 - **Measured 2026-10-14 (read only):** 151 of 203 completed orders are dated on or before `STK-001` (confirmed 09/08/2026 22:02 Saigon), the only confirmed stocktake, so their stock and cost fields are locked; 52 are not.
+
+### BR-INV-020 — The shop does not buy on credit; a completed purchase order is paid in full
+
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit question Q4, *"Không, nhận là trả đủ"*. Measured that day: all 203 purchase orders were completed and recorded as paid in cash on receipt.
+
+- No supplier debt is tracked. A completed order is money out on its date, as the cash book already records it.
+- Supplier debt (KiotViet's "công nợ") would be a new feature. It waits until he has a supplier who gives credit.
