@@ -134,7 +134,7 @@ The owner chose "Giữ nguyên" on 2026-10-15. The design that was offered (a `c
 
 The till is not exposed. Order "code stops reading → migration → code stops sending" applies only to `payer`, which nothing reads or sends except the import script's `null`.
 
-- Drop `cash_entries.payer` (null on 41 of 41, 0 readers). Migration number: the next free one when the file is written; 0125 is reserved for dropping DELETED (`docs/superpowers/plans/2026-10-15-bo-deleted.md`).
+- Drop `cash_entries.payer` (null on 41 of 41, 0 readers). Migration number: the next free one when the file is written; 0125 dropped DELETED (run 2026-10-15).
 - No other dead column: `bank_name` and `account_number` are set on 1 of 1 and shown; `monthly_item_id` is new; `updated_by_*` are written on every edit and kept for the audit even though no screen shows them. `cash_transfers.note` is NOT NULL '' while `cash_entries.note` is nullable: left as is, 0 rows either way.
 
 ## Order of work
