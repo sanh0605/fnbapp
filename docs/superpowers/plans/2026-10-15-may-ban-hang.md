@@ -53,7 +53,7 @@ Ví dụ: thu ngân gõ "bac xiu" → hiện Bạc xỉu. Đơn 100.000, thu ng�
 
 ## Bước 4 — sau C10
 
-- [x] **G-MB4:** R3 chặn ô giảm giá, một hàm chung, xoá năm bản sao và `calculateCartBaseTotal` thừa; R2 bước Khách đưa / Tiền thừa.
+- [x] **G-MB4:** R3 chặn ô giảm giá, một hàm chung, xoá năm bản sao và `calculateCartBaseTotal` thừa; R2 bước Khách đưa / Tiền thừa — chủ quán bỏ 2026-10-15 sau khi bấm thử (`BR-SALE-018`), đã gỡ trước lần đẩy.
 
 ## Bước 5
 

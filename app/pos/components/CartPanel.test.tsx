@@ -2,14 +2,13 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import React from "react";
-import { formatNumber } from "@/lib/shared/format";
 import { CartPanel } from "./CartPanel";
 
 afterEach(() => {
   cleanup();
 });
 
-describe("CartPanel Discount & Cash Tender (R2 & R3)", () => {
+describe("Discount (R3)", () => {
   const sampleCart = [
     {
       id: "line-1",
@@ -61,10 +60,6 @@ describe("CartPanel Discount & Cash Tender (R2 & R3)", () => {
     appliedPromotions: [],
     promotions: [],
     appliedPromoCode: null,
-    isCashStepOpen: false,
-    setIsCashStepOpen: vi.fn(),
-    cashTendered: null,
-    setCashTendered: vi.fn(),
   };
 
   describe("R3 Discount box clamping", () => {
@@ -119,132 +114,14 @@ describe("CartPanel Discount & Cash Tender (R2 & R3)", () => {
     });
   });
 
-  describe("R2 Khách đưa / Tiền thừa step", () => {
-    it("opens inline cash tender step when tapping TIỀN MẶT", () => {
-      const setIsCashStepOpen = vi.fn();
-      const setCashTendered = vi.fn();
-      render(
-        <CartPanel
-          {...defaultProps}
-          setIsCashStepOpen={setIsCashStepOpen}
-          setCashTendered={setCashTendered}
-        />
-      );
-
+  describe("Cash checkout", () => {
+    it("clicking TIỀN MẶT calls handleConfirmCheckout with 'Tien mat' once", () => {
+      const handleConfirmCheckout = vi.fn();
+      render(<CartPanel {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
       const cashButton = screen.getByRole("button", { name: /TIỀN MẶT/i });
       fireEvent.click(cashButton);
-
-      expect(setIsCashStepOpen).toHaveBeenCalledWith(true);
-      expect(setCashTendered).toHaveBeenCalledWith(81_000);
-    });
-
-    it("prefills 'Khách đưa' with formatted total amount and uses inputMode='numeric' without spinner", () => {
-      render(<CartPanel {...defaultProps} isCashStepOpen={true} cashTendered={81_000} />);
-      const input = screen.getByLabelText("Khách đưa") as HTMLInputElement;
-      expect(input.value).toBe(formatNumber(81_000));
-      expect(input).toHaveAttribute("inputMode", "numeric");
-      expect(input).toHaveAttribute("type", "text");
-    });
-
-    it("provides quick buttons for round notes above total (for 81.000 -> 100.000, 200.000, 500.000)", () => {
-      render(<CartPanel {...defaultProps} isCashStepOpen={true} cashTendered={81_000} />);
-      expect(screen.getByRole("button", { name: formatNumber(100_000) })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: formatNumber(200_000) })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: formatNumber(500_000) })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: formatNumber(50_000) })).toBeNull();
-    });
-
-    it("shows live 'Tiền thừa' when tendered is greater than total (200.000 for 81.000 -> Tiền thừa 119.000)", () => {
-      render(<CartPanel {...defaultProps} isCashStepOpen={true} cashTendered={200_000} />);
-      expect(screen.getByText("Tiền thừa")).toBeInTheDocument();
-      expect(screen.getByText(formatNumber(119_000))).toBeInTheDocument();
-    });
-
-    it("shows 'Khách đưa còn thiếu' and disables confirm when tendered is less than total", () => {
-      render(<CartPanel {...defaultProps} isCashStepOpen={true} cashTendered={50_000} />);
-      expect(screen.getByText("Khách đưa còn thiếu")).toBeInTheDocument();
-      expect(screen.getByText(formatNumber(31_000))).toBeInTheDocument();
-
-      const confirmBtn = screen.getByRole("button", { name: "Xác nhận thanh toán" });
-      expect(confirmBtn).toBeDisabled();
-    });
-
-    it("clicking quick note button updates tendered cash", () => {
-      const setCashTendered = vi.fn();
-      render(
-        <CartPanel
-          {...defaultProps}
-          isCashStepOpen={true}
-          cashTendered={81_000}
-          setCashTendered={setCashTendered}
-        />
-      );
-      const note200k = screen.getByRole("button", { name: formatNumber(200_000) });
-      fireEvent.click(note200k);
-      expect(setCashTendered).toHaveBeenCalledWith(200_000);
-    });
-
-    it("confirms cash checkout when valid amount is tendered", () => {
-      const handleConfirmCheckout = vi.fn();
-      render(
-        <CartPanel
-          {...defaultProps}
-          isCashStepOpen={true}
-          cashTendered={100_000}
-          handleConfirmCheckout={handleConfirmCheckout}
-        />
-      );
-      const confirmBtn = screen.getByRole("button", { name: "Xác nhận thanh toán" });
-      expect(confirmBtn).not.toBeDisabled();
-      fireEvent.click(confirmBtn);
-
+      expect(handleConfirmCheckout).toHaveBeenCalledTimes(1);
       expect(handleConfirmCheckout).toHaveBeenCalledWith("Tien mat");
-    });
-
-    it("hides promo and discount blocks while cash step is open", () => {
-      const { rerender } = render(<CartPanel {...defaultProps} isCashStepOpen={false} />);
-      expect(screen.getByLabelText("Mã giảm giá")).toBeInTheDocument();
-      expect(screen.getByLabelText("Giảm giá tùy chỉnh")).toBeInTheDocument();
-
-      rerender(<CartPanel {...defaultProps} isCashStepOpen={true} cashTendered={81_000} />);
-      expect(screen.queryByLabelText("Mã giảm giá")).toBeNull();
-      expect(screen.queryByLabelText("Giảm giá tùy chỉnh")).toBeNull();
-      expect(screen.getByText("Bạc xỉu")).toBeInTheDocument();
-    });
-
-    it("Enter on input confirms when tendered >= total and stops propagation", () => {
-      const handleConfirmCheckout = vi.fn();
-      render(
-        <CartPanel
-          {...defaultProps}
-          isCashStepOpen={true}
-          cashTendered={100_000}
-          handleConfirmCheckout={handleConfirmCheckout}
-        />
-      );
-      const input = screen.getByLabelText("Khách đưa");
-      const event = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
-      const stopSpy = vi.spyOn(event, "stopPropagation");
-      input.dispatchEvent(event);
-
-      expect(handleConfirmCheckout).toHaveBeenCalledWith("Tien mat");
-      expect(stopSpy).toHaveBeenCalled();
-    });
-
-    it("Enter on input sends nothing when box is blank (null)", () => {
-      const handleConfirmCheckout = vi.fn();
-      render(
-        <CartPanel
-          {...defaultProps}
-          isCashStepOpen={true}
-          cashTendered={null}
-          handleConfirmCheckout={handleConfirmCheckout}
-        />
-      );
-      const input = screen.getByLabelText("Khách đưa");
-      fireEvent.keyDown(input, { key: "Enter" });
-
-      expect(handleConfirmCheckout).not.toHaveBeenCalled();
     });
   });
 });

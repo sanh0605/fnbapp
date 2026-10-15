@@ -308,10 +308,6 @@ export default function POSScreen({
   const [userCustomDiscount, setUserCustomDiscount] = useState<number | null>(null);
   const [userCustomDiscountType, setUserCustomDiscountType] = useState<"VND" | "PERCENT">("VND");
 
-  // Cash Tender State (Khách đưa / Tiền thừa)
-  const [isCashStepOpen, setIsCashStepOpen] = useState(false);
-  const [cashTendered, setCashTendered] = useState<number | null>(null);
-
   const filteredProducts = useMemo(() => {
     if (searchQuery.trim()) {
       const q = stripDiacritics(searchQuery.trim().toLowerCase());
@@ -668,14 +664,14 @@ export default function POSScreen({
   };
 
   const handleConfirmCheckoutRef = useRef<(method: string, payments?: any[]) => void>(() => {});
+  // A second Enter before the first confirm settles must not ask (and send) again.
+  const enterConfirmOpenRef = useRef(false);
 
   const resetAfterSale = (draftId?: string | null) => {
     checkoutAttemptRef.current = null;
     clientCapturedAtRef.current = null;
     setCart([]);
     setIsCartOpen(false);
-    setIsCashStepOpen(false);
-    setCashTendered(null);
     setUserCustomDiscount(null);
     setUserCustomDiscountType("VND");
     setAppliedPromoCode(null);
@@ -803,8 +799,6 @@ export default function POSScreen({
     // Optimistically clear cart
     setCart([]);
     setIsCartOpen(false);
-    setIsCashStepOpen(false);
-    setCashTendered(null);
     setUserCustomDiscount(null);
     setUserCustomDiscountType("VND");
     setAppliedPromoCode(null);
@@ -890,29 +884,37 @@ export default function POSScreen({
         setIsDraftModalOpen(false);
         setSelectedProduct(null);
         setIsCartOpen(false);
-        setIsCashStepOpen(false);
-        setCashTendered(null);
       } else if (e.key === "Enter") {
-        if (activeEl?.tagName === "BUTTON") return;
-        if (!isCheckingOut && !processingOrder && cart.length > 0 && isOnline) {
+        if (activeEl?.tagName === "BUTTON" || enterConfirmOpenRef.current) return;
+        if (
+          !isCheckingOut &&
+          !processingOrder &&
+          cart.length > 0 &&
+          isOnline &&
+          !selectedProduct &&
+          !isDraftModalOpen
+        ) {
           e.preventDefault();
-          if (!isCashStepOpen) {
-            setIsCashStepOpen(true);
-            setCashTendered(totalAmount);
-            setIsCartOpen(true);
-          } else {
-            if (cashTendered !== null && cashTendered >= totalAmount) {
+          enterConfirmOpenRef.current = true;
+          try {
+            if (
+              await confirm({
+                title: "Xác nhận",
+                message: "Xác nhận thanh toán TIỀN MẶT cho đơn hàng?",
+                variant: "warning",
+              })
+            ) {
               handleConfirmCheckoutRef.current("Tien mat");
-              setIsCashStepOpen(false);
-              setCashTendered(null);
             }
+          } finally {
+            enterConfirmOpenRef.current = false;
           }
         }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isCheckingOut, processingOrder, cart.length, isOnline, isCashStepOpen, cashTendered, totalAmount]);
+  }, [isCheckingOut, processingOrder, cart.length, isOnline, selectedProduct, isDraftModalOpen]);
 
   return (
     <div className="fixed inset-0 flex bg-page text-text-primary font-sans overflow-hidden">
@@ -1087,10 +1089,6 @@ export default function POSScreen({
         appliedPromotions={appliedPromotions}
         promotions={promotions}
         appliedPromoCode={appliedPromoCode}
-        isCashStepOpen={isCashStepOpen}
-        setIsCashStepOpen={setIsCashStepOpen}
-        cashTendered={cashTendered}
-        setCashTendered={setCashTendered}
         onResendFailedOrder={() => handleResendOrder()}
       />
 

@@ -100,9 +100,8 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     fireEvent.click(screen.getByText("Cà phê đen"));
     fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
-    // Click TIỀN MẶT and confirm cash payment
+    // Click TIỀN MẶT (sends at once, BR-SALE-018)
     fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
-    fireEvent.click(screen.getByRole("button", { name: /Xác nhận thanh toán/i }));
 
     // Wait for failure
     await waitFor(() => {
@@ -163,9 +162,8 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     fireEvent.click(screen.getByText("Cà phê đen"));
     fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
-    // Click TIỀN MẶT and confirm cash payment
+    // Click TIỀN MẶT (sends at once, BR-SALE-018)
     fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
-    fireEvent.click(screen.getByRole("button", { name: /Xác nhận thanh toán/i }));
 
     // Wait for error
     await waitFor(() => {
@@ -219,9 +217,8 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     fireEvent.click(screen.getByText("Cà phê đen"));
     fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
-    // Click TIỀN MẶT and confirm cash payment
+    // Click TIỀN MẶT (sends at once, BR-SALE-018)
     fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
-    fireEvent.click(screen.getByRole("button", { name: /Xác nhận thanh toán/i }));
 
     // Wait for refusal error
     await waitFor(() => {

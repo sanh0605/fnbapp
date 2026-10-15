@@ -3,7 +3,6 @@ import {
   clampDiscount,
   calculateItemTotal,
   calculateItemGross,
-  getRoundNotesAbove,
 } from "./cart-pricing";
 
 describe("clampDiscount (R3)", () => {
@@ -84,21 +83,5 @@ describe("calculateItemTotal & calculateItemGross", () => {
       discount_type: "VND",
     });
     expect(net).toBe(0);
-  });
-});
-
-describe("getRoundNotesAbove (R2)", () => {
-  it("returns round notes strictly above total for 81.000 -> [100.000, 200.000, 500.000]", () => {
-    expect(getRoundNotesAbove(81_000)).toEqual([100_000, 200_000, 500_000]);
-  });
-
-  it("returns notes above 35.000 -> [50.000, 100.000, 200.000, 500.000]", () => {
-    expect(getRoundNotesAbove(35_000)).toEqual([50_000, 100_000, 200_000, 500_000]);
-  });
-
-  it("handles totals above 500.000 by returning round multiples", () => {
-    const notes = getRoundNotesAbove(520_000);
-    expect(notes.length).toBeGreaterThan(0);
-    expect(notes[0]).toBe(600_000);
   });
 });

@@ -170,4 +170,12 @@ Every edit rebuilt the order from today's catalog. The new version credited the 
 
 ### BR-SALE-017 — A dish group's till icon is data the owner edits
 
-2026-10-15 (spec R4; owner rule 2026-09-28, no hard-coding what he may change): `product_categories.icon` holds the emoji shown on a dish card at the till, set on the dish-group form. Blank means no icon on the card, not a default cup. Up to 8 characters (one emoji can be several code units), refused with "Biểu tượng tối đa 8 ký tự". Migration `0130` (runs before the push that ships the form; not run yet on 2026-10-15) backfills only the three groups the old keyword table really matched: Cà phê ☕, Trà 🍵, Yogurt 🥛; Giải trí, Thức ăn and Topping get no icon (the old fallback cup was wrong there).
+2026-10-15 (spec R4; owner rule 2026-09-28, no hard-coding what he may change): `product_categories.icon` holds the emoji shown on a dish card at the till, set on the dish-group form. Blank means no icon on the card, not a default cup. Up to 8 characters (one emoji can be several code units), refused with "Biểu tượng tối đa 8 ký tự". Migration `0130` (run 2026-10-15, before the push that ships the form) backfills only the three groups the old keyword table really matched: Cà phê ☕, Trà 🍵, Yogurt 🥛; Giải trí, Thức ăn and Topping get no icon (the old fallback cup was wrong there).
+
+### BR-SALE-018 — TIỀN MẶT sends the order at once; the till does not count change
+
+**Status:** `APPROVED` — owner 2026-10-15, after trying the till: *"chỉ riêng phần Khách đưa trong chỗ bán hàng thì không cần bước đó"*. Reverses Máy bán hàng proposal R2 (a Khách đưa / Tiền thừa step on cash), which was built the same day and never pushed.
+
+- TIỀN MẶT sends a cash order straight away. The Enter key asks once, "Xác nhận thanh toán TIỀN MẶT cho đơn hàng?", then sends — both as before R2. Enter does nothing while a dish or draft window is open.
+- No amount the customer handed over is asked, and no change is shown.
+- Nothing was ever stored by the step, so no data changes.

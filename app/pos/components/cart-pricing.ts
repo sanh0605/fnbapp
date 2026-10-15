@@ -67,17 +67,3 @@ export function clampDiscount(
   }
   return Math.min(Math.max(0, subtotal), nonNegative);
 }
-
-/**
- * Returns round cash notes strictly above total (e.g. 81.000 -> [100.000, 200.000, 500.000]).
- */
-export function getRoundNotesAbove(total: number): number[] {
-  const standardNotes = [10_000, 20_000, 50_000, 100_000, 200_000, 500_000];
-  const above = standardNotes.filter((n) => n > total);
-  if (above.length > 0) return above;
-  const next100k = Math.ceil((total + 1) / 100_000) * 100_000;
-  const next500k = Math.ceil((total + 1) / 500_000) * 500_000;
-  const res = [next100k];
-  if (next500k > next100k) res.push(next500k);
-  return res;
-}

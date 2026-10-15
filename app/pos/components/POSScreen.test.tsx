@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within, act } from "@testing-library/react";
 import React from "react";
 
 const { signOutMock } = vi.hoisted(() => ({
@@ -37,6 +37,7 @@ vi.mock("@/lib/shared/dialog", () => ({
 }));
 
 import { submitOrderV2, savePOSDraft } from "@/app/pos/actions";
+import { confirm } from "@/lib/shared/dialog";
 import POSScreen from "./POSScreen";
 
 afterEach(() => {
@@ -45,6 +46,7 @@ afterEach(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(confirm).mockResolvedValue(true);
   vi.mocked(submitOrderV2).mockReset();
   vi.mocked(submitOrderV2).mockResolvedValue({ success: true } as any);
   vi.mocked(savePOSDraft).mockReset();
@@ -148,101 +150,129 @@ describe("POSScreen (Step 3 & 5)", () => {
     });
   });
 
-  describe("R2: Enter key cash flow", () => {
-    it("Enter opens cash tender step, Enter again confirms cash payment", async () => {
+  describe("Enter key cash flow (BR-SALE-018)", () => {
+    it("pressing Enter twice quickly sends one order", async () => {
       render(<POSScreen {...defaultProps} />);
 
       // Add item to cart
       fireEvent.click(screen.getByText("Bạc xỉu"));
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
-      // First Enter: opens cash tender step
       fireEvent.keyDown(window, { key: "Enter" });
-      expect(screen.getByText("Thanh toán Tiền mặt")).toBeInTheDocument();
-      expect(screen.getByLabelText("Khách đưa")).toBeInTheDocument();
-
-      // Second Enter: confirms cash payment
-      fireEvent.keyDown(screen.getByLabelText("Khách đưa"), { key: "Enter" });
-      // Upon confirmation, submitOrderV2 is triggered and cash step is closed
-      await waitFor(() => {
-        expect(screen.queryByText("Thanh toán Tiền mặt")).toBeNull();
-      });
-      expect(submitOrderV2).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe("Item 1: Enter on Khách đưa input sends exactly once, blank sends nothing", () => {
-    it("firing Enter on the input calls submitOrderV2 exactly once", async () => {
-      render(<POSScreen {...defaultProps} />);
-
-      fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
-
-      // Enter on window opens cash step
       fireEvent.keyDown(window, { key: "Enter" });
-      const input = screen.getByLabelText("Khách đưa");
-      expect(input).toBeInTheDocument();
-
-      // Enter ON THE INPUT
-      fireEvent.keyDown(input, { key: "Enter" });
 
       await waitFor(() => {
         expect(submitOrderV2).toHaveBeenCalledTimes(1);
       });
     });
 
-    it("Enter on input with blank box sends nothing", async () => {
+    it("Enter while sending sends nothing", async () => {
+      let resolveSubmit: (val: any) => void;
+      vi.mocked(submitOrderV2).mockImplementationOnce(
+        () => new Promise((resolve) => { resolveSubmit = resolve; }) as any
+      );
+
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
+      // First Enter: starts checkout
       fireEvent.keyDown(window, { key: "Enter" });
-      const input = screen.getByLabelText("Khách đưa");
+      await waitFor(() => {
+        expect(submitOrderV2).toHaveBeenCalledTimes(1);
+      });
 
-      // Click Xoá to clear the box
-      const clearBtn = within(input.parentElement!).getByRole("button", { name: "Xoá" });
-      fireEvent.click(clearBtn);
-      expect((input as HTMLInputElement).value).toBe("");
+      // Second Enter while sending: does not even ask
+      fireEvent.keyDown(window, { key: "Enter" });
+      expect(confirm).toHaveBeenCalledTimes(1);
+      expect(submitOrderV2).toHaveBeenCalledTimes(1);
 
-      // Enter on the blank input
-      fireEvent.keyDown(input, { key: "Enter" });
+      resolveSubmit!({ success: true });
+    });
 
+    it("Enter while offline sends nothing", async () => {
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent(window, new Event("offline"));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+      expect(confirm).not.toHaveBeenCalled();
       expect(submitOrderV2).not.toHaveBeenCalled();
     });
 
-    it("Enter in Khách đưa with an amount less than the total does not send", async () => {
+    it("Enter with confirm resolving false sends nothing", async () => {
+      vi.mocked(confirm).mockResolvedValueOnce(false);
+
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
       fireEvent.keyDown(window, { key: "Enter" });
-      const input = screen.getByLabelText("Khách đưa");
-      expect(input).toBeInTheDocument();
 
-      // Total is 29,000; enter 10,000 which is less than total
-      fireEvent.change(input, { target: { value: "10000" } });
-      fireEvent.keyDown(input, { key: "Enter" });
-
+      await waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
+      await act(async () => {});
       expect(submitOrderV2).not.toHaveBeenCalled();
     });
 
-    it("Enter with focus on 'Quay lại' does not send order", async () => {
+    it("Enter while the item modal is open (a product card clicked so ItemConfigModal shows) sends nothing and does not call confirm", () => {
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      expect(screen.getByRole("button", { name: /THÊM/i })).toBeInTheDocument();
+
+      (document.activeElement as HTMLElement)?.blur?.();
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      expect(confirm).not.toHaveBeenCalled();
+      expect(submitOrderV2).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Item 1: Enter sends exactly once, blank cart sends nothing", () => {
+    it("firing Enter calls submitOrderV2 exactly once", async () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
       fireEvent.keyDown(window, { key: "Enter" });
-      expect(screen.getByText("Thanh toán Tiền mặt")).toBeInTheDocument();
 
-      const backBtn = screen.getByRole("button", { name: "Quay lại" });
-      backBtn.focus();
-      expect(document.activeElement).toBe(backBtn);
+      await waitFor(() => {
+        expect(submitOrderV2).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it("Enter on blank cart sends nothing", async () => {
+      render(<POSScreen {...defaultProps} />);
 
       fireEvent.keyDown(window, { key: "Enter" });
 
+      expect(confirm).not.toHaveBeenCalled();
+      expect(submitOrderV2).not.toHaveBeenCalled();
+    });
+
+    it("Enter with focus on a button does not send order", async () => {
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+
+      const draftBtn = screen.getByRole("button", { name: "Lưu Nháp" });
+      draftBtn.focus();
+      expect(document.activeElement).toBe(draftBtn);
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      expect(confirm).not.toHaveBeenCalled();
       expect(submitOrderV2).not.toHaveBeenCalled();
     });
   });
@@ -263,10 +293,10 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       // Checkout
       fireEvent.keyDown(window, { key: "Enter" });
-      const input = screen.getByLabelText("Khách đưa");
-      fireEvent.keyDown(input, { key: "Enter" });
 
-      expect(submitOrderV2).toHaveBeenCalledTimes(1);
+      await waitFor(() => {
+        expect(submitOrderV2).toHaveBeenCalledTimes(1);
+      });
 
       // Cart is empty while checking out
       expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
@@ -301,8 +331,6 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       // Pay with cash
       fireEvent.keyDown(window, { key: "Enter" });
-      const input = screen.getByLabelText("Khách đưa");
-      fireEvent.keyDown(input, { key: "Enter" });
 
       await waitFor(() => {
         expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại")[0]).toBeInTheDocument();
@@ -354,8 +382,6 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       // Checkout
       fireEvent.keyDown(window, { key: "Enter" });
-      const cashInput = screen.getByLabelText("Khách đưa");
-      fireEvent.keyDown(cashInput, { key: "Enter" });
 
       // First call failed
       await waitFor(() => {
@@ -413,8 +439,6 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
       fireEvent.keyDown(window, { key: "Enter" });
-      const input = screen.getByLabelText("Khách đưa");
-      fireEvent.keyDown(input, { key: "Enter" });
 
       await waitFor(() => {
         expect(screen.getAllByText(REFUSAL_TEXT)[0]).toBeInTheDocument();
@@ -444,7 +468,6 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
       fireEvent.keyDown(window, { key: "Enter" });
-      fireEvent.keyDown(screen.getByLabelText("Khách đưa"), { key: "Enter" });
 
       await waitFor(() => {
         expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại")[0]).toBeInTheDocument();
@@ -475,7 +498,6 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
       fireEvent.keyDown(window, { key: "Enter" });
-      fireEvent.keyDown(screen.getByLabelText("Khách đưa"), { key: "Enter" });
 
       await waitFor(() => {
         expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại").length).toBeGreaterThan(0);
@@ -496,7 +518,6 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
       fireEvent.keyDown(window, { key: "Enter" });
-      fireEvent.keyDown(screen.getByLabelText("Khách đưa"), { key: "Enter" });
 
       await waitFor(() => {
         expect(screen.getAllByText("Món Bạc xỉu đã hết hàng").length).toBeGreaterThan(0);
@@ -542,7 +563,6 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
       fireEvent.keyDown(window, { key: "Enter" });
-      fireEvent.keyDown(screen.getByLabelText("Khách đưa"), { key: "Enter" });
 
       await waitFor(() => {
         expect(screen.getByRole("button", { name: "Gửi lại" })).toBeInTheDocument();
@@ -574,7 +594,6 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
 
       fireEvent.keyDown(window, { key: "Enter" });
-      fireEvent.keyDown(screen.getByLabelText("Khách đưa"), { key: "Enter" });
 
       await waitFor(() => {
         expect(screen.getByRole("button", { name: "Gửi lại" })).toBeInTheDocument();
