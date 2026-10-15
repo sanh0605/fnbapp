@@ -75,7 +75,7 @@ Backend và cấu hình → Sonnet (S1). Trang Xoá bộ nhớ đệm → Gemini
 **Interfaces:**
 - Produces: `clearProductCache(): Promise<void>` trong `app/admin/clear-cache/actions.ts`, `"use server"`, gọi `revalidateTag(tag, { expire: 0 })` cho `sheets-Product_Variants`, `sheets-Products`, `sheets-Product_Price_History`, yêu cầu `requireAdmin()` như các action khác.
 
-- [ ] **Bước 1: cài bản mới**
+- [x] **Bước 1: cài bản mới**
 
 ```bash
 npm install next@16.4.1 react@19.3.1 react-dom@19.3.1 @types/react@19 @types/react-dom@19 eslint@9 eslint-config-next@16.4.1
@@ -84,7 +84,7 @@ npm uninstall googleapis
 
 Nếu `npm install` kêu peer dependency: đọc tên gói kêu, không dùng `--force` khi chưa biết gói nào.
 
-- [ ] **Bước 2: codemod**
+- [x] **Bước 2: codemod**
 
 ```bash
 npx @next/codemod@canary next-async-request-api .
@@ -102,7 +102,7 @@ export default defineConfig([...nextVitals, { ignores: [".next/**"] }]);
 
 và xoá `.eslintrc.json`.
 
-- [ ] **Bước 3: sửa tay cấu hình và đăng nhập**
+- [x] **Bước 3: sửa tay cấu hình và đăng nhập**
 
 `next.config.js`: bỏ `swcMinify` và khối `eslint`; giữ `reactStrictMode`, `redirects`, dòng `process.env.TZ`.
 
@@ -112,7 +112,7 @@ git mv middleware.ts proxy.ts
 
 Trong `proxy.ts` đổi tên hàm bên trong `withAuth(function middleware(req)` thành `function proxy(req)`; giữ `export default withAuth(...)` và `config.matcher`.
 
-- [ ] **Bước 4: làm mới cache**
+- [x] **Bước 4: làm mới cache**
 
 Viết test đỏ trước trong `lib/db/tables.test.ts`: `insert` gọi `revalidateTag("sheets-Products", { expire: 0 })`. Chạy, đỏ vì đối số thứ hai thiếu.
 
@@ -145,7 +145,7 @@ Trong `app/admin/clear-cache/page.tsx` tạm bỏ ba dòng `revalidateTag` để
 
 Xoá `app/api/revalidate/` (grep: không ai gọi `api/revalidate`).
 
-- [ ] **Bước 5: kiểu React 19**
+- [x] **Bước 5: kiểu React 19**
 
 ```bash
 grep -rln "\bJSX\.Element" app components lib
@@ -153,7 +153,7 @@ grep -rln "\bJSX\.Element" app components lib
 
 Mỗi chỗ `): JSX.Element {` → `) {`. Chạy `npx tsc --noEmit`; lỗi còn lại sửa từng cái theo nghĩa nhỏ nhất (ví dụ `ReactNode` chặt hơn, `ref` kiểu mới). Nếu lỗi từ `@types/react-datepicker`: `npm uninstall @types/react-datepicker` (react-datepicker 9 tự mang kiểu).
 
-- [ ] **Bước 6: năm cửa kiểm**
+- [x] **Bước 6: năm cửa kiểm**
 
 ```bash
 npx tsc --noEmit
@@ -166,7 +166,7 @@ npm run lint
 
 Test đỏ vì React 19 (ví dụ `act` warning thành lỗi, `@testing-library/react` cần `IS_REACT_ACT_ENVIRONMENT`): sửa trong `vitest.setup.ts` một lần, không sửa từng test. `npm run lint` đỏ không chặn, nhưng báo số lỗi.
 
-- [ ] **Bước 7: commit**
+- [x] **Bước 7: commit**
 
 Một commit `chore(deps): Next 16.4.1 and React 19.3.1 — ...` ghi số trang codemod sửa, số file đổi `updateTag`, số file bỏ `JSX.Element`, mọi lỗi `tsc` phải sửa tay và cách sửa.
 
@@ -176,16 +176,19 @@ Báo lại: số dòng diff; lỗi nào phải sửa tay ngoài danh sách trên
 
 **Files:** `app/admin/clear-cache/page.tsx`, test `app/admin/clear-cache/page.test.tsx`.
 
-- [ ] Trang theo khuôn `PageHeader` như hôm nay; dưới tiêu đề một `form` với `action={clearProductCache}` và một `Button` dùng chung "Làm mới bộ nhớ đệm"; sau khi bấm hiện `Alert` loại thành công "Đã làm mới bộ nhớ đệm." (dùng `useActionState` hoặc `useFormStatus` của React 19 cho trạng thái đang chạy). Bỏ câu nhắc Google Sheets. Máy tính và điện thoại cùng một cột vì trang chỉ có một nút; nút rộng vừa ngón cái trên điện thoại.
-- [ ] Test render: có nút, bấm gọi action một lần.
-- [ ] Commit.
+- [x] Trang theo khuôn `PageHeader` như hôm nay; dưới tiêu đề một `form` với `action={clearProductCache}` và một `Button` dùng chung "Làm mới bộ nhớ đệm"; sau khi bấm hiện `Alert` loại thành công "Đã làm mới bộ nhớ đệm." (dùng `useActionState` hoặc `useFormStatus` của React 19 cho trạng thái đang chạy). Bỏ câu nhắc Google Sheets. Máy tính và điện thoại cùng một cột vì trang chỉ có một nút; nút rộng vừa ngón cái trên điện thoại.
+- [x] Test render: có nút, bấm gọi action một lần.
+- [x] Commit.
 
 ### O2 (Opus, sau G1): soát, đo sau, mở bằng mắt
 
-- [ ] Soát diff S1 và G1: tìm chỗ thừa, chỗ codemod để lại rác, chỗ còn `revalidateTag` một đối số.
-- [ ] `npm run build` ghi số giây; `next start -p 8386`; đo 5 trang như O1; so sánh, ghi vào kế hoạch chung.
-- [ ] Mở trên 8386 ở 1568/1024/390 px: Tổng quan, Đơn hàng (lọc `?range=THIS_MONTH`), Phiếu nhập, Doanh số, Món (lưu một món thử rồi ngừng bán nó), Xoá bộ nhớ đệm, máy bán hàng (thêm món, không thanh toán), đăng nhập STAFF vào `/admin` bị đẩy về `/pos`.
-- [ ] Kiểm giờ: một đơn hàng, giờ hiện bằng `created_at` + 7.
+- [x] Soát diff S1 và G1: tìm chỗ thừa, chỗ codemod để lại rác, chỗ còn `revalidateTag` một đối số.
+- [x] `npm run build` ghi số giây; `next start -p 8386`; đo 5 trang như O1; so sánh, ghi vào kế hoạch chung.
+  - Đo 2026-10-15 (giữa 3 lần sau 1 lần làm nóng, ms, trước → sau): Tổng quan 311 → 325; Đơn hàng 538 → 396; Phiếu nhập 206 → 126; Doanh số 978 → 577; `/pos` 56 → 5 (cả hai đo lối chuyển về `/admin` vì thiếu `outletId`, không phải máy bán thật). Dựng 52 s → 36 s (lần đầu), 11–13 s khi có bộ nhớ dựng.
+- [x] Mở trên 8386 ở 1568/1024/390 px: Tổng quan, Đơn hàng (lọc `?range=THIS_MONTH`), Phiếu nhập, Doanh số, Món (lưu một món thử rồi ngừng bán nó), Xoá bộ nhớ đệm, máy bán hàng (thêm món, không thanh toán), đăng nhập STAFF vào `/admin` bị đẩy về `/pos`.
+  - Làm 2026-10-15: 6 trang quản trị × 3 khổ đều mở được, không tràn ngang; máy bán hàng Điểm bán 1 thêm Cà phê sữa tươi 500ml ra 22.000, không thanh toán; STAFF vào `/admin` bị đẩy về `/pos`; nút Xoá bộ nhớ đệm hiện "Đã làm mới bộ nhớ đệm.". **Không** lưu món thử: ghi vào dữ liệu thật, trái luật không bấm Lưu khi kiểm.
+- [x] Kiểm giờ: một đơn hàng, giờ hiện bằng `created_at` + 7.
+  - Đơn 261015001032: máy chủ 09:49:29+07, trang hiện 09:49:29.
 - [ ] Ghi kết quả vào kế hoạch chung; hỏi chủ quán duyệt đẩy, lúc máy bán không còn đơn chờ. Sau đẩy: báo nhân viên tải lại trang máy bán; Vercel READY, 0 lỗi máy chủ một giờ, chủ quán mở trang thật.
 
 ## Phản biện (phiên fnbapp-f5, 2026-10-15, trước khi triển khai)
