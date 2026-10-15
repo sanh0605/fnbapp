@@ -1,10 +1,12 @@
 "use server";
 
-import { findAll, findAllNoCache, findAllWhere, findAllWhereInBatches, insert, generateNewId } from "@/lib/db/tables";
-import { revalidatePath } from "next/cache";
+import { findAll, findAllNoCache, findAllWhere, findAllWhereInBatches, generateNewId, getCacheTag } from "@/lib/db/tables";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { requireAdmin } from "@/lib/auth/auth";
+import { disposeAssetAtomic } from "@/lib/assets/dispose-asset-transaction";
+import { parseCashEntry } from "@/lib/finance/cash-entry-rules";
 import {
   buildAssetSchedule,
   chargeForMonth,
@@ -19,9 +21,10 @@ import {
   type AssetItemDetail,
   type AssetItemRow,
   type AssetLotInput,
+  type DisposalProceeds,
   type DisposalRowInput,
 } from "@/lib/assets/asset-items";
-import type { DBAsset, DBAssetDisposal, DBPurchaseOrderLine, DBPurchasedItem } from "@/types/db";
+import type { DBAsset, DBAssetDisposal, DBBankAccount, DBCashEntry, DBPurchaseOrderLine, DBPurchasedItem } from "@/types/db";
 
 const ASSETS_SHEET = "assets";
 const DISPOSALS_SHEET = "asset_disposals";
@@ -152,6 +155,22 @@ export async function getAssetItemsData(): Promise<AssetItemRow[]> {
   }
 }
 
+// The cash-book row each disposal wrote (BR-COGS-008), by disposal id. A cancelled
+// row is returned as such, not hidden.
+async function loadProceeds(disposalIds: string[]): Promise<Map<string, DisposalProceeds>> {
+  const entries = await findAllWhereInBatches<DBCashEntry>("Cash_Entries", "asset_disposal_id", disposalIds);
+  const accounts = await findAllWhereInBatches<DBBankAccount>(
+    "Bank_Accounts", "id", entries.map(e => e.bank_account_id).filter((id): id is string => !!id),
+  );
+  const accountName = new Map(accounts.map(a => [a.id, a.name]));
+  return new Map(entries.map(e => [e.asset_disposal_id!, {
+    amount: Number(e.amount),
+    paymentMethod: e.payment_method,
+    bankAccountName: e.bank_account_id ? accountName.get(e.bank_account_id) ?? null : null,
+    status: e.status,
+  }]));
+}
+
 // Read-only: one purchased item's lots, disposals (with the amount each one
 // charged into its month) and monthly depreciation. null = no ACTIVE lot.
 export async function getAssetItemDetail(itemId: string): Promise<AssetItemDetail | null> {
@@ -170,10 +189,11 @@ export async function getAssetItemDetail(itemId: string): Promise<AssetItemDetai
       findAllWhere<DBPurchasedItem>("purchased_items", { eq: { id: itemId } }),
     ]);
     const orderByLine = new Map(lines.map(l => [l.id, l.purchase_order_id]));
+    const proceeds = await loadProceeds(disposals.map(d => d.id));
     return buildAssetItemDetail(
       itemId,
       assets.map(a => toLotInput(a, a.purchase_order_line_id ? orderByLine.get(a.purchase_order_line_id) ?? null : null)),
-      toDisposalRows(disposals),
+      toDisposalRows(disposals).map(d => ({ ...d, proceeds: proceeds.get(d.id) ?? null })),
       items[0]?.name,
       currentSaigonMonth(),
     );
@@ -249,7 +269,7 @@ export async function previewDisposalCharge(
   }
 }
 
-// Section 3.3: inserts a row, never updates assets.quantity downward and
+// Section 3.3: records a disposal (and its proceeds row, BR-COGS-008) in one rpc, never updates assets.quantity downward and
 // never deletes -- remaining quantity is derived (assets.quantity minus
 // the sum of disposals), so a mistaken entry is reversible by a
 // compensating row rather than by editing the past.
@@ -260,11 +280,17 @@ export async function disposeAsset(formData: FormData): Promise<ActionResponse> 
   const asset_id = formData.get("asset_id") as string;
   const quantity = Number(formData.get("quantity"));
   const disposed_date = formData.get("disposed_date") as string;
-  const reason = (formData.get("reason") as string) || "";
+  const reason = (formData.get("reason") as string) || null;
 
   if (!asset_id) return fail("Thiếu tài sản");
   if (!Number.isInteger(quantity) || quantity <= 0) return fail("Số lượng thanh lý phải là số nguyên lớn hơn 0");
   if (!disposed_date) return fail("Vui lòng chọn ngày");
+
+  // BR-COGS-008: the amount box is required, 0 is a valid answer.
+  const proceedsRaw = ((formData.get("proceeds") as string) || "").trim();
+  if (!proceedsRaw) return fail("Nhập số tiền thu được, bỏ đi thì nhập 0");
+  if (!/^\d+$/.test(proceedsRaw)) return fail("Số tiền thu được phải là số nguyên đồng, từ 0 trở lên");
+  const proceeds = Number(proceedsRaw);
 
   try {
     // Fresh rows, not the cached list: the remaining quantity must not be stale.
@@ -304,16 +330,40 @@ export async function disposeAsset(formData: FormData): Promise<ActionResponse> 
     );
 
     const id = await generateNewId(DISPOSALS_SHEET, "TL");
-    await insert(DISPOSALS_SHEET, {
-      id,
-      asset_id,
-      quantity,
-      disposed_date,
-      reason,
-      created_by_id: auth.actor.id,
-      created_by_name: auth.actor.name,
+    let entry: { entry_id: string; payment_method: "CASH" | "BANK_TRANSFER"; bank_account_id: string | null; note: string } | null = null;
+    if (proceeds > 0) {
+      const note = `Thanh lý ${id}: ${asset.name_snapshot} × ${quantity}`;
+      // The same rule as a hand-typed row; the group is the flagged one, picked by the database.
+      const parsed = parseCashEntry({
+        entry_date: disposed_date,
+        category_id: "asset-disposal",
+        amount: proceedsRaw,
+        payment_method: (formData.get("payment_method") as string) || "",
+        bank_account_id: (formData.get("bank_account_id") as string) || "",
+        note,
+      });
+      if (parsed.ok === false) return fail(parsed.error);
+      entry = {
+        entry_id: await generateNewId("Cash_Entries", "CE"),
+        payment_method: parsed.value.payment_method,
+        bank_account_id: parsed.value.bank_account_id,
+        note,
+      };
+    }
+    await disposeAssetAtomic({
+      id, asset_id, quantity, disposed_date, reason,
+      actor_id: auth.actor.id, actor_name: auth.actor.name,
+      amount: proceeds,
+      entry_id: entry?.entry_id ?? null,
+      payment_method: entry?.payment_method ?? null,
+      bank_account_id: entry?.bank_account_id ?? null,
+      note: entry?.note ?? null,
     });
+    // The rpc skips the insert helper, which used to drop the cached disposals list.
+    revalidateTag(getCacheTag(DISPOSALS_SHEET), { expire: 0 });
     revalidatePath(PATH);
+    revalidatePath("/admin/finance");
+    revalidatePath("/admin/reports/pnl");
     return ok();
   } catch (error: unknown) {
     return describeActionError(error);

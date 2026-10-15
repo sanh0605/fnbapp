@@ -92,3 +92,33 @@ describe("hand row group and account (R6)", () => {
     expect(mocks.update).not.toHaveBeenCalled();
   });
 });
+
+describe("a row written by an asset disposal (BR-COGS-008)", () => {
+  const DISPOSAL_ROW = { ...EXISTING, entry_date: "2026-10-01", category_id: "CFC-001", payment_method: "CASH", bank_account_id: null, asset_disposal_id: "TL-003" };
+  beforeEach(() => {
+    mocks.findById.mockImplementation(async (sheet: string, id: string) =>
+      sheet === "Cash_Entries" ? DISPOSAL_ROW : ROWS[`${sheet}:${id}`] ?? null,
+    );
+  });
+
+  it("cannot change its group", async () => {
+    ROWS["Cash_Categories:CFC-009"] = { id: "CFC-009", status: "ACTIVE" };
+    const res = await updateCashEntry(form({ category_id: "CFC-009" }));
+    expect(res).toEqual({ error: "Dòng này ghi từ thanh lý tài sản, không đổi nhóm được" });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("cannot change its date: money and the disposal's depreciation stay in the same month", async () => {
+    const res = await updateCashEntry(form({ category_id: "CFC-001", entry_date: "2026-10-02" }));
+    expect(res).toEqual({ error: "Dòng này ghi từ thanh lý tài sản, không đổi ngày được" });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("can still change amount and note, and an edit never touches asset_disposal_id", async () => {
+    const res = await updateCashEntry(form({ category_id: "CFC-001", amount: "1300000", note: "Sửa số tiền" }));
+    expect(res.success).toBe(true);
+    const payload = mocks.update.mock.calls[0][2];
+    expect(payload).toMatchObject({ amount: 1_300_000, note: "Sửa số tiền" });
+    expect(payload).not.toHaveProperty("asset_disposal_id");
+  });
+});

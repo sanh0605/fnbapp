@@ -421,3 +421,41 @@ describe("a group used by a monthly item", () => {
     expect(mocks.remove).not.toHaveBeenCalled();
   });
 });
+
+// BR-COGS-008: the one group flagged is_asset_disposal receives disposal proceeds,
+// so the server keeps it an income group that counts in profit and loss.
+describe("the asset-disposal group keeps its shape", () => {
+  const FLAGGED = { id: "CFC-008", name: "Thu thanh lý tài sản", kind: "INCOME", affects_pnl: true, is_asset_disposal: true, status: "ACTIVE" };
+  const save = (over: Record<string, string>) =>
+    updateCashCategory(formData({ id: "CFC-008", name: "Thu thanh lý tài sản", kind: "INCOME", affects_pnl: "on", ...over }));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue(ADMIN);
+    mocks.requireOwner.mockResolvedValue(ADMIN);
+    mocks.findAll.mockResolvedValue([FLAGGED]);
+    mocks.findAllWhere.mockResolvedValue([]);
+    mocks.findById.mockResolvedValue(FLAGGED);
+  });
+
+  it("refuses Thu to Chi, turning off 'tính vào lãi lỗ', and ticking sales revenue, in Vietnamese", async () => {
+    expect((await save({ kind: "EXPENSE" })).error).toBe("Nhóm thu thanh lý tài sản phải là nhóm Thu, không đổi được");
+    expect((await save({ affects_pnl: "off" })).error).toBe("Nhóm thu thanh lý tài sản phải tính vào lãi lỗ");
+    expect((await save({ is_sales_revenue: "on" })).error).toBe("Nhóm thu thanh lý tài sản không đánh dấu là doanh thu bán hàng được");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("still lets the owner rename it", async () => {
+    expect((await save({ name: "Bán đồ cũ" })).error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalledWith("Cash_Categories", "CFC-008", expect.objectContaining({ name: "Bán đồ cũ" }));
+  });
+
+  it("refuses a hard delete even with no entry yet, but stopping it is allowed", async () => {
+    const del = await deleteCashCategory(formData({ id: "CFC-008" }));
+    expect(del.error).toContain("thanh lý tài sản");
+    expect(mocks.remove).not.toHaveBeenCalled();
+    const stop = await setCashCategoryStatus(formData({ id: "CFC-008", status: "INACTIVE" }));
+    expect(stop.error).toBeUndefined();
+    expect(mocks.update).toHaveBeenCalledWith("Cash_Categories", "CFC-008", expect.objectContaining({ status: "INACTIVE" }));
+  });
+});

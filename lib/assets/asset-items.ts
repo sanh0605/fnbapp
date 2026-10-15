@@ -18,7 +18,14 @@ export type AssetLotInput = {
   name_snapshot: string; acquired_date: string; unit_cost: number;
   total_cost: number; quantity: number; term_months: number;
 };
-export type DisposalRowInput = { id: string; asset_id: string; quantity: number; disposed_date: string; reason: string | null };
+// BR-COGS-008: the cash-book row a disposal wrote; a disposal without one brought in 0d.
+export type DisposalProceeds = {
+  amount: number; paymentMethod: "CASH" | "BANK_TRANSFER"; bankAccountName: string | null; status: "ACTIVE" | "CANCELLED";
+};
+export type DisposalRowInput = {
+  id: string; asset_id: string; quantity: number; disposed_date: string; reason: string | null;
+  proceeds?: DisposalProceeds | null;
+};
 
 export type AssetItemRow = {
   itemId: string;
@@ -35,6 +42,7 @@ export type AssetItemDisposal = {
   id: string; assetId: string; lotAcquiredDate: string;
   quantity: number; disposedDate: string; reason: string;
   charge: number;
+  proceeds: DisposalProceeds | null;
 };
 export type AssetItemMonth = { month: string; unitsHeld: number; charge: number; disposalCharge: number };
 export type AssetItemDetail = {
@@ -163,6 +171,7 @@ export function buildAssetItemDetail(
         disposedDate: d.disposed_date,
         reason: d.reason ?? "",
         charge: chargeForMonth(upTo, month) - chargeForMonth(before, month),
+        proceeds: d.proceeds ?? null,
       });
     });
 

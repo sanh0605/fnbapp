@@ -230,3 +230,16 @@ describe("assetItemTotals (BR-UI-004)", () => {
     expect(assetItemTotals([])).toEqual({ count: 0, remainingValue: 0 });
   });
 });
+
+describe("disposal proceeds in the detail (BR-COGS-008)", () => {
+  const proceeds = { amount: 1_200_000, paymentMethod: "CASH" as const, bankAccountName: null, status: "ACTIVE" as const };
+
+  it("carries each disposal's proceeds through, and gives null for a 0d disposal", () => {
+    const rows: DisposalRowInput[] = [
+      { id: "TL-1", asset_id: "TS-025", quantity: 1, disposed_date: "2026-07-02", reason: null, proceeds },
+      { id: "TL-2", asset_id: "TS-025", quantity: 1, disposed_date: "2026-07-03", reason: null },
+    ];
+    const detail = buildAssetItemDetail("SPM-COC", COC_LOTS, rows, "Cốc đong 100ml", AS_OF)!;
+    expect(detail.disposals.map(d => d.proceeds)).toEqual([proceeds, null]);
+  });
+});

@@ -38,6 +38,7 @@ export interface PnlMonthFigures {
   nonInventoryExact: number;
   expenseByCategory: Record<string, number>;
   otherIncome: number;
+  disposalIncome: number;            // BR-COGS-008: proceeds of asset disposals
   depreciationExact: number;
   sources: {
     manualRevenue: PnlSource[];
@@ -46,6 +47,7 @@ export interface PnlMonthFigures {
     nonInventory: PnlSource[];
     expense: Record<string, PnlSource[]>;
     otherIncome: PnlSource[];
+    disposalIncome: PnlSource[];
     depreciation: PnlSource[];
   };
 }
@@ -104,15 +106,15 @@ function emptyMonth(month: string): PnlMonthFigures {
     month,
     posRevenue: 0, posOrderCount: 0, posRevenueBeforePayments: 0, manualRevenue: 0,
     cogsExact: 0, shrinkageExact: 0, nonInventoryExact: 0,
-    expenseByCategory: {}, otherIncome: 0, depreciationExact: 0,
-    sources: { manualRevenue: [], cogs: [], shrinkage: [], nonInventory: [], expense: {}, otherIncome: [], depreciation: [] },
+    expenseByCategory: {}, otherIncome: 0, disposalIncome: 0, depreciationExact: 0,
+    sources: { manualRevenue: [], cogs: [], shrinkage: [], nonInventory: [], expense: {}, otherIncome: [], disposalIncome: [], depreciation: [] },
   };
 }
 
 function hasAnyFigure(m: PnlMonthFigures): boolean {
   const figures = [
     m.posRevenue, m.manualRevenue, m.cogsExact, m.shrinkageExact, m.nonInventoryExact,
-    m.otherIncome, m.depreciationExact, ...Object.values(m.expenseByCategory),
+    m.otherIncome, m.disposalIncome, m.depreciationExact, ...Object.values(m.expenseByCategory),
   ];
   return m.posOrderCount > 0 || figures.some(x => Math.abs(x) > NEAR_ZERO);
 }
@@ -144,8 +146,8 @@ export function computeProfitAndLoss(input: PnlInput): PnlFigures {
   }
 
   // 2. Cash book: ACTIVE rows of categories that count in P&L (BR-CASH-002,
-  // BR-CASH-003). A sales-revenue category (BR-CASH-006) is revenue, any
-  // other income category is Thu khác.
+  // BR-CASH-003). A sales-revenue category (BR-CASH-006) is revenue, the
+  // asset-disposal category (BR-COGS-008) is its own line, any other income category is Thu khác.
   const categoryById = new Map(input.cashCategories.map(c => [c.id, c]));
   for (const e of input.cashEntries) {
     if (e.status !== "ACTIVE") continue;
@@ -167,6 +169,9 @@ export function computeProfitAndLoss(input: PnlInput): PnlFigures {
     } else if (category.is_sales_revenue === true) {
       m.manualRevenue += amount;
       m.sources.manualRevenue.push(source);
+    } else if (category.is_asset_disposal === true) {
+      m.disposalIncome += amount;
+      m.sources.disposalIncome.push(source);
     } else {
       m.otherIncome += amount;
       m.sources.otherIncome.push(source);
@@ -290,6 +295,7 @@ export function computeProfitAndLoss(input: PnlInput): PnlFigures {
     m.sources.shrinkage.sort(byDateThenId);
     m.sources.nonInventory.sort(byDateThenId);
     m.sources.otherIncome.sort(byDateThenId);
+    m.sources.disposalIncome.sort(byDateThenId);
     for (const list of Object.values(m.sources.expense)) list.sort(byDateThenId);
     m.sources.depreciation.sort(byAmountDesc);
   }

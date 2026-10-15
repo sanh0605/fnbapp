@@ -82,6 +82,7 @@ const MOCK_DETAIL: AssetItemDetail = {
       disposedDate: "2026-07-02",
       reason: "",
       charge: 171600,
+      proceeds: null,
     },
   ],
   months: [

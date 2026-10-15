@@ -103,6 +103,59 @@ async function typeQuantity(container: HTMLElement, text: string) {
   await flush();
 }
 
+function proceedsBox(container: HTMLElement): HTMLInputElement {
+  const label = Array.from(container.querySelectorAll("label")).find(
+    (l) => l.textContent?.trim() === "Số tiền thu được",
+  )!;
+  return document.getElementById(label.htmlFor) as HTMLInputElement;
+}
+
+async function typeProceeds(container: HTMLElement, text: string) {
+  const box = proceedsBox(container);
+  const setter = Object.getOwnPropertyDescriptor(
+    window.HTMLInputElement.prototype,
+    "value",
+  )!.set!;
+  await act(async () => {
+    setter.call(box, text);
+    box.dispatchEvent(new Event("input", { bubbles: true }));
+    box.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await flush();
+}
+
+async function selectPaymentMethod(container: HTMLElement, method: "CASH" | "BANK_TRANSFER") {
+  const label = Array.from(container.querySelectorAll("label")).find(
+    (l) => l.textContent?.trim() === "Nhận vào",
+  )!;
+  const select = document.getElementById(label.htmlFor) as HTMLSelectElement;
+  const setter = Object.getOwnPropertyDescriptor(
+    window.HTMLSelectElement.prototype,
+    "value",
+  )!.set!;
+  await act(async () => {
+    setter.call(select, method);
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await flush();
+}
+
+async function selectBankAccount(container: HTMLElement, accountId: string) {
+  const label = Array.from(container.querySelectorAll("label")).find(
+    (l) => l.textContent?.trim().startsWith("Tài khoản"),
+  )!;
+  const select = document.getElementById(label.htmlFor) as HTMLSelectElement;
+  const setter = Object.getOwnPropertyDescriptor(
+    window.HTMLSelectElement.prototype,
+    "value",
+  )!.set!;
+  await act(async () => {
+    setter.call(select, accountId);
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await flush();
+}
+
 // Real figures from the plan: Cốc đong 100ml remaining lots TS-030 and TS-057
 const TS030_LOT: AssetLotView = {
   id: "TS-030",
@@ -321,6 +374,7 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
     );
     await flush();
     await typeQuantity(container, "1");
+    await typeProceeds(container, "0");
 
     // Select TS-057 before submitting
     const radio057 = Array.from(
@@ -350,6 +404,7 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
     );
     await flush();
     await typeQuantity(container, "1");
+    await typeProceeds(container, "0");
 
     const form = container.querySelector("form")!;
     await act(async () => {
@@ -400,8 +455,181 @@ describe("DisposeAssetForm -- Lý do example", () => {
   });
 });
 
+// BR-COGS-008: the server half (amount required with 0 valid, one proceeds row, group by flag)
+// is green in app/admin/inventory/assets/actions.test.ts "money received". Left: the two boxes.
 describe("DisposeAssetForm -- money received (BR-COGS-008)", () => {
-  it.todo(
-    "Trang thanh lý ghi số tiền thu được (bỏ đi thì 0đ), tự ghi một dòng thu vào sổ thu chi nhóm \"Thu thanh lý tài sản\", lãi lỗ hiện dòng riêng (chủ quán chốt 08/10/2026)",
-  );
+  it("the money box is required and blocks submit when empty", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    mocks.disposeAsset.mockResolvedValue({ ok: true });
+
+    const container = await renderTracked(
+      <DisposeAssetForm
+        lots={[TS030_LOT]}
+        initialLotId="TS-030"
+        returnTo="/admin/inventory/assets/SPM-COC"
+      />,
+    );
+    await flush();
+    expect(proceedsBox(container).placeholder).toBe("Ví dụ: 150,000");
+    await typeQuantity(container, "1");
+
+    const form = container.querySelector("form")!;
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    await flush();
+
+    expect(mocks.disposeAsset).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Nhập số tiền thu được, bỏ đi thì nhập 0");
+  });
+
+  it("0 submits with no 'Nhận vào' box shown", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    mocks.disposeAsset.mockResolvedValue({ ok: true });
+
+    const container = await renderTracked(
+      <DisposeAssetForm
+        lots={[TS030_LOT]}
+        initialLotId="TS-030"
+        returnTo="/admin/inventory/assets/SPM-COC"
+      />,
+    );
+    await flush();
+    await typeQuantity(container, "1");
+    await typeProceeds(container, "0");
+
+    const labels = Array.from(container.querySelectorAll("label"));
+    const paymentLabel = labels.find((l) => l.textContent?.trim() === "Nhận vào");
+    expect(paymentLabel).toBeUndefined();
+
+    const form = container.querySelector("form")!;
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    await flush();
+
+    expect(mocks.disposeAsset).toHaveBeenCalled();
+    const formData = mocks.disposeAsset.mock.calls[0][0] as FormData;
+    expect(formData.get("proceeds")).toBe("0");
+    expect(formData.get("payment_method")).toBeNull();
+  });
+
+  it("1200000 shows 'Nhận vào' defaulting to CASH without bank select", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    mocks.disposeAsset.mockResolvedValue({ ok: true });
+
+    const container = await renderTracked(
+      <DisposeAssetForm
+        lots={[TS030_LOT]}
+        initialLotId="TS-030"
+        returnTo="/admin/inventory/assets/SPM-COC"
+      />,
+    );
+    await flush();
+    await typeQuantity(container, "1");
+    await typeProceeds(container, "1200000");
+
+    const labels = Array.from(container.querySelectorAll("label"));
+    const paymentLabel = labels.find((l) => l.textContent?.trim() === "Nhận vào");
+    expect(paymentLabel).toBeDefined();
+
+    const bankLabel = labels.find((l) => l.textContent?.trim().startsWith("Tài khoản"));
+    expect(bankLabel).toBeUndefined();
+
+    const form = container.querySelector("form")!;
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    await flush();
+
+    expect(mocks.disposeAsset).toHaveBeenCalled();
+    const formData = mocks.disposeAsset.mock.calls[0][0] as FormData;
+    expect(formData.get("proceeds")).toBe("1200000");
+    expect(formData.get("payment_method")).toBe("CASH");
+  });
+
+  it("choosing Chuyển khoản shows the bank select and carries proceeds, payment_method, bank_account_id in FormData", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    mocks.disposeAsset.mockResolvedValue({ ok: true });
+
+    const container = await renderTracked(
+      <DisposeAssetForm
+        lots={[TS030_LOT]}
+        initialLotId="TS-030"
+        returnTo="/admin/inventory/assets/SPM-COC"
+        bankAccounts={[
+          { id: "BA-001", name: "Vietcombank" },
+          { id: "BA-002", name: "MB Bank" },
+        ]}
+      />,
+    );
+    await flush();
+    await typeQuantity(container, "1");
+    await typeProceeds(container, "1200000");
+
+    await selectPaymentMethod(container, "BANK_TRANSFER");
+
+    const labels = Array.from(container.querySelectorAll("label"));
+    const bankLabel = labels.find((l) => l.textContent?.trim().startsWith("Tài khoản"));
+    expect(bankLabel).toBeDefined();
+
+    await selectBankAccount(container, "BA-001");
+
+    const form = container.querySelector("form")!;
+    await act(async () => {
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+    await flush();
+
+    expect(mocks.disposeAsset).toHaveBeenCalled();
+    const formData = mocks.disposeAsset.mock.calls[0][0] as FormData;
+    expect(formData.get("proceeds")).toBe("1200000");
+    expect(formData.get("payment_method")).toBe("BANK_TRANSFER");
+    expect(formData.get("bank_account_id")).toBe("BA-001");
+  });
+
+  it("when bankAccounts is empty, shows 'Chưa có tài khoản ngân hàng' and disables Chuyển khoản", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+
+    const container = await renderTracked(
+      <DisposeAssetForm
+        lots={[TS030_LOT]}
+        initialLotId="TS-030"
+        returnTo="/admin/inventory/assets/SPM-COC"
+        bankAccounts={[]}
+      />,
+    );
+    await flush();
+    await typeQuantity(container, "1");
+    await typeProceeds(container, "1200000");
+
+    expect(container.textContent).toContain("Chưa có tài khoản ngân hàng");
+    const option = container.querySelector('option[value="BANK_TRANSFER"]') as HTMLOptionElement;
+    expect(option).toBeDefined();
+    expect(option.disabled).toBe(true);
+  });
+
+  it("choosing Chuyển khoản with proceeds 1200000 without picking a bank has checkValidity() false", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+
+    const container = await renderTracked(
+      <DisposeAssetForm
+        lots={[TS030_LOT]}
+        initialLotId="TS-030"
+        returnTo="/admin/inventory/assets/SPM-COC"
+        bankAccounts={[
+          { id: "BA-001", name: "Vietcombank" },
+          { id: "BA-002", name: "MB Bank" },
+        ]}
+      />,
+    );
+    await flush();
+    await typeQuantity(container, "1");
+    await typeProceeds(container, "1200000");
+
+    await selectPaymentMethod(container, "BANK_TRANSFER");
+
+    const form = container.querySelector("form")!;
+    expect(form.checkValidity()).toBe(false);
+  });
 });

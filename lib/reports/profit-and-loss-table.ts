@@ -33,7 +33,7 @@ export interface PnlCell {
 export interface PnlRow {
   key: string;               // "revenue", "revenueManual", "cogs", "nonInventory", "shrinkage",
                              // "grossProfit", "expense:<category id>", "depreciation",
-                             // "otherIncome", "netProfit", "margin", "cumulative"
+                             // "otherIncome", "disposalIncome", "netProfit", "margin", "cumulative"
   label: string;
   kind: PnlRowKind;
   unit: "money" | "percent";
@@ -125,7 +125,7 @@ export function buildPnlTable(figures: PnlFigures, today: string, rangeName: str
     const revenue = m.posRevenue + m.manualRevenue;
     const gross = revenue - m.cogsExact - m.nonInventoryExact - m.shrinkageExact;
     const expenses = sum(Object.values(m.expenseByCategory));
-    const net = gross - expenses - m.depreciationExact + m.otherIncome;
+    const net = gross - expenses - m.depreciationExact + m.otherIncome + m.disposalIncome;
     return { revenue, gross, expenses, net };
   });
   let running = 0;
@@ -157,6 +157,8 @@ export function buildPnlTable(figures: PnlFigures, today: string, rangeName: str
   const otherIncome = months.map(m => m.otherIncome);
   const showShrinkage = anyNonZero(shrinkage);
   const showOtherIncome = anyNonZero(otherIncome);
+  const disposalIncome = months.map(m => m.disposalIncome);
+  const showDisposalIncome = anyNonZero(disposalIncome);
 
   const rows: PnlRow[] = [];
   rows.push(moneyRow("revenue", "Doanh thu", "revenue", exact.map(e => e.revenue), i => {
@@ -191,9 +193,13 @@ export function buildPnlTable(figures: PnlFigures, today: string, rangeName: str
   if (showOtherIncome) {
     rows.push(moneyRow("otherIncome", "Thu khác", "income", otherIncome, i => months[i].sources.otherIncome.map(toCellSource)));
   }
+  if (showDisposalIncome) {
+    rows.push(moneyRow("disposalIncome", "Thu thanh lý tài sản", "income", disposalIncome, i => months[i].sources.disposalIncome.map(toCellSource)));
+  }
   rows.push(moneyRow("netProfit", "Lợi nhuận ròng", "net", exact.map(e => e.net), noSources, i => {
     let text = `Lợi nhuận gộp ${money(exact[i].gross)} ${MINUS} chi phí ${money(exact[i].expenses)} ${MINUS} khấu hao ${money(months[i].depreciationExact)}`;
     if (showOtherIncome) text += ` + thu khác ${money(months[i].otherIncome)}`;
+    if (showDisposalIncome) text += ` + thu thanh lý ${money(months[i].disposalIncome)}`;
     return `${text} = ${money(exact[i].net)}`;
   }));
   rows.push({
@@ -226,11 +232,11 @@ export function buildPnlTable(figures: PnlFigures, today: string, rangeName: str
   // Does adding shown numbers by hand ever miss a shown result? Then say why.
   const shown = (key: string) => rows.find(r => r.key === key)?.cells.map(c => c.value ?? 0) ?? months.map(() => 0);
   let roundingGap = rows.some(r => r.unit === "money" && r.total !== null && sum(r.cells.map(c => c.value ?? 0)) !== r.total);
-  const [rev, cogs, nonInv, shr, gross, dep, oth, net, cum] =
-    ["revenue", "cogs", "nonInventory", "shrinkage", "grossProfit", "depreciation", "otherIncome", "netProfit", "cumulative"].map(shown);
+  const [rev, cogs, nonInv, shr, gross, dep, oth, disp, net, cum] =
+    ["revenue", "cogs", "nonInventory", "shrinkage", "grossProfit", "depreciation", "otherIncome", "disposalIncome", "netProfit", "cumulative"].map(shown);
   months.forEach((_, i) => {
     if (rev[i] - cogs[i] - nonInv[i] - shr[i] !== gross[i]) roundingGap = true;
-    if (gross[i] - displayMoney(exact[i].expenses) - dep[i] + oth[i] !== net[i]) roundingGap = true;
+    if (gross[i] - displayMoney(exact[i].expenses) - dep[i] + oth[i] + disp[i] !== net[i]) roundingGap = true;
     if (i > 0 && cum[i - 1] + net[i] !== cum[i]) roundingGap = true;
   });
 

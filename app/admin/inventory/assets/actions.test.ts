@@ -6,9 +6,10 @@ const mocks = vi.hoisted(() => ({
   findAllNoCache: vi.fn(),
   findAllWhere: vi.fn(),
   findAllWhereInBatches: vi.fn(),
-  insert: vi.fn(),
   generateNewId: vi.fn(),
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+  disposeAssetAtomic: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/auth", () => ({ requireAdmin: mocks.requireAdmin }));
@@ -17,10 +18,11 @@ vi.mock("@/lib/db/tables", () => ({
   findAllNoCache: mocks.findAllNoCache,
   findAllWhere: mocks.findAllWhere,
   findAllWhereInBatches: mocks.findAllWhereInBatches,
-  insert: mocks.insert,
   generateNewId: mocks.generateNewId,
+  getCacheTag: (sheet: string) => `sheets-${sheet}`,
 }));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("@/lib/assets/dispose-asset-transaction", () => ({ disposeAssetAtomic: mocks.disposeAssetAtomic }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, revalidateTag: mocks.revalidateTag }));
 
 import {
   getAssetsData,
@@ -168,7 +170,7 @@ describe("disposeAsset -- section 3.3", () => {
 
   function fd(fields: Record<string, string>): FormData {
     const f = new FormData();
-    for (const [k, v] of Object.entries(fields)) f.set(k, v);
+    for (const [k, v] of Object.entries({ proceeds: "0", ...fields })) f.set(k, v);
     return f;
   }
 
@@ -180,9 +182,8 @@ describe("disposeAsset -- section 3.3", () => {
     );
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "asset_disposals",
-      expect.objectContaining({ asset_id: "TS-002", quantity: 1, disposed_date: "2026-05-15", reason: "Vỡ" }),
+    expect(mocks.disposeAssetAtomic).toHaveBeenCalledWith(
+      expect.objectContaining({ asset_id: "TS-002", quantity: 1, disposed_date: "2026-05-15", reason: "Vỡ", amount: 0 }),
     );
   });
 
@@ -197,7 +198,7 @@ describe("disposeAsset -- section 3.3", () => {
     const res = await disposeAsset(fd({ asset_id: "TS-001", quantity: "4", disposed_date: "2026-03-01" }));
 
     expect(res.error).toContain("3"); // only 3 remain (8 - 5)
-    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.disposeAssetAtomic).not.toHaveBeenCalled();
   });
 
   it("refuses a non-positive quantity before touching the database", async () => {
@@ -224,7 +225,7 @@ describe("disposeAsset -- section 3.3", () => {
     const res = await disposeAsset(fd({ asset_id: "TS-002", quantity: "1", disposed_date: "2099-01-01" }));
 
     expect(res.error).toContain("tương lai");
-    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.disposeAssetAtomic).not.toHaveBeenCalled();
   });
 
   // Today (pre-fix), a same-month-earlier-day case slips past the existing
@@ -237,7 +238,7 @@ describe("disposeAsset -- section 3.3", () => {
     const res = await disposeAsset(fd({ asset_id: "TS-002", quantity: "1", disposed_date: "2026-03-05" }));
 
     expect(res.error).toContain("trước ngày mua");
-    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.disposeAssetAtomic).not.toHaveBeenCalled();
   });
 
   // The load-bearing case (section 3.3): a real backdate, months before
@@ -252,8 +253,7 @@ describe("disposeAsset -- section 3.3", () => {
     );
 
     expect(res.error).toBeUndefined();
-    expect(mocks.insert).toHaveBeenCalledWith(
-      "asset_disposals",
+    expect(mocks.disposeAssetAtomic).toHaveBeenCalledWith(
       expect.objectContaining({ asset_id: "TS-002", disposed_date: "2026-05-15" }),
     );
   });
@@ -265,7 +265,7 @@ describe("disposeAsset -- section 3.3", () => {
     const res = await disposeAsset(fd({ asset_id: "TS-067", quantity: "1", disposed_date: "2026-05-15" }));
 
     expect(res.error).toBe("Tài sản đã ngừng dùng, không thanh lý được");
-    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.disposeAssetAtomic).not.toHaveBeenCalled();
   });
 
   it("refuses a quantity that is not a whole number", async () => {
@@ -274,6 +274,77 @@ describe("disposeAsset -- section 3.3", () => {
     expect(res.error).toBe("Số lượng thanh lý phải là số nguyên lớn hơn 0");
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
   });
+
+  describe("money received (BR-COGS-008)", () => {
+    const base = { asset_id: "TS-002", quantity: "1", disposed_date: "2026-05-15" };
+    beforeEach(() => {
+      mocks.generateNewId.mockImplementation((sheet: string) => Promise.resolve(sheet === "asset_disposals" ? "TL-100" : "CE-100"));
+      mocks.findAllNoCache.mockImplementation(findAllMockFor([CA_DONG], []));
+    });
+
+    it("stores no reason as null, not an empty string", async () => {
+      await disposeAsset(fd({ ...base, proceeds: "0" }));
+      expect(mocks.disposeAssetAtomic).toHaveBeenCalledWith(expect.objectContaining({ reason: null }));
+    });
+
+    it("refuses an empty amount box, writing nothing", async () => {
+      const res = await disposeAsset(fd({ ...base, proceeds: "" }));
+      expect(res.error).toBe("Nhập số tiền thu được, bỏ đi thì nhập 0");
+      expect(mocks.disposeAssetAtomic).not.toHaveBeenCalled();
+    });
+
+    it("refuses a negative or non-integer amount", async () => {
+      for (const proceeds of ["-1", "1.5", "abc"]) {
+        const res = await disposeAsset(fd({ ...base, proceeds }));
+        expect(res.error).toBe("Số tiền thu được phải là số nguyên đồng, từ 0 trở lên");
+      }
+      expect(mocks.disposeAssetAtomic).not.toHaveBeenCalled();
+    });
+
+    it("0 records the disposal alone: amount 0, no entry fields", async () => {
+      const res = await disposeAsset(fd({ ...base, proceeds: "0", payment_method: "CASH" }));
+      expect(res.error).toBeUndefined();
+      expect(mocks.disposeAssetAtomic).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "TL-100", amount: 0, entry_id: null, payment_method: null, bank_account_id: null }),
+      );
+    });
+
+    it("cash proceeds: one entry, dated the disposal day, noted with the disposal code, asset name and quantity", async () => {
+      const res = await disposeAsset(fd({ ...base, proceeds: "1200000", payment_method: "CASH", bank_account_id: "BA-001" }));
+      expect(res.error).toBeUndefined();
+      expect(mocks.disposeAssetAtomic).toHaveBeenCalledWith({
+        id: "TL-100", asset_id: "TS-002", quantity: 1, disposed_date: "2026-05-15", reason: null,
+        actor_id: "admin-1", actor_name: "Admin",
+        amount: 1_200_000, entry_id: "CE-100", payment_method: "CASH", bank_account_id: null,
+        note: "Thanh lý TL-100: Ca đong × 1",
+      });
+      expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/finance");
+      expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/reports/pnl");
+      // the rpc bypasses insert(), which used to drop the cached disposals list
+      expect(mocks.revalidateTag).toHaveBeenCalledWith("sheets-asset_disposals", { expire: 0 });
+    });
+
+    it("bank transfer keeps the account", async () => {
+      await disposeAsset(fd({ ...base, proceeds: "500000", payment_method: "BANK_TRANSFER", bank_account_id: "BA-001" }));
+      expect(mocks.disposeAssetAtomic).toHaveBeenCalledWith(
+        expect.objectContaining({ payment_method: "BANK_TRANSFER", bank_account_id: "BA-001" }),
+      );
+    });
+
+    it("refuses money without a way of receiving it, and a transfer without an account", async () => {
+      expect((await disposeAsset(fd({ ...base, proceeds: "500000" }))).error).toBe("Chọn tiền mặt hoặc chuyển khoản");
+      expect((await disposeAsset(fd({ ...base, proceeds: "500000", payment_method: "BANK_TRANSFER" }))).error)
+        .toBe("Chuyển khoản phải chọn tài khoản");
+      expect(mocks.disposeAssetAtomic).not.toHaveBeenCalled();
+    });
+
+    it("passes the database's Vietnamese refusal through (stopped group)", async () => {
+      mocks.disposeAssetAtomic.mockRejectedValueOnce(new Error("Nhóm thu thanh lý tài sản đã ngừng dùng"));
+      const res = await disposeAsset(fd({ ...base, proceeds: "500000", payment_method: "CASH" }));
+      expect(res.error).toBe("Nhóm thu thanh lý tài sản đã ngừng dùng");
+    });
+  });
+
 });
 
 // Filter-aware in-memory stand-ins for findAllWhere (eq) and
@@ -372,6 +443,25 @@ describe("getAssetItemDetail", () => {
     expect(detail!.disposals[0].charge).toBeCloseTo(171_600, 6);
     expect(detail!.months.find(m => m.month === "2026-07")!.disposalCharge).toBeCloseTo(171_600, 6);
     expect(detail!.item.chargedToDate).toBeCloseTo(265_980, 6);
+  });
+
+  it("attaches each disposal's proceeds row: amount, how received, account name, status; none means null", async () => {
+    wireTables({
+      ...ITEM_TABLES,
+      asset_disposals: [TL002, { id: "TL-003", asset_id: "TS-004", quantity: 1, disposed_date: "2026-07-05", reason: null }],
+      Cash_Entries: [
+        { id: "CE-100", asset_disposal_id: "TL-002", amount: 500_000, payment_method: "BANK_TRANSFER", bank_account_id: "BA-001", status: "CANCELLED" },
+        { id: "CE-101", asset_disposal_id: null, amount: 9, payment_method: "CASH", bank_account_id: null, status: "ACTIVE" },
+      ],
+      Bank_Accounts: [{ id: "BA-001", name: "ACB" }],
+    });
+
+    const detail = await getAssetItemDetail("SPM-BINH");
+
+    expect(detail!.disposals.map(d => [d.id, d.proceeds])).toEqual([
+      ["TL-002", { amount: 500_000, paymentMethod: "BANK_TRANSFER", bankAccountName: "ACB", status: "CANCELLED" }],
+      ["TL-003", null],
+    ]);
   });
 
   it("gives a null purchase order id when the lot has no purchase order line", async () => {

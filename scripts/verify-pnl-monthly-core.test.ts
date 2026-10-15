@@ -7,7 +7,7 @@ function augustLike(): PnlMonthFigures {
     month: "2026-08",
     posRevenue: 17_682_000, posOrderCount: 644, posRevenueBeforePayments: 0, manualRevenue: 0,
     cogsExact: 46_418_989.6, shrinkageExact: 0, nonInventoryExact: 1_760_000,
-    expenseByCategory: { "CFC-001": 615_000 }, otherIncome: 0, depreciationExact: 790_978,
+    expenseByCategory: { "CFC-001": 615_000 }, otherIncome: 0, disposalIncome: 0, depreciationExact: 790_978,
     sources: {
       manualRevenue: [],
       cogs: [
@@ -18,6 +18,7 @@ function augustLike(): PnlMonthFigures {
       nonInventory: [{ kind: "PO_LINE", id: "POL-d0228874-66d6-4e78-bef1-059b39ca423d", date: "2026-08-30", label: "Đá viên", ref: "PO-175", amountExact: 1_760_000 }],
       expense: { "CFC-001": [{ kind: "CASH_ENTRY", id: "CE-023", date: "2026-08-02", label: "Dán lại xe Phin Đi", ref: null, amountExact: 615_000 }] },
       otherIncome: [],
+      disposalIncome: [],
       depreciation: [{ kind: "ASSET", id: "TS-001", date: null, label: "Máy xay", ref: null, amountExact: 790_978 }],
     },
   };
@@ -39,6 +40,14 @@ describe("checkPnlMonth", () => {
     const problems = checkPnlMonth(augustLike(), { ...reference, totalCOGS: 46_418_991 });
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain("totalCOGS");
+  });
+
+  it("names a disposal-proceeds line whose sources do not add up to it", () => {
+    const month = augustLike();
+    month.disposalIncome = 1_200_000;
+    const problems = checkPnlMonth(month, reference);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toContain("disposalIncome");
   });
 
   it("names a line whose sources do not add up to it", () => {

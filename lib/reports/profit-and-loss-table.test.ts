@@ -7,10 +7,10 @@ function monthFigures(month: string, overrides: Partial<PnlMonthFigures> = {}): 
     month,
     posRevenue: 0, posOrderCount: 0, posRevenueBeforePayments: 0, manualRevenue: 0,
     cogsExact: 0, shrinkageExact: 0, nonInventoryExact: 0,
-    expenseByCategory: {}, otherIncome: 0, depreciationExact: 0,
+    expenseByCategory: {}, otherIncome: 0, disposalIncome: 0, depreciationExact: 0,
     ...overrides,
     sources: {
-      manualRevenue: [], cogs: [], shrinkage: [], nonInventory: [], expense: {}, otherIncome: [], depreciation: [],
+      manualRevenue: [], cogs: [], shrinkage: [], nonInventory: [], expense: {}, otherIncome: [], disposalIncome: [], depreciation: [],
       ...overrides.sources,
     },
   };
@@ -41,7 +41,7 @@ function august(): PnlMonthFigures {
     expenseByCategory: { "CFC-001": 615_000, "CFC-002": 470_000 },
     depreciationExact: 790_974.0694444443,
     sources: {
-      manualRevenue: [], shrinkage: [], otherIncome: [], depreciation: [],
+      manualRevenue: [], shrinkage: [], otherIncome: [], disposalIncome: [], depreciation: [],
       cogs: [
         { kind: "STOCKTAKE", id: "STK-001", date: "2026-08-09", label: "Kiểm kê định kỳ", ref: null, amountExact: 34_864_626.83216999 },
       ],
@@ -220,6 +220,32 @@ describe("which rows show", () => {
       text: "Doanh thu tháng 04/2026 có 8,411,868đ ghi tay trong sổ thu chi, không qua máy bán hàng.",
       strong: ["8,411,868đ"],
     });
+  });
+});
+
+describe("disposal proceeds row (BR-COGS-008)", () => {
+  const october = () => monthFigures("2026-10", {
+    posRevenue: 1_000_000, posOrderCount: 10, depreciationExact: 1_750_000, otherIncome: 30_000, disposalIncome: 1_200_000,
+    sources: { disposalIncome: [{ kind: "CASH_ENTRY", id: "CE-100", date: "2026-10-16", label: "Thanh lý TL-003: Xe bán nước gấp gọn × 1", ref: null, amountExact: 1_200_000 }] } as PnlMonthFigures["sources"],
+  });
+
+  it("shows a Thu thanh lý tài sản row right under Thu khác, only when there is a figure", () => {
+    const t = buildPnlTable(figures([october()]), "2026-10-16", "năm nay");
+    const keys = t.rows.map(r => r.key);
+    expect(keys.indexOf("otherIncome")).toBeGreaterThan(-1);
+    expect(keys.indexOf("disposalIncome")).toBe(keys.indexOf("otherIncome") + 1);
+    expect(row(t, "disposalIncome").label).toBe("Thu thanh lý tài sản");
+    expect(row(t, "disposalIncome").cells[0].sources[0].label).toContain("Xe bán nước gấp gọn");
+    expect(augustTable().rows.some(r => r.key === "disposalIncome")).toBe(false);
+  });
+
+  it("goes into net profit and its sentence, with no false rounding note", () => {
+    const t = buildPnlTable(figures([october()]), "2026-10-16", "năm nay");
+    expect(values(t, "netProfit")).toEqual([1_000_000 - 1_750_000 + 30_000 + 1_200_000]);
+    expect(row(t, "netProfit").cells[0].formula).toBe(
+      "Lợi nhuận gộp 1,000,000 − chi phí 0 − khấu hao 1,750,000 + thu khác 30,000 + thu thanh lý 1,200,000 = 480,000",
+    );
+    expect(t.footnotes.some(f => f.key === "rounding")).toBe(false);
   });
 });
 

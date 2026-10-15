@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getAssetItemDetail, findItemIdForAsset } from "@/app/admin/inventory/assets/actions";
 import { DisposeAssetForm } from "@/app/admin/inventory/assets/components/DisposeAssetForm";
+import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
 import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
@@ -47,6 +48,11 @@ export default async function DisposeAssetPage(
     : undefined;
   const initialLotId = requestedLot ? requestedLot.id : lotsWithStock[0].id;
 
+  // BR-COGS-008: where the money can be received when it is not cash.
+  const bankAccounts = (await getBankAccounts())
+    .filter((a) => a.status === "ACTIVE")
+    .map((a) => ({ id: a.id, name: a.name }));
+
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/inventory/assets");
   const backLabel = returnTo.startsWith("/admin/inventory/assets/") ? detail.item.name : "Tài sản";
 
@@ -62,6 +68,7 @@ export default async function DisposeAssetPage(
         lots={lotsWithStock}
         initialLotId={initialLotId}
         returnTo={returnTo}
+        bankAccounts={bankAccounts}
       />
     </DetailFrame>
   );
