@@ -125,13 +125,18 @@ Chủ quán chốt 2026-09-28, áp dụng mọi phiên:
 
 | Phần việc | Ai làm |
 |---|---|
-| Giao diện, frontend, UI/UX: màn hình, component, bố cục, menu, kiểu dáng | Gemini bản mới nhất, mạnh nhất, chạy qua `agy` (`agy --model <tên> -p "<việc>"`) |
-| Backend: `lib/`, server action, `supabase/`, `scripts/`, test của chúng | Sonnet 5.5 (công cụ Agent, model `sonnet`) |
-| Đặc tả, kế hoạch, giao việc, soát lại, tài liệu | Opus |
+| Giao diện, frontend, UI/UX: màn hình, component, bố cục, menu, kiểu dáng | Gemini bản mới nhất, mạnh nhất, chạy qua `agy` (`agy -p "<việc>" --model <tên> --mode accept-edits --print-timeout 0`) |
+| Backend: `lib/`, server action, `supabase/`, `scripts/`, test của chúng | Sonnet 5.5, qua agent `backend-coder` (công cụ Agent, `subagent_type: backend-coder`; agent này tự gọi ponytail và đọc file này trước khi viết) |
+| Đặc tả, kế hoạch, thiết kế, giao việc, tài liệu | Opus (phiên chính); không tự viết code, trừ dòng "Sửa nhỏ" |
+| Phản biện kế hoạch trước khi code | Sonnet |
+| Soát lại | Opus, một agent riêng, độc lập (loại `reviewer`); không ai tự duyệt việc của mình; không dùng Sonnet hay Gemini để soát |
+| Sửa nhỏ: tài liệu, hoặc lỗi nhỏ rõ ràng trong 1 file | Opus tự làm. Từ 2 file trở lên, hành vi mới, hoặc code tính số liệu: lập kế hoạch rồi giao đi |
+| Tư vấn: quyết định khó, kiến trúc, kẹt sau 2 lần thử | Fable 5.1 (công cụ Agent, model `fable`); chỉ tư vấn, không viết code; Opus quyết định cuối |
 | Tìm chỗ trong code và tài liệu, tra tài liệu thư viện | Haiku (công cụ Agent, loại `Explore`, model `haiku`); Opus kiểm lại trước khi dùng |
 | Tra luật kế toán, thuế; lấy con số hiện tại | Opus, không giao Haiku |
 
 Việc có cả hai phần thì tách thành hai phiếu giao việc. Opus soát lại trước khi báo xong.
+Phản biện, soát lại, sửa nhỏ, tư vấn: chủ quán chốt 2026-10-15 (*"Đồng ý"*), chuẩn chung cho mọi dự án của chủ quán.
 Haiku: chủ quán chốt 2026-10-04 (*"Làm theo em khuyến nghị"*), sau khi nghe Haiku hợp việc tìm, không hợp việc tra luật hay lấy số.
 
 Model chủ quán chốt 2026-10-01 (thay bản 2026-09-29): *"giao cho model mới nhất và mạnh nhất"*. Mỗi lần giao, chạy `agy models`, chọn Gemini thế hệ mới nhất ở mức cao nhất (`-high`; thế hệ đó có Pro thì lấy Pro), ghi rõ `--model`, không để `agy` tự chọn. Đo 2026-10-01: `gemini-3.8-flash-high`. Sonnet dùng bản mới nhất có trong công cụ Agent, hiện là Sonnet 5.5 (`claude-sonnet-5-5`); có bản mới hơn thì báo chủ quán trước khi đổi.
