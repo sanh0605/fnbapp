@@ -428,6 +428,35 @@ describe("PurchasedItemForm on-page behaviour", () => {
     await fireClick(boBtn);
     expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/items?category=CAT-1");
   });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ' in create mode", async () => {
+    const container = await renderTracked(
+      <PurchasedItemForm
+        itemCategories={CATEGORIES as any}
+        units={UNITS as any}
+        returnTo="/admin/inventory/items"
+      />,
+    );
+    expect(findButtonWithText(container, "Tạo")).toBeDefined();
+    expect(findButtonWithText(container, "Bỏ")).toBeDefined();
+  });
+
+  it("shows FormActionBar with 'Lưu thay đổi' and 'Bỏ thay đổi' in edit mode", async () => {
+    const container = await renderTracked(
+      <PurchasedItemForm
+        itemCategories={CATEGORIES as any}
+        units={UNITS as any}
+        initialData={{ id: "SPM-1", name: "Sữa", item_category_id: "NHH-001" } as any}
+        returnTo="/admin/inventory/items"
+      />,
+    );
+    expect(findButtonWithText(container, "Lưu thay đổi")).toBeDefined();
+    const cancelBtn = findButtonWithText(container, "Bỏ thay đổi")!;
+    expect(cancelBtn).toBeDefined();
+
+    await fireClick(cancelBtn);
+    expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/items");
+  });
 });
 
 describe("PurchasedItemForm -- asset removal confirmation on category change (Task C)", () => {

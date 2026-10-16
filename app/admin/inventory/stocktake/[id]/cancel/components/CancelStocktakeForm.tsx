@@ -228,10 +228,10 @@ export function CancelStocktakeForm({ session, listRow }: CancelStocktakeFormPro
                     if (error) setError(null);
                   }}
                   placeholder="Ví dụ: kiểm nhầm ngày"
-                  className="w-full border border-border rounded-lg p-3 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card text-text-primary resize-y"
+                  className="w-full border border-border rounded-lg p-3 text-base md:text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card text-text-primary resize-y"
                 />
               </Field>
-              <div className="text-right text-xs text-text-muted">
+              <div className="text-right text-[13px] text-text-muted">
                 {reason.length}/500
               </div>
             </div>

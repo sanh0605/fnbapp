@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Alert } from "@/components/ui/Alert";
 import { NumberInput } from "@/components/ui/NumberInput";
 import {
@@ -295,7 +296,7 @@ export function EditBandsForm({
                       title="Xoá"
                       aria-label="Xoá"
                       onClick={() => handleRemoveRow(index)}
-                      className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors"
+                      className="w-12 h-12 flex items-center justify-center text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors"
                     >
                       <TrashIcon />
                       <span className="sr-only">Xoá</span>
@@ -306,7 +307,7 @@ export function EditBandsForm({
                 <div className="space-y-1">
                   <label
                     htmlFor={`min-mobile-${row.clientId}`}
-                    className="text-xs text-text-secondary"
+                    className="text-sm text-text-secondary"
                   >
                     Từ giá (đ)
                   </label>
@@ -324,7 +325,7 @@ export function EditBandsForm({
                 </div>
 
                 <div className="space-y-1">
-                  <div className="text-xs text-text-secondary">Đến dưới</div>
+                  <div className="text-sm text-text-secondary">Đến dưới</div>
                   <div className="text-sm font-medium text-text-primary px-3 py-2 bg-surface-secondary/50 rounded-button">
                     {nextMinText}
                   </div>
@@ -333,7 +334,7 @@ export function EditBandsForm({
                 <div className="space-y-1">
                   <label
                     htmlFor={`term-mobile-${row.clientId}`}
-                    className="text-xs text-text-secondary"
+                    className="text-sm text-text-secondary"
                   >
                     Số tháng
                   </label>
@@ -365,29 +366,15 @@ export function EditBandsForm({
         </div>
 
         {/* Note */}
-        <p className="text-xs text-text-muted">
+        <p className="text-[13px] text-text-muted">
           Sửa khung chỉ áp dụng cho tài sản mua sau khi lưu -- tài sản đã có giữ nguyên số tháng đã tính lúc mua.
         </p>
 
-        {/* Form actions: Bỏ and Lưu */}
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {loading ? "Đang lưu..." : "Lưu"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode="edit"
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

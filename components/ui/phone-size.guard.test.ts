@@ -29,32 +29,14 @@ const NEW_48 = "min-h-[48px] md:min-h-[40px]";
 const TINY = /text-\[(?:[1-9]|1[01])(?:\.\d+)?px\]/;
 
 const OWED_44: string[] = [
-  "app/admin/brands/components/BrandForm.tsx",
-  "app/admin/dashboard-settings/components/DashboardSettingsForm.tsx",
-  "app/admin/inventory/assets/components/DisposeAssetForm.tsx",
-  "app/admin/inventory/conversions/components/ConversionForm.tsx",
   "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx",
-  "app/admin/inventory/items/components/PurchasedItemForm.tsx",
-  "app/admin/inventory/purchase-orders/[id]/cancel/page.tsx",
   "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx",
   "app/admin/inventory/purchase-orders/components/PurchaseOrderLines.tsx",
   "app/admin/inventory/purchase-orders/components/PurchaseOrderTotals.tsx",
-  "app/admin/orders/[id]/edit/components/OrderEditForm.tsx",
-  "app/admin/orders/[id]/void/components/VoidOrderForm.tsx",
-  "app/admin/outlets/components/OutletForm.tsx",
-  "app/admin/products/components/ProductForm.tsx",
-  "app/admin/products/modifier-groups/components/ModifierGroupForm.tsx",
-  "app/admin/products/modifiers/components/ModifierForm.tsx",
-  "app/admin/products/types/components/ProductTypeForm.tsx",
-  "app/error.tsx",
-  "app/global-error.tsx",
 ];
 
 const OWED_TINY: string[] = [
-  "app/admin/inventory/conversions/components/ConversionForm.tsx",
-  "app/admin/orders/[id]/components/OrderDetailView.tsx",
-  "app/admin/orders/[id]/edit/components/OrderEditForm.tsx",
-  "app/admin/promotions/components/PromotionForm.tsx",
+
 ];
 
 describe("BR-UI-014 phone control size", () => {

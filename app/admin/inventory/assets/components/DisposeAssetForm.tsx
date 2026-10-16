@@ -3,7 +3,7 @@
 import { useId, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
-import { Button } from "@/components/ui/Button";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { DayInput } from "@/components/ui/DayInput";
 import { TextInput } from "@/components/ui/TextInput";
@@ -151,7 +151,7 @@ export function DisposeAssetForm({
                 return (
                   <label
                     key={lot.id}
-                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition min-h-[44px] md:min-h-[40px] ${
+                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition min-h-[48px] md:min-h-[40px] ${
                       isSelected
                         ? "border-primary bg-primary-soft/30 text-text-primary"
                         : "border-border bg-surface-card hover:bg-surface-secondary/50 text-text-secondary"
@@ -304,24 +304,11 @@ export function DisposeAssetForm({
           </div>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {loading ? "Đang lưu..." : "Xác nhận"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode="create"
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

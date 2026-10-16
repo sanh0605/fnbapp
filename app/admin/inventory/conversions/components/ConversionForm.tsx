@@ -3,7 +3,7 @@
 import { useState, useMemo, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addConversion, updateConversion } from "../actions";
-import { Button } from "@/components/ui/Button";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import { NumberInput } from "@/components/ui/NumberInput";
@@ -166,13 +166,13 @@ export function ConversionForm({
 
         {baseUnit && (
           <div className="p-3 bg-primary-soft rounded-lg border border-primary/20">
-            <div className="text-[10px] font-bold text-primary-active uppercase tracking-wider mb-1">
+            <div className="text-xs font-bold text-primary-active uppercase tracking-wider mb-1">
               Quy đổi sang đơn vị cơ bản
             </div>
             <div className="text-sm font-medium text-primary-active">
               1 {selectedUnitName || "..."} = <span className="font-bold text-primary">{formatDecimal(Number(conversionRate || 0), { maxDigits: 6 })}</span> {baseUnit.name}
             </div>
-            <div className="text-[10px] text-primary mt-1 italic">
+            <div className="text-[13px] text-primary mt-1 italic">
               (Đơn vị gốc đã thiết lập cho {selectedItem?.name})
             </div>
           </div>
@@ -180,7 +180,7 @@ export function ConversionForm({
 
         <label
           htmlFor={`${formId}-purchase_only`}
-          className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px] md:min-h-[40px]"
+          className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[48px] md:min-h-[40px]"
         >
           <input
             type="checkbox"
@@ -195,24 +195,11 @@ export function ConversionForm({
           </span>
         </label>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật" : "Lưu Quy Đổi"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

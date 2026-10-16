@@ -439,6 +439,22 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
 
     expect(mocks.routerPush).toHaveBeenCalledWith("/admin/inventory/assets/SPM-COC");
   });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ'", async () => {
+    mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
+    const container = await renderTracked(
+      <DisposeAssetForm
+        lots={[TS030_LOT]}
+        initialLotId="TS-030"
+        returnTo="/admin/inventory/assets/SPM-COC"
+      />,
+    );
+    await flush();
+
+    const buttons = Array.from(container.querySelectorAll("button")).map((b) => b.textContent?.trim());
+    expect(buttons).toContain("Tạo");
+    expect(buttons).toContain("Bỏ");
+  });
 });
 
 // K3 review finding 7, BR-UI-009: the example sits inside the empty box.
