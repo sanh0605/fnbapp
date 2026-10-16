@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-// BR-COGS-008 / plan 2026-10-16-thanh-ly-thu-tien: pins the migration text; the live
+// BR-COGS-008: pins the migration text; the live
 // function cannot be read from here (supabase/CLAUDE.md).
 const raw = readFileSync(resolve(process.cwd(), "supabase/migrations/0131_disposal_proceeds.sql"), "utf8").replace(/\r\n/g, "\n");
 const sql = raw.replace(/--[^\n]*/g, "").toLowerCase();

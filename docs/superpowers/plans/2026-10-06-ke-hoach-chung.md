@@ -61,7 +61,7 @@ Máy bán hàng (7) và các mảng Bán hàng, Kho, Thu chi, Báo cáo đã đ�
 | 1b | Khung mẫu cho từng thành phần; bộ lọc thời gian; dòng tổng dưới tiêu đề cột | xong trên nhánh, chờ đẩy: khuôn K1–K6 (K2–K6 chờ đẩy); bộ lọc thời gian 2026-10-09; 2026-10-14 dòng danh sách một kiểu, chữ một cách viết, dòng tổng dưới tiêu đề cột, sửa góp ý đã lưu (kế hoạch con `docs/superpowers/plans/2026-10-14-dot-9-phan-con-lai.md`) |
 | 2 | Giao diện đồng nhất — các trang ngoài khuôn | gần xong trên nhánh, chờ đẩy: trang lẻ và báo cáo theo khuôn (K5, K6), trang tạo theo khuôn (2026-10-11 → 14), Kiểm kê tách thành bốn file 2026-10-14; Q4 chủ quán chốt 2026-10-14 (chỉ sửa được phiếu kiểm kê mới nhất); sửa phiếu kiểm kê đã xác nhận (`BR-INV-012`) xong trên nhánh 2026-10-14, migration 0110 đã lên máy chủ 2026-10-14 (chủ quán duyệt "a"): đặc tả `docs/superpowers/specs/2026-10-14-sua-phieu-kiem-ke-design.md` chủ quán xác nhận ví dụ 2026-10-14, kế hoạch con `docs/superpowers/plans/2026-10-14-sua-phieu-kiem-ke.md` |
 | 3 | Tổng quan mới (bước D của bản cải tổ) | xong trên nhánh 2026-10-14, chờ đẩy: ô "việc cần xử lý" và bảng 7 ngày (`BR-SALE-007`, `BR-CASH-009`), ba trang Loại món, Khoản chi hằng tháng, Cài đặt Tổng quan; migration 0109 đã lên máy chủ; phép đo `scripts/verify-dashboard-seven-days.ts` 0 lệch trên 36 ô; đặc tả `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md`. Khi đẩy: dán lại danh sách bảng sao lưu Apps Script cùng lúc với bản sao lưu trên máy chủ |
-| 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E), trả phiếu nhập bằng nhiều hình thức, bảng chữ viết tắt, số tiền thu khi thanh lý | Tồn kho và Lưu chuyển tiền tệ (thành tab "Theo tháng" của Sổ thu chi) viết xong trên nhánh 2026-10-15, xem dòng 6-Kho, 6-Thu-chi; trả nhiều hình thức để tới khi có đơn thật cần (Thu chi R2); còn lại chưa làm |
+| 4 | Chức năng còn thiếu: Tồn kho, Lưu chuyển tiền tệ (bước E), trả phiếu nhập bằng nhiều hình thức, bảng chữ viết tắt, số tiền thu khi thanh lý | Tồn kho và Lưu chuyển tiền tệ (thành tab "Theo tháng" của Sổ thu chi) viết xong trên nhánh 2026-10-15, xem dòng 6-Kho, 6-Thu-chi; trả nhiều hình thức để tới khi có đơn thật cần (Thu chi R2); số tiền thu khi thanh lý xong, đã đẩy 2026-10-16; bảng chữ viết tắt gác lại |
 | 5 | Ô tiền tự thêm dấu chấm ở các màn còn lại | chưa làm |
 | 6 | Dọn phần sót (bước H) | đang làm: báo cáo và Đơn hàng tách file 2026-10-14; còn máy bán hàng (phần 7) và code chết chờ chủ quán |
 | 6b | Sửa theo đợt soát toàn bộ 2026-10-14 (chủ quán yêu cầu): đợt 1 lỗi kỹ thuật, đợt 2 tốc độ, đợt 3 dọn dẹp, đợt 4 gộp chỗ lặp, 10 câu chủ quán quyết | kế hoạch con `docs/superpowers/plans/2026-10-14-soat-toan-bo.md`; đã sửa ngay: lộ mã băm mật khẩu ở Doanh số, cổng sửa đơn không hỏi đăng nhập, đơn vị ở Kiểm kê |
@@ -73,7 +73,7 @@ Máy bán hàng (7) và các mảng Bán hàng, Kho, Thu chi, Báo cáo đã đ�
 | 6-Báo-cáo | Mảng Báo cáo + Tổng quan: soát và đề xuất `docs/superpowers/specs/2026-10-15-bao-cao-de-xuat.md`; Q1 chủ quán trả lời 2026-10-15 (tháng 9 lấy số của app làm mốc) | **Viết xong trên nhánh 2026-10-15, chưa đẩy:** Doanh số trên khung báo cáo, máy chủ tính hết, đếm lượt thanh toán (R2); Hàng đã xuất theo khoảng tháng, tách Hàng dùng và Hao hụt khớp Lãi lỗ; `verify-revenue` xanh lại |
 | 6-Nền-tảng | Nâng cấp Next 14 → 16, React 18 → 19; xoá code chết đợt 3; cột thừa soát theo mảng (chủ quán hỏi 2026-10-15 lúc không bán hàng). Đề xuất `docs/superpowers/specs/2026-10-15-nen-tang-de-xuat.md`: đo 2026-10-15 — 101 trang codemod tự sửa, 44 chỗ `revalidateTag`, 1 middleware, 0 thư viện chặn, 40 bảng 409 cột; khuyến nghị thứ tự A: nền trước rồi từng mảng. **Chủ quán chốt A 2026-10-15.** Bước 1 nâng cấp: kế hoạch con `docs/superpowers/plans/2026-10-15-nang-cap-next-16.md`. Chủ quán 2026-10-15: phiên này chỉ lên kế hoạch; phiên fnbapp-f5 phản biện rồi triển khai. Làm xong trên nhánh `chore/next-16` 2026-10-15: năm cửa kiểm xanh (vitest 493/493 file, 3.777 test), trang nhanh hơn ở 3/5 trang đo (Doanh số 978 → 577 ms), Tổng quan ngang (311 → 325 ms) | Bước 1 **đã đẩy 2026-10-15** (6d286c96, Vercel READY, 0 lỗi máy chủ 15 phút đầu); chờ chủ quán mở trang thật. Bước 2 xoá code chết xong trên nhánh 2026-10-15 (`docs/superpowers/plans/2026-10-15-don-code-chet.md`): −1.175 dòng, 16 file test canh thứ đã gỡ; **đã đẩy 2026-10-15** (chủ quán duyệt "Đẩy ngay", `d46953bb`, Vercel READY, 0 lỗi máy chủ trong 1 giờ). **Xong** |
 | 6c | Thống nhất một khuôn thiết kế chung cho toàn dự án, rồi soát mọi trang theo cùng một luật, cùng một thiết kế; chủ quán 2026-10-14: *"đây luôn là điểm ưu"*. Kèm theo: trang nào có cách làm tốt hơn (tra hệ thống lớn cùng ngành) thì đề xuất làm lại, không bám code 100% (chủ quán 2026-10-14). Làm sau khi xong 6b | **Khuôn viết xong 2026-10-15** (`docs/superpowers/specs/2026-10-15-khuon-chung-design.md`, chọn theo khuyến nghị, chủ quán uỷ quyền 2026-10-15): tra Shopify, KiotViet, Square, Toast; thêm `BR-UI-015` chân form, `BR-UI-016` ô tìm và trang trống, `BR-UI-017` vỏ báo cáo; bảng soát dùng cho từng mảng. Trang mẫu: thanh lưu ở Tạo món, Sửa món |
-| 6d | Soát cấu trúc cơ sở dữ liệu, tối ưu cho không thừa không thiếu; chủ quán 2026-10-14 chấp nhận thao tác trên hệ thống có thể đổi theo (*"đó là điều phải xảy ra"*); được chạy nhiều Opus song song để soát. Làm sau 6c. Việc nào có thể làm máy bán ngừng nhận đơn phải báo trước | chưa làm |
+| 6d | Soát cấu trúc cơ sở dữ liệu, tối ưu cho không thừa không thiếu; chủ quán 2026-10-14 chấp nhận thao tác trên hệ thống có thể đổi theo (*"đó là điều phải xảy ra"*); được chạy nhiều Opus song song để soát. Làm sau 6c. Việc nào có thể làm máy bán ngừng nhận đơn phải báo trước | Kế hoạch con `docs/superpowers/plans/2026-10-16-6d-csdl.md`. **Đợt 1a xong, đã đẩy 2026-10-16** (`067a6708`; migration 0132 chạy cùng ngày; sao lưu Drive cập nhật; thêm 1 dòng thanh toán và 9 dòng lịch sử giá, 0 lệch trên 1.874 đơn và 57 cỡ món; gỡ `user-admin`, xoá POE-001 — chủ quán duyệt từng việc). Còn: đợt 1b, các mục hoãn, đợt 2 máy bán hàng |
 | 7 | Máy bán hàng và trang đăng nhập | **Xong**: đẩy 2026-10-15 (`4b837522`), bỏ bước Khách đưa theo chủ quán (`BR-SALE-018`) |
 | 8 | Lộ trình dài hạn | gác lại (chủ quán 2026-10-16) |
 
@@ -178,19 +178,14 @@ bước (đặc tả → thiết kế → kế hoạch → code).
   cũ giữ nguyên một hình thức.
 - **Bảng chữ viết tắt** (`BR-UI-006`): bảng mới + màn hình chủ quán tự thêm, sửa, xoá; ví
   dụ "Hình thức thanh toán" → "HTTT" ở tiêu đề cột hẹp. Đủ bốn bước.
-- **Số tiền thu khi thanh lý tài sản** (chủ quán 2026-10-08, *"Làm theo em khuyến nghị"*,
-  luật ở `BR-COGS-008`). Trang thanh lý thêm ô số tiền (bỏ đi thì nhập 0đ, để trống không
-  lưu được) và ô tiền về két hay tài khoản nào; máy tự ghi một dòng thu vào sổ thu chi, nhóm
-  mới "Thu thanh lý tài sản"; lãi lỗ hiện dòng riêng "Thu thanh lý tài sản" trong thu khác.
-  Thêm cột vào `asset_disposals` → migration, duyệt riêng. Chủ quán dặn: *"chỉ thêm vào danh
-  sách các việc cần làm"*, chưa làm ngay. Mục chờ: `it.todo` trong
-  `app/admin/inventory/assets/components/DisposeAssetForm.test.tsx`.
+- **Số tiền thu khi thanh lý tài sản** (`BR-COGS-008`): **xong, đã đẩy 2026-10-16**
+  (`067a6708`, migration 0131 chạy cùng ngày, chủ quán duyệt "Chạy" rồi "Đẩy").
 
 ## 5. Ô tiền tự thêm dấu phẩy
 
 Xong trên nhánh 2026-10-08: phiếu nhập ở đợt K3; giá món, giá tuỳ chọn món, khuyến mãi ở đợt K4
 (chủ quán chốt 07/10/2026 làm trong đợt khuôn mẫu). `components/ui/MoneyInput.test.tsx` canh ba
-màn này. Ô tiền của trang thanh lý đi cùng việc "số tiền thu khi thanh lý" ở phần 4.
+màn này. Ô tiền của trang thanh lý xong cùng việc "số tiền thu khi thanh lý" 2026-10-16.
 
 ## 6. Dọn phần sót
 
