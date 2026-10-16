@@ -238,7 +238,7 @@ Mỗi đợt đều qua: soát độc lập (agent `reviewer`), năm lệnh ki�
 
 ## 6. Cần chủ quán duyệt lại cuối đợt
 
-Theo uỷ quyền, đã chọn trước theo khuyến nghị:
+Theo uỷ quyền, đã chọn trước theo khuyến nghị. **Chủ quán duyệt cả sáu 2026-10-17** (*"Giữ cả sáu"*), kèm chữ trên nút đổi theo `BR-UI-015` (Phiếu xuất "Quay lại" → "Bỏ", Sửa kiểm kê "Lưu" → "Lưu thay đổi"):
 
 1. Danh sách trên điện thoại dùng dòng gọn hai tầng thay cho thẻ, và bỏ nút thùng rác trên từng dòng (xoá qua "Chọn" với thanh xoá dính đáy màn hình, hoặc trang chi tiết; 3 lần bấm thay vì 1).
 2. Ô và nút trên điện thoại cao 48 px thay vì 44 px. Điều này đổi `BR-UI-014`.
