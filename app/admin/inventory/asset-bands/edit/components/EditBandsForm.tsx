@@ -262,7 +262,12 @@ export function EditBandsForm({
                           type="button"
                           title="Xoá"
                           aria-label="Xoá"
-                          onClick={() => handleRemoveRow(index)}
+                          onClick={(e) => {
+                            if (rows.length > 1) {
+                              e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                            }
+                            handleRemoveRow(index);
+                          }}
                           className="p-2 text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors inline-flex items-center justify-center min-w-[36px] min-h-[36px]"
                         >
                           <TrashIcon />
@@ -295,7 +300,12 @@ export function EditBandsForm({
                       type="button"
                       title="Xoá"
                       aria-label="Xoá"
-                      onClick={() => handleRemoveRow(index)}
+                      onClick={(e) => {
+                        if (rows.length > 1) {
+                          e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                        }
+                        handleRemoveRow(index);
+                      }}
                       className="w-12 h-12 flex items-center justify-center text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors"
                     >
                       <TrashIcon />
@@ -358,7 +368,10 @@ export function EditBandsForm({
           <Button
             type="button"
             variant="secondary"
-            onClick={handleAddRow}
+            onClick={(e) => {
+              e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+              handleAddRow();
+            }}
             className="w-full sm:w-auto"
           >
             Thêm khung

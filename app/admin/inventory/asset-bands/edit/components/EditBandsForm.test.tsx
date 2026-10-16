@@ -270,4 +270,19 @@ describe("EditBandsForm", () => {
     expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
+
+  it("shows 'Có thay đổi chưa lưu' when clicking add-row button", () => {
+    render(
+      <EditBandsForm
+        bands={INITIAL_BANDS}
+        canRemove={true}
+        returnTo="/admin/inventory/asset-bands"
+      />
+    );
+
+    const addBtn = screen.getByRole("button", { name: "Thêm khung" });
+    fireEvent.click(addBtn);
+
+    expect(screen.getAllByText("Có thay đổi chưa lưu").length > 0).toBe(true);
+  });
 });

@@ -107,6 +107,34 @@ describe("SearchableSelect", () => {
     expect(onChange).toHaveBeenCalledWith("2");
     expect(onFormChange).toHaveBeenCalledTimes(1);
   });
+
+  it("dispatches bubbling native change event to form when picking with keyboard", () => {
+    const options = [
+      { id: "1", label: "Option 1" },
+      { id: "2", label: "Option 2" },
+    ];
+    const onFormChange = vi.fn();
+    const onChange = vi.fn();
+
+    render(
+      <form data-testid="f">
+        <SearchableSelect options={options} value="1" onChange={onChange} />
+      </form>
+    );
+
+    const form = screen.getByTestId("f");
+    form.addEventListener("change", onFormChange);
+
+    const trigger = screen.getByRole("combobox");
+    fireEvent.click(trigger);
+
+    const input = screen.getByRole("textbox", { name: "Tìm trong danh sách" });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(onChange).toHaveBeenCalledWith("2");
+    expect(onFormChange).toHaveBeenCalledTimes(1);
+  });
 });
 
 // BR-UI-010 (2026-10-08): a long name in a pick list is shown whole. The owner

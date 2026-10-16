@@ -246,28 +246,4 @@ describe("OptionGroupPicker (Task 5 Step 1)", () => {
 
     expect(onChange).toHaveBeenCalledWith([]);
   });
-
-  it("dispatches bubbling native change event to form on pick", () => {
-    const onFormChange = vi.fn();
-    const onChange = vi.fn();
-
-    render(
-      <form data-testid="f">
-        <OptionGroupPicker
-          groups={[sugarProductGroup]}
-          picks={[]}
-          onChange={onChange}
-        />
-      </form>
-    );
-
-    const form = screen.getByTestId("f");
-    form.addEventListener("change", onFormChange);
-
-    const lessBtn = screen.getByRole("button", { name: /Ít đường/i });
-    fireEvent.click(lessBtn);
-
-    expect(onChange).toHaveBeenCalled();
-    expect(onFormChange).toHaveBeenCalledTimes(1);
-  });
 });

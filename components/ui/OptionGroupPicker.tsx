@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import { formatNumber } from "@/lib/shared/format";
 import {
   canAddPortion,
@@ -18,7 +18,6 @@ export interface OptionGroupPickerProps {
 }
 
 export function OptionGroupPicker({ groups, picks, onChange }: OptionGroupPickerProps) {
-  const rootRef = useRef<HTMLDivElement>(null);
   const allOptionIds = useMemo(() => {
     const ids = new Set<string>();
     for (const g of groups) {
@@ -41,7 +40,6 @@ export function OptionGroupPicker({ groups, picks, onChange }: OptionGroupPicker
       const next = [...picks];
       next.splice(idx, 1);
       onChange(next);
-      rootRef.current?.dispatchEvent(new Event("change", { bubbles: true }));
     }
   };
 
@@ -51,14 +49,12 @@ export function OptionGroupPicker({ groups, picks, onChange }: OptionGroupPicker
       const next = [...picks];
       next.splice(idx, 1);
       onChange(next);
-      rootRef.current?.dispatchEvent(new Event("change", { bubbles: true }));
     }
   };
 
   const addManyPortion = (g: ProductOptionGroup, option: OptionRow) => {
     if (!canAddPortion(picks, g, option)) return;
     onChange([...picks, { id: option.id, name: option.name, price: option.price }]);
-    rootRef.current?.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
   if (groups.length === 0 && orphanPicks.length === 0) {
@@ -66,7 +62,7 @@ export function OptionGroupPicker({ groups, picks, onChange }: OptionGroupPicker
   }
 
   return (
-    <div ref={rootRef} className="space-y-6">
+    <div className="space-y-6">
       {groups.map((g) => {
         const isOne = g.group.selection_mode === "ONE";
         const litId = isOne ? litOptionId(picks, g) : null;
@@ -86,10 +82,7 @@ export function OptionGroupPicker({ groups, picks, onChange }: OptionGroupPicker
                     <button
                       type="button"
                       key={opt.id}
-                      onClick={() => {
-                        onChange(pickOne(picks, g, opt));
-                        rootRef.current?.dispatchEvent(new Event("change", { bubbles: true }));
-                      }}
+                      onClick={() => onChange(pickOne(picks, g, opt))}
                       aria-pressed={isLit}
                       data-lit={isLit ? "true" : undefined}
                       className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors min-h-[44px] ${

@@ -238,6 +238,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
                         e.preventDefault();
                         try {
                           await onCreateNew(searchTerm.trim());
+                          wrapperRef.current?.dispatchEvent(new Event("change", { bubbles: true }));
                         } finally {
                           setIsOpen(false);
                         }

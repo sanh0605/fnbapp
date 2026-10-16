@@ -289,7 +289,10 @@ export function ModifierGroupForm({
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={() => handleToggleCategory(group.productIds)}
+                      onClick={(e) => {
+                        e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                        handleToggleCategory(group.productIds);
+                      }}
                       className="text-xs min-h-[36px] h-9 px-3"
                     >
                       {allGroupSelected ? "Bỏ chọn nhóm" : "Chọn cả nhóm"}
