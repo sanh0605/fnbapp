@@ -114,7 +114,6 @@ export interface OrderV2 {
   created_at: string;
   created_by_id: string;
   created_by_name: string;
-  completed_at: string | "";
   voided_at: string | "";
   voided_by_id: string | "";
   void_reason: string | "";
@@ -129,7 +128,6 @@ export interface OrderV2 {
   // Snapshots & payment
   applied_promotion_id: string | "";
   applied_promotion_snapshot_json: string; // empty string when no promo
-  pos_snapshot_json: string;
   payment_method: PaymentMethod;
 
   // Migration metadata

@@ -127,7 +127,6 @@ export function makeSuaDauStandaloneOrder(): { order: OrderV2; lines: OrderLineV
     created_at: "2026-06-12T12:21:26.776Z",
     created_by_id: "USER-TUYEN2612",
     created_by_name: "tuyen2612",
-    completed_at: "2026-06-12T12:21:26.776Z",
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
@@ -138,7 +137,6 @@ export function makeSuaDauStandaloneOrder(): { order: OrderV2; lines: OrderLineV
     net_total: 25000,
     applied_promotion_id: "PRM-003",
     applied_promotion_snapshot_json: JSON.stringify(PRM_003_SNAPSHOT),
-    pos_snapshot_json: "{}",
     payment_method: "CASH",
     migration_notes: "",
   };
@@ -203,7 +201,6 @@ function buildUCK000094Order(netTotal: number, migrationNotes: string): OrderV2 
     created_at: "2026-06-12T12:21:26.776Z",
     created_by_id: "USER-TUYEN2612",
     created_by_name: "tuyen2612",
-    completed_at: "2026-06-12T12:21:26.776Z",
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
@@ -214,7 +211,6 @@ function buildUCK000094Order(netTotal: number, migrationNotes: string): OrderV2 
     net_total: netTotal,
     applied_promotion_id: "PRM-003",
     applied_promotion_snapshot_json: JSON.stringify(PRM_003_SNAPSHOT),
-    pos_snapshot_json: "{}",
     payment_method: "BANK_TRANSFER",
     migration_notes: migrationNotes,
   };
@@ -280,7 +276,6 @@ function buildPHD000540Order(orderDiscount: number, migrationNotes: string): Ord
     created_at: "2026-06-18T00:36:56.326Z",
     created_by_id: "USER-TUYEN2612",
     created_by_name: "tuyen2612",
-    completed_at: "2026-06-18T00:36:56.326Z",
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
@@ -291,7 +286,6 @@ function buildPHD000540Order(orderDiscount: number, migrationNotes: string): Ord
     net_total: 0, // customer paid 0
     applied_promotion_id: "PRM-003",
     applied_promotion_snapshot_json: JSON.stringify(PRM_003_SNAPSHOT),
-    pos_snapshot_json: "{}",
     payment_method: "CASH",
     migration_notes: migrationNotes,
   };
@@ -350,7 +344,6 @@ export function makeNoDiscountOrder(): { order: OrderV2; lines: OrderLineV2[] } 
     created_at: "2026-06-01T00:00:00.000Z",
     created_by_id: "U",
     created_by_name: "Test",
-    completed_at: "2026-06-01T00:00:00.000Z",
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
@@ -361,7 +354,6 @@ export function makeNoDiscountOrder(): { order: OrderV2; lines: OrderLineV2[] } 
     net_total: 60000,
     applied_promotion_id: "",
     applied_promotion_snapshot_json: "",
-    pos_snapshot_json: "{}",
     payment_method: "CASH",
     migration_notes: "",
   };
@@ -424,7 +416,6 @@ export function makeCapacityCapOrder(): { order: OrderV2; lines: OrderLineV2[] }
     created_at: "2026-06-01T00:00:00.000Z",
     created_by_id: "U",
     created_by_name: "Test",
-    completed_at: "2026-06-01T00:00:00.000Z",
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
@@ -435,7 +426,6 @@ export function makeCapacityCapOrder(): { order: OrderV2; lines: OrderLineV2[] }
     net_total: 0,
     applied_promotion_id: "",
     applied_promotion_snapshot_json: "",
-    pos_snapshot_json: "{}",
     payment_method: "CASH",
     migration_notes: "",
   };

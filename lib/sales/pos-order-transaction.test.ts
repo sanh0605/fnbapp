@@ -250,7 +250,6 @@ describe("savePosOrderAtomic", () => {
       outletCode: "001",
       order: {
         id: "ord-1",
-        pos_snapshot_json: "{\"source\":\"POS\"}",
         applied_promotion_snapshot_json: "",
       },
       lines: [{
@@ -265,7 +264,6 @@ describe("savePosOrderAtomic", () => {
       "create_pos_order_atomic",
       expect.objectContaining({
         p_order: expect.objectContaining({
-          pos_snapshot_json: { source: "POS" },
           applied_promotion_snapshot_json: {},
         }),
         p_lines: [expect.objectContaining({

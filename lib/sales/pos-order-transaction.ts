@@ -40,7 +40,6 @@ export async function savePosOrderAtomic(
     p_outlet_code: input.outletCode,
     p_order: parseJsonColumns(input.order, [
       "applied_promotion_snapshot_json",
-      "pos_snapshot_json",
     ]),
     p_lines: input.lines.map(line => parseJsonColumns(line, [
       "product_snapshot_json",

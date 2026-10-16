@@ -234,7 +234,6 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
     created_at: createdAt,
     created_by_id: input.actor.id,
     created_by_name: input.actor.name,
-    completed_at: createdAt,
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
@@ -245,7 +244,6 @@ export function buildOrderFromCart(input: CartInput, ref: ReferenceData): BuildO
     net_total: netTotal,
     applied_promotion_id: resolvedPromo?.id || "",
     applied_promotion_snapshot_json: promoSnapshot ? JSON.stringify(promoSnapshot) : "",
-    pos_snapshot_json: JSON.stringify({ items: input.items, payment_method: input.payment_method }),
     payment_method: primaryPaymentMethod === "BANK_TRANSFER" ? PAYMENT_METHOD.BANK_TRANSFER : PAYMENT_METHOD.CASH,
     migration_notes: capturedAtRejected ? "client_captured_at_rejected" : "",
   };
