@@ -15,6 +15,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/Table";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { formatDate, formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { deletePromotionAction } from "@/app/admin/promotions/actions";
@@ -186,19 +187,13 @@ export function PromotionDetailView({
                 {applicableItems.map((item, idx) => (
                   <div
                     key={item.variantId || idx}
-                    className="p-4 flex items-center justify-between"
+                    className="px-4 py-2.5"
                   >
-                    <div>
-                      <div className="text-text-primary text-sm">
-                        {item.dishName}
-                      </div>
-                      <div className="text-xs text-text-muted mt-0.5">
-                        {item.sizeName}
-                      </div>
-                    </div>
-                    <div className="text-text-primary text-sm">
-                      {item.appliedValue}
-                    </div>
+                    <PhoneRow
+                      title={item.dishName}
+                      value={item.appliedValue}
+                      meta={item.sizeName}
+                    />
                   </div>
                 ))}
               </div>

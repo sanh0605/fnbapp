@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { TextInput } from "@/components/ui/TextInput";
@@ -396,7 +397,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
               </div>
 
               {/* Mobile Preview Cards */}
-              <div className="md:hidden space-y-2">
+              <div className="md:hidden divide-y divide-border bg-surface-card rounded-card border border-border">
                 {preview.rows.map((row) => {
                   const l = lines.find((candidate) => candidate.id === row.lineId);
                   const unitName = l?.unitName || "";
@@ -404,26 +405,26 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                   return (
                     <div
                       key={row.lineId || row.itemReference}
-                      className="border border-border rounded-lg p-3 text-sm space-y-1"
+                      className="px-4 py-2.5"
                     >
-                      <div className="font-medium text-text-primary">{displayName}</div>
-                      <div className="flex justify-between text-xs text-text-secondary">
-                        <span>
-                          Tồn hiện tại: {formatNumber(row.currentTheoreticalQty)} {unitName}
-                        </span>
-                        <span
-                          className={row.countVariance > 0 ? "text-success" : "text-danger"}
-                        >
-                          {row.countVariance > 0 ? "+" : ""}
-                          {formatNumber(row.countVariance)} {unitName}
-                        </span>
-                      </div>
-                      <div className="text-xs text-text-secondary">
-                        Dự kiến sau áp dụng:{" "}
-                        <span className="text-text-primary">
-                          {formatNumber(row.projectedQty)} {unitName}
-                        </span>
-                      </div>
+                      <PhoneRow
+                        title={displayName}
+                        value={
+                          <span
+                            className={
+                              row.countVariance > 0
+                                ? "text-success"
+                                : row.countVariance < 0
+                                ? "text-danger"
+                                : ""
+                            }
+                          >
+                            {row.countVariance > 0 ? "+" : ""}
+                            {formatNumber(row.countVariance)} {unitName}
+                          </span>
+                        }
+                        meta={`Tồn hiện tại: ${formatNumber(row.currentTheoreticalQty)} ${unitName} · Sau áp dụng: ${formatNumber(row.projectedQty)} ${unitName}`}
+                      />
                     </div>
                   );
                 })}
@@ -767,7 +768,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                             }
                             loading={isSaving}
                             disabled={isPreviewing}
-                            className="min-h-[44px]"
+                            className="min-h-[48px]"
                           >
                             {isPackage ? "Xác nhận" : "Lưu"}
                           </Button>

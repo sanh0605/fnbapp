@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import React from "react";
 import { ProductCategoryDetailView } from "./ProductCategoryDetailView";
 
@@ -146,5 +146,37 @@ describe("ProductCategoryDetailView", () => {
 
     expect(screen.getByText("Loại món")).toBeInTheDocument();
     expect(screen.getByText("Đồ uống")).toBeInTheDocument();
+  });
+
+  it("renders dishes on phone as a divide-y list of PhoneRow links with 48px controls", () => {
+    render(
+      <ProductCategoryDetailView
+        category={sampleCategory}
+        dishCount={sampleDishes.length}
+        dishes={sampleDishes}
+        canDelete={false}
+        returnTo="/admin/products/categories"
+      />
+    );
+
+    const mobileList = document.querySelector(".md\\:hidden") as HTMLElement;
+    expect(mobileList).toBeInTheDocument();
+    expect(mobileList.className).toContain("divide-y");
+
+    const links = within(mobileList).getAllByRole("link");
+    expect(links).toHaveLength(2);
+
+    const firstLink = links[0];
+    expect(firstLink).toHaveAttribute("href", "/admin/products/PROD-001");
+    expect(firstLink.className).toContain("px-4");
+    expect(firstLink.className).toContain("py-2.5");
+    expect(firstLink.className).toContain("min-h-[48px]");
+    expect(firstLink.className).not.toContain("min-h-[44px]");
+    expect(firstLink.className).not.toContain("p-4");
+
+    // PhoneRow: title on line 1, meta & badge on line 2
+    expect(within(firstLink).getByText("Cà phê đá")).toBeInTheDocument();
+    expect(within(firstLink).getByText("PROD-001")).toBeInTheDocument();
+    expect(within(firstLink).getByText("Đang bán")).toBeInTheDocument();
   });
 });

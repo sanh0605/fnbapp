@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import {
@@ -261,45 +262,19 @@ export function StocktakeDetailView({
                   </Table>
                 </div>
 
-                {/* Mobile Cards Layout */}
-                <div className="md:hidden space-y-3">
+                {/* Mobile PhoneRow Layout */}
+                <div className="md:hidden divide-y divide-border bg-surface-card rounded-card border border-border">
                   {groupLines.map((line) => (
                     <div
                       key={line.id}
                       data-line-id={line.id}
-                      className="bg-surface-card rounded-2xl border border-border p-4 space-y-2 text-sm"
+                      className="px-4 py-2.5"
                     >
-                      <div className="font-medium text-text-primary">{line.itemName}</div>
-                      <div className="space-y-1 text-text-secondary text-xs">
-                        <div className="flex justify-between items-center">
-                          <span>Sổ lúc đếm</span>
-                          <span className="text-text-primary tabular-nums">
-                            {line.theoreticalAtCount !== null
-                              ? `${formatNumber(line.theoreticalAtCount)} ${line.unitName}`
-                              : "—"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span>Đếm được</span>
-                          <span className="text-text-primary tabular-nums">
-                            {line.countedQty !== null
-                              ? `${formatNumber(line.countedQty)} ${line.unitName}`
-                              : "—"}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span>Chênh lệch số lượng</span>
-                          <span className="text-text-primary tabular-nums">
-                            {formatDiffQuantity(line)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center pt-1 border-t border-border/50">
-                          <span>Chênh lệch giá trị</span>
-                          <span className="text-text-primary tabular-nums font-medium">
-                            {formatDiffValue(line)}
-                          </span>
-                        </div>
-                      </div>
+                      <PhoneRow
+                        title={line.itemName}
+                        value={formatDiffValue(line)}
+                        meta={formatDiffQuantity(line)}
+                      />
                     </div>
                   ))}
                 </div>

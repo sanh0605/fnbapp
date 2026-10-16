@@ -196,4 +196,57 @@ describe("ProductDetailView", () => {
     );
     expect(screen.getByText("Nhóm tuỳ chọn")).toBeInTheDocument();
   });
+
+  it("renders sizes on phone as a divide-y list of PhoneRow (title/value on line 1, badge on line 2)", () => {
+    render(
+      <ProductDetailView
+        product={matchaLatteProduct}
+        categoryName="Giải trí"
+        returnTo="/admin/products"
+        canDelete={false}
+      />,
+    );
+
+    const mobileLists = document.querySelectorAll(".md\\:hidden");
+    const variantsList = mobileLists[0] as HTMLElement;
+    expect(variantsList).toBeInTheDocument();
+    expect(variantsList.className).toContain("divide-y");
+
+    const firstRow = variantsList.firstElementChild as HTMLElement;
+    expect(firstRow.className).toContain("px-4");
+    expect(firstRow.className).toContain("py-2.5");
+    expect(firstRow.className).not.toContain("p-4");
+
+    // PhoneRow: title (size) and value (price with đ) on line 1, badge on line 2
+    expect(within(firstRow).getByText("360ml")).toBeInTheDocument();
+    expect(within(firstRow).getByText("20,000đ")).toBeInTheDocument();
+    expect(within(firstRow).getByText("Đang bán")).toBeInTheDocument();
+    expect(firstRow.querySelector(".font-bold")).toBeNull();
+  });
+
+  it("renders price history on phone as a divide-y list of PhoneRow (title/value on line 1, meta on line 2)", () => {
+    render(
+      <ProductDetailView
+        product={matchaLatteProduct}
+        categoryName="Giải trí"
+        returnTo="/admin/products"
+        canDelete={false}
+      />,
+    );
+
+    const historySection = document.getElementById("lich-su-gia")!;
+    const historyMobileList = historySection.querySelector(".md\\:hidden") as HTMLElement;
+    expect(historyMobileList).toBeInTheDocument();
+    expect(historyMobileList.className).toContain("divide-y");
+
+    const firstRow = historyMobileList.firstElementChild as HTMLElement;
+    expect(firstRow.className).toContain("px-4");
+    expect(firstRow.className).toContain("py-2.5");
+    expect(firstRow.className).not.toContain("p-4");
+
+    // PhoneRow: size on line 1 left, price transition on line 1 right, timestamp on line 2
+    expect(within(firstRow).getByText("360ml")).toBeInTheDocument();
+    expect(within(firstRow).getByText("— → 0")).toBeInTheDocument();
+    expect(within(firstRow).getByText("28/06/2026 23:27:49")).toBeInTheDocument();
+  });
 });

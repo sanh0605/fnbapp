@@ -15,6 +15,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/Table";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { formatNumber } from "@/lib/shared/format";
 import {
   deleteModifierGroup,
@@ -272,33 +273,27 @@ export function ModifierGroupDetailView({
             {/* Mobile Cards */}
             <div className="md:hidden bg-surface-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
               {options.map((opt) => (
-                <div key={opt.id} className="p-4 space-y-1">
-                  <div className="flex justify-between items-start gap-2">
-                    <div>
-                      <div className="text-text-primary text-sm font-medium">
-                        {opt.name}
-                      </div>
-                    </div>
-                    <span className="text-primary text-sm font-medium tabular-nums">
-                      {formatNumber(opt.price)}đ
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-text-secondary pt-1">
-                    <span>
-                      {group.selection_mode === "ONE"
+                <div key={opt.id} className="px-4 py-2.5">
+                  <PhoneRow
+                    title={opt.name}
+                    value={`${formatNumber(opt.price)}đ`}
+                    meta={
+                      group.selection_mode === "ONE"
                         ? `Có sẵn: ${opt.is_default ? "Có" : "Không"}`
-                        : `Tối đa: ${opt.max_qty ? opt.max_qty : "Không giới hạn"}`}
-                    </span>
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-normal ${
-                        opt.status === "ACTIVE"
-                          ? "bg-primary-soft text-primary"
-                          : "bg-surface-secondary text-text-muted"
-                      }`}
-                    >
-                      {opt.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng"}
-                    </span>
-                  </div>
+                        : `Tối đa: ${opt.max_qty ? opt.max_qty : "Không giới hạn"}`
+                    }
+                    badge={
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-normal ${
+                          opt.status === "ACTIVE"
+                            ? "bg-primary-soft text-primary"
+                            : "bg-surface-secondary text-text-muted"
+                        }`}
+                      >
+                        {opt.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng"}
+                      </span>
+                    }
+                  />
                 </div>
               ))}
             </div>
@@ -343,15 +338,11 @@ export function ModifierGroupDetailView({
             {/* Mobile Cards */}
             <div className="md:hidden bg-surface-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
               {appliedProducts.map((p) => (
-                <div key={p.id} className="p-4 flex items-center justify-between gap-2">
-                  <div>
-                    <div className="text-text-primary text-sm font-medium">
-                      {p.name}
-                    </div>
-                    <div className="text-xs text-text-muted mt-0.5">
-                      {categoriesById.get(p.category_id) || "—"}
-                    </div>
-                  </div>
+                <div key={p.id} className="px-4 py-2.5">
+                  <PhoneRow
+                    title={p.name}
+                    meta={categoriesById.get(p.category_id) || "—"}
+                  />
                 </div>
               ))}
             </div>

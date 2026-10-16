@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
@@ -72,38 +73,25 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
         </Table>
       </div>
 
-      {/* Mobile: Card layout (< 768px) */}
-      <div className="md:hidden flex flex-col gap-3">
+      {/* Mobile: PhoneRow layout */}
+      <div className="md:hidden divide-y divide-border bg-surface-card rounded-card border border-border">
         {rows.map((row, idx) => (
-          <div key={`${row.poId}-${idx}`} className="bg-surface-card rounded-xl border border-border p-4 shadow-sm space-y-2">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-text-secondary">
-                {row.date ? formatDateTimeFull(row.date) : "---"}
-              </span>
-              <Link
-                href={`/admin/inventory/purchase-orders/${row.poId}`}
-                className="text-primary hover:text-primary-hover font-mono text-xs"
-              >
-                {row.poId}
-              </Link>
-            </div>
-            <div className="text-text-primary">{row.supplierName}</div>
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border text-xs">
-              <div>
-                <div className="text-text-muted text-xs">Số lượng</div>
-                <div className="text-text-primary tabular-nums mt-0.5">
-                  {formatNumber(row.quantity)} {row.unitLabel}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-text-muted text-xs">Đơn giá</div>
-                <div className="text-text-muted tabular-nums mt-0.5">{formatNumber(row.unitCost)}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-text-muted text-xs">Thành tiền</div>
-                <div className="text-text-primary tabular-nums mt-0.5">{formatNumber(row.lineTotal)}</div>
-              </div>
-            </div>
+          <div key={`${row.poId}-${idx}`} className="px-4 py-2.5">
+            <PhoneRow
+              title={row.supplierName}
+              value={`${formatNumber(row.lineTotal)}đ`}
+              meta={
+                <span>
+                  {row.date ? formatDateTimeFull(row.date) : "---"} · {formatNumber(row.quantity)} {row.unitLabel} × {formatNumber(row.unitCost)}đ ·{" "}
+                  <Link
+                    href={`/admin/inventory/purchase-orders/${row.poId}`}
+                    className="text-primary hover:text-primary-hover font-mono text-xs"
+                  >
+                    {row.poId}
+                  </Link>
+                </span>
+              }
+            />
           </div>
         ))}
       </div>

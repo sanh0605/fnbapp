@@ -405,4 +405,33 @@ describe("ItemDetailView", () => {
 
     expect(screen.getByText("Tồn kho hiện tại")).toBeInTheDocument();
   });
+
+  it("renders conversions child rows on phone as a divide-y list of PhoneRow", () => {
+    const { container } = render(
+      <ItemDetailView
+        item={mlekovitaItem}
+        category={category}
+        conversions={mlekovitaConversions}
+        units={units}
+        purchaseHistory={purchaseHistory}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />,
+    );
+
+    const phoneSection = container.querySelector(".md\\:hidden");
+    expect(phoneSection).not.toBeNull();
+    expect(phoneSection?.className).toContain("divide-y");
+
+    const rows = phoneSection?.querySelectorAll(":scope > div");
+    expect(rows?.length).toBe(1);
+    const firstRow = rows?.[0];
+    expect(firstRow?.className).toContain("px-4");
+    expect(firstRow?.className).toContain("py-2.5");
+    expect(firstRow?.className).not.toContain("p-4");
+
+    // PhoneRow: line 1 has conversion formula, line 2 has badge
+    expect(firstRow?.textContent).toContain("1 Hộp = 1000 ml");
+    expect(firstRow?.textContent).toContain("Đang dùng");
+  });
 });

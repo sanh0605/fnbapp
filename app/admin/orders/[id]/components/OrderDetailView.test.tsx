@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { OrderDetailView } from "./OrderDetailView";
 import type { OrderDetailV2Result } from "@/app/admin/orders/order-detail-actions";
 
@@ -246,16 +246,33 @@ describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
     expect(screen.getByRole("link", { name: "Huỷ đơn" })).toBeDefined();
   });
 
-  it("shows the dishes as a table on a computer and as cards on a phone", () => {
+  it("shows the dishes as a table on a computer and as a divide-y list of PhoneRow on a phone", () => {
     render(<OrderDetailView detail={makeDetail()} brands={[]} returnTo="/admin/orders" />);
     const table = screen.getByRole("table");
     expect(table.closest(".hidden.md\\:block")).not.toBeNull();
     const headers = screen.getAllByRole("columnheader").map(h => h.textContent);
     expect(headers).toEqual(expect.arrayContaining(["Món", "Size", "SL", "Thành tiền"]));
     expect(table.textContent).toContain("Cà phê sữa");
+
     const phone = screen.getByTestId("detail-lines-phone");
     expect(phone.className).toContain("md:hidden");
-    expect(phone.textContent).toContain("Cà phê sữa");
+    expect(phone.className).toContain("divide-y");
+    expect(phone.className).not.toContain("space-y");
+
+    const firstRow = phone.firstElementChild as HTMLElement;
+    expect(firstRow).toBeInTheDocument();
+    expect(firstRow.className).toContain("px-4");
+    expect(firstRow.className).toContain("py-2.5");
+    expect(firstRow.className).not.toContain("rounded-xl");
+    expect(firstRow.className).not.toContain("p-3");
+
+    // Line 1: dish title and formatted price with currency
+    expect(within(firstRow).getByText("Cà phê sữa")).toBeInTheDocument();
+    expect(within(firstRow).getByText("50,000đ")).toBeInTheDocument();
+    // Line 2: quantity and size in meta
+    expect(within(firstRow).getByText("1 × Size M")).toBeInTheDocument();
+    // No bold classes inside list rows (BR-UI-003)
+    expect(firstRow.querySelector(".font-bold")).toBeNull();
   });
 });
 

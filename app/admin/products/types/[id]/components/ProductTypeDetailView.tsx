@@ -8,6 +8,7 @@ import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { deleteProductType } from "@/app/admin/products/types/actions";
 import type { DBProductType } from "@/types/db";
 
@@ -159,8 +160,8 @@ export function ProductTypeDetailView({
             {/* Mobile Cards */}
             <div className="md:hidden bg-surface-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
               {categoryNames.map((name) => (
-                <div key={name} className="p-4 text-text-primary text-sm font-normal">
-                  {name}
+                <div key={name} className="px-4 py-2.5">
+                  <PhoneRow title={name} />
                 </div>
               ))}
             </div>

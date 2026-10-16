@@ -252,31 +252,102 @@ describe("AssetItemDetailView", () => {
     // Desktop table header
     expect(screen.getByRole("columnheader", { name: "Thu được" })).toBeInTheDocument();
 
+    // Desktop table rows render proceeds
     // Case 1: null -> 0đ
     expect(screen.getAllByText("0đ").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Thu được: 0đ").length).toBeGreaterThan(0);
+    // On phone, old card label "Thu được: 0đ" is replaced by PhoneRow without "Thu được:"
+    expect(screen.queryByText("Thu được: 0đ")).toBeNull();
 
     // Case 2: CASH -> 1,200,000đ · Tiền mặt
     expect(screen.getAllByText("1,200,000đ · Tiền mặt").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Thu được: 1,200,000đ · Tiền mặt").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Thu được: 1,200,000đ · Tiền mặt")).toBeNull();
 
     // Case 3: BANK_TRANSFER -> 1,200,000đ · Vietcombank
     expect(screen.getAllByText("1,200,000đ · Vietcombank").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Thu được: 1,200,000đ · Vietcombank").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Thu được: 1,200,000đ · Vietcombank")).toBeNull();
 
     // Case 4: CANCELLED -> amount struck through plus " (đã huỷ)"
     const cancelledTexts = screen.getAllByText((_content, element) => {
-      return (
-        element?.textContent === "1,200,000đ · Tiền mặt (đã huỷ)" ||
-        element?.textContent === "Thu được: 1,200,000đ · Tiền mặt (đã huỷ)"
-      );
+      return element?.textContent === "1,200,000đ · Tiền mặt (đã huỷ)";
     });
     expect(cancelledTexts.length).toBeGreaterThan(0);
+    expect(screen.queryByText("Thu được: 1,200,000đ · Tiền mặt (đã huỷ)")).toBeNull();
 
     // Verify struck-through amount
     const struckAmounts = screen
       .getAllByText("1,200,000đ")
       .filter((el) => el.classList.contains("line-through"));
     expect(struckAmounts.length).toBeGreaterThan(0);
+  });
+
+  it("renders 'Các lần mua' child rows on phone as a divide-y list of PhoneRow", () => {
+    const { container } = render(<AssetItemDetailView detail={BINH_BOM_DETAIL} returnTo={returnTo} />);
+    const phoneSection = container.querySelector(".md\\:hidden");
+    expect(phoneSection).not.toBeNull();
+    expect(phoneSection?.className).toContain("divide-y");
+
+    const rows = phoneSection?.querySelectorAll(":scope > div");
+    expect(rows?.length).toBe(1);
+    const firstRow = rows?.[0];
+    expect(firstRow?.className).toContain("px-4");
+    expect(firstRow?.className).toContain("py-2.5");
+    expect(firstRow?.className).not.toContain("p-4");
+
+    // PhoneRow: line 1 has TS-004 and remaining value 145,860đ
+    expect(firstRow?.textContent).toContain("TS-004");
+    expect(firstRow?.textContent).toContain("145,860đ");
+    // Line 2 has meta: date, remaining/quantity, term
+    expect(firstRow?.textContent).toContain("04/04/2026 00:00:00");
+    expect(firstRow?.textContent).toContain("Còn 1/2 cái");
+    expect(firstRow?.textContent).toContain("24 tháng");
+    // Old card labels should not exist in the phone row
+    expect(firstRow?.textContent).not.toContain("Giá một cái");
+    expect(firstRow?.textContent).not.toContain("Giá trị còn lại");
+  });
+
+  it("renders 'Thanh lý' child rows on phone as a divide-y list of PhoneRow", () => {
+    const { container } = render(<AssetItemDetailView detail={BINH_BOM_DETAIL} returnTo={returnTo} />);
+    const phoneSections = container.querySelectorAll(".md\\:hidden");
+    const disposalSection = phoneSections[1];
+    expect(disposalSection).not.toBeNull();
+    expect(disposalSection?.className).toContain("divide-y");
+
+    const rows = disposalSection?.querySelectorAll(":scope > div");
+    expect(rows?.length).toBe(1);
+    const firstRow = rows?.[0];
+    expect(firstRow?.className).toContain("px-4");
+    expect(firstRow?.className).toContain("py-2.5");
+    expect(firstRow?.className).not.toContain("p-4");
+
+    // Line 1: disposed date and charge
+    expect(firstRow?.textContent).toContain("02/07/2026 00:00:00");
+    expect(firstRow?.textContent).toContain("171,600đ");
+    // Old card labels should not exist
+    expect(firstRow?.textContent).not.toContain("Lần mua:");
+    expect(firstRow?.textContent).not.toContain("Thu được:");
+    expect(firstRow?.textContent).not.toContain("Lý do:");
+  });
+
+  it("renders 'Khấu hao theo tháng' child rows on phone as a divide-y list of PhoneRow", () => {
+    const { container } = render(<AssetItemDetailView detail={BINH_BOM_DETAIL} returnTo={returnTo} />);
+    const phoneSections = container.querySelectorAll(".md\\:hidden");
+    const monthSection = phoneSections[2];
+    expect(monthSection).not.toBeNull();
+    expect(monthSection?.className).toContain("divide-y");
+
+    const rows = monthSection?.querySelectorAll(":scope > div");
+    expect(rows?.length).toBe(5);
+    const julyRow = rows?.[3]; // 2026-07
+    expect(julyRow?.className).toContain("px-4");
+    expect(julyRow?.className).toContain("py-2.5");
+    expect(julyRow?.className).not.toContain("p-4");
+
+    // Line 1: month and charge
+    expect(julyRow?.textContent).toContain("07/2026");
+    expect(julyRow?.textContent).toContain("188,760đ");
+    // Line 2: disposal charge
+    expect(julyRow?.textContent).toContain("gồm 171,600đ thanh lý");
+    // Old label "Số cái giữ:" replaced by clean meta
+    expect(julyRow?.textContent).not.toContain("Số cái giữ:");
   });
 });
