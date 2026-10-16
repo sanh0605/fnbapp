@@ -4,6 +4,7 @@ import {
   Table,
   TableHead,
   TableHeaderCell,
+  TableTotalRow,
   TableBody,
   TableRow,
   TableRowHeader,
@@ -31,12 +32,10 @@ export function SalesByDaySection({ salesByDate, totalRevenue }: SalesByDaySecti
           <TableHeaderCell>Doanh thu</TableHeaderCell>
         </TableHead>
         {salesByDate.length > 0 && (
-          <thead className="border-b border-border">
-            <tr className="bg-primary-soft">
-              <TableCell>Tổng cộng</TableCell>
-              <TableCell align="right">{formatNumber(totalRevenue)}</TableCell>
-            </tr>
-          </thead>
+          <TableTotalRow>
+            <TableCell stick="left">Tổng cộng</TableCell>
+            <TableCell align="right">{formatNumber(totalRevenue)}</TableCell>
+          </TableTotalRow>
         )}
         <TableBody>
           {salesByDate.length === 0 ? (

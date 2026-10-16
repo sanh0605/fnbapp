@@ -248,4 +248,25 @@ describe("PromotionsClient", () => {
     expect(createLink).toBeInTheDocument();
     expect(createLink.getAttribute("href")).toContain("/admin/promotions/new?returnTo=");
   });
+
+  it("omits date part from phone meta when both start_date and end_date are empty", () => {
+    const promoWithoutDates: DBPromotion = {
+      ...samplePromotions[0],
+      start_date: "",
+      end_date: "",
+    };
+    const { container } = render(
+      <PromotionsClient
+        promotions={[promoWithoutDates]}
+        brands={sampleBrands}
+        products={[]}
+        variants={sampleVariants}
+        categories={[]}
+        canDelete={false}
+      />,
+    );
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("Toàn hệ thống · Toàn bộ đơn hàng")).toBeInTheDocument();
+    expect(within(phone).queryByText(/→/)).toBeNull();
+  });
 });

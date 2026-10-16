@@ -4,6 +4,7 @@ import {
   Table,
   TableHead,
   TableHeaderCell,
+  TableTotalRow,
   TableBody,
   TableRow,
   TableRowHeader,
@@ -63,18 +64,16 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
           <TableHeaderCell>Tổng thu</TableHeaderCell>
         </TableHead>
         {items.length > 0 && (
-          <thead className="border-b border-border">
-            <tr className="bg-primary-soft">
-              <TableCell>Tổng cộng</TableCell>
-              {tableUniqueSizes.map(size => (
-                <TableCell key={size} align="right">
-                  {totalQtyBySize[size] > 0 ? formatNumber(totalQtyBySize[size]) : "-"}
-                </TableCell>
-              ))}
-              <TableCell align="right">{formatNumber(totalQtyAll)}</TableCell>
-              <TableCell align="right">{formatNumber(Math.round(totalRevenueAll))}</TableCell>
-            </tr>
-          </thead>
+          <TableTotalRow>
+            <TableCell stick="left">Tổng cộng</TableCell>
+            {tableUniqueSizes.map(size => (
+              <TableCell key={size} align="right">
+                {totalQtyBySize[size] > 0 ? formatNumber(totalQtyBySize[size]) : "-"}
+              </TableCell>
+            ))}
+            <TableCell align="right">{formatNumber(totalQtyAll)}</TableCell>
+            <TableCell align="right">{formatNumber(Math.round(totalRevenueAll))}</TableCell>
+          </TableTotalRow>
         )}
         <TableBody>
           {items.length === 0 ? (

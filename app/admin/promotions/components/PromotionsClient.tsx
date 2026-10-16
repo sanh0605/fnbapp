@@ -447,7 +447,10 @@ export default function PromotionsClient({
           const scopeText = getScopeText(promo, variantMap);
           const expired = isExpired(promo.end_date);
 
-          const datesText = `${formatPromotionDate(promo.start_date)} → ${formatPromotionDate(promo.end_date)}`;
+          const datesText =
+            !promo.start_date && !promo.end_date
+              ? null
+              : `${formatPromotionDate(promo.start_date)} → ${formatPromotionDate(promo.end_date)}`;
 
           const meta = [datesText, brandName, scopeText].filter(Boolean).join(" · ");
 

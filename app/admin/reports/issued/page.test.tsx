@@ -24,6 +24,14 @@ const MOCK_REPORT = {
       issuedValue: 500_000,
       closingValue: 200_000,
     },
+    {
+      purchasedItemId: "ITEM-2",
+      name: "Sữa chua không đường Vinamilk",
+      unitName: "g",
+      issuedQuantity: 100,
+      issuedValue: 500_000,
+      closingValue: 200_000,
+    },
   ],
   events: [
     {
@@ -114,6 +122,13 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     expect(within(row).getByText("10.00 hộp")).toBeInTheDocument();
     expect(within(row).getByText("500,000đ")).toBeInTheDocument();
     expect(within(row).getByText("200,000đ")).toBeInTheDocument();
+
+    // OPEN-ITEMS 41: Sữa chua không đường Vinamilk shows g
+    const vinamilkHeader = screen.getByRole("rowheader", { name: "Sữa chua không đường Vinamilk" });
+    expect(vinamilkHeader.className).toContain("sticky");
+    expect(vinamilkHeader.className).toContain("left-0");
+    const vinamilkRow = vinamilkHeader.closest("tr")!;
+    expect(within(vinamilkRow).getByText("100.00 g")).toBeInTheDocument();
   });
 
 

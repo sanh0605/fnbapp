@@ -52,7 +52,7 @@ describe("ProductTable on the shared Table set (wave K5)", () => {
     expect(table.closest(".hidden")).toBeNull();
 
     // The first cell of each body row is a TableRowHeader with stick="left"
-    const bodyRows = Array.from(table.querySelectorAll("tbody tr"));
+    const bodyRows = Array.from(table.querySelectorAll("tbody.divide-y tr"));
     expect(bodyRows).toHaveLength(2);
     for (const row of bodyRows) {
       const headerCell = row.querySelector("th[scope='row']")!;

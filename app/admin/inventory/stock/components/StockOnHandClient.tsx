@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Field } from "@/components/ui/Field";
@@ -198,28 +198,25 @@ export default function StockOnHandClient({
         }
         columns={columns}
         phoneRow={(row) => {
-          const hasWarningBadge =
+          const daysNode = renderDaysLeft(row);
+          const isWarningBadge =
             !row.inactive &&
-            row.onHand >= 0 &&
-            (row.daysLeft === "OUT" || (typeof row.daysLeft === "number" && row.daysLeft <= 7));
+            React.isValidElement(daysNode) &&
+            (daysNode.props as { variant?: string }).variant === "warning";
 
           const badge = row.inactive ? (
             <Badge variant="neutral">Ngừng dùng</Badge>
-          ) : hasWarningBadge ? (
-            row.daysLeft === "OUT" ? (
-              <Badge variant="warning">Hết</Badge>
-            ) : (
-              <Badge variant="warning">khoảng {formatNumber(row.daysLeft as number)} ngày</Badge>
-            )
+          ) : isWarningBadge ? (
+            daysNode
           ) : undefined;
 
           const daysText =
-            hasWarningBadge || row.onHand < 0
+            isWarningBadge || row.onHand < 0 || row.daysLeft == null
               ? null
-              : row.daysLeft === "OUT"
-              ? "Hết"
               : typeof row.daysLeft === "number"
               ? `khoảng ${formatNumber(row.daysLeft)} ngày`
+              : row.daysLeft === "OUT"
+              ? "Hết"
               : null;
 
           return {

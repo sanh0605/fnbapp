@@ -35,7 +35,7 @@ describe("SalesByDaySection (Ticket G-BC, spec root 1, R1)", () => {
     expect(table.closest(".hidden")).toBeNull();
 
     // First cell of each body row is TableRowHeader with stick="left"
-    const bodyRows = table.querySelectorAll("tbody tr");
+    const bodyRows = table.querySelectorAll("tbody.divide-y tr");
     expect(bodyRows).toHaveLength(2);
     for (const row of Array.from(bodyRows)) {
       const headerCell = row.querySelector("th[scope='row']")!;

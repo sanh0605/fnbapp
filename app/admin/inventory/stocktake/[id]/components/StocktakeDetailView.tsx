@@ -264,19 +264,30 @@ export function StocktakeDetailView({
 
                 {/* Mobile PhoneRow Layout */}
                 <div className="md:hidden divide-y divide-border bg-surface-card rounded-card border border-border">
-                  {groupLines.map((line) => (
-                    <div
-                      key={line.id}
-                      data-line-id={line.id}
-                      className="px-4 py-2.5"
-                    >
-                      <PhoneRow
-                        title={line.itemName}
-                        value={formatDiffValue(line)}
-                        meta={formatDiffQuantity(line)}
-                      />
-                    </div>
-                  ))}
+                  {groupLines.map((line) => {
+                    const book =
+                      line.theoreticalAtCount !== null
+                        ? `${formatNumber(line.theoreticalAtCount)} ${line.unitName}`
+                        : "—";
+                    const counted =
+                      line.countedQty !== null
+                        ? `${formatNumber(line.countedQty)} ${line.unitName}`
+                        : "—";
+                    const diff = formatDiffQuantity(line);
+                    return (
+                      <div
+                        key={line.id}
+                        data-line-id={line.id}
+                        className="px-4 py-2.5"
+                      >
+                        <PhoneRow
+                          title={line.itemName}
+                          value={formatDiffValue(line)}
+                          meta={`Sổ ${book} · Đếm ${counted} · ${diff}`}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );

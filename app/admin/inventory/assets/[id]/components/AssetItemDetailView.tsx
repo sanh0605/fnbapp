@@ -184,37 +184,37 @@ export function AssetItemDetailView({
             {/* Phone Rows */}
             <div className="md:hidden bg-surface-card rounded-card border border-border divide-y divide-border">
               {detail.lots.map((lot) => {
-                const metaNodes: React.ReactNode[] = [
+                const metaParts = [
                   formatDateTimeFull(lot.acquiredDate),
                   `Còn ${lot.remainingQuantity}/${lot.quantity} cái`,
+                  `${formatNumber(Math.round(lot.unitCost))}đ`,
                   `${lot.termMonths} tháng`,
-                  lot.purchaseOrderId ? (
-                    <Link
-                      key="po"
-                      href={`/admin/inventory/purchase-orders/${lot.purchaseOrderId}`}
-                      className="font-mono text-primary hover:underline"
-                    >
-                      {lot.purchaseOrderId}
-                    </Link>
-                  ) : null,
+                  lot.purchaseOrderId,
                 ].filter(Boolean);
 
+                const content = (
+                  <PhoneRow
+                    title={lot.id}
+                    value={`${formatNumber(Math.round(lot.remainingValue))}đ`}
+                    meta={metaParts.join(" · ")}
+                  />
+                );
+
+                if (lot.purchaseOrderId) {
+                  return (
+                    <Link
+                      key={lot.id}
+                      href={`/admin/inventory/purchase-orders/${lot.purchaseOrderId}`}
+                      className="block px-4 py-2.5 min-h-[48px] hover:bg-surface-secondary/50 transition-colors"
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
+
                 return (
-                  <div key={lot.id} className="px-4 py-2.5">
-                    <PhoneRow
-                      title={lot.id}
-                      value={`${formatNumber(Math.round(lot.remainingValue))}đ`}
-                      meta={
-                        <span>
-                          {metaNodes.map((node, i) => (
-                            <React.Fragment key={i}>
-                              {i > 0 && " · "}
-                              {node}
-                            </React.Fragment>
-                          ))}
-                        </span>
-                      }
-                    />
+                  <div key={lot.id} className="px-4 py-2.5 min-h-[48px]">
+                    {content}
                   </div>
                 );
               })}
@@ -270,7 +270,7 @@ export function AssetItemDetailView({
                 const metaNodes: React.ReactNode[] = [
                   `${formatDateTimeFull(d.lotAcquiredDate)} (${d.assetId})`,
                   `${d.quantity} cái`,
-                  renderProceeds(d.proceeds),
+                  <span key="proceeds">Thu được: {renderProceeds(d.proceeds)}</span>,
                   d.reason || null,
                 ].filter(Boolean);
 

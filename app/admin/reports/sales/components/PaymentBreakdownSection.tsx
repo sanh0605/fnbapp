@@ -3,6 +3,7 @@ import {
   Table,
   TableHead,
   TableHeaderCell,
+  TableTotalRow,
   TableBody,
   TableRow,
   TableRowHeader,
@@ -54,15 +55,13 @@ export function PaymentBreakdownSection({
           <TableHeaderCell>Doanh thu</TableHeaderCell>
         </TableHead>
         {paymentBreakdown.length > 0 && (
-          <thead className="border-b border-border">
-            <tr className="bg-primary-soft">
-              <TableCell>Tổng cộng</TableCell>
-              <TableCell align="right">
-                {totalPaymentCount} lượt thanh toán của {paymentOrderCount} đơn
-              </TableCell>
-              <TableCell align="right">{formatNumber(totalRevenue)}</TableCell>
-            </tr>
-          </thead>
+          <TableTotalRow>
+            <TableCell stick="left">Tổng cộng</TableCell>
+            <TableCell align="right">
+              {totalPaymentCount} lượt thanh toán của {paymentOrderCount} đơn
+            </TableCell>
+            <TableCell align="right">{formatNumber(totalRevenue)}</TableCell>
+          </TableTotalRow>
         )}
         <TableBody>
           {paymentBreakdown.length === 0 ? (

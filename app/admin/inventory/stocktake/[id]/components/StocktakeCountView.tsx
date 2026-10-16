@@ -768,7 +768,6 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                             }
                             loading={isSaving}
                             disabled={isPreviewing}
-                            className="min-h-[48px]"
                           >
                             {isPackage ? "Xác nhận" : "Lưu"}
                           </Button>

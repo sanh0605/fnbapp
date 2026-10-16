@@ -136,7 +136,7 @@ describe("StocktakeDetailView (Screen 3)", () => {
     expect(firstRow?.textContent).toContain("-296,033đ");
 
     // PhoneRow: Line 2 has quantity info
-    expect(firstRow?.textContent).toContain("Thiếu 2,000 g");
+    expect(firstRow?.textContent).toContain("Sổ 6,000 g · Đếm 4,000 g · Thiếu 2,000 g");
 
     // Old card labels are not present on phone
     expect(firstRow?.textContent).not.toContain("Sổ lúc đếm");

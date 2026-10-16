@@ -310,5 +310,11 @@ describe("StockOnHandClient", () => {
     expect(
       within(phone).getByText("15,000đ · Nguyên liệu · Chưa kiểm lần nào"),
     ).toBeInTheDocument();
+
+    const warning5 = within(phone).getByText("khoảng 5 ngày");
+    expect(warning5.className).toContain("text-warning");
+
+    const outBadge = within(phone).getByText("Hết");
+    expect(outBadge.className).toContain("text-warning");
   });
 });

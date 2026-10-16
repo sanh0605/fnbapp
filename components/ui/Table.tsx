@@ -4,7 +4,7 @@
 // which server components cannot create. Server pages still render it.
 import React from "react";
 
-export type TableRowLook = "subtotal" | "strong" | "detail";
+export type TableRowLook = "subtotal" | "strong" | "detail" | "total";
 export type TableStick = "left" | "right" | "right-2";
 export type TableCellTone = "negative" | "muted";
 
@@ -16,14 +16,15 @@ const TableContext = React.createContext<{ statement?: boolean; pinHead?: boolea
 const TableRowContext = React.createContext<{ look?: TableRowLook }>({});
 
 function getRowStickBg(look?: TableRowLook): string {
+  if (look === "total") return "bg-primary-soft";
   return look === "subtotal" ? "bg-surface-secondary" : "bg-surface-card";
 }
 
-function getStickClasses(stick: TableStick | undefined, bg: string): string {
+function getStickClasses(stick: TableStick | undefined, bg: string, zIndex = "z-10"): string {
   if (!stick) return "";
-  if (stick === "left") return `sticky left-0 z-10 ${bg}`;
-  if (stick === "right-2") return `sticky right-24 z-10 border-l-2 border-border ${bg}`;
-  if (stick === "right") return `sticky right-0 z-10 w-24 min-w-[6rem] ${bg}`;
+  if (stick === "left") return `sticky left-0 ${zIndex} ${bg}`;
+  if (stick === "right-2") return `sticky right-24 ${zIndex} border-l-2 border-border ${bg}`;
+  if (stick === "right") return `sticky right-0 ${zIndex} w-24 min-w-[6rem] ${bg}`;
   return "";
 }
 
@@ -76,7 +77,8 @@ export function TableHeaderCell({
 }) {
   const { statement, pinHead } = React.useContext(TableContext);
   const headBg = statement ? "bg-surface-secondary" : "bg-page";
-  const stickClasses = getStickClasses(stick, headBg);
+  const zIndex = pinHead && stick === "left" ? "z-20" : "z-10";
+  const stickClasses = getStickClasses(stick, headBg, zIndex);
   const baseClasses = [
     // BR-UI-011: every title is bold and on the left, an amount column's
     // too; its figures stay right in the body cells.
@@ -144,12 +146,18 @@ export function TableRowHeader({
   colSpan?: number;
   className?: string;
 }) {
+  const { statement } = React.useContext(TableContext);
   const { look } = React.useContext(TableRowContext);
   const stickBg = getRowStickBg(look);
   const stickClasses = getStickClasses(stick, stickBg);
 
+  const pad = statement
+    ? "px-3 py-2 whitespace-nowrap"
+    : "px-3 py-2 md:px-4 md:py-3 whitespace-nowrap md:whitespace-normal";
+
   const baseClasses = [
-    "px-3 py-2 text-left whitespace-nowrap [font-weight:inherit]",
+    pad,
+    "text-left [font-weight:inherit]",
     indent ? "pl-6" : "",
   ]
     .filter(Boolean)
@@ -195,7 +203,7 @@ export function TableCell({
   // A plain list row sets its cells' size, weight and colour; a styled row
   // (look) or any statement row sets them on the <tr>, so its cells inherit
   // them and only pad.
-  const inherit = Boolean(look) || Boolean(statement);
+  const inherit = Boolean(statement) || (Boolean(look) && look !== "total");
   const pad = statement && tight ? "px-1 py-1" : inherit ? "px-3 py-2" : "px-3 py-2 md:px-4 md:py-3 text-sm font-normal";
   const colour =
     tone === "negative" ? "text-danger" : tone === "muted" ? "text-text-secondary" : inherit ? "" : "text-text-primary";
@@ -222,8 +230,10 @@ export function TableCell({
 
 export function TableTotalRow({ children }: { children: React.ReactNode }) {
   return (
-    <tbody>
-      <tr className="bg-primary-soft">{children}</tr>
-    </tbody>
+    <TableRowContext.Provider value={{ look: "total" }}>
+      <tbody>
+        <tr className="bg-primary-soft">{children}</tr>
+      </tbody>
+    </TableRowContext.Provider>
   );
 }

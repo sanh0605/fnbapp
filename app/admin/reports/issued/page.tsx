@@ -145,7 +145,7 @@ export default async function IssuedValueReportPage(
         ) : (
           <>
             <p className="text-xs text-text-secondary -mt-1">
-              Mỗi thẻ làm tròn riêng theo số thật của nó -- cộng tay các thẻ có thể lệch vài đồng so với tổng ở trên, số ở trên mới là số đúng.
+              Mỗi dòng làm tròn riêng theo số thật của nó -- cộng tay các dòng có thể lệch vài đồng so với tổng ở trên, số ở trên mới là số đúng.
             </p>
             <div className="md:hidden space-y-3">
               <div className="divide-y divide-border bg-surface-card rounded-xl border border-border px-4">
@@ -160,28 +160,27 @@ export default async function IssuedValueReportPage(
                   />
                 ))}
               </div>
-              <div className="bg-primary-soft rounded-xl p-4 border border-border flex justify-between items-baseline font-bold text-text-primary">
-                <span>Tổng cộng</span>
-                <span className="text-danger">{formatNumber(report.grandTotal)}đ</span>
+              <div className="px-4 py-2 bg-primary-soft text-sm text-text-primary tabular-nums">
+                Tổng cộng: {formatNumber(report.grandTotal)}đ
               </div>
             </div>
             <div className="hidden md:block">
               <Table>
                 <TableHead>
-                  <TableHeaderCell stick="left">Loại</TableHeaderCell>
+                  <TableHeaderCell>Loại</TableHeaderCell>
                   <TableHeaderCell>Ngày</TableHeaderCell>
                   <TableHeaderCell>Lần xuất</TableHeaderCell>
                   <TableHeaderCell>Số mặt hàng</TableHeaderCell>
                   <TableHeaderCell>Giá trị xuất</TableHeaderCell>
                 </TableHead>
                 <TableTotalRow>
-                  <TableCell stick="left" colSpan={4}>Tổng cộng</TableCell>
+                  <TableCell colSpan={4}>Tổng cộng</TableCell>
                   <TableCell align="right" tone="negative">{formatNumber(report.grandTotal)}đ</TableCell>
                 </TableTotalRow>
                 <TableBody>
                   {report.events.map((event) => (
                     <TableRow key={event.key}>
-                      <TableCell stick="left">
+                      <TableCell>
                         <span
                           className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                             event.kind === "STOCKTAKE"
