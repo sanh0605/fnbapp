@@ -207,9 +207,6 @@ export default function ConversionsClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
-  const activeCount = appliedSearch ? 1 : 0;
-
   const removal = canDelete
     ? {
         verb: "Xoá hoặc ngừng dùng",
@@ -251,16 +248,17 @@ export default function ConversionsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
-        activeCount={activeCount}
         search={
-          <Field label="Tìm hàng hoá" htmlFor="conversions-search">
-            <TextInput
-              id="conversions-search"
-              placeholder="Ví dụ: Trứng gà"
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm hàng hoá" htmlFor="conversions-search">
+              <TextInput
+                id="conversions-search"
+                placeholder="Ví dụ: Trứng gà"
+                value={search}
+                onChange={handleSearchChange}
+              />
+            </Field>
+          </div>
         }
       >
         {null}

@@ -392,14 +392,16 @@ export default function PromotionsClient({
         showClear={Boolean(search || status !== "ALL" || type !== "ALL")}
         activeCount={activeCount}
         search={
-          <Field label="Tìm khuyến mãi" htmlFor="promotions-search">
-            <TextInput
-              id="promotions-search"
-              placeholder="Ví dụ: Giảm 10%"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm khuyến mãi" htmlFor="promotions-search">
+              <TextInput
+                id="promotions-search"
+                placeholder="Ví dụ: Giảm 10%"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 w-full md:w-48">
@@ -445,14 +447,7 @@ export default function PromotionsClient({
           const scopeText = getScopeText(promo, variantMap);
           const expired = isExpired(promo.end_date);
 
-          const datesText =
-            promo.start_date && promo.end_date
-              ? `${formatPromotionDate(promo.start_date)} → ${formatPromotionDate(promo.end_date)}`
-              : promo.start_date
-              ? formatPromotionDate(promo.start_date)
-              : promo.end_date
-              ? formatPromotionDate(promo.end_date)
-              : "";
+          const datesText = `${formatPromotionDate(promo.start_date)} → ${formatPromotionDate(promo.end_date)}`;
 
           const meta = [datesText, brandName, scopeText].filter(Boolean).join(" · ");
 

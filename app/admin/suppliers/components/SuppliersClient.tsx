@@ -162,9 +162,6 @@ export default function SuppliersClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
-  const activeCount = appliedSearch ? 1 : 0;
-
   const removal = canDelete
     ? {
         verb: "Xoá",
@@ -201,16 +198,17 @@ export default function SuppliersClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
-        activeCount={activeCount}
         search={
-          <Field label="Tìm kiếm" htmlFor="suppliers-search">
-            <TextInput
-              id="suppliers-search"
-              placeholder="Ví dụ: Thế Kỷ Xanh"
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm kiếm" htmlFor="suppliers-search">
+              <TextInput
+                id="suppliers-search"
+                placeholder="Ví dụ: Thế Kỷ Xanh"
+                value={search}
+                onChange={handleSearchChange}
+              />
+            </Field>
+          </div>
         }
       >
         {null}

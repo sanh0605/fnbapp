@@ -228,14 +228,16 @@ export default function UsersClient({
         showClear={Boolean(search || role !== "ALL")}
         activeCount={activeCount}
         search={
-          <Field label="Tìm nhân sự" htmlFor="users-search">
-            <TextInput
-              id="users-search"
-              placeholder="Ví dụ: nhanvien01"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm nhân sự" htmlFor="users-search">
+              <TextInput
+                id="users-search"
+                placeholder="Ví dụ: nhanvien01"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 w-full md:w-48">

@@ -156,9 +156,6 @@ export default function BrandsClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
-  const activeCount = appliedSearch ? 1 : 0;
-
   const removal = canDelete
     ? {
         verb: "Xoá",
@@ -194,16 +191,17 @@ export default function BrandsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
-        activeCount={activeCount}
         search={
-          <Field label="Tìm thương hiệu" htmlFor="brands-search">
-            <TextInput
-              id="brands-search"
-              placeholder="Ví dụ: Phin Di"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm thương hiệu" htmlFor="brands-search">
+              <TextInput
+                id="brands-search"
+                placeholder="Ví dụ: Phin Di"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         {null}

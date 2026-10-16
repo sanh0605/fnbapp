@@ -321,14 +321,16 @@ export default function OrderTable({
         showClear={hasActiveFilters}
         activeCount={activeCount}
         search={
-          <Field label="Tìm mã đơn" htmlFor="search-order-no">
-            <TextInput
-              id="search-order-no"
-              placeholder="Ví dụ: 261012001030"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </Field>
+          <div className="flex-1 min-w-[200px]">
+            <Field label="Tìm mã đơn" htmlFor="search-order-no">
+              <TextInput
+                id="search-order-no"
+                placeholder="Ví dụ: 261012001030"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="w-full md:w-auto shrink-0">

@@ -260,9 +260,7 @@ export default function ModifiersClient({
             getGroupName(m),
             m.id,
             `Bán độc lập: ${isStandaloneModifier(m) ? "Có" : "Không"}`,
-          ]
-            .filter(Boolean)
-            .join(" · "),
+          ].join(" · "),
           badge:
             m.status === "INACTIVE" ? (
               <Badge variant="neutral">Ngừng dùng</Badge>

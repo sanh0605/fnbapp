@@ -49,11 +49,11 @@ export function FilterCard({
           <div
             className={
               search !== undefined
-                ? "flex items-end gap-2 w-full md:w-auto md:flex-1 md:min-w-[200px]"
+                ? "flex items-end gap-2 w-full md:contents"
                 : "flex items-end gap-2 w-full md:hidden"
             }
           >
-            {search !== undefined && <div className="flex-1 min-w-0">{search}</div>}
+            {search !== undefined && <div className="flex-1 min-w-0 md:contents">{search}</div>}
             {canFold && (
               <button
                 type="button"

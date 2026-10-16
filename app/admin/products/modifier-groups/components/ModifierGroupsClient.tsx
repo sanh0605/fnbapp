@@ -270,7 +270,8 @@ export default function ModifierGroupsClient({
           value: `${r.productCount} món`,
           meta: [
             r.group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều",
-            r.optionNames.length > 0 ? r.optionNames.join(", ") : undefined,
+            r.group.max_total ? `tối đa ${r.group.max_total} phần` : null,
+            r.optionNames.length > 0 ? r.optionNames.join(", ") : "Chưa có tuỳ chọn",
           ]
             .filter(Boolean)
             .join(" · "),

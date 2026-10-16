@@ -71,16 +71,18 @@ export default function PurchaseOrdersClient({
   const { draft, setField, applyFilters, isPending } = useFilterForm(defaultFilters);
   const [applyRequested, setApplyRequested] = useState(false);
 
-  const hasAnyFilter = Boolean(
-    searchParams.get("q") ||
-      (searchParams.get("status") && searchParams.get("status") !== "ACTIVE") ||
-      (searchParams.get("supplier") && searchParams.get("supplier") !== "ALL") ||
-      (searchParams.get("pay") && searchParams.get("pay") !== "ALL") ||
-      searchParams.get("account") ||
-      (searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
-      searchParams.get("from") ||
-      searchParams.get("to")
-  );
+  const activeCount =
+    (searchParams.get("q") ? 1 : 0) +
+    (searchParams.get("status") && searchParams.get("status") !== "ACTIVE" ? 1 : 0) +
+    (searchParams.get("supplier") && searchParams.get("supplier") !== "ALL" ? 1 : 0) +
+    (searchParams.get("pay") && searchParams.get("pay") !== "ALL" ? 1 : 0) +
+    (searchParams.get("account") ? 1 : 0) +
+    ((searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
+    searchParams.get("from") ||
+    searchParams.get("to")
+      ? 1
+      : 0);
+  const hasAnyFilter = activeCount > 0;
   const draftChanged =
     draft.q !== defaultFilters.q ||
     draft.status !== defaultFilters.status ||
@@ -189,18 +191,6 @@ export default function PurchaseOrdersClient({
     []
   );
 
-  const activeCount =
-    (searchParams.get("q") ? 1 : 0) +
-    (searchParams.get("status") && searchParams.get("status") !== "ACTIVE" ? 1 : 0) +
-    (searchParams.get("supplier") && searchParams.get("supplier") !== "ALL" ? 1 : 0) +
-    (searchParams.get("pay") && searchParams.get("pay") !== "ALL" ? 1 : 0) +
-    (searchParams.get("account") ? 1 : 0) +
-    ((searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
-    searchParams.get("from") ||
-    searchParams.get("to")
-      ? 1
-      : 0);
-
   return (
     <div className="space-y-6 pb-20">
       <ListPageHeader
@@ -222,14 +212,16 @@ export default function PurchaseOrdersClient({
         showClear={showClear}
         activeCount={activeCount}
         search={
-          <Field label="Tìm kiếm" htmlFor="search-input">
-            <TextInput
-              id="search-input"
-              placeholder="Ví dụ: PO-181"
-              value={draft.q}
-              onChange={(e) => setField("q", e.target.value)}
-            />
-          </Field>
+          <div className="flex-1 min-w-[200px]">
+            <Field label="Tìm kiếm" htmlFor="search-input">
+              <TextInput
+                id="search-input"
+                placeholder="Ví dụ: PO-181"
+                value={draft.q}
+                onChange={(e) => setField("q", e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="w-full md:w-auto shrink-0">

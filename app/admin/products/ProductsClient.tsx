@@ -329,14 +329,16 @@ export default function ProductsClient({
         showClear={Boolean(search || (category && category !== "ALL") || status !== "ACTIVE")}
         activeCount={activeCount}
         search={
-          <Field label="Tìm món" htmlFor="products-search">
-            <TextInput
-              id="products-search"
-              placeholder="Ví dụ: Cà phê sữa đá"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm món" htmlFor="products-search">
+              <TextInput
+                id="products-search"
+                placeholder="Ví dụ: Cà phê sữa đá"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 w-full md:w-48">

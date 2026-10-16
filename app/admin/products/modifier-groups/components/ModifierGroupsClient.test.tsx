@@ -133,7 +133,7 @@ describe("ModifierGroupsClient", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("Thêm Topping")).toBeInTheDocument();
     expect(within(phone).getByText("20 món")).toBeInTheDocument();
-    expect(within(phone).getByText("Chọn nhiều · Trân châu trắng, Kem muối")).toBeInTheDocument();
+    expect(within(phone).getByText("Chọn nhiều · tối đa 3 phần · Trân châu trắng, Kem muối")).toBeInTheDocument();
     expect(
       within(phone).getByText("Chọn một · Ít đường, Bình thường, Nhiều đường")
     ).toBeInTheDocument();

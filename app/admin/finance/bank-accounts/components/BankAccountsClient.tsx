@@ -246,14 +246,16 @@ export default function BankAccountsClient({
         showClear={Boolean(search || status !== "ACTIVE")}
         activeCount={activeCount}
         search={
-          <Field label="Tìm tài khoản" htmlFor="bank-accounts-search">
-            <TextInput
-              id="bank-accounts-search"
-              placeholder="Ví dụ: Vietcombank"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm tài khoản" htmlFor="bank-accounts-search">
+              <TextInput
+                id="bank-accounts-search"
+                placeholder="Ví dụ: Vietcombank"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 w-full md:w-48">

@@ -254,14 +254,16 @@ export default function CategoriesClient({
         showClear={Boolean(search || status !== "ACTIVE")}
         activeCount={activeCount}
         search={
-          <Field label="Tìm nhóm" htmlFor="categories-search">
-            <TextInput
-              id="categories-search"
-              placeholder="Ví dụ: Vận hành"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm nhóm" htmlFor="categories-search">
+              <TextInput
+                id="categories-search"
+                placeholder="Ví dụ: Vận hành"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 w-full md:w-48">

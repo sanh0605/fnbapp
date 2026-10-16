@@ -299,10 +299,10 @@ describe("StockOnHandClient", () => {
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(
-      within(phone).getByText("74,414đ · khoảng 5 ngày · Nguyên liệu · Kiểm lần cuối 09/08/2026"),
+      within(phone).getByText("74,414đ · Nguyên liệu · Kiểm lần cuối 09/08/2026"),
     ).toBeInTheDocument();
     expect(
-      within(phone).getByText("0đ · Hết · Nguyên liệu · Chưa kiểm lần nào"),
+      within(phone).getByText("0đ · Nguyên liệu · Chưa kiểm lần nào"),
     ).toBeInTheDocument();
     expect(
       within(phone).getByText("Nguyên liệu · Chưa kiểm lần nào"),

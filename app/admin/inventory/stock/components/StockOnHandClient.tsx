@@ -174,14 +174,16 @@ export default function StockOnHandClient({
         onClear={handleClear}
         showClear={Boolean(search)}
         search={
-          <Field label="Tìm kiếm" htmlFor="stock-search">
-            <TextInput
-              id="stock-search"
-              placeholder="Ví dụ: Trứng gà"
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-80">
+            <Field label="Tìm kiếm" htmlFor="stock-search">
+              <TextInput
+                id="stock-search"
+                placeholder="Ví dụ: Trứng gà"
+                value={search}
+                onChange={handleSearchChange}
+              />
+            </Field>
+          </div>
         }
       >
         {null}
@@ -196,8 +198,23 @@ export default function StockOnHandClient({
         }
         columns={columns}
         phoneRow={(row) => {
+          const hasWarningBadge =
+            !row.inactive &&
+            row.onHand >= 0 &&
+            (row.daysLeft === "OUT" || (typeof row.daysLeft === "number" && row.daysLeft <= 7));
+
+          const badge = row.inactive ? (
+            <Badge variant="neutral">Ngừng dùng</Badge>
+          ) : hasWarningBadge ? (
+            row.daysLeft === "OUT" ? (
+              <Badge variant="warning">Hết</Badge>
+            ) : (
+              <Badge variant="warning">khoảng {formatNumber(row.daysLeft as number)} ngày</Badge>
+            )
+          ) : undefined;
+
           const daysText =
-            row.onHand < 0
+            hasWarningBadge || row.onHand < 0
               ? null
               : row.daysLeft === "OUT"
               ? "Hết"
@@ -220,9 +237,7 @@ export default function StockOnHandClient({
             ]
               .filter(Boolean)
               .join(" · "),
-            badge: row.inactive ? (
-              <Badge variant="neutral">Ngừng dùng</Badge>
-            ) : undefined,
+            badge,
           };
         }}
         empty={

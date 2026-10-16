@@ -71,14 +71,16 @@ export default function IssueSlipsClient({
   const defaultFilters = { q: "", kind: "ALL", person: "ALL", page: "1" };
   const { draft, setField, applyFilters, isPending } = useFilterForm(defaultFilters);
 
-  const hasAnyFilter = Boolean(
-    searchParams.get("q") ||
-      (searchParams.get("kind") && searchParams.get("kind") !== "ALL") ||
-      (searchParams.get("person") && searchParams.get("person") !== "ALL") ||
-      (searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
-      searchParams.get("from") ||
-      searchParams.get("to")
-  );
+  const activeCount =
+    (searchParams.get("q") ? 1 : 0) +
+    (searchParams.get("kind") && searchParams.get("kind") !== "ALL" ? 1 : 0) +
+    (searchParams.get("person") && searchParams.get("person") !== "ALL" ? 1 : 0) +
+    ((searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
+    searchParams.get("from") ||
+    searchParams.get("to")
+      ? 1
+      : 0);
+  const hasAnyFilter = activeCount > 0;
   const draftChanged =
     draft.q !== defaultFilters.q ||
     draft.kind !== defaultFilters.kind ||
@@ -174,16 +176,6 @@ export default function IssueSlipsClient({
     []
   );
 
-  const activeCount =
-    (searchParams.get("q") ? 1 : 0) +
-    (searchParams.get("kind") && searchParams.get("kind") !== "ALL" ? 1 : 0) +
-    (searchParams.get("person") && searchParams.get("person") !== "ALL" ? 1 : 0) +
-    ((searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
-    searchParams.get("from") ||
-    searchParams.get("to")
-      ? 1
-      : 0);
-
   return (
     <div className="space-y-6 pb-20">
       <ListPageHeader
@@ -205,14 +197,16 @@ export default function IssueSlipsClient({
         showClear={showClear}
         activeCount={activeCount}
         search={
-          <Field label="Tìm kiếm" htmlFor="search-input">
-            <TextInput
-              id="search-input"
-              placeholder="Ví dụ: ISL-00088"
-              value={draft.q}
-              onChange={(e) => setField("q", e.target.value)}
-            />
-          </Field>
+          <div className="flex-1 min-w-[200px]">
+            <Field label="Tìm kiếm" htmlFor="search-input">
+              <TextInput
+                id="search-input"
+                placeholder="Ví dụ: ISL-00088"
+                value={draft.q}
+                onChange={(e) => setField("q", e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="w-full md:w-auto shrink-0">

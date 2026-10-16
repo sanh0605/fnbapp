@@ -189,7 +189,7 @@ export default function AssetsClient({
     (appliedSearch.trim() ? 1 : 0) +
     (appliedAll ? 1 : 0);
 
-  const showClear = Boolean(search.trim() || showAll || appliedSearch.trim() || appliedAll);
+  const showClear = Boolean(search.trim() || showAll);
 
   const handleApplyFilter = () => {
     setPage(1);
@@ -211,15 +211,17 @@ export default function AssetsClient({
         showClear={showClear}
         activeCount={activeCount}
         search={
-          <Field label="Tìm kiếm" htmlFor="assets-search">
-            <TextInput
-              id="assets-search"
-              type="text"
-              placeholder="Ví dụ: Tạp dề"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm kiếm" htmlFor="assets-search">
+              <TextInput
+                id="assets-search"
+                type="text"
+                placeholder="Ví dụ: Tạp dề"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 flex items-center min-h-[48px] md:min-h-[40px] pb-1">
@@ -249,9 +251,7 @@ export default function AssetsClient({
           meta: [
             `Còn ${asset.remainingQuantity} / mua ${asset.quantity}`,
             `Đã thanh lý ${asset.disposedQuantity}`,
-          ]
-            .filter(Boolean)
-            .join(" · "),
+          ].join(" · "),
           badge: asset.fullyDisposed ? (
             <Badge variant="neutral">Đã thanh lý hết</Badge>
           ) : undefined,

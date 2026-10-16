@@ -252,10 +252,7 @@ export default function ItemsClient({
     (appliedCategory && appliedCategory !== "ALL" ? 1 : 0);
 
   const showClear = Boolean(
-    search.trim() ||
-      (category && category !== "ALL") ||
-      appliedSearch.trim() ||
-      (appliedCategory && appliedCategory !== "ALL")
+    search.trim() || (category && category !== "ALL")
   );
 
   const removal = canDelete
@@ -303,14 +300,16 @@ export default function ItemsClient({
         showClear={showClear}
         activeCount={activeCount}
         search={
-          <Field label="Tìm kiếm" htmlFor="items-search">
-            <TextInput
-              id="items-search"
-              placeholder="Ví dụ: Trứng gà"
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm kiếm" htmlFor="items-search">
+              <TextInput
+                id="items-search"
+                placeholder="Ví dụ: Trứng gà"
+                value={search}
+                onChange={handleSearchChange}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 w-full md:w-48">

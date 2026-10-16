@@ -467,14 +467,16 @@ export default function CashBookClient({
         showClear={Boolean(search.trim() || status !== "ACTIVE" || kind !== "ALL")}
         activeCount={activeCount}
         search={
-          <Field label="Tìm kiếm" htmlFor="cashbook-search">
-            <TextInput
-              id="cashbook-search"
-              placeholder="Ví dụ: CE-001"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="flex-1 min-w-[200px]">
+            <Field label="Tìm kiếm" htmlFor="cashbook-search">
+              <TextInput
+                id="cashbook-search"
+                placeholder="Ví dụ: CE-001"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 w-full md:w-auto">

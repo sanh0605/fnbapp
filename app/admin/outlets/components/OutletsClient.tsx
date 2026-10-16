@@ -275,14 +275,16 @@ export default function OutletsClient({
         showClear={Boolean(search || status !== "ACTIVE")}
         activeCount={activeCount}
         search={
-          <Field label="Tìm điểm bán" htmlFor="outlets-search">
-            <TextInput
-              id="outlets-search"
-              placeholder="Ví dụ: Điểm bán 3"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm điểm bán" htmlFor="outlets-search">
+              <TextInput
+                id="outlets-search"
+                placeholder="Ví dụ: Điểm bán 3"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 w-full md:w-48">
@@ -314,6 +316,7 @@ export default function OutletsClient({
             brandMap[o.brand_id] || o.brand_id,
             o.code,
             formatHours(o.open_time, o.close_time),
+            o.start_date ? `Bắt đầu: ${formatDate(o.start_date)}` : null,
           ]
             .filter(Boolean)
             .join(" · "),

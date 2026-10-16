@@ -204,9 +204,7 @@ export default function ProductTypesClient({
             r.categoryNames.length > 0
               ? r.categoryNames.join(", ")
               : "Chưa có nhóm nào",
-          ]
-            .filter(Boolean)
-            .join(" · "),
+          ].join(" · "),
         })}
         sort={{
           key: sortKey,

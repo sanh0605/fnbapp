@@ -16,7 +16,10 @@ import {
   type StocktakeListRow,
 } from "../actions";
 
-export function formatStocktakeDiffValue(row: StocktakeListRow): string {
+export function formatStocktakeDiffValue(
+  row: StocktakeListRow,
+  options?: { includeProvisional?: boolean },
+): string {
   if (row.status === "REVERSED" || (row.shortValue === null && row.foundValue === null)) {
     return "—";
   }
@@ -28,7 +31,7 @@ export function formatStocktakeDiffValue(row: StocktakeListRow): string {
     parts.push(`thừa ${formatNumber(row.foundValue)}đ`);
   }
   let text = parts.length > 0 ? parts.join(" · ") : "0đ";
-  if (row.status === "OPEN") {
+  if (row.status === "OPEN" && options?.includeProvisional !== false) {
     text = `${text} (tạm tính)`;
   }
   return text;
@@ -162,8 +165,13 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
         columns={columns}
         phoneRow={(row) => ({
           title: formatDateTimeFull(row.at),
-          value: formatStocktakeDiffValue(row),
-          meta: [row.id, row.personName, `Đã đếm ${row.countedLines}/${row.totalLines}`]
+          value: formatStocktakeDiffValue(row, { includeProvisional: false }),
+          meta: [
+            row.status === "OPEN" ? "Tạm tính" : null,
+            row.id,
+            row.personName,
+            `Đã đếm ${row.countedLines}/${row.totalLines}`,
+          ]
             .filter(Boolean)
             .join(" · "),
           badge: renderStocktakeStatusBadge(row.status),

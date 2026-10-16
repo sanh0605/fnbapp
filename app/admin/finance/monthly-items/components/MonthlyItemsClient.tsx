@@ -245,14 +245,16 @@ export default function MonthlyItemsClient({
         showClear={hasAnyFilter}
         activeCount={activeCount}
         search={
-          <Field label="Tìm khoản chi" htmlFor="monthly-items-search">
-            <TextInput
-              id="monthly-items-search"
-              placeholder="Ví dụ: Tiền điện"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm khoản chi" htmlFor="monthly-items-search">
+              <TextInput
+                id="monthly-items-search"
+                placeholder="Ví dụ: Tiền điện"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
         }
       >
         <div className="shrink-0 w-full md:w-48">

@@ -144,7 +144,7 @@ describe("StocktakeList (Screen 1)", () => {
     expect(screen.getAllByText("thiếu 296,033đ").length).toBeGreaterThanOrEqual(1);
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
-    expect(within(phone).getByText("STK-003 · Admin · Đã đếm 2/3")).toBeInTheDocument();
+    expect(within(phone).getByText("Tạm tính · STK-003 · Admin · Đã đếm 2/3")).toBeInTheDocument();
     expect(within(phone).getByText("STK-002 · Admin · Đã đếm 50/50")).toBeInTheDocument();
     expect(within(phone).getByText("STK-001 · Admin · Đã đếm 50/50")).toBeInTheDocument();
   });

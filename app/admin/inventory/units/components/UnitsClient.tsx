@@ -114,7 +114,6 @@ export default function UnitsClient({
         action={
           <Button
             href={`/admin/inventory/units/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            variant="primary"
           >
             Tạo
           </Button>

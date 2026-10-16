@@ -136,7 +136,6 @@ export default function CategoriesClient({
         action={
           <Button
             href={`/admin/inventory/categories/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            variant="primary"
           >
             Tạo
           </Button>
