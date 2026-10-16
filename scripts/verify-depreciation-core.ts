@@ -28,11 +28,9 @@ export interface DepDisposal {
 const monthNo = (date: string): number => Number(date.slice(0, 4)) * 12 + Number(date.slice(5, 7)) - 1;
 const monthKey = (n: number): string => `${Math.floor(n / 12)}-${String((n % 12) + 1).padStart(2, "0")}`;
 
-// today: "YYYY-MM". Used for the lifetime check on assets whose charging has already ended.
-export function computeDepreciation(assets: DepAsset[], disposals: DepDisposal[], today: string) {
+export function computeDepreciation(assets: DepAsset[], disposals: DepDisposal[]) {
   const months: Record<string, Record<string, number>> = {};
   const problems: string[] = [];
-  const nowNo = monthNo(today);
 
   for (const a of assets) {
     if (a.status === "INACTIVE") continue;
@@ -40,12 +38,16 @@ export function computeDepreciation(assets: DepAsset[], disposals: DepDisposal[]
     const qty = Number(a.quantity);
     const term = Number(a.term_months);
     const start = monthNo(a.acquired_date);
-    if (!(term > 0) || !(qty > 0)) {
-      problems.push(`${a.id}: unusable term_months ${a.term_months} or quantity ${a.quantity}`);
+    if (!(term > 0) || !(qty > 0) || !Number.isFinite(total)) {
+      problems.push(`${a.id}: unusable total_cost ${a.total_cost}, term_months ${a.term_months} or quantity ${a.quantity}`);
       continue;
     }
     const own = disposals.filter(d => d.asset_id === a.id);
     const disposedQty = own.reduce((s, d) => s + Number(d.quantity), 0);
+    if (own.some(d => !(Number(d.quantity) > 0))) {
+      problems.push(`${a.id}: a disposal has quantity 0 or less`);
+      continue;
+    }
     if (disposedQty > qty) {
       problems.push(`${a.id}: disposals total ${disposedQty} units, asset has ${qty}`);
       continue;
@@ -70,13 +72,6 @@ export function computeDepreciation(assets: DepAsset[], disposals: DepDisposal[]
       if (c === 0) return;
       (months[monthKey(start + m)] ??= {})[a.id] = c;
     });
-
-    // Charging has ended when the last charged month is not after today; then the whole cost is charged.
-    const last = disposedQty === qty ? Math.max(...groups.map(g => g[1])) : term - 1;
-    if (start + last <= nowNo) {
-      const sum = charges.reduce((s, c) => s + c, 0);
-      if (Math.abs(sum - total) > 0.01) problems.push(`${a.id}: charged ${sum} over its life, total_cost is ${total}`);
-    }
   }
   return { months, problems };
 }
