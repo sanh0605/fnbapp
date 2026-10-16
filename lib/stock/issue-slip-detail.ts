@@ -12,7 +12,7 @@ export interface IssueSlipDetailLine {
   quantityText: string; value: number; unitOptions: IssueUnitOption[];
 }
 export interface IssueSlipDetail {
-  id: string; issuedAt: string; dateText: string; note: string; createdByName: string;
+  id: string; issuedAt: string; dateText: string; createdByName: string;
   lines: IssueSlipDetailLine[]; totalValue: number;
   cancellation: { at: string; dateText: string; reason: string } | null;
   lock: { sessionId: string; confirmedAt: string; dateText: string } | null;
@@ -62,7 +62,7 @@ export function buildIssueSlipDetail(input: {
     : null;
   return {
     id: slip.id, issuedAt: slip.issued_at, dateText: formatDateTimeFull(slip.issued_at),
-    note: slip.note ?? "", createdByName: slip.created_by_name ?? "",
+    createdByName: slip.created_by_name ?? "",
     lines, totalValue: cancel ? 0 : displayMoney(exactTotal),
     cancellation, lock, canEdit: !cancellation && !lock, unitCostByItem,
   };

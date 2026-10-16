@@ -12,7 +12,6 @@ import {
   applyStocktakeSessionAtomic,
   reverseStocktakeSessionAtomic,
   editConfirmedStocktakeAtomic,
-  type StocktakeItemType,
   type StocktakeApplyResult,
   type StocktakeReversalResult,
 } from "@/lib/stock/stocktake-transaction";
@@ -28,16 +27,12 @@ const PATH = "/admin/inventory/stocktake";
 export interface StocktakeLineView {
   id: string;
   itemReference: string;
-  itemType: StocktakeItemType;
   itemName: string;
   unitName: string;
   countedQty: number | null;
   theoreticalAtCount: number | null;
   countedAt: string | null;
-  // Plan D D6: only set for PURCHASED_ITEM lines in a session opened after
-  // D4/D6 landed. A legacy BASE_INGREDIENT line from a session opened
-  // before D6 (kept alive per C8/C16) has no conversions to show and falls
-  // back to the old single base-unit input.
+  // Plan D D6: the purchased item's package conversions; empty when it has none.
   packageLines: PackageLine[];
   // Phân loại hàng name, for grouping.
   groupName: string;
@@ -59,7 +54,6 @@ export interface StocktakeSessionView {
   createdAt: string;
   confirmedAt: string | null;
   confirmedByName: string | null;
-  notes: string;
   lines: StocktakeLineView[];
 }
 
@@ -151,7 +145,6 @@ export interface StocktakeDetailView {
   confirmedAt: string | null;
   confirmedByName: string | null;
   reversedAt: string | null;
-  notes: string;
   lines: StocktakeDetailLine[]; // sorted by itemName, "vi"
   editBlock: StocktakeEditBlock | null;
 }
@@ -192,7 +185,6 @@ export async function getStocktakeDetail(id: string): Promise<StocktakeDetailVie
     confirmedAt: session.confirmed_at ?? null,
     confirmedByName: session.confirmed_by_name ?? null,
     reversedAt: session.reversed_at ?? null,
-    notes: session.notes ?? "",
     lines: lines
       .map(line => ({
         id: line.id,
@@ -332,7 +324,6 @@ export async function getStocktakeSessionData(id: string): Promise<StocktakeSess
     createdAt: session.created_at,
     confirmedAt: session.confirmed_at ?? null,
     confirmedByName: session.confirmed_by_name ?? null,
-    notes: session.notes ?? "",
     lines: lines
       .map((line): StocktakeLineView => {
         const counted = line.counted_qty !== null ? Number(line.counted_qty) : null;
@@ -347,15 +338,12 @@ export async function getStocktakeSessionData(id: string): Promise<StocktakeSess
         return {
           id: line.id,
           itemReference: line.item_reference,
-          itemType: line.item_type as StocktakeItemType,
           itemName: nameById.get(line.item_reference) ?? line.item_reference,
           unitName: unitNameByItemId.get(line.item_reference) ?? "",
           countedQty: counted,
           theoreticalAtCount: book,
           countedAt: line.counted_at,
-          packageLines: line.item_type === "PURCHASED_ITEM"
-            ? (packageLinesByPurchasedItem.get(line.item_reference) ?? [])
-            : [],
+          packageLines: packageLinesByPurchasedItem.get(line.item_reference) ?? [],
           groupName: categoryNameById.get(categoryIdByItem.get(line.item_reference) ?? "") ?? "",
           state: counted === null ? "BLANK" : counted === book ? "MATCH" : "OFF",
           unitCost,
@@ -374,7 +362,7 @@ function describeStocktakeError(error: unknown): ActionResponse {
   return describeActionError(error);
 }
 
-export async function startStocktakeSession(notes?: string): Promise<ActionResponse> {
+export async function startStocktakeSession(): Promise<ActionResponse> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
@@ -414,7 +402,6 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
     const includedPurchasedItems = await filterByC17(eligiblePurchasedItems);
     const items = includedPurchasedItems.map(p => ({
       itemReference: p.id as string,
-      itemType: "PURCHASED_ITEM" as StocktakeItemType,
     }));
     if (items.length === 0) return fail("Không có mặt hàng nào để kiểm kê");
 
@@ -422,7 +409,6 @@ export async function startStocktakeSession(notes?: string): Promise<ActionRespo
       createdById: auth.actor.id,
       createdByName: auth.actor.name,
       items,
-      notes,
     });
     revalidatePath(PATH);
     return ok();

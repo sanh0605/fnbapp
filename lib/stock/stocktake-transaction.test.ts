@@ -29,7 +29,6 @@ describe("stocktake atomic adapters", () => {
         rows: [{
           line_id: "SKL-00001",
           item_reference: "ING-001",
-          item_type: "BASE_INGREDIENT",
           counted_qty: 8,
           theoretical_at_count: 10,
           current_theoretical_qty: 9,
@@ -137,7 +136,7 @@ describe("stocktake atomic adapters", () => {
     ]);
   });
 
-  it("parses an ingredient-correction row (item_type BASE_INGREDIENT, from an aggregated purchased-item count) like any other row", async () => {
+  it("parses an ingredient-correction row (from an aggregated purchased-item count) like any other row", async () => {
     mocks.rpc.mockResolvedValue({
       data: {
         session_id: "STK-001",
@@ -149,7 +148,6 @@ describe("stocktake atomic adapters", () => {
           {
             line_id: "SKL-00001",
             item_reference: "SPM-033",
-            item_type: "PURCHASED_ITEM",
             counted_qty: 1000,
             theoretical_at_count: 4100,
             current_theoretical_qty: 4100,
@@ -159,7 +157,6 @@ describe("stocktake atomic adapters", () => {
           {
             line_id: null,
             item_reference: "ING-028",
-            item_type: "BASE_INGREDIENT",
             counted_qty: 1000,
             theoretical_at_count: 4100,
             current_theoretical_qty: 4100,
@@ -183,7 +180,7 @@ describe("stocktake atomic adapters", () => {
     });
 
     expect(result.ledgerCount + result.issueCount).toBe(result.rows.length);
-    const ingredientRow = result.rows.find(r => r.itemType === "BASE_INGREDIENT" && r.itemReference === "ING-028");
+    const ingredientRow = result.rows.find(r => r.itemReference === "ING-028");
     expect(ingredientRow?.countVariance).toBe(-3100);
     expect(ingredientRow?.projectedQty).toBe(1000);
   });
@@ -339,5 +336,24 @@ describe("editConfirmedStocktakeAtomic (BR-INV-012)", () => {
       sessionId: "STK-001",
       lines: [{ lineId: "SKL-00004", countedQty: 5000 }],
     })).rejects.toThrow(/^Chỉ sửa được phiếu kiểm kê mới nhất \(STK-002\), không phải STK-001$/);
+  });
+});
+
+describe("openStocktakeSessionAtomic", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
+  });
+
+  // item_type has no column default until 0136 runs, so the old function still needs it in the JSON.
+  it("sends item_type PURCHASED_ITEM per line and an empty p_notes", async () => {
+    mocks.rpc.mockResolvedValue({ data: { id: "STK-001", status: "OPEN" }, error: null });
+    await stocktakeTransaction.openStocktakeSessionAtomic({
+      createdById: "u1", createdByName: "Admin", items: [{ itemReference: "SPM-001" }],
+    });
+    expect(mocks.rpc).toHaveBeenCalledWith("open_stocktake_session_atomic", {
+      p_created_by_id: "u1", p_created_by_name: "Admin",
+      p_items: [{ item_reference: "SPM-001", item_type: "PURCHASED_ITEM" }], p_notes: "",
+    });
   });
 });

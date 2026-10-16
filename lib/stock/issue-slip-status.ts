@@ -7,7 +7,7 @@ export interface IssueRowRecord {
   reverses_issue_id: string | null; issue_slip_id: string | null;
 }
 export interface IssueSlipRecord {
-  id: string; issued_at: string; note: string | null; created_by_id: string | null;
+  id: string; issued_at: string; created_by_id: string | null;
   created_by_name: string | null; created_at: string | null;
 }
 export interface StocktakeSessionRecord {
