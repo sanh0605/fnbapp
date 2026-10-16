@@ -75,6 +75,7 @@ Mọi kế hoạch mở đầu bằng mục hiện trạng, năm câu đánh s�
 | Đẩy code ra ngoài (push, deploy) | Không có uỷ quyền trước cho lần sau |
 | Chạy migration lên máy chủ thật | Duyệt riêng, tách khỏi duyệt push |
 | Xoá file tài liệu | Kiểm ai đang trích dẫn trước khi xoá |
+| Xoá dữ liệu (dòng, cột còn giá trị, bảng) | Không tự xoá. Gom lại hỏi ở bước cuối, sau khi mọi việc khác đã xong. Chủ quán chốt 2026-10-17: *"Không được xóa bất kỳ dữ liệu nào. Nếu xóa thì sau khi phải hỏi ý kiến của anh, và tốt nhất là báo anh ở bước cuối cùng sau khi đã hoàn tất tất cả các việc"* |
 
 Một câu trả lời chỉ duyệt một việc. "Chạy migration và đẩy không?" mà nhận "đẩy đi" thì chỉ được đẩy.
 
