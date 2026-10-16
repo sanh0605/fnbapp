@@ -144,6 +144,7 @@ Model chủ quán chốt 2026-10-01 (thay bản 2026-09-29): *"giao cho model m�
 ## Viết code
 
 - Máy tính và điện thoại dựng hai bố cục riêng. Trang xong khi cả hai dùng được. Chi tiết: `.claude/rules/ui-devices.md`.
+- Mỗi việc giao diện xong phải mở bằng MCP `playwright`: bấm và gõ thật, chụp ở 390×844 (thêm 360×780 cho lưới, bảng kéo ngang) và 1280×800, nhìn ảnh rồi mới kết luận; không đọc code rồi tự phán. Máy 8386 nối vào dữ liệu thật: chỉ xem và gõ thử, không bấm Lưu, Huỷ, Xoá khi chưa duyệt ghi dữ liệu. Báo bằng bảng bước | mong đợi | thực tế | ảnh | đạt; một bước không đạt là chưa xong. Xong thì tắt máy chủ 8386 và đóng trình duyệt. Chủ quán chốt 2026-10-17: *"mỗi lần làm xong một giao diện, ui, ux, frontend mới thì luôn phải chạy playwright để xem thực tế đã chuẩn chưa nhé! Đây là luật, chứ không đọc code rồi tự phán kết quả"*, chọn "Ghi vào".
 - Không đo tỉ lệ thiết bị người dùng mở; chủ quán đã bác (2026-08-26). Điều kiện xem lại do chủ quán tự nêu.
 - Màn hình mới phải gắn lối vào menu; quên thì `npx vitest run` đỏ.
 - Thứ chủ quán có thể muốn đổi phải là một bảng dữ liệu kèm màn hình để chủ quán tự thêm, sửa, xoá; không nhét cứng vào code (chủ quán chốt 2026-09-28: "Tuyệt đối không áp dụng hardcode 100% vào tất cả mọi thứ"). Thứ đã có lịch sử (món, nguyên liệu, đơn, nhà cung cấp) vẫn theo Luật dữ liệu: ngừng dùng thay vì xoá. Phải nói rõ: ghi lại giá trị đã dùng lúc tính, hay sửa bảng là tính lại toàn bộ.
