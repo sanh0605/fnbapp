@@ -169,6 +169,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
       if (activeIndex >= 0 && activeIndex < filteredOptions.length) {
         const selectedOpt = filteredOptions[activeIndex];
         onChange(selectedOpt.id);
+        wrapperRef.current?.dispatchEvent(new Event("change", { bubbles: true }));
         setIsOpen(false);
         triggerRef.current?.focus();
       }
@@ -262,6 +263,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
                         } ${idx === activeIndex ? 'ring-2 ring-inset ring-focus-ring bg-primary-soft' : 'hover:bg-primary-soft'}`}
                         onClick={() => {
                           onChange(opt.id);
+                          wrapperRef.current?.dispatchEvent(new Event("change", { bubbles: true }));
                           setIsOpen(false);
                           triggerRef.current?.focus();
                         }}

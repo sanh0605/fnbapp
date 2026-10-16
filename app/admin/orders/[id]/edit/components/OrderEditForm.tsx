@@ -265,7 +265,10 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                   <Button
                     type="button"
                     variant="secondary"
-                    onClick={handleAddPaymentPart}
+                    onClick={(e) => {
+                      e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                      handleAddPaymentPart();
+                    }}
                     className="text-xs min-h-[48px] md:min-h-[36px] py-1 px-3"
                   >
                     Thêm cách trả
@@ -326,7 +329,10 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                         <Button
                           type="button"
                           variant="secondary"
-                          onClick={() => handleRemovePaymentPart(idx)}
+                          onClick={(e) => {
+                            e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                            handleRemovePaymentPart(idx);
+                          }}
                           aria-label={`Xoá ${
                             part.method === "CASH" ? "tiền mặt" : "chuyển khoản"
                           }`}

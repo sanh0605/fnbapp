@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useState, useEffect, type ReactElement } from "react";
+import { forwardRef, useState, useEffect, useRef, type ReactElement } from "react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { vi } from "date-fns/locale";
@@ -24,6 +24,7 @@ interface CustomDatePickerProps {
 
 export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
   ({ name, selected, onChange, placeholderText, className, ...props }, ref) => {
+    const rootRef = useRef<HTMLDivElement>(null);
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -38,27 +39,32 @@ export const CustomDatePicker = forwardRef<any, CustomDatePickerProps>(
     }, []);
 
     return (
-      <DatePicker
-        name={name}
-        selected={selected}
-        onChange={(date: any) => onChange && onChange(date)}
-        showTimeSelect={props.showTimeSelect !== undefined ? props.showTimeSelect : true}
-        timeFormat="HH:mm"
-        timeIntervals={props.timeIntervals ?? 15}
-        timeCaption="Giờ"
-        dateFormat={props.dateFormat || "dd/MM/yyyy HH:mm:ss"}
-        locale="vi"
-        placeholderText={placeholderText || "dd/mm/yyyy hh:mm:ss"}
-        className={className || "w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring"}
-        wrapperClassName="w-full"
-        isClearable={props.isClearable ?? true}
-        withPortal={isMobile}
-        portalId={!isMobile ? "datepicker-portal" : undefined}
-        popperPlacement="bottom-start"
-        popperClassName="z-[110]"
-        {...props}
-        {...({ inputMode: "none" } as any)}
-      />
+      <div ref={rootRef} className="w-full">
+        <DatePicker
+          name={name}
+          selected={selected}
+          onChange={(date: any) => {
+            onChange && onChange(date);
+            rootRef.current?.dispatchEvent(new Event("change", { bubbles: true }));
+          }}
+          showTimeSelect={props.showTimeSelect !== undefined ? props.showTimeSelect : true}
+          timeFormat="HH:mm"
+          timeIntervals={props.timeIntervals ?? 15}
+          timeCaption="Giờ"
+          dateFormat={props.dateFormat || "dd/MM/yyyy HH:mm:ss"}
+          locale="vi"
+          placeholderText={placeholderText || "dd/mm/yyyy hh:mm:ss"}
+          className={className || "w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring"}
+          wrapperClassName="w-full"
+          isClearable={props.isClearable ?? true}
+          withPortal={isMobile}
+          portalId={!isMobile ? "datepicker-portal" : undefined}
+          popperPlacement="bottom-start"
+          popperClassName="z-[110]"
+          {...props}
+          {...({ inputMode: "none" } as any)}
+        />
+      </div>
     );
   }
 );
