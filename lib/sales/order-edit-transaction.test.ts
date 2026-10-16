@@ -26,7 +26,7 @@ describe("supersedeOrderAtomic", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("supersede_order_v2_atomic", {
       p_old_order_id: "ord-old",
       p_expected_old_version: 1,
-      p_new_order: expect.objectContaining({ applied_promotion_snapshot_json: {} }),
+      p_new_order: expect.objectContaining({ applied_promotion_snapshot_json: { id: "PRM-003" } }),
       p_new_lines: [expect.objectContaining({ product_snapshot_json: {} })],
       p_event: expect.objectContaining({ delta_json: { changed: true } }),
       p_payments: input.payments,
@@ -62,7 +62,7 @@ function makeInput() {
     expectedOldVersion: 1,
     newOrder: {
       id: "ord-new",
-      applied_promotion_snapshot_json: "{}",
+      applied_promotion_snapshot_json: "{\"id\":\"PRM-003\"}",
     },
     newLines: [{
       id: "line-new",

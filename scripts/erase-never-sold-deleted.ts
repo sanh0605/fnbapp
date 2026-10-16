@@ -9,7 +9,7 @@ import { selectErasures, type Input } from "./erase-never-sold-deleted-core";
  * Erases DELETED dishes (with their sizes and price history), DELETED
  * categories with no dish left, and DELETED options that were never sold.
  * A row that anything else still points at is kept and reported, the rest still go
- * (measured 2026-10-17: nothing is kept today; MOD-007 no longer exists in modifiers).
+ * (dry run 2026-10-17: 0 to erase, 0 kept; MOD-007 no longer in modifiers).
  * A dish goes through the existing erase_never_sold_product_atomic rpc
  * (migration 0075: price history, sizes, dish in one transaction).
  *

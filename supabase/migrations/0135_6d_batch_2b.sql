@@ -11,9 +11,13 @@
 --   2. Drops orders_v2.completed_at (equal to created_at on every order) and
 --      orders_v2.pos_snapshot_json (till input, already carried by the order lines).
 --
--- WHY THE FUNCTIONS FIRST: a column cannot be dropped while a function body inserts into it.
+-- WHY THE FUNCTIONS FIRST: functions must stop naming the columns before they are dropped, or
+-- every insert fails at runtime (plpgsql does not track what a body uses, so the drop itself succeeds).
 -- Extra keys still sent by an old till build are ignored, since the functions read only the
 -- keys they need.
+--
+-- Triggers on orders_v2 (queried from the server 2026-10-17, pg_trigger): none mentions
+-- completed_at or pos_snapshot_json, so no trigger is affected by the drop.
 
 set lock_timeout = '3s';
 

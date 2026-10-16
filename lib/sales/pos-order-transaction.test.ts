@@ -250,7 +250,7 @@ describe("savePosOrderAtomic", () => {
       outletCode: "001",
       order: {
         id: "ord-1",
-        applied_promotion_snapshot_json: "",
+        applied_promotion_snapshot_json: "{\"id\":\"PRM-003\"}",
       },
       lines: [{
         id: "line-1",
@@ -264,7 +264,7 @@ describe("savePosOrderAtomic", () => {
       "create_pos_order_atomic",
       expect.objectContaining({
         p_order: expect.objectContaining({
-          applied_promotion_snapshot_json: {},
+          applied_promotion_snapshot_json: { id: "PRM-003" },
         }),
         p_lines: [expect.objectContaining({
           product_snapshot_json: { name: "Coffee" },
