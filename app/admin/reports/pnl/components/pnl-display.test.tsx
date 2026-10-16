@@ -77,4 +77,12 @@ describe("NoteMarks", () => {
     expect(sups).toHaveLength(1);
     expect(sups[0].textContent).toBe("1,3");
   });
+
+  it("uses text-xs (no text-[10.5px] below 12px)", () => {
+    const { container } = render(<NoteMarks numbers={[1, 3]} />);
+    const sup = container.querySelector("sup")!;
+    expect(sup.className).not.toContain("text-[10.5px]");
+    expect(sup.className).toContain("text-xs");
+  });
 });
+

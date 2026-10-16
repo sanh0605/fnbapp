@@ -31,8 +31,8 @@ function YearCard({ table }: { table: PnlTable }) {
   const eyebrow = table.rangeName.toLocaleUpperCase("vi-VN");
   return (
     <details data-testid="pnl-year" className="rounded-xl bg-surface-secondary">
-      <summary className="flex min-h-[44px] md:min-h-[40px] cursor-pointer flex-col gap-1 px-4 py-3">
-        <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-text-muted">{eyebrow}</span>
+      <summary className="flex min-h-[48px] md:min-h-[40px] cursor-pointer flex-col gap-1 px-4 py-3">
+        <span className="text-xs font-medium uppercase tracking-[0.04em] text-text-muted">{eyebrow}</span>
         <span className="flex items-baseline justify-between gap-3">
           <span className="font-display font-semibold text-text-primary">Lợi nhuận ròng</span>
           <span className={`font-display text-xl font-semibold tabular-nums ${netTone(net.total)}`}>{formatNumber(net.total)}</span>
@@ -59,7 +59,7 @@ function MonthCard({ table, index }: { table: PnlTable; index: number }) {
   const revenue = table.rows.find(r => r.key === "revenue")!.cells[index];
   return (
     <details data-testid={`pnl-month-${column.month}`} className="rounded-xl border border-border bg-surface-card">
-      <summary className="flex min-h-[44px] md:min-h-[40px] cursor-pointer flex-col gap-1 px-4 py-3">
+      <summary className="flex min-h-[48px] md:min-h-[40px] cursor-pointer flex-col gap-1 px-4 py-3">
         <span className="flex items-baseline justify-between gap-3">
           <span className="min-w-0 font-bold text-text-primary">
             {column.title}
@@ -85,7 +85,7 @@ function MonthCard({ table, index }: { table: PnlTable; index: number }) {
           }
           return (
             <details key={row.key} data-testid={`pnl-line-${row.key}`} className="py-1 text-sm">
-              <summary className="flex min-h-[44px] md:min-h-[40px] cursor-pointer items-center justify-between gap-3">
+              <summary className="flex min-h-[48px] md:min-h-[40px] cursor-pointer items-center justify-between gap-3">
                 <LineText row={row} value={cell.value} />
               </summary>
               <div className="space-y-2 pb-2 pl-3">

@@ -191,3 +191,11 @@ describe("OutletBreakdownSection -- total under the header (wave K5)", () => {
     expect(table.querySelector("tbody .font-bold, tbody .font-semibold")).toBeNull();
   });
 });
+
+describe("OutletBreakdownSection size-only (Task 5)", () => {
+  it("has no text under 12px (no text-[10px], text-[11px], text-[10.5px], text-[11.5px])", async () => {
+    const container = await renderTracked(<OutletBreakdownSection outletBreakdown={TWO_OUTLETS} />);
+    expect(container.innerHTML).not.toMatch(/text-\[(?:[1-9]|1[01])(?:\.\d+)?px\]/);
+  });
+});
+

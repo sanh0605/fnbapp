@@ -13,11 +13,10 @@ import {
   TableTotalRow,
   TableBody,
   TableRow,
+  TableRowHeader,
   TableCell,
 } from "@/components/ui/Table";
-import { ItemCard } from "./ItemCard";
 import { EventCard } from "./EventCard";
-import { MonthCard } from "./components/MonthCard";
 
 export const dynamic = "force-dynamic";
 
@@ -109,49 +108,36 @@ export default async function IssuedValueReportPage(
         report.items.length === 0 ? (
           <EmptyState title="Chưa có mặt hàng nào được xuất trong khoảng thời gian này." />
         ) : (
-          <>
-            <div className="md:hidden flex flex-col gap-3">
+          <Table>
+            <TableHead>
+              <TableHeaderCell stick="left">Nguyên liệu</TableHeaderCell>
+              <TableHeaderCell>Đã xuất</TableHeaderCell>
+              <TableHeaderCell>Giá trị đã xuất</TableHeaderCell>
+              <TableHeaderCell>Giá trị tồn còn lại</TableHeaderCell>
+            </TableHead>
+            <TableTotalRow>
+              <TableCell stick="left">Tổng cộng</TableCell>
+              <TableCell align="right" />
+              <TableCell align="right" tone="negative">{formatNumber(report.grandTotal)}đ</TableCell>
+              <TableCell align="right" />
+            </TableTotalRow>
+            <TableBody>
               {report.items.map((item) => (
-                <ItemCard key={item.purchasedItemId} {...item} />
+                <TableRow key={item.purchasedItemId}>
+                  <TableRowHeader stick="left">{item.name}</TableRowHeader>
+                  <TableCell align="right">
+                    {formatNumber(item.issuedQuantity, { withDecimals: true })} {item.unitName}
+                  </TableCell>
+                  <TableCell align="right" tone="negative">
+                    {formatNumber(item.issuedValue)}đ
+                  </TableCell>
+                  <TableCell align="right">
+                    {formatNumber(item.closingValue)}đ
+                  </TableCell>
+                </TableRow>
               ))}
-              <div className="bg-primary-soft rounded-xl p-4 border border-border flex justify-between items-baseline font-bold text-text-primary">
-                <span>Tổng cộng</span>
-                <span className="text-danger">{formatNumber(report.grandTotal)}đ</span>
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <Table>
-                <TableHead>
-                  <TableHeaderCell>Nguyên liệu</TableHeaderCell>
-                  <TableHeaderCell>Đã xuất</TableHeaderCell>
-                  <TableHeaderCell>Giá trị đã xuất</TableHeaderCell>
-                  <TableHeaderCell>Giá trị tồn còn lại</TableHeaderCell>
-                </TableHead>
-                <TableTotalRow>
-                  <TableCell>Tổng cộng</TableCell>
-                  <TableCell align="right" />
-                  <TableCell align="right" tone="negative">{formatNumber(report.grandTotal)}đ</TableCell>
-                  <TableCell align="right" />
-                </TableTotalRow>
-                <TableBody>
-                  {report.items.map((item) => (
-                    <TableRow key={item.purchasedItemId}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell align="right">
-                        {formatNumber(item.issuedQuantity, { withDecimals: true })} {item.unitName}
-                      </TableCell>
-                      <TableCell align="right" tone="negative">
-                        {formatNumber(item.issuedValue)}đ
-                      </TableCell>
-                      <TableCell align="right">
-                        {formatNumber(item.closingValue)}đ
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </>
+            </TableBody>
+          </Table>
         )
       ) : activeTab === "events" ? (
         report.events.length === 0 ? (
@@ -161,17 +147,19 @@ export default async function IssuedValueReportPage(
             <p className="text-xs text-text-secondary -mt-1">
               Mỗi thẻ làm tròn riêng theo số thật của nó -- cộng tay các thẻ có thể lệch vài đồng so với tổng ở trên, số ở trên mới là số đúng.
             </p>
-            <div className="md:hidden flex flex-col gap-3">
-              {report.events.map((event) => (
-                <EventCard
-                  key={event.key}
-                  kind={event.kind}
-                  label={event.label}
-                  at={event.at}
-                  itemCount={event.itemCount}
-                  value={event.value}
-                />
-              ))}
+            <div className="md:hidden space-y-3">
+              <div className="divide-y divide-border bg-surface-card rounded-xl border border-border px-4">
+                {report.events.map((event) => (
+                  <EventCard
+                    key={event.key}
+                    kind={event.kind}
+                    label={event.label}
+                    at={event.at}
+                    itemCount={event.itemCount}
+                    value={event.value}
+                  />
+                ))}
+              </div>
               <div className="bg-primary-soft rounded-xl p-4 border border-border flex justify-between items-baseline font-bold text-text-primary">
                 <span>Tổng cộng</span>
                 <span className="text-danger">{formatNumber(report.grandTotal)}đ</span>
@@ -180,22 +168,22 @@ export default async function IssuedValueReportPage(
             <div className="hidden md:block">
               <Table>
                 <TableHead>
-                  <TableHeaderCell>Loại</TableHeaderCell>
+                  <TableHeaderCell stick="left">Loại</TableHeaderCell>
                   <TableHeaderCell>Ngày</TableHeaderCell>
                   <TableHeaderCell>Lần xuất</TableHeaderCell>
                   <TableHeaderCell>Số mặt hàng</TableHeaderCell>
                   <TableHeaderCell>Giá trị xuất</TableHeaderCell>
                 </TableHead>
                 <TableTotalRow>
-                  <TableCell colSpan={4}>Tổng cộng</TableCell>
+                  <TableCell stick="left" colSpan={4}>Tổng cộng</TableCell>
                   <TableCell align="right" tone="negative">{formatNumber(report.grandTotal)}đ</TableCell>
                 </TableTotalRow>
                 <TableBody>
                   {report.events.map((event) => (
                     <TableRow key={event.key}>
-                      <TableCell>
+                      <TableCell stick="left">
                         <span
-                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                          className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                             event.kind === "STOCKTAKE"
                               ? "bg-primary-soft text-primary"
                               : "bg-warning/10 text-warning"
@@ -222,76 +210,45 @@ export default async function IssuedValueReportPage(
           <p className="text-xs text-text-secondary -mt-1">
             Những tháng trước lần kiểm kê đầu tiên hiện 0đ -- không phải vì tháng đó không dùng gì, mà vì lúc đó chưa đếm để biết đã dùng bao nhiêu.
           </p>
-
-          {/* Mobile Stacked Cards (< 768px): two lines Hàng dùng and Hao hụt, plus total */}
-          <div className="md:hidden flex flex-col gap-3">
-            {report.months.map((month) => (
-              <MonthCard
-                key={month.yearMonth}
-                yearMonth={month.yearMonth}
-                usedValue={month.usedValue}
-                shrinkageValue={month.shrinkageValue}
-              />
-            ))}
-            <div className="bg-primary-soft rounded-xl p-4 border border-border flex flex-col gap-2">
-              <div className="font-bold text-text-primary">Tổng cộng</div>
-              <div className="flex justify-between items-baseline text-sm">
-                <span className="text-text-secondary">Hàng dùng</span>
-                <span className="font-semibold text-text-primary">{formatNumber(report.usedTotal)}đ</span>
-              </div>
-              <div className="flex justify-between items-baseline text-sm">
-                <span className="text-text-secondary">Hao hụt</span>
-                <span className="font-semibold text-text-primary">{formatNumber(report.shrinkageTotal)}đ</span>
-              </div>
-              <div className="flex justify-between items-baseline text-sm border-t border-border/50 pt-1">
-                <span className="font-bold text-text-primary">Tổng</span>
-                <span className="font-bold text-danger">{formatNumber(report.grandTotal)}đ</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop Table (>= 768px): per month Hàng dùng and Hao hụt, total row */}
-          <div className="hidden md:block">
-            <Table>
-              <TableHead>
-                <TableHeaderCell>Tháng</TableHeaderCell>
-                <TableHeaderCell>Hàng dùng</TableHeaderCell>
-                <TableHeaderCell>Hao hụt</TableHeaderCell>
-                <TableHeaderCell>Tổng cộng</TableHeaderCell>
-              </TableHead>
-              <TableTotalRow>
-                <TableCell>Tổng cộng</TableCell>
-                <TableCell align="right" tone={report.usedTotal === 0 ? "muted" : "negative"}>
-                  {formatNumber(report.usedTotal)}đ
-                </TableCell>
-                <TableCell align="right" tone={report.shrinkageTotal === 0 ? "muted" : "negative"}>
-                  {formatNumber(report.shrinkageTotal)}đ
-                </TableCell>
-                <TableCell align="right" tone={report.grandTotal === 0 ? "muted" : "negative"}>
-                  {formatNumber(report.grandTotal)}đ
-                </TableCell>
-              </TableTotalRow>
-              <TableBody>
-                {report.months.map((month) => {
-                  const monthTotal = month.usedValue + month.shrinkageValue;
-                  return (
-                    <TableRow key={month.yearMonth}>
-                      <TableCell>Tháng {formatMonthLabel(month.yearMonth)}</TableCell>
-                      <TableCell align="right" tone={month.usedValue === 0 ? "muted" : "negative"}>
-                        {formatNumber(month.usedValue)}đ
-                      </TableCell>
-                      <TableCell align="right" tone={month.shrinkageValue === 0 ? "muted" : "negative"}>
-                        {formatNumber(month.shrinkageValue)}đ
-                      </TableCell>
-                      <TableCell align="right" tone={monthTotal === 0 ? "muted" : "negative"}>
-                        {formatNumber(monthTotal)}đ
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          <Table>
+            <TableHead>
+              <TableHeaderCell stick="left">Tháng</TableHeaderCell>
+              <TableHeaderCell>Hàng dùng</TableHeaderCell>
+              <TableHeaderCell>Hao hụt</TableHeaderCell>
+              <TableHeaderCell>Tổng cộng</TableHeaderCell>
+            </TableHead>
+            <TableTotalRow>
+              <TableCell stick="left">Tổng cộng</TableCell>
+              <TableCell align="right" tone={report.usedTotal === 0 ? "muted" : "negative"}>
+                {formatNumber(report.usedTotal)}đ
+              </TableCell>
+              <TableCell align="right" tone={report.shrinkageTotal === 0 ? "muted" : "negative"}>
+                {formatNumber(report.shrinkageTotal)}đ
+              </TableCell>
+              <TableCell align="right" tone={report.grandTotal === 0 ? "muted" : "negative"}>
+                {formatNumber(report.grandTotal)}đ
+              </TableCell>
+            </TableTotalRow>
+            <TableBody>
+              {report.months.map((month) => {
+                const monthTotal = month.usedValue + month.shrinkageValue;
+                return (
+                  <TableRow key={month.yearMonth}>
+                    <TableRowHeader stick="left">Tháng {formatMonthLabel(month.yearMonth)}</TableRowHeader>
+                    <TableCell align="right" tone={month.usedValue === 0 ? "muted" : "negative"}>
+                      {formatNumber(month.usedValue)}đ
+                    </TableCell>
+                    <TableCell align="right" tone={month.shrinkageValue === 0 ? "muted" : "negative"}>
+                      {formatNumber(month.shrinkageValue)}đ
+                    </TableCell>
+                    <TableCell align="right" tone={monthTotal === 0 ? "muted" : "negative"}>
+                      {formatNumber(monthTotal)}đ
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </>
       )}
     </div>

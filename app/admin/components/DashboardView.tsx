@@ -8,6 +8,7 @@ import {
   TableHeaderCell,
   TableBody,
   TableRow,
+  TableRowHeader,
   TableCell,
 } from "@/components/ui/Table";
 import type { DashboardData } from "@/lib/dashboard/dashboard-data";
@@ -101,78 +102,36 @@ export function DashboardView({ data }: { data: DashboardData }) {
 
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-text-primary">Bán hàng 7 ngày</h2>
-        <div className="hidden md:block">
-          <Table>
-            <TableHead>
-              <TableHeaderCell>Ngày</TableHeaderCell>
-              <TableHeaderCell>Doanh thu</TableHeaderCell>
-              <TableHeaderCell>TB mỗi ly</TableHeaderCell>
-              <TableHeaderCell>Số ly</TableHeaderCell>
-              {data.foodColumns.map((fc) => (
-                <TableHeaderCell key={fc.id}>{fc.name}</TableHeaderCell>
-              ))}
-              {hasTopping && <TableHeaderCell>Topping mua riêng</TableHeaderCell>}
-            </TableHead>
-            <TableBody>
-              {sortedRows.map((row) => (
-                <TableRow key={row.day}>
-                  <TableCell>{formatVnDayWithWeekday(row.day)}</TableCell>
-                  <TableCell align="right">{formatNumber(row.revenue)}</TableCell>
-                  <TableCell align="right">{formatNumber(row.avgPerCup)}</TableCell>
-                  <TableCell align="right">{row.cups}</TableCell>
-                  {data.foodColumns.map((fc) => (
-                    <TableCell key={fc.id} align="right">
-                      {row.foodQty[fc.id] ?? 0}
-                    </TableCell>
-                  ))}
-                  {hasTopping && (
-                    <TableCell align="right">{row.toppingQty ?? 0}</TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        <div className="md:hidden space-y-3">
-          {sortedRows.map((row) => (
-            <div
-              key={row.day}
-              data-day={row.day}
-              className="bg-surface-card rounded-card p-4 border border-border shadow-sm space-y-2"
-            >
-              <div className="font-semibold text-text-primary border-b border-border pb-2">
-                {formatVnDayWithWeekday(row.day)}
-              </div>
-              <div className="space-y-1.5 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-text-secondary">Doanh thu</span>
-                  <span className="text-text-primary tabular-nums">{formatNumber(row.revenue)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-text-secondary">TB mỗi ly</span>
-                  <span className="text-text-primary tabular-nums">{formatNumber(row.avgPerCup)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-text-secondary">Số ly</span>
-                  <span className="text-text-primary tabular-nums">{row.cups}</span>
-                </div>
+        <Table>
+          <TableHead>
+            <TableHeaderCell stick="left">Ngày</TableHeaderCell>
+            <TableHeaderCell>Doanh thu</TableHeaderCell>
+            <TableHeaderCell>TB mỗi ly</TableHeaderCell>
+            <TableHeaderCell>Số ly</TableHeaderCell>
+            {data.foodColumns.map((fc) => (
+              <TableHeaderCell key={fc.id}>{fc.name}</TableHeaderCell>
+            ))}
+            {hasTopping && <TableHeaderCell>Topping mua riêng</TableHeaderCell>}
+          </TableHead>
+          <TableBody>
+            {sortedRows.map((row) => (
+              <TableRow key={row.day}>
+                <TableRowHeader stick="left">{formatVnDayWithWeekday(row.day)}</TableRowHeader>
+                <TableCell align="right">{formatNumber(row.revenue)}</TableCell>
+                <TableCell align="right">{formatNumber(row.avgPerCup)}</TableCell>
+                <TableCell align="right">{row.cups}</TableCell>
                 {data.foodColumns.map((fc) => (
-                  <div key={fc.id} className="flex justify-between items-center">
-                    <span className="text-text-secondary">{fc.name}</span>
-                    <span className="text-text-primary tabular-nums">{row.foodQty[fc.id] ?? 0}</span>
-                  </div>
+                  <TableCell key={fc.id} align="right">
+                    {row.foodQty[fc.id] ?? 0}
+                  </TableCell>
                 ))}
                 {hasTopping && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-text-secondary">Topping mua riêng</span>
-                    <span className="text-text-primary tabular-nums">{row.toppingQty ?? 0}</span>
-                  </div>
+                  <TableCell align="right">{row.toppingQty ?? 0}</TableCell>
                 )}
-              </div>
-            </div>
-          ))}
-        </div>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </section>
     </div>
   );

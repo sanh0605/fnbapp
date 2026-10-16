@@ -1,4 +1,13 @@
 import { formatNumber } from "@/lib/shared/format";
+import {
+  Table,
+  TableHead,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableRowHeader,
+  TableCell,
+} from "@/components/ui/Table";
 
 // Extracted from page.tsx (not left inline) so it can be unit-rendered
 // directly (OPEN-ITEMS 38/41) -- Next.js's route-module type constraint
@@ -18,22 +27,27 @@ export function ItemCard({
   closingValue: number;
 }) {
   return (
-    <div className="bg-surface-card border border-border rounded-xl p-4 flex flex-col gap-2">
-      <p className="font-bold text-text-primary text-sm leading-snug">{name}</p>
-      <div className="flex items-baseline justify-between text-sm">
-        <span className="text-text-secondary">Đã xuất</span>
-        <span className="font-semibold text-text-primary">
-          {formatNumber(issuedQuantity, { withDecimals: true })} {unitName}
-        </span>
-      </div>
-      <div className="flex items-baseline justify-between text-sm">
-        <span className="text-text-secondary">Giá trị đã xuất</span>
-        <span className="font-bold text-danger">{formatNumber(issuedValue)}đ</span>
-      </div>
-      <div className="flex items-baseline justify-between text-sm">
-        <span className="text-text-secondary">Giá trị tồn còn lại</span>
-        <span className="font-semibold text-text-primary">{formatNumber(closingValue)}đ</span>
-      </div>
-    </div>
+    <Table>
+      <TableHead>
+        <TableHeaderCell stick="left">Nguyên liệu</TableHeaderCell>
+        <TableHeaderCell>Đã xuất</TableHeaderCell>
+        <TableHeaderCell>Giá trị đã xuất</TableHeaderCell>
+        <TableHeaderCell>Giá trị tồn còn lại</TableHeaderCell>
+      </TableHead>
+      <TableBody>
+        <TableRow>
+          <TableRowHeader stick="left">{name}</TableRowHeader>
+          <TableCell align="right">
+            {formatNumber(issuedQuantity, { withDecimals: true })} {unitName}
+          </TableCell>
+          <TableCell align="right" tone="negative">
+            {formatNumber(issuedValue)}đ
+          </TableCell>
+          <TableCell align="right">
+            {formatNumber(closingValue)}đ
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
   );
 }

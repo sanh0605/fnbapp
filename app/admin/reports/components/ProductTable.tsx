@@ -4,9 +4,9 @@ import {
   Table,
   TableHead,
   TableHeaderCell,
-  TableTotalRow,
   TableBody,
   TableRow,
+  TableRowHeader,
   TableCell,
 } from "@/components/ui/Table";
 
@@ -53,18 +53,18 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
           Tổng: {formatNumber(totalQtyAll)}
         </span>
       </div>
-      <div className="hidden md:block">
-        <Table pinHead>
-          <TableHead>
-            <TableHeaderCell>Món</TableHeaderCell>
-            {tableUniqueSizes.map(size => (
-              <TableHeaderCell key={size}>Size {size}</TableHeaderCell>
-            ))}
-            <TableHeaderCell>Tổng SL</TableHeaderCell>
-            <TableHeaderCell>Tổng thu</TableHeaderCell>
-          </TableHead>
-          {items.length > 0 && (
-            <TableTotalRow>
+      <Table pinHead>
+        <TableHead>
+          <TableHeaderCell stick="left">Món</TableHeaderCell>
+          {tableUniqueSizes.map(size => (
+            <TableHeaderCell key={size}>Size {size}</TableHeaderCell>
+          ))}
+          <TableHeaderCell>Tổng SL</TableHeaderCell>
+          <TableHeaderCell>Tổng thu</TableHeaderCell>
+        </TableHead>
+        {items.length > 0 && (
+          <thead className="border-b border-border">
+            <tr className="bg-primary-soft">
               <TableCell>Tổng cộng</TableCell>
               {tableUniqueSizes.map(size => (
                 <TableCell key={size} align="right">
@@ -73,79 +73,32 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
               ))}
               <TableCell align="right">{formatNumber(totalQtyAll)}</TableCell>
               <TableCell align="right">{formatNumber(Math.round(totalRevenueAll))}</TableCell>
-            </TableTotalRow>
-          )}
-          <TableBody>
-            {items.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={tableUniqueSizes.length + 3}>
-                  <div className="text-center py-8 text-text-muted">Không có giao dịch</div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              items.map((item, i) => (
-                <TableRow key={i}>
-                  <TableCell>{item.name}</TableCell>
-                  {tableUniqueSizes.map(size => (
-                    <TableCell key={size} align="right">
-                      {item.sizes[size] ? item.sizes[size] : "-"}
-                    </TableCell>
-                  ))}
-                  <TableCell align="right">{item.totalQty}</TableCell>
-                  <TableCell align="right">{formatNumber(Math.round(item.totalRevenue))}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      {/* Mobile Card Layout (< 768px) */}
-      <div className="md:hidden flex flex-col gap-3 p-4 overflow-y-auto max-h-[528px] bg-page/30 flex-1">
-        {items.length > 0 && (
-          <div className="pb-3 border-b border-border flex flex-col gap-2">
-            <div className="flex justify-between items-center font-bold text-text-primary">
-              <span>Tổng cộng</span>
-              <span className="text-text-primary">{formatNumber(Math.round(totalRevenueAll))}</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-text-secondary">
-              <div className="flex items-center gap-1">
-                 <span className="text-text-secondary">Tổng SL:</span>
-                 <span className="font-bold text-text-primary">{formatNumber(totalQtyAll)}</span>
-              </div>
-              {tableUniqueSizes.filter(size => totalQtyBySize[size] > 0).map(size => (
-                <div key={size} className="flex items-center gap-1 text-xs">
-                  <span className="text-text-muted">Size {size}:</span>
-                  <span className="font-medium text-text-primary">{formatNumber(totalQtyBySize[size])}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+            </tr>
+          </thead>
         )}
-        {items.length === 0 ? (
-          <div className="text-center py-8 text-text-muted">Không có giao dịch</div>
-        ) : (
-          items.map((item, i) => (
-            <div key={i} className="bg-surface-card rounded-xl p-4 shadow-sm border border-border flex flex-col gap-3">
-              <div className="flex justify-between items-start gap-2">
-                <div className="font-bold text-text-primary">{item.name}</div>
-                <div className="font-bold text-text-primary shrink-0">{formatNumber(Math.round(item.totalRevenue))}</div>
-              </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-text-secondary">
-                <div className="flex items-center gap-1">
-                  <span className="text-text-muted">Tổng SL:</span>
-                  <span className="font-semibold text-text-primary">{item.totalQty}</span>
-                </div>
-                {tableUniqueSizes.filter(size => item.sizes[size]).map(size => (
-                  <div key={size} className="flex items-center gap-1 text-xs">
-                    <span className="text-text-muted">Size {size}:</span>
-                    <span className="font-medium text-text-primary">{item.sizes[size]}</span>
-                  </div>
+        <TableBody>
+          {items.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={tableUniqueSizes.length + 3}>
+                <div className="text-center py-8 text-text-muted">Không có giao dịch</div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            items.map((item, i) => (
+              <TableRow key={i}>
+                <TableRowHeader stick="left">{item.name}</TableRowHeader>
+                {tableUniqueSizes.map(size => (
+                  <TableCell key={size} align="right">
+                    {item.sizes[size] ? item.sizes[size] : "-"}
+                  </TableCell>
                 ))}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+                <TableCell align="right">{item.totalQty}</TableCell>
+                <TableCell align="right">{formatNumber(Math.round(item.totalRevenue))}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

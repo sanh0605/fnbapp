@@ -50,7 +50,7 @@ async function renderTracked(element: React.ReactElement) {
 }
 
 describe("ItemCard unit label (OPEN-ITEMS 41)", () => {
-  it("renders g for Sua chua khong duong Vinamilk now that QD-049 is corrected", async () => {
+  it("renders g for Sua chua khong duong Vinamilk now that QD-049 is corrected in a table row", async () => {
     const container = await renderTracked(
       <ItemCard
         name="Sữa chua không đường Vinamilk"
@@ -61,10 +61,21 @@ describe("ItemCard unit label (OPEN-ITEMS 41)", () => {
       />,
     );
 
-    const label = Array.from(container.querySelectorAll("span")).find(
-      s => s.textContent?.trim() === "Đã xuất",
-    );
-    const value = label?.nextElementSibling;
-    expect(value?.textContent?.trim()).toBe("100.00 g");
+    // Old card format is gone; must be a table
+    const table = container.querySelector("table");
+    expect(table).not.toBeNull();
+
+    // First cell of body row is a TableRowHeader with stick="left"
+    const rowHeader = container.querySelector("th[scope='row']");
+    expect(rowHeader).not.toBeNull();
+    expect(rowHeader?.textContent?.trim()).toBe("Sữa chua không đường Vinamilk");
+    expect(rowHeader?.className).toContain("sticky");
+    expect(rowHeader?.className).toContain("left-0");
+
+    // Quantity cell renders "100.00 g"
+    const cells = Array.from(container.querySelectorAll("td"));
+    const quantityCell = cells.find(td => td.textContent?.includes("100.00 g"));
+    expect(quantityCell).toBeDefined();
   });
 });
+

@@ -143,62 +143,6 @@ function extractGroups(months: CashBookMonth[], side: "cash" | "bank") {
   };
 }
 
-function SideCardBlock({
-  label,
-  sideData,
-  incomeGroups,
-  expenseGroups,
-}: {
-  label: string;
-  sideData: CashBookMonth["cash"];
-  incomeGroups: GroupSummary[];
-  expenseGroups: GroupSummary[];
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="font-semibold text-sm text-text-primary">{label}</div>
-      <div className="divide-y divide-border/50 text-sm">
-        <div className="flex justify-between py-1.5">
-          <span className="text-text-secondary">Đầu kỳ</span>
-          <span className="tabular-nums font-medium">{money(sideData.opening)}</span>
-        </div>
-        <div className="flex justify-between py-1.5">
-          <span className="text-text-secondary">Thu bán hàng</span>
-          <span className="tabular-nums">{money(sideData.salesIncome)}</span>
-        </div>
-        {incomeGroups.map((g) => {
-          const item = sideData.handIncome.find((x) => x.key === g.key);
-          return (
-            <div key={g.key} className="flex justify-between py-1.5 pl-3 text-xs">
-              <span className="text-text-secondary">{g.name}</span>
-              <span className="tabular-nums">{item ? money(item.total) : "–"}</span>
-            </div>
-          );
-        })}
-        <div className="flex justify-between py-1.5">
-          <span className="text-text-secondary">Chi nhập hàng</span>
-          <span className="tabular-nums">{money(sideData.purchaseExpense)}</span>
-        </div>
-        {expenseGroups.map((g) => {
-          const item = sideData.handExpense.find((x) => x.key === g.key);
-          return (
-            <div key={g.key} className="flex justify-between py-1.5 pl-3 text-xs">
-              <span className="text-text-secondary">{g.name}</span>
-              <span className="tabular-nums">{item ? money(item.total) : "–"}</span>
-            </div>
-          );
-        })}
-        <div className="flex justify-between py-1.5 font-semibold">
-          <span>Cuối kỳ</span>
-          <span className={`tabular-nums ${sideData.closing < 0 ? "text-danger" : ""}`}>
-            {money(sideData.closing)}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function CashBookMonthsClient({
   months,
   range,
@@ -209,11 +153,6 @@ export default function CashBookMonthsClient({
       (m) => m.month >= range.start && m.month <= range.end,
     );
   }, [months, range.start, range.end]);
-
-  const reversedMonths = useMemo(() => {
-    return [...filteredMonths].reverse();
-  }, [filteredMonths]);
-
   const cashGroups = useMemo(() => extractGroups(filteredMonths, "cash"), [filteredMonths]);
   const bankGroups = useMemo(() => extractGroups(filteredMonths, "bank"), [filteredMonths]);
 
@@ -288,8 +227,8 @@ export default function CashBookMonthsClient({
             </div>
           )}
 
-          {/* Computer layout: one table per side (Tiền mặt, Ngân hàng) */}
-          <div className="hidden md:block space-y-6">
+          {/* One table per side (Tiền mặt, Ngân hàng) */}
+          <div className="space-y-6">
             <div className="overflow-hidden rounded-xl border border-border bg-surface-card p-4 shadow-sm">
               <SideTable
                 title="Tiền mặt"
@@ -308,39 +247,6 @@ export default function CashBookMonthsClient({
                 months={filteredMonths}
               />
             </div>
-          </div>
-
-          {/* Phone layout: one card per month, newest first, both sides stacked */}
-          <div className="md:hidden flex flex-col gap-4">
-            {reversedMonths.map((m) => (
-              <div
-                key={m.month}
-                data-testid={`month-card-${m.month}`}
-                className="bg-surface-card rounded-xl border border-border p-4 space-y-4"
-              >
-                <div className="font-bold text-base text-text-primary border-b border-border pb-2">
-                  Tháng {formatMonthLabel(m.month)}
-                </div>
-
-                {/* Side 1: Tiền mặt */}
-                <SideCardBlock
-                  label="Tiền mặt"
-                  sideData={m.cash}
-                  incomeGroups={cashGroups.income}
-                  expenseGroups={cashGroups.expense}
-                />
-
-                {/* Side 2: Ngân hàng */}
-                <div className="pt-2 border-t border-border">
-                  <SideCardBlock
-                    label="Ngân hàng"
-                    sideData={m.bank}
-                    incomeGroups={bankGroups.income}
-                    expenseGroups={bankGroups.expense}
-                  />
-                </div>
-              </div>
-            ))}
           </div>
         </>
       )}
