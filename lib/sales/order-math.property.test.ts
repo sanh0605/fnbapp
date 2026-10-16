@@ -65,7 +65,6 @@ describe("Property tests", () => {
             created_at: "2026-06-01T00:00:00.000Z",
             created_by_id: "U",
             created_by_name: "Test",
-            completed_at: "2026-06-01T00:00:00.000Z",
             voided_at: "",
             voided_by_id: "",
             void_reason: "",
@@ -79,7 +78,6 @@ describe("Property tests", () => {
             net_total: lines.reduce((s, l) => s + l.net_line_total, 0),
             applied_promotion_id: "",
             applied_promotion_snapshot_json: "",
-            pos_snapshot_json: "{}",
             payment_method: "CASH",
             migration_notes: "",
           };

@@ -26,11 +26,22 @@ describe("supersedeOrderAtomic", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("supersede_order_v2_atomic", {
       p_old_order_id: "ord-old",
       p_expected_old_version: 1,
-      p_new_order: expect.objectContaining({ pos_snapshot_json: { source: "edit" } }),
+      p_new_order: expect.objectContaining({ applied_promotion_snapshot_json: { id: "PRM-003" } }),
       p_new_lines: [expect.objectContaining({ product_snapshot_json: {} })],
       p_event: expect.objectContaining({ delta_json: { changed: true } }),
       p_payments: input.payments,
     });
+  });
+
+  it("still sends an order row that carries the two columns 0135 dropped", async () => {
+    mocks.rpc.mockResolvedValue({ data: { new_order_id: "ord-new", line_count: 1, payment_count: 2 }, error: null });
+    const input = makeInput();
+    input.newOrder = { ...input.newOrder, completed_at: "2026-06-01T00:00:00Z", pos_snapshot_json: "{}" } as typeof input.newOrder;
+
+    await expect(supersedeOrderAtomic(input)).resolves.toMatchObject({ newOrderId: "ord-new" });
+    expect(mocks.rpc).toHaveBeenCalledWith("supersede_order_v2_atomic", expect.objectContaining({
+      p_new_order: expect.objectContaining({ completed_at: "2026-06-01T00:00:00Z", pos_snapshot_json: "{}" }),
+    }));
   });
 
   it("surfaces optimistic-lock and rollback errors", async () => {
@@ -51,8 +62,7 @@ function makeInput() {
     expectedOldVersion: 1,
     newOrder: {
       id: "ord-new",
-      pos_snapshot_json: JSON.stringify({ source: "edit" }),
-      applied_promotion_snapshot_json: "{}",
+      applied_promotion_snapshot_json: "{\"id\":\"PRM-003\"}",
     },
     newLines: [{
       id: "line-new",

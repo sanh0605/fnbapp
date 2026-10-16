@@ -51,7 +51,6 @@ function makeOrder(id: string) {
     created_at: createdAt,
     created_by_id: "U",
     created_by_name: "Test",
-    completed_at: createdAt,
     voided_at: "",
     voided_by_id: "",
     void_reason: "",
@@ -62,7 +61,6 @@ function makeOrder(id: string) {
     net_total: 10000,
     applied_promotion_id: "",
     applied_promotion_snapshot_json: "",
-    pos_snapshot_json: "{}",
     payment_method: "CASH",
     migration_notes: "",
   };

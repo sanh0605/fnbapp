@@ -95,12 +95,12 @@ function backfillModifierGroup(table: string, row: JsonRow, bundle: BackupBundle
 }
 
 /**
- * Migrations 0121 and 0133 dropped these columns; 0121 also stores "no link" as null, not "".
+ * Migrations 0121, 0133 and 0135 dropped these columns; 0121 also stores "no link" as null, not "".
  * An older bundle still carries the dropped keys (the insert would fail on an
  * unknown column) and empty text in the link columns (a foreign key refuses it).
  */
 const RETIRED_COLUMNS: Record<string, string[]> = {
-  orders_v2: ["currency", "payment_ref"],
+  orders_v2: ["currency", "payment_ref", "completed_at", "pos_snapshot_json"],
   order_lines_v2: ["cost_at_sale", "recipe_snapshot_json", "manual_discount_reason"],
   products: ["description", "brand_id", "sort_order", "image_url"],
   product_variants: ["sort_order"],

@@ -313,7 +313,9 @@ describe("findAllWhere", () => {
       data: [{
         id: "ORD-1",
         applied_promotion_snapshot_json: { id: "PROMO-1" },
-        pos_snapshot_json: {},
+      }, {
+        id: "ORD-2",
+        applied_promotion_snapshot_json: {},
       }],
       error: null,
     });
@@ -323,7 +325,9 @@ describe("findAllWhere", () => {
     expect(rows).toEqual([{
       id: "ORD-1",
       applied_promotion_snapshot_json: '{"id":"PROMO-1"}',
-      pos_snapshot_json: "",
+    }, {
+      id: "ORD-2",
+      applied_promotion_snapshot_json: "",
     }]);
   });
 

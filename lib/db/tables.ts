@@ -123,7 +123,6 @@ function serializeRow(
 const JSON_COLUMNS_BY_TABLE: Record<string, Set<string>> = {
   orders_v2: new Set([
     'applied_promotion_snapshot_json',
-    'pos_snapshot_json',
   ]),
   order_lines_v2: new Set([
     'product_snapshot_json',

@@ -29,7 +29,6 @@ export async function supersedeOrderAtomic(
       p_expected_old_version: input.expectedOldVersion,
       p_new_order: parseJsonColumns(input.newOrder, [
         "applied_promotion_snapshot_json",
-        "pos_snapshot_json",
       ]),
       p_new_lines: input.newLines.map((line) => parseJsonColumns(line, [
         "product_snapshot_json",

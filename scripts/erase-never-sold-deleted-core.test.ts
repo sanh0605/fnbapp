@@ -58,10 +58,10 @@ describe("selectErasures", () => {
     ];
     const r = selectErasures(base({
       modifiers: mods, soldModifierIds: ["MOD-2"],
-      refs: [{ where: "orders_v2.pos_snapshot_json (260624002014)", value: '{"modifier_id": "MOD-1"}' }],
+      refs: [{ where: "order_events.delta_json (evt-1)", value: '{"modifier_id": "MOD-1"}' }],
     }));
     expect(r.modifiers).toEqual([{ id: "MOD-3", name: "Kem" }]);
-    expect(r.skipped).toContainEqual({ kind: "tuỳ chọn", id: "MOD-1", name: "Dâu sấy", reason: "còn được nhắc ở orders_v2.pos_snapshot_json (260624002014)" });
+    expect(r.skipped).toContainEqual({ kind: "tuỳ chọn", id: "MOD-1", name: "Dâu sấy", reason: "còn được nhắc ở order_events.delta_json (evt-1)" });
     expect(r.skipped).toContainEqual({ kind: "tuỳ chọn", id: "MOD-2", name: "Trân châu", reason: "đã có đơn" });
   });
 

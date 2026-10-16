@@ -352,3 +352,17 @@ describe("rows from a bundle taken before migration 0133", () => {
     expect(calls.map(c => c.rows)).toEqual([[{ id: "I1" }], [{ id: "S1" }], [{ id: "U1" }], [{ id: "H1" }], [{ id: "B1" }], [{ id: "L1" }], [{ id: "P1" }]]);
   });
 });
+
+describe("rows from a bundle taken before migration 0135", () => {
+  it("drops completed_at and pos_snapshot_json from orders_v2", async () => {
+    const calls: Array<{ table: string; rows: unknown[] }> = [];
+    const client = fakeClient((table, rows) => (calls.push({ table, rows }), { error: null }));
+    const bundle = fakeBundle({
+      orders_v2: [{ id: "O1", completed_at: "2026-06-01T00:00:00Z", pos_snapshot_json: {} }],
+    });
+
+    await restoreBundleToTarget(bundle, client, ["orders_v2"], 500);
+
+    expect(calls.map(c => c.rows)).toEqual([[{ id: "O1" }]]);
+  });
+});
