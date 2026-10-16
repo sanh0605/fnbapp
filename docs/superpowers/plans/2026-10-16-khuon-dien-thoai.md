@@ -70,8 +70,9 @@ Chưa xem:
 - Không chữ đậm trong dòng danh sách (`BR-UI-003`; `font-bold`/`font-semibold` bị `list-rows.guard` đếm).
 - Không hộp nổi (`BR-DATA-007`): khung lọc và dòng hàng mở ngay tại chỗ.
 - Chữ hiển thị tiếng Việt; code và chú thích tiếng Anh. Viết theo ponytail: không viết thừa code, không thêm tuỳ chọn ngoài kế hoạch.
-- Gemini không chạy lệnh và không commit; Opus chạy kiểm tra và commit. Gemini dùng `agy -p "<phiếu>" --model gemini-4-argon-high --mode accept-edits --print-timeout 0` (đo lại `agy models` trước mỗi lần giao).
+- Gemini không chạy lệnh và không commit; Opus chạy kiểm tra và commit. Gemini dùng `agy -p "<phiếu>" --model gemini-4-argon-high --mode accept-edits --print-timeout 0` (đo lại `agy models` trước mỗi lần giao). Từ Task 2 phần sửa trở đi: Gemini 4 Argon hết lượt đến khoảng 2026-10-23, chủ quán chọn `gemini-3.8-flash-high` (2026-10-16, *"Gemini 3.8 Flash"*).
 - Worktree ở `.worktrees/phone`, nhánh `feat/khuon-dien-thoai`. Build chạy ở thư mục chính sau khi gộp, vì Turbopack 16.4 từ chối junction `node_modules` trong worktree (đo 2026-10-16), và chỉ chạy khi máy chủ 8386 đang tắt.
+- `components/ui/OptionGroupPicker.tsx` chỉ máy bán hàng dùng (`app/pos/components/ItemConfigModal.tsx`), nên phép kiểm cỡ để nó ngoài (`TILL_ONLY`).
 - Phiếu Gemini chạy song song trong cùng worktree chỉ khi không chung file nào. Ba danh sách nợ (`OWED_CARDS`, `OWED_44`, `OWED_TINY`) **chỉ Opus sửa**, sau khi phiếu xong; phiếu không đụng tới. Kiểm tra chạy khi cả đợt song song đã xong, rồi commit từng phiếu, chỉ stage file của phiếu đó.
 - `PhoneRow` không dùng hook, để trang máy chủ (`purchase-orders/[id]/page.tsx`) dùng được.
 
@@ -254,7 +255,7 @@ Các component chung khác:
 - `FilterCard`:
   - `onKeyDown` (Enter = áp dụng) chuyển lên phần tử gốc, để cả ô tìm lẫn các ô lọc đều nhận Enter.
   - Khi gập được (xem điều kiện ở Interfaces): hàng đầu gồm `search` (co giãn) và nút "Bộ lọc"/"Bộ lọc (n)" cao 48 px, `md:hidden`. Khối `children` cùng hai nút "Lọc"/"Xoá lọc" mang lớp `hidden md:flex` (hoặc `md:grid` như hôm nay) khi đóng, bỏ `hidden` khi mở. Ẩn bằng lớp, không bỏ khỏi DOM.
-  - Máy tính: `search` hiện ở vị trí đầu hàng lọc, đúng chỗ ô tìm đang đứng hôm nay. Không có nút gập.
+  - Máy tính: `search` hiện ở vị trí đầu hàng lọc, theo `BR-UI-016` ("first in the filter card"); ở Sổ thu chi và Phiếu nhập ô tìm đổi từ thứ hai lên thứ nhất. Không có nút gập.
 - Năm ô và nút dùng chung đổi `min-h-[44px]` thành `min-h-[48px]`, giữ `md:min-h-[40px]`. `SearchableSelect` thêm lớp đó cho nút mở và cho từng lựa chọn.
 - `Field`: nhãn đổi `text-[13px]` thành `text-sm`; gợi ý và lỗi đổi `text-xs` thành `text-[13px]`.
 - `Table`: ô và tiêu đề kiểu thường đổi `px-4 py-3` thành `px-3 py-2 md:px-4 md:py-3`; tiêu đề cột `whitespace-nowrap`. Kiểu `statement` giữ nguyên. Hôm nay bảng không hiện trên điện thoại nên máy tính không đổi.
@@ -273,7 +274,7 @@ Các component chung khác:
 
     `sourceName` chỉ còn ở trang chi tiết.
   - Sổ thu chi: theo dòng "Sổ thu chi" ở bảng Task 3.
-  - Cả hai trang truyền `activeCount` (số bộ lọc đang thu hẹp danh sách, khoảng ngày tính là 1) và `search` (ô tìm hiện có, chuyển ra khỏi `children`) cho `FilterCard`. Bỏ `className="w-full md:w-auto"` ở nút "Tạo".
+  - Cả hai trang truyền `activeCount` (số bộ lọc đã áp dụng khác mặc định, đúng những gì "Xoá lọc" sẽ xoá; quyết định sau khi soát 2026-10-16, vì đếm cả mặc định thì trang mới mở đã hiện "Bộ lọc (2)" trong khi "Xoá lọc" không có gì để xoá) và `search` (ô tìm hiện có, chuyển ra khỏi `children`) cho `FilterCard`. Bỏ `className="w-full md:w-auto"` ở nút "Tạo".
 - [ ] **Step 5: Opus chạy kiểm tra.**
   - Lệnh: `npx tsc --noEmit`, rồi `npx vitest run components/ui app/admin/inventory/purchase-orders app/admin/inventory/issue-slips app/admin/finance app/admin/components`.
   - Bỏ `.fails` ở Task 1 trong cùng commit.
@@ -461,7 +462,7 @@ Mỗi file có test cạnh bên thì sửa test đó.
   - đọc lỗi console;
   - đo số dòng lọt màn hình đầu.
 
-  Phiếu nhập phải từ 3–4 dòng lên ít nhất 7. Bảng báo cáo: cột cuối bị mép cắt cho thấy còn cột.
+  Phiếu nhập phải từ 3–4 dòng lên ít nhất 7. Bảng báo cáo: cột cuối bị mép cắt cho thấy còn cột. Thanh xoá khi chọn (dính đáy) không bị thanh menu dưới hay nút tròn máy bán hàng che; nhãn "Máy bán hàng" 12 px không xuống dòng ở 360 và 390 px.
 - [ ] **Step 3: Kiểm ở 1280 × 800.** Mở cùng các trang đó, so với `main` trước nhánh: chiều cao ô 40 px, bảng không đổi.
 - [ ] **Step 4: Sửa và kiểm lại.** Lỗi tìm được thì giao Gemini sửa, rồi kiểm lại đúng trang đó.
 - [ ] **Step 5: Ghi kết quả.** Ghi vào mục "Đã kiểm" của kế hoạch này, kèm mẫu số, ví dụ "68/68 trang mở được, 0 lỗi console".

@@ -183,7 +183,7 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 - Line 1: the name on the left, the one number on the right. Line 2, smaller and grey: the other facts, most important first, at most two lines; one status badge on the right. No bold (`BR-UI-003`).
 - No bin on each row on a phone; the computer keeps it. Deleting goes through "Chọn", whose delete bar sticks to the bottom of the screen above the menu, or through the record's own page.
 - A total (`BR-UI-004`) is one thin strip above the list, not a card.
-- On a list with filters, the filter folds behind "Bộ lọc (n)"; n counts the filters narrowing the list, a date range included. A list with only a search box has nothing to fold. Report filters stay as they are.
+- On a list with filters, the filter folds behind "Bộ lọc (n)"; n counts the filters set away from the page's default, exactly what "Xoá lọc" would clear; a freshly opened page shows no number. A list with only a search box has nothing to fold. Report filters stay as they are.
 - Sources: Sapo and KiotViet phone apps (two-line rows), NN/g *Mobile tables*, Apple *Lists and tables*.
 
 ### BR-UI-019 — Phone reports keep their table

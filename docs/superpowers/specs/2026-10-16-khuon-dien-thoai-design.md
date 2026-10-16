@@ -45,7 +45,7 @@ Năm câu hiện trạng:
    - Mỗi dòng hàng trong biểu mẫu nhiều dòng thu gọn hoặc mở ra. Bấm vào dòng để mở, bấm "Xong" để thu lại. Mỗi lúc chỉ mở một dòng.
 2. **Nút.**
    - "Tạo" nằm cùng hàng với tiêu đề.
-   - "Bộ lọc (n)": n là số bộ lọc đang thu hẹp danh sách (khoảng ngày cũng tính), nút này mở và đóng khung lọc. Không đặt tên "Lọc" để khỏi trùng nút "Lọc" bên trong.
+   - "Bộ lọc (n)": n là số bộ lọc khác mặc định, đúng những gì "Xoá lọc" sẽ xoá (mở trang mới thì không có số), nút này mở và đóng khung lọc. Không đặt tên "Lọc" để khỏi trùng nút "Lọc" bên trong.
    - Trong khung lọc có "Lọc" và "Xoá lọc".
    - "Chọn" / "Xong".
    - Bấm cả dòng để mở trang chi tiết.
