@@ -997,6 +997,36 @@ describe("Ticket 6c: PurchaseOrderForm FormActionBar save bar", () => {
         conversions={sampleConversions}
         units={sampleUnits}
         bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-VALID",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "50000",
+            total_amount: "50000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [
+            {
+              id: "POL-1",
+              purchase_order_id: "PO-VALID",
+              item_id: "ITEM-1",
+              quantity: "1",
+              unit_id: "U-1",
+              unit_cost: "50000",
+              subtotal: "50000",
+              created_at: "2026-10-01",
+              conversion_id: "CONV-1",
+              purchased_item_id: "ITEM-1",
+              unit: "kg",
+            } as any,
+          ],
+        }}
       />
     );
 
@@ -1006,6 +1036,7 @@ describe("Ticket 6c: PurchaseOrderForm FormActionBar save bar", () => {
     fireEvent.submit(form);
 
     expect(mockSavePurchaseOrder).not.toHaveBeenCalled();
+    expect(form.querySelectorAll('button:not([type="button"])').length).toBe(0);
   });
 
   it("typing in a box shows 'Có thay đổi chưa lưu' on FormActionBar", () => {
@@ -1502,6 +1533,49 @@ describe("Ticket 6c-2: PurchaseOrderLines & PurchaseOrderTotals enhancements", (
     const phoneRow = cards[0].querySelector(".md\\:hidden") as HTMLElement;
     expect(within(phoneRow).getByText(/1,000 kg × 50,000đ/)).toBeInTheDocument();
     expect(phoneRow.textContent).not.toContain("U-1");
+  });
+
+  it("folded phone row formats fractional quantities: 2.5 shows '2.5', 0.125 shows '0.125', 1000 shows '1,000'", () => {
+    const linesWithDecimals = [
+      { purchased_item_id: "ITEM-1", unit: "kg", conversion_id: "CONV-1", quantity: "2.5", subtotal: "125000" },
+      { purchased_item_id: "ITEM-1", unit: "kg", conversion_id: "CONV-1", quantity: "0.125", subtotal: "6250" },
+      { purchased_item_id: "ITEM-1", unit: "kg", conversion_id: "CONV-1", quantity: "1000", subtotal: "50000000" },
+    ];
+    const { container } = render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-DECIMALS",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "50131250",
+            total_amount: "50131250",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: linesWithDecimals as any,
+        }}
+      />
+    );
+
+    const cards = container.querySelectorAll('[data-testid="po-line-card"]');
+    const row0 = cards[0].querySelector(".md\\:hidden") as HTMLElement;
+    const row1 = cards[1].querySelector(".md\\:hidden") as HTMLElement;
+    const row2 = cards[2].querySelector(".md\\:hidden") as HTMLElement;
+
+    expect(within(row0).getByText(/2\.5 kg × 50,000đ/)).toBeInTheDocument();
+    expect(within(row1).getByText(/0\.125 kg × 50,000đ/)).toBeInTheDocument();
+    expect(within(row2).getByText(/1,000 kg × 50,000đ/)).toBeInTheDocument();
   });
 
   it("moves 'Ghi chú' into folded block in 'Thanh toán' (form-money), not in 'Thông tin phiếu' (form-shared)", () => {

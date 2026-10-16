@@ -360,6 +360,7 @@ describe("OrderEditForm two columns (owner 2026-10-10)", () => {
     expect(lines.className).toContain("lg:col-span-2");
     expect(lines.className).toContain("lg:col-start-1");
     expect(money.className).toContain("lg:col-start-3");
+    expect(layout.className).toContain("mb-6");
     expect(layout.className).not.toContain("max-w-4xl");
 
     expect(within(lines).getByText("Món trong đơn")).toBeInTheDocument();
@@ -367,8 +368,13 @@ describe("OrderEditForm two columns (owner 2026-10-10)", () => {
     expect(within(money).getByText("Thanh toán")).toBeInTheDocument();
     expect(within(money).getByLabelText("Lý do chỉnh sửa")).toBeInTheDocument();
     const form = layout.closest("form")!;
-    expect(within(form).getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
-    expect(within(form).getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
+    const saveBtn = within(form).getByRole("button", { name: "Lưu thay đổi" });
+    const cancelBtn = within(form).getByRole("button", { name: "Bỏ thay đổi" });
+    expect(saveBtn).toBeInTheDocument();
+    expect(cancelBtn).toBeInTheDocument();
+    expect(form.lastElementChild).toContainElement(saveBtn);
+    expect(within(money).queryByRole("button", { name: "Lưu thay đổi" })).toBeNull();
+    expect(within(money).queryByRole("button", { name: "Bỏ thay đổi" })).toBeNull();
   });
 
   it("on a phone the dishes come before the payment and the buttons", () => {

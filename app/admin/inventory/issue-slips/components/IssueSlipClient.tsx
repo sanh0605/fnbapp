@@ -21,7 +21,7 @@ import { formatConvertedOnHand } from "@/lib/stock/issue-slip-onhand-display";
 import { createIssueSlip, getIssueUnitCostsAt, type IssueSlipItemView } from "../actions";
 import { buildIssueUnitOptions, toBaseQuantity, type IssueUnitOption } from "@/lib/stock/issue-unit-options";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
-import { formatNumber } from "@/lib/shared/format";
+import { formatNumber, formatDecimal } from "@/lib/shared/format";
 import { numberTextToValue } from "@/lib/shared/money-digits";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
@@ -79,7 +79,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unitCosts, setUnitCosts] = useState<Record<string, number>>({});
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [errorIndex, setErrorIndex] = useState<number | null>(null);
   const costRequestIdRef = useRef(0);
   const savingRef = useRef(false);
@@ -161,11 +161,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
       if (index < prev) return prev - 1;
       return prev;
     });
-    if (errorIndex === index) {
-      setErrorIndex(null);
-    } else if (errorIndex !== null && index < errorIndex) {
-      setErrorIndex(errorIndex - 1);
-    }
+    setErrorIndex(null);
   }
 
   function updateLine(index: number, patch: Partial<DraftLine>) {
@@ -451,7 +447,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
 
             const itemName = item?.name || "Chưa chọn hàng";
             const qtyDisplay = line.packageQty
-              ? formatNumber(line.packageQty, { withDecimals: !Number.isInteger(Number(line.packageQty)) })
+              ? formatDecimal(Number(line.packageQty) || 0, { maxDigits: 3 })
               : "0";
             const unitLabel = option?.label || "";
             const meta = `${qtyDisplay}${unitLabel ? ` ${unitLabel}` : ""} · Quy ra ${convertedDisplay}`;
@@ -539,7 +535,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                           type="button"
                           variant="secondary"
                           onClick={() => removeLine(index)}
-                          className="min-h-[48px] text-danger p-2"
+                          className="min-h-[48px] text-danger"
                           aria-label="Xoá dòng"
                         >
                           Xoá dòng

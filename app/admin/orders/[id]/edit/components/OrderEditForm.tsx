@@ -154,7 +154,7 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
       <form onSubmit={handleSave}>
         <div
           data-testid="form-layout"
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start mb-6"
         >
         {/* Summary of order as sold (Desktop: left 2/3, Phone: stacked above) */}
         <div

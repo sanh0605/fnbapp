@@ -29,8 +29,6 @@ export interface PurchaseOrderTotalsProps {
   setPaymentError: (err: string | null) => void;
   notes: string;
   setNotes: (notes: string) => void;
-  showExtra?: boolean;
-  setShowExtra?: (show: boolean | ((prev: boolean) => boolean)) => void;
 }
 
 export function PurchaseOrderTotals({
@@ -54,8 +52,6 @@ export function PurchaseOrderTotals({
   setPaymentError,
   notes,
   setNotes,
-  showExtra,
-  setShowExtra,
 }: PurchaseOrderTotalsProps) {
   const hasValue = Boolean(
     (taxAmount && Number(taxAmount) !== 0) ||
@@ -63,7 +59,7 @@ export function PurchaseOrderTotals({
     (notes && notes.trim() !== "")
   );
   const [userOpen, setUserOpen] = useState(false);
-  const isExpanded = hasValue || (showExtra !== undefined ? showExtra : userOpen);
+  const isExpanded = hasValue || userOpen;
 
   return (
     <>
@@ -107,11 +103,7 @@ export function PurchaseOrderTotals({
             disabled={hasValue}
             onClick={() => {
               if (hasValue) return;
-              if (setShowExtra) {
-                setShowExtra((prev: boolean) => !prev);
-              } else {
-                setUserOpen((prev) => !prev);
-              }
+              setUserOpen((prev) => !prev);
             }}
             className="text-sm text-primary hover:underline py-1 flex items-center justify-between w-full min-h-[48px] md:min-h-[40px] disabled:no-underline disabled:cursor-default"
           >

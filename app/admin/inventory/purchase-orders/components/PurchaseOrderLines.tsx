@@ -2,7 +2,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
-import { formatNumber } from "@/lib/shared/format";
+import { formatNumber, formatDecimal } from "@/lib/shared/format";
 import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import type { DBPurchasedItem, DBUOMConversion, DBUnit } from "@/types/db";
 
@@ -94,7 +94,7 @@ export function PurchaseOrderLines({
                   <PhoneRow
                     title={itemName}
                     value={`${formatNumber(Number(line.subtotal) || 0)}đ`}
-                    meta={`${formatNumber(Number(line.quantity) || 0)} ${unitName} × ${formatNumber(Math.round(unitPrice))}đ`}
+                    meta={`${formatDecimal(Number(line.quantity) || 0, { maxDigits: 3 })} ${unitName} × ${formatNumber(Math.round(unitPrice))}đ`}
                   />
                 </button>
 

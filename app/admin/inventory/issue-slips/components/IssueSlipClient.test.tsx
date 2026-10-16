@@ -552,7 +552,7 @@ describe("IssueSlipClient -- manages an add/remove line list (D9)", () => {
     await clickButtonWithText(container, "+ Thêm mặt hàng");
     expect(getLineBlocks(container)).toHaveLength(2);
 
-    const removeBtn = (getLineBlocks(container)[1] || getLineBlocks(container)[0]).querySelector('button[aria-label="Xoá dòng"]');
+    const removeBtn = getLineBlocks(container)[1].querySelector('button[aria-label="Xoá dòng"]');
     await fireClick(removeBtn!);
     expect(getLineBlocks(container)).toHaveLength(1);
   });
@@ -713,11 +713,11 @@ describe("IssueSlipClient -- M3, tap targets carry the 48px class, not the 32px 
     expect(addBtn?.className).toContain("min-h-[48px]");
   });
 
-  it("the remove-line button carries the p-2 padding class that gives it a real hit area", async () => {
+  it("the remove-line button carries min-h-[48px]", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await clickButtonWithText(container, "+ Thêm mặt hàng");
-    const removeBtn = (getLineBlocks(container)[1] || getLineBlocks(container)[0]).querySelector('button[aria-label="Xoá dòng"]');
-    expect(removeBtn?.className).toContain("p-2");
+    const removeBtn = getLineBlocks(container)[1].querySelector('button[aria-label="Xoá dòng"]');
+    expect(removeBtn?.className).toContain("min-h-[48px]");
   });
 });
 
@@ -1034,17 +1034,24 @@ describe("Ticket 6c: IssueSlipClient single FormActionBar replacing both bars", 
   });
 
   it("pressing Enter in a box does not save (form prevents default, FormActionBar uses button type)", async () => {
+    mocks.createIssueSlip.mockResolvedValue({ result: submittedResult() });
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const form = container.querySelector("form")!;
     expect(form).toBeInTheDocument();
 
-    const input = container.querySelector("input") as HTMLInputElement;
+    const block = getLineBlocks(container)[0];
+    await selectItemInBlock(block, "Sữa tươi Vinamilk");
+    await selectPackage(block, "Thùng 12 hộp");
+    const qtyInput = findQtyInput(block);
+    await setInputValue(qtyInput, "2");
+
     await act(async () => {
-      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+      qtyInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
       form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
     expect(mocks.createIssueSlip).not.toHaveBeenCalled();
+    expect(form.querySelectorAll('button:not([type="button"])').length).toBe(0);
   });
 
   it("typing in a box shows 'Có thay đổi chưa lưu' on FormActionBar", async () => {
@@ -1093,6 +1100,9 @@ describe("Ticket 6c-2: Phiếu xuất phone lines (spec 3.3 item 7)", () => {
     const cards = phone.querySelectorAll('[data-testid="issue-line-card"]');
     expect(cards).toHaveLength(1);
 
+    // Fresh slip starts with line 0 open; click Xong to collapse
+    await clickButtonWithText(cards[0] as HTMLElement, "Xong");
+
     const collapsedBtn = cards[0].querySelector("button") as HTMLButtonElement;
     expect(collapsedBtn).toBeInTheDocument();
     expect(collapsedBtn.className).toContain("min-h-[48px]");
@@ -1108,14 +1118,7 @@ describe("Ticket 6c-2: Phiếu xuất phone lines (spec 3.3 item 7)", () => {
     const phone = container.querySelector(".md\\:hidden") as HTMLElement;
     const card = phone.querySelector('[data-testid="issue-line-card"]') as HTMLElement;
 
-    // Initially collapsed: Xong is not shown
-    expect(within(card).queryByRole("button", { name: "Xong" })).toBeNull();
-
-    // Tap collapsed button to open
-    const collapsedBtn = card.querySelector("button") as HTMLButtonElement;
-    await fireClick(collapsedBtn);
-
-    // Now open: Xong is shown, but Xoá dòng is NOT shown because only 1 line
+    // Fresh slip starts with line 0 open: Xong is shown, but Xoá dòng is NOT shown because only 1 line
     expect(within(card).getByRole("button", { name: "Xong" })).toBeInTheDocument();
     expect(within(card).queryByRole("button", { name: "Xoá dòng" })).toBeNull();
 
@@ -1132,6 +1135,10 @@ describe("Ticket 6c-2: Phiếu xuất phone lines (spec 3.3 item 7)", () => {
     const phoneRow = card.querySelector("button") as HTMLElement;
     expect(within(phoneRow).getByText("Sữa tươi Vinamilk")).toBeInTheDocument();
     expect(within(phoneRow).getByText(/3 Thùng 12 hộp · Quy ra 36 hộp/)).toBeInTheDocument();
+
+    // Tap collapsed button to reopen
+    await fireClick(phoneRow);
+    expect(within(card).getByRole("button", { name: "Xong" })).toBeInTheDocument();
 
     // Old corner ✕ is not present
     expect(card.querySelector(".absolute.top-2.right-2")).toBeNull();
@@ -1228,8 +1235,7 @@ describe("Ticket 6c-2: Phiếu xuất phone lines (spec 3.3 item 7)", () => {
     const phone = container.querySelector(".md\\:hidden") as HTMLElement;
     const card = phone.querySelector('[data-testid="issue-line-card"]') as HTMLElement;
 
-    // Open line, fill inputs
-    await fireClick(card.querySelector("button")!);
+    // Line starts open, fill inputs directly
     await selectItemInBlock(card, "Sữa tươi Vinamilk");
     await selectPackage(card, "Thùng 12 hộp");
     await setInputValue(findQtyInput(card), "7");
@@ -1242,6 +1248,46 @@ describe("Ticket 6c-2: Phiếu xuất phone lines (spec 3.3 item 7)", () => {
     await fireClick(card.querySelector("button")!);
     expect(within(card).getByRole("button", { name: "Xong" })).toBeInTheDocument();
     expect(findQtyInput(card).value).toBe("7");
+  });
+
+  it("folded phone row formats fractional quantities: 2.5 shows '2.5', 0.125 shows '0.125', 1000 shows '1,000'", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item1]} />);
+    const phone = container.querySelector(".md\\:hidden") as HTMLElement;
+
+    // Fill line 1 with 2.5
+    const card0 = phone.querySelectorAll('[data-testid="issue-line-card"]')[0] as HTMLElement;
+    await selectItemInBlock(card0, "Sữa tươi Vinamilk");
+    await selectPackage(card0, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(card0), "2.5");
+    // Collapse line 1
+    await clickButtonWithText(card0, "Xong");
+
+    // Add line 2 with 0.125
+    await clickButtonWithText(container, "+ Thêm mặt hàng");
+    const card1 = phone.querySelectorAll('[data-testid="issue-line-card"]')[1] as HTMLElement;
+    await selectItemInBlock(card1, "Sữa tươi Vinamilk");
+    await selectPackage(card1, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(card1), "0.125");
+    // Collapse line 2
+    await clickButtonWithText(card1, "Xong");
+
+    // Add line 3 with 1000
+    await clickButtonWithText(container, "+ Thêm mặt hàng");
+    const card2 = phone.querySelectorAll('[data-testid="issue-line-card"]')[2] as HTMLElement;
+    await selectItemInBlock(card2, "Sữa tươi Vinamilk");
+    await selectPackage(card2, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(card2), "1000");
+    // Collapse line 3
+    await clickButtonWithText(card2, "Xong");
+
+    const cards = phone.querySelectorAll('[data-testid="issue-line-card"]');
+    const row0 = cards[0].querySelector("button") as HTMLElement;
+    const row1 = cards[1].querySelector("button") as HTMLElement;
+    const row2 = cards[2].querySelector("button") as HTMLElement;
+
+    expect(within(row0).getByText(/2\.5 Thùng 12 hộp/)).toBeInTheDocument();
+    expect(within(row1).getByText(/0\.125 Thùng 12 hộp/)).toBeInTheDocument();
+    expect(within(row2).getByText(/1,000 Thùng 12 hộp/)).toBeInTheDocument();
   });
 });
 
