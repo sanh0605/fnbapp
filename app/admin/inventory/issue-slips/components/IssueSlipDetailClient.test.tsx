@@ -308,8 +308,8 @@ describe("IssueSlipDetailClient", () => {
     expect(back?.getAttribute("href")).toBe("/admin/inventory/issue-slips?kind=SLIP&page=2");
   });
 
-  describe("Reason (note) display rules (BR-INV-014)", () => {
-    it("does not render 'Lý do:' at all when note is empty", () => {
+  describe("Slip has no reason line (BR-INV-014)", () => {
+    it("does not render 'Lý do:' on an active slip", () => {
       const detailEmptyNote = { ...defaultDetail };
       render(<IssueSlipDetailClient detail={detailEmptyNote} items={mockItems} />);
       expect(screen.queryByText(/Lý do:/)).not.toBeInTheDocument();
