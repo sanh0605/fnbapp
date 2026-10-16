@@ -144,8 +144,8 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 **Status:** `APPROVED` — owner 2026-10-11 asked for pages that look neat, with readable text, boxes neither too tall nor crammed (*"các ô không bị quá cao hay cũng không bị dồn quá nhiều thông tin"*); a trial went on 8386 that day, and on 2026-10-14 he kept it: *"Làm theo em khuyến nghị và tiếp tục"*. Built on the branch `feat/no-popups` 2026-10-11 (shared button, text box, select, number box and list).
 
 - **On a computer** a box or button is 40 px tall (was 44) and a list row about 45 px (was 53–73). A row with a delete button is no taller than one without.
-- **On a phone** a box or button stays 44 px, a thumb's width.
-- Text size is unchanged: 14 px.
+- **On a phone** a box, button or pick-list option is 48 px tall (44 px until 2026-10-16). Chosen on the owner's behalf under his 2026-10-16 delegation, when he asked for phone screens *"dễ thấy chữ và dễ bấm"*; Material's 48 dp touch target. Guard `components/ui/phone-size.guard.test.ts`. Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.3.
+- **Text on a phone:** a box's label 14 px, its hint and error 13 px, what is typed 16 px. Nothing outside the till is smaller than 12 px. On a computer text stays 14 px.
 - A form with few boxes puts them two to a row on a computer and one per row on a phone (`BR-UI-012`).
 
 ### BR-UI-015 — One footer on every create and edit form, always in reach
@@ -174,3 +174,22 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 - Top to bottom: the title; one filter bar (date range per `BR-UI-007`, outlet where the report can split by outlet); the headline figures for the range; the detail table with its total row (`BR-UI-004`).
 - Exporting to a file is left out until someone keeping the books asks for it.
 - Sources: Toast (https://support.toasttab.com/en/article/Getting-Started-with-Analytics-and-Reports), Square (https://squareup.com/help/ca/en/article/5072).
+
+### BR-UI-018 — Phone lists are two-line rows, not cards
+
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation. His words: *"Các nơi trên điện thoại dùng thẻ để thay thế bảng thì nên có cách khác vì càng nhiều thẻ thì lại càng dài."* Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.1; on the list of points he reviews at the end of the phone batch. Guard `components/ui/phone-rows.guard.test.ts` lists the screens still drawing cards; it only shrinks.
+
+- Measured 2026-10-16: a Phiếu nhập card was about 110 px tall, so 3–4 fitted on a phone's first screen.
+- Line 1: the name on the left, the one number on the right. Line 2, smaller and grey: the other facts, most important first, at most two lines; one status badge on the right. No bold (`BR-UI-003`).
+- No bin on each row on a phone; the computer keeps it. Deleting goes through "Chọn", whose delete bar sticks to the bottom of the screen above the menu, or through the record's own page.
+- A total (`BR-UI-004`) is one thin strip above the list, not a card.
+- The filter folds behind "Bộ lọc (n)" on lists with a search box or filters; n counts the filters narrowing the list.
+- Sources: Sapo and KiotViet phone apps (two-line rows), NN/g *Mobile tables*, Apple *Lists and tables*.
+
+### BR-UI-019 — Phone reports keep their table
+
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation, with `BR-UI-018`. Spec section 3.4; on his end-of-batch review list. It replaces the phone rule "no sideways tables" in `.claude/rules/ui-devices.md` for number reports only.
+
+- Tổng quan's 7-day table, Doanh số by day and by dish, Hàng đã xuất, and Sổ thu chi by month show a compact table on a phone: the first column (day, dish, line) stays put, the number columns scroll sideways, the total row sits under the header as on a computer.
+- Lãi lỗ theo tháng keeps its month cards, because each month opens to show its formula and sources, which a table cannot hold.
+- Source: NN/g *Mobile tables* — data compared by column stays a table with a fixed first column.
