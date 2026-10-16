@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import React from "react";
 import BankAccountsClient from "./BankAccountsClient";
@@ -103,6 +103,20 @@ describe("BankAccountsClient", () => {
     expect(screen.getAllByText("ACB - Phin Di").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Vietcombank Sanh").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
+  });
+
+  it("renders phone rows with title, bank · account number meta, and status badge", () => {
+    mockSearchParams = new URLSearchParams("status=ALL");
+    const { container } = render(<BankAccountsClient accounts={sampleAccounts} initialStatus="ALL" />);
+
+    const phoneList = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phoneList).getByText("ACB - Phin Di")).toBeInTheDocument();
+    expect(within(phoneList).getByText("ACB · 123456")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Đang dùng")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Vietcombank Sanh")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Vietcombank · 987654")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Ngừng dùng")).toBeInTheDocument();
+    expect(within(phoneList).queryByText("BA-001")).toBeNull();
   });
 
   it("renders in default order newest code first (BA-002 before BA-001)", () => {

@@ -156,7 +156,7 @@ export default function ActivityLogClient({
             key={key}
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-secondary text-text-secondary border border-border"
           >
-            <span className="text-[10px] uppercase font-bold text-text-muted">{label}:</span>
+            <span className="text-xs uppercase font-bold text-text-muted">{label}:</span>
             <span>{formattedVal}</span>
           </span>
         );
@@ -165,7 +165,7 @@ export default function ActivityLogClient({
       return <div className="flex flex-wrap gap-2 mt-2">{items}</div>;
     } catch (e) {
       return (
-        <pre className="text-[10px] text-text-muted font-mono bg-surface-secondary p-2 rounded-lg border border-border mt-2 overflow-x-auto">
+        <pre className="text-xs text-text-muted font-mono bg-surface-secondary p-2 rounded-lg border border-border mt-2 overflow-x-auto">
           {deltaJson}
         </pre>
       );
@@ -347,7 +347,7 @@ export default function ActivityLogClient({
                         <span className="font-extrabold text-sm text-text-primary">
                           Đơn hàng {evt.order_no}
                         </span>
-                        <span className="text-[11px] text-text-muted font-medium">
+                        <span className="text-xs text-text-muted font-medium">
                           ({evt.id})
                         </span>
                       </div>
@@ -368,7 +368,7 @@ export default function ActivityLogClient({
                         {evt.from_version !== undefined && evt.to_version !== undefined && (
                           <p className="flex items-center gap-1.5">
                             <span className="text-text-muted">Phiên bản:</span>
-                            <span className="font-mono bg-surface-secondary border border-border rounded px-1 text-[10px]">
+                            <span className="font-mono bg-surface-secondary border border-border rounded px-1 text-xs">
                               v{evt.from_version || 0} ➔ v{evt.to_version}
                             </span>
                           </p>
@@ -387,7 +387,7 @@ export default function ActivityLogClient({
                     </div>
 
                     <div className="shrink-0 flex items-center md:self-stretch justify-end">
-                      <span className="text-[11px] text-text-muted font-medium bg-surface-secondary border border-border rounded px-2.5 py-1">
+                      <span className="text-xs text-text-muted font-medium bg-surface-secondary border border-border rounded px-2.5 py-1">
                         Mã đơn: {evt.order_id}
                       </span>
                     </div>

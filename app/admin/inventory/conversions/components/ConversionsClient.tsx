@@ -207,49 +207,8 @@ export default function ConversionsClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const renderCard = (conv: DBUOMConversion) => {
-    const itemName = itemMap[conv.purchased_item_id] || conv.purchased_item_id;
-    const pUnit = conv.purchased_unit
-      ? unitMap[conv.purchased_unit] || conv.purchased_unit
-      : !conv.purchased_unit && conv.from_unit_id
-      ? unitMap[conv.from_unit_id] || conv.from_unit_id
-      : "";
-    const bUnit = conv.base_unit
-      ? unitMap[conv.base_unit] || conv.base_unit
-      : !conv.base_unit && conv.to_unit_id
-      ? unitMap[conv.to_unit_id] || conv.to_unit_id
-      : "";
-
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-text-primary text-base leading-tight">
-              {itemName}
-            </div>
-            <div className="font-mono text-xs text-primary mt-0.5">
-              {conv.id}
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            {conv.status === "INACTIVE" && (
-              <Badge variant="neutral">
-                Ngừng dùng
-              </Badge>
-            )}
-            {conv.purchase_only && (
-              <Badge variant="warning">
-                Chỉ cách mua
-              </Badge>
-            )}
-          </div>
-        </div>
-        <div className="text-sm text-text-secondary">
-          1 {pUnit} = {conv.conversion_rate} {bUnit}
-        </div>
-      </div>
-    );
-  };
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const activeCount = appliedSearch ? 1 : 0;
 
   const removal = canDelete
     ? {
@@ -282,7 +241,6 @@ export default function ConversionsClient({
           <Button
             href={`/admin/inventory/conversions/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -293,8 +251,8 @@ export default function ConversionsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
-      >
-        <div className="shrink-0 w-full md:w-64">
+        activeCount={activeCount}
+        search={
           <Field label="Tìm hàng hoá" htmlFor="conversions-search">
             <TextInput
               id="conversions-search"
@@ -303,7 +261,9 @@ export default function ConversionsClient({
               onChange={handleSearchChange}
             />
           </Field>
-        </div>
+        }
+      >
+        {null}
       </FilterCard>
 
       <DataList
@@ -314,7 +274,30 @@ export default function ConversionsClient({
           `/admin/inventory/conversions/${encodeURIComponent(conv.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(conv) => {
+          const itemName = itemMap[conv.purchased_item_id] || conv.purchased_item_id;
+          const pUnit = conv.purchased_unit
+            ? unitMap[conv.purchased_unit] || conv.purchased_unit
+            : !conv.purchased_unit && conv.from_unit_id
+            ? unitMap[conv.from_unit_id] || conv.from_unit_id
+            : "";
+          const bUnit = conv.base_unit
+            ? unitMap[conv.base_unit] || conv.base_unit
+            : !conv.base_unit && conv.to_unit_id
+            ? unitMap[conv.to_unit_id] || conv.to_unit_id
+            : "";
+          const formula = `1 ${pUnit} = ${conv.conversion_rate} ${bUnit}`;
+          return {
+            title: itemName,
+            meta: [formula, conv.id, conv.purchase_only ? "Chỉ cách mua" : null]
+              .filter(Boolean)
+              .join(" · "),
+            badge:
+              conv.status === "INACTIVE" ? (
+                <Badge variant="neutral">Ngừng dùng</Badge>
+              ) : undefined,
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

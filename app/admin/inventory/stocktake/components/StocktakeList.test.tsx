@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { StocktakeList } from "./StocktakeList";
 import type { StocktakeListRow } from "../actions";
 
@@ -133,7 +133,7 @@ describe("StocktakeList (Screen 1)", () => {
       },
     ];
 
-    render(<StocktakeList sessions={sessions} />);
+    const { container } = render(<StocktakeList sessions={sessions} />);
 
     expect(screen.getAllByText("Đang đếm").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Đã hoàn tác").length).toBeGreaterThanOrEqual(1);
@@ -142,5 +142,10 @@ describe("StocktakeList (Screen 1)", () => {
     expect(screen.getAllByText(/thiếu 20,000đ · thừa 150đ \(tạm tính\)/).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("thiếu 296,033đ").length).toBeGreaterThanOrEqual(1);
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("STK-003 · Admin · Đã đếm 2/3")).toBeInTheDocument();
+    expect(within(phone).getByText("STK-002 · Admin · Đã đếm 50/50")).toBeInTheDocument();
+    expect(within(phone).getByText("STK-001 · Admin · Đã đếm 50/50")).toBeInTheDocument();
   });
 });

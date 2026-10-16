@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import React from "react";
 import CategoriesClient from "./CategoriesClient";
 import type { DBProductCategory } from "@/types/db";
@@ -185,14 +185,21 @@ describe("CategoriesClient", () => {
       { id: "CAT-001", name: "Cà phê", status: "ACTIVE", type_id: "PT-001", icon: "☕" },
       { id: "CAT-002", name: "Trà sữa", status: "ACTIVE", type_id: "PT-001", icon: null },
     ];
-    render(
+    const sampleTypes = [{ id: "PT-001", name: "Đồ uống", status: "ACTIVE" }];
+    const { container } = render(
       <CategoriesClient
         categories={categoriesWithIcon}
         counts={sampleCounts}
+        types={sampleTypes as any}
       />,
     );
 
     expect(screen.getAllByText("☕").length).toBeGreaterThan(0);
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("☕")).toBeInTheDocument();
+    expect(within(phone).getByText("8 món")).toBeInTheDocument();
+    expect(within(phone).getByText("CAT-001 · Đồ uống")).toBeInTheDocument();
+    expect(within(phone).queryByText(/Loại món:/)).toBeNull();
   });
 });
 

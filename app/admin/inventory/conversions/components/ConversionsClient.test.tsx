@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import ConversionsClient from "./ConversionsClient";
 import type { DBPurchasedItem, DBUOMConversion, DBUnit } from "@/types/db";
@@ -170,11 +170,18 @@ describe("ConversionsClient", () => {
     expect(screen.queryByRole("button", { name: /Xoá|Ngừng dùng/ })).toBeNull();
   });
 
-  it("renders 'Chỉ cách mua' badge for purchase_only conversions", () => {
-    render(
+  it("renders 'Chỉ cách mua' in phone row meta alongside formula and code, and 'Ngừng dùng' badge when inactive", () => {
+    const { container } = render(
       <ConversionsClient
         items={ITEMS}
-        conversions={CONVERSIONS}
+        conversions={[
+          ...CONVERSIONS,
+          {
+            ...CONVERSIONS[0],
+            id: "CONV-3",
+            status: "INACTIVE",
+          },
+        ]}
         units={UNITS}
         usedConversionIds={[]}
         canDelete={false}
@@ -183,5 +190,11 @@ describe("ConversionsClient", () => {
     );
 
     expect(screen.getAllByText("Chỉ cách mua").length).toBeGreaterThan(0);
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("1 Thùng = 24 Lon · CONV-1")).toBeInTheDocument();
+    expect(within(phone).getByText("1 Gói = 500 g · CONV-2 · Chỉ cách mua")).toBeInTheDocument();
+    expect(within(phone).getByText("1 Thùng = 24 Lon · CONV-3")).toBeInTheDocument();
+    expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
   });
 });

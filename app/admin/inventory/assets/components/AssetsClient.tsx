@@ -13,7 +13,6 @@ import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
-import { AssetItemCard } from "./AssetItemCard";
 import { assetItemTotals, type AssetItemRow } from "@/lib/assets/asset-items";
 
 interface AssetsClientProps {
@@ -181,6 +180,17 @@ export default function AssetsClient({
   const dirParam = rawSort ? sortDir : undefined;
   const currentListUrl = listUrl(search, showAll, slice.page, sortParam, dirParam);
 
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedAll = searchParams?.has("all")
+    ? searchParams.get("all") === "1"
+    : Boolean(initialAll);
+
+  const activeCount =
+    (appliedSearch.trim() ? 1 : 0) +
+    (appliedAll ? 1 : 0);
+
+  const showClear = Boolean(search.trim() || showAll || appliedSearch.trim() || appliedAll);
+
   const handleApplyFilter = () => {
     setPage(1);
     router.replace(listUrl(search, showAll, 1, sortParam, dirParam), { scroll: false });
@@ -198,9 +208,9 @@ export default function AssetsClient({
       <FilterCard
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
-        showClear={Boolean(search.trim() || showAll)}
-      >
-        <div className="shrink-0 w-full md:w-64">
+        showClear={showClear}
+        activeCount={activeCount}
+        search={
           <Field label="Tìm kiếm" htmlFor="assets-search">
             <TextInput
               id="assets-search"
@@ -210,8 +220,9 @@ export default function AssetsClient({
               onChange={(e) => setSearch(e.target.value)}
             />
           </Field>
-        </div>
-        <div className="shrink-0 flex items-center h-10 mt-auto pb-1">
+        }
+      >
+        <div className="shrink-0 flex items-center min-h-[48px] md:min-h-[40px] pb-1">
           <label className="inline-flex items-center gap-2 cursor-pointer text-sm text-text-primary select-none">
             <input
               type="checkbox"
@@ -232,7 +243,19 @@ export default function AssetsClient({
           `/admin/inventory/assets/${encodeURIComponent(asset.itemId)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={(asset) => <AssetItemCard item={asset} />}
+        phoneRow={(asset) => ({
+          title: asset.name,
+          value: `${formatNumber(Math.round(asset.remainingValue))}đ`,
+          meta: [
+            `Còn ${asset.remainingQuantity} / mua ${asset.quantity}`,
+            `Đã thanh lý ${asset.disposedQuantity}`,
+          ]
+            .filter(Boolean)
+            .join(" · "),
+          badge: asset.fullyDisposed ? (
+            <Badge variant="neutral">Đã thanh lý hết</Badge>
+          ) : undefined,
+        })}
         totals={{
           label: "Tổng (không tính đã thanh lý hết)",
           values: { remainingValue: formatNumber(assetTotals.remainingValue) },

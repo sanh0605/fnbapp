@@ -167,32 +167,6 @@ export default function CategoriesClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const renderCard = (cat: DBProductCategory) => {
-    const count = counts[cat.id] ?? 0;
-    const typeName = typesById.get(cat.type_id) || "—";
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-text-primary text-base leading-tight">
-              {cat.icon ? <span className="mr-1.5">{cat.icon}</span> : null}
-              {cat.name}
-            </div>
-            <div className="font-mono text-xs text-primary mt-0.5">
-              {cat.id}
-            </div>
-          </div>
-          <div className="shrink-0 text-text-secondary text-xs">
-            {`${count} món`}
-          </div>
-        </div>
-        <div className="text-xs text-text-secondary">
-          Loại món: <span className="text-text-primary">{typeName}</span>
-        </div>
-      </div>
-    );
-  };
-
   const removal = {
     verb: "Xoá",
     confirmMessage: (count: number) => `Xoá ${count} nhóm món?`,
@@ -216,7 +190,6 @@ export default function CategoriesClient({
           <Button
             href={`/admin/products/categories/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -248,7 +221,16 @@ export default function CategoriesClient({
           `/admin/products/categories/${encodeURIComponent(cat.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(cat) => ({
+          title: (
+            <>
+              {cat.icon ? <span className="mr-1.5">{cat.icon}</span> : null}
+              {cat.name}
+            </>
+          ),
+          value: `${counts[cat.id] ?? 0} món`,
+          meta: [cat.id, typesById.get(cat.type_id)].filter(Boolean).join(" · "),
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

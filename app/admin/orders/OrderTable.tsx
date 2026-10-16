@@ -208,6 +208,17 @@ export default function OrderTable({
     searchParams.get("to")
   );
 
+  const activeCount =
+    (searchParams.get("q")?.trim() ? 1 : 0) +
+    (searchParams.get("status") === "VOIDED" ? 1 : 0) +
+    (searchParams.get("payment") ? 1 : 0) +
+    (searchParams.get("brand") ? 1 : 0) +
+    ((searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
+    searchParams.get("from") ||
+    searchParams.get("to")
+      ? 1
+      : 0);
+
   function getPageUrl(pageNum: number): string {
     const params = new URLSearchParams(searchParams.toString());
     if (pageNum === 1) {
@@ -231,7 +242,7 @@ export default function OrderTable({
                 {order.display_order_no || order.order_no}
               </span>
               {order.parent_order_id && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-primary-soft text-primary">
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs bg-primary-soft text-primary">
                   v{order.version}
                 </span>
               )}
@@ -297,59 +308,6 @@ export default function OrderTable({
     []
   );
 
-  const renderCard = (order: Order) => (
-    <div className="space-y-3">
-      <div className="flex justify-between items-start">
-        <div>
-          <span className="font-mono text-xs text-primary">
-            {order.display_order_no || order.order_no}
-          </span>
-          {order.parent_order_id && (
-            <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] bg-primary-soft text-primary">
-              v{order.version}
-            </span>
-          )}
-          <p className="text-[11px] text-text-muted mt-0.5 tabular-nums">
-            {formatDateTimeFull(order.created_at)}
-          </p>
-          {order.status === "VOIDED" && (
-            <div className="mt-1 flex flex-wrap items-center gap-1.5">
-              <Badge variant="danger">Đã huỷ</Badge>
-              {order.void_reason && (
-                <span className="text-xs text-text-muted">
-                  {order.void_reason}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="text-right">
-          <div className="text-sm tabular-nums text-text-primary">
-            {formatNumber(order.net_total)}
-          </div>
-          <div className="mt-1">
-            {renderPaymentMethodBadge(order)}
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-border pt-2 space-y-1">
-        {order.lines &&
-          order.lines.map((line: OrderLine, idx: number) => (
-            <div key={idx} className="text-xs text-text-secondary">
-              <span className="text-text-primary">{line.qty}x</span> {line.product_name}{" "}
-              <span className="text-text-muted">({line.size_name})</span>
-              {line.modifiers && line.modifiers.length > 0 && (
-                <div className="text-[10px] text-text-muted ml-4 mt-0.5">
-                  + {line.modifiers.map((m: any) => m.name).join(", ")}
-                </div>
-              )}
-            </div>
-          ))}
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-4">
       <ListPageHeader
@@ -361,6 +319,17 @@ export default function OrderTable({
         onApply={handleApply}
         onClear={clearFilters}
         showClear={hasActiveFilters}
+        activeCount={activeCount}
+        search={
+          <Field label="Tìm mã đơn" htmlFor="search-order-no">
+            <TextInput
+              id="search-order-no"
+              placeholder="Ví dụ: 261012001030"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </Field>
+        }
       >
         <div className="w-full md:w-auto shrink-0">
           <DateRangeButton
@@ -370,16 +339,6 @@ export default function OrderTable({
             disabled={searching}
             disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
           />
-        </div>
-        <div className="flex-1 min-w-[200px]">
-          <Field label="Tìm mã đơn" htmlFor="search-order-no">
-            <TextInput
-              id="search-order-no"
-              placeholder="Ví dụ: 261012001030"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </Field>
         </div>
         <div className="w-full md:w-36">
           <Field label="Trạng thái" htmlFor="status-filter">
@@ -441,7 +400,38 @@ export default function OrderTable({
             `/admin/orders/${encodeURIComponent(order.id)}?returnTo=${returnTo}`
           }
           columns={columns}
-          renderCard={renderCard}
+          phoneRow={(order) => {
+            const orderCode = order.display_order_no || order.order_no;
+            const title = order.parent_order_id
+              ? `${orderCode} · v${order.version}`
+              : orderCode;
+
+            const itemsSummary = (order.lines ?? [])
+              .map((line: OrderLine) => {
+                const size = line.size_name ? ` (${line.size_name})` : "";
+                const mods =
+                  line.modifiers && line.modifiers.length > 0
+                    ? ` + ${line.modifiers.map((m: any) => m.name).join(", ")}`
+                    : "";
+                return `${line.qty}x ${line.product_name}${size}${mods}`;
+              })
+              .join(", ");
+
+            const timeStr = formatDateTimeFull(order.created_at);
+            const meta = [timeStr, itemsSummary].filter(Boolean).join(" · ");
+
+            return {
+              title,
+              value: formatNumber(order.net_total),
+              meta,
+              badge:
+                order.status === "VOIDED" ? (
+                  <Badge variant="danger">Đã huỷ</Badge>
+                ) : (
+                  renderPaymentMethodBadge(order)
+                ),
+            };
+          }}
           totals={
             totals && statusFilter !== "VOIDED" && searchParams.get("status") !== "VOIDED"
               ? {

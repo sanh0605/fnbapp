@@ -20,29 +20,7 @@ const files = sources(join(root, "app", "admin"))
   .filter(f => /<DataList\b/.test(f.src));
 
 const OWED_CARDS: string[] = [
-  "app/admin/brands/components/BrandsClient.tsx",
-  "app/admin/finance/bank-accounts/components/BankAccountsClient.tsx",
-  "app/admin/finance/categories/components/CategoriesClient.tsx",
-  "app/admin/finance/monthly-items/components/MonthlyItemsClient.tsx",
-  "app/admin/inventory/asset-bands/components/BandsClient.tsx",
-  "app/admin/inventory/assets/components/AssetsClient.tsx",
-  "app/admin/inventory/categories/components/CategoriesClient.tsx",
-  "app/admin/inventory/conversions/components/ConversionsClient.tsx",
-  "app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx",
-  "app/admin/inventory/items/components/ItemsClient.tsx",
-  "app/admin/inventory/stock/components/StockOnHandClient.tsx",
-  "app/admin/inventory/stocktake/components/StocktakeList.tsx",
-  "app/admin/inventory/units/components/UnitsClient.tsx",
-  "app/admin/orders/OrderTable.tsx",
-  "app/admin/outlets/components/OutletsClient.tsx",
-  "app/admin/products/ProductsClient.tsx",
-  "app/admin/products/categories/components/CategoriesClient.tsx",
-  "app/admin/products/modifier-groups/components/ModifierGroupsClient.tsx",
-  "app/admin/products/modifiers/components/ModifiersClient.tsx",
-  "app/admin/products/types/components/ProductTypesClient.tsx",
-  "app/admin/promotions/components/PromotionsClient.tsx",
-  "app/admin/suppliers/components/SuppliersClient.tsx",
-  "app/admin/users/components/UsersClient.tsx",
+
 ];
 
 describe("BR-UI-018 phone lists use PhoneRow", () => {

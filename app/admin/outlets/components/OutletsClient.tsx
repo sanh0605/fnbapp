@@ -230,42 +230,11 @@ export default function OutletsClient({
 
   const currentListUrl = listUrl(search, status, slice.page, sortParam, dirParam);
 
-  const renderCard = (outlet: DBOutlet) => (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between items-start gap-2">
-        <div>
-          <div className="text-sm text-text-primary">
-            {outlet.name}
-          </div>
-          <div className="text-[11px] text-text-muted mt-0.5">
-            {brandMap[outlet.brand_id] || outlet.brand_id}
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-primary-soft text-text-primary border border-primary/20 font-mono">
-            {outlet.code}
-          </span>
-          {outlet.status === "ACTIVE" ? (
-            <Badge variant="success">Đang hoạt động</Badge>
-          ) : (
-            <Badge variant="warning">Ngừng hoạt động</Badge>
-          )}
-        </div>
-      </div>
-      <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
-        <div>
-          <span className="text-text-muted">Giờ hoạt động: </span>
-          <span>{formatHours(outlet.open_time, outlet.close_time)}</span>
-        </div>
-        {outlet.start_date && (
-          <div>
-            <span className="text-text-muted">Bắt đầu: </span>
-            <span>{formatDate(outlet.start_date)}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedStatus = searchParams?.get("status") ?? initialStatus ?? "ACTIVE";
+  const activeCount =
+    (appliedSearch ? 1 : 0) +
+    (appliedStatus && appliedStatus !== "ACTIVE" ? 1 : 0);
 
   const removal =
     status === "ACTIVE"
@@ -294,7 +263,6 @@ export default function OutletsClient({
           <Button
             href={`/admin/outlets/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -305,8 +273,8 @@ export default function OutletsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search || status !== "ACTIVE")}
-      >
-        <div className="shrink-0 w-full md:w-64">
+        activeCount={activeCount}
+        search={
           <Field label="Tìm điểm bán" htmlFor="outlets-search">
             <TextInput
               id="outlets-search"
@@ -315,7 +283,8 @@ export default function OutletsClient({
               onChange={(e) => setSearch(e.target.value)}
             />
           </Field>
-        </div>
+        }
+      >
         <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="outlets-status">
             <Select
@@ -339,7 +308,22 @@ export default function OutletsClient({
           `/admin/outlets/${encodeURIComponent(o.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(o) => ({
+          title: o.name,
+          meta: [
+            brandMap[o.brand_id] || o.brand_id,
+            o.code,
+            formatHours(o.open_time, o.close_time),
+          ]
+            .filter(Boolean)
+            .join(" · "),
+          badge:
+            o.status === "ACTIVE" ? (
+              <Badge variant="success">Đang hoạt động</Badge>
+            ) : (
+              <Badge variant="warning">Ngừng hoạt động</Badge>
+            ),
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

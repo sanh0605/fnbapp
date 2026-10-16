@@ -175,6 +175,9 @@ describe("OutletsClient", () => {
 
     expect(screen.getAllByText("07:00 - 22:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chưa đặt").length).toBeGreaterThan(0);
+    expect(screen.getByText("Phin Đi · 001 · 07:00 - 22:00")).toBeInTheDocument();
+    expect(screen.getByText("Uchako · 002 · Chưa đặt")).toBeInTheDocument();
+    expect(screen.queryByText(/Giờ hoạt động:/)).toBeNull();
   });
 
   it("create link reads 'Tạo' and points to /admin/outlets/new", () => {

@@ -150,50 +150,6 @@ export default function StockOnHandClient({
     [],
   );
 
-  const renderCard = (row: StockOnHandRow) => {
-    const stockText = `${formatDecimal(row.onHand, { maxDigits: 2 })} ${row.unitName}`.trim();
-    const valueText = row.value !== null ? `${formatNumber(Math.round(row.value))}đ` : "—";
-    const lastCountText = row.lastCountedAt ? formatDate(row.lastCountedAt) : "Chưa kiểm lần nào";
-
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-text-primary text-base leading-tight">
-              {row.name}
-            </div>
-            {row.categoryName && (
-              <div className="text-xs text-text-secondary mt-0.5">
-                {row.categoryName}
-              </div>
-            )}
-            {row.inactive && (
-              <Badge variant="neutral" className="mt-1">
-                Ngừng dùng
-              </Badge>
-            )}
-          </div>
-          <div className="shrink-0">
-            {renderDaysLeft(row)}
-          </div>
-        </div>
-
-        <div className="flex justify-between items-center text-sm">
-          <span className={row.onHand < 0 ? "text-danger tabular-nums" : "text-text-secondary tabular-nums"}>
-            Tồn: <span className={row.onHand < 0 ? "text-danger" : "text-text-primary"}>{stockText}</span>
-          </span>
-          <span className="text-text-primary tabular-nums">
-            {valueText}
-          </span>
-        </div>
-
-        <div className="text-xs text-text-muted">
-          Kiểm lần cuối: {lastCountText}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-6">
       <ListPageHeader
@@ -217,8 +173,7 @@ export default function StockOnHandClient({
         onApply={() => {}}
         onClear={handleClear}
         showClear={Boolean(search)}
-      >
-        <div className="shrink-0 w-full md:w-80">
+        search={
           <Field label="Tìm kiếm" htmlFor="stock-search">
             <TextInput
               id="stock-search"
@@ -227,7 +182,9 @@ export default function StockOnHandClient({
               onChange={handleSearchChange}
             />
           </Field>
-        </div>
+        }
+      >
+        {null}
       </FilterCard>
 
       <DataList
@@ -238,7 +195,36 @@ export default function StockOnHandClient({
           `/admin/inventory/items/${encodeURIComponent(row.itemId)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(row) => {
+          const daysText =
+            row.onHand < 0
+              ? null
+              : row.daysLeft === "OUT"
+              ? "Hết"
+              : typeof row.daysLeft === "number"
+              ? `khoảng ${formatNumber(row.daysLeft)} ngày`
+              : null;
+
+          return {
+            title: row.name,
+            value: (
+              <span className={row.onHand < 0 ? "text-danger" : ""}>
+                {formatDecimal(row.onHand, { maxDigits: 2 })} {row.unitName}
+              </span>
+            ),
+            meta: [
+              row.value !== null ? `${formatNumber(Math.round(row.value))}đ` : null,
+              daysText,
+              row.categoryName || null,
+              row.lastCountedAt ? `Kiểm lần cuối ${formatDate(row.lastCountedAt)}` : "Chưa kiểm lần nào",
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            badge: row.inactive ? (
+              <Badge variant="neutral">Ngừng dùng</Badge>
+            ) : undefined,
+          };
+        }}
         empty={
           <EmptyState
             icon={<span className="text-4xl">📦</span>}

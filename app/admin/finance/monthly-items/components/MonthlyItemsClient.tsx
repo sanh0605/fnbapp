@@ -212,40 +212,12 @@ export default function MonthlyItemsClient({
 
   const currentListUrl = listUrl(search, status, slice.page, sortParam, dirParam);
 
-  const renderCard = (row: MonthlyItemRow) => {
-    const catName = categoryMap.get(row.item.cash_category_id)?.name ?? row.item.cash_category_id;
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-sm text-text-primary">
-              {row.item.name}
-            </div>
-            <div className="text-[11px] text-text-muted mt-0.5 font-mono">
-              {row.item.id}
-            </div>
-          </div>
-          <div className="shrink-0">
-            {row.item.status === "ACTIVE" ? (
-              <Badge variant="success">Đang dùng</Badge>
-            ) : (
-              <Badge variant="warning">Ngừng dùng</Badge>
-            )}
-          </div>
-        </div>
-        <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
-          <div className="flex justify-between">
-            <span className="text-text-muted">Nhóm thu chi:</span>
-            <span>{catName}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-text-muted">Số dòng đã nhập:</span>
-            <span className="tabular-nums">{formatNumber(row.entryCount)}</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedStatus = parseStatus(searchParams?.get("status") ?? initialStatus);
+
+  const activeCount =
+    (appliedSearch.trim() ? 1 : 0) +
+    (appliedStatus !== "ACTIVE" ? 1 : 0);
 
   return (
     <div className="space-y-6">
@@ -257,7 +229,6 @@ export default function MonthlyItemsClient({
             <Button
               href={`/admin/finance/monthly-items/new?returnTo=${encodeURIComponent(currentListUrl)}`}
               variant="primary"
-              className="w-full md:w-auto"
             >
               Tạo
             </Button>
@@ -272,8 +243,8 @@ export default function MonthlyItemsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={hasAnyFilter}
-      >
-        <div className="shrink-0 w-full md:w-64">
+        activeCount={activeCount}
+        search={
           <Field label="Tìm khoản chi" htmlFor="monthly-items-search">
             <TextInput
               id="monthly-items-search"
@@ -282,7 +253,8 @@ export default function MonthlyItemsClient({
               onChange={(e) => setSearch(e.target.value)}
             />
           </Field>
-        </div>
+        }
+      >
         <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="monthly-items-status">
             <Select
@@ -306,7 +278,17 @@ export default function MonthlyItemsClient({
           `/admin/finance/monthly-items/${encodeURIComponent(r.item.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(r) => ({
+          title: r.item.name,
+          value: `${formatNumber(r.entryCount)} dòng`,
+          meta: categoryMap.get(r.item.cash_category_id)?.name ?? r.item.cash_category_id,
+          badge:
+            r.item.status === "ACTIVE" ? (
+              <Badge variant="success">Đang dùng</Badge>
+            ) : (
+              <Badge variant="warning">Ngừng dùng</Badge>
+            ),
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

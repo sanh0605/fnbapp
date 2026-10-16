@@ -199,37 +199,12 @@ export default function BankAccountsClient({
 
   const currentListUrl = listUrl(search, status, slice.page, sortParam, dirParam);
 
-  const renderCard = (account: DBBankAccount) => (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between items-start gap-2">
-        <div>
-          <div className="text-sm text-text-primary">
-            {account.name}
-          </div>
-          <div className="text-[11px] text-text-muted mt-0.5 font-mono">
-            {account.id}
-          </div>
-        </div>
-        <div className="shrink-0">
-          {account.status === "ACTIVE" ? (
-            <Badge variant="success">Đang dùng</Badge>
-          ) : (
-            <Badge variant="warning">Ngừng dùng</Badge>
-          )}
-        </div>
-      </div>
-      <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
-        <div className="flex justify-between">
-          <span className="text-text-muted">Ngân hàng:</span>
-          <span>{display(account.bank_name)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-text-muted">Số tài khoản:</span>
-          <span>{display(account.account_number)}</span>
-        </div>
-      </div>
-    </div>
-  );
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedStatus = parseStatus(searchParams?.get("status") ?? initialStatus);
+
+  const activeCount =
+    (appliedSearch.trim() ? 1 : 0) +
+    (appliedStatus !== "ACTIVE" ? 1 : 0);
 
   const removal =
     status === "ACTIVE"
@@ -259,7 +234,6 @@ export default function BankAccountsClient({
           <Button
             href={`/admin/finance/bank-accounts/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -270,8 +244,8 @@ export default function BankAccountsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search || status !== "ACTIVE")}
-      >
-        <div className="shrink-0 w-full md:w-64">
+        activeCount={activeCount}
+        search={
           <Field label="Tìm tài khoản" htmlFor="bank-accounts-search">
             <TextInput
               id="bank-accounts-search"
@@ -280,7 +254,8 @@ export default function BankAccountsClient({
               onChange={(e) => setSearch(e.target.value)}
             />
           </Field>
-        </div>
+        }
+      >
         <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="bank-accounts-status">
             <Select
@@ -304,7 +279,16 @@ export default function BankAccountsClient({
           `/admin/finance/bank-accounts/${encodeURIComponent(a.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(a) => ({
+          title: a.name,
+          meta: [a.bank_name, a.account_number].filter(Boolean).join(" · "),
+          badge:
+            a.status === "ACTIVE" ? (
+              <Badge variant="success">Đang dùng</Badge>
+            ) : (
+              <Badge variant="warning">Ngừng dùng</Badge>
+            ),
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

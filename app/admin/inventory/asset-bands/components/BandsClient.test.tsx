@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import BandsClient from "./BandsClient";
 import type { DBAssetDepreciationBand } from "@/types/db";
 
@@ -67,8 +67,8 @@ beforeEach(() => {
 });
 
 describe("BandsClient", () => {
-  it("renders 3 bands with id, range, and term", () => {
-    render(<BandsClient bands={BANDS} canDelete={false} />);
+  it("renders 3 bands with id, range, and term, and phone rows with range title, term value, and id meta", () => {
+    const { container } = render(<BandsClient bands={BANDS} canDelete={false} />);
 
     // Renders IDs
     expect(screen.getAllByText("KH-001").length).toBeGreaterThan(0);
@@ -84,6 +84,14 @@ describe("BandsClient", () => {
     expect(screen.getAllByText("12 tháng").length).toBeGreaterThan(0);
     expect(screen.getAllByText("24 tháng").length).toBeGreaterThan(0);
     expect(screen.getAllByText("36 tháng").length).toBeGreaterThan(0);
+
+    // Phone rows (default sort: code, newest first): line 1 has range + term, line 2 has code, no "Đơn giá:" prefix
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    const phoneLinks = within(phone).getAllByRole("link");
+    expect(phone.textContent).not.toContain("Đơn giá:");
+    expect(phoneLinks[2].textContent).toBe("Dưới 200,000đ12 thángKH-001");
+    expect(phoneLinks[1].textContent).toBe("Từ 200,000đ đến dưới 500,000đ24 thángKH-002");
+    expect(phoneLinks[0].textContent).toBe("Từ 500,000đ trở lên36 thángKH-003");
   });
 
   it("row link carries returnTo to the detail page", () => {

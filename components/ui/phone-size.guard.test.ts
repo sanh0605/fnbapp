@@ -45,13 +45,11 @@ const OWED_44: string[] = [
   "app/admin/orders/[id]/edit/components/OrderEditForm.tsx",
   "app/admin/orders/[id]/void/components/VoidOrderForm.tsx",
   "app/admin/outlets/components/OutletForm.tsx",
-  "app/admin/products/ProductsClient.tsx",
   "app/admin/products/categories/[id]/components/ProductCategoryDetailView.tsx",
   "app/admin/products/components/ProductForm.tsx",
   "app/admin/products/modifier-groups/components/ModifierGroupForm.tsx",
   "app/admin/products/modifiers/components/ModifierForm.tsx",
   "app/admin/products/types/components/ProductTypeForm.tsx",
-  "app/admin/promotions/components/PromotionsClient.tsx",
   "app/admin/reports/pnl/components/PnlMonthCards.tsx",
   "app/admin/reports/sales/page.tsx",
   "app/admin/suppliers/[id]/components/SupplierDetailView.tsx",
@@ -60,23 +58,11 @@ const OWED_44: string[] = [
 ];
 
 const OWED_TINY: string[] = [
-  "app/admin/activity-log/components/ActivityLogClient.tsx",
-  "app/admin/brands/components/BrandsClient.tsx",
-  "app/admin/finance/bank-accounts/components/BankAccountsClient.tsx",
-  "app/admin/finance/categories/components/CategoriesClient.tsx",
-  "app/admin/finance/monthly-items/components/MonthlyItemsClient.tsx",
-  "app/admin/inventory/categories/components/CategoriesClient.tsx",
   "app/admin/inventory/conversions/components/ConversionForm.tsx",
-  "app/admin/inventory/items/components/ItemsClient.tsx",
-  "app/admin/orders/OrderTable.tsx",
   "app/admin/orders/[id]/components/OrderDetailView.tsx",
   "app/admin/orders/[id]/edit/components/OrderEditForm.tsx",
-  "app/admin/outlets/components/OutletsClient.tsx",
-  "app/admin/products/ProductsClient.tsx",
   "app/admin/products/modifier-groups/[id]/components/ModifierGroupDetailView.tsx",
-  "app/admin/products/modifiers/components/ModifiersClient.tsx",
   "app/admin/promotions/components/PromotionForm.tsx",
-  "app/admin/promotions/components/PromotionsClient.tsx",
   "app/admin/reports/components/SalesCharts.tsx",
   "app/admin/reports/issued/EventCard.tsx",
   "app/admin/reports/issued/page.tsx",
@@ -84,8 +70,6 @@ const OWED_TINY: string[] = [
   "app/admin/reports/pnl/components/PnlMonthCards.tsx",
   "app/admin/reports/pnl/components/PnlTableView.tsx",
   "app/admin/reports/sales/page.tsx",
-  "app/admin/users/components/RoleBadge.tsx",
-  "app/admin/users/components/UsersClient.tsx",
 ];
 
 describe("BR-UI-014 phone control size", () => {

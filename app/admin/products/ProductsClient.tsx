@@ -281,46 +281,14 @@ export default function ProductsClient({
 
   const currentListUrl = listUrl(search, category, status, slice.page, sortParam, dirParam);
 
-  const renderCard = (product: Product) => {
-    const catName = categoryMap[product.category_id] || "Chưa phân loại";
-    const sizeTexts = (product.variants || []).map(
-      (v) => `${v.size_name} ${formatNumber(v.price)}`,
-    );
-    const sizesSummary = sizeTexts.join(" · ");
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedCategory = searchParams?.get("category") ?? initialCategory ?? "ALL";
+  const appliedStatus = parseStatus(searchParams?.get("status") ?? initialStatus);
 
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-text-primary text-base leading-tight">
-              {product.name}
-            </div>
-            <div className="font-mono text-xs text-primary mt-0.5">
-              {product.id}
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-surface-secondary text-text-secondary border border-border">
-              {catName}
-            </span>
-            {product.status === "ACTIVE" ? (
-              <Badge variant="success">Đang bán</Badge>
-            ) : (
-              <Badge variant="warning">Ngừng bán</Badge>
-            )}
-          </div>
-        </div>
-        <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
-          {sizesSummary && <div>{sizesSummary}</div>}
-          {product.hasNoSellableVariant && (
-            <div>
-              <Badge variant="danger">Không có size nào đang bán</Badge>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const activeCount =
+    (appliedSearch.trim() ? 1 : 0) +
+    (appliedCategory && appliedCategory !== "ALL" ? 1 : 0) +
+    (appliedStatus !== "ACTIVE" ? 1 : 0);
 
   const removal =
     status === "ACTIVE"
@@ -349,7 +317,6 @@ export default function ProductsClient({
           <Button
             href={`/admin/products/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -360,8 +327,8 @@ export default function ProductsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search || (category && category !== "ALL") || status !== "ACTIVE")}
-      >
-        <div className="shrink-0 w-full md:w-64">
+        activeCount={activeCount}
+        search={
           <Field label="Tìm món" htmlFor="products-search">
             <TextInput
               id="products-search"
@@ -370,7 +337,8 @@ export default function ProductsClient({
               onChange={(e) => setSearch(e.target.value)}
             />
           </Field>
-        </div>
+        }
+      >
         <div className="shrink-0 w-full md:w-48">
           <Field label="Nhóm món" htmlFor="products-category">
             <Select
@@ -409,7 +377,31 @@ export default function ProductsClient({
           `/admin/products/${encodeURIComponent(product.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(product) => {
+          const catName = categoryMap[product.category_id] || "Chưa phân loại";
+          let sizesSummary = "";
+          if (product.hasNoSellableVariant) {
+            sizesSummary = "Không có size nào đang bán";
+          } else {
+            const sizeTexts = (product.variants || []).map(
+              (v) => `${v.size_name} ${formatNumber(v.price)}`,
+            );
+            sizesSummary = sizeTexts.join(" · ");
+          }
+
+          const meta = [sizesSummary, catName].filter(Boolean).join(" · ");
+
+          return {
+            title: product.name,
+            meta,
+            badge:
+              product.status === "ACTIVE" ? (
+                <Badge variant="success">Đang bán</Badge>
+              ) : (
+                <Badge variant="warning">Ngừng bán</Badge>
+              ),
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,
@@ -434,7 +426,7 @@ export default function ProductsClient({
                       { scroll: false },
                     );
                   }}
-                  className="text-primary hover:text-primary-hover font-medium underline text-sm min-h-[44px] md:min-h-[40px] inline-flex items-center"
+                  className="text-primary hover:text-primary-hover font-medium underline text-sm min-h-[48px] md:min-h-[40px] inline-flex items-center"
                 >
                   Xem &ldquo;{STATUS_LABELS[matchingOtherStatus] || matchingOtherStatus}&rdquo;
                 </button>
@@ -449,7 +441,7 @@ export default function ProductsClient({
                 <button
                   type="button"
                   onClick={handleClearFilter}
-                  className="text-danger hover:underline font-medium text-sm min-h-[44px] md:min-h-[40px] inline-flex items-center"
+                  className="text-danger hover:underline font-medium text-sm min-h-[48px] md:min-h-[40px] inline-flex items-center"
                 >
                   Xoá lọc
                 </button>

@@ -115,32 +115,6 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
     []
   );
 
-  const renderCard = (row: StocktakeListRow) => (
-    <div className="space-y-2 text-sm" data-testid={`session-card-${row.id}`}>
-      <div className="flex justify-between items-center">
-        <span className="font-mono text-primary font-medium text-base">
-          {row.id}
-        </span>
-        {renderStocktakeStatusBadge(row.status)}
-      </div>
-      <div className="flex justify-between items-center text-xs text-text-secondary">
-        <span className="tabular-nums">{formatDateTimeFull(row.at)}</span>
-        <span>{row.personName}</span>
-      </div>
-      <div className="flex justify-between items-center text-xs text-text-secondary pt-1 border-t border-border/50">
-        <span>
-          Tiến độ:{" "}
-          <span className="tabular-nums text-text-primary">
-            {row.countedLines}/{row.totalLines}
-          </span>
-        </span>
-        <span className="tabular-nums text-text-primary">
-          {formatStocktakeDiffValue(row)}
-        </span>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
       <ListPageHeader
@@ -152,7 +126,6 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
               <Button
                 variant="primary"
                 disabled={true}
-                className="w-full md:w-auto"
               >
                 Tạo phiên kiểm kê
               </Button>
@@ -172,7 +145,6 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
               variant="primary"
               loading={isStarting}
               onClick={handleStart}
-              className="w-full md:w-auto"
             >
               Tạo phiên kiểm kê
             </Button>
@@ -188,7 +160,14 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
         getName={(row) => row.id}
         getHref={(row) => `/admin/inventory/stocktake/${row.id}`}
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(row) => ({
+          title: formatDateTimeFull(row.at),
+          value: formatStocktakeDiffValue(row),
+          meta: [row.id, row.personName, `Đã đếm ${row.countedLines}/${row.totalLines}`]
+            .filter(Boolean)
+            .join(" · "),
+          badge: renderStocktakeStatusBadge(row.status),
+        })}
         empty={
           <EmptyState
             icon="📋"

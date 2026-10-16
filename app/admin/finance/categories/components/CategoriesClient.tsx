@@ -207,37 +207,12 @@ export default function CategoriesClient({
 
   const currentListUrl = listUrl(search, status, slice.page, sortParam, dirParam);
 
-  const renderCard = (category: DBCashCategory) => (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between items-start gap-2">
-        <div>
-          <div className="text-sm text-text-primary">
-            {category.name}
-          </div>
-          <div className="text-[11px] text-text-muted mt-0.5 font-mono">
-            {category.id}
-          </div>
-        </div>
-        <div className="shrink-0">
-          {category.status === "ACTIVE" ? (
-            <Badge variant="success">Đang dùng</Badge>
-          ) : (
-            <Badge variant="warning">Ngừng dùng</Badge>
-          )}
-        </div>
-      </div>
-      <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
-        <div className="flex justify-between">
-          <span className="text-text-muted">Bên:</span>
-          <span>{KIND_LABEL[category.kind]}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-text-muted">Tính vào lãi lỗ:</span>
-          <span>{pnlTreatmentLabel(category)}</span>
-        </div>
-      </div>
-    </div>
-  );
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedStatus = parseStatus(searchParams?.get("status") ?? initialStatus);
+
+  const activeCount =
+    (appliedSearch.trim() ? 1 : 0) +
+    (appliedStatus !== "ACTIVE" ? 1 : 0);
 
   const removal =
     status === "ACTIVE"
@@ -267,7 +242,6 @@ export default function CategoriesClient({
           <Button
             href={`/admin/finance/categories/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -278,8 +252,8 @@ export default function CategoriesClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search || status !== "ACTIVE")}
-      >
-        <div className="shrink-0 w-full md:w-64">
+        activeCount={activeCount}
+        search={
           <Field label="Tìm nhóm" htmlFor="categories-search">
             <TextInput
               id="categories-search"
@@ -288,7 +262,8 @@ export default function CategoriesClient({
               onChange={(e) => setSearch(e.target.value)}
             />
           </Field>
-        </div>
+        }
+      >
         <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="categories-status">
             <Select
@@ -312,7 +287,16 @@ export default function CategoriesClient({
           `/admin/finance/categories/${encodeURIComponent(c.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(c) => ({
+          title: c.name,
+          meta: [KIND_LABEL[c.kind], pnlTreatmentLabel(c)].filter(Boolean).join(" · "),
+          badge:
+            c.status === "ACTIVE" ? (
+              <Badge variant="success">Đang dùng</Badge>
+            ) : (
+              <Badge variant="warning">Ngừng dùng</Badge>
+            ),
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

@@ -287,4 +287,28 @@ describe("StockOnHandClient", () => {
 
     expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
   });
+
+  it("renders phone rows with name, stock value, joined meta, and inactive badge", () => {
+    const { container } = render(
+      <StockOnHandClient
+        total={18013339}
+        unpricedCount={0}
+        rows={SAMPLE_ROWS}
+      />,
+    );
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(
+      within(phone).getByText("74,414đ · khoảng 5 ngày · Nguyên liệu · Kiểm lần cuối 09/08/2026"),
+    ).toBeInTheDocument();
+    expect(
+      within(phone).getByText("0đ · Hết · Nguyên liệu · Chưa kiểm lần nào"),
+    ).toBeInTheDocument();
+    expect(
+      within(phone).getByText("Nguyên liệu · Chưa kiểm lần nào"),
+    ).toBeInTheDocument();
+    expect(
+      within(phone).getByText("15,000đ · Nguyên liệu · Chưa kiểm lần nào"),
+    ).toBeInTheDocument();
+  });
 });
