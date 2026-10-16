@@ -3,7 +3,7 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addBrand, editBrand } from "@/app/admin/brands/actions";
-import { Button } from "@/components/ui/Button";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
@@ -95,29 +95,16 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
               dateFormat="dd/MM/yyyy"
               showTimeSelect={false}
               placeholderText="DD/MM/YYYY"
-              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] md:min-h-[40px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+              className="w-full border border-border rounded-lg px-3 py-2 min-h-[48px] md:min-h-[40px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             />
           </Field>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật" : "Lưu Thương Hiệu"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

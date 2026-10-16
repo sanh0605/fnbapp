@@ -150,10 +150,10 @@ describe("OrderEditForm (Đổi cách trả)", () => {
     expect(textarea).toBeDefined();
   });
 
-  it("Bỏ navigates back to view order page with returnTo preserved", () => {
+  it("Bỏ thay đổi navigates back to view order page with returnTo preserved", () => {
     render(<OrderEditForm order={makeOrder()} returnTo={returnTo} />);
 
-    const cancelButton = screen.getByRole("button", { name: "Bỏ" });
+    const cancelButton = screen.getByRole("button", { name: "Bỏ thay đổi" });
     fireEvent.click(cancelButton);
 
     expect(push).toHaveBeenCalledWith(
@@ -175,7 +175,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
     const methodSelect = screen.getByLabelText("Phương thức thanh toán");
     fireEvent.change(methodSelect, { target: { value: "BANK_TRANSFER" } });
 
-    const submitButton = screen.getByRole("button", { name: "Lưu" });
+    const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -203,7 +203,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
     const textarea = screen.getByLabelText("Lý do chỉnh sửa");
     fireEvent.change(textarea, { target: { value: "Đổi phương thức" } });
 
-    const submitButton = screen.getByRole("button", { name: "Lưu" });
+    const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -235,7 +235,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
       const textarea = screen.getByLabelText("Lý do chỉnh sửa");
       fireEvent.change(textarea, { target: { value: "Chỉnh tỷ lệ tiền mặt/chuyển khoản" } });
 
-      const submitButton = screen.getByRole("button", { name: "Lưu" });
+      const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
       expect(submitButton).not.toBeDisabled();
       fireEvent.click(submitButton);
 
@@ -252,7 +252,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
       });
     });
 
-    it("(b) 9,000 + 8,000 shows 'Còn lệch' and Lưu is disabled", () => {
+    it("(b) 9,000 + 8,000 shows 'Còn lệch' and submitting does not call changeOrderPayments", async () => {
       render(<OrderEditForm order={makeSplitOrder()} returnTo={returnTo} />);
 
       const transferInput = screen.getByLabelText("Số tiền chuyển khoản");
@@ -264,8 +264,11 @@ describe("OrderEditForm (Đổi cách trả)", () => {
       const textarea = screen.getByLabelText("Lý do chỉnh sửa");
       fireEvent.change(textarea, { target: { value: "Thử lưu lệch" } });
 
-      const submitButton = screen.getByRole("button", { name: "Lưu" });
+      const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
       expect(submitButton).toBeDisabled();
+      fireEvent.click(submitButton);
+
+      expect(changeOrderPayments).not.toHaveBeenCalled();
     });
 
     it("(c) removing the transfer part leaves one Tiền mặt part and saving sends one CASH entry with full total", async () => {
@@ -285,7 +288,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
       const textarea = screen.getByLabelText("Lý do chỉnh sửa");
       fireEvent.change(textarea, { target: { value: "Khách trả toàn bộ tiền mặt" } });
 
-      const submitButton = screen.getByRole("button", { name: "Lưu" });
+      const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
       expect(submitButton).not.toBeDisabled();
       fireEvent.click(submitButton);
 
@@ -312,7 +315,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
       const textarea = screen.getByLabelText("Lý do chỉnh sửa");
       fireEvent.change(textarea, { target: { value: "Cập nhật đơn một cách trả" } });
 
-      const submitButton = screen.getByRole("button", { name: "Lưu" });
+      const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
       expect(submitButton).not.toBeDisabled();
       fireEvent.click(submitButton);
 
@@ -357,18 +360,31 @@ describe("OrderEditForm two columns (owner 2026-10-10)", () => {
     expect(lines.className).toContain("lg:col-span-2");
     expect(lines.className).toContain("lg:col-start-1");
     expect(money.className).toContain("lg:col-start-3");
+    expect(layout.className).toContain("mb-6");
     expect(layout.className).not.toContain("max-w-4xl");
 
     expect(within(lines).getByText("Món trong đơn")).toBeInTheDocument();
     expect(within(lines).getByText("Khách trả")).toBeInTheDocument();
     expect(within(money).getByText("Thanh toán")).toBeInTheDocument();
     expect(within(money).getByLabelText("Lý do chỉnh sửa")).toBeInTheDocument();
-    expect(within(money).getByRole("button", { name: "Lưu" })).toBeInTheDocument();
-    expect(within(money).getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+    const form = layout.closest("form")!;
+    const saveBtn = within(form).getByRole("button", { name: "Lưu thay đổi" });
+    const cancelBtn = within(form).getByRole("button", { name: "Bỏ thay đổi" });
+    expect(saveBtn).toBeInTheDocument();
+    expect(cancelBtn).toBeInTheDocument();
+    expect(form.lastElementChild).toContainElement(saveBtn);
+    expect(within(money).queryByRole("button", { name: "Lưu thay đổi" })).toBeNull();
+    expect(within(money).queryByRole("button", { name: "Bỏ thay đổi" })).toBeNull();
   });
 
   it("on a phone the dishes come before the payment and the buttons", () => {
     renderForm();
     expectBefore(screen.getByTestId("form-lines"), screen.getByTestId("form-money"));
+  });
+
+  it("shows FormActionBar with Lưu thay đổi and Bỏ thay đổi", () => {
+    renderForm();
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
 });

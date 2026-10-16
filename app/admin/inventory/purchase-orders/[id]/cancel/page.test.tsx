@@ -78,6 +78,8 @@ describe("CancelPurchaseOrderPage", () => {
     expect(text).toContain("Chưa cập nhật dữ liệu, chưa huỷ được phiếu.");
     expect(text).toContain("Quay lại");
     expect(text).not.toContain("MOCK_CANCEL_FORM");
+    const link = (tree as any).props.children[2].props.children;
+    expect(link.props.className).toContain("min-h-[48px] md:min-h-[40px]");
   });
 
   it("ready view renders CancelPurchaseOrderForm", async () => {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import React from "react";
 import ModifiersClient from "./ModifiersClient";
 import type { DBModifier } from "@/types/db";
@@ -208,14 +208,30 @@ describe("ModifiersClient", () => {
         status: "INACTIVE",
       },
     ];
-    render(
+    const { container } = render(
       <ModifiersClient
         modifiers={inactiveModifiers}
         toppings={sampleToppings}
+        groups={[
+          {
+            id: "MG-001",
+            name: "Thêm Topping",
+            selection_mode: "MANY",
+            max_total: null,
+            allow_standalone: true,
+            sort_order: 50,
+            status: "ACTIVE",
+          },
+        ]}
       />,
     );
 
     const badges = screen.getAllByText("Ngừng dùng");
     expect(badges.length).toBeGreaterThanOrEqual(2);
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("Dâu sấy")).toBeInTheDocument();
+    expect(within(phone).getByText("5,000")).toBeInTheDocument();
+    expect(within(phone).getByText("Thêm Topping · MOD-007 · Bán độc lập: Có")).toBeInTheDocument();
+    expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
   });
 });

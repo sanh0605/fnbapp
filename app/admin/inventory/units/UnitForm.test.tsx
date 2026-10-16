@@ -72,4 +72,26 @@ describe("UnitForm on-page behaviour", () => {
     await fireClick(boBtn);
     expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/units");
   });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ' in create mode", async () => {
+    const container = await renderTracked(<UnitForm returnTo="/admin/inventory/units" />);
+    const buttons = Array.from(container.querySelectorAll("button")).map((b) => b.textContent?.trim());
+    expect(buttons).toContain("Tạo");
+    expect(buttons).toContain("Bỏ");
+  });
+
+  it("shows FormActionBar with 'Lưu thay đổi' and 'Bỏ thay đổi' in edit mode", async () => {
+    const container = await renderTracked(
+      <UnitForm initialData={{ id: "U-1", name: "Hộp" }} returnTo="/admin/inventory/units" />
+    );
+    const buttons = Array.from(container.querySelectorAll("button")).map((b) => b.textContent?.trim());
+    expect(buttons).toContain("Lưu thay đổi");
+    expect(buttons).toContain("Bỏ thay đổi");
+
+    const cancelBtn = Array.from(container.querySelectorAll("button")).find(
+      (b) => b.textContent?.trim() === "Bỏ thay đổi",
+    )!;
+    await fireClick(cancelBtn);
+    expect(mocks.push).toHaveBeenCalledWith("/admin/inventory/units");
+  });
 });

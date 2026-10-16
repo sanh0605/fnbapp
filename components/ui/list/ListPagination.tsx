@@ -29,12 +29,12 @@ export function ListPagination({
           {page > 1 ? (
             <Link
               href={pageHref(page - 1)}
-              className="px-3 py-1 text-sm font-medium text-text-primary hover:bg-surface-card rounded border border-transparent hover:border-border min-h-[44px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
+              className="px-3 py-1 text-sm font-medium text-text-primary hover:bg-surface-card rounded border border-transparent hover:border-border min-h-[48px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
             >
               Trước
             </Link>
           ) : (
-            <span className="px-3 py-1 text-sm font-medium text-text-muted/50 cursor-not-allowed min-h-[44px] md:min-h-[40px] min-w-[44px] flex items-center justify-center">
+            <span className="px-3 py-1 text-sm font-medium text-text-muted/50 cursor-not-allowed min-h-[48px] md:min-h-[40px] min-w-[44px] flex items-center justify-center">
               Trước
             </span>
           )}
@@ -44,7 +44,7 @@ export function ListPagination({
               key={p}
               href={pageHref(p)}
               aria-current={p === page ? "page" : undefined}
-              className={`min-h-[44px] md:min-h-[40px] min-w-[44px] items-center justify-center px-3 py-1 text-sm font-medium rounded border ${
+              className={`min-h-[48px] md:min-h-[40px] min-w-[44px] items-center justify-center px-3 py-1 text-sm font-medium rounded border ${
                 p === page
                   ? "flex bg-primary text-on-primary border-primary"
                   : "hidden md:flex text-text-primary hover:bg-surface-card border-transparent hover:border-border"
@@ -57,12 +57,12 @@ export function ListPagination({
           {page < pageCount ? (
             <Link
               href={pageHref(page + 1)}
-              className="px-3 py-1 text-sm font-medium text-text-primary hover:bg-surface-card rounded border border-transparent hover:border-border min-h-[44px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
+              className="px-3 py-1 text-sm font-medium text-text-primary hover:bg-surface-card rounded border border-transparent hover:border-border min-h-[48px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
             >
               Sau
             </Link>
           ) : (
-            <span className="px-3 py-1 text-sm font-medium text-text-muted/50 cursor-not-allowed min-h-[44px] md:min-h-[40px] min-w-[44px] flex items-center justify-center">
+            <span className="px-3 py-1 text-sm font-medium text-text-muted/50 cursor-not-allowed min-h-[48px] md:min-h-[40px] min-w-[44px] flex items-center justify-center">
               Sau
             </span>
           )}

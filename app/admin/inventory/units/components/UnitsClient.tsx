@@ -90,17 +90,6 @@ export default function UnitsClient({
 
   const currentListUrl = listUrl(slice.page, sortParam, dirParam);
 
-  const renderCard = (unit: DBUnit) => (
-    <div className="flex flex-col gap-1">
-      <div className="text-sm text-text-primary">
-        {unit.name}
-      </div>
-      <div className="text-sm text-text-muted">
-        <span className="text-text-muted">Ghi chú:</span> {unit.description || "—"}
-      </div>
-    </div>
-  );
-
   const removal = canDelete
     ? {
         verb: "Xoá",
@@ -125,7 +114,6 @@ export default function UnitsClient({
         action={
           <Button
             href={`/admin/inventory/units/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -140,7 +128,10 @@ export default function UnitsClient({
           `/admin/inventory/units/${encodeURIComponent(unit.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(unit) => ({
+          title: unit.name,
+          meta: unit.description || undefined,
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

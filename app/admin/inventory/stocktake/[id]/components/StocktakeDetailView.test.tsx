@@ -109,4 +109,38 @@ describe("StocktakeDetailView (Screen 3)", () => {
     expect(screen.getByText("Chủ quán")).toBeInTheDocument();
     expect(screen.getByText(formatDateTimeFull("2026-10-10T09:00:00Z"))).toBeInTheDocument();
   });
+
+  it("renders stocktake line items on phone as a divide-y list of PhoneRow", () => {
+    const { container } = render(
+      <StocktakeDetailView
+        session={confirmedSession}
+        isLatestConfirmed={true}
+        isOwner={true}
+      />
+    );
+
+    const phoneContainer = container.querySelector(".md\\:hidden");
+    expect(phoneContainer).not.toBeNull();
+    expect(phoneContainer?.className).toContain("divide-y");
+    expect(phoneContainer?.className).not.toContain("space-y-3");
+
+    const rows = phoneContainer?.querySelectorAll(":scope > div");
+    expect(rows?.length).toBe(1);
+    const firstRow = rows?.[0];
+    expect(firstRow?.className).toContain("px-4");
+    expect(firstRow?.className).toContain("py-2.5");
+    expect(firstRow?.className).not.toContain("p-4");
+
+    // PhoneRow: Line 1 has item name and value difference
+    expect(firstRow?.textContent).toContain("Bột cà phê truyền thống Phin Đậm");
+    expect(firstRow?.textContent).toContain("-296,033đ");
+
+    // PhoneRow: Line 2 has quantity info
+    expect(firstRow?.textContent).toContain("Sổ 6,000 g · Đếm 4,000 g · Thiếu 2,000 g");
+
+    // Old card labels are not present on phone
+    expect(firstRow?.textContent).not.toContain("Sổ lúc đếm");
+    expect(firstRow?.textContent).not.toContain("Chênh lệch số lượng");
+    expect(firstRow?.textContent).not.toContain("Chênh lệch giá trị");
+  });
 });

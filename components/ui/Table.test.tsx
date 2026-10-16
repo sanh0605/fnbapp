@@ -10,7 +10,6 @@ import {
   TableRow,
   TableRowHeader,
   TableTotalRow,
-  TotalCard,
 } from "./Table";
 
 afterEach(cleanup);
@@ -66,12 +65,6 @@ describe("BR-UI-005 Table set", () => {
     const rows = within(screen.getByRole("table", { name: "Phiếu xuất" })).getAllByRole("row");
     expect(rows[1]).toHaveTextContent("Tổng149,399đ");
     expect(rows[1].className).toContain("bg-primary-soft");
-  });
-
-  it("on a phone the totals are the first card", () => {
-    render(<TotalCard items={[{ label: "Giá trị xuất", value: "149,399đ" }]} />);
-    expect(screen.getByText("Giá trị xuất")).toBeInTheDocument();
-    expect(screen.getByText("149,399đ")).toBeInTheDocument();
   });
 });
 
@@ -305,4 +298,56 @@ describe("BR-UI-005 Table set: a pinned head (K5 review)", () => {
       expect(th.className.split(/\s+/)).toEqual(expect.arrayContaining(["sticky", "top-0", "bg-page"]));
     }
   });
+
+  it("a header cell that is both pinned and stick='left' gets z-20", () => {
+    render(
+      <Table aria-label="Bán chạy" pinHead>
+        <TableHead>
+          <TableHeaderCell stick="left">Món</TableHeaderCell>
+        </TableHead>
+      </Table>,
+    );
+    const th = screen.getByRole("columnheader", { name: "Món" });
+    expect(th.className).toContain("z-20");
+    expect(th.className).toContain("sticky");
+    expect(th.className).toContain("top-0");
+    expect(th.className).toContain("left-0");
+  });
 });
+
+describe("Table review fixes (desktop lining and total band)", () => {
+  it("non-statement TableRowHeader has md:px-4 md:py-3 md:whitespace-normal", () => {
+    render(
+      <Table aria-label="Kiểm tra">
+        <TableBody>
+          <TableRow>
+            <TableRowHeader stick="left">Dòng đầu</TableRowHeader>
+          </TableRow>
+        </TableBody>
+      </Table>,
+    );
+    const th = screen.getByRole("rowheader", { name: "Dòng đầu" });
+    expect(th.className).toContain("px-3");
+    expect(th.className).toContain("py-2");
+    expect(th.className).toContain("md:px-4");
+    expect(th.className).toContain("md:py-3");
+    expect(th.className).toContain("whitespace-nowrap");
+    expect(th.className).toContain("md:whitespace-normal");
+  });
+
+  it("sticky cell inside TableTotalRow keeps the total band background bg-primary-soft", () => {
+    render(
+      <Table aria-label="Kiểm tra tổng">
+        <TableTotalRow>
+          <TableCell stick="left">Tổng cộng</TableCell>
+        </TableTotalRow>
+      </Table>,
+    );
+    const td = screen.getByRole("cell", { name: "Tổng cộng" });
+    expect(td.className).toContain("sticky");
+    expect(td.className).toContain("left-0");
+    expect(td.className).toContain("bg-primary-soft");
+    expect(td.className).not.toContain("bg-surface-card");
+  });
+});
+

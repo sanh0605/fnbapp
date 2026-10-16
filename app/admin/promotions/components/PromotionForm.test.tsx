@@ -152,7 +152,7 @@ describe("PromotionForm", () => {
         returnTo="/admin/promotions?status=ACTIVE"
       />
     );
-    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/promotions?status=ACTIVE"));
     expect(refresh).toHaveBeenCalled();
   });
@@ -169,7 +169,7 @@ describe("PromotionForm", () => {
         returnTo="/admin/promotions"
       />
     );
-    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Mã khuyến mãi đã tồn tại"));
     expect(push).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Tên chương trình *")).toHaveValue("Giảm 10%");
@@ -198,7 +198,7 @@ describe("PromotionForm", () => {
       // 24-hour Saigon box (dd/MM/yyyy HH:mm), not the browser's 12-hour datetime-local.
       expect(startInput.value).toBe("15/09/2026 06:30");
 
-      fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+      fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
       await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
       const payload = mocks.savePromotion.mock.calls[0][0];
       expect(payload.start_date).toBe("2026-09-14T23:30:00.000Z");
@@ -270,7 +270,7 @@ describe("PromotionForm -- value boxes (wave K4)", () => {
     expect(box.value).toBe("20,000");
     expect(minBox().value).toBe("50,000");
     fireEvent.change(minBox(), { target: { value: "" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
     const payload = mocks.savePromotion.mock.calls[0][0];
     expect(payload.discount_value).toBe(20000);
@@ -287,13 +287,13 @@ describe("PromotionForm -- value boxes (wave K4)", () => {
     expect(own.type).toBe("text");
     fireEvent.change(own, { target: { value: "12000" } });
     expect(own.value).toBe("12,000");
-    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
     expect(JSON.parse(mocks.savePromotion.mock.calls[0][0].applicable_products_json)).toEqual({ "VAR-001": 12000 });
 
     mocks.savePromotion.mockClear();
     fireEvent.change(own, { target: { value: "" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
     expect(JSON.parse(mocks.savePromotion.mock.calls[0][0].applicable_products_json)).toEqual({ "VAR-001": 10000 });
   });
@@ -343,14 +343,14 @@ describe("PromotionForm -- stackable and FLAT_PRICE (Phiếu G7)", () => {
     fireEvent.change(stackableSelect, { target: { value: "yes" } });
     expect(stackableSelect).toHaveValue("yes");
 
-    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
     expect(mocks.savePromotion.mock.calls[0][0].stackable).toBe(true);
 
     mocks.savePromotion.mockClear();
     // Change back to Không (no)
     fireEvent.change(stackableSelect, { target: { value: "no" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu thông tin" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(mocks.savePromotion).toHaveBeenCalledTimes(1));
     expect(mocks.savePromotion.mock.calls[0][0].stackable).toBe(false);
   });
@@ -363,4 +363,89 @@ describe("PromotionForm -- stackable and FLAT_PRICE (Phiếu G7)", () => {
     expect((discountValueInput as HTMLInputElement).value).toBe("");
   });
 });
+
+describe("PromotionForm sections and FormActionBar (BR-UI-014, BR-UI-015)", () => {
+  it("renders sections in order: Chương trình, Mức giảm, Thời gian, Món áp dụng", () => {
+    render(
+      <PromotionForm
+        brands={mockBrands}
+        categories={mockCategories}
+        products={mockProducts}
+        variants={mockVariants}
+        returnTo="/admin/promotions"
+      />
+    );
+
+    const headings = screen.getAllByRole("heading", { level: 3 });
+    const headingTexts = headings.map(h => h.textContent?.trim());
+    expect(headingTexts).toEqual(["Chương trình", "Mức giảm", "Thời gian", "Món áp dụng"]);
+
+    headings.forEach(h => {
+      expect(h.className).toContain("text-sm");
+      expect(h.className).toContain("text-text-secondary");
+      expect(h.className).not.toContain("font-bold");
+    });
+  });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ' on create mode", () => {
+    render(
+      <PromotionForm
+        brands={mockBrands}
+        categories={mockCategories}
+        products={mockProducts}
+        variants={mockVariants}
+        returnTo="/admin/promotions"
+      />
+    );
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
+  it("shows FormActionBar with 'Lưu thay đổi' and 'Bỏ thay đổi' on edit mode", () => {
+    render(
+      <PromotionForm
+        initialData={promoFixture()}
+        brands={mockBrands}
+        categories={mockCategories}
+        products={mockProducts}
+        variants={mockVariants}
+        returnTo="/admin/promotions"
+      />
+    );
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    const cancelButton = screen.getByRole("button", { name: "Bỏ thay đổi" });
+    expect(cancelButton).toBeInTheDocument();
+    fireEvent.click(cancelButton);
+    expect(push).toHaveBeenCalledWith("/admin/promotions");
+  });
+
+  it("does not have text below 12px (no sub-12px classes)", () => {
+    const { container } = render(
+      <PromotionForm
+        initialData={promoFixture({ type: "PRODUCT_DISCOUNT" })}
+        brands={mockBrands}
+        categories={mockCategories}
+        products={mockProducts}
+        variants={mockVariants}
+        returnTo="/admin/promotions"
+      />
+    );
+    expect(container.querySelector(".text-\\[10px\\]")).toBeNull();
+    expect(container.querySelector(".text-\\[11px\\]")).toBeNull();
+  });
+
+  it("renders 'Áp dụng cho toàn đơn' under 'Món áp dụng' for whole-order discount", () => {
+    render(
+      <PromotionForm
+        brands={mockBrands}
+        categories={mockCategories}
+        products={mockProducts}
+        variants={mockVariants}
+        returnTo="/admin/promotions"
+      />
+    );
+    expect(screen.getByText("Áp dụng cho toàn đơn")).toBeInTheDocument();
+  });
+});
+
 

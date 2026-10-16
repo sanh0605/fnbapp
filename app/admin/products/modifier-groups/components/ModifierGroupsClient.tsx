@@ -225,45 +225,6 @@ export default function ModifierGroupsClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const renderCard = (r: ModifierGroupRow) => {
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-text-primary text-base leading-tight font-normal">
-              {r.group.name}
-            </div>
-            <div className="text-xs text-text-secondary font-normal mt-0.5">
-              Thứ tự hiện: {r.group.sort_order} •{" "}
-              {r.group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều"}
-              {r.group.selection_mode === "MANY" && r.group.max_total
-                ? ` (tối đa ${r.group.max_total} phần)`
-                : ""}
-            </div>
-          </div>
-          <span
-            className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded text-xs font-normal ${
-              r.group.status === "ACTIVE"
-                ? "bg-primary-soft text-primary"
-                : "bg-surface-secondary text-text-muted"
-            }`}
-          >
-            {r.group.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng"}
-          </span>
-        </div>
-        <div className="text-xs text-text-secondary font-normal">
-          Tuỳ chọn:{" "}
-          {r.optionNames.length > 0
-            ? r.optionNames.join(", ")
-            : "Chưa có tuỳ chọn"}
-        </div>
-        <div className="text-xs text-text-muted font-normal">
-          Áp dụng: {r.productCount} món
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-6">
       <ListPageHeader
@@ -273,7 +234,6 @@ export default function ModifierGroupsClient({
           <Button
             href={`/admin/products/modifier-groups/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -305,7 +265,28 @@ export default function ModifierGroupsClient({
           `/admin/products/modifier-groups/${encodeURIComponent(r.group.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(r) => ({
+          title: r.group.name,
+          value: `${r.productCount} món`,
+          meta: [
+            r.group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều",
+            r.group.max_total ? `tối đa ${r.group.max_total} phần` : null,
+            r.optionNames.length > 0 ? r.optionNames.join(", ") : "Chưa có tuỳ chọn",
+          ]
+            .filter(Boolean)
+            .join(" · "),
+          badge: (
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-normal ${
+                r.group.status === "ACTIVE"
+                  ? "bg-primary-soft text-primary"
+                  : "bg-surface-secondary text-text-muted"
+              }`}
+            >
+              {r.group.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng"}
+            </span>
+          ),
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

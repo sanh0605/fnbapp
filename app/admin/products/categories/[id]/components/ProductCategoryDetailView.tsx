@@ -9,6 +9,7 @@ import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { deleteCategory } from "@/app/admin/products/categories/actions";
 import type { DBProductCategory } from "@/types/db";
 
@@ -139,19 +140,17 @@ export function ProductCategoryDetailView({
                 <Link
                   key={dish.id}
                   href={`/admin/products/${encodeURIComponent(dish.id)}`}
-                  className="p-4 flex items-center justify-between hover:bg-surface-secondary/50 transition-colors min-h-[44px] md:min-h-[40px]"
+                  className="block px-4 py-2.5 hover:bg-surface-secondary/50 transition-colors min-h-[48px] md:min-h-[40px]"
                 >
-                  <div>
-                    <div className="text-text-primary text-sm">
-                      {dish.name}
-                    </div>
-                    <div className="font-mono text-xs text-primary mt-0.5">
-                      {dish.id}
-                    </div>
-                  </div>
-                  <Badge variant={dish.status === "ACTIVE" ? "success" : "warning"}>
-                    {dish.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
-                  </Badge>
+                  <PhoneRow
+                    title={dish.name}
+                    meta={dish.id}
+                    badge={
+                      <Badge variant={dish.status === "ACTIVE" ? "success" : "warning"}>
+                        {dish.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
+                      </Badge>
+                    }
+                  />
                 </Link>
               ))}
             </div>

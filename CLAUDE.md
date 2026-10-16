@@ -139,7 +139,7 @@ Việc có cả hai phần thì tách thành hai phiếu giao việc. Opus soát
 Phản biện, soát lại, sửa nhỏ, tư vấn: chủ quán chốt 2026-10-15 (*"Đồng ý"*), chuẩn chung cho mọi dự án của chủ quán.
 Haiku: chủ quán chốt 2026-10-04 (*"Làm theo em khuyến nghị"*), sau khi nghe Haiku hợp việc tìm, không hợp việc tra luật hay lấy số.
 
-Model chủ quán chốt 2026-10-01 (thay bản 2026-09-29): *"giao cho model mới nhất và mạnh nhất"*. Mỗi lần giao, chạy `agy models`, chọn Gemini thế hệ mới nhất ở mức cao nhất (`-high`; thế hệ đó có Pro thì lấy Pro), ghi rõ `--model`, không để `agy` tự chọn. Đo 2026-10-16: `gemini-4-argon-high` (thế hệ 4 chưa có Pro). Sonnet dùng bản mới nhất có trong công cụ Agent, hiện là Sonnet 5.5 (`claude-sonnet-5-5`); có bản mới hơn thì báo chủ quán trước khi đổi.
+Model chủ quán chốt 2026-10-01 (thay bản 2026-09-29): *"giao cho model mới nhất và mạnh nhất"*. Mỗi lần giao, chạy `agy models`, chọn Gemini thế hệ mới nhất ở mức cao nhất (`-high`; thế hệ đó có Pro thì lấy Pro), ghi rõ `--model`, không để `agy` tự chọn. Đo 2026-10-16: `gemini-4-argon-high` (thế hệ 4 chưa có Pro). Chủ quán chốt 2026-10-16 (*"Argon có quá ít lượt để dùng nên chỉ có thể dùng trong những việc thực sự cần"*, chọn "Argon cho việc dựng mới"): Argon chỉ cho dựng màn hình mới, làm lại cả một trang, thiết kế khuôn chung, hoặc khi Flash sửa 2 lần vẫn hỏng; còn lại (sửa theo kết quả soát, chỉnh cỡ, sửa phép thử, việc nhỏ 1–3 file) dùng `gemini-3.8-flash-high`, hoặc bản Flash mới nhất. Sonnet dùng bản mới nhất có trong công cụ Agent, hiện là Sonnet 5.5 (`claude-sonnet-5-5`); có bản mới hơn thì báo chủ quán trước khi đổi.
 
 ## Viết code
 
@@ -176,7 +176,7 @@ Ponytail (cài cho cả máy) đặt cách viết code mặc định. Khi trái 
 | `scripts/`, `supabase/`, `app/pos/`, `lib/costing/` | có `CLAUDE.md` riêng, máy nạp khi mở file trong đó |
 
 Module mới đặt vào đúng vùng; không có vùng hợp thì hỏi trước khi tạo vùng mới. Gốc `lib/` không chứa file — có phép kiểm canh.
-Import cùng thư mục viết tương đối (`./TenFile`); import khác thư mục viết bằng alias `@/...`. Ví dụ có sẵn: `app/admin/inventory/assets/components/AssetsClient.tsx` import `./AssetItemCard`.
+Import cùng thư mục viết tương đối (`./TenFile`); import khác thư mục viết bằng alias `@/...`. Ví dụ có sẵn: `app/admin/users/components/UsersClient.tsx` import `./RoleBadge`.
 Đường dẫn viết bắt đầu bằng tên thư mục gốc (`app`, `lib`, `components`, `tests`, `scripts`, `docs`, `supabase`, `types`, `.claude`), không mở đầu bằng dấu gạch chéo. Phép kiểm chỉ nhận dạng lối này, nên đừng lấy đường dẫn không có thật ra làm ví dụ.
 
 ## Tài liệu

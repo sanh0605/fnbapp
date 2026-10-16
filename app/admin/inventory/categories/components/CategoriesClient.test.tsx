@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import CategoriesClient from "./CategoriesClient";
 import type { DBItemCategory } from "@/types/db";
 
@@ -86,8 +86,8 @@ describe("CategoriesClient", () => {
     expect(addLink.getAttribute("href")).toContain("/admin/inventory/categories/new?returnTo=");
   });
 
-  it("renders system_type labels correctly without English in parentheses", () => {
-    render(
+  it("renders system_type labels correctly and phone rows with name, code meta, and type badge", () => {
+    const { container } = render(
       <CategoriesClient
         categories={CATEGORIES}
         canDelete={false}
@@ -100,6 +100,12 @@ describe("CategoriesClient", () => {
     expect(screen.queryByText(/RAW/)).toBeNull();
     expect(screen.queryByText(/CONSUMABLE/)).toBeNull();
     expect(screen.queryByText(/EQUIPMENT/)).toBeNull();
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    const metaEl = within(phone).getByText("NHH-001");
+    expect(metaEl.className).toContain("text-sm");
+    expect(metaEl.className).toContain("text-text-secondary");
+    expect(metaEl.parentElement?.textContent).toBe("NHH-001Nguyên liệu");
   });
 
   it("canDelete=false renders no checkboxes and no removal bin", () => {

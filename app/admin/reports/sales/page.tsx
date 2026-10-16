@@ -283,7 +283,7 @@ export default async function SalesReportPage(
                   const dayTotalOrders = dayCells.reduce((s, c) => s + c.orderCount, 0);
                   return (
                     <details key={day} className="rounded-xl border border-border bg-page overflow-hidden group">
-                      <summary className="flex items-center justify-between p-3 cursor-pointer list-none min-h-[44px] md:min-h-[40px] [&::-webkit-details-marker]:hidden">
+                      <summary className="flex items-center justify-between p-3 cursor-pointer list-none min-h-[48px] md:min-h-[40px] [&::-webkit-details-marker]:hidden">
                         <div className="flex items-center gap-3">
                           <div className="w-11 h-11 shrink-0 rounded-lg bg-primary-soft text-primary flex items-center justify-center font-bold text-sm">
                             {day === "CN" ? "CN" : day}
@@ -295,7 +295,7 @@ export default async function SalesReportPage(
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-success">{formatNumber(dayTotalRevenue)}</div>
-                          <div className="text-[10px] text-text-muted flex items-center justify-end gap-1">
+                          <div className="text-xs text-text-muted flex items-center justify-end gap-1">
                             bấm để mở/đóng
                             <ChevronDown className="w-3 h-3 transition-transform group-open:rotate-180" />
                           </div>
@@ -328,7 +328,7 @@ export default async function SalesReportPage(
               <div className="w-16 shrink-0 text-xs text-text-muted font-bold text-center">Thứ</div>
               <div className="flex-1 gap-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
                 {Array.from({ length: 24 }, (_, i) => i).map(h => (
-                  <div key={h} className="text-center text-[10px] text-text-muted font-medium">
+                  <div key={h} className="text-center text-xs text-text-muted font-medium">
                     {h}h
                   </div>
                 ))}
@@ -358,7 +358,7 @@ export default async function SalesReportPage(
                         }}
                       >
                         {cell.revenue > 0 && (
-                          <span className="text-[10px] font-black leading-none truncate max-w-full px-0.5">
+                          <span className="text-xs font-black leading-none truncate max-w-full px-0.5">
                             {cell.revenue >= 1000000 
                               ? formatCompact(cell.revenue, "tr") 
                               : cell.revenue >= 1000 

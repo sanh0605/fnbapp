@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { OrderDetailView } from "./OrderDetailView";
 import type { OrderDetailV2Result } from "@/app/admin/orders/order-detail-actions";
 
@@ -246,16 +246,33 @@ describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
     expect(screen.getByRole("link", { name: "Huỷ đơn" })).toBeDefined();
   });
 
-  it("shows the dishes as a table on a computer and as cards on a phone", () => {
+  it("shows the dishes as a table on a computer and as a divide-y list of PhoneRow on a phone", () => {
     render(<OrderDetailView detail={makeDetail()} brands={[]} returnTo="/admin/orders" />);
     const table = screen.getByRole("table");
     expect(table.closest(".hidden.md\\:block")).not.toBeNull();
     const headers = screen.getAllByRole("columnheader").map(h => h.textContent);
     expect(headers).toEqual(expect.arrayContaining(["Món", "Size", "SL", "Thành tiền"]));
     expect(table.textContent).toContain("Cà phê sữa");
+
     const phone = screen.getByTestId("detail-lines-phone");
     expect(phone.className).toContain("md:hidden");
-    expect(phone.textContent).toContain("Cà phê sữa");
+    expect(phone.className).toContain("divide-y");
+    expect(phone.className).not.toContain("space-y");
+
+    const firstRow = phone.firstElementChild as HTMLElement;
+    expect(firstRow).toBeInTheDocument();
+    expect(firstRow.className).toContain("px-4");
+    expect(firstRow.className).toContain("py-2.5");
+    expect(firstRow.className).not.toContain("rounded-xl");
+    expect(firstRow.className).not.toContain("p-3");
+
+    // Line 1: dish title and formatted price with currency
+    expect(within(firstRow).getByText("Cà phê sữa")).toBeInTheDocument();
+    expect(within(firstRow).getByText("50,000đ")).toBeInTheDocument();
+    // Line 2: quantity and size in meta
+    expect(within(firstRow).getByText("1 × Size M")).toBeInTheDocument();
+    // No bold classes inside list rows (BR-UI-003)
+    expect(firstRow.querySelector(".font-bold")).toBeNull();
   });
 });
 
@@ -344,6 +361,36 @@ describe("OrderDetailView promotions (Phiếu G7)", () => {
     expect(screen.getByText("KHAITRUONG")).toBeInTheDocument();
     expect(screen.getByText("-5,100")).toBeInTheDocument();
     expect(screen.queryByText("Khuyến mãi hệ thống")).toBeNull();
+  });
+
+  it("does not use sub-12px text (e.g. text-[11px]) on discounted lines (BR-UI-014)", () => {
+    const detail = makeDetail("COMPLETED", {
+      lines: [
+        {
+          id: "line-1",
+          order_id: "ORD-1",
+          line_no: 1,
+          product_id: "PROD-1",
+          product_snapshot_json: "{}",
+          variant_id: "VAR-1",
+          variant_snapshot_json: "{}",
+          qty: 1,
+          unit_price: 50000,
+          modifiers_snapshot_json: "[]",
+          gross_line_total: 60000,
+          promo_discount: 10000,
+          manual_item_discount: 0,
+          order_discount_allocation: 0,
+          net_line_total: 50000,
+          promo_discount_reason: "",
+          product_name: "Cà phê sữa",
+          size_name: "M",
+          modifiers: [],
+        },
+      ],
+    });
+    const { container } = render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
+    expect(container.querySelector(".text-\\[11px\\]")).toBeNull();
   });
 });
 

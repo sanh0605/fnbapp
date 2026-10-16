@@ -73,7 +73,7 @@ export default function CategoriesClient({
         header: "Mã",
         sortValue: (cat) => cat.id,
         render: (cat) => (
-          <span className="font-mono text-[11px] text-text-muted group-hover:text-primary transition-colors">
+          <span className="font-mono text-xs text-text-muted group-hover:text-primary transition-colors">
             {cat.id}
           </span>
         ),
@@ -112,22 +112,6 @@ export default function CategoriesClient({
 
   const currentListUrl = listUrl(slice.page, sortParam, dirParam);
 
-  const renderCard = (cat: DBItemCategory) => (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between items-start gap-2">
-        <div>
-          <div className="text-sm text-text-primary">
-            {cat.name}
-          </div>
-          <div className="font-mono text-[11px] text-text-muted mt-0.5">
-            {cat.id}
-          </div>
-        </div>
-      </div>
-      <div>{getTypeLabel(cat.system_type)}</div>
-    </div>
-  );
-
   const removal = canDelete
     ? {
         verb: "Xoá",
@@ -152,7 +136,6 @@ export default function CategoriesClient({
         action={
           <Button
             href={`/admin/inventory/categories/new?returnTo=${encodeURIComponent(currentListUrl)}`}
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -167,7 +150,11 @@ export default function CategoriesClient({
           `/admin/inventory/categories/${encodeURIComponent(cat.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(cat) => ({
+          title: cat.name,
+          meta: cat.id,
+          badge: getTypeLabel(cat.system_type),
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

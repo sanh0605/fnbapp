@@ -110,7 +110,7 @@ describe("ConversionForm update_history removed (audit A5)", () => {
 
     expect(screen.queryByLabelText(/Cập nhật đơn vị mua cho các đơn hàng cũ/)).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
 
     expect(updateConversion).toHaveBeenCalledTimes(1);
     const fd = vi.mocked(updateConversion).mock.calls[0][0] as FormData;
@@ -156,10 +156,40 @@ describe("ConversionForm stopped units (B4)", () => {
       />
     );
     expect(screen.getByText("Bao Cũ")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     expect(updateConversion).toHaveBeenCalledTimes(1);
     const fd = vi.mocked(updateConversion).mock.calls[0][0] as FormData;
     expect(fd.get("purchased_unit")).toBe("U-INACTIVE");
+  });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ' in create mode", () => {
+    render(<ConversionForm items={ITEMS} conversions={[]} units={UNITS_WITH_INACTIVE} />);
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
+  it("shows FormActionBar with 'Lưu thay đổi' and 'Bỏ thay đổi' in edit mode", () => {
+    const EDIT = {
+      id: "CONV-1",
+      purchased_item_id: "ITEM-1",
+      purchased_unit: "U-THUNG",
+      conversion_rate: "1000",
+      base_unit: "U-ML",
+    } as any;
+    render(
+      <ConversionForm
+        items={ITEMS}
+        conversions={[EDIT]}
+        units={UNITS_WITH_INACTIVE}
+        initialData={EDIT}
+        returnTo="/admin/inventory/conversions"
+      />
+    );
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Bỏ thay đổi" }));
+    expect(push).toHaveBeenCalledWith("/admin/inventory/conversions");
   });
 });
 

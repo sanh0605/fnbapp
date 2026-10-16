@@ -292,5 +292,24 @@ describe("ProductForm -- inline validation and Alert (ticket B2)", () => {
     expect(alertEl).toBeTruthy();
     expect(alertEl?.textContent).toContain("Tên món đã tồn tại");
   });
+
+  it("controls use min-h-[48px] md:min-h-[40px] (BR-UI-014)", async () => {
+    const container = await renderTracked(
+      <ProductForm
+        categories={[{ id: "CAT-001", name: "Cà phê" }]}
+        optionGroups={[{ id: "OG-001", name: "Mức đường", status: "ACTIVE" }]}
+      />,
+    );
+
+    const addSizeBtn = Array.from(container.querySelectorAll("button")).find((b) => b.textContent?.includes("Thêm size"));
+    expect(addSizeBtn?.className).toContain("min-h-[48px]");
+    expect(addSizeBtn?.className).toContain("md:min-h-[40px]");
+    expect(addSizeBtn?.className).not.toContain("min-h-[44px]");
+
+    const optionGroupLabel = container.querySelector("label.cursor-pointer");
+    expect(optionGroupLabel?.className).toContain("min-h-[48px]");
+    expect(optionGroupLabel?.className).toContain("md:min-h-[40px]");
+    expect(optionGroupLabel?.className).not.toContain("min-h-[44px]");
+  });
 });
 

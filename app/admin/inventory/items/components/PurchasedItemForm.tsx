@@ -4,6 +4,7 @@ import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addPurchasedItem, updatePurchasedItem } from "../actions";
 import { Button } from "@/components/ui/Button";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
@@ -449,7 +450,7 @@ export function PurchasedItemForm({
           {(isConsumable || isRaw) && (
             <label
               htmlFor={`${formId}-isNonInventory`}
-              className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[44px] md:min-h-[40px]"
+              className="flex items-start gap-3 p-3 bg-surface-secondary rounded-lg border border-border cursor-pointer min-h-[48px] md:min-h-[40px]"
             >
               <input
                 type="checkbox"
@@ -465,24 +466,11 @@ export function PurchasedItemForm({
             </label>
           )}
 
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => router.push(returnTo)}
-              className="w-full sm:w-auto"
-            >
-              Bỏ
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={loading}
-              className="w-full sm:w-auto"
-            >
-              {isEdit ? "Cập nhật" : "Lưu"}
-            </Button>
-          </div>
+          <FormActionBar
+            mode={isEdit ? "edit" : "create"}
+            loading={loading}
+            onCancel={() => router.push(returnTo)}
+          />
         </form>
       </div>
     );
@@ -521,7 +509,7 @@ function BaseUnitSelector({
       {isUnitLocked ? (
         <div
           id={`${formId}-baseUnitId`}
-          className="w-full min-h-[44px] md:min-h-[40px] flex items-center border border-border rounded-button px-3 text-sm bg-surface-secondary text-text-secondary"
+          className="w-full min-h-[48px] md:min-h-[40px] flex items-center border border-border rounded-button px-3 text-sm bg-surface-secondary text-text-secondary"
         >
           {selectedBaseUnitName || "—"}
         </div>

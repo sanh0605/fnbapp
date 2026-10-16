@@ -191,3 +191,29 @@ describe("Doanh số dish category filter hides order-level figures (audit B3)",
   });
 });
 
+describe("Doanh số phone text size and touch targets (Task 5)", () => {
+  it("has no text under 12px (no text-[10px], text-[11px]) in rendered markup", async () => {
+    getSalesDataV2.mockResolvedValue(EMPTY);
+    getHourlyHeatmapV2.mockResolvedValue([
+      { dayOfWeek: "T2", hour: 9, revenue: 50000, orderCount: 2 },
+    ]);
+    getSalesTotalsV2.mockResolvedValue({ totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 });
+
+    const tree = await SalesReportPage({ searchParams: Promise.resolve({}) });
+    const json = JSON.stringify(tree);
+    expect(json).not.toMatch(/text-\[(?:[1-9]|1[01])(?:\.\d+)?px\]/);
+  });
+
+  it("has 48 px controls on phone (no min-h-[44px])", async () => {
+    getSalesDataV2.mockResolvedValue(EMPTY);
+    getHourlyHeatmapV2.mockResolvedValue([
+      { dayOfWeek: "T2", hour: 9, revenue: 50000, orderCount: 2 },
+    ]);
+    getSalesTotalsV2.mockResolvedValue({ totalRevenue: 0, totalOrders: 0, avgOrderValue: 0 });
+
+    const tree = await SalesReportPage({ searchParams: Promise.resolve({}) });
+    const json = JSON.stringify(tree);
+    expect(json).not.toContain("min-h-[44px]");
+  });
+});
+

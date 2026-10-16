@@ -10,6 +10,7 @@ import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } fro
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { PurchaseHistoryView } from "./PurchaseHistoryView";
 import { confirm } from "@/lib/shared/dialog";
@@ -87,7 +88,7 @@ export function ItemDetailView({
       stockValue = (
         <Link
           href={`/admin/inventory/assets?q=${encodeURIComponent(item.id)}`}
-          className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] md:min-h-[40px] inline-flex items-center"
+          className="text-sm font-medium text-primary hover:text-primary-hover min-h-[48px] md:min-h-[40px] inline-flex items-center"
         >
           Xem ở Tài sản
         </Link>
@@ -177,7 +178,7 @@ export function ItemDetailView({
           </h2>
           <Link
             href={`/admin/inventory/conversions?q=${encodeURIComponent(item.name)}`}
-            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] md:min-h-[40px] inline-flex items-center"
+            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[48px] md:min-h-[40px] inline-flex items-center"
           >
             Xem trong Bảng quy đổi &rarr;
           </Link>
@@ -223,21 +224,20 @@ export function ItemDetailView({
               </Table>
             </div>
 
-            {/* Phone Cards */}
-            <div className="md:hidden flex flex-col divide-y divide-border bg-surface-card rounded-card border border-border">
+            {/* Phone Rows */}
+            <div className="md:hidden divide-y divide-border bg-surface-card rounded-card border border-border">
               {conversions.map((conv) => (
-                <div key={conv.id} className="p-4 space-y-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="text-text-primary">
-                      1 {getUnitName(conv.purchased_unit, units)} = {conv.conversion_rate}{" "}
-                      {getUnitName(conv.base_unit, units)}
-                    </div>
-                    <Badge
-                      variant={conv.status === "INACTIVE" ? "neutral" : "processing"}
-                    >
-                      {conv.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng"}
-                    </Badge>
-                  </div>
+                <div key={conv.id} className="px-4 py-2.5">
+                  <PhoneRow
+                    title={`1 ${getUnitName(conv.purchased_unit, units)} = ${conv.conversion_rate} ${getUnitName(conv.base_unit, units)}`}
+                    badge={
+                      <Badge
+                        variant={conv.status === "INACTIVE" ? "neutral" : "processing"}
+                      >
+                        {conv.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng"}
+                      </Badge>
+                    }
+                  />
                 </div>
               ))}
             </div>

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { SupplierDetailView } from "./SupplierDetailView";
 import type { DBSupplier } from "@/types/db";
 import type { PurchaseOrderListPage } from "@/lib/purchasing/purchase-order-list";
@@ -364,5 +364,42 @@ describe("SupplierDetailView", () => {
 
     const badges = screen.getAllByText("Đã huỷ");
     expect(badges.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders purchase orders on phone as a divide-y list of PhoneRow links with 48px controls", () => {
+    render(
+      <SupplierDetailView
+        supplier={vinamilkSupplier}
+        orders={ordersWithTwelve}
+        returnTo="/admin/suppliers"
+        canDelete={false}
+      />
+    );
+
+    const mobileList = document.querySelector(".md\\:hidden") as HTMLElement;
+    expect(mobileList).toBeInTheDocument();
+    expect(mobileList.className).toContain("divide-y");
+
+    const links = within(mobileList).getAllByRole("link");
+    expect(links).toHaveLength(1);
+
+    const firstLink = links[0];
+    expect(firstLink).toHaveAttribute("href", "/admin/inventory/purchase-orders/PO-001");
+    expect(firstLink.className).toContain("px-4");
+    expect(firstLink.className).toContain("py-2.5");
+    expect(firstLink.className).toContain("min-h-[48px]");
+    expect(firstLink.className).not.toContain("min-h-[44px]");
+    expect(firstLink.className).not.toContain("p-4");
+
+    // PhoneRow: line 1 has po.id (text-base) and totalAmount; line 2 has dateText · sourceName (text-sm) and status badge
+    const titleEl = within(firstLink).getByText("PO-001");
+    expect(titleEl.className).toContain("text-base");
+    expect(within(firstLink).getByText("12,500,000đ")).toBeInTheDocument();
+
+    const metaEl = within(firstLink).getByText("01/10/2026 · Kho Tổng");
+    expect(metaEl.className).toContain("text-sm");
+    expect(metaEl.className).not.toContain("text-xs");
+
+    expect(within(firstLink).getByText("Hoàn thành")).toBeInTheDocument();
   });
 });

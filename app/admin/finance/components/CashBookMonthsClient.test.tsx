@@ -156,13 +156,35 @@ describe("CashBookMonthsClient (G-TC2)", () => {
     expect(screen.getAllByText("23,756,578đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("27,972,578đ").length).toBeGreaterThan(0);
 
-    // Phone card exists
-    const phoneCard = screen.getByTestId("month-card-2026-09");
-    expect(phoneCard).toBeInTheDocument();
-    expect(within(phoneCard).getByText("-10,341,000đ")).toBeInTheDocument();
-    expect(within(phoneCard).getByText("2,443,400đ")).toBeInTheDocument();
-    expect(within(phoneCard).getByText("1,637,000đ")).toBeInTheDocument();
+    // The old phone cards are gone; number report uses compact table
+    expect(screen.queryByTestId("month-card-2026-09")).toBeNull();
+    expect(document.querySelector(".md\\:hidden")).toBeNull();
+    expect(document.querySelector(".hidden.md\\:block")).toBeNull();
+
+    // Table body rows use TableRowHeader with stick="left" (class "sticky left-0")
+    const tienMatSection = screen.getByRole("region", { name: "Tiền mặt" });
+    const table = within(tienMatSection).getByRole("table");
+    expect(table).toBeInTheDocument();
+
+    const dauKyHeader = within(table).getByRole("rowheader", { name: "Đầu kỳ" });
+    expect(dauKyHeader.className).toContain("sticky");
+    expect(dauKyHeader.className).toContain("left-0");
+    const dauKyRow = dauKyHeader.closest("tr")!;
+    expect(within(dauKyRow).getByText("-10,341,000đ")).toBeInTheDocument();
+
+    const vonGopHeader = within(table).getByRole("rowheader", { name: "Vốn góp" });
+    expect(vonGopHeader.className).toContain("sticky");
+    expect(vonGopHeader.className).toContain("left-0");
+    const vonGopRow = vonGopHeader.closest("tr")!;
+    expect(within(vonGopRow).getByText("2,443,400đ")).toBeInTheDocument();
+
+    const vanHanhHeader = within(table).getByRole("rowheader", { name: "Vận hành" });
+    expect(vanHanhHeader.className).toContain("sticky");
+    expect(vanHanhHeader.className).toContain("left-0");
+    const vanHanhRow = vanHanhHeader.closest("tr")!;
+    expect(within(vanHanhRow).getByText("1,637,000đ")).toBeInTheDocument();
   });
+
 
   it("tab switch keeps the range", async () => {
     getCashBookMonths.mockResolvedValue([septemberFixture]);
@@ -247,18 +269,24 @@ describe("CashBookMonthsClient (G-TC2)", () => {
     const dashes = screen.getAllByText("–");
     expect(dashes.length).toBeGreaterThanOrEqual(2);
 
-    // Verify specifically in August phone card
-    const augCard = screen.getByTestId("month-card-2026-08");
-    const vonGopAugRow = within(augCard).getByText("Vốn góp").closest("div");
-    expect(vonGopAugRow).toHaveTextContent("1,000,000đ");
-    const vanHanhAugRow = within(augCard).getByText("Vận hành").closest("div");
-    expect(vanHanhAugRow).toHaveTextContent("–");
+    // The old phone cards are gone; verify in table rows with TableRowHeader stick="left"
+    expect(screen.queryByTestId("month-card-2026-08")).toBeNull();
+    expect(screen.queryByTestId("month-card-2026-09")).toBeNull();
 
-    // Verify specifically in September phone card
-    const septCard = screen.getByTestId("month-card-2026-09");
-    const vanHanhSeptRow = within(septCard).getByText("Vận hành").closest("div");
-    expect(vanHanhSeptRow).toHaveTextContent("1,637,000đ");
-    const vonGopSeptRow = within(septCard).getByText("Vốn góp").closest("div");
-    expect(vonGopSeptRow).toHaveTextContent("–");
+    const tienMatSection = screen.getByRole("region", { name: "Tiền mặt" });
+    const vonGopHeader = within(tienMatSection).getByRole("rowheader", { name: "Vốn góp" });
+    expect(vonGopHeader.className).toContain("sticky");
+    expect(vonGopHeader.className).toContain("left-0");
+    const vonGopRow = vonGopHeader.closest("tr")!;
+    expect(within(vonGopRow).getByText("1,000,000đ")).toBeInTheDocument();
+    expect(within(vonGopRow).getByText("–")).toBeInTheDocument();
+
+    const vanHanhHeader = within(tienMatSection).getByRole("rowheader", { name: "Vận hành" });
+    expect(vanHanhHeader.className).toContain("sticky");
+    expect(vanHanhHeader.className).toContain("left-0");
+    const vanHanhRow = vanHanhHeader.closest("tr")!;
+    expect(within(vanHanhRow).getByText("1,637,000đ")).toBeInTheDocument();
+    expect(within(vanHanhRow).getByText("–")).toBeInTheDocument();
   });
+
 });

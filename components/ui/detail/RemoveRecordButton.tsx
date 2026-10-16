@@ -53,7 +53,7 @@ export function RemoveRecordButton({
         title={`${verb} ${name}`}
         disabled={isPending}
         onClick={handleClick}
-        className="px-4 py-2 text-sm font-medium text-danger border border-danger/30 rounded-lg hover:bg-danger/10 transition min-h-[44px] md:min-h-[40px] flex items-center justify-center disabled:opacity-50"
+        className="px-4 py-2 text-sm font-medium text-danger border border-danger/30 rounded-lg hover:bg-danger/10 transition min-h-[48px] md:min-h-[40px] flex items-center justify-center disabled:opacity-50"
       >
         {isPending ? "Đang xử lý..." : verb}
       </button>

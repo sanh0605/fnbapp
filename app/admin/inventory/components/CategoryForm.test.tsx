@@ -48,4 +48,19 @@ describe("CategoryForm on-page behaviour", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
     expect(push).toHaveBeenCalledWith("/admin/inventory/categories");
   });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ' in create mode", () => {
+    render(<CategoryForm returnTo="/admin/inventory/categories" />);
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
+  it("shows FormActionBar with 'Lưu thay đổi' and 'Bỏ thay đổi' in edit mode", () => {
+    render(<CategoryForm initialData={{ id: "CAT-1", name: "Nguyên liệu", system_type: "RAW" }} returnTo="/admin/inventory/categories" />);
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Bỏ thay đổi" }));
+    expect(push).toHaveBeenCalledWith("/admin/inventory/categories");
+  });
 });

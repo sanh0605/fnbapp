@@ -199,40 +199,6 @@ export default function ModifiersClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const renderCard = (m: DBModifier) => {
-    const standalone = isStandaloneModifier(m) ? "Có" : "Không";
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-text-primary text-base leading-tight">
-              {m.name}
-            </div>
-            <div className="font-mono text-xs text-primary mt-0.5">
-              {m.id}
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <div className="text-primary text-sm tabular-nums">
-              {formatNumber(m.price)}
-            </div>
-            {m.status === "INACTIVE" && (
-              <Badge variant="neutral">
-                Ngừng dùng
-              </Badge>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center justify-between text-xs text-text-secondary pt-1 border-t border-border/50">
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-surface-secondary text-text-secondary">
-            {getGroupName(m)}
-          </span>
-          <span>Bán độc lập: {standalone}</span>
-        </div>
-      </div>
-    );
-  };
-
   const removal = {
     verb: "Xoá",
     confirmMessage: (count: number) => `Xoá ${count} tuỳ chọn?`,
@@ -256,7 +222,6 @@ export default function ModifiersClient({
           <Button
             href={`/admin/products/modifiers/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -288,7 +253,19 @@ export default function ModifiersClient({
           `/admin/products/modifiers/${encodeURIComponent(m.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(m) => ({
+          title: m.name,
+          value: formatNumber(m.price),
+          meta: [
+            getGroupName(m),
+            m.id,
+            `Bán độc lập: ${isStandaloneModifier(m) ? "Có" : "Không"}`,
+          ].join(" · "),
+          badge:
+            m.status === "INACTIVE" ? (
+              <Badge variant="neutral">Ngừng dùng</Badge>
+            ) : undefined,
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

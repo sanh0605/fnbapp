@@ -96,8 +96,8 @@ describe("EditBandsForm", () => {
     // Change the first row's term from 12 to 6
     fireEvent.change(termInputs[0], { target: { value: "6" } });
 
-    // Click "Lưu"
-    const saveBtn = screen.getByRole("button", { name: "Lưu" });
+    // Click "Lưu thay đổi"
+    const saveBtn = screen.getByRole("button", { name: "Lưu thay đổi" });
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
@@ -231,7 +231,7 @@ describe("EditBandsForm", () => {
       />
     );
 
-    const saveBtn = screen.getByRole("button", { name: "Lưu" });
+    const saveBtn = screen.getByRole("button", { name: "Lưu thay đổi" });
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
@@ -242,7 +242,7 @@ describe("EditBandsForm", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it("navigates back to returnTo without saving when 'Bỏ' is clicked", () => {
+  it("navigates back to returnTo without saving when 'Bỏ thay đổi' is clicked", () => {
     render(
       <EditBandsForm
         bands={INITIAL_BANDS}
@@ -251,10 +251,23 @@ describe("EditBandsForm", () => {
       />
     );
 
-    const cancelBtn = screen.getByRole("button", { name: "Bỏ" });
+    const cancelBtn = screen.getByRole("button", { name: "Bỏ thay đổi" });
     fireEvent.click(cancelBtn);
 
     expect(push).toHaveBeenCalledWith("/admin/inventory/asset-bands?page=2");
     expect(saveAssetBands).not.toHaveBeenCalled();
+  });
+
+  it("renders FormActionBar with 'Lưu thay đổi' and 'Bỏ thay đổi' buttons", () => {
+    render(
+      <EditBandsForm
+        bands={INITIAL_BANDS}
+        canRemove={true}
+        returnTo="/admin/inventory/asset-bands"
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
 });

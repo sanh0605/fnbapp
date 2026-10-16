@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import OrderTable from "./OrderTable";
 import type { OrderListItem } from "./actions";
 
@@ -281,11 +281,45 @@ describe("OrderTable -- shared table (wave K4)", () => {
   });
 
   it("the phone list shows one card per order", () => {
-    const { container } = renderList();
-    const phone = container.querySelector(".md\\:hidden");
+    const { container } = render(
+      <OrderTable
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialOrders={[
+          makeOrder("ORD-1", "000001"),
+          makeOrder("ORD-2", "000002", {
+            parent_order_id: "ORD-1",
+            version: 2,
+            status: "VOIDED",
+            void_reason: "Khách huỷ bàn",
+            lines: [
+              {
+                ...makeOrder("ORD-2", "000002").lines[0],
+                qty: 2,
+                product_name: "Bạc xỉu",
+                size_name: "L",
+                modifiers: [{ id: "MOD-1", name: "Trân châu", price: 5000 }],
+              },
+            ],
+          }),
+        ]}
+        totalCount={2}
+        itemsPerPage={20}
+        brands={[]}
+      />
+    );
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(phone).not.toBeNull();
-    expect(phone!.textContent).toContain("ORD000001");
-    expect(phone!.textContent).toContain("ORD000002");
+    expect(within(phone).getByText("ORD000001")).toBeInTheDocument();
+    expect(within(phone).getAllByText("60,000")).toHaveLength(2);
+    expect(within(phone).getByText("01/10/2026 19:00:00 · 1x Trà đào (L)")).toBeInTheDocument();
+    expect(within(phone).getByText("Chuyển khoản")).toBeInTheDocument();
+    expect(within(phone).getByText("ORD000002 · v2")).toBeInTheDocument();
+    expect(
+      within(phone).getByText("01/10/2026 19:00:00 · 2x Bạc xỉu (L) + Trân châu")
+    ).toBeInTheDocument();
+    expect(within(phone).getByText("Đã huỷ")).toBeInTheDocument();
+    expect(within(phone).queryByText("Khách huỷ bàn")).toBeNull();
   });
 
   it("shows the filter's total under the Khách trả header when COMPLETED", () => {
@@ -331,8 +365,8 @@ describe("OrderTable payment method display (BR-SALE-013, owner 2026-10-14 C12)"
     expect(desktopTable).not.toBeNull();
     expect(desktopTable!.textContent).toContain("Tiền mặt + Chuyển khoản");
 
-    // Phone card
-    const phoneList = container.querySelector(".md\\:hidden");
+    // Phone list (the filter toggle is md:hidden too)
+    const phoneList = container.querySelector(".md\\:hidden.flex.flex-col");
     expect(phoneList).not.toBeNull();
     expect(phoneList!.textContent).toContain("Tiền mặt + Chuyển khoản");
 

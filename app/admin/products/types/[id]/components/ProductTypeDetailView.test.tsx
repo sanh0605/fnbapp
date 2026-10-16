@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import React from "react";
 import { ProductTypeDetailView } from "./ProductTypeDetailView";
 import type { DBProductType } from "@/types/db";
@@ -168,5 +168,29 @@ describe("ProductTypeDetailView", () => {
     await waitFor(() => {
       expect(push).toHaveBeenCalledWith("/admin/products/types");
     });
+  });
+
+  it("renders category list on phone as a divide-y list of PhoneRow with px-4 py-2.5 and text-base title", () => {
+    render(
+      <ProductTypeDetailView
+        type={sampleType}
+        categoryNames={["Cà phê", "Trà"]}
+        canDelete={false}
+        returnTo="/admin/products/types"
+      />
+    );
+
+    const mobileList = document.querySelector(".md\\:hidden") as HTMLElement;
+    expect(mobileList).toBeInTheDocument();
+    expect(mobileList.className).toContain("divide-y");
+
+    const firstRow = mobileList.firstElementChild as HTMLElement;
+    expect(firstRow.className).toContain("px-4");
+    expect(firstRow.className).toContain("py-2.5");
+    expect(firstRow.className).not.toContain("p-4");
+
+    // Title is rendered via PhoneRow (text-base)
+    const titleEl = within(firstRow).getByText("Cà phê");
+    expect(titleEl.className).toContain("text-base");
   });
 });

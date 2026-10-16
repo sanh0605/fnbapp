@@ -72,6 +72,27 @@ describe("ProductCategoryForm", () => {
     fireEvent.click(cancelButton);
     expect(push).toHaveBeenCalledWith("/admin/products/categories?q=tra");
   });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ' on create mode", () => {
+    render(<ProductCategoryForm types={TYPES} returnTo="/admin/products/categories" />);
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
+  it("shows FormActionBar with 'Lưu thay đổi' and 'Bỏ thay đổi' on edit mode", () => {
+    render(
+      <ProductCategoryForm
+        initialData={sampleCategory}
+        types={TYPES}
+        returnTo="/admin/products/categories"
+      />
+    );
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    const cancelButton = screen.getByRole("button", { name: "Bỏ thay đổi" });
+    expect(cancelButton).toBeInTheDocument();
+    fireEvent.click(cancelButton);
+    expect(push).toHaveBeenCalledWith("/admin/products/categories");
+  });
 });
 
 // Plan 2026-10-14-tong-quan-moi Task 6: every dish group picks a Loại món.

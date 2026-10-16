@@ -4,7 +4,7 @@ import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addOutlet, editOutlet } from "@/app/admin/outlets/actions";
 import { nextOutletCode } from "@/lib/catalog/outlet-code";
-import { Button } from "@/components/ui/Button";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
@@ -99,6 +99,8 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
         )}
 
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <h3 className="col-span-1 md:col-span-2 text-sm text-text-secondary">Thông tin</h3>
+
           <Field label="Tên điểm bán" htmlFor={`${formId}-name`} required>
             <TextInput
               id={`${formId}-name`}
@@ -141,11 +143,13 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
               dateFormat="dd/MM/yyyy"
               showTimeSelect={false}
               placeholderText="DD/MM/YYYY"
-              className="w-full border border-border rounded-lg px-3 py-2 min-h-[44px] md:min-h-[40px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
+              className="w-full border border-border rounded-lg px-3 py-2 min-h-[48px] md:min-h-[40px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             />
           </Field>
 
-          <div className="space-y-1">
+          <h3 className="col-span-1 md:col-span-2 text-sm text-text-secondary pt-2">Giờ hoạt động</h3>
+
+          <div className="col-span-1 md:col-span-2 space-y-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Giờ mở cửa" htmlFor={`${formId}-open-time`}>
                 <TextInput
@@ -164,30 +168,17 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
                 />
               </Field>
             </div>
-            <p className="text-xs text-text-muted">
+            <p className="text-[13px] md:text-xs text-text-secondary">
               Để trống nếu chưa muốn hệ thống nhắc giờ mở/đóng cửa cho điểm bán này.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật" : "Lưu điểm bán"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

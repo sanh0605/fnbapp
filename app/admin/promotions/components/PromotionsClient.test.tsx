@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import React from "react";
 import PromotionsClient from "./PromotionsClient";
@@ -169,7 +169,7 @@ describe("PromotionsClient", () => {
   });
 
   it("PRM-004 fixture shows expected fields", () => {
-    render(
+    const { container } = render(
       <PromotionsClient
         promotions={[samplePromotions[1]]}
         brands={sampleBrands}
@@ -185,6 +185,15 @@ describe("PromotionsClient", () => {
     expect(screen.getAllByText("Đã hết hạn").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/15\/07\/2026 12:59:00/).length).toBeGreaterThan(0);
     expect(screen.getAllByText("2 món, 3 size").length).toBeGreaterThan(0);
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("202607 - GIẢM 10K")).toBeInTheDocument();
+    expect(within(phone).getByText("Giảm 10,000đ")).toBeInTheDocument();
+    expect(
+      within(phone).getByText("01/07/2026 00:00:00 → 15/07/2026 12:59:00 · Uchako · 2 món, 3 size")
+    ).toBeInTheDocument();
+    expect(within(phone).getByText("Đã hết hạn")).toBeInTheDocument();
+    expect(within(phone).queryByText("PRM-004")).toBeNull();
   });
 
   it("leaves a plain date start_date (day with no time) as a plain date without seconds", () => {
@@ -238,5 +247,26 @@ describe("PromotionsClient", () => {
     const createLink = screen.getByRole("link", { name: "Tạo" });
     expect(createLink).toBeInTheDocument();
     expect(createLink.getAttribute("href")).toContain("/admin/promotions/new?returnTo=");
+  });
+
+  it("omits date part from phone meta when both start_date and end_date are empty", () => {
+    const promoWithoutDates: DBPromotion = {
+      ...samplePromotions[0],
+      start_date: "",
+      end_date: "",
+    };
+    const { container } = render(
+      <PromotionsClient
+        promotions={[promoWithoutDates]}
+        brands={sampleBrands}
+        products={[]}
+        variants={sampleVariants}
+        categories={[]}
+        canDelete={false}
+      />,
+    );
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("Toàn hệ thống · Toàn đơn")).toBeInTheDocument();
+    expect(within(phone).queryByText(/→/)).toBeNull();
   });
 });

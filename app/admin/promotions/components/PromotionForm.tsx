@@ -3,11 +3,11 @@
 import { useState, useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
 import { savePromotion } from "@/app/admin/promotions/actions";
-import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { formatNumber } from "@/lib/shared/format";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCategory } from "@/types/db";
@@ -241,161 +241,181 @@ export function PromotionForm({
           </div>
         )}
 
-        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          <div className="col-span-1 md:col-span-2">
-            <Field label="Tên chương trình" htmlFor={`${formId}-name`} required>
-              <TextInput
-                id={`${formId}-name`}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ví dụ: Happy Hour Giảm 10%"
-                required
-              />
-            </Field>
-          </div>
+        {/* Section 1: Chương trình */}
+        <div className="space-y-4">
+          <h3 className="text-sm text-text-secondary">Chương trình</h3>
+          <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="col-span-1 md:col-span-2">
+              <Field label="Tên chương trình" htmlFor={`${formId}-name`} required>
+                <TextInput
+                  id={`${formId}-name`}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ví dụ: Happy Hour Giảm 10%"
+                  required
+                />
+              </Field>
+            </div>
 
-          <div>
-            <Field label="Mã khuyến mãi (để nhập tay)" htmlFor={`${formId}-code`}>
-              <TextInput
-                id={`${formId}-code`}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Ví dụ: HAPPY10 (để trống nếu tự động)"
-              />
-            </Field>
-          </div>
+            <div>
+              <Field label="Mã khuyến mãi (để nhập tay)" htmlFor={`${formId}-code`}>
+                <TextInput
+                  id={`${formId}-code`}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="Ví dụ: HAPPY10 (để trống nếu tự động)"
+                />
+              </Field>
+            </div>
 
-          <div>
-            <Field label="Áp dụng thương hiệu" htmlFor={`${formId}-brandId`}>
-              <SearchableSelect
-                id={`${formId}-brandId`}
-                value={brandId}
-                onChange={setBrandId}
-                options={[
-                  { id: "", label: "Tất cả thương hiệu (Toàn hệ thống)" },
-                  ...brands.map((b) => ({ id: b.id, label: b.name })),
-                ]}
-                placeholder="Tất cả thương hiệu (Toàn hệ thống)"
-              />
-            </Field>
-          </div>
+            <div>
+              <Field label="Áp dụng thương hiệu" htmlFor={`${formId}-brandId`}>
+                <SearchableSelect
+                  id={`${formId}-brandId`}
+                  value={brandId}
+                  onChange={setBrandId}
+                  options={[
+                    { id: "", label: "Tất cả thương hiệu (Toàn hệ thống)" },
+                    ...brands.map((b) => ({ id: b.id, label: b.name })),
+                  ]}
+                  placeholder="Tất cả thương hiệu (Toàn hệ thống)"
+                />
+              </Field>
+            </div>
 
-          <div>
-            <Field label="Đối tượng giảm giá" htmlFor={`${formId}-type`}>
-              <Select
-                id={`${formId}-type`}
-                value={type}
-                onChange={(e) => handleTypeChange(e.target.value)}
-              >
-                <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
-                <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
-              </Select>
-            </Field>
-          </div>
+            <div>
+              <Field label="Dùng chung với khuyến mãi khác" htmlFor={`${formId}-stackable`}>
+                <Select
+                  id={`${formId}-stackable`}
+                  value={stackable ? "yes" : "no"}
+                  onChange={(e) => setStackable(e.target.value === "yes")}
+                >
+                  <option value="no">Không</option>
+                  <option value="yes">Có</option>
+                </Select>
+              </Field>
+            </div>
 
-          <div>
-            <Field label="Dùng chung với khuyến mãi khác" htmlFor={`${formId}-stackable`}>
-              <Select
-                id={`${formId}-stackable`}
-                value={stackable ? "yes" : "no"}
-                onChange={(e) => setStackable(e.target.value === "yes")}
-              >
-                <option value="no">Không</option>
-                <option value="yes">Có</option>
-              </Select>
-            </Field>
-          </div>
-
-          <div>
-            <Field label="Trạng thái" htmlFor={`${formId}-status`}>
-              <Select
-                id={`${formId}-status`}
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="ACTIVE">Hoạt động</option>
-                <option value="INACTIVE">Không hoạt động</option>
-              </Select>
-            </Field>
-          </div>
-
-          <div>
-            <Field label="Hình thức giảm giá" htmlFor={`${formId}-discountType`}>
-              <Select
-                id={`${formId}-discountType`}
-                value={discountType}
-                onChange={(e) => setDiscountType(e.target.value)}
-              >
-                <option value="PERCENT">Phần trăm (%)</option>
-                <option value="FLAT_VND">Số tiền giảm cố định (đ)</option>
-                {type !== "ORDER_DISCOUNT" && (
-                  <option value="FLAT_PRICE">Đồng giá (đ)</option>
-                )}
-              </Select>
-            </Field>
-          </div>
-
-          <div>
-            <Field label="Giá trị giảm giá" htmlFor={`${formId}-discountValue`} required>
-              <NumberInput
-                id={`${formId}-discountValue`}
-                decimals={0}
-                required
-                min={0}
-                minExclusive
-                unit={discountType === "PERCENT" ? "%" : "đ"}
-                max={discountType === "PERCENT" ? 100 : undefined}
-                example={
-                  discountType === "PERCENT"
-                    ? "10"
-                    : discountType === "FLAT_PRICE"
-                    ? "15,000"
-                    : "20,000"
-                }
-                value={discountValue === "" ? null : Number(discountValue)}
-                onValueChange={(v) => setDiscountValue(v === null ? "" : String(v))}
-              />
-            </Field>
-          </div>
-
-          <div>
-            <Field label="Đơn tối thiểu để áp dụng" htmlFor={`${formId}-minOrderValue`}>
-              <NumberInput
-                id={`${formId}-minOrderValue`}
-                decimals={0}
-                unit="đ"
-                min={0}
-                example="50,000"
-                value={minOrderValue === "" ? null : Number(minOrderValue)}
-                onValueChange={(v) => setMinOrderValue(v === null ? "" : String(v))}
-              />
-            </Field>
-          </div>
-
-          <div>
-            <Field label="Bắt đầu lúc" htmlFor={`${formId}-startDate`} required>
-              <SaigonDateTimeInput
-                id={`${formId}-startDate`}
-                value={startDate}
-                onChange={setStartDate}
-              />
-            </Field>
-          </div>
-
-          <div>
-            <Field label="Kết thúc lúc (không bắt buộc)" htmlFor={`${formId}-endDate`}>
-              <SaigonDateTimeInput
-                id={`${formId}-endDate`}
-                value={endDate}
-                onChange={setEndDate}
-                clearable
-              />
-            </Field>
+            <div>
+              <Field label="Trạng thái" htmlFor={`${formId}-status`}>
+                <Select
+                  id={`${formId}-status`}
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                >
+                  <option value="ACTIVE">Hoạt động</option>
+                  <option value="INACTIVE">Không hoạt động</option>
+                </Select>
+              </Field>
+            </div>
           </div>
         </div>
 
-        {type === "PRODUCT_DISCOUNT" && (
-          <div className="border-t border-border pt-4 mt-2">
+        {/* Section 2: Mức giảm */}
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h3 className="text-sm text-text-secondary">Mức giảm</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div>
+              <Field label="Đối tượng giảm giá" htmlFor={`${formId}-type`}>
+                <Select
+                  id={`${formId}-type`}
+                  value={type}
+                  onChange={(e) => handleTypeChange(e.target.value)}
+                >
+                  <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
+                  <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
+                </Select>
+              </Field>
+            </div>
+
+            <div>
+              <Field label="Hình thức giảm giá" htmlFor={`${formId}-discountType`}>
+                <Select
+                  id={`${formId}-discountType`}
+                  value={discountType}
+                  onChange={(e) => setDiscountType(e.target.value)}
+                >
+                  <option value="PERCENT">Phần trăm (%)</option>
+                  <option value="FLAT_VND">Số tiền giảm cố định (đ)</option>
+                  {type !== "ORDER_DISCOUNT" && (
+                    <option value="FLAT_PRICE">Đồng giá (đ)</option>
+                  )}
+                </Select>
+              </Field>
+            </div>
+
+            <div>
+              <Field label="Giá trị giảm giá" htmlFor={`${formId}-discountValue`} required>
+                <NumberInput
+                  id={`${formId}-discountValue`}
+                  decimals={0}
+                  required
+                  min={0}
+                  minExclusive
+                  unit={discountType === "PERCENT" ? "%" : "đ"}
+                  max={discountType === "PERCENT" ? 100 : undefined}
+                  example={
+                    discountType === "PERCENT"
+                      ? "10"
+                      : discountType === "FLAT_PRICE"
+                      ? "15,000"
+                      : "20,000"
+                  }
+                  value={discountValue === "" ? null : Number(discountValue)}
+                  onValueChange={(v) => setDiscountValue(v === null ? "" : String(v))}
+                />
+              </Field>
+            </div>
+
+            <div>
+              <Field label="Đơn tối thiểu để áp dụng" htmlFor={`${formId}-minOrderValue`}>
+                <NumberInput
+                  id={`${formId}-minOrderValue`}
+                  decimals={0}
+                  unit="đ"
+                  min={0}
+                  example="50,000"
+                  value={minOrderValue === "" ? null : Number(minOrderValue)}
+                  onValueChange={(v) => setMinOrderValue(v === null ? "" : String(v))}
+                />
+              </Field>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Thời gian */}
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h3 className="text-sm text-text-secondary">Thời gian</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div>
+              <Field label="Bắt đầu lúc" htmlFor={`${formId}-startDate`} required>
+                <SaigonDateTimeInput
+                  id={`${formId}-startDate`}
+                  value={startDate}
+                  onChange={setStartDate}
+                />
+              </Field>
+            </div>
+
+            <div>
+              <Field label="Kết thúc lúc (không bắt buộc)" htmlFor={`${formId}-endDate`}>
+                <SaigonDateTimeInput
+                  id={`${formId}-endDate`}
+                  value={endDate}
+                  onChange={setEndDate}
+                  clearable
+                />
+              </Field>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 4: Món áp dụng */}
+        <div className="space-y-4 pt-4 border-t border-border">
+          <h3 className="text-sm text-text-secondary">Món áp dụng</h3>
+
+          {type === "PRODUCT_DISCOUNT" ? (
+            <div>
             <div className="flex justify-between items-center mb-3">
               <div>
                 <h4 className="text-sm font-bold text-text-primary">Chọn món áp dụng</h4>
@@ -426,7 +446,7 @@ export function PromotionForm({
                         />
                         📁 {group.category.name}
                       </label>
-                      <span className="text-[11px] text-text-muted font-medium">
+                      <span className="text-xs text-text-muted font-medium">
                         {group.products.length} sản phẩm
                       </span>
                     </div>
@@ -461,7 +481,7 @@ export function PromotionForm({
                                         <div className="text-xs font-semibold text-text-primary truncate">
                                           {v.size_name || "Mặc định"}
                                         </div>
-                                        <div className="text-[10px] text-text-muted font-medium">
+                                        <div className="text-xs text-text-muted font-medium">
                                           {formatNumber(v.price)}
                                         </div>
                                       </div>
@@ -469,7 +489,7 @@ export function PromotionForm({
 
                                     {isChecked && (
                                       <div className="flex items-center gap-1.5 pt-1.5 border-t border-border/40">
-                                        <span className="text-[10px] text-text-muted shrink-0">Giảm:</span>
+                                        <span className="text-xs text-text-muted shrink-0">Giảm:</span>
                                         <div className="w-28">
                                           <NumberInput
                                             id={`${formId}-variant-${v.id}`}
@@ -513,27 +533,16 @@ export function PromotionForm({
               })}
             </div>
           </div>
+        ) : (
+          <p className="text-sm text-text-muted">Áp dụng cho toàn đơn</p>
         )}
-
-        <div className="border-t border-border pt-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            disabled={loading}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            Lưu thông tin
-          </Button>
         </div>
+
+        <FormActionBar
+          mode={initialData ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

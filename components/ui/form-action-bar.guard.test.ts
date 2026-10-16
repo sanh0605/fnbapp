@@ -32,29 +32,12 @@ function formsOf(page: string): string[] {
 }
 
 const forms = [...new Set(pages(join(root, "app", "admin")).flatMap(formsOf))].sort();
-const usesBar = (path: string) => /from "@\/components\/ui\/FormActionBar"/.test(readFileSync(join(root, path), "utf8"));
+const usesBar = (path: string) => {
+  const content = readFileSync(join(root, path), "utf8");
+  return /from "@\/components\/ui\/FormActionBar"/.test(content) && content.includes("<FormActionBar");
+};
 
-const OWED = [
-  "app/admin/brands/components/BrandForm.tsx",
-  "app/admin/inventory/asset-bands/edit/components/EditBandsForm.tsx",
-  "app/admin/inventory/components/CategoryForm.tsx",
-  "app/admin/inventory/conversions/components/ConversionForm.tsx",
-  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx",
-  "app/admin/inventory/items/components/PurchasedItemForm.tsx",
-  "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx",
-  "app/admin/inventory/stocktake/[id]/edit/components/StocktakeEditForm.tsx",
-  "app/admin/inventory/units/UnitForm.tsx",
-  "app/admin/orders/[id]/edit/components/OrderEditForm.tsx",
-  "app/admin/outlets/components/OutletForm.tsx",
-  "app/admin/products/categories/components/ProductCategoryForm.tsx",
-  "app/admin/products/modifier-groups/components/ModifierGroupForm.tsx",
-  "app/admin/products/modifiers/components/ModifierForm.tsx",
-  "app/admin/products/types/components/ProductTypeForm.tsx",
-  "app/admin/promotions/components/PromotionForm.tsx",
-  "app/admin/suppliers/components/SupplierForm.tsx",
-  "app/admin/users/components/EditUserForm.tsx",
-  "app/admin/users/components/UserForm.tsx",
-];
+const OWED: string[] = [];
 
 describe("BR-UI-015 create and edit forms end with FormActionBar", () => {
   it("finds the forms behind the create and edit pages", () => {

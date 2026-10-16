@@ -156,32 +156,6 @@ export default function BrandsClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const renderCard = (brand: DBBrand) => (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between items-start gap-2">
-        <div>
-          <div className="text-sm text-text-primary">
-            {brand.name}
-          </div>
-          <div className="font-mono text-[11px] text-text-muted mt-0.5">
-            {brand.id}
-          </div>
-        </div>
-        {brand.code && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] bg-primary-soft text-text-primary border border-primary/20 font-mono">
-            {brand.code}
-          </span>
-        )}
-      </div>
-      {brand.start_date && (
-        <div className="text-xs text-text-secondary pt-1 border-t border-border/50">
-          <span className="text-text-muted">Ngày bắt đầu: </span>
-          <span>{formatDate(brand.start_date)}</span>
-        </div>
-      )}
-    </div>
-  );
-
   const removal = canDelete
     ? {
         verb: "Xoá",
@@ -207,7 +181,6 @@ export default function BrandsClient({
           <Button
             href={`/admin/brands/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -218,17 +191,20 @@ export default function BrandsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
+        search={
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm thương hiệu" htmlFor="brands-search">
+              <TextInput
+                id="brands-search"
+                placeholder="Ví dụ: Phin Di"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
+        }
       >
-        <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm thương hiệu" htmlFor="brands-search">
-            <TextInput
-              id="brands-search"
-              placeholder="Ví dụ: Phin Di"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
-        </div>
+        {null}
       </FilterCard>
 
       <DataList
@@ -239,7 +215,12 @@ export default function BrandsClient({
           `/admin/brands/${encodeURIComponent(b.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(b) => ({
+          title: b.name,
+          meta: [b.id, b.code, b.start_date ? `Từ ${formatDate(b.start_date)}` : null]
+            .filter(Boolean)
+            .join(" · "),
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

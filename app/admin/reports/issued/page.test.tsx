@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import React from "react";
 
 const getIssuedValueReport = vi.hoisted(() => vi.fn());
@@ -21,6 +21,14 @@ const MOCK_REPORT = {
       name: "Sữa đặc",
       unitName: "hộp",
       issuedQuantity: 10,
+      issuedValue: 500_000,
+      closingValue: 200_000,
+    },
+    {
+      purchasedItemId: "ITEM-2",
+      name: "Sữa chua không đường Vinamilk",
+      unitName: "g",
+      issuedQuantity: 100,
       issuedValue: 500_000,
       closingValue: 200_000,
     },
@@ -51,15 +59,29 @@ beforeEach(() => {
 });
 
 describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
-  it("issued page shows Hàng dùng and Hao hụt per month and a total", async () => {
+  it("issued page shows Hàng dùng and Hao hụt per month and a total in a compact table", async () => {
     const page = await IssuedValueReportPage({
       searchParams: Promise.resolve({ tab: "months", range: "THIS_YEAR" }),
     });
 
     render(page);
 
+    // Old phone cards are gone, table is visible on phone
+    expect(document.querySelector(".md\\:hidden")).toBeNull();
+    expect(document.querySelector(".hidden.md\\:block")).toBeNull();
+
     // Month label
     expect(screen.getAllByText(/Tháng 09\/2026/).length).toBeGreaterThan(0);
+
+    // Column header sticks left
+    const thangHeader = screen.getByRole("columnheader", { name: "Tháng" });
+    expect(thangHeader.className).toContain("sticky");
+    expect(thangHeader.className).toContain("left-0");
+
+    // First cell of body row is TableRowHeader with stick="left"
+    const rowHeader = screen.getByRole("rowheader", { name: /Tháng 09\/2026/ });
+    expect(rowHeader.className).toContain("sticky");
+    expect(rowHeader.className).toContain("left-0");
 
     // Shows Hàng dùng and Hao hụt
     expect(screen.getAllByText("Hàng dùng").length).toBeGreaterThan(0);
@@ -69,6 +91,46 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     // Shows total row
     expect(screen.getAllByText("Tổng cộng").length).toBeGreaterThan(0);
   });
+
+  it("items tab renders compact table on phone with sticky TableRowHeader", async () => {
+    const page = await IssuedValueReportPage({
+      searchParams: Promise.resolve({ tab: "items" }),
+    });
+
+    render(page);
+
+    // No md:hidden card version or hidden md:block table
+    expect(document.querySelector(".md\\:hidden")).toBeNull();
+    expect(document.querySelector(".hidden.md\\:block")).toBeNull();
+
+    // Table exists
+    const table = screen.getByRole("table");
+    expect(table).toBeInTheDocument();
+
+    // Column header sticks left
+    const colHeader = screen.getByRole("columnheader", { name: "Nguyên liệu" });
+    expect(colHeader.className).toContain("sticky");
+    expect(colHeader.className).toContain("left-0");
+
+    // First cell of body row is TableRowHeader with stick="left"
+    const rowHeader = screen.getByRole("rowheader", { name: "Sữa đặc" });
+    expect(rowHeader.className).toContain("sticky");
+    expect(rowHeader.className).toContain("left-0");
+
+    // Row has quantity and values
+    const row = rowHeader.closest("tr")!;
+    expect(within(row).getByText("10.00 hộp")).toBeInTheDocument();
+    expect(within(row).getByText("500,000đ")).toBeInTheDocument();
+    expect(within(row).getByText("200,000đ")).toBeInTheDocument();
+
+    // OPEN-ITEMS 41: Sữa chua không đường Vinamilk shows g
+    const vinamilkHeader = screen.getByRole("rowheader", { name: "Sữa chua không đường Vinamilk" });
+    expect(vinamilkHeader.className).toContain("sticky");
+    expect(vinamilkHeader.className).toContain("left-0");
+    const vinamilkRow = vinamilkHeader.closest("tr")!;
+    expect(within(vinamilkRow).getByText("100.00 g")).toBeInTheDocument();
+  });
+
 
   it("tab links keep from/to", async () => {
     const page = await IssuedValueReportPage({
@@ -103,4 +165,25 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     expect(monthsTab.getAttribute("href")).toContain("range=CUSTOM");
     expect(monthsTab.getAttribute("href")).toContain("tab=months");
   });
+
+  it("events tab on phone renders total strip above the events list (BR-UI-004, BR-UI-018)", async () => {
+    const page = await IssuedValueReportPage({
+      searchParams: Promise.resolve({ tab: "events" }),
+    });
+
+    render(page);
+
+    const phoneContainer = document.querySelector(".md\\:hidden") as HTMLElement;
+    expect(phoneContainer).toBeInTheDocument();
+
+    const totalStrip = within(phoneContainer).getByText(/Tổng cộng:\s*8,454,110đ/);
+    expect(totalStrip).toBeInTheDocument();
+
+    const eventList = phoneContainer.querySelector(".divide-y") as HTMLElement;
+    expect(eventList).toBeInTheDocument();
+
+    // Total strip must precede the event list
+    expect(totalStrip.compareDocumentPosition(eventList) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });
+

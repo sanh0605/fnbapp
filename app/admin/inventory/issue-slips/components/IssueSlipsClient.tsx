@@ -71,14 +71,16 @@ export default function IssueSlipsClient({
   const defaultFilters = { q: "", kind: "ALL", person: "ALL", page: "1" };
   const { draft, setField, applyFilters, isPending } = useFilterForm(defaultFilters);
 
-  const hasAnyFilter = Boolean(
-    searchParams.get("q") ||
-      (searchParams.get("kind") && searchParams.get("kind") !== "ALL") ||
-      (searchParams.get("person") && searchParams.get("person") !== "ALL") ||
-      (searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
-      searchParams.get("from") ||
-      searchParams.get("to")
-  );
+  const activeCount =
+    (searchParams.get("q") ? 1 : 0) +
+    (searchParams.get("kind") && searchParams.get("kind") !== "ALL" ? 1 : 0) +
+    (searchParams.get("person") && searchParams.get("person") !== "ALL" ? 1 : 0) +
+    ((searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
+    searchParams.get("from") ||
+    searchParams.get("to")
+      ? 1
+      : 0);
+  const hasAnyFilter = activeCount > 0;
   const draftChanged =
     draft.q !== defaultFilters.q ||
     draft.kind !== defaultFilters.kind ||
@@ -174,23 +176,6 @@ export default function IssueSlipsClient({
     []
   );
 
-  const renderCard = (row: IssueSlipListRow) => (
-    <div>
-      <div className="flex justify-between items-start gap-2 mb-2">
-        <span className="font-mono text-xs text-primary">{row.id}</span>
-        <span className="text-text-primary text-base tabular-nums font-normal">
-          {formatNumber(row.value)}đ
-        </span>
-      </div>
-      <div className="flex justify-between items-center gap-2">
-        <div className="text-xs text-text-secondary">
-          {row.dateText} · {row.createdByName}
-        </div>
-        <div>{renderKindBadge(row.kind)}</div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-6 pb-20">
       <ListPageHeader
@@ -200,7 +185,6 @@ export default function IssueSlipsClient({
           <Button
             href="/admin/inventory/issue-slips/new"
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -211,6 +195,19 @@ export default function IssueSlipsClient({
         onApply={handleApply}
         onClear={handleClear}
         showClear={showClear}
+        activeCount={activeCount}
+        search={
+          <div className="flex-1 min-w-[200px]">
+            <Field label="Tìm kiếm" htmlFor="search-input">
+              <TextInput
+                id="search-input"
+                placeholder="Ví dụ: ISL-00088"
+                value={draft.q}
+                onChange={(e) => setField("q", e.target.value)}
+              />
+            </Field>
+          </div>
+        }
       >
         <div className="w-full md:w-auto shrink-0">
           <DateRangeButton
@@ -220,16 +217,6 @@ export default function IssueSlipsClient({
             disabled={searching}
             disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
           />
-        </div>
-        <div className="flex-1 min-w-[200px]">
-          <Field label="Tìm kiếm" htmlFor="search-input">
-            <TextInput
-              id="search-input"
-              placeholder="Ví dụ: ISL-00088"
-              value={draft.q}
-              onChange={(e) => setField("q", e.target.value)}
-            />
-          </Field>
         </div>
         <div className="w-full md:w-40">
           <Field label="Loại" htmlFor="kind-select">
@@ -271,7 +258,12 @@ export default function IssueSlipsClient({
           getName={(row) => row.id}
           getHref={getRowHref}
           columns={columns}
-          renderCard={renderCard}
+          phoneRow={(row) => ({
+            title: row.dateText,
+            value: `${formatNumber(row.value)}đ`,
+            meta: [row.id, row.createdByName].filter(Boolean).join(" · "),
+            badge: renderKindBadge(row.kind),
+          })}
           totals={{
             label: "Tổng (không tính huỷ)",
             values: { value: formatNumber(pageData.totals.value) },

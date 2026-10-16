@@ -181,7 +181,7 @@ describe("ModifierForm -- option groups come from a table the owner edits (audit
     fireEvent.change(screen.getByLabelText(/^Tên tuỳ chọn/), { target: { value: "Bình thường" } });
     fireEvent.change(screen.getByLabelText("Giá thêm"), { target: { value: "0" } });
 
-    fireEvent.click(screen.getByRole("button", { name: "Lưu tuỳ chọn" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
 
     await waitFor(() => {
       expect(saveModifierAction).toHaveBeenCalled();
@@ -195,5 +195,37 @@ describe("ModifierForm -- option groups come from a table the owner edits (audit
     const groupSelect = screen.getByLabelText("Nhóm tuỳ chọn") as HTMLSelectElement;
     expect(groupSelect.options.length).toBe(0);
     expect(screen.queryByRole("option", { name: "Thêm Topping" })).toBeNull();
+  });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ' on create mode (BR-UI-015)", () => {
+    render(<ModifierForm groups={sampleGroups} returnTo="/admin/products/modifiers" />);
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
+  it("shows FormActionBar with 'Lưu thay đổi' and 'Bỏ thay đổi' on edit mode (BR-UI-015)", () => {
+    render(
+      <ModifierForm
+        initialData={{ id: "MOD-001", name: "Trân châu trắng", group_id: "MG-001", price: 5000 } as any}
+        groups={sampleGroups}
+        returnTo="/admin/products/modifiers"
+      />
+    );
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    const cancelButton = screen.getByRole("button", { name: "Bỏ thay đổi" });
+    expect(cancelButton).toBeInTheDocument();
+    fireEvent.click(cancelButton);
+    expect(push).toHaveBeenCalledWith("/admin/products/modifiers");
+  });
+
+  it("controls use min-h-[48px] md:min-h-[40px] (BR-UI-014)", () => {
+    render(<ModifierForm groups={sampleGroups} returnTo="/admin/products/modifiers" />);
+    const groupSelect = screen.getByLabelText("Nhóm tuỳ chọn") as HTMLSelectElement;
+    fireEvent.change(groupSelect, { target: { value: "MG-002" } });
+
+    const defaultCheckboxLabel = screen.getByLabelText(/Có sẵn/).closest("label");
+    expect(defaultCheckboxLabel?.className).toContain("min-h-[48px]");
+    expect(defaultCheckboxLabel?.className).toContain("md:min-h-[40px]");
+    expect(defaultCheckboxLabel?.className).not.toContain("min-h-[44px]");
   });
 });

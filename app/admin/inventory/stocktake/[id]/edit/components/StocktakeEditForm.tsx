@@ -2,7 +2,6 @@
 
 import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { formatNumber } from "@/lib/shared/format";
@@ -11,6 +10,7 @@ import {
   type StocktakeDetailView as Detail,
 } from "@/app/admin/inventory/stocktake/actions";
 import { getVarianceText } from "@/app/admin/inventory/stocktake/[id]/components/StocktakeDetailView";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 
 
 export function StocktakeEditForm({ detail }: { detail: Detail }) {
@@ -73,9 +73,9 @@ export function StocktakeEditForm({ detail }: { detail: Detail }) {
             <div
               key={line.id}
               data-line-id={line.id}
-              className="bg-surface-card rounded-2xl border border-border p-4 space-y-3 md:space-y-0 md:grid md:grid-cols-[1fr_200px_160px] md:items-center md:gap-6"
+              className="bg-surface-card rounded-2xl border border-border p-4 flex items-center justify-between gap-3 md:grid md:grid-cols-[1fr_200px_160px] md:items-center md:gap-6"
             >
-              <div>
+              <div className="min-w-0">
                 <div className="text-sm font-medium text-text-primary">
                   {line.itemName}
                 </div>
@@ -84,10 +84,14 @@ export function StocktakeEditForm({ detail }: { detail: Detail }) {
                   {line.theoreticalAtCount !== null
                     ? formatNumber(line.theoreticalAtCount)
                     : "—"}
+                  {line.unitName ? ` ${line.unitName}` : ""}
+                </div>
+                <div className="text-xs text-text-secondary tabular-nums md:hidden mt-0.5">
+                  {varianceText}
                 </div>
               </div>
 
-              <div>
+              <div className="w-28 md:w-full shrink-0">
                 <NumberInput
                   id={`line-${line.id}`}
                   decimals={3}
@@ -102,7 +106,7 @@ export function StocktakeEditForm({ detail }: { detail: Detail }) {
                 />
               </div>
 
-              <div className="text-sm text-text-secondary md:text-right tabular-nums">
+              <div className="hidden md:block text-sm text-text-secondary md:text-right tabular-nums">
                 {varianceText}
               </div>
             </div>
@@ -114,23 +118,11 @@ export function StocktakeEditForm({ detail }: { detail: Detail }) {
         <Alert variant="danger">{error}</Alert>
       )}
 
-      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-        <Button
-          href={`/admin/inventory/stocktake/${encodeURIComponent(detail.id)}`}
-          variant="secondary"
-          className="w-full sm:w-auto"
-        >
-          Bỏ
-        </Button>
-        <Button
-          type="submit"
-          variant="primary"
-          loading={loading}
-          className="w-full sm:w-auto"
-        >
-          Lưu
-        </Button>
-      </div>
+      <FormActionBar
+        mode="edit"
+        loading={loading}
+        onCancel={() => router.push(`/admin/inventory/stocktake/${encodeURIComponent(detail.id)}`)}
+      />
     </form>
   );
 }

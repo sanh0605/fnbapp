@@ -30,7 +30,7 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 **Status:** `APPROVED` — owner 2026-10-06: *"Các cột có thể thống kê thì nên hiện một dòng số nhỏ bên dưới tiêu đề cột tương ứng cho thấy tổng của tất cả dòng theo bộ lọc."* Built 2026-10-14 on the branch `feat/no-popups` (list below).
 
 - The total covers every row the current filter matches, not only the page on screen. Rounding follows `BR-DATA-005`: the rounded exact total.
-- Cancelled rows are left out, as `BR-ACCESS-003` already says for every total; drafts are left out too, since nothing was bought or sold yet (Opus 2026-10-14). The label names what is left out. Only money columns are added up; quantities in different units never are. The shared list draws the total under the header on a computer and as a card on a phone. Built 2026-10-14 on the branch `feat/no-popups`:
+- Cancelled rows are left out, as `BR-ACCESS-003` already says for every total; drafts are left out too, since nothing was bought or sold yet (Opus 2026-10-14). The label names what is left out. Only money columns are added up; quantities in different units never are. The shared list draws the total under the header on a computer and as one thin strip above the rows on a phone (a card until 2026-10-16, `BR-UI-018`). Built 2026-10-14 on the branch `feat/no-popups`:
   - Đơn hàng: Khách trả, "Tổng (không tính huỷ)"; old versions of an edited order are left out too.
   - Phiếu nhập: Tổng tiền, "Tổng (không tính huỷ, nháp)".
   - Phiếu xuất: Giá trị xuất, "Tổng (không tính huỷ)".
@@ -83,7 +83,7 @@ Owner choices on 2026-10-09, after trying a clickable sample (two styles, comput
   - **Tổng quan loses its figure boxes, its filter and its comparison when the new Tổng quan is built** (owner 2026-10-14: *"Mấy ô số đó anh thấy khá vô nghĩa nên làm gì khác cho nó có nghĩa hơn, nếu chưa thì ưu tiên làm trước các cảnh báo, báo động"*). Alerts take the top of the page. After that only Doanh số compares. Design: `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md`.
   - Built on the branch `feat/no-popups` 2026-10-14, not yet pushed. The page shows, from the top:
     - "Cần xử lý": orders the till failed to resend; items with negative stock; too long since the last confirmed stock count (default 30 days); a stock count left open too long (default 2 days); and missing monthly expenses (`BR-CASH-009`).
-    - The 7-day table (`BR-SALE-007`): a table on a computer, one card per day on a phone.
+    - The 7-day table (`BR-SALE-007`): a table on both; on a phone the day column stays put and the rest scrolls sideways (`BR-UI-019`, 2026-10-16).
   - The owner sets the thresholds and the table's columns in Cài đặt → Cài đặt Tổng quan. Changing them applies at once, and nothing past is stored.
 
 ### BR-UI-008 — A comma separates thousands, a dot marks decimals, everywhere
@@ -144,8 +144,8 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 **Status:** `APPROVED` — owner 2026-10-11 asked for pages that look neat, with readable text, boxes neither too tall nor crammed (*"các ô không bị quá cao hay cũng không bị dồn quá nhiều thông tin"*); a trial went on 8386 that day, and on 2026-10-14 he kept it: *"Làm theo em khuyến nghị và tiếp tục"*. Built on the branch `feat/no-popups` 2026-10-11 (shared button, text box, select, number box and list).
 
 - **On a computer** a box or button is 40 px tall (was 44) and a list row about 45 px (was 53–73). A row with a delete button is no taller than one without.
-- **On a phone** a box or button stays 44 px, a thumb's width.
-- Text size is unchanged: 14 px.
+- **On a phone** a box, button or pick-list option is 48 px tall (44 px until 2026-10-16). Chosen on the owner's behalf under his 2026-10-16 delegation, when he asked for phone screens *"dễ thấy chữ và dễ bấm"*; Material's 48 dp touch target. Guard `components/ui/phone-size.guard.test.ts`. Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.3. Being built on the branch `feat/khuon-dien-thoai` from 2026-10-16, not yet pushed; the guard lists what is still 44 px.
+- **Text on a phone:** a box's label 14 px, its hint and error 13 px, what is typed 16 px. Nothing outside the till is smaller than 12 px. On a computer text stays 14 px.
 - A form with few boxes puts them two to a row on a computer and one per row on a phone (`BR-UI-012`).
 
 ### BR-UI-015 — One footer on every create and edit form, always in reach
@@ -174,3 +174,22 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 - Top to bottom: the title; one filter bar (date range per `BR-UI-007`, outlet where the report can split by outlet); the headline figures for the range; the detail table with its total row (`BR-UI-004`).
 - Exporting to a file is left out until someone keeping the books asks for it.
 - Sources: Toast (https://support.toasttab.com/en/article/Getting-Started-with-Analytics-and-Reports), Square (https://squareup.com/help/ca/en/article/5072).
+
+### BR-UI-018 — Phone lists are two-line rows, not cards
+
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation. His words: *"Các nơi trên điện thoại dùng thẻ để thay thế bảng thì nên có cách khác vì càng nhiều thẻ thì lại càng dài."* Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.1; on the list of points he reviews at the end of the phone batch. Being built on the branch `feat/khuon-dien-thoai` from 2026-10-16, not yet pushed. All 25 lists moved 2026-10-16; `DataList` now requires `phoneRow`, and guard `components/ui/phone-rows.guard.test.ts` checks every list screen passes it.
+
+- Measured 2026-10-16: a Phiếu nhập card was about 110 px tall, so 3–4 fitted on a phone's first screen.
+- Line 1: the name on the left, the one number on the right. Line 2, smaller and grey: the other facts, most important first, at most two lines; one status badge on the right. No bold (`BR-UI-003`).
+- No bin on each row on a phone; the computer keeps it. Deleting goes through "Chọn", whose delete bar sticks to the bottom of the screen above the menu, or through the record's own page.
+- A total (`BR-UI-004`) is one thin strip above the list, not a card.
+- On a list with filters, the filter folds behind "Bộ lọc (n)"; n counts the filters set away from the page's default, exactly what "Xoá lọc" would clear; a freshly opened page shows no number. A list with only a search box has nothing to fold. Report filters stay as they are.
+- Sources: Sapo and KiotViet phone apps (two-line rows), NN/g *Mobile tables*, Apple *Lists and tables*.
+
+### BR-UI-019 — Phone reports keep their table
+
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation, with `BR-UI-018`. Spec section 3.4; on his end-of-batch review list. Being built on the branch `feat/khuon-dien-thoai`, not yet pushed. It replaces the phone rule "no sideways tables" in `.claude/rules/ui-devices.md` for number reports only.
+
+- Tổng quan's 7-day table, Doanh số by day and by dish, Hàng đã xuất, and Sổ thu chi by month show a compact table on a phone: the first column (day, dish, line) stays put, the number columns scroll sideways, the total row sits under the header as on a computer.
+- Lãi lỗ theo tháng keeps its month cards, because each month opens to show its formula and sources, which a table cannot hold.
+- Source: NN/g *Mobile tables* — data compared by column stays a table with a fixed first column.

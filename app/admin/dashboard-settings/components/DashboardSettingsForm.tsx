@@ -211,7 +211,7 @@ export function DashboardSettingsForm({
                     <label
                       key={p.id}
                       htmlFor={checkboxId}
-                      className="flex items-center gap-3 min-h-[44px] px-3 py-2 rounded-lg border border-border hover:bg-surface-secondary/40 cursor-pointer select-none"
+                      className="flex items-center gap-3 min-h-[48px] md:min-h-[40px] px-3 py-2 rounded-lg border border-border hover:bg-surface-secondary/40 cursor-pointer select-none"
                     >
                       <input
                         type="checkbox"

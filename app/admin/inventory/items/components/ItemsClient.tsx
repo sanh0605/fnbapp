@@ -244,48 +244,16 @@ export default function ItemsClient({
 
   const currentListUrl = listUrl(search, category, slice.page, sortParam, dirParam);
 
-  const renderCard = (item: DBPurchasedItem) => {
-    const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
-    const catName = categoryMap[item.item_category_id] || "—";
-    const stockText = stockById[item.id]?.text ?? "—";
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-text-primary text-base leading-tight">
-              {item.name}
-            </div>
-            <div className="font-mono text-xs text-primary mt-0.5">
-              {item.id}
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-surface-secondary text-text-secondary border border-border">
-              {catName}
-            </span>
-            {item.status === "INACTIVE" && (
-              <Badge variant="neutral">
-                Ngừng dùng
-              </Badge>
-            )}
-          </div>
-        </div>
-        <div className="text-xs text-text-secondary">
-          Tồn kho: {stockText}
-        </div>
-        {itemConversions.length > 0 && (
-          <div className="text-xs text-text-secondary pt-1 border-t border-border/50">
-            {itemConversions.map((conv) => (
-              <div key={conv.id}>
-                1 {getUnitName(conv.purchased_unit, units)} = {conv.conversion_rate}{" "}
-                {getUnitName(conv.base_unit, units)}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedCategory = searchParams?.get("category") ?? initialCategory ?? "ALL";
+
+  const activeCount =
+    (appliedSearch.trim() ? 1 : 0) +
+    (appliedCategory && appliedCategory !== "ALL" ? 1 : 0);
+
+  const showClear = Boolean(
+    search.trim() || (category && category !== "ALL")
+  );
 
   const removal = canDelete
     ? {
@@ -309,18 +277,16 @@ export default function ItemsClient({
         group="Kho"
         title="Hàng hoá"
         action={
-          <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-2">
             <Button
               href="/admin/inventory/conversions"
               variant="secondary"
-              className="w-full md:w-auto"
             >
               Bảng quy đổi
             </Button>
             <Button
               href={`/admin/inventory/items/new?returnTo=${encodeURIComponent(currentListUrl)}`}
               variant="primary"
-              className="w-full md:w-auto"
             >
               Tạo
             </Button>
@@ -331,18 +297,21 @@ export default function ItemsClient({
       <FilterCard
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
-        showClear={Boolean(search || (category && category !== "ALL"))}
+        showClear={showClear}
+        activeCount={activeCount}
+        search={
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm kiếm" htmlFor="items-search">
+              <TextInput
+                id="items-search"
+                placeholder="Ví dụ: Trứng gà"
+                value={search}
+                onChange={handleSearchChange}
+              />
+            </Field>
+          </div>
+        }
       >
-        <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm kiếm" htmlFor="items-search">
-            <TextInput
-              id="items-search"
-              placeholder="Ví dụ: Trứng gà"
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </Field>
-        </div>
         <div className="shrink-0 w-full md:w-48">
           <Field label="Phân loại" htmlFor="items-category">
             <Select
@@ -369,7 +338,14 @@ export default function ItemsClient({
           `/admin/inventory/items/${encodeURIComponent(item.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(item) => ({
+          title: item.name,
+          value: `Tồn: ${stockById[item.id]?.text ?? "—"}`,
+          meta: [item.id, categoryMap[item.item_category_id]].filter(Boolean).join(" · "),
+          badge: item.status === "INACTIVE" ? (
+            <Badge variant="neutral">Ngừng dùng</Badge>
+          ) : undefined,
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

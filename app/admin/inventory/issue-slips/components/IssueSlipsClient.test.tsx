@@ -126,13 +126,16 @@ describe("IssueSlipsClient", () => {
       expect(url.searchParams.get("returnTo")).toBe("/admin/inventory/issue-slips?kind=SLIP&page=2");
     });
 
-    it("the phone list is cards, one per row, with no table", () => {
+    it("the phone list renders rows with date title, value, code · creator meta, and kind badge", () => {
       const { container } = render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={rows} />);
       const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
       expect(phone).toBeTruthy();
       expect(phone.querySelector("table")).toBeNull();
-      expect(phone.textContent).toContain("ISL-01");
-      expect(phone.textContent).toContain("ISL-03");
+      expect(within(phone).getByText("29/09")).toBeInTheDocument();
+      expect(within(phone).getByText("100đ")).toBeInTheDocument();
+      expect(within(phone).getByText("ISL-01 · admin")).toBeInTheDocument();
+      expect(within(phone).getByText("ISL-03 · admin")).toBeInTheDocument();
+      expect(within(phone).getAllByText("Phiếu xuất")).toHaveLength(2);
     });
   });
 

@@ -441,4 +441,86 @@ describe("StocktakeCountView (Screen 2)", () => {
     expect(saveStocktakeLine).not.toHaveBeenCalled();
     expect(screen.getAllByText("Cần nhập số đếm").length).toBeGreaterThan(0);
   });
+
+  it("renders preview rows on phone as a divide-y list of PhoneRow", async () => {
+    const session: StocktakeSessionView = {
+      id: "STK-001",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      notes: "",
+      lines: [
+        {
+          id: "SKL-00001",
+          itemReference: "SPM-001",
+          itemType: "PURCHASED_ITEM",
+          itemName: "Sữa tươi",
+          unitName: "l",
+          countedQty: 8,
+          theoreticalAtCount: 10,
+          countedAt: "2026-10-14T15:00:00Z",
+          packageLines: [],
+          groupName: "",
+          state: "OFF",
+          unitCost: 30000,
+          diffValue: -60000,
+        },
+      ],
+    };
+
+    const previewResult: StocktakeApplyResult = {
+      sessionId: "STK-001",
+      status: "OPEN",
+      dryRun: true,
+      ledgerCount: 1,
+      issueCount: 1,
+      rows: [
+        {
+          lineId: "SKL-00001",
+          itemReference: "SPM-001",
+          itemType: "PURCHASED_ITEM",
+          countedQty: 8,
+          theoreticalAtCount: 10,
+          currentTheoreticalQty: 10,
+          countVariance: -2,
+          projectedQty: 8,
+        },
+      ],
+      skippedIngredients: [],
+      planHash: "hash-preview-row",
+      issueIds: [],
+      recomputedLines: [],
+    };
+
+    vi.mocked(getStocktakeConfirmPreview).mockResolvedValue({ preview: previewResult });
+
+    const { container } = render(<StocktakeCountView session={session} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Xem trước" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Dự kiến áp dụng")).toBeInTheDocument();
+    });
+
+    const phoneContainer = container.querySelector(".md\\:hidden");
+    expect(phoneContainer).not.toBeNull();
+    expect(phoneContainer?.className).toContain("divide-y");
+    expect(phoneContainer?.className).not.toContain("space-y-2");
+
+    const rows = phoneContainer?.querySelectorAll(":scope > div");
+    expect(rows?.length).toBe(1);
+    const firstRow = rows?.[0];
+    expect(firstRow?.className).toContain("px-4");
+    expect(firstRow?.className).toContain("py-2.5");
+    expect(firstRow?.className).not.toContain("p-3");
+
+    // PhoneRow: line 1 has item name and variance
+    expect(firstRow?.textContent).toContain("Sữa tươi");
+    expect(firstRow?.textContent).toContain("-2 l");
+
+    // Old card text "Dự kiến sau áp dụng:" should not exist
+    expect(firstRow?.textContent).not.toContain("Dự kiến sau áp dụng:");
+  });
 });

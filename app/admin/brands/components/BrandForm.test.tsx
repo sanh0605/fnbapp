@@ -79,11 +79,23 @@ beforeEach(() => {
 });
 
 describe("BrandForm", () => {
-  it("renders on the page and immediately shows the brand name input and Bỏ button", () => {
+  it("renders on the page and shows FormActionBar with Tạo and Bỏ buttons in create mode", () => {
     render(<BrandForm returnTo="/admin/brands" />);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByLabelText(/^Tên thương hiệu( \*)?$/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
+  it("shows FormActionBar with Lưu thay đổi and Bỏ thay đổi buttons in edit mode", () => {
+    render(
+      <BrandForm
+        initialData={brandFixture()}
+        returnTo="/admin/brands"
+      />
+    );
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
 
   it("pre-fills fields when editing", () => {
@@ -102,7 +114,7 @@ describe("BrandForm", () => {
     render(<BrandForm returnTo="/admin/brands" />);
     fireEvent.change(screen.getByLabelText(/^Tên thương hiệu( \*)?$/), { target: { value: "Trà Sữa Mới" } });
     fireEvent.change(screen.getByLabelText(/^Mã đơn hàng \(3 ký tự\)( \*)?$/), { target: { value: "TSM" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu Thương Hiệu" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/brands"));
     expect(refresh).toHaveBeenCalled();
   });
@@ -112,7 +124,7 @@ describe("BrandForm", () => {
     render(<BrandForm returnTo="/admin/brands" />);
     fireEvent.change(screen.getByLabelText(/^Tên thương hiệu( \*)?$/), { target: { value: "Phin Đi" } });
     fireEvent.change(screen.getByLabelText(/^Mã đơn hàng \(3 ký tự\)( \*)?$/), { target: { value: "PHD" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu Thương Hiệu" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Ten thuong hieu da ton tai"));
     expect(push).not.toHaveBeenCalled();
     expect(screen.getByLabelText(/^Tên thương hiệu( \*)?$/)).toHaveValue("Phin Đi");
@@ -123,6 +135,13 @@ describe("BrandForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
     expect(push).toHaveBeenCalledWith("/admin/brands");
     expect(mocks.addBrand).not.toHaveBeenCalled();
+  });
+
+  it("Bỏ thay đổi in edit mode goes to returnTo without calling server action", () => {
+    render(<BrandForm initialData={brandFixture()} returnTo="/admin/brands?tab=all" />);
+    fireEvent.click(screen.getByRole("button", { name: "Bỏ thay đổi" }));
+    expect(push).toHaveBeenCalledWith("/admin/brands?tab=all");
+    expect(mocks.editBrand).not.toHaveBeenCalled();
   });
 
   it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z and preserves start_date", async () => {
@@ -137,7 +156,7 @@ describe("BrandForm", () => {
         />
       );
 
-      fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+      fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
       await waitFor(() => expect(mocks.editBrand).toHaveBeenCalledTimes(1));
       const formData = mocks.editBrand.mock.calls[0][0] as FormData;
       expect(formData.get("start_date")).toBe("2026-09-15");

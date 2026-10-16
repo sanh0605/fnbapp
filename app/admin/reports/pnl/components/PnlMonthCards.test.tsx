@@ -101,4 +101,10 @@ describe("PnlMonthCards", () => {
     expect(screen.getByTestId("pnl-month-2024-10")).toBeInTheDocument();
     expect(screen.getByTestId("pnl-month-2026-09")).toBeInTheDocument();
   });
+
+  it("has no text size classes below 12px (no text-[11px], uses text-xs)", () => {
+    const { container } = render(<PnlMonthCards table={table()} />);
+    expect(container.querySelectorAll(".text-\\[11px\\], .text-\\[10px\\], .text-\\[9px\\], .text-\\[10\\.5px\\], .text-\\[11\\.5px\\]")).toHaveLength(0);
+  });
 });
+

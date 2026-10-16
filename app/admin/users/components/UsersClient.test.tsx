@@ -110,6 +110,8 @@ describe("UsersClient", () => {
     );
 
     expect(screen.getAllByText("thu").length).toBeGreaterThan(0);
+    expect(screen.getByText("USR-003 · Tạo 15/05/2026")).toBeInTheDocument();
+    expect(screen.queryByText("Ngày tạo:")).toBeNull();
     expect(screen.queryByText("admin")).toBeNull();
     expect(screen.queryByText("tuyen2612")).toBeNull();
     expect(screen.getByRole("combobox", { name: "Quyền hạn" })).toHaveValue("STAFF");

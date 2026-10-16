@@ -12,6 +12,7 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { ListPagination } from "@/components/ui/list/ListPagination";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { formatNumber } from "@/lib/shared/format";
 import { confirm } from "@/lib/shared/dialog";
 import { deleteSupplierAction, setSupplierStatus } from "../../actions";
@@ -174,7 +175,7 @@ export function SupplierDetailView({
           </h2>
           <Link
             href={purchaseOrdersHref}
-            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[44px] md:min-h-[40px] inline-flex items-center"
+            className="text-sm font-medium text-primary hover:text-primary-hover min-h-[48px] md:min-h-[40px] inline-flex items-center"
           >
             Xem trong Phiếu nhập &rarr;
           </Link>
@@ -235,22 +236,14 @@ export function SupplierDetailView({
                 <Link
                   key={po.id}
                   href={`/admin/inventory/purchase-orders/${encodeURIComponent(po.id)}`}
-                  className="block p-4 hover:bg-surface-secondary/50 transition-colors focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px] md:min-h-[40px]"
+                  className="block px-4 py-2.5 hover:bg-surface-secondary/50 transition-colors focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[48px] md:min-h-[40px]"
                 >
-                  <div className="flex justify-between items-start gap-2 mb-1">
-                    <span className="font-mono text-xs text-text-muted">
-                      {po.id}
-                    </span>
-                    <span className="text-text-primary text-base tabular-nums">
-                      {formatNumber(po.totalAmount)}đ
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-end gap-2 mt-2">
-                    <div className="text-xs text-text-muted">
-                      {po.dateText} · {po.sourceName}
-                    </div>
-                    <div>{renderPoStatusBadge(po.status)}</div>
-                  </div>
+                  <PhoneRow
+                    title={po.id}
+                    value={`${formatNumber(po.totalAmount)}đ`}
+                    meta={`${po.dateText} · ${po.sourceName}`}
+                    badge={renderPoStatusBadge(po.status)}
+                  />
                 </Link>
               ))}
             </div>

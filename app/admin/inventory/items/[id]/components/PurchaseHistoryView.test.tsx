@@ -78,4 +78,45 @@ describe("PurchaseHistoryView", () => {
       vi.useRealTimers();
     }
   });
+
+  it("renders purchase history child rows on phone as a divide-y list of PhoneRow", () => {
+    const rows: ItemPurchaseHistoryRow[] = [
+      {
+        poId: "PO-001",
+        supplierId: "SUP-1",
+        date: "2026-09-15",
+        supplierName: "Nhà cung cấp A",
+        quantity: 10,
+        unitLabel: "Bao",
+        unitCost: 40000,
+        lineTotal: 400000,
+      },
+    ];
+
+    const { container } = render(<PurchaseHistoryView rows={rows} itemName="Cà phê Robusta" />);
+    const phoneContainer = container.querySelector(".md\\:hidden");
+    expect(phoneContainer).not.toBeNull();
+    expect(phoneContainer?.className).toContain("divide-y");
+    expect(phoneContainer?.className).not.toContain("gap-3");
+
+    const phoneRows = phoneContainer?.querySelectorAll(":scope > div");
+    expect(phoneRows?.length).toBe(1);
+    const firstRow = phoneRows?.[0];
+    expect(firstRow?.className).toContain("px-4");
+    expect(firstRow?.className).toContain("py-2.5");
+    expect(firstRow?.className).not.toContain("p-4");
+
+    // PhoneRow: Line 1 has supplier name and total amount
+    expect(firstRow?.textContent).toContain("Nhà cung cấp A");
+    expect(firstRow?.textContent).toContain("400,000đ");
+
+    // PhoneRow: Line 2 has date, quantity x unit price, and PO link
+    expect(firstRow?.textContent).toContain("10 Bao × 40,000đ");
+    expect(firstRow?.textContent).toContain("PO-001");
+
+    // Old card column labels are not present on phone
+    expect(firstRow?.textContent).not.toContain("Số lượng");
+    expect(firstRow?.textContent).not.toContain("Đơn giá");
+    expect(firstRow?.textContent).not.toContain("Thành tiền");
+  });
 });

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import UnitsClient from "./UnitsClient";
 import type { DBUnit } from "@/types/db";
 import { deleteUnit } from "@/app/admin/inventory/actions";
@@ -55,10 +55,13 @@ beforeEach(() => {
 });
 
 describe("UnitsClient", () => {
-  it("renders row linking to detail page instead of removed Sửa button", () => {
-    render(
+  it("renders row linking to detail page and phone row with name and description meta without 'Ghi chú:' prefix", () => {
+    const { container } = render(
       <UnitsClient
-        units={UNITS}
+        units={[
+          ...UNITS,
+          { id: "UNT-002", name: "Lon", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
+        ]}
         canDelete={false}
       />,
     );
@@ -75,6 +78,14 @@ describe("UnitsClient", () => {
         l.getAttribute("href")?.startsWith("/admin/inventory/units/UNT-001?returnTo=")
       )
     ).toBe(true);
+
+    // Phone row shows name and description (if any) without "Ghi chú:" prefix or "—"
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("Hộp")).toBeInTheDocument();
+    expect(within(phone).getByText("Hộp giấy")).toBeInTheDocument();
+    expect(within(phone).getByText("Lon")).toBeInTheDocument();
+    expect(phone.textContent).not.toContain("Ghi chú:");
+    expect(within(phone).queryByText("—")).toBeNull();
   });
 
   it("links 'Tạo' to new page with returnTo", () => {

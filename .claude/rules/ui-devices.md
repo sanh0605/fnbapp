@@ -14,7 +14,9 @@ vừa cả hai. Không bản nào là "bản chính".
 
 ## Trên điện thoại
 
-- **Không dùng bảng ngang.** Mỗi dòng là một thẻ xếp dọc.
+- **Danh sách: dòng gọn hai tầng** (`PhoneRow`, `BR-UI-018`), không thẻ to.
+- **Báo cáo số cần so theo cột: bảng gọn**, cột đầu đứng yên, kéo ngang (`BR-UI-019`).
+  Chủ quán 2026-10-16: *"càng nhiều thẻ thì lại càng dài"*; cách làm chọn theo uỷ quyền.
 - `inputMode="numeric"` cho **mọi** ô nhập số.
 - Vùng bấm vừa ngón cái.
 - Việc dài phải **hiện tiến độ** và **lưu từng bước lên máy chủ**, không giữ

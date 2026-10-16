@@ -120,6 +120,30 @@ describe("OutletForm edit mode", () => {
     expect(document.body.textContent).toContain("không đổi được");
     expect(document.querySelector('input[name="code"]')).toBeNull();
   });
+
+  it("shows FormActionBar with Lưu thay đổi and Bỏ thay đổi buttons in edit mode", () => {
+    render(<OutletForm initialData={OUTLET} brands={BRANDS} outlets={[OUTLET]} returnTo="/admin/outlets" />);
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
+  });
+
+  it("clicking Bỏ thay đổi in edit mode goes to returnTo without saving", () => {
+    render(<OutletForm initialData={OUTLET} brands={BRANDS} outlets={[OUTLET]} returnTo="/admin/outlets?tab=all" />);
+    fireEvent.click(screen.getByRole("button", { name: "Bỏ thay đổi" }));
+    expect(push).toHaveBeenCalledWith("/admin/outlets?tab=all");
+    expect(mocks.editOutlet).not.toHaveBeenCalled();
+  });
+});
+
+describe("OutletForm sections", () => {
+  it("renders section headings Thông tin and Giờ hoạt động in order", () => {
+    render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
+    const infoHeading = screen.getByText("Thông tin");
+    const hoursHeading = screen.getByText("Giờ hoạt động");
+    expect(infoHeading).toBeInTheDocument();
+    expect(hoursHeading).toBeInTheDocument();
+    expect(infoHeading.compareDocumentPosition(hoursHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });
 
 // Wave K6 (plan Review Focus 1): the two hour boxes move to the shared
@@ -140,7 +164,7 @@ describe("OutletForm hour boxes (wave K6)", () => {
     expect(open.type).toBe("time");
     expect(open.value).toBe("07:00");
     expect(close.value).toBe("22:30");
-    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
     const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
     expect(formData.get("open_time")).toBe("07:00");
@@ -157,7 +181,7 @@ describe("OutletForm hour boxes (wave K6)", () => {
         returnTo="/admin/outlets"
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
     const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
     expect(formData.get("open_time")).toBe("");
@@ -166,6 +190,12 @@ describe("OutletForm hour boxes (wave K6)", () => {
 });
 
 describe("OutletForm add mode", () => {
+  it("shows FormActionBar with Tạo and Bỏ buttons in add mode", () => {
+    render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
   it("also shows brand, address, start date and both hour fields", () => {
     render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
 
@@ -207,7 +237,7 @@ describe("OutletForm add mode", () => {
         />
       );
 
-      fireEvent.click(screen.getByRole("button", { name: "Cập nhật" }));
+      fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
       await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
       const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
       expect(formData.get("start_date")).toBe("2026-09-15");
@@ -230,7 +260,7 @@ describe("OutletForm add mode", () => {
         target: { value: "BR-001" },
       });
 
-      fireEvent.click(screen.getByRole("button", { name: "Lưu điểm bán" }));
+      fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
       await waitFor(() => expect(mocks.addOutlet).toHaveBeenCalledTimes(1));
       const addFormData = mocks.addOutlet.mock.calls[0][0] as FormData;
       // The outlet form has no default day: start_date is not set (null)

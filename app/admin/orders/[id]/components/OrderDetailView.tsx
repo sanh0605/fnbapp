@@ -14,6 +14,7 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import { VoidOrderButton } from "@/app/admin/orders/components/VoidOrderButton";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import type { OrderDetailV2Result } from "@/app/admin/orders/order-detail-actions";
 
 interface OrderDetailViewProps {
@@ -136,7 +137,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                       </TableCell>
                       <TableCell align="right">
                         {line.gross_line_total > line.net_line_total && (
-                          <div className="text-[11px] text-text-muted line-through">
+                          <div className="text-xs text-text-muted line-through">
                             {formatNumber(line.gross_line_total)}
                           </div>
                         )}
@@ -149,38 +150,42 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
             </Table>
           </div>
 
-          {/* Phone: line cards */}
-          <div data-testid="detail-lines-phone" className="md:hidden space-y-3">
+          {/* Phone: line rows */}
+          <div data-testid="detail-lines-phone" className="md:hidden divide-y divide-border">
             {currentOrder.lines.map((line, idx) => {
               const gross = line.gross_line_total;
               const net = line.net_line_total;
+              const qtySize = line.size_name ? `${line.qty} × Size ${line.size_name}` : `${line.qty}`;
+              const modifiersText =
+                line.modifiers && line.modifiers.length > 0
+                  ? `+ ${line.modifiers.map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`).join(", ")}`
+                  : null;
+              const totalDiscount =
+                (line.promo_discount || 0) +
+                (line.manual_item_discount || 0) +
+                (line.order_discount_allocation || 0);
+              const discountText =
+                totalDiscount > 0 ? `Giảm: -${formatNumber(totalDiscount)}` : null;
+              const meta = [qtySize, modifiersText, discountText].filter(Boolean).join(" · ");
+
               return (
-                <div key={idx} className="bg-page rounded-xl p-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="font-bold text-text-primary">
-                        <span className="text-primary mr-1">{line.qty}x</span>
-                        {line.product_name}
-                      </div>
-                      <div className="text-xs text-text-secondary mt-0.5">Size {line.size_name}</div>
-                      {line.modifiers && line.modifiers.length > 0 && (
-                        <div className="text-xs text-primary mt-1">
-                          + {line.modifiers.map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`).join(", ")}
-                        </div>
-                      )}
-                      {(line.promo_discount + line.manual_item_discount + line.order_discount_allocation) > 0 && (
-                        <div className="text-xs text-danger mt-1">
-                          Giảm: -{formatNumber(line.promo_discount + line.manual_item_discount + line.order_discount_allocation)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      {gross > net && (
-                        <div className="text-[11px] text-text-muted line-through">{formatNumber(gross)}</div>
-                      )}
-                      <div className="font-bold text-text-primary">{formatNumber(net)}</div>
-                    </div>
-                  </div>
+                <div key={idx} className="px-4 py-2.5">
+                  <PhoneRow
+                    title={line.product_name}
+                    value={
+                      gross > net ? (
+                        <span>
+                          <span className="text-xs text-text-muted line-through mr-1 font-normal">
+                            {formatNumber(gross)}đ
+                          </span>
+                          <span>{formatNumber(net)}đ</span>
+                        </span>
+                      ) : (
+                        `${formatNumber(net)}đ`
+                      )
+                    }
+                    meta={meta}
+                  />
                 </div>
               );
             })}

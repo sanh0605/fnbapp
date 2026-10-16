@@ -198,7 +198,8 @@ describe("ModifierGroupForm", () => {
     const cfMilk = screen.getByLabelText("Cà phê sữa") as HTMLInputElement;
     expect(cfMilk.checked).toBe(false);
 
-    expect(screen.getByRole("button", { name: "Cập nhật" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
 
   it("'Bỏ' navigates to returnTo without submitting", () => {
@@ -236,5 +237,27 @@ describe("ModifierGroupForm", () => {
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent("Tên nhóm đã có");
     });
+  });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ' on create mode and controls use min-h-[48px] md:min-h-[40px] (BR-UI-014, BR-UI-015)", () => {
+    render(
+      <ModifierGroupForm
+        categories={sampleCategories}
+        products={sampleProducts}
+        returnTo="/admin/products/modifier-groups"
+      />
+    );
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+
+    const allowStandaloneLabel = screen.getByLabelText(/Cho bán riêng/).closest("label");
+    expect(allowStandaloneLabel?.className).toContain("min-h-[48px]");
+    expect(allowStandaloneLabel?.className).toContain("md:min-h-[40px]");
+    expect(allowStandaloneLabel?.className).not.toContain("min-h-[44px]");
+
+    const prodLabel = screen.getByLabelText("Cà phê đen").closest("label");
+    expect(prodLabel?.className).toContain("min-h-[48px]");
+    expect(prodLabel?.className).toContain("md:min-h-[40px]");
+    expect(prodLabel?.className).not.toContain("min-h-[44px]");
   });
 });

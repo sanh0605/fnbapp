@@ -156,33 +156,6 @@ export default function ProductTypesClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const renderCard = (r: ProductTypeRow) => {
-    const groupsText =
-      r.categoryNames.length > 0
-        ? r.categoryNames.join(", ")
-        : "Chưa có nhóm nào";
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-text-primary text-base leading-tight font-normal">
-              {r.type.name}
-            </div>
-            <div className="font-mono text-xs text-primary mt-0.5">
-              {r.type.id}
-            </div>
-          </div>
-          <div className="shrink-0 text-text-secondary text-xs font-normal">
-            Tính là ly: {r.type.is_drink ? "Có" : "Không"}
-          </div>
-        </div>
-        <div className="text-xs text-text-secondary font-normal">
-          Nhóm món đang dùng: {groupsText}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-6">
       <ListPageHeader
@@ -192,7 +165,6 @@ export default function ProductTypesClient({
           <Button
             href={`/admin/products/types/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -224,7 +196,16 @@ export default function ProductTypesClient({
           `/admin/products/types/${encodeURIComponent(r.type.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(r) => ({
+          title: r.type.name,
+          meta: [
+            r.type.id,
+            `Tính là ly: ${r.type.is_drink ? "Có" : "Không"}`,
+            r.categoryNames.length > 0
+              ? r.categoryNames.join(", ")
+              : "Chưa có nhóm nào",
+          ].join(" · "),
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

@@ -9,6 +9,7 @@ import { formatDecimal, formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { resolvePurchaseOrderEditGate } from "@/lib/purchasing/purchase-order-edit-gate";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { MoneySummary } from "@/components/ui/MoneySummary";
@@ -242,26 +243,19 @@ export default async function PurchaseOrderDetail(
                     </Table>
                   </div>
 
-                  <div className="md:hidden flex flex-col divide-y divide-border">
+                  <div className="md:hidden divide-y divide-border">
                     {poLines.map((line: any, idx: number) => {
                       const item = allItems.find((i: any) => i.id === line.purchased_item_id);
                       const unitName =
                         allUnits.find((u: any) => u.id === line.unit)?.name || line.unit;
 
                       return (
-                        <div key={idx} className="p-4 space-y-1">
-                          <div className="flex justify-between items-start gap-2">
-                            <div className="text-sm font-medium text-text-primary">
-                              {item?.name || line.purchased_item_id}
-                            </div>
-                            <div className="text-sm font-medium text-text-primary tabular-nums">
-                              {formatNumber(line.subtotal)}đ
-                            </div>
-                          </div>
-                          <div className="text-xs text-text-secondary">
-                            {formatDecimal(Number(line.quantity), { maxDigits: 3 })} {unitName} ×{" "}
-                            {formatNumber(line.unit_price)}đ
-                          </div>
+                        <div key={idx} className="px-4 py-2.5">
+                          <PhoneRow
+                            title={item?.name || line.purchased_item_id}
+                            value={`${formatNumber(line.subtotal)}đ`}
+                            meta={`${formatDecimal(Number(line.quantity), { maxDigits: 3 })} ${unitName} × ${formatNumber(line.unit_price)}đ`}
+                          />
                         </div>
                       );
                     })}

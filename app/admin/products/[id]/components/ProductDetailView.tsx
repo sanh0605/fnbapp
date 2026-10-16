@@ -11,6 +11,7 @@ import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { confirm } from "@/lib/shared/dialog";
@@ -235,18 +236,16 @@ export function ProductDetailView({
             {/* Mobile Cards */}
             <div className="md:hidden bg-surface-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
               {variants.map((v: any, idx: number) => (
-                <div key={v.id || idx} className="p-4 flex items-center justify-between">
-                  <div>
-                    <div className="text-text-primary text-sm">
-                      {v.size_name}
-                    </div>
-                    <div className="text-sm text-primary tabular-nums">
-                      {formatNumber(v.price)}
-                    </div>
-                  </div>
-                  <Badge variant={v.status === "ACTIVE" ? "success" : "warning"}>
-                    {v.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
-                  </Badge>
+                <div key={v.id || idx} className="px-4 py-2.5">
+                  <PhoneRow
+                    title={v.size_name}
+                    value={`${formatNumber(v.price)}đ`}
+                    badge={
+                      <Badge variant={v.status === "ACTIVE" ? "success" : "warning"}>
+                        {v.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
+                      </Badge>
+                    }
+                  />
                 </div>
               ))}
             </div>
@@ -344,18 +343,12 @@ export function ProductDetailView({
                   formatDateTimeFull(entry.effective_at || entry.created_at) || "—";
 
                 return (
-                  <div key={entry.id || idx} className="p-4 space-y-1">
-                    <div className="flex justify-between items-start text-xs text-text-muted">
-                      <span className="font-mono">{dateText}</span>
-                      <span className="text-text-primary">{sizeName}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-text-muted">{oldPriceText}</span>
-                      <span className="text-text-muted">&rarr;</span>
-                      <span className="text-text-primary tabular-nums">
-                        {formatNumber(entry.new_price)}
-                      </span>
-                    </div>
+                  <div key={entry.id || idx} className="px-4 py-2.5">
+                    <PhoneRow
+                      title={sizeName}
+                      value={`${oldPriceText} → ${formatNumber(entry.new_price)}`}
+                      meta={dateText}
+                    />
                   </div>
                 );
               })}

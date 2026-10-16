@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import React from "react";
 import CategoriesClient, { pnlTreatmentLabel } from "./CategoriesClient";
@@ -127,6 +127,22 @@ describe("CategoriesClient", () => {
     expect(screen.getAllByText("Vận hành").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Doanh thu ghi tay").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
+  });
+
+  it("renders phone rows with title, side · PnL treatment meta, and status badge", () => {
+    mockSearchParams = new URLSearchParams("status=ALL");
+    const { container } = render(<CategoriesClient categories={sampleCategories} initialStatus="ALL" />);
+
+    const phoneList = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phoneList).getByText("Vận hành")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Chi · Có")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Vốn góp")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Thu · Không")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Doanh thu ghi tay")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Thu · Có — doanh thu bán hàng")).toBeInTheDocument();
+    expect(within(phoneList).getAllByText("Đang dùng")).toHaveLength(2);
+    expect(within(phoneList).getByText("Ngừng dùng")).toBeInTheDocument();
+    expect(within(phoneList).queryByText("CFC-001")).toBeNull();
   });
 
   it("renders in default order newest code first (CFC-006 before CFC-001)", () => {

@@ -76,4 +76,65 @@ describe("BR-UI-015 FormActionBar", () => {
     const primary = screen.getByRole("button", { name: "Tạo" });
     expect(primary.getAttribute("type")).toBe("submit");
   });
+
+  it("submitLabel replaces default primary button label, but shows 'Đang lưu…' while loading", () => {
+    const { rerender } = render(
+      <form>
+        <FormActionBar mode="create" submitLabel="Xác nhận" onCancel={() => {}} />
+      </form>
+    );
+    expect(screen.getByRole("button", { name: "Xác nhận" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Tạo" })).toBeNull();
+
+    rerender(
+      <form>
+        <FormActionBar mode="create" submitLabel="Xác nhận" loading onCancel={() => {}} />
+      </form>
+    );
+    expect(screen.getByRole("button", { name: "Đang lưu…" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Xác nhận" })).toBeNull();
+  });
+
+  it("disabled prop disables the submit button", () => {
+    const { rerender } = render(
+      <form>
+        <FormActionBar mode="create" disabled={true} onCancel={() => {}} />
+      </form>
+    );
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeDisabled();
+
+    rerender(
+      <form>
+        <FormActionBar mode="create" disabled={false} onCancel={() => {}} />
+      </form>
+    );
+    expect(screen.getByRole("button", { name: "Tạo" })).not.toBeDisabled();
+  });
+
+  it("onSubmit prop sets submit button type='button' and calls onSubmit on click", () => {
+    const onSubmit = vi.fn();
+    render(
+      <div>
+        <FormActionBar mode="create" onSubmit={onSubmit} onCancel={() => {}} />
+      </div>
+    );
+    const submitBtn = screen.getByRole("button", { name: "Tạo" });
+    expect(submitBtn.getAttribute("type")).toBe("button");
+
+    fireEvent.click(submitBtn);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it("children prop renders extra buttons between cancel and submit buttons", () => {
+    render(
+      <form>
+        <FormActionBar mode="create" onCancel={() => {}}>
+          <button type="button">Lưu nháp</button>
+        </FormActionBar>
+      </form>
+    );
+    const buttons = screen.getAllByRole("button");
+    expect(buttons.map((b) => b.textContent?.trim())).toEqual(["Bỏ", "Lưu nháp", "Tạo"]);
+  });
 });
+

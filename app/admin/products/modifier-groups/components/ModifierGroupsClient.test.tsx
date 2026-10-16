@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import React from "react";
 import ModifierGroupsClient, { type ModifierGroupRow } from "./ModifierGroupsClient";
 
@@ -117,7 +117,7 @@ describe("ModifierGroupsClient", () => {
   });
 
   it("renders row details: selection mode, caps, standalone, options, product count, status", () => {
-    render(<ModifierGroupsClient rows={sampleRows} />);
+    const { container } = render(<ModifierGroupsClient rows={sampleRows} />);
 
     expect(screen.getAllByText("Chọn nhiều").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chọn một").length).toBeGreaterThan(0);
@@ -129,6 +129,15 @@ describe("ModifierGroupsClient", () => {
 
     expect(screen.getAllByText("Trân châu trắng, Kem muối").length).toBeGreaterThan(0);
     expect(screen.getAllByText("20 món").length).toBeGreaterThan(0);
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("Thêm Topping")).toBeInTheDocument();
+    expect(within(phone).getByText("20 món")).toBeInTheDocument();
+    expect(within(phone).getByText("Chọn nhiều · tối đa 3 phần · Trân châu trắng, Kem muối")).toBeInTheDocument();
+    expect(
+      within(phone).getByText("Chọn một · Ít đường, Bình thường, Nhiều đường")
+    ).toBeInTheDocument();
+    expect(within(phone).queryByText(/Thứ tự hiện:/)).toBeNull();
   });
 
   it("rows have links opening the detail page", () => {

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach } from "vitest";
 import React from "react";
 import {
@@ -176,6 +176,35 @@ describe("PromotionDetailView", () => {
 
     expect(screen.getByText("Dùng chung với khuyến mãi khác")).toBeInTheDocument();
     expect(screen.getByText("Không")).toBeInTheDocument();
+  });
+
+  it("renders applicable items on phone as a divide-y list of PhoneRow (title/value on line 1, meta on line 2)", () => {
+    render(
+      <PromotionDetailView
+        promo={samplePromo}
+        brandName="Uchako"
+        applicableItems={sampleItems}
+        canDelete={false}
+        returnTo="/admin/promotions"
+      />
+    );
+
+    const mobileList = document.querySelector(".md\\:hidden") as HTMLElement;
+    expect(mobileList).toBeInTheDocument();
+    expect(mobileList.className).toContain("divide-y");
+
+    const firstRow = mobileList.firstElementChild as HTMLElement;
+    expect(firstRow.className).toContain("px-4");
+    expect(firstRow.className).toContain("py-2.5");
+    expect(firstRow.className).not.toContain("p-4");
+
+    // PhoneRow: line 1 has dishName (text-base) and appliedValue; line 2 has sizeName (text-sm)
+    const titleEl = within(firstRow).getByText("Trà đào");
+    expect(titleEl.className).toContain("text-base");
+    expect(within(firstRow).getByText("10,000đ")).toBeInTheDocument();
+    const metaEl = within(firstRow).getByText("Size M");
+    expect(metaEl.className).toContain("text-sm");
+    expect(metaEl.className).not.toContain("text-xs");
   });
 });
 

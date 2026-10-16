@@ -162,47 +162,6 @@ export default function SuppliersClient({
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
 
-  const renderCard = (s: DBSupplier) => (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between items-start gap-2">
-        <div>
-          <div className="text-text-primary text-base leading-tight">
-            {s.name}
-          </div>
-          <div className="font-mono text-xs text-primary mt-0.5">
-            {s.id}
-          </div>
-        </div>
-        {s.status === "INACTIVE" && (
-          <Badge variant="neutral">
-            Ngừng hợp tác
-          </Badge>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-1 text-sm text-text-secondary">
-        {s.phone && (
-          <div className="flex gap-2">
-            <span className="text-text-muted shrink-0">LH:</span>
-            <span className="text-text-primary">{s.phone}</span>
-          </div>
-        )}
-        {s.tax_id && (
-          <div className="flex gap-2">
-            <span className="text-text-muted shrink-0">MST:</span>
-            <span className="font-mono">{s.tax_id}</span>
-          </div>
-        )}
-        {s.address && (
-          <div className="flex gap-2">
-            <span className="text-text-muted shrink-0">ĐC:</span>
-            <span className="line-clamp-2">{s.address}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
   const removal = canDelete
     ? {
         verb: "Xoá",
@@ -229,7 +188,6 @@ export default function SuppliersClient({
           <Button
             href={`/admin/suppliers/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -240,17 +198,20 @@ export default function SuppliersClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
+        search={
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm kiếm" htmlFor="suppliers-search">
+              <TextInput
+                id="suppliers-search"
+                placeholder="Ví dụ: Thế Kỷ Xanh"
+                value={search}
+                onChange={handleSearchChange}
+              />
+            </Field>
+          </div>
+        }
       >
-        <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm kiếm" htmlFor="suppliers-search">
-            <TextInput
-              id="suppliers-search"
-              placeholder="Ví dụ: Thế Kỷ Xanh"
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </Field>
-        </div>
+        {null}
       </FilterCard>
 
       <DataList
@@ -261,7 +222,14 @@ export default function SuppliersClient({
           `/admin/suppliers/${encodeURIComponent(s.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(s) => ({
+          title: s.name,
+          meta: [s.id, s.phone].filter(Boolean).join(" · "),
+          badge:
+            s.status === "INACTIVE" ? (
+              <Badge variant="neutral">Ngừng hợp tác</Badge>
+            ) : undefined,
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

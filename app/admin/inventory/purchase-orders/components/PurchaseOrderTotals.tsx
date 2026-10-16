@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { formatNumber } from "@/lib/shared/format";
 import type { DBBankAccount } from "@/types/db";
@@ -25,6 +27,8 @@ export interface PurchaseOrderTotalsProps {
   bankAccounts: DBBankAccount[];
   paymentError: string | null;
   setPaymentError: (err: string | null) => void;
+  notes: string;
+  setNotes: (notes: string) => void;
 }
 
 export function PurchaseOrderTotals({
@@ -46,9 +50,20 @@ export function PurchaseOrderTotals({
   bankAccounts,
   paymentError,
   setPaymentError,
+  notes,
+  setNotes,
 }: PurchaseOrderTotalsProps) {
+  const hasValue = Boolean(
+    (taxAmount && Number(taxAmount) !== 0) ||
+    (discountAmount && Number(discountAmount) !== 0) ||
+    (notes && notes.trim() !== "")
+  );
+  const [userOpen, setUserOpen] = useState(false);
+  const isExpanded = hasValue || userOpen;
+
   return (
     <>
+      <h3 className="text-sm text-text-secondary mb-3">Thanh toán</h3>
       <div className="w-full mb-6 space-y-3 bg-surface-card rounded-xl shadow-sm border border-border p-5">
         <div className="flex justify-between items-center text-sm text-text-secondary">
           <span className="font-medium">Tổng tiền hàng:</span>
@@ -70,19 +85,6 @@ export function PurchaseOrderTotals({
             </div>
           </div>
           <div className="flex justify-between items-center text-sm gap-2">
-            <span className="text-text-secondary">Thuế (+):</span>
-            <div className="w-28 md:w-32">
-              <NumberInput
-                id={`${formId}-tax`}
-                aria-label="Thuế"
-                decimals={0}
-                zeroIsEmpty
-                value={taxAmount || null}
-                onValueChange={(v) => setTaxAmount(v ?? 0)}
-              />
-            </div>
-          </div>
-          <div className="flex justify-between items-center text-sm gap-2">
             <span className="text-text-secondary">Voucher (-):</span>
             <div className="w-28 md:w-32">
               <NumberInput
@@ -95,17 +97,56 @@ export function PurchaseOrderTotals({
               />
             </div>
           </div>
-          <div className="flex justify-between items-center text-sm gap-2">
-            <span className="text-text-secondary">Chiết khấu (-):</span>
-            <div className="w-28 md:w-32">
-              <NumberInput
-                id={`${formId}-discount`}
-                aria-label="Chiết khấu"
-                decimals={0}
-                zeroIsEmpty
-                value={discountAmount || null}
-                onValueChange={(v) => setDiscountAmount(v ?? 0)}
-              />
+
+          <button
+            type="button"
+            disabled={hasValue}
+            onClick={() => {
+              if (hasValue) return;
+              setUserOpen((prev) => !prev);
+            }}
+            className="text-sm text-primary hover:underline py-1 flex items-center justify-between w-full min-h-[48px] md:min-h-[40px] disabled:no-underline disabled:cursor-default"
+          >
+            <span>Thuế, chiết khấu, ghi chú</span>
+            <span className="text-xs text-text-muted">{isExpanded ? "▲" : "▼"}</span>
+          </button>
+
+          <div className={isExpanded ? "space-y-2" : "hidden"}>
+            <div className="flex justify-between items-center text-sm gap-2">
+              <span className="text-text-secondary">Thuế (+):</span>
+              <div className="w-28 md:w-32">
+                <NumberInput
+                  id={`${formId}-tax`}
+                  aria-label="Thuế"
+                  decimals={0}
+                  zeroIsEmpty
+                  value={taxAmount || null}
+                  onValueChange={(v) => setTaxAmount(v ?? 0)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-between items-center text-sm gap-2">
+              <span className="text-text-secondary">Chiết khấu (-):</span>
+              <div className="w-28 md:w-32">
+                <NumberInput
+                  id={`${formId}-discount`}
+                  aria-label="Chiết khấu"
+                  decimals={0}
+                  zeroIsEmpty
+                  value={discountAmount || null}
+                  onValueChange={(v) => setDiscountAmount(v ?? 0)}
+                />
+              </div>
+            </div>
+            <div className="pt-1">
+              <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
+                <TextInput
+                  id={`${formId}-notes`}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Ví dụ: giao buổi sáng"
+                />
+              </Field>
             </div>
           </div>
         </div>
@@ -120,7 +161,7 @@ export function PurchaseOrderTotals({
         <span className="block text-sm font-semibold text-text-secondary mb-2">
           Hình thức thanh toán
         </span>
-        <div className="flex items-center gap-6 min-h-[44px] md:min-h-[40px]">
+        <div className="flex items-center gap-6 min-h-[48px] md:min-h-[40px]">
           <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
             <input
               type="radio"

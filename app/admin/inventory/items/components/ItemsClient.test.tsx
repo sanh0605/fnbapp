@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import ItemsClient from "./ItemsClient";
 import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
@@ -191,19 +191,38 @@ describe("ItemsClient", () => {
     expect(bins.length).toBeGreaterThan(0);
   });
 
-  it("renders conversion summary line under secondary column", () => {
-    render(
+  it("renders conversion summary line under secondary column on desktop and phone row with 'Tồn: …' and 'mã · phân loại'", () => {
+    const { container } = render(
       <ItemsClient
         categories={CATEGORIES}
-        items={ITEMS}
+        items={[
+          ...ITEMS,
+          {
+            id: "SPM-099",
+            name: "Trà nhài cũ",
+            item_category_id: "CAT-1",
+            status: "INACTIVE",
+            is_non_inventory: false,
+            created_at: "2026-01-01T00:00:00Z",
+          },
+        ]}
         conversions={CONVERSIONS}
         units={UNITS}
-        stockById={{}}
+        stockById={{ "SPM-002": { kind: "figure", text: "42.000 ml", onHand: 42000 } }}
         canDelete={false}
       />,
     );
 
-    expect(screen.getAllByText("1 Hộp = 1000 ml").length).toBeGreaterThan(0);
+    const table = screen.getByRole("table");
+    expect(within(table).getByText("1 Hộp = 1000 ml")).toBeInTheDocument();
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("Sữa tươi Mlekovita")).toBeInTheDocument();
+    expect(within(phone).getByText("Tồn: 42.000 ml")).toBeInTheDocument();
+    expect(within(phone).getByText("SPM-002 · Nguyên liệu")).toBeInTheDocument();
+    expect(within(phone).getByText("SPM-099 · Nguyên liệu")).toBeInTheDocument();
+    expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
+    expect(within(phone).queryByText("1 Hộp = 1000 ml")).toBeNull();
   });
 
   it("renders stock column with figures and text kinds, and no link for 'Xem ở Tài sản'", () => {

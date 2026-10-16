@@ -183,27 +183,11 @@ export default function UsersClient({
 
   const currentListUrl = listUrl(search, role, slice.page, sortParam, dirParam);
 
-  const renderCard = (u: DBUser) => (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between items-start gap-2">
-        <div>
-          <div className="text-sm text-text-primary">
-            {u.username}
-          </div>
-          <div className="text-[11px] text-text-muted mt-0.5 font-mono">
-            {u.id}
-          </div>
-        </div>
-        <div className="shrink-0">
-          <RoleBadge role={u.role} />
-        </div>
-      </div>
-      <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex justify-between">
-        <span className="text-text-muted">Ngày tạo:</span>
-        <span>{u.created_at ? formatDate(u.created_at) : "—"}</span>
-      </div>
-    </div>
-  );
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedRole = searchParams?.get("role") ?? initialRole ?? "ALL";
+  const activeCount =
+    (appliedSearch ? 1 : 0) +
+    (appliedRole && appliedRole !== "ALL" ? 1 : 0);
 
   const removal = canDelete
     ? {
@@ -232,7 +216,6 @@ export default function UsersClient({
           <Button
             href={`/admin/users/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -243,17 +226,20 @@ export default function UsersClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search || role !== "ALL")}
+        activeCount={activeCount}
+        search={
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm nhân sự" htmlFor="users-search">
+              <TextInput
+                id="users-search"
+                placeholder="Ví dụ: nhanvien01"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
+        }
       >
-        <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm nhân sự" htmlFor="users-search">
-            <TextInput
-              id="users-search"
-              placeholder="Ví dụ: nhanvien01"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
-        </div>
         <div className="shrink-0 w-full md:w-48">
           <Field label="Quyền hạn" htmlFor="users-role">
             <Select
@@ -278,7 +264,13 @@ export default function UsersClient({
           `/admin/users/${encodeURIComponent(u.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(u) => ({
+          title: u.username,
+          meta: [u.id, u.created_at ? `Tạo ${formatDate(u.created_at)}` : null]
+            .filter(Boolean)
+            .join(" · "),
+          badge: <RoleBadge role={u.role} />,
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

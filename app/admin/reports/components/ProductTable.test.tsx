@@ -43,4 +43,29 @@ describe("ProductTable on the shared Table set (wave K5)", () => {
       expect(th.className.split(/\s+/)).toEqual(expect.arrayContaining(["sticky", "top-0"]));
     }
   });
+
+  it("renders compact table on phone without mobile cards, body rows starting with sticky TableRowHeader (Task 5)", () => {
+    const { container } = render(<ProductTable title="Bán chạy" items={ITEMS} uniqueSizes={[]} />);
+    // The old md:hidden card version is gone
+    expect(container.querySelector(".md\\:hidden")).toBeNull();
+    const table = container.querySelector("table")!;
+    expect(table.closest(".hidden")).toBeNull();
+
+    // The first cell of each body row is a TableRowHeader with stick="left"
+    const bodyRows = Array.from(table.querySelectorAll("tbody.divide-y tr"));
+    expect(bodyRows).toHaveLength(2);
+    for (const row of bodyRows) {
+      const headerCell = row.querySelector("th[scope='row']")!;
+      expect(headerCell).not.toBeNull();
+      expect(headerCell.className).toContain("sticky");
+      expect(headerCell.className).toContain("left-0");
+    }
+    expect(bodyRows[0].querySelector("th[scope='row']")!.textContent).toBe("Trà đào");
+    expect(bodyRows[1].querySelector("th[scope='row']")!.textContent).toBe("Bạc xỉu");
+
+    // The first header cell has stick="left"
+    const firstHeader = table.querySelector("thead th")!;
+    expect(firstHeader.className).toContain("sticky");
+    expect(firstHeader.className).toContain("left-0");
+  });
 });

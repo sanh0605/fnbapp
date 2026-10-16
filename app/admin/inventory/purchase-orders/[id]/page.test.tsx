@@ -48,6 +48,7 @@ vi.mock("./components/PurchasePaymentBlock", () => ({
 }));
 
 import PurchaseOrderDetail from "./page";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 
 function collectText(node: ReactNode, out: string[] = []): string[] {
   if (node === null || node === undefined || typeof node === "boolean") return out;
@@ -491,3 +492,92 @@ describe("edit form stopped suppliers and items (BR-CATALOG-007)", () => {
     findAll.mockReset().mockResolvedValue([]);
   });
 });
+
+function findElementByClassName(node: ReactNode, classNameSubstr: string): any | null {
+  if (!node || typeof node !== "object") return null;
+  const el = node as any;
+  if (typeof el.props?.className === "string" && el.props.className.includes(classNameSubstr)) {
+    return el;
+  }
+  if (Array.isArray(el)) {
+    for (const child of el) {
+      const found = findElementByClassName(child, classNameSubstr);
+      if (found) return found;
+    }
+  } else if (el.props?.children) {
+    if (Array.isArray(el.props.children)) {
+      for (const child of el.props.children) {
+        const found = findElementByClassName(child, classNameSubstr);
+        if (found) return found;
+      }
+    } else {
+      return findElementByClassName(el.props.children, classNameSubstr);
+    }
+  }
+  return null;
+}
+
+describe("purchase order line items on phone (Task 4)", () => {
+  beforeEach(() => {
+    findById.mockReset();
+    findAll.mockReset();
+    findAll.mockResolvedValue([]);
+    fetchPurchaseOrderCancelCheck.mockReset();
+    fetchPurchaseOrderCancelCheck.mockResolvedValue({ blocked: [], assets: [] });
+    getServerSession.mockResolvedValue({ user: { role: "ADMIN" } });
+  });
+
+  it("renders line items inside md:hidden as a divide-y list of PhoneRow with px-4 py-2.5", async () => {
+    findById.mockResolvedValue({
+      id: "PO-1",
+      status: "COMPLETED",
+      created_at: "2026-09-15T00:00:00Z",
+      transaction_date: "2026-09-15",
+      subtotal_amount: 380000,
+      total_amount: 380000,
+    });
+    findAll.mockImplementation(async (table: string) => {
+      if (table === "Purchase_Order_Lines") {
+        return [
+          {
+            po_id: "PO-1",
+            purchased_item_id: "ITEM-1",
+            unit: "UNT-HOP",
+            quantity: 10,
+            unit_price: 38000,
+            subtotal: 380000,
+          },
+        ];
+      }
+      if (table === "Purchased_Items") {
+        return [{ id: "ITEM-1", name: "Sữa đặc Ông Thọ" }];
+      }
+      if (table === "Units") {
+        return [{ id: "UNT-HOP", name: "hộp" }];
+      }
+      return [];
+    });
+
+    const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-1" }), searchParams: Promise.resolve({}) });
+    const phoneContainer = findElementByClassName(tree as ReactNode, "md:hidden");
+    expect(phoneContainer).not.toBeNull();
+    expect(phoneContainer.props.className).toContain("divide-y");
+
+    const rows = Array.isArray(phoneContainer.props.children)
+      ? phoneContainer.props.children
+      : [phoneContainer.props.children];
+    expect(rows.length).toBe(1);
+
+    const firstRow = rows[0];
+    expect(firstRow.props.className).toContain("px-4");
+    expect(firstRow.props.className).toContain("py-2.5");
+    expect(firstRow.props.className).not.toContain("p-4");
+
+    const phoneRow = firstRow.props.children;
+    expect(phoneRow.type).toBe(PhoneRow);
+    expect(phoneRow.props.title).toBe("Sữa đặc Ông Thọ");
+    expect(phoneRow.props.value).toBe("380,000đ");
+    expect(phoneRow.props.meta).toBe("10 hộp × 38,000đ");
+  });
+});
+

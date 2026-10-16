@@ -70,8 +70,9 @@ Chưa xem:
 - Không chữ đậm trong dòng danh sách (`BR-UI-003`; `font-bold`/`font-semibold` bị `list-rows.guard` đếm).
 - Không hộp nổi (`BR-DATA-007`): khung lọc và dòng hàng mở ngay tại chỗ.
 - Chữ hiển thị tiếng Việt; code và chú thích tiếng Anh. Viết theo ponytail: không viết thừa code, không thêm tuỳ chọn ngoài kế hoạch.
-- Gemini không chạy lệnh và không commit; Opus chạy kiểm tra và commit. Gemini dùng `agy -p "<phiếu>" --model gemini-4-argon-high --mode accept-edits --print-timeout 0` (đo lại `agy models` trước mỗi lần giao).
+- Gemini không chạy lệnh và không commit; Opus chạy kiểm tra và commit. Gemini dùng `agy -p "<phiếu>" --model gemini-4-argon-high --mode accept-edits --print-timeout 0` (đo lại `agy models` trước mỗi lần giao). Từ Task 2 phần sửa trở đi: Gemini 4 Argon hết lượt đến khoảng 2026-10-23, chủ quán chọn `gemini-3.8-flash-high` (2026-10-16, *"Gemini 3.8 Flash"*).
 - Worktree ở `.worktrees/phone`, nhánh `feat/khuon-dien-thoai`. Build chạy ở thư mục chính sau khi gộp, vì Turbopack 16.4 từ chối junction `node_modules` trong worktree (đo 2026-10-16), và chỉ chạy khi máy chủ 8386 đang tắt.
+- `components/ui/OptionGroupPicker.tsx` chỉ máy bán hàng dùng (`app/pos/components/ItemConfigModal.tsx`), nên phép kiểm cỡ để nó ngoài (`TILL_ONLY`).
 - Phiếu Gemini chạy song song trong cùng worktree chỉ khi không chung file nào. Ba danh sách nợ (`OWED_CARDS`, `OWED_44`, `OWED_TINY`) **chỉ Opus sửa**, sau khi phiếu xong; phiếu không đụng tới. Kiểm tra chạy khi cả đợt song song đã xong, rồi commit từng phiếu, chỉ stage file của phiếu đó.
 - `PhoneRow` không dùng hook, để trang máy chủ (`purchase-orders/[id]/page.tsx`) dùng được.
 
@@ -254,7 +255,7 @@ Các component chung khác:
 - `FilterCard`:
   - `onKeyDown` (Enter = áp dụng) chuyển lên phần tử gốc, để cả ô tìm lẫn các ô lọc đều nhận Enter.
   - Khi gập được (xem điều kiện ở Interfaces): hàng đầu gồm `search` (co giãn) và nút "Bộ lọc"/"Bộ lọc (n)" cao 48 px, `md:hidden`. Khối `children` cùng hai nút "Lọc"/"Xoá lọc" mang lớp `hidden md:flex` (hoặc `md:grid` như hôm nay) khi đóng, bỏ `hidden` khi mở. Ẩn bằng lớp, không bỏ khỏi DOM.
-  - Máy tính: `search` hiện ở vị trí đầu hàng lọc, đúng chỗ ô tìm đang đứng hôm nay. Không có nút gập.
+  - Máy tính: `search` hiện ở vị trí đầu hàng lọc, theo `BR-UI-016` ("first in the filter card"); ở Sổ thu chi và Phiếu nhập ô tìm đổi từ thứ hai lên thứ nhất. Không có nút gập.
 - Năm ô và nút dùng chung đổi `min-h-[44px]` thành `min-h-[48px]`, giữ `md:min-h-[40px]`. `SearchableSelect` thêm lớp đó cho nút mở và cho từng lựa chọn.
 - `Field`: nhãn đổi `text-[13px]` thành `text-sm`; gợi ý và lỗi đổi `text-xs` thành `text-[13px]`.
 - `Table`: ô và tiêu đề kiểu thường đổi `px-4 py-3` thành `px-3 py-2 md:px-4 md:py-3`; tiêu đề cột `whitespace-nowrap`. Kiểu `statement` giữ nguyên. Hôm nay bảng không hiện trên điện thoại nên máy tính không đổi.
@@ -273,10 +274,11 @@ Các component chung khác:
 
     `sourceName` chỉ còn ở trang chi tiết.
   - Sổ thu chi: theo dòng "Sổ thu chi" ở bảng Task 3.
-  - Cả hai trang truyền `activeCount` (số bộ lọc đang thu hẹp danh sách, khoảng ngày tính là 1) và `search` (ô tìm hiện có, chuyển ra khỏi `children`) cho `FilterCard`. Bỏ `className="w-full md:w-auto"` ở nút "Tạo".
+  - Cả hai trang truyền `activeCount` (số bộ lọc đã áp dụng khác mặc định, đúng những gì "Xoá lọc" sẽ xoá; quyết định sau khi soát 2026-10-16, vì đếm cả mặc định thì trang mới mở đã hiện "Bộ lọc (2)" trong khi "Xoá lọc" không có gì để xoá) và `search` (ô tìm hiện có, chuyển ra khỏi `children`) cho `FilterCard`. Bỏ `className="w-full md:w-auto"` ở nút "Tạo".
 - [ ] **Step 5: Opus chạy kiểm tra.**
   - Lệnh: `npx tsc --noEmit`, rồi `npx vitest run components/ui app/admin/inventory/purchase-orders app/admin/inventory/issue-slips app/admin/finance app/admin/components`.
   - Bỏ `.fails` ở Task 1 trong cùng commit.
+  - Opus sửa `BR-UI-004` (`screens.md`, câu "as a card on a phone") thành dải mỏng, cùng commit.
   - Xoá hai trang khỏi `OWED_CARDS`, và các file đã sửa khỏi `OWED_44` / `OWED_TINY`.
   - Commit.
 - [ ] **Step 6: Soát độc lập** (agent `reviewer`), theo Global Constraints và Review Focus 1–3, 5.
@@ -302,8 +304,8 @@ Quy ước:
 | Phiếu | File | title | value | meta (theo thứ tự) | badge |
 |---|---|---|---|---|---|
 | 3a | `app/admin/inventory/assets/components/AssetsClient.tsx` (bỏ `AssetItemCard.tsx` nếu không còn ai dùng) | tên | giá trị còn lại + "đ" | "Còn x / mua y" · "Đã thanh lý z" | "Đã thanh lý hết" |
-| 3a | `app/admin/inventory/stock/components/StockOnHandClient.tsx` | tên | tồn + đơn vị (đỏ nếu âm, giữ như cũ) | giá trị · số ngày đủ dùng · phân loại · "Kiểm lần cuối …" hoặc "Chưa kiểm lần nào" | "Ngừng dùng" |
-| 3a | `app/admin/inventory/stocktake/components/StocktakeList.tsx` | thời gian (`formatDateTimeFull`) | giá trị lệch | mã · người làm · "Đã đếm a/b" | trạng thái |
+| 3a | `app/admin/inventory/stock/components/StockOnHandClient.tsx` | tên | tồn + đơn vị (đỏ nếu âm, giữ như cũ) | giá trị · số ngày đủ dùng · phân loại · "Kiểm lần cuối …" hoặc "Chưa kiểm lần nào" | "Ngừng dùng"; dòng đang dùng mà sắp hết ("Hết", "≤7 ngày") thì nhãn cảnh báo như thẻ cũ (soát 2026-10-16) |
+| 3a | `app/admin/inventory/stocktake/components/StocktakeList.tsx` | thời gian (`formatDateTimeFull`) | giá trị lệch, bỏ " (tạm tính)" | "Tạm tính" (nếu có) · mã · người làm · "Đã đếm a/b" | trạng thái |
 | 3a | `app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx` | ngày xuất | giá trị + "đ" | mã · người ghi | loại (Phiếu xuất / Đã huỷ) |
 | 3a | `app/admin/inventory/items/components/ItemsClient.tsx` | tên | "Tồn: …" | mã · phân loại | "Ngừng dùng" |
 | 3a | `app/admin/inventory/conversions/components/ConversionsClient.tsx` | tên hàng | — | "1 {mua} = {tỷ lệ} {gốc}" · mã · "Chỉ cách mua" | "Ngừng dùng" |
@@ -315,13 +317,13 @@ Quy ước:
 | 3b | `app/admin/products/categories/components/CategoriesClient.tsx` | biểu tượng + tên | "{n} món" | mã · loại món | — |
 | 3b | `app/admin/products/types/components/ProductTypesClient.tsx` | tên | — | mã · "Tính là ly: Có/Không" · nhóm món | — |
 | 3b | `app/admin/products/modifiers/components/ModifiersClient.tsx` | tên | giá thêm | nhóm · mã · "Bán độc lập: Có/Không" | "Ngừng dùng" |
-| 3b | `app/admin/products/modifier-groups/components/ModifierGroupsClient.tsx` | tên nhóm | "{n} món" | "Chọn một/nhiều" · tuỳ chọn | trạng thái |
+| 3b | `app/admin/products/modifier-groups/components/ModifierGroupsClient.tsx` | tên nhóm | "{n} món" | "Chọn một/nhiều" · "tối đa N phần" (nếu có) · tuỳ chọn hoặc "Chưa có tuỳ chọn" | trạng thái |
 | 3b | `app/admin/promotions/components/PromotionsClient.tsx` | tên | mức giảm | ngày bắt đầu → kết thúc · thương hiệu · áp dụng | trạng thái |
 | 3c | `app/admin/finance/bank-accounts/components/BankAccountsClient.tsx` | tên | — | ngân hàng · số tài khoản | trạng thái |
 | 3c | `app/admin/finance/categories/components/CategoriesClient.tsx` | tên | — | Bên · tính vào lãi lỗ | trạng thái |
 | 3c | `app/admin/finance/monthly-items/components/MonthlyItemsClient.tsx` | tên khoản | "{n} dòng" | nhóm thu chi | trạng thái |
 | 3d | `app/admin/brands/components/BrandsClient.tsx` | tên | — | mã · mã đơn · "Từ …" | — |
-| 3d | `app/admin/outlets/components/OutletsClient.tsx` | tên | — | thương hiệu · mã đơn · giờ mở cửa | trạng thái |
+| 3d | `app/admin/outlets/components/OutletsClient.tsx` | tên | — | thương hiệu · mã đơn · giờ mở cửa · "Bắt đầu: …" | trạng thái |
 | 3d | `app/admin/suppliers/components/SuppliersClient.tsx` | tên | — | mã · điện thoại | "Ngừng hợp tác" |
 | 3d | `app/admin/users/components/UsersClient.tsx` | tên đăng nhập | — | mã · "Tạo {ngày}" | vai trò |
 | pilot | `app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx` | nhà cung cấp | tổng tiền | ngày · mã · thanh toán | trạng thái |
@@ -350,7 +352,7 @@ Thông tin bị bỏ khỏi dòng điện thoại vẫn có ở trang chi tiết
   - Bỏ `renderCard` khỏi `DataListProps`; `phoneRow` thành bắt buộc.
   - Bỏ `TotalCard` và test của nó trong `Table.test.tsx` (lý do: không còn ai dùng).
   - Sửa `DataList.test.tsx`.
-  - Đổi phép kiểm thứ ba của `phone-rows.guard` thành "không file nào còn `renderCard`".
+  - Đổi phép kiểm thứ ba của `phone-rows.guard` thành "không file nào còn `renderCard`". Đã làm khác (2026-10-16): `phoneRow` bắt buộc nên `tsc` tự từ chối `renderCard`; phép kiểm thứ ba thành "mọi danh sách truyền `phoneRow`".
 - [ ] **Step 5: Soát độc lập cả Task 3.**
 - [ ] **Step 6: Build sớm một lần.** Gộp nhánh vào `main` ở máy (chưa đẩy), tắt máy chủ 8386, chạy `npm run build` ở thư mục chính, trả `next-env.d.ts` và `docs/generated/system-map.md` (chỉ khác CRLF) về như cũ. Mục đích: bắt lỗi `"use client"` hay import trước khi Task 4–6 chồng thêm.
 
@@ -390,8 +392,8 @@ Thông tin bị bỏ khỏi dòng điện thoại vẫn có ở trang chi tiết
 - `app/admin/reports/sales/components/SalesByDaySection.tsx`, `PaymentBreakdownSection.tsx`, `SalesCharts` (chỉ cỡ chữ);
 - `app/admin/reports/sales/OutletBreakdownSection.tsx`, `app/admin/reports/sales/page.tsx` (chỉ cỡ chữ);
 - `app/admin/reports/components/ProductTable.tsx` (mỗi size một cột);
-- `app/admin/reports/issued/page.tsx` cùng `ItemCard.tsx` (thành bảng) và `EventCard.tsx` (danh sách sự kiện: giữ dạng danh sách, đổi sang `PhoneRow`);
-- `app/admin/reports/pnl/components/PnlMonthCards.tsx` (giữ dạng bấm mở từng tháng, chỉ đổi cỡ chữ);
+- `app/admin/reports/issued/page.tsx` cùng thẻ hàng cũ (thành bảng; file thẻ đã xoá 2026-10-16) và `EventCard.tsx` (danh sách sự kiện: giữ dạng danh sách, đổi sang `PhoneRow`);
+- `app/admin/reports/pnl/components/PnlMonthCards.tsx` (giữ dạng bấm mở từng tháng, chỉ đổi cỡ chữ), `pnl-display.tsx` và `PnlTableView.tsx` (chữ 10.5 / 11.5 px lên 12 px);
 - `app/admin/finance/components/CashBookMonthsClient.tsx`.
 
 Mỗi file có test cạnh bên thì sửa test đó.
@@ -403,7 +405,7 @@ Mỗi file có test cạnh bên thì sửa test đó.
   - Cột đầu: tiêu đề `stick="left"`, thân bảng `TableRowHeader stick="left"`; dòng tổng dưới tiêu đề như máy tính.
   - Biểu đồ giữ nguyên.
   - Không thêm bóng mờ mép bảng; Task 7 xem cột cuối bị cắt có đủ báo còn cột không.
-- [ ] **Step 3: Opus chạy kiểm tra, rút danh sách nợ, commit, soát độc lập.**
+- [ ] **Step 3: Opus chạy kiểm tra, rút danh sách nợ, commit, soát độc lập.** Cùng commit, Opus sửa câu "one card per day on a phone" ở `BR-UI-007` (`screens.md`) và `docs/03-workflows/reports.md`.
 
 ### Task 6: Màn hình Tạo và Sửa (Gemini, ba phiếu không chung file, chạy song song)
 
@@ -412,7 +414,8 @@ Mỗi file có test cạnh bên thì sửa test đó.
   - Chia phần: Khuyến mãi "Chương trình", "Mức giảm", "Thời gian", "Món áp dụng"; Điểm bán "Thông tin", "Giờ hoạt động". Sổ thu chi (`CashEntryForm`) không chia.
   - Tiêu đề phần cỡ `text-sm text-text-secondary`, không đậm.
   - `OrderEditForm.tsx`: chỉ đổi cỡ (spec 3.3 mục 7).
-- **6b. Kho, trừ ba biểu mẫu của 6c.** Các biểu mẫu Kho còn trong `OWED`, cùng `DisposeAssetForm.tsx`, `purchase-orders/[id]/cancel/page.tsx`, `CancelStocktakeForm.tsx`: `FormActionBar`, 48 px, chữ ≥ 12 px.
+  - Cũng trong phiếu này, chỉ đổi cỡ 44 → 48 px: `VoidOrderForm.tsx`, `DashboardSettingsForm.tsx`, `app/error.tsx`, `app/global-error.tsx` (phép kiểm siết lại 2026-10-16 bắt thêm `min-h-[44px]` đứng một mình).
+- **6b. Kho, trừ ba biểu mẫu của 6c.** Các biểu mẫu Kho còn trong `OWED`, cùng `DisposeAssetForm.tsx`, `purchase-orders/[id]/cancel/page.tsx`, `CancelStocktakeForm.tsx`: `FormActionBar`, 48 px, chữ ≥ 12 px. Hai trang huỷ giữ nút riêng ("Xác nhận huỷ"), chỉ đổi cỡ; `DisposeAssetForm` dùng `FormActionBar` với chữ riêng "Xác nhận" (`BR-UI-015`).
 - **6c. Phiếu nhập, Phiếu xuất, Sửa kiểm kê: trọn gói** (thanh lưu, chia phần, dòng hàng).
   - Files:
     - `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx`, `PurchaseOrderLines.tsx`, `PurchaseOrderTotals.tsx`;
@@ -459,7 +462,7 @@ Mỗi file có test cạnh bên thì sửa test đó.
   - đọc lỗi console;
   - đo số dòng lọt màn hình đầu.
 
-  Phiếu nhập phải từ 3–4 dòng lên ít nhất 7. Bảng báo cáo: cột cuối bị mép cắt cho thấy còn cột.
+  Phiếu nhập phải từ 3–4 dòng lên ít nhất 7. Bảng báo cáo: cột cuối bị mép cắt cho thấy còn cột. Thanh xoá khi chọn (dính đáy) không bị thanh menu dưới hay nút tròn máy bán hàng che; nhãn "Máy bán hàng" 12 px không xuống dòng ở 360 và 390 px.
 - [ ] **Step 3: Kiểm ở 1280 × 800.** Mở cùng các trang đó, so với `main` trước nhánh: chiều cao ô 40 px, bảng không đổi.
 - [ ] **Step 4: Sửa và kiểm lại.** Lỗi tìm được thì giao Gemini sửa, rồi kiểm lại đúng trang đó.
 - [ ] **Step 5: Ghi kết quả.** Ghi vào mục "Đã kiểm" của kế hoạch này, kèm mẫu số, ví dụ "68/68 trang mở được, 0 lỗi console".

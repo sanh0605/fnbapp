@@ -112,31 +112,44 @@ describe("DashboardView 7-day table on a computer", () => {
     expect(bodyRows).toHaveLength(7);
     expect(bodyRows[0].textContent).toContain("14/10");
     const oct8 = bodyRows[6];
+    const headerCell = oct8.querySelector("th[scope='row']")!;
+    expect(headerCell.textContent).toContain("08/10");
     const cells = [...oct8.querySelectorAll("td")].map(td => td.textContent?.trim());
-    expect(cells[0]).toContain("08/10");
-    expect(cells.slice(1)).toEqual([formatNumber(714000), formatNumber(20889), "27", "22", "12", "0"]);
+    expect(cells).toEqual([formatNumber(714000), formatNumber(20889), "27", "22", "12", "0"]);
   });
 
-  it("keeps the table in a box shown from md up and the cards in a box hidden from md up", () => {
+  it("renders the table across all screens without hiding it below md, and removes the mobile cards (Task 5)", () => {
     const { container } = render(<DashboardView data={QUIET} />);
-    const desktopBox = container.querySelector("table")!.closest(".md\\:block")!;
-    expect(desktopBox).not.toBeNull();
-    expect(desktopBox.className).toContain("hidden");
-    expect(container.querySelector(".md\\:hidden")).not.toBeNull();
+    const table = container.querySelector("table")!;
+    expect(table).not.toBeNull();
+    expect(table.closest(".hidden")).toBeNull();
+    expect(container.querySelector(".md\\:hidden")).toBeNull();
   });
 });
 
-describe("DashboardView 7-day cards on a phone", () => {
-  it("has one card per day, newest first, each naming the food columns", () => {
+describe("DashboardView 7-day table on a phone (Task 5)", () => {
+  it("renders table rows instead of cards, with sticky left-0 TableRowHeader on each body row", () => {
     const { container } = render(<DashboardView data={QUIET} />);
-    const phone = container.querySelector(".md\\:hidden")!;
-    const cards = phone.querySelectorAll("[data-day]");
-    expect(cards).toHaveLength(7);
-    expect(cards[0].getAttribute("data-day")).toBe("2026-10-14");
-    const oct8 = phone.querySelector('[data-day="2026-10-08"]')!;
+    // The old md:hidden card version is gone
+    expect(container.querySelector(".md\\:hidden")).toBeNull();
+    const rows = container.querySelectorAll("table tbody tr");
+    expect(rows).toHaveLength(7);
+    expect(rows[0].textContent).toContain("14/10");
+    const oct8 = rows[6];
     expect(oct8.textContent).toContain(formatNumber(714000));
-    expect(oct8.textContent).toContain("Trứng luộc");
-    expect(oct8.textContent).toContain("Khoai lang");
+
+    // The first cell of each body row is a TableRowHeader with stick="left"
+    for (const row of Array.from(rows)) {
+      const headerCell = row.querySelector("th[scope='row']")!;
+      expect(headerCell).not.toBeNull();
+      expect(headerCell.className).toContain("sticky");
+      expect(headerCell.className).toContain("left-0");
+    }
+
+    // The first header cell also has stick="left"
+    const firstHeader = container.querySelector("table thead th")!;
+    expect(firstHeader.className).toContain("sticky");
+    expect(firstHeader.className).toContain("left-0");
   });
 });
 

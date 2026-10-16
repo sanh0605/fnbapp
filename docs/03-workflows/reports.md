@@ -21,7 +21,7 @@ brCodes: BR-COGS-005, BR-COGS-007, BR-PNL-001, BR-PNL-002, BR-PNL-003, BR-PNL-00
   - too long since the last confirmed stock count;
   - a stock count left open too long;
   - monthly expenses not yet entered (`BR-CASH-009`), each with a "Nhập" link.
-- **Below: the 7-day table** (`BR-SALE-007`). Columns: Ngày, Doanh thu, TB mỗi ly, Số ly, one column per chosen food dish, and Topping mua riêng. It is a table on a computer and one card per day on a phone.
+- **Below: the 7-day table** (`BR-SALE-007`). Columns: Ngày, Doanh thu, TB mỗi ly, Số ly, one column per chosen food dish, and Topping mua riêng. It is a table on both; on a phone the day column stays put and the rest scrolls sideways (`BR-UI-019`).
 - **Data.** Loaded by `lib/dashboard/dashboard-data.ts`. The page still writes nothing. Its thresholds and columns come from Cài đặt Tổng quan (see `docs/03-workflows/operations.md`).
 
 This flow is **read-only**: the dashboard and the three reports display figures

@@ -208,10 +208,19 @@ describe("AssetsClient", () => {
     expect(screen.queryByRole("button", { name: /Trash/i })).toBeNull();
   });
 
-  it("renders phone card with 'Còn 1 / mua 2 · Đã thanh lý 1'", () => {
-    render(<AssetsClient items={[BINH_BOM]} />);
+  it("renders phone row with name, remaining value, meta 'Còn x / mua y · Đã thanh lý z', and disposed badge", () => {
+    const { container } = render(<AssetsClient items={[BINH_BOM, KHAY_CU]} initialAll={true} />);
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    const links = within(phone).getAllByRole("link");
 
-    expect(screen.getAllByText("Còn 1 / mua 2 · Đã thanh lý 1").length).toBeGreaterThan(0);
+    // Default sort: code, newest first. Line 1: name + remaining value; Line 2: meta
+    expect(links[1].textContent).toBe(
+      "Bình bơm (thuỷ tinh, 1300ml, 10ml/lần)145,860đCòn 1 / mua 2 · Đã thanh lý 1",
+    );
+    // Fully disposed row has badge on line 2 after meta
+    expect(links[0].textContent).toBe(
+      "Khay inox cũ0đCòn 0 / mua 2 · Đã thanh lý 2Đã thanh lý hết",
+    );
   });
 
   it("renders empty state when there are no matching items", () => {

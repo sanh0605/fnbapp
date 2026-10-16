@@ -52,7 +52,7 @@ export function PnlTableView({ table }: { table: PnlTable }) {
             <TableHeaderCell key={m.month} aria-label={m.label}>
               {m.head}
               <NoteMarks numbers={m.notes} />
-              {m.until && <span className="block text-[11.5px] font-normal text-text-secondary">đến {m.until}</span>}
+              {m.until && <span className="block text-xs font-normal text-text-secondary">đến {m.until}</span>}
             </TableHeaderCell>
           ))}
           <TableHeaderCell stick="right-2">Tổng</TableHeaderCell>

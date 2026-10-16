@@ -71,16 +71,18 @@ export default function PurchaseOrdersClient({
   const { draft, setField, applyFilters, isPending } = useFilterForm(defaultFilters);
   const [applyRequested, setApplyRequested] = useState(false);
 
-  const hasAnyFilter = Boolean(
-    searchParams.get("q") ||
-      (searchParams.get("status") && searchParams.get("status") !== "ACTIVE") ||
-      (searchParams.get("supplier") && searchParams.get("supplier") !== "ALL") ||
-      (searchParams.get("pay") && searchParams.get("pay") !== "ALL") ||
-      searchParams.get("account") ||
-      (searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
-      searchParams.get("from") ||
-      searchParams.get("to")
-  );
+  const activeCount =
+    (searchParams.get("q") ? 1 : 0) +
+    (searchParams.get("status") && searchParams.get("status") !== "ACTIVE" ? 1 : 0) +
+    (searchParams.get("supplier") && searchParams.get("supplier") !== "ALL" ? 1 : 0) +
+    (searchParams.get("pay") && searchParams.get("pay") !== "ALL" ? 1 : 0) +
+    (searchParams.get("account") ? 1 : 0) +
+    ((searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
+    searchParams.get("from") ||
+    searchParams.get("to")
+      ? 1
+      : 0);
+  const hasAnyFilter = activeCount > 0;
   const draftChanged =
     draft.q !== defaultFilters.q ||
     draft.status !== defaultFilters.status ||
@@ -189,24 +191,6 @@ export default function PurchaseOrdersClient({
     []
   );
 
-  const renderCard = (po: PurchaseOrderRow) => (
-    <div className="space-y-2">
-      <div className="flex justify-between items-start gap-2">
-        <span className="font-mono text-xs text-primary">{po.id}</span>
-        <span className="tabular-nums text-text-primary text-base font-medium">
-          {formatNumber(po.totalAmount)}đ
-        </span>
-      </div>
-      <div className="text-text-primary line-clamp-2 leading-tight">{po.supplierName}</div>
-      <div className="flex justify-between items-end gap-2">
-        <div className="text-xs text-text-secondary">
-          {po.dateText} · {po.sourceName} · {po.paymentLabel}
-        </div>
-        <div>{renderStatusBadge(po.status)}</div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-6 pb-20">
       <ListPageHeader
@@ -216,7 +200,6 @@ export default function PurchaseOrdersClient({
           <Button
             href="/admin/inventory/purchase-orders/new"
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -227,6 +210,19 @@ export default function PurchaseOrdersClient({
         onApply={() => setApplyRequested(true)}
         onClear={handleClear}
         showClear={showClear}
+        activeCount={activeCount}
+        search={
+          <div className="flex-1 min-w-[200px]">
+            <Field label="Tìm kiếm" htmlFor="search-input">
+              <TextInput
+                id="search-input"
+                placeholder="Ví dụ: PO-181"
+                value={draft.q}
+                onChange={(e) => setField("q", e.target.value)}
+              />
+            </Field>
+          </div>
+        }
       >
         <div className="w-full md:w-auto shrink-0">
           <DateRangeButton
@@ -236,16 +232,6 @@ export default function PurchaseOrdersClient({
             disabled={searching}
             disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
           />
-        </div>
-        <div className="flex-1 min-w-[200px]">
-          <Field label="Tìm kiếm" htmlFor="search-input">
-            <TextInput
-              id="search-input"
-              placeholder="Ví dụ: PO-181"
-              value={draft.q}
-              onChange={(e) => setField("q", e.target.value)}
-            />
-          </Field>
         </div>
         <div className="w-full md:w-40">
           <Field label="Trạng thái" htmlFor="status-select">
@@ -306,7 +292,12 @@ export default function PurchaseOrdersClient({
             )}`
           }
           columns={columns}
-          renderCard={renderCard}
+          phoneRow={(po) => ({
+            title: po.supplierName,
+            value: `${formatNumber(po.totalAmount)}đ`,
+            meta: [po.dateText, po.id, po.paymentLabel].join(" · "),
+            badge: renderStatusBadge(po.status),
+          })}
           totals={{
             label: "Tổng (không tính huỷ, nháp)",
             values: { totalAmount: formatNumber(pageData.totals.totalAmount) },

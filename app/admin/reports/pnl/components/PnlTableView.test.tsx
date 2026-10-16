@@ -44,10 +44,16 @@ describe("PnlTableView", () => {
     expect(cell.closest("td")!.className).not.toContain("text-danger");
   });
 
-  it("the month still running says how far its figures reach", () => {
-    render(<PnlTableView table={table()} />);
-    expect(screen.getByRole("columnheader", { name: "09/2026 (đến 11/09)" })).toBeTruthy();
+  it("the month still running says how far its figures reach and uses text-xs (no text-[11.5px])", () => {
+    const { container } = render(<PnlTableView table={table()} />);
+    const header = screen.getByRole("columnheader", { name: "09/2026 (đến 11/09)" });
+    expect(header).toBeTruthy();
+    const untilSpan = header.querySelector("span")!;
+    expect(untilSpan.className).not.toContain("text-[11.5px]");
+    expect(untilSpan.className).toContain("text-xs");
+    expect(container.querySelectorAll(".text-\\[11\\.5px\\]")).toHaveLength(0);
   });
+
 
   it("the 08/2026 header shows the note number the fixture gives it", () => {
     render(<PnlTableView table={table()} />);

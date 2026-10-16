@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import React from "react";
 import ProductTypesClient from "./ProductTypesClient";
 import type { ProductTypeRow } from "../actions";
@@ -70,7 +70,7 @@ describe("ProductTypesClient", () => {
   });
 
   it("renders rows with Có / Không for Tính là ly and category names joined by ', ' or 'Chưa có nhóm nào'", () => {
-    render(<ProductTypesClient rows={sampleRows} />);
+    const { container } = render(<ProductTypesClient rows={sampleRows} />);
 
     expect(screen.getAllByText("Thức uống").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Thức ăn").length).toBeGreaterThan(0);
@@ -82,6 +82,12 @@ describe("ProductTypesClient", () => {
     expect(screen.getAllByText("Cà phê, Trà").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Bánh").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chưa có nhóm nào").length).toBeGreaterThan(0);
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("PT-001 · Tính là ly: Có · Cà phê, Trà")).toBeInTheDocument();
+    expect(within(phone).getByText("PT-002 · Tính là ly: Không · Bánh")).toBeInTheDocument();
+    expect(within(phone).getByText("PT-003 · Tính là ly: Không · Chưa có nhóm nào")).toBeInTheDocument();
+    expect(within(phone).queryByText(/Nhóm món đang dùng:/)).toBeNull();
   });
 
   it("rows have links opening the detail page", () => {

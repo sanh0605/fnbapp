@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import React from "react";
 import { ModifierGroupDetailView } from "./ModifierGroupDetailView";
 import type { DBModifierGroup, DBModifier, DBProduct, DBProductCategory } from "@/types/db";
@@ -271,5 +271,68 @@ describe("ModifierGroupDetailView", () => {
     const fdResume = (setModifierGroupStatus as any).mock.calls[1][0] as FormData;
     expect(fdResume.get("id")).toBe("MG-001");
     expect(fdResume.get("status")).toBe("ACTIVE");
+  });
+
+  it("renders options on phone as a divide-y list of PhoneRow without text-[10px] or p-4", () => {
+    render(
+      <ModifierGroupDetailView
+        group={sampleGroup}
+        options={[sampleOption]}
+        productIds={["PROD-001"]}
+        allProducts={sampleProducts}
+        allCategories={sampleCategories}
+        canDelete={false}
+        returnTo="/admin/products/modifier-groups"
+      />
+    );
+
+    const mobileLists = document.querySelectorAll(".md\\:hidden");
+    const optionsList = mobileLists[0] as HTMLElement;
+    expect(optionsList).toBeInTheDocument();
+    expect(optionsList.className).toContain("divide-y");
+
+    const optionRow = optionsList.firstElementChild as HTMLElement;
+    expect(optionRow.className).toContain("px-4");
+    expect(optionRow.className).toContain("py-2.5");
+    expect(optionRow.className).not.toContain("p-4");
+
+    // PhoneRow: title & value on line 1, meta & badge on line 2
+    expect(within(optionRow).getByText("Trân châu trắng")).toBeInTheDocument();
+    expect(within(optionRow).getByText("5,000đ")).toBeInTheDocument();
+    expect(within(optionRow).getByText("Tối đa: 2")).toBeInTheDocument();
+    expect(within(optionRow).getByText("Đang dùng")).toBeInTheDocument();
+
+    // No text-[10px] anywhere in the row
+    expect(optionRow.innerHTML).not.toContain("text-[10px]");
+    // No font-medium inside row (BR-UI-003)
+    expect(optionRow.querySelector(".font-medium")).toBeNull();
+  });
+
+  it("renders applied dishes on phone as a divide-y list of PhoneRow", () => {
+    render(
+      <ModifierGroupDetailView
+        group={sampleGroup}
+        options={[sampleOption]}
+        productIds={["PROD-001"]}
+        allProducts={sampleProducts}
+        allCategories={sampleCategories}
+        canDelete={false}
+        returnTo="/admin/products/modifier-groups"
+      />
+    );
+
+    const mobileLists = document.querySelectorAll(".md\\:hidden");
+    const appliedList = mobileLists[1] as HTMLElement;
+    expect(appliedList).toBeInTheDocument();
+    expect(appliedList.className).toContain("divide-y");
+
+    const productRow = appliedList.firstElementChild as HTMLElement;
+    expect(productRow.className).toContain("px-4");
+    expect(productRow.className).toContain("py-2.5");
+    expect(productRow.className).not.toContain("p-4");
+
+    expect(within(productRow).getByText("Cà phê đen")).toBeInTheDocument();
+    expect(within(productRow).getByText("Cà phê")).toBeInTheDocument();
+    expect(productRow.querySelector(".font-medium")).toBeNull();
   });
 });

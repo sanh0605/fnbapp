@@ -16,6 +16,7 @@ import type { PurchaseOrderCopySeed } from "@/lib/purchasing/purchase-order-copy
 import { alert } from "@/lib/shared/dialog";
 import { PurchaseOrderLines } from "./PurchaseOrderLines";
 import { PurchaseOrderTotals } from "./PurchaseOrderTotals";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 
 export function validatePurchaseOrderLine(
   line: { purchased_item_id?: string; unit?: string; conversion_id?: string; quantity?: string | number },
@@ -133,6 +134,9 @@ export default function PurchaseOrderForm({
   const [discountAmount, setDiscountAmount] = useState(Number(initialData?.po?.discount_amount || copySeed?.discount_amount || 0));
 
   const [restoreFailed, setRestoreFailed] = useState(false);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [errorIndex, setErrorIndex] = useState<number | null>(null);
+  const [submittingStatus, setSubmittingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (restoredRef.current) return;
@@ -154,7 +158,9 @@ export default function PurchaseOrderForm({
       if (draft.supplierInvoiceCode !== undefined) setSupplierInvoiceCode(draft.supplierInvoiceCode);
       setTransactionDate(draft.transactionDate ? new Date(draft.transactionDate) : null);
       if (draft.notes !== undefined) setNotes(draft.notes);
-      if (Array.isArray(draft.lines)) setLines(draft.lines);
+      if (Array.isArray(draft.lines)) {
+        setLines(draft.lines);
+      }
       if (draft.shippingFee !== undefined) setShippingFee(Number(draft.shippingFee));
       if (draft.taxAmount !== undefined) setTaxAmount(Number(draft.taxAmount));
       if (draft.voucherAmount !== undefined) setVoucherAmount(Number(draft.voucherAmount));
@@ -184,20 +190,34 @@ export default function PurchaseOrderForm({
   }, []);
 
   const addLine = () => {
-    setLines([...lines, {
-      purchased_item_id: "",
-      unit: "",
-      quantity: "",
-      subtotal: 0,
-      conversion_rate: "",
-    }]);
+    setOpenIndex(lines.length);
+    setLines((prev) => [
+      ...prev,
+      {
+        purchased_item_id: "",
+        unit: "",
+        quantity: "",
+        subtotal: 0,
+        conversion_rate: "",
+      },
+    ]);
   };
 
   const removeLine = (index: number) => {
-    setLines(lines.filter((_, i) => i !== index));
+    setLines((prev) => prev.filter((_, i) => i !== index));
+    setOpenIndex((prev) => {
+      if (prev === null) return null;
+      if (prev === index) return null;
+      if (index < prev) return prev - 1;
+      return prev;
+    });
+    setErrorIndex(null);
   };
 
   const updateLine = (index: number, field: string, value: any) => {
+    if (errorIndex === index) {
+      setErrorIndex(null);
+    }
     const newLines = [...lines];
     newLines[index][field] = value;
 
@@ -229,12 +249,17 @@ export default function PurchaseOrderForm({
 
       for (let i = 0; i < lines.length; i++) {
         const lineError = validatePurchaseOrderLine(lines[i], conversions);
-        if (lineError) return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: ${lineError}`, variant: "warning" });
+        if (lineError) {
+          setOpenIndex(i);
+          setErrorIndex(i);
+          return await alert({ title: "Thiếu thông tin", message: `Dòng ${i + 1}: ${lineError}`, variant: "warning" });
+        }
       }
     }
 
     savingRef.current = true;
     setLoading(true);
+    setSubmittingStatus(status);
     setPaymentError(null);
     const formData = new FormData();
     if (isEdit) formData.append("id", po.id!);
@@ -268,6 +293,7 @@ export default function PurchaseOrderForm({
       } else {
         savingRef.current = false;
         setLoading(false);
+        setSubmittingStatus(null);
         if (
           res.error === "Chọn cách trả tiền" ||
           res.error === "Chọn tài khoản nhận chuyển khoản" ||
@@ -281,12 +307,13 @@ export default function PurchaseOrderForm({
     } catch {
       savingRef.current = false;
       setLoading(false);
+      setSubmittingStatus(null);
       await alert({ title: "Lỗi", message: "Không lưu được. Kiểm tra mạng rồi bấm lại.", variant: "danger" });
     }
   };
 
   return (
-    <>
+    <form noValidate onSubmit={(e) => e.preventDefault()}>
       {restoreFailed && (
         <Alert variant="warning" className="mb-6">
           Không khôi phục được phiếu đang nhập dở
@@ -294,12 +321,13 @@ export default function PurchaseOrderForm({
       )}
       <div
         data-testid="form-layout"
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start lg:grid-rows-[auto_1fr]"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start lg:grid-rows-[auto_1fr] mb-6"
       >
         <div
           data-testid="form-shared"
           className="bg-surface-card rounded-xl shadow-sm border border-border p-6 lg:col-start-3 lg:row-start-1 space-y-4"
         >
+          <h3 className="text-sm text-text-secondary mb-3">Thông tin phiếu</h3>
           <div>
             <Field label="Nhà cung cấp" htmlFor={`${formId}-supplierId`} required>
               <SearchableSelect
@@ -398,16 +426,6 @@ export default function PurchaseOrderForm({
               />
             </Field>
           </div>
-          <div>
-            <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
-              <TextInput
-                id={`${formId}-notes`}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Ví dụ: giao buổi sáng"
-              />
-            </Field>
-          </div>
         </div>
 
         <div
@@ -423,6 +441,9 @@ export default function PurchaseOrderForm({
             addLine={addLine}
             removeLine={removeLine}
             updateLine={updateLine}
+            openIndex={openIndex}
+            setOpenIndex={setOpenIndex}
+            errorIndex={errorIndex}
           />
         </div>
 
@@ -449,32 +470,39 @@ export default function PurchaseOrderForm({
             bankAccounts={bankAccounts}
             paymentError={paymentError}
             setPaymentError={setPaymentError}
+            notes={notes}
+            setNotes={setNotes}
           />
-
-          <div className="flex flex-col gap-3">
-            <Button
-              type="button"
-              variant="primary"
-              loading={loading}
-              onClick={() => handleSubmit("COMPLETED")}
-              className="w-full min-h-[44px] md:min-h-[40px]"
-            >
-              {isEdit ? "Cập nhật & Hoàn thành" : "Tạo"}
-            </Button>
-            {!(isEdit && po.status === "COMPLETED") && (
-              <Button
-                type="button"
-                variant="secondary"
-                loading={loading}
-                onClick={() => handleSubmit("DRAFT")}
-                className="w-full min-h-[44px] md:min-h-[40px]"
-              >
-                Lưu nháp
-              </Button>
-            )}
-          </div>
         </div>
       </div>
-    </>
+
+      <FormActionBar
+        mode={isEdit ? "edit" : "create"}
+        submitLabel={isEdit ? "Cập nhật & Hoàn thành" : undefined}
+        onSubmit={() => handleSubmit("COMPLETED")}
+        loading={loading && submittingStatus === "COMPLETED"}
+        disabled={loading}
+        onCancel={() =>
+          router.push(
+            isEdit && po.id
+              ? `/admin/inventory/purchase-orders/${po.id}`
+              : "/admin/inventory/purchase-orders"
+          )
+        }
+      >
+        {!(isEdit && po.status === "COMPLETED") && (
+          <Button
+            type="button"
+            variant="secondary"
+            loading={loading && submittingStatus === "DRAFT"}
+            disabled={loading}
+            onClick={() => handleSubmit("DRAFT")}
+            className="w-full md:w-auto"
+          >
+            Lưu nháp
+          </Button>
+        )}
+      </FormActionBar>
+    </form>
   );
 }

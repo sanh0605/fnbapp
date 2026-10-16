@@ -111,14 +111,18 @@ describe("SuppliersClient", () => {
     // Sửa button was removed; row links to detail and shows 'Ngừng hợp tác'
     render(
       <SuppliersClient
-        suppliers={[sup("SUP-003", "Cũ", "INACTIVE")]}
+        suppliers={[{ ...sup("SUP-003", "Cũ", "INACTIVE"), phone: "0909123456", tax_id: "0312345678", address: "12 Nguyễn Huệ" }]}
         canDelete={false}
         initialSearch=""
       />
     );
     const links = screen.getAllByRole("link", { name: /Cũ/ });
     expect(links.length).toBeGreaterThan(0);
+    expect(screen.getByText("SUP-003 · 0909123456")).toBeInTheDocument();
     expect(screen.getAllByText("Ngừng hợp tác").length).toBeGreaterThan(0);
+    expect(screen.queryByText("LH:")).toBeNull();
+    expect(screen.queryByText("MST:")).toBeNull();
+    expect(screen.queryByText("ĐC:")).toBeNull();
   });
 
   it("does not render a status select filter", () => {

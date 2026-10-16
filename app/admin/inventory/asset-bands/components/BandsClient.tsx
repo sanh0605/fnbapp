@@ -91,23 +91,6 @@ export default function BandsClient({
 
   const currentListUrl = listUrl(slice.page, sortParam, dirParam);
 
-  const renderCard = (band: DBAssetDepreciationBand) => (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-sm text-text-primary">
-          {band.id}
-        </span>
-        <span className="text-sm text-text-primary">
-          {band.term_months} tháng
-        </span>
-      </div>
-      <div className="text-sm text-text-muted">
-        <span>Đơn giá: </span>
-        <span className="text-text-primary">{formatBandRange(band)}</span>
-      </div>
-    </div>
-  );
-
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -115,17 +98,15 @@ export default function BandsClient({
           group="Kho"
           title="Thời hạn khấu hao"
           action={
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 href="/admin/inventory/assets"
                 variant="secondary"
-                className="w-full md:w-auto"
               >
                 Tài sản
               </Button>
               <Button
                 href={`/admin/inventory/asset-bands/edit?returnTo=${encodeURIComponent(currentListUrl)}`}
-                className="w-full md:w-auto"
               >
                 Sửa khung
               </Button>
@@ -145,7 +126,11 @@ export default function BandsClient({
           `/admin/inventory/asset-bands/${encodeURIComponent(band.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(band) => ({
+          title: formatBandRange(band),
+          value: `${band.term_months} tháng`,
+          meta: band.id,
+        })}
         sort={{
           key: sortKey,
           dir: sortDir,

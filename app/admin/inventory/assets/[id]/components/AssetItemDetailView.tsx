@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import {
   Table,
   TableHead,
@@ -180,55 +181,43 @@ export function AssetItemDetailView({
               </Table>
             </div>
 
-            {/* Phone Cards */}
+            {/* Phone Rows */}
             <div className="md:hidden bg-surface-card rounded-card border border-border divide-y divide-border">
-              {detail.lots.map((lot) => (
-                <div key={lot.id} className="p-4 space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-text-secondary">
-                      {lot.id}
-                    </span>
-                    <span className="text-xs text-text-secondary">
-                      {formatDateTimeFull(lot.acquiredDate)}
-                    </span>
+              {detail.lots.map((lot) => {
+                const metaParts = [
+                  formatDateTimeFull(lot.acquiredDate),
+                  `Còn ${lot.remainingQuantity}/${lot.quantity} cái`,
+                  `${formatNumber(Math.round(lot.unitCost))}đ`,
+                  `${lot.termMonths} tháng`,
+                  lot.purchaseOrderId,
+                ].filter(Boolean);
+
+                const content = (
+                  <PhoneRow
+                    title={lot.id}
+                    value={`${formatNumber(Math.round(lot.remainingValue))}đ`}
+                    meta={metaParts.join(" · ")}
+                  />
+                );
+
+                if (lot.purchaseOrderId) {
+                  return (
+                    <Link
+                      key={lot.id}
+                      href={`/admin/inventory/purchase-orders/${lot.purchaseOrderId}`}
+                      className="block px-4 py-2.5 min-h-[48px] hover:bg-surface-secondary/50 transition-colors"
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <div key={lot.id} className="px-4 py-2.5 min-h-[48px]">
+                    {content}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-text-secondary">Phiếu nhập</span>
-                    {lot.purchaseOrderId ? (
-                      <Link
-                        href={`/admin/inventory/purchase-orders/${lot.purchaseOrderId}`}
-                        className="font-mono text-primary hover:underline min-h-[44px] md:min-h-[40px] flex items-center"
-                      >
-                        {lot.purchaseOrderId}
-                      </Link>
-                    ) : (
-                      <span className="text-text-muted">—</span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-text-secondary">Còn / Mua</span>
-                    <span className="text-text-primary">
-                      {lot.remainingQuantity} / {lot.quantity} cái
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-text-secondary">Giá một cái</span>
-                    <span className="text-text-primary">
-                      {formatNumber(Math.round(lot.unitCost))}đ
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-text-secondary">Thời hạn</span>
-                    <span className="text-text-secondary">{lot.termMonths} tháng</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-text-secondary">Giá trị còn lại</span>
-                    <span className="text-primary">
-                      {formatNumber(Math.round(lot.remainingValue))}đ
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -275,29 +264,35 @@ export function AssetItemDetailView({
               </Table>
             </div>
 
-            {/* Phone Cards */}
+            {/* Phone Rows */}
             <div className="md:hidden bg-surface-card rounded-card border border-border divide-y divide-border">
-              {detail.disposals.map((d) => (
-                <div key={d.id} className="p-4 space-y-1 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-text-primary">
-                      {formatDateTimeFull(d.disposedDate)}
-                    </span>
-                    <span className="text-text-primary">
-                      {formatNumber(Math.round(d.charge))}đ
-                    </span>
+              {detail.disposals.map((d) => {
+                const metaNodes: React.ReactNode[] = [
+                  `${formatDateTimeFull(d.lotAcquiredDate)} (${d.assetId})`,
+                  `${d.quantity} cái`,
+                  <span key="proceeds">Thu được: {renderProceeds(d.proceeds)}</span>,
+                  d.reason || null,
+                ].filter(Boolean);
+
+                return (
+                  <div key={d.id} className="px-4 py-2.5">
+                    <PhoneRow
+                      title={formatDateTimeFull(d.disposedDate)}
+                      value={`${formatNumber(Math.round(d.charge))}đ`}
+                      meta={
+                        <span>
+                          {metaNodes.map((node, i) => (
+                            <React.Fragment key={i}>
+                              {i > 0 && " · "}
+                              {node}
+                            </React.Fragment>
+                          ))}
+                        </span>
+                      }
+                    />
                   </div>
-                  <div className="text-xs text-text-secondary">
-                    Lần mua: {formatDateTimeFull(d.lotAcquiredDate)} ({d.assetId}) · Số lượng: {d.quantity}
-                  </div>
-                  <div className="text-xs text-text-secondary">
-                    Thu được: {renderProceeds(d.proceeds)}
-                  </div>
-                  <div className="text-xs text-text-muted">
-                    Lý do: {d.reason || "—"}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -341,30 +336,24 @@ export function AssetItemDetailView({
               </Table>
             </div>
 
-            {/* Phone Cards */}
+            {/* Phone Rows */}
             <div className="md:hidden bg-surface-card rounded-card border border-border divide-y divide-border">
-              {detail.months.map((m, idx) => (
-                <div key={idx} className="p-4 flex items-center justify-between text-sm">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-text-primary">
-                      {formatMonth(m.month)}
-                    </span>
-                    <span className="text-xs text-text-secondary">
-                      Số cái giữ: {m.unitsHeld}
-                    </span>
+              {detail.months.map((m, idx) => {
+                const metaParts = [
+                  `${m.unitsHeld} cái`,
+                  m.disposalCharge > 0 ? `gồm ${formatNumber(Math.round(m.disposalCharge))}đ thanh lý` : "",
+                ].filter(Boolean);
+
+                return (
+                  <div key={idx} className="px-4 py-2.5">
+                    <PhoneRow
+                      title={formatMonth(m.month)}
+                      value={`${formatNumber(Math.round(m.charge))}đ`}
+                      meta={metaParts.join(" · ")}
+                    />
                   </div>
-                  <div className="text-right">
-                    <div className="text-text-primary">
-                      {formatNumber(Math.round(m.charge))}đ
-                    </div>
-                    {m.disposalCharge > 0 && (
-                      <div className="text-xs text-text-muted">
-                        gồm {formatNumber(Math.round(m.disposalCharge))}đ thanh lý
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

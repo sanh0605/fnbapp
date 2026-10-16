@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Alert } from "@/components/ui/Alert";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import {
   Table,
   TableHead,
@@ -110,6 +111,9 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) {
+      return;
+    }
     setInlineError(null);
     setIsSaving(true);
 
@@ -147,11 +151,11 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
         subtitle={orderNo}
       />
 
-      <form
-        onSubmit={handleSave}
-        data-testid="form-layout"
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start"
-      >
+      <form onSubmit={handleSave}>
+        <div
+          data-testid="form-layout"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start mb-6"
+        >
         {/* Summary of order as sold (Desktop: left 2/3, Phone: stacked above) */}
         <div
           data-testid="form-lines"
@@ -188,7 +192,7 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                       <TableCell align="right">{line.qty}</TableCell>
                       <TableCell align="right">
                         {line.gross_line_total > line.net_line_total && (
-                          <div className="text-[11px] text-text-muted line-through">
+                          <div className="text-xs text-text-muted line-through">
                             {formatNumber(line.gross_line_total)}
                           </div>
                         )}
@@ -228,7 +232,7 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                     </div>
                     <div className="text-right">
                       {line.gross_line_total > line.net_line_total && (
-                        <div className="text-[11px] text-text-muted line-through">
+                        <div className="text-xs text-text-muted line-through">
                           {formatNumber(line.gross_line_total)}
                         </div>
                       )}
@@ -262,7 +266,7 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                     type="button"
                     variant="secondary"
                     onClick={handleAddPaymentPart}
-                    className="text-xs min-h-[44px] md:min-h-[36px] py-1 px-3"
+                    className="text-xs min-h-[48px] md:min-h-[36px] py-1 px-3"
                   >
                     Thêm cách trả
                   </Button>
@@ -326,7 +330,7 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                           aria-label={`Xoá ${
                             part.method === "CASH" ? "tiền mặt" : "chuyển khoản"
                           }`}
-                          className="px-3 min-h-[44px] md:min-h-[40px] shrink-0"
+                          className="px-3 min-h-[48px] md:min-h-[40px] shrink-0"
                         >
                           Xoá
                         </Button>
@@ -376,32 +380,23 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
             />
           </div>
 
-          <div className="p-4 flex flex-col gap-3 bg-surface-card border-t border-border">
-            {inlineError && (
+          {inlineError && (
+            <div className="px-4 py-3">
               <Alert variant="danger">
                 {inlineError}
               </Alert>
-            )}
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSaving || !editReason.trim() || !isPaymentValid}
-              className="w-full min-h-[44px] md:min-h-[40px]"
-            >
-              {isSaving ? "Đang lưu..." : "Lưu"}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => router.push(viewUrl)}
-              disabled={isSaving}
-              className="w-full min-h-[44px] md:min-h-[40px]"
-            >
-              Bỏ
-            </Button>
-          </div>
+            </div>
+          )}
         </div>
-      </form>
-    </DetailFrame>
+      </div>
+
+      <FormActionBar
+        mode="edit"
+        loading={isSaving}
+        disabled={!editReason.trim() || !isPaymentValid}
+        onCancel={() => router.push(viewUrl)}
+      />
+    </form>
+  </DetailFrame>
   );
 }

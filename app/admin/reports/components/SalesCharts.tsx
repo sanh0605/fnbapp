@@ -83,7 +83,7 @@ export default function SalesCharts({
                   style={{ height: `${heightPercent}%`, minHeight: d.amount > 0 ? '4px' : '0' }}
                 ></div>
               </div>
-              <div className="text-[10px] sm:text-xs text-text-muted mt-3 font-medium text-center h-4">
+              <div className="text-xs text-text-muted mt-3 font-medium text-center h-4">
                 {shouldShowLabel ? d.label : ""}
               </div>
             </div>

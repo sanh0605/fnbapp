@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { DataList, type DataColumn } from "./DataList";
 
 const { refresh, router } = vi.hoisted(() => {
@@ -87,7 +87,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -131,7 +131,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -156,7 +156,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         empty={<div>Trống</div>}
       />
     );
@@ -173,7 +173,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         empty={<div>Trống</div>}
       />
     );
@@ -192,7 +192,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} dòng?`,
@@ -209,44 +209,6 @@ describe("DataList", () => {
     }
   });
 
-  it("after clicking Chọn, clicking the card text of Circle K ticks Chọn Circle K and has no link around it", () => {
-    render(
-      <DataList
-        rows={suppliers}
-        getId={(r: SampleSupplier) => r.id}
-        getName={(r: SampleSupplier) => r.name}
-        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
-        columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
-        removal={{
-          verb: "Xoá",
-          confirmMessage: (count) => `Xoá ${count} dòng?`,
-          remove: vi.fn(),
-        }}
-        empty={<div>Trống</div>}
-      />
-    );
-
-    // Click "Chọn" to enter mobile select mode
-    const selectModeBtn = screen.getByRole("button", { name: "Chọn" });
-    fireEvent.click(selectModeBtn);
-
-    // jsdom renders both layouts; the phone card's tick box is the last one.
-    const ticks = screen.getAllByRole("checkbox", { name: "Chọn Circle K" });
-    const checkbox = ticks[ticks.length - 1];
-    expect(checkbox).not.toBeChecked();
-
-    // The mobile card text of Circle K
-    const circleKMatches = screen.getAllByText("Circle K");
-    const mobileCardText = circleKMatches[circleKMatches.length - 1];
-    expect(mobileCardText.closest("a")).toBeNull();
-
-    // Clicking the card text ticks the checkbox
-    fireEvent.click(mobileCardText);
-    expect(checkbox).toBeChecked();
-    expect(mobileCardText.closest("a")).toBeNull();
-  });
-
   it("rowVerb: two rows, rowVerb returns 'Ngừng dùng' for row A and 'Xoá' for row B -> bins have aria-labels 'Ngừng dùng A' and 'Xoá B'", () => {
     const twoRows: SampleSupplier[] = [
       { id: "A", name: "A" },
@@ -260,7 +222,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           rowVerb: (row: SampleSupplier) => (row.id === "A" ? "Ngừng dùng" : "Xoá"),
@@ -295,7 +257,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -332,7 +294,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -370,7 +332,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá hoặc ngừng dùng",
           rowVerb: () => "Xoá",
@@ -422,7 +384,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={sortColumns as any}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           empty={<div>Trống</div>}
           {...({
             sort: {
@@ -468,7 +430,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={sortColumns as any}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           empty={<div>Trống</div>}
           {...({
             sort: {
@@ -497,7 +459,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={sortColumns as any}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           empty={<div>Trống</div>}
           {...({
             sort: {
@@ -511,7 +473,7 @@ describe("DataList", () => {
 
       const select = screen.getByRole("combobox", { name: "Sắp xếp" }) as HTMLSelectElement;
       expect(select).toBeInTheDocument();
-      expect(select.className).toContain("min-h-[44px]");
+      expect(select.className).toContain("min-h-[48px]");
 
       const options = Array.from(select.querySelectorAll("option"));
       const optionTexts = options.map((o) => o.textContent?.trim());
@@ -546,7 +508,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -590,7 +552,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -613,7 +575,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -636,7 +598,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -658,7 +620,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -687,7 +649,7 @@ describe("DataList wears the table template", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         empty={<div>Trống</div>}
         {...extra}
       />
@@ -756,21 +718,31 @@ describe("DataList wears the table template", () => {
     expect(screen.queryByText("Tổng")).not.toBeInTheDocument();
   });
 
-  it("with totals: a soft brown row right under the header, and a first card on the phone", () => {
+  it("with totals: a soft brown row right under the header, and a strip on the phone", () => {
     renderList({ totals: { label: "Tổng", values: { name: "3 nhà cung cấp" } } });
     const rows = screen.getAllByRole("row");
     expect(rows[1].className).toContain("bg-primary-soft");
     expect(rows[1]).toHaveTextContent("Tổng");
     expect(rows[1]).toHaveTextContent("3 nhà cung cấp");
 
-    // The phone card list comes after the desktop table in the page; its
-    // totals card must come before its first row card.
-    const totals = screen.getAllByText("3 nhà cung cấp");
-    expect(totals).toHaveLength(2);
-    const phoneTotal = totals[1];
+    // The phone list comes after the desktop table in the page; its
+    // totals strip reads "<label>: <value>" and comes before its first row.
+    const phoneTotal = screen.getByText("Tổng: 3 nhà cung cấp");
+    expect(phoneTotal.closest(".md\\:hidden")).not.toBeNull();
     const vinamilks = screen.getAllByText("Vinamilk");
-    const phoneFirstCard = vinamilks[vinamilks.length - 1];
-    expect(phoneTotal.compareDocumentPosition(phoneFirstCard) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const phoneFirstRow = vinamilks[vinamilks.length - 1];
+    expect(phoneTotal.compareDocumentPosition(phoneFirstRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("multi-value totals strip joins items with · on the phone", () => {
+    renderList({
+      totals: {
+        label: "Tổng",
+        values: { id: "3", name: "3 nhà cung cấp" },
+      },
+    });
+    const phoneTotal = screen.getByText("Tổng: Mã 3 · Tên 3 nhà cung cấp");
+    expect(phoneTotal.closest(".md\\:hidden")).not.toBeNull();
   });
 
   it("the bulk delete button is a red outline, since a yes/no question follows it", () => {
@@ -787,3 +759,134 @@ describe("DataList wears the table template", () => {
     expect(cls).not.toContain("bg-danger");
   });
 });
+
+describe("DataList phoneRow (BR-UI-018)", () => {
+  it("renders each phone row as a link to getHref(row)", () => {
+    render(
+      <DataList
+        rows={suppliers}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        phoneRow={(r: SampleSupplier) => ({
+          title: r.name,
+          value: "1,000đ",
+          meta: r.id,
+        })}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    const phoneTitle = screen.getAllByText("Vinamilk").find((el) => el.closest(".md\\:hidden"))!;
+    expect(phoneTitle).toBeDefined();
+    const phoneContainer = phoneTitle.closest(".md\\:hidden") as HTMLElement;
+
+    for (const s of suppliers) {
+      const rowTitle = within(phoneContainer).getByText(s.name);
+      const link = rowTitle.closest("a");
+      expect(link).not.toBeNull();
+      expect(link?.getAttribute("href")).toBe(`/admin/suppliers/${s.id}`);
+    }
+  });
+
+  it("renders no delete button inside the phone layout (.md\\:hidden)", () => {
+    render(
+      <DataList
+        rows={suppliers}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        phoneRow={(r: SampleSupplier) => ({
+          title: r.name,
+          meta: r.id,
+        })}
+        removal={{
+          verb: "Xoá",
+          confirmMessage: (count) => `Xoá ${count} dòng?`,
+          remove: vi.fn(),
+        }}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    const phoneTitle = screen.getAllByText("Vinamilk").find((el) => el.closest(".md\\:hidden"))!;
+    expect(phoneTitle).toBeDefined();
+    const phoneContainer = phoneTitle.closest(".md\\:hidden") as HTMLElement;
+    expect(within(phoneContainer).queryByRole("button", { name: /^Xoá/ })).toBeNull();
+  });
+
+  it("in select mode, clicking the row title toggles its checkbox once per click, and omits checkbox when canRemove is false", () => {
+    render(
+      <DataList
+        rows={suppliers}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        phoneRow={(r: SampleSupplier) => ({
+          title: r.name,
+          meta: r.id,
+        })}
+        removal={{
+          verb: "Xoá",
+          confirmMessage: (count) => `Xoá ${count} dòng?`,
+          remove: vi.fn(),
+          canRemove: (r: SampleSupplier) => r.id !== "NCC-020",
+        }}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Chọn" }));
+
+    const phoneTitle = screen.getAllByText("Circle K").find((el) => el.closest(".md\\:hidden"))!;
+    expect(phoneTitle).toBeDefined();
+    expect(phoneTitle.closest("a")).toBeNull();
+    const phoneContainer = phoneTitle.closest(".md\\:hidden") as HTMLElement;
+
+    const checkbox = within(phoneContainer).getByRole("checkbox", { name: "Chọn Circle K" });
+    expect(checkbox).not.toBeChecked();
+
+    fireEvent.click(phoneTitle);
+    expect(checkbox).toBeChecked();
+
+    fireEvent.click(phoneTitle);
+    expect(checkbox).not.toBeChecked();
+
+    expect(
+      within(phoneContainer).queryByRole("checkbox", { name: "Chọn The Garden Tea & Coffee" })
+    ).toBeNull();
+  });
+
+  it("shows a sticky bulk delete bar in select mode", () => {
+    render(
+      <DataList
+        rows={suppliers}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        phoneRow={(r: SampleSupplier) => ({
+          title: r.name,
+          meta: r.id,
+        })}
+        removal={{
+          verb: "Xoá",
+          confirmMessage: (count) => `Xoá ${count} dòng?`,
+          remove: vi.fn(),
+        }}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Chọn" }));
+    const phoneTitle = screen.getAllByText("Circle K").find((el) => el.closest(".md\\:hidden"))!;
+    fireEvent.click(phoneTitle);
+
+    const deleteBtn = screen.getByRole("button", { name: "Xoá 1 dòng đã chọn" });
+    expect(deleteBtn.closest(".sticky")).not.toBeNull();
+  });
+});
+

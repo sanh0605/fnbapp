@@ -347,51 +347,14 @@ export default function PromotionsClient({
 
   const currentListUrl = listUrl(search, status, type, slice.page, sortParam, dirParam);
 
-  const renderCard = (promo: DBPromotion) => {
-    const brandName = promo.brand_id ? brandMap[promo.brand_id] || "Toàn hệ thống" : "Toàn hệ thống";
-    const discountText = formatDiscountText(promo);
-    const scopeText = getScopeText(promo, variantMap);
-    const expired = isExpired(promo.end_date);
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedStatus = parseStatus(searchParams?.get("status") ?? initialStatus);
+  const appliedType = parseType(searchParams?.get("type") ?? initialType);
 
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-text-primary text-base leading-tight">
-              {promo.name}
-            </div>
-            <div className="font-mono text-[11px] text-text-muted mt-0.5">
-              {promo.id}
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-secondary text-text-secondary border border-border">
-              {brandName}
-            </span>
-            {expired ? (
-              <Badge variant="danger">Đã hết hạn</Badge>
-            ) : promo.status === "INACTIVE" ? (
-              <Badge variant="warning">Tạm ngưng</Badge>
-            ) : (
-              <Badge variant="success">Đang chạy</Badge>
-            )}
-          </div>
-        </div>
-        <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
-          <div className="flex justify-between items-center">
-            <span className="text-text-primary">{discountText}</span>
-            <span>{scopeText}</span>
-          </div>
-          {(promo.start_date || promo.end_date) && (
-            <div className="text-[11px] text-text-muted">
-              {formatPromotionDate(promo.start_date)} &rarr;{" "}
-              {formatPromotionDate(promo.end_date)}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
+  const activeCount =
+    (appliedSearch.trim() ? 1 : 0) +
+    (appliedStatus !== "ALL" ? 1 : 0) +
+    (appliedType !== "ALL" ? 1 : 0);
 
   const removal = canDelete
     ? {
@@ -417,7 +380,6 @@ export default function PromotionsClient({
           <Button
             href={`/admin/promotions/new?returnTo=${encodeURIComponent(currentListUrl)}`}
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -428,17 +390,20 @@ export default function PromotionsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search || status !== "ALL" || type !== "ALL")}
+        activeCount={activeCount}
+        search={
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm khuyến mãi" htmlFor="promotions-search">
+              <TextInput
+                id="promotions-search"
+                placeholder="Ví dụ: Giảm 10%"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
+        }
       >
-        <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm khuyến mãi" htmlFor="promotions-search">
-            <TextInput
-              id="promotions-search"
-              placeholder="Ví dụ: Giảm 10%"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
-        </div>
         <div className="shrink-0 w-full md:w-48">
           <Field label="Trạng thái" htmlFor="promotions-status">
             <Select
@@ -476,7 +441,32 @@ export default function PromotionsClient({
           `/admin/promotions/${encodeURIComponent(p.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(promo) => {
+          const brandName = promo.brand_id ? brandMap[promo.brand_id] || "Toàn hệ thống" : "Toàn hệ thống";
+          const discountText = formatDiscountText(promo);
+          const scopeText = getScopeText(promo, variantMap);
+          const expired = isExpired(promo.end_date);
+
+          const datesText =
+            !promo.start_date && !promo.end_date
+              ? null
+              : `${formatPromotionDate(promo.start_date)} → ${formatPromotionDate(promo.end_date)}`;
+
+          const meta = [datesText, brandName, scopeText].filter(Boolean).join(" · ");
+
+          return {
+            title: promo.name,
+            value: discountText,
+            meta,
+            badge: expired ? (
+              <Badge variant="danger">Đã hết hạn</Badge>
+            ) : promo.status === "INACTIVE" ? (
+              <Badge variant="warning">Tạm ngưng</Badge>
+            ) : (
+              <Badge variant="success">Đang chạy</Badge>
+            ),
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,
@@ -492,7 +482,7 @@ export default function PromotionsClient({
               <button
                 type="button"
                 onClick={handleClearFilter}
-                className="text-danger hover:underline font-medium text-sm min-h-[44px] md:min-h-[40px] inline-flex items-center"
+                className="text-danger hover:underline font-medium text-sm min-h-[48px] md:min-h-[40px] inline-flex items-center"
               >
                 Xoá lọc
               </button>
