@@ -314,6 +314,23 @@ describe("rows from a bundle taken before migration 0121", () => {
 
     expect(order).toEqual(["insert old superseded_by=null", "insert new superseded_by=null", "update old -> new"]);
   });
+
+  it("inserts a SUPERSEDED order as COMPLETED and restores status with superseded_by in one update", async () => {
+    const inserted: unknown[] = [];
+    const updates: unknown[] = [];
+    const client = {
+      from: () => ({
+        insert: (rows: unknown[]) => (inserted.push(...rows), Promise.resolve({ error: null })),
+        update: (values: unknown) => ({ eq: (_col: string, id: string) => (updates.push({ id, ...(values as object) }), Promise.resolve({ error: null })) }),
+      }),
+    } as any;
+    const bundle = fakeBundle({ orders_v2: [{ id: "old", version: 1, status: "SUPERSEDED", superseded_by: "new" }] });
+
+    await restoreBundleToTarget(bundle, client, ["orders_v2"], 500);
+
+    expect(inserted).toEqual([{ id: "old", version: 1, status: "COMPLETED", superseded_by: null }]);
+    expect(updates).toEqual([{ id: "old", status: "SUPERSEDED", superseded_by: "new" }]);
+  });
 });
 
 describe("rows from a bundle taken before migration 0133", () => {

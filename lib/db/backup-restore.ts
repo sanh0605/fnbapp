@@ -127,12 +127,14 @@ function applyMigration0121(table: string, row: JsonRow): JsonRow {
 /**
  * An edited order and its replacement point at each other (parent_order_id one way,
  * superseded_by the other), so the rows cannot go in one by one. Oldest version first
- * satisfies parent_order_id; superseded_by goes in as null and is set after the table.
+ * satisfies parent_order_id; superseded_by goes in as null and is set after the table, together
+ * with the status: the status/link CHECK refuses SUPERSEDED without superseded_by, so these rows
+ * go in as COMPLETED.
  */
-function splitSupersededLinks(rows: JsonRow[]): { rows: JsonRow[]; links: Array<{ id: string; superseded_by: string }> } {
-  const links = rows.filter(r => r.superseded_by).map(r => ({ id: r.id as string, superseded_by: r.superseded_by as string }));
+function splitSupersededLinks(rows: JsonRow[]): { rows: JsonRow[]; links: Array<{ id: string; status: string; superseded_by: string }> } {
+  const links = rows.filter(r => r.superseded_by).map(r => ({ id: r.id as string, status: r.status as string, superseded_by: r.superseded_by as string }));
   const sorted = [...rows].sort((a, b) => Number(a.version) - Number(b.version));
-  return { rows: sorted.map(r => (r.superseded_by ? { ...r, superseded_by: null } : r)), links };
+  return { rows: sorted.map(r => (r.superseded_by ? { ...r, status: "COMPLETED", superseded_by: null } : r)), links };
 }
 
 /**
@@ -169,7 +171,7 @@ export async function restoreBundleToTarget(
       if (result.changed) substituted += 1;
       return applyMigration0121(table, backfillModifierGroup(table, backfillPurchaseOrderPayment(table, result.row), bundle));
     });
-    let links: Array<{ id: string; superseded_by: string }> = [];
+    let links: Array<{ id: string; status: string; superseded_by: string }> = [];
     if (table === "orders_v2") ({ rows, links } = splitSupersededLinks(rows));
 
     for (let offset = 0; offset < rows.length; offset += batchSize) {
@@ -188,8 +190,9 @@ export async function restoreBundleToTarget(
         }
       }
     }
+    // If a link update fails, the older version stays COMPLETED in the restored copy and is listed in skipped with its original status.
     for (const link of links) {
-      const { error } = await targetClient.from(table).update({ superseded_by: link.superseded_by }).eq("id", link.id);
+      const { error } = await targetClient.from(table).update({ status: link.status, superseded_by: link.superseded_by }).eq("id", link.id);
       if (error) skipped.push({ row: link, error: error.message });
     }
     results.push({ table, inserted, skipped, substituted });
