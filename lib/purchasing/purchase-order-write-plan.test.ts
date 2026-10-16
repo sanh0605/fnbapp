@@ -26,7 +26,6 @@ const lines = [
     quantity: 2,
     subtotal: 196,
     conversion_id: "QD-001",
-    base_unit: "U-ML",
   },
 ];
 
@@ -56,13 +55,14 @@ describe("buildPurchaseOrderWritePlan", () => {
         id: "POL-line-uuid",
         purchased_item_id: "SPM-001",
         conversion_id: "QD-001",
-        base_unit: "U-ML",
         base_quantity: 10,
         unit_price: 98,
         subtotal: 196,
         created_at: "2026-07-01T04:00:00.000Z",
       }),
     ]);
+    // 0133: the unit comes from the conversion, so the line carries no base_unit of its own.
+    expect(plan.lines[0]).not.toHaveProperty("base_unit");
   });
 
   it("does not create receipt ledger rows for a draft order", () => {
@@ -102,7 +102,6 @@ describe("buildPurchaseOrderWritePlan", () => {
           quantity: 1,
           subtotal: 0,
           conversion_id: "",
-          base_unit: "",
         },
       ],
       purchasedItems: [],
@@ -145,7 +144,6 @@ describe("buildPurchaseOrderWritePlan", () => {
             quantity: 2,
             subtotal: 196,
             conversion_id: "QD-DOES-NOT-EXIST",
-            base_unit: "U-ML",
           },
         ],
         purchasedItems: [
@@ -176,7 +174,6 @@ describe("buildPurchaseOrderWritePlan", () => {
             quantity: 2,
             subtotal: 196,
             conversion_id: "",
-            base_unit: "U-ML",
           },
         ],
         purchasedItems: [
@@ -200,7 +197,6 @@ describe("buildPurchaseOrderWritePlan", () => {
             quantity,
             subtotal: "150000",
             conversion_id: "QD-001",
-            base_unit: "U-ML",
           },
         ],
         purchasedItems: [{ id: "SPM-001" }],
@@ -224,8 +220,8 @@ describe("buildPurchaseOrderWritePlan", () => {
   );
 
   describe("line ids on an edit", () => {
-    const eggLine = { purchased_item_id: "SPM-EGG", unit: "box", quantity: 2, subtotal: 196, conversion_id: "QD-EGG", base_unit: "U-PCS" };
-    const milkLine = { purchased_item_id: "SPM-MILK", unit: "box", quantity: 2, subtotal: 196, conversion_id: "QD-MILK", base_unit: "U-ML" };
+    const eggLine = { purchased_item_id: "SPM-EGG", unit: "box", quantity: 2, subtotal: 196, conversion_id: "QD-EGG" };
+    const milkLine = { purchased_item_id: "SPM-MILK", unit: "box", quantity: 2, subtotal: 196, conversion_id: "QD-MILK" };
     const edit = {
       order,
       purchasedItems: [{ id: "SPM-EGG" }, { id: "SPM-MILK" }],

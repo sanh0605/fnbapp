@@ -101,7 +101,6 @@ export async function addSupplier(formData: FormData): Promise<ActionResponse> {
       tax_id,
       address,
       links,
-      parent_id: "",
       status: "ACTIVE",
       created_at,
       duplicate_warning_confirmed: wasWarningConfirmed,

@@ -77,7 +77,7 @@ export async function getIssuedValueReport(range: RangeValue): Promise<IssuedVal
 
   const nameById = new Map<string, string>((purchasedItems as any[]).map(p => [p.id, p.name]));
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
-  // OPEN-ITEMS 41: purchased_items.default_unit_id is null for every row
+  // OPEN-ITEMS 41: purchased_items.default_unit_id never held a value (dropped by 0133)
   // (measured 2026-08-13), so the base unit has to come from
   // UOM_Conversions.base_unit instead -- the same source
   // getIssueSlipFormData already uses for baseUnitName

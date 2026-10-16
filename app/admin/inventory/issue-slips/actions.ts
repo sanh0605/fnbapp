@@ -221,7 +221,7 @@ export async function getIssueSlipFormData(): Promise<IssueSlipItemView[]> {
   const eligible = await filterByC17(eligiblePurchasedItems);
   const onHandById = await computeOnHandByPurchasedItem();
 
-  // OPEN-ITEMS 41: purchased_items.default_unit_id is null on every row, so
+  // OPEN-ITEMS 41: purchased_items.default_unit_id never held a value and was dropped by 0133, so
   // it can never label onHand. The base unit comes from
   // UOM_Conversions.base_unit instead -- the same fix G4 (7882894) applied
   // to app/admin/reports/issued. Verified 2026-08-17 against live data: all

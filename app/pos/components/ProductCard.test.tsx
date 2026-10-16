@@ -12,7 +12,6 @@ describe("ProductCard category icon (R4)", () => {
   const sampleProduct = {
     id: "P1",
     name: "Cà phê đen",
-    image_url: null,
   };
 
   it("renders group's own icon when set", () => {
@@ -43,23 +42,7 @@ describe("ProductCard category icon (R4)", () => {
     expect(screen.queryByText("☕")).toBeNull();
   });
 
-  it("renders product image when image_url exists", () => {
-    const productWithImage = { ...sampleProduct, image_url: "/coffee.png" };
-    const category = { id: "C1", name: "Cà phê", icon: "☕" };
-    render(
-      <ProductCard
-        product={productWithImage}
-        category={category}
-        basePrice={25000}
-        onClick={vi.fn()}
-      />
-    );
-    const img = screen.getByRole("img", { name: "Cà phê đen" });
-    expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute("src", "/coffee.png");
-  });
-
-  it("renders compact card without aspect-square block when neither image nor icon exists", () => {
+  it("renders compact card without aspect-square block when no icon exists", () => {
     const category = { id: "C1", name: "Cà phê", icon: null };
     const { container } = render(
       <ProductCard
@@ -74,7 +57,7 @@ describe("ProductCard category icon (R4)", () => {
     expect(screen.getByText("25,000")).toBeInTheDocument();
   });
 
-  it("renders icon small without aspect-square container when icon is present without image", () => {
+  it("renders icon small without aspect-square container when an icon is present", () => {
     const category = { id: "C1", name: "Cà phê", icon: "☕" };
     const { container } = render(
       <ProductCard

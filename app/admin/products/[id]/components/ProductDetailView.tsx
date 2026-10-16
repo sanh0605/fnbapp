@@ -22,7 +22,6 @@ export interface ProductDetailViewProps {
     name: string;
     category_id: string;
     status: string;
-    image_url?: string;
     variants: any[];
     priceHistory: any[];
     neverSold: boolean;
@@ -70,21 +69,6 @@ export function ProductDetailView({
       value: product.neverSold ? "Chưa bán lần nào" : "Đã có đơn",
     },
   ];
-
-  if (product.image_url) {
-    fields.push({
-      label: "Ảnh",
-      value: (
-        <div className="w-12 h-12 rounded-lg bg-page border border-border overflow-hidden shrink-0">
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ),
-    });
-  }
 
   const currentDetailUrl = `/admin/products/${encodeURIComponent(product.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/products/${encodeURIComponent(product.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
@@ -306,7 +290,6 @@ export function ProductDetailView({
                   <TableHeaderCell>Size</TableHeaderCell>
                   <TableHeaderCell>Giá cũ</TableHeaderCell>
                   <TableHeaderCell>Giá mới</TableHeaderCell>
-                  <TableHeaderCell>Lý do</TableHeaderCell>
                 </TableHead>
                 <TableBody>
                   {sortedHistory.map((entry: any, idx: number) => {
@@ -322,7 +305,6 @@ export function ProductDetailView({
                         : formatNumber(entry.old_price);
                     const dateText =
                       formatDateTimeFull(entry.effective_at || entry.created_at) || "—";
-                    const reasonText = entry.reason || entry.note || "—";
 
                     return (
                       <TableRow key={entry.id || idx}>
@@ -337,9 +319,6 @@ export function ProductDetailView({
                         </TableCell>
                         <TableCell align="right">
                           {formatNumber(entry.new_price)}
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-text-secondary">{reasonText}</span>
                         </TableCell>
                       </TableRow>
                     );
@@ -363,7 +342,6 @@ export function ProductDetailView({
                     : formatNumber(entry.old_price);
                 const dateText =
                   formatDateTimeFull(entry.effective_at || entry.created_at) || "—";
-                const reasonText = entry.reason || entry.note || "—";
 
                 return (
                   <div key={entry.id || idx} className="p-4 space-y-1">
@@ -378,11 +356,6 @@ export function ProductDetailView({
                         {formatNumber(entry.new_price)}
                       </span>
                     </div>
-                    {reasonText !== "—" && (
-                      <div className="text-xs text-text-secondary italic">
-                        {reasonText}
-                      </div>
-                    )}
                   </div>
                 );
               })}

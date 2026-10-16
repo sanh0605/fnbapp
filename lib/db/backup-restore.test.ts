@@ -315,3 +315,23 @@ describe("rows from a bundle taken before migration 0121", () => {
     expect(order).toEqual(["insert old superseded_by=null", "insert new superseded_by=null", "update old -> new"]);
   });
 });
+
+describe("rows from a bundle taken before migration 0133", () => {
+  it("drops the seven columns that migration removed", async () => {
+    const calls: Array<{ table: string; rows: unknown[] }> = [];
+    const client = fakeClient((table, rows) => (calls.push({ table, rows }), { error: null }));
+    const bundle = fakeBundle({
+      purchased_items: [{ id: "I1", default_unit_id: "" }],
+      suppliers: [{ id: "S1", parent_id: "" }],
+      units: [{ id: "U1", abbreviation: "" }],
+      product_price_history: [{ id: "H1", reason: "" }],
+      asset_depreciation_bands: [{ id: "B1", status: "ACTIVE" }],
+      purchase_order_lines: [{ id: "L1", base_unit: "U1" }],
+      products: [{ id: "P1", image_url: "" }],
+    });
+
+    await restoreBundleToTarget(bundle, client, ["purchased_items", "suppliers", "units", "product_price_history", "asset_depreciation_bands", "purchase_order_lines", "products"], 500);
+
+    expect(calls.map(c => c.rows)).toEqual([[{ id: "I1" }], [{ id: "S1" }], [{ id: "U1" }], [{ id: "H1" }], [{ id: "B1" }], [{ id: "L1" }], [{ id: "P1" }]]);
+  });
+});

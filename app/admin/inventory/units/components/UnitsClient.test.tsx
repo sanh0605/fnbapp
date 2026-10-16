@@ -41,8 +41,8 @@ vi.mock("@/lib/shared/dialog", () => ({
 }));
 
 const UNITS: DBUnit[] = [
-  { id: "UNT-001", name: "Hộp", abbreviation: "", description: "Hộp giấy", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
-  { id: "UNT-010", name: "Combo 2", abbreviation: "", description: "Bộ đôi sản phẩm", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
+  { id: "UNT-001", name: "Hộp", description: "Hộp giấy", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
+  { id: "UNT-010", name: "Combo 2", description: "Bộ đôi sản phẩm", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
 ];
 
 afterEach(() => {

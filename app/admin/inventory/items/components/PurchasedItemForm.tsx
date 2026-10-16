@@ -304,7 +304,6 @@ export function PurchasedItemForm({
   }
 
   const usedUnitIds = new Set<string>();
-  if (initialData?.default_unit_id) usedUnitIds.add(initialData.default_unit_id);
   if (initialConversions) {
     for (const c of initialConversions) {
       if (c.base_unit) usedUnitIds.add(c.base_unit);

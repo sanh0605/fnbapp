@@ -24,17 +24,6 @@ describe("buildUnitDeleteRestrictionMessage", () => {
     expect(message).toContain("Xoá các dòng quy đổi đó trước.");
   });
 
-  it("names the item, not a code, for purchased_items.default_unit_id", () => {
-    const message = buildUnitDeleteRestrictionMessage("Túi", {
-      kind: "purchased_items",
-      count: 1,
-      ownerName: "Túi đựng rác",
-    });
-    expect(message).toBe(
-      "Không xoá được đơn vị Túi vì đang được dùng trong mặt hàng mua Túi đựng rác. Đổi đơn vị mặc định của mặt hàng đó trước.",
-    );
-  });
-
   it("frames purchase_order_lines as frozen history with no fix-it hint", () => {
     const message = buildUnitDeleteRestrictionMessage("Can", {
       kind: "purchase_order_lines",

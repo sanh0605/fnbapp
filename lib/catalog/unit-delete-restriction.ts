@@ -9,6 +9,9 @@
 // Measured live 2026-09-01: exactly 7 foreign keys reference units.id, all
 // ON DELETE RESTRICT -- uom_conversions (two columns), purchased_items,
 // base_ingredients, semi_products, purchase_order_lines, production_items.
+// Migration 0133 dropped purchased_items.default_unit_id and
+// purchase_order_lines.base_unit with their keys; a purchase order line now
+// blocks a unit through its conversion's base_unit.
 // semi_products and production_items were dropped with their tables
 // (migration 0105, 2026-09-28 owner decision); their kinds were removed here
 // in step. base_ingredients was dropped earlier (migration 0090,
@@ -18,7 +21,6 @@
 
 export type UnitBlockerKind =
   | "uom_conversions"
-  | "purchased_items"
   | "purchase_order_lines";
 
 export type UnitBlockerFinding = {
@@ -34,8 +36,6 @@ function clauseFor(finding: UnitBlockerFinding): string {
   switch (kind) {
     case "uom_conversions":
       return `${count} dòng quy đổi của ${ownerName}`;
-    case "purchased_items":
-      return `mặt hàng mua ${ownerName}`;
     case "purchase_order_lines":
       return `${count} dòng đơn nhập lịch sử của ${ownerName}`;
   }
@@ -45,8 +45,6 @@ function hintFor(finding: UnitBlockerFinding): string {
   switch (finding.kind) {
     case "uom_conversions":
       return finding.count === 1 ? "Xoá dòng quy đổi đó trước." : "Xoá các dòng quy đổi đó trước.";
-    case "purchased_items":
-      return "Đổi đơn vị mặc định của mặt hàng đó trước.";
     case "purchase_order_lines":
       // Unlike the other sources, this one is never freeable -- a purchase
       // order line's unit is frozen history (same reasoning as

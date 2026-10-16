@@ -47,7 +47,6 @@ describe("saveProduct atomic persistence", () => {
       product: {
         category_id: "CAT-001",
         name: "Món thử lỗi",
-        image_url: "",
         status: "ACTIVE",
         created_at: expect.any(String),
       },

@@ -29,7 +29,6 @@ type PurchaseOrderLineWriteInput = {
   quantity: string | number;
   subtotal: string | number;
   conversion_id?: string;
-  base_unit?: string;
 };
 
 type PurchasedItemWriteInput = {
@@ -120,7 +119,6 @@ export function buildPurchaseOrderWritePlan(input: {
       unit_price: quantity > 0 ? Math.round(subtotal / quantity) : 0,
       subtotal,
       conversion_id: line.conversion_id || receipt?.conversion_id || "",
-      base_unit: line.base_unit || "",
       base_quantity: baseQuantity,
       created_at: input.createdAt,
     });

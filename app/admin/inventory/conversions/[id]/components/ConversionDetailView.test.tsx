@@ -29,7 +29,6 @@ const item: DBPurchasedItem = {
   id: "SPM-002",
   name: "Sữa tươi Mlekovita",
   item_category_id: "CAT-1",
-  default_unit_id: "UNT-ML",
   status: "ACTIVE",
   is_non_inventory: false,
   created_at: "2026-01-01T00:00:00Z",
