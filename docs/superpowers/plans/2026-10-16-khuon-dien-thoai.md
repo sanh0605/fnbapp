@@ -304,8 +304,8 @@ Quy ước:
 | Phiếu | File | title | value | meta (theo thứ tự) | badge |
 |---|---|---|---|---|---|
 | 3a | `app/admin/inventory/assets/components/AssetsClient.tsx` (bỏ `AssetItemCard.tsx` nếu không còn ai dùng) | tên | giá trị còn lại + "đ" | "Còn x / mua y" · "Đã thanh lý z" | "Đã thanh lý hết" |
-| 3a | `app/admin/inventory/stock/components/StockOnHandClient.tsx` | tên | tồn + đơn vị (đỏ nếu âm, giữ như cũ) | giá trị · số ngày đủ dùng · phân loại · "Kiểm lần cuối …" hoặc "Chưa kiểm lần nào" | "Ngừng dùng" |
-| 3a | `app/admin/inventory/stocktake/components/StocktakeList.tsx` | thời gian (`formatDateTimeFull`) | giá trị lệch | mã · người làm · "Đã đếm a/b" | trạng thái |
+| 3a | `app/admin/inventory/stock/components/StockOnHandClient.tsx` | tên | tồn + đơn vị (đỏ nếu âm, giữ như cũ) | giá trị · số ngày đủ dùng · phân loại · "Kiểm lần cuối …" hoặc "Chưa kiểm lần nào" | "Ngừng dùng"; dòng đang dùng mà sắp hết ("Hết", "≤7 ngày") thì nhãn cảnh báo như thẻ cũ (soát 2026-10-16) |
+| 3a | `app/admin/inventory/stocktake/components/StocktakeList.tsx` | thời gian (`formatDateTimeFull`) | giá trị lệch, bỏ " (tạm tính)" | "Tạm tính" (nếu có) · mã · người làm · "Đã đếm a/b" | trạng thái |
 | 3a | `app/admin/inventory/issue-slips/components/IssueSlipsClient.tsx` | ngày xuất | giá trị + "đ" | mã · người ghi | loại (Phiếu xuất / Đã huỷ) |
 | 3a | `app/admin/inventory/items/components/ItemsClient.tsx` | tên | "Tồn: …" | mã · phân loại | "Ngừng dùng" |
 | 3a | `app/admin/inventory/conversions/components/ConversionsClient.tsx` | tên hàng | — | "1 {mua} = {tỷ lệ} {gốc}" · mã · "Chỉ cách mua" | "Ngừng dùng" |
@@ -317,13 +317,13 @@ Quy ước:
 | 3b | `app/admin/products/categories/components/CategoriesClient.tsx` | biểu tượng + tên | "{n} món" | mã · loại món | — |
 | 3b | `app/admin/products/types/components/ProductTypesClient.tsx` | tên | — | mã · "Tính là ly: Có/Không" · nhóm món | — |
 | 3b | `app/admin/products/modifiers/components/ModifiersClient.tsx` | tên | giá thêm | nhóm · mã · "Bán độc lập: Có/Không" | "Ngừng dùng" |
-| 3b | `app/admin/products/modifier-groups/components/ModifierGroupsClient.tsx` | tên nhóm | "{n} món" | "Chọn một/nhiều" · tuỳ chọn | trạng thái |
+| 3b | `app/admin/products/modifier-groups/components/ModifierGroupsClient.tsx` | tên nhóm | "{n} món" | "Chọn một/nhiều" · "tối đa N phần" (nếu có) · tuỳ chọn hoặc "Chưa có tuỳ chọn" | trạng thái |
 | 3b | `app/admin/promotions/components/PromotionsClient.tsx` | tên | mức giảm | ngày bắt đầu → kết thúc · thương hiệu · áp dụng | trạng thái |
 | 3c | `app/admin/finance/bank-accounts/components/BankAccountsClient.tsx` | tên | — | ngân hàng · số tài khoản | trạng thái |
 | 3c | `app/admin/finance/categories/components/CategoriesClient.tsx` | tên | — | Bên · tính vào lãi lỗ | trạng thái |
 | 3c | `app/admin/finance/monthly-items/components/MonthlyItemsClient.tsx` | tên khoản | "{n} dòng" | nhóm thu chi | trạng thái |
 | 3d | `app/admin/brands/components/BrandsClient.tsx` | tên | — | mã · mã đơn · "Từ …" | — |
-| 3d | `app/admin/outlets/components/OutletsClient.tsx` | tên | — | thương hiệu · mã đơn · giờ mở cửa | trạng thái |
+| 3d | `app/admin/outlets/components/OutletsClient.tsx` | tên | — | thương hiệu · mã đơn · giờ mở cửa · "Bắt đầu: …" | trạng thái |
 | 3d | `app/admin/suppliers/components/SuppliersClient.tsx` | tên | — | mã · điện thoại | "Ngừng hợp tác" |
 | 3d | `app/admin/users/components/UsersClient.tsx` | tên đăng nhập | — | mã · "Tạo {ngày}" | vai trò |
 | pilot | `app/admin/inventory/purchase-orders/components/PurchaseOrdersClient.tsx` | nhà cung cấp | tổng tiền | ngày · mã · thanh toán | trạng thái |

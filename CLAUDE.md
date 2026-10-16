@@ -176,7 +176,7 @@ Ponytail (cài cho cả máy) đặt cách viết code mặc định. Khi trái 
 | `scripts/`, `supabase/`, `app/pos/`, `lib/costing/` | có `CLAUDE.md` riêng, máy nạp khi mở file trong đó |
 
 Module mới đặt vào đúng vùng; không có vùng hợp thì hỏi trước khi tạo vùng mới. Gốc `lib/` không chứa file — có phép kiểm canh.
-Import cùng thư mục viết tương đối (`./TenFile`); import khác thư mục viết bằng alias `@/...`. Ví dụ có sẵn: `app/admin/inventory/assets/components/AssetsClient.tsx` import `./AssetItemCard`.
+Import cùng thư mục viết tương đối (`./TenFile`); import khác thư mục viết bằng alias `@/...`. Ví dụ có sẵn: `app/admin/users/components/UsersClient.tsx` import `./RoleBadge`.
 Đường dẫn viết bắt đầu bằng tên thư mục gốc (`app`, `lib`, `components`, `tests`, `scripts`, `docs`, `supabase`, `types`, `.claude`), không mở đầu bằng dấu gạch chéo. Phép kiểm chỉ nhận dạng lối này, nên đừng lấy đường dẫn không có thật ra làm ví dụ.
 
 ## Tài liệu
