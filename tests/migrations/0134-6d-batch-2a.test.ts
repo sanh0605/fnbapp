@@ -18,6 +18,7 @@ describe("0134 6d batch 2a", () => {
   it.each(CONSTRAINTS)("%s: drops then adds %s, validated", (table, name) => {
     expect(flat).toContain(`alter table public.${table} drop constraint if exists ${name};`);
     expect(flat).toContain(`alter table public.${table} add constraint ${name}`);
+    expect(flat).not.toMatch(/not valid/i);
   });
 
   it("keeps money columns non-negative on orders and lines", () => {

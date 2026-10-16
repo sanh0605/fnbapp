@@ -190,6 +190,7 @@ export async function restoreBundleToTarget(
         }
       }
     }
+    // If a link update fails, the older version stays COMPLETED in the restored copy and is listed in skipped with its original status.
     for (const link of links) {
       const { error } = await targetClient.from(table).update({ status: link.status, superseded_by: link.superseded_by }).eq("id", link.id);
       if (error) skipped.push({ row: link, error: error.message });

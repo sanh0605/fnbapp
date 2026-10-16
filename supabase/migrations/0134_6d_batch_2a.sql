@@ -33,12 +33,14 @@
 --     order to be COMPLETED, so superseded_by is null.
 --   lib/db/backup-restore.ts: inserted SUPERSEDED orders as COMPLETED with superseded_by null and
 --     set status and superseded_by together in one UPDATE (changed in the same commit).
---   No other insert into or update of the two tables was found by grep over supabase/migrations.
+--   Every other writer found by grep over supabase/migrations (0008-0011, 0015, 0026, 0029-0031, 0034,
+--     0042, 0046 and others) sits in a function dropped in 0054, 0077 or 0105 (checked in those files),
+--     or is a one-off statement that already ran (the empty-text-to-null update at 0121:658).
+--     scripts/restore-order-seller-promo.ts updates only the seller and promotion columns.
 --
--- Triggers on the touched tables (inferred from migration text: grep of every create/drop trigger,
--- not queried from the server): trg_orders_v2_touch BEFORE UPDATE (0001, touch_updated_at, sets
--- updated_at). order_lines_v2: prevent_audit_locked_order_line_mutation was created in 0012/0016 and
--- dropped in 0054; no other trigger found. This file updates no row, and a CHECK or UNIQUE never
+-- Triggers on the touched tables (queried from the server 2026-10-17, pg_trigger): exactly one,
+-- trg_orders_v2_touch BEFORE UPDATE ON orders_v2 (touch_updated_at(), sets updated_at); order_lines_v2
+-- has none. This file updates no row, and a CHECK or UNIQUE never
 -- fires a trigger, so none is affected.
 
 set lock_timeout = '3s';
