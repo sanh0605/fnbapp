@@ -28,8 +28,7 @@ export interface DataListProps<T> {
   getName: (row: T) => string; // used in messages, e.g. "Vinamilk"
   getHref: (row: T) => string; // whole row / card opens this
   columns: DataColumn<T>[];
-  phoneRow?: (row: T) => PhoneRowData;
-  renderCard?: (row: T) => React.ReactNode; // phone card body
+  phoneRow: (row: T) => PhoneRowData;
   sort?: {
     key: string;
     dir: SortDir;
@@ -121,7 +120,6 @@ export function DataList<T>({
   getHref,
   columns,
   phoneRow,
-  renderCard,
   sort,
   removal,
   totals,
@@ -582,7 +580,7 @@ export function DataList<T>({
             const href = getHref(row);
             const isRemovable = isRowRemovable(row);
             const isSelected = selectedIds.has(id);
-            const content = phoneRow ? <PhoneRow {...phoneRow(row)} /> : renderCard?.(row);
+            const content = <PhoneRow {...phoneRow(row)} />;
 
             if (isMobileSelecting) {
               if (isRemovable) {

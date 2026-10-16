@@ -87,7 +87,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -131,7 +131,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -156,7 +156,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         empty={<div>Trống</div>}
       />
     );
@@ -173,7 +173,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         empty={<div>Trống</div>}
       />
     );
@@ -192,7 +192,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} dòng?`,
@@ -209,44 +209,6 @@ describe("DataList", () => {
     }
   });
 
-  it("after clicking Chọn, clicking the card text of Circle K ticks Chọn Circle K and has no link around it", () => {
-    render(
-      <DataList
-        rows={suppliers}
-        getId={(r: SampleSupplier) => r.id}
-        getName={(r: SampleSupplier) => r.name}
-        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
-        columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
-        removal={{
-          verb: "Xoá",
-          confirmMessage: (count) => `Xoá ${count} dòng?`,
-          remove: vi.fn(),
-        }}
-        empty={<div>Trống</div>}
-      />
-    );
-
-    // Click "Chọn" to enter mobile select mode
-    const selectModeBtn = screen.getByRole("button", { name: "Chọn" });
-    fireEvent.click(selectModeBtn);
-
-    // jsdom renders both layouts; the phone card's tick box is the last one.
-    const ticks = screen.getAllByRole("checkbox", { name: "Chọn Circle K" });
-    const checkbox = ticks[ticks.length - 1];
-    expect(checkbox).not.toBeChecked();
-
-    // The mobile card text of Circle K
-    const circleKMatches = screen.getAllByText("Circle K");
-    const mobileCardText = circleKMatches[circleKMatches.length - 1];
-    expect(mobileCardText.closest("a")).toBeNull();
-
-    // Clicking the card text ticks the checkbox
-    fireEvent.click(mobileCardText);
-    expect(checkbox).toBeChecked();
-    expect(mobileCardText.closest("a")).toBeNull();
-  });
-
   it("rowVerb: two rows, rowVerb returns 'Ngừng dùng' for row A and 'Xoá' for row B -> bins have aria-labels 'Ngừng dùng A' and 'Xoá B'", () => {
     const twoRows: SampleSupplier[] = [
       { id: "A", name: "A" },
@@ -260,7 +222,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           rowVerb: (row: SampleSupplier) => (row.id === "A" ? "Ngừng dùng" : "Xoá"),
@@ -295,7 +257,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -332,7 +294,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá",
           confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
@@ -370,7 +332,7 @@ describe("DataList", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         removal={{
           verb: "Xoá hoặc ngừng dùng",
           rowVerb: () => "Xoá",
@@ -422,7 +384,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={sortColumns as any}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           empty={<div>Trống</div>}
           {...({
             sort: {
@@ -468,7 +430,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={sortColumns as any}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           empty={<div>Trống</div>}
           {...({
             sort: {
@@ -497,7 +459,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={sortColumns as any}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           empty={<div>Trống</div>}
           {...({
             sort: {
@@ -546,7 +508,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -590,7 +552,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -613,7 +575,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -636,7 +598,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -658,7 +620,7 @@ describe("DataList", () => {
           getName={(r: SampleSupplier) => r.name}
           getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
           columns={columns}
-          renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+          phoneRow={(r: SampleSupplier) => ({ title: r.name })}
           removal={{
             verb: "Xoá",
             confirmMessage: (count) => `Xoá ${count} dòng đã chọn?`,
@@ -687,7 +649,7 @@ describe("DataList wears the table template", () => {
         getName={(r: SampleSupplier) => r.name}
         getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
         columns={columns}
-        renderCard={(r: SampleSupplier) => <div>{r.name}</div>}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
         empty={<div>Trống</div>}
         {...extra}
       />

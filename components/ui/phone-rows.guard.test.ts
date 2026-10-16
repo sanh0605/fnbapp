@@ -4,8 +4,7 @@ import { describe, expect, it } from "vitest";
 
 // BR-UI-018 (chosen on the owner's 2026-10-16 delegation, spec
 // docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md section 3.1):
-// phone lists draw PhoneRow through DataList's phoneRow prop. OWED_CARDS lists
-// screens still on renderCard; it may only shrink.
+// phone lists draw PhoneRow through DataList's phoneRow prop (required, so tsc rejects renderCard).
 
 const root = process.cwd();
 function sources(dir: string): string[] {
@@ -19,18 +18,9 @@ const files = sources(join(root, "app", "admin"))
   .map(f => ({ path: relative(root, f).split(sep).join("/"), src: readFileSync(f, "utf8") }))
   .filter(f => /<DataList\b/.test(f.src));
 
-const OWED_CARDS: string[] = [
-
-];
-
 describe("BR-UI-018 phone lists use PhoneRow", () => {
   it("finds the list screens", () => expect(files.length).toBeGreaterThanOrEqual(25));
-  it("every list passes phoneRow or is still owed", () => {
-    const off = files.filter(f => !/phoneRow=/.test(f.src) && !OWED_CARDS.includes(f.path)).map(f => f.path);
-    expect(off).toEqual([]);
-  });
-  it("owed entries still use renderCard (the list only shrinks)", () => {
-    const paid = OWED_CARDS.filter(p => !files.find(f => f.path === p && /renderCard=/.test(f.src)));
-    expect(paid).toEqual([]);
+  it("every list passes phoneRow", () => {
+    expect(files.filter(f => !/phoneRow=/.test(f.src)).map(f => f.path)).toEqual([]);
   });
 });

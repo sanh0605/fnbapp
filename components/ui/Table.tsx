@@ -227,25 +227,3 @@ export function TableTotalRow({ children }: { children: React.ReactNode }) {
     </tbody>
   );
 }
-
-export function TotalCard({
-  title,
-  items,
-  className = "",
-}: {
-  title?: string;
-  items: { label: string; value: React.ReactNode }[];
-  className?: string;
-}) {
-  return (
-    <div className={`bg-primary-soft rounded-card p-4 space-y-2 ${className}`.trim()}>
-      {title && <div className="text-sm font-medium text-text-primary">{title}</div>}
-      {items.map((item, index) => (
-        <div key={index} className="flex justify-between items-center text-sm">
-          <span className="text-text-secondary">{item.label}</span>
-          <span className="text-text-primary tabular-nums font-normal">{item.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-}

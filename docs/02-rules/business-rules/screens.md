@@ -177,7 +177,7 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 
 ### BR-UI-018 — Phone lists are two-line rows, not cards
 
-**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation. His words: *"Các nơi trên điện thoại dùng thẻ để thay thế bảng thì nên có cách khác vì càng nhiều thẻ thì lại càng dài."* Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.1; on the list of points he reviews at the end of the phone batch. Being built on the branch `feat/khuon-dien-thoai` from 2026-10-16, not yet pushed. Guard `components/ui/phone-rows.guard.test.ts` lists the screens still drawing cards; it only shrinks.
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation. His words: *"Các nơi trên điện thoại dùng thẻ để thay thế bảng thì nên có cách khác vì càng nhiều thẻ thì lại càng dài."* Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.1; on the list of points he reviews at the end of the phone batch. Being built on the branch `feat/khuon-dien-thoai` from 2026-10-16, not yet pushed. All 25 lists moved 2026-10-16; `DataList` now requires `phoneRow`, and guard `components/ui/phone-rows.guard.test.ts` checks every list screen passes it.
 
 - Measured 2026-10-16: a Phiếu nhập card was about 110 px tall, so 3–4 fitted on a phone's first screen.
 - Line 1: the name on the left, the one number on the right. Line 2, smaller and grey: the other facts, most important first, at most two lines; one status badge on the right. No bold (`BR-UI-003`).

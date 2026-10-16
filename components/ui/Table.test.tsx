@@ -10,7 +10,6 @@ import {
   TableRow,
   TableRowHeader,
   TableTotalRow,
-  TotalCard,
 } from "./Table";
 
 afterEach(cleanup);
@@ -66,12 +65,6 @@ describe("BR-UI-005 Table set", () => {
     const rows = within(screen.getByRole("table", { name: "Phiếu xuất" })).getAllByRole("row");
     expect(rows[1]).toHaveTextContent("Tổng149,399đ");
     expect(rows[1].className).toContain("bg-primary-soft");
-  });
-
-  it("on a phone the totals are the first card", () => {
-    render(<TotalCard items={[{ label: "Giá trị xuất", value: "149,399đ" }]} />);
-    expect(screen.getByText("Giá trị xuất")).toBeInTheDocument();
-    expect(screen.getByText("149,399đ")).toBeInTheDocument();
   });
 });
 
