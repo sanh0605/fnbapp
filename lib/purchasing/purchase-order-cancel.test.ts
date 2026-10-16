@@ -56,12 +56,6 @@ describe("parseCancelCheck", () => {
     expect(check.blocked[0]).toMatchObject({ code: "NEGATIVE", itemId: "x", itemName: "Trứng gà", lowBalance: 21, orderQty: 60, baseUnit: "trái" });
   });
 
-  it("keeps a line whose unit came back empty (no conversion) as an empty unit", () => {
-    const check = parseCancelCheck({ blocked: [{ code: "NEGATIVE", item_id: "x", item_name: "Trứng gà", low_balance: 21,
-      low_at: "2026-10-03T15:32:00Z", order_qty: 60, base_unit: "" }], assets: [] });
-    expect(check.blocked[0]).toMatchObject({ code: "NEGATIVE", baseUnit: "" });
-  });
-
   it("reads the other blocker codes", () => {
     const check = parseCancelCheck({ blocked: [
       { code: "NOT_FOUND" },

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// 2026-10-14 audit, wave 1: F2 (edit keeps the stored picture), F3 (never-sold
+// 2026-10-14 audit, wave 1: F3 (never-sold
 // dish linked as a topping cannot be erased, with the real reason), F6 (a
 // linked topping cannot get a second size).
 

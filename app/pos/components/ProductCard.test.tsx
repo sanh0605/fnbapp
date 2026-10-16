@@ -42,7 +42,7 @@ describe("ProductCard category icon (R4)", () => {
     expect(screen.queryByText("☕")).toBeNull();
   });
 
-  it("renders compact card without aspect-square block when neither image nor icon exists", () => {
+  it("renders compact card without aspect-square block when no icon exists", () => {
     const category = { id: "C1", name: "Cà phê", icon: null };
     const { container } = render(
       <ProductCard
@@ -57,7 +57,7 @@ describe("ProductCard category icon (R4)", () => {
     expect(screen.getByText("25,000")).toBeInTheDocument();
   });
 
-  it("renders icon small without aspect-square container when icon is present without image", () => {
+  it("renders icon small without aspect-square container when an icon is present", () => {
     const category = { id: "C1", name: "Cà phê", icon: "☕" };
     const { container } = render(
       <ProductCard

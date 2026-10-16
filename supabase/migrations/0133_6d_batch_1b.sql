@@ -22,7 +22,7 @@
 -- purchase_order_lines are read by the till, so give up after 3 s instead of queueing behind it.
 --
 -- Triggers on the touched tables (from the migration text and the server pg_trigger as reported in
--- the 0132 header): only touch_updated_at, BEFORE UPDATE, on products, purchased_items, assets and
+-- the 0132 header): only touch_updated_at, BEFORE UPDATE, on products, purchased_items and
 -- asset_depreciation_bands. This file updates no row, so no trigger fires. None on suppliers, units,
 -- product_price_history or purchase_order_lines.
 
@@ -797,48 +797,6 @@ begin
   return jsonb_build_object('blocked', v_blocked, 'assets', v_assets);
 end
 $function$;
-
--- Atomic cancel: one transaction, nothing is ever removed.
-create or replace function public.cancel_purchase_order_atomic(p_id text, p_reason text, p_actor_id text, p_actor_name text)
-returns jsonb language plpgsql security definer set search_path to 'public' as $function$
-declare
-  v_reason text := btrim(coalesce(p_reason, ''));
-  v_check jsonb;
-  v_asset_ids text[];
-begin
-  if nullif(btrim(coalesce(p_actor_id, '')), '') is null then raise exception 'p_actor_id is required'; end if;
-  if nullif(btrim(coalesce(p_actor_name, '')), '') is null then raise exception 'p_actor_name is required'; end if;
-  if v_reason = '' then raise exception 'Lý do huỷ phiếu là bắt buộc'; end if;
-  if char_length(v_reason) > 500 then raise exception 'Lý do huỷ tối đa 500 ký tự'; end if;
-
-  -- Same lock as every stock writer (issue slips, stocktake): a slip saved at
-  -- the same instant waits, so the below-zero check reads settled stock.
-  perform pg_advisory_xact_lock(hashtext('stock_issues:id'));
-  perform 1 from public.purchase_orders
-  where id = p_id
-  for update;
-
-  v_check := public.purchase_order_cancel_check(p_id);
-  if jsonb_array_length(v_check->'blocked') > 0 then
-    return jsonb_build_object('cancelled', false, 'blocked', v_check->'blocked');
-  end if;
-
-  select coalesce(array_agg(a->>'id'), '{}') into v_asset_ids
-  from jsonb_array_elements(v_check->'assets') a;
-
-  update public.purchase_orders
-  set status = 'CANCELLED', cancelled_at = now(), cancelled_by_id = p_actor_id,
-      cancelled_by_name = p_actor_name, cancel_reason = v_reason
-  where id = p_id;
-
-  update public.assets
-  set status = 'INACTIVE'
-  where id = any(v_asset_ids);
-
-  return jsonb_build_object('cancelled', true, 'retired_asset_ids', to_jsonb(v_asset_ids));
-end
-$function$;
-
 
 revoke all on function public.purchase_order_cancel_check(text) from public, anon, authenticated;
 grant execute on function public.purchase_order_cancel_check(text) to service_role;
