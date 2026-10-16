@@ -28,13 +28,26 @@ describe("BR-UI-018 PhoneRow", () => {
     expect(valueEl.className).toContain("tabular-nums");
 
     const metaEl = screen.getByText("16/10/2026 · PN-001 · Tiền mặt");
-    expect(metaEl.className).toContain("line-clamp-2");
+    expect(metaEl.className).toContain("truncate");
+    expect(metaEl.className).not.toContain("line-clamp-2");
 
     expect(screen.getByText("Hoàn thành")).toBeInTheDocument();
 
     for (const el of Array.from(container.querySelectorAll("*"))) {
       expect(el.className).not.toMatch(/\bfont-(bold|semibold)\b/);
     }
+  });
+
+  it("renders the meta element with truncate and not line-clamp-2", () => {
+    render(
+      <PhoneRow
+        title="Tiêu đề"
+        meta="Thông tin phụ một dòng"
+      />,
+    );
+    const metaEl = screen.getByText("Thông tin phụ một dòng");
+    expect(metaEl.className).toContain("truncate");
+    expect(metaEl.className).not.toContain("line-clamp-2");
   });
 
   it("omits the second line when both meta and badge are absent", () => {
@@ -45,3 +58,4 @@ describe("BR-UI-018 PhoneRow", () => {
     expect(container.firstElementChild?.children).toHaveLength(1);
   });
 });
+

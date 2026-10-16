@@ -53,7 +53,7 @@ export function PhoneNavBar({ onOpenPos }: { onOpenPos: () => void }) {
               }`}
             >
               <Icon size={24} />
-              <span className="truncate w-full">{slot.name}</span>
+              <span className="truncate w-full whitespace-nowrap">{slot.name}</span>
             </Link>
           );
         })}
@@ -65,18 +65,19 @@ export function PhoneNavBar({ onOpenPos }: { onOpenPos: () => void }) {
           className="flex flex-col items-center justify-center gap-1 min-h-[52px] py-1 px-0.5 text-xs font-semibold text-text-muted bg-transparent border-0 cursor-pointer"
         >
           <Menu size={24} />
-          <span>Thêm</span>
+          <span className="whitespace-nowrap">Thêm</span>
         </button>
 
         <button
           type="button"
           onClick={onOpenPos}
+          aria-label="Máy bán hàng"
           className="flex flex-col items-center justify-center gap-1 min-h-[52px] py-1 px-0.5 text-xs font-semibold text-text-primary bg-transparent border-0 cursor-pointer"
         >
           <div className="flex items-center justify-center w-12 h-12 -mt-[22px] rounded-full bg-text-primary text-white shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
             <Store size={24} />
           </div>
-          <span>Máy bán hàng</span>
+          <span className="whitespace-nowrap">Bán hàng</span>
         </button>
       </nav>
 
