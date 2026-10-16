@@ -29,7 +29,6 @@ interface Product {
   name: string;
   category_id: string;
   status: string;
-  image_url?: string;
   variants: ProductVariant[];
   hasNoSellableVariant: boolean;
   isLinkedTopping?: boolean;
@@ -156,17 +155,9 @@ export default function ProductsClient({
         key: "image",
         header: "Ảnh",
         secondary: true,
-        render: (product) => (
+        render: () => (
           <div className="w-10 h-10 rounded-lg bg-page border border-border flex items-center justify-center overflow-hidden shrink-0">
-            {product.image_url ? (
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <ImageIcon className="w-5 h-5 text-text-muted" />
-            )}
+            <ImageIcon className="w-5 h-5 text-text-muted" />
           </div>
         ),
       },

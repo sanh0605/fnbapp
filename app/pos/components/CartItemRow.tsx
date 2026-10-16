@@ -81,13 +81,9 @@ export function CartItemRow({
         {/* Line 1: Thumbnail, Name & Details, and Price */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Photo Thumbnail */}
-          {currentProduct?.image_url ? (
-            <img src={currentProduct.image_url} alt={item.product_name} className="w-12 h-12 rounded-lg bg-surface-secondary object-cover shrink-0" />
-          ) : (
-            <div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center shrink-0 text-xl">
-              ☕
-            </div>
-          )}
+          <div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center shrink-0 text-xl">
+            ☕
+          </div>
           
           {/* Name & Details */}
           <div className="flex-1 min-w-0 cursor-pointer" onClick={() => currentProduct && openProductModal(currentProduct, idx)}>

@@ -12,7 +12,6 @@ describe("ProductCard category icon (R4)", () => {
   const sampleProduct = {
     id: "P1",
     name: "Cà phê đen",
-    image_url: null,
   };
 
   it("renders group's own icon when set", () => {
@@ -41,22 +40,6 @@ describe("ProductCard category icon (R4)", () => {
     // Should NOT show the old hardcoded default 🥤 or any emoji
     expect(screen.queryByText("🥤")).toBeNull();
     expect(screen.queryByText("☕")).toBeNull();
-  });
-
-  it("renders product image when image_url exists", () => {
-    const productWithImage = { ...sampleProduct, image_url: "/coffee.png" };
-    const category = { id: "C1", name: "Cà phê", icon: "☕" };
-    render(
-      <ProductCard
-        product={productWithImage}
-        category={category}
-        basePrice={25000}
-        onClick={vi.fn()}
-      />
-    );
-    const img = screen.getByRole("img", { name: "Cà phê đen" });
-    expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute("src", "/coffee.png");
   });
 
   it("renders compact card without aspect-square block when neither image nor icon exists", () => {
