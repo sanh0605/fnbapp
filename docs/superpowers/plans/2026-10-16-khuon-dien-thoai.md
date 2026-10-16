@@ -277,6 +277,7 @@ Các component chung khác:
 - [ ] **Step 5: Opus chạy kiểm tra.**
   - Lệnh: `npx tsc --noEmit`, rồi `npx vitest run components/ui app/admin/inventory/purchase-orders app/admin/inventory/issue-slips app/admin/finance app/admin/components`.
   - Bỏ `.fails` ở Task 1 trong cùng commit.
+  - Opus sửa `BR-UI-004` (`screens.md`, câu "as a card on a phone") thành dải mỏng, cùng commit.
   - Xoá hai trang khỏi `OWED_CARDS`, và các file đã sửa khỏi `OWED_44` / `OWED_TINY`.
   - Commit.
 - [ ] **Step 6: Soát độc lập** (agent `reviewer`), theo Global Constraints và Review Focus 1–3, 5.
@@ -391,7 +392,7 @@ Thông tin bị bỏ khỏi dòng điện thoại vẫn có ở trang chi tiết
 - `app/admin/reports/sales/OutletBreakdownSection.tsx`, `app/admin/reports/sales/page.tsx` (chỉ cỡ chữ);
 - `app/admin/reports/components/ProductTable.tsx` (mỗi size một cột);
 - `app/admin/reports/issued/page.tsx` cùng `ItemCard.tsx` (thành bảng) và `EventCard.tsx` (danh sách sự kiện: giữ dạng danh sách, đổi sang `PhoneRow`);
-- `app/admin/reports/pnl/components/PnlMonthCards.tsx` (giữ dạng bấm mở từng tháng, chỉ đổi cỡ chữ);
+- `app/admin/reports/pnl/components/PnlMonthCards.tsx` (giữ dạng bấm mở từng tháng, chỉ đổi cỡ chữ), `pnl-display.tsx` và `PnlTableView.tsx` (chữ 10.5 / 11.5 px lên 12 px);
 - `app/admin/finance/components/CashBookMonthsClient.tsx`.
 
 Mỗi file có test cạnh bên thì sửa test đó.
@@ -403,7 +404,7 @@ Mỗi file có test cạnh bên thì sửa test đó.
   - Cột đầu: tiêu đề `stick="left"`, thân bảng `TableRowHeader stick="left"`; dòng tổng dưới tiêu đề như máy tính.
   - Biểu đồ giữ nguyên.
   - Không thêm bóng mờ mép bảng; Task 7 xem cột cuối bị cắt có đủ báo còn cột không.
-- [ ] **Step 3: Opus chạy kiểm tra, rút danh sách nợ, commit, soát độc lập.**
+- [ ] **Step 3: Opus chạy kiểm tra, rút danh sách nợ, commit, soát độc lập.** Cùng commit, Opus sửa câu "one card per day on a phone" ở `BR-UI-007` (`screens.md`) và `docs/03-workflows/reports.md`.
 
 ### Task 6: Màn hình Tạo và Sửa (Gemini, ba phiếu không chung file, chạy song song)
 
@@ -412,6 +413,7 @@ Mỗi file có test cạnh bên thì sửa test đó.
   - Chia phần: Khuyến mãi "Chương trình", "Mức giảm", "Thời gian", "Món áp dụng"; Điểm bán "Thông tin", "Giờ hoạt động". Sổ thu chi (`CashEntryForm`) không chia.
   - Tiêu đề phần cỡ `text-sm text-text-secondary`, không đậm.
   - `OrderEditForm.tsx`: chỉ đổi cỡ (spec 3.3 mục 7).
+  - Cũng trong phiếu này, chỉ đổi cỡ 44 → 48 px: `VoidOrderForm.tsx`, `DashboardSettingsForm.tsx`, `app/error.tsx`, `app/global-error.tsx` (phép kiểm siết lại 2026-10-16 bắt thêm `min-h-[44px]` đứng một mình).
 - **6b. Kho, trừ ba biểu mẫu của 6c.** Các biểu mẫu Kho còn trong `OWED`, cùng `DisposeAssetForm.tsx`, `purchase-orders/[id]/cancel/page.tsx`, `CancelStocktakeForm.tsx`: `FormActionBar`, 48 px, chữ ≥ 12 px.
 - **6c. Phiếu nhập, Phiếu xuất, Sửa kiểm kê: trọn gói** (thanh lưu, chia phần, dòng hàng).
   - Files:
