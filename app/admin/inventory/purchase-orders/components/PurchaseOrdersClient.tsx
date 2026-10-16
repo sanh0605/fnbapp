@@ -190,11 +190,16 @@ export default function PurchaseOrdersClient({
   );
 
   const activeCount =
-    (searching ? 0 : 1) +
-    (draft.status !== "ALL" ? 1 : 0) +
-    (draft.pay !== "ALL" ? 1 : 0) +
-    (draft.supplier !== "ALL" ? 1 : 0) +
-    (searchParams.get("account") ? 1 : 0);
+    (searchParams.get("q") ? 1 : 0) +
+    (searchParams.get("status") && searchParams.get("status") !== "ACTIVE" ? 1 : 0) +
+    (searchParams.get("supplier") && searchParams.get("supplier") !== "ALL" ? 1 : 0) +
+    (searchParams.get("pay") && searchParams.get("pay") !== "ALL" ? 1 : 0) +
+    (searchParams.get("account") ? 1 : 0) +
+    ((searchParams.get("range") && searchParams.get("range") !== "THIS_MONTH") ||
+    searchParams.get("from") ||
+    searchParams.get("to")
+      ? 1
+      : 0);
 
   return (
     <div className="space-y-6 pb-20">

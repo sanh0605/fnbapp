@@ -82,7 +82,7 @@ export function TableHeaderCell({
     // too; its figures stay right in the body cells.
     statement
       ? "px-3 py-2 whitespace-nowrap text-left font-semibold text-text-secondary"
-      : "px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-[13px] text-left font-semibold text-text-secondary",
+      : "px-3 py-2 md:px-4 md:py-3 whitespace-nowrap md:whitespace-normal text-[13px] text-left font-semibold text-text-secondary",
   ]
     .filter(Boolean)
     .join(" ");

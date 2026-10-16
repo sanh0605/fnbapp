@@ -703,7 +703,7 @@ describe("IssueSlipClient -- M2, the quantity input opens a numeric phone keypad
   });
 });
 
-describe("IssueSlipClient -- M3, tap targets carry the 44px-tier class, not the 32px one (class presence, not measured size)", () => {
+describe("IssueSlipClient -- M3, tap targets carry the 48px class, not the 32px one (class presence, not measured size)", () => {
   it("the add-line button carries min-h-[48px]", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const addBtn = findButtonWithText(container, "+ Thêm mặt hàng");

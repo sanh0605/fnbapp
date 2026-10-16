@@ -290,7 +290,7 @@ export function DataList<T>({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 md:block md:space-y-4">
       {statusResult && (
         <div
           role="status"
@@ -618,9 +618,7 @@ export function DataList<T>({
               <Link
                 key={id}
                 href={href}
-                className={`block px-4 py-2.5 min-h-[48px] hover:bg-surface-secondary/50 transition-colors focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none ${
-                  isSelected ? "bg-primary-soft/30" : ""
-                }`}
+                className="block px-4 py-2.5 min-h-[48px] hover:bg-surface-secondary/50 transition-colors focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none"
               >
                 {content}
               </Link>

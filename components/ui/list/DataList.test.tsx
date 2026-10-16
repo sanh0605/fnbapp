@@ -767,10 +767,20 @@ describe("DataList wears the table template", () => {
     // totals strip reads "<label>: <value>" and comes before its first row.
     const phoneTotal = screen.getByText("Tổng: 3 nhà cung cấp");
     expect(phoneTotal.closest(".md\\:hidden")).not.toBeNull();
-    expect(phoneTotal.textContent).toContain("3 nhà cung cấp");
     const vinamilks = screen.getAllByText("Vinamilk");
     const phoneFirstRow = vinamilks[vinamilks.length - 1];
     expect(phoneTotal.compareDocumentPosition(phoneFirstRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("multi-value totals strip joins items with · on the phone", () => {
+    renderList({
+      totals: {
+        label: "Tổng",
+        values: { id: "3", name: "3 nhà cung cấp" },
+      },
+    });
+    const phoneTotal = screen.getByText("Tổng: Mã 3 · Tên 3 nhà cung cấp");
+    expect(phoneTotal.closest(".md\\:hidden")).not.toBeNull();
   });
 
   it("the bulk delete button is a red outline, since a yes/no question follows it", () => {

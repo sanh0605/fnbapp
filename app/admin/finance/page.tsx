@@ -93,18 +93,16 @@ export default async function FinancePage(props: {
         group="Thu chi"
         title="Sổ thu chi"
         action={
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-2">
             <Button
               href={`/admin/finance/transfers/new?returnTo=${encodeURIComponent(currentUrl)}`}
               variant="secondary"
-              className="w-full sm:w-auto"
             >
               Chuyển tiền
             </Button>
             <Button
               href={`/admin/finance/new?returnTo=${encodeURIComponent(currentUrl)}`}
               variant="primary"
-              className="w-full sm:w-auto"
             >
               Tạo
             </Button>

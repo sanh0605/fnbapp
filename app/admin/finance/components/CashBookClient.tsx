@@ -449,8 +449,14 @@ export default function CashBookClient({
   const closingDateLabel =
     formatVnDay(resolvedRange.end) || formatDate(resolvedRange.end);
 
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const appliedKind = parseKind(searchParams?.get("kind") ?? initialKind);
+  const appliedStatus = parseStatus(searchParams?.get("status") ?? initialStatus);
+
   const activeCount =
-    1 + (kind !== "ALL" ? 1 : 0) + (status !== "ALL" ? 1 : 0);
+    (appliedSearch.trim() ? 1 : 0) +
+    (appliedKind !== "ALL" ? 1 : 0) +
+    (appliedStatus !== "ACTIVE" ? 1 : 0);
 
   return (
     <div className="space-y-6">
