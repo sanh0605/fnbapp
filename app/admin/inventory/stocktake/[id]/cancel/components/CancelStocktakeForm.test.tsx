@@ -37,12 +37,10 @@ const mockSession: StocktakeSessionView = {
   createdAt: "2026-08-09T15:02:24.000Z",
   confirmedAt: null,
   confirmedByName: null,
-  notes: "",
   lines: [
     {
       id: "LINE-1",
       itemReference: "SPM-004",
-      itemType: "PURCHASED_ITEM",
       itemName: "Bột cà phê truyền thống Phin Đậm",
       unitName: "g",
       countedQty: 4000,

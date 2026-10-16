@@ -305,9 +305,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
         backHref="/admin/inventory/stocktake"
         backLabel="Kiểm kê"
         title={`Phiên kiểm kê ${session.id}`}
-        subtitle={`Bắt đầu bởi ${session.createdByName} lúc ${formatDateTimeFull(session.createdAt)}${
-          session.notes ? ` · ${session.notes}` : ""
-        }`}
+        subtitle={`Bắt đầu bởi ${session.createdByName} lúc ${formatDateTimeFull(session.createdAt)}`}
       />
 
       {globalError && <Alert variant="danger">{globalError}</Alert>}

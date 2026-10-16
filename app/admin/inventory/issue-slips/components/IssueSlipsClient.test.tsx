@@ -62,8 +62,8 @@ describe("IssueSlipsClient", () => {
     const pageData: IssueSlipListPage = {
       ...defaultPageData,
       rows: [
-        { id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", reason: "Hư hỏng", dateText: "29/09", createdByName: "admin", value: 100 },
-        { id: "ISL-02", href: "/admin/inventory/issue-slips/ISL-02", kind: "CANCELLED", reason: "Sai sót", dateText: "27/09", createdByName: "admin", value: 0 },
+        { id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", dateText: "29/09", createdByName: "admin", value: 100 },
+        { id: "ISL-02", href: "/admin/inventory/issue-slips/ISL-02", kind: "CANCELLED", dateText: "27/09", createdByName: "admin", value: 0 },
       ],
       total: 2,
       lastIndex: 2,
@@ -95,8 +95,8 @@ describe("IssueSlipsClient", () => {
     const rows: IssueSlipListPage = {
       ...defaultPageData,
       rows: [
-        { id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", reason: "Hư hỏng", dateText: "29/09", createdByName: "admin", value: 100 },
-        { id: "ISL-03", href: "/admin/inventory/issue-slips/ISL-03", kind: "SLIP", reason: "Hết hạn", dateText: "28/09", createdByName: "admin", value: 50 },
+        { id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", dateText: "29/09", createdByName: "admin", value: 100 },
+        { id: "ISL-03", href: "/admin/inventory/issue-slips/ISL-03", kind: "SLIP", dateText: "28/09", createdByName: "admin", value: 50 },
       ],
       total: 2,
       firstIndex: 1,
@@ -150,7 +150,7 @@ describe("IssueSlipsClient", () => {
   it("shows the filter's total under the value header", () => {
     const withTotals: IssueSlipListPage = {
       ...defaultPageData,
-      rows: [{ id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", reason: "Hư hỏng", dateText: "29/09", createdByName: "admin", value: 100 }],
+      rows: [{ id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", dateText: "29/09", createdByName: "admin", value: 100 }],
       total: 1, firstIndex: 1, lastIndex: 1,
       totals: { count: 21, value: 2108 },
     };

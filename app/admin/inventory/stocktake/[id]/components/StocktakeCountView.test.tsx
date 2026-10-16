@@ -40,12 +40,10 @@ const mockSession: StocktakeSessionView = {
   createdAt: "2026-10-15T10:00:00.000Z",
   confirmedAt: null,
   confirmedByName: null,
-  notes: "Phiên đếm tháng 10",
   lines: [
     {
       id: "LINE-1",
       itemReference: "SPM-004",
-      itemType: "PURCHASED_ITEM",
       itemName: "Bột cà phê truyền thống Phin Đậm",
       unitName: "g",
       countedQty: null,
@@ -60,7 +58,6 @@ const mockSession: StocktakeSessionView = {
     {
       id: "LINE-2",
       itemReference: "SPM-007",
-      itemType: "PURCHASED_ITEM",
       itemName: "Sữa tươi Mlekovita",
       unitName: "hộp",
       countedQty: 8,
@@ -75,7 +72,6 @@ const mockSession: StocktakeSessionView = {
     {
       id: "LINE-3",
       itemReference: "SPM-053",
-      itemType: "PURCHASED_ITEM",
       itemName: "Ống hút nhỏ",
       unitName: "bao",
       countedQty: 5,
@@ -145,12 +141,10 @@ describe("StocktakeCountView (Screen 2)", () => {
       createdAt: "2026-10-14T15:00:00Z",
       confirmedAt: null,
       confirmedByName: null,
-      notes: "",
       lines: [
         {
           id: "SKL-00001",
           itemReference: "SPM-001",
-          itemType: "PURCHASED_ITEM",
           itemName: "Sữa tươi",
           unitName: "",
           countedQty: 8,
@@ -211,12 +205,10 @@ describe("StocktakeCountView (Screen 2)", () => {
       createdAt: "2026-10-14T15:00:00Z",
       confirmedAt: null,
       confirmedByName: null,
-      notes: "",
       lines: [
         {
           id: "SKL-00001",
           itemReference: "SPM-001",
-          itemType: "PURCHASED_ITEM",
           itemName: "Sữa tươi",
           unitName: "",
           countedQty: 10,
@@ -273,12 +265,10 @@ describe("StocktakeCountView (Screen 2)", () => {
       createdAt: "2026-10-14T15:00:00Z",
       confirmedAt: null,
       confirmedByName: null,
-      notes: "",
       lines: [
         {
           id: "SKL-00001",
           itemReference: "SPM-001",
-          itemType: "PURCHASED_ITEM",
           itemName: "Sữa tươi",
           unitName: "l",
           countedQty: 8,
@@ -293,7 +283,6 @@ describe("StocktakeCountView (Screen 2)", () => {
         {
           id: "SKL-00002",
           itemReference: "SPM-002",
-          itemType: "PURCHASED_ITEM",
           itemName: "Đường cát",
           unitName: "kg",
           countedQty: 5,
@@ -356,7 +345,6 @@ describe("StocktakeCountView (Screen 2)", () => {
       createdAt: "2026-10-14T15:00:00Z",
       confirmedAt: null,
       confirmedByName: null,
-      notes: "",
       lines: [],
     };
 
@@ -402,12 +390,10 @@ describe("StocktakeCountView (Screen 2)", () => {
       createdAt: "2026-10-14T15:00:00Z",
       confirmedAt: null,
       confirmedByName: null,
-      notes: "",
       lines: [
         {
           id: "LINE-PKG-1",
           itemReference: "SPM-008",
-          itemType: "PURCHASED_ITEM",
           itemName: "Sữa đặc Larosee",
           unitName: "lon",
           countedQty: null,
@@ -450,12 +436,10 @@ describe("StocktakeCountView (Screen 2)", () => {
       createdAt: "2026-10-14T15:00:00Z",
       confirmedAt: null,
       confirmedByName: null,
-      notes: "",
       lines: [
         {
           id: "SKL-00001",
           itemReference: "SPM-001",
-          itemType: "PURCHASED_ITEM",
           itemName: "Sữa tươi",
           unitName: "l",
           countedQty: 8,
@@ -480,7 +464,6 @@ describe("StocktakeCountView (Screen 2)", () => {
         {
           lineId: "SKL-00001",
           itemReference: "SPM-001",
-          itemType: "PURCHASED_ITEM",
           countedQty: 8,
           theoreticalAtCount: 10,
           currentTheoreticalQty: 10,

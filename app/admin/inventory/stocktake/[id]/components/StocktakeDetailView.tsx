@@ -116,13 +116,6 @@ export function StocktakeDetailView({
     },
   ];
 
-  if (session.notes && session.notes.trim()) {
-    fields.push({
-      label: "Ghi chú",
-      value: session.notes,
-    });
-  }
-
   function formatDiffQuantity(line: StocktakeLineView) {
     if (line.countedQty === null || line.theoreticalAtCount === null) return "—";
     const diff = line.countedQty - line.theoreticalAtCount;

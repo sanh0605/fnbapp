@@ -30,7 +30,6 @@ const DETAIL: Detail = {
   confirmedAt: "2026-08-09T15:02:24.914754+00:00",
   confirmedByName: "admin",
   reversedAt: null,
-  notes: "",
   editBlock: null,
   lines: [
     { id: "SKL-00004", itemReference: "SPM-004", itemName: "Bột cà phê truyền thống Phin Đậm", unitName: "g", countedQty: 4000, theoreticalAtCount: 6000 },

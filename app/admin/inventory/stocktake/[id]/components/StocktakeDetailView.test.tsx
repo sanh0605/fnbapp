@@ -33,12 +33,10 @@ const confirmedSession: StocktakeSessionView = {
   createdAt: "2026-08-09T15:02:24.000Z",
   confirmedAt: "2026-10-10T09:00:00Z",
   confirmedByName: "Chủ quán",
-  notes: "",
   lines: [
     {
       id: "LINE-1",
       itemReference: "SPM-004",
-      itemType: "PURCHASED_ITEM",
       itemName: "Bột cà phê truyền thống Phin Đậm",
       unitName: "g",
       countedQty: 4000,

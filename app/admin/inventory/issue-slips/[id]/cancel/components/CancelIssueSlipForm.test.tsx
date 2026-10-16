@@ -38,7 +38,6 @@ const sampleDetail: IssueSlipDetail = {
   id: "ISL-00076",
   issuedAt: "2026-09-28T18:20:00Z",
   dateText: "28/09/2026 18:20",
-  note: "Khác",
   createdByName: "tuyen2612",
   lines: [
     {
