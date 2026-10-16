@@ -352,7 +352,7 @@ Thông tin bị bỏ khỏi dòng điện thoại vẫn có ở trang chi tiết
   - Bỏ `renderCard` khỏi `DataListProps`; `phoneRow` thành bắt buộc.
   - Bỏ `TotalCard` và test của nó trong `Table.test.tsx` (lý do: không còn ai dùng).
   - Sửa `DataList.test.tsx`.
-  - Đổi phép kiểm thứ ba của `phone-rows.guard` thành "không file nào còn `renderCard`".
+  - Đổi phép kiểm thứ ba của `phone-rows.guard` thành "không file nào còn `renderCard`". Đã làm khác (2026-10-16): `phoneRow` bắt buộc nên `tsc` tự từ chối `renderCard`; phép kiểm thứ ba thành "mọi danh sách truyền `phoneRow`".
 - [ ] **Step 5: Soát độc lập cả Task 3.**
 - [ ] **Step 6: Build sớm một lần.** Gộp nhánh vào `main` ở máy (chưa đẩy), tắt máy chủ 8386, chạy `npm run build` ở thư mục chính, trả `next-env.d.ts` và `docs/generated/system-map.md` (chỉ khác CRLF) về như cũ. Mục đích: bắt lỗi `"use client"` hay import trước khi Task 4–6 chồng thêm.
 
@@ -415,7 +415,7 @@ Mỗi file có test cạnh bên thì sửa test đó.
   - Tiêu đề phần cỡ `text-sm text-text-secondary`, không đậm.
   - `OrderEditForm.tsx`: chỉ đổi cỡ (spec 3.3 mục 7).
   - Cũng trong phiếu này, chỉ đổi cỡ 44 → 48 px: `VoidOrderForm.tsx`, `DashboardSettingsForm.tsx`, `app/error.tsx`, `app/global-error.tsx` (phép kiểm siết lại 2026-10-16 bắt thêm `min-h-[44px]` đứng một mình).
-- **6b. Kho, trừ ba biểu mẫu của 6c.** Các biểu mẫu Kho còn trong `OWED`, cùng `DisposeAssetForm.tsx`, `purchase-orders/[id]/cancel/page.tsx`, `CancelStocktakeForm.tsx`: `FormActionBar`, 48 px, chữ ≥ 12 px.
+- **6b. Kho, trừ ba biểu mẫu của 6c.** Các biểu mẫu Kho còn trong `OWED`, cùng `DisposeAssetForm.tsx`, `purchase-orders/[id]/cancel/page.tsx`, `CancelStocktakeForm.tsx`: `FormActionBar`, 48 px, chữ ≥ 12 px. Hai trang huỷ giữ nút riêng ("Xác nhận huỷ"), chỉ đổi cỡ; `DisposeAssetForm` dùng `FormActionBar` với chữ riêng "Xác nhận" (`BR-UI-015`).
 - **6c. Phiếu nhập, Phiếu xuất, Sửa kiểm kê: trọn gói** (thanh lưu, chia phần, dòng hàng).
   - Files:
     - `app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx`, `PurchaseOrderLines.tsx`, `PurchaseOrderTotals.tsx`;

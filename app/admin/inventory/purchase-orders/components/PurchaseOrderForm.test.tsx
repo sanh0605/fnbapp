@@ -647,10 +647,10 @@ describe("PurchaseOrderForm two columns (owner 2026-10-10)", () => {
     expect(within(shared).getByText("Nhà cung cấp")).toBeInTheDocument();
     expect(within(shared).getByText("Mã hoá đơn")).toBeInTheDocument();
     expect(within(shared).getByText("Ghi chú")).toBeInTheDocument();
-    expect(within(lines).getByText("Chi tiết nhập hàng")).toBeInTheDocument();
+    expect(within(lines).getByText("Hàng nhập")).toBeInTheDocument();
     expect(within(money).getByText(/Tổng tiền hàng/)).toBeInTheDocument();
-    expect(within(money).getByRole("button", { name: "Lưu nháp" })).toBeInTheDocument();
-    expect(within(money).getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lưu nháp" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
   });
 
   it("on a phone the blocks run shared, lines, money", () => {
@@ -772,4 +772,598 @@ describe("PurchaseOrderForm source picker (BR-DATA-007, K4)", () => {
     });
   });
 });
+
+const sampleItemsWithOngTho: DBPurchasedItem[] = [
+  ...sampleItems,
+  {
+    id: "ITEM-ONGTHO",
+    name: "Sữa đặc Ông Thọ",
+    item_category_id: "CAT-1",
+    status: "ACTIVE",
+    created_at: "2026-01-01",
+    is_non_inventory: false,
+  },
+  {
+    id: "ITEM-DUONG",
+    name: "Đường cát",
+    item_category_id: "CAT-1",
+    status: "ACTIVE",
+    created_at: "2026-01-01",
+    is_non_inventory: false,
+  },
+  {
+    id: "ITEM-TRA",
+    name: "Trà đen",
+    item_category_id: "CAT-1",
+    status: "ACTIVE",
+    created_at: "2026-01-01",
+    is_non_inventory: false,
+  },
+];
+
+const sampleConversionsWithOngTho: DBUOMConversion[] = [
+  ...sampleConversions,
+  {
+    id: "CONV-ONGTHO",
+    purchased_item_id: "ITEM-ONGTHO",
+    from_unit_id: "U-HOP",
+    to_unit_id: "U-HOP",
+    factor: "1",
+    purchased_unit: "hộp",
+    base_unit: "hộp",
+    conversion_rate: "1",
+    status: "ACTIVE",
+    purchase_only: false,
+    created_at: "2026-01-01",
+  },
+  {
+    id: "CONV-DUONG",
+    purchased_item_id: "ITEM-DUONG",
+    from_unit_id: "U-1",
+    to_unit_id: "U-1",
+    factor: "1",
+    purchased_unit: "kg",
+    base_unit: "kg",
+    conversion_rate: "1",
+    status: "ACTIVE",
+    purchase_only: false,
+    created_at: "2026-01-01",
+  },
+  {
+    id: "CONV-TRA",
+    purchased_item_id: "ITEM-TRA",
+    from_unit_id: "U-1",
+    to_unit_id: "U-1",
+    factor: "1",
+    purchased_unit: "kg",
+    base_unit: "kg",
+    conversion_rate: "1",
+    status: "ACTIVE",
+    purchase_only: false,
+    created_at: "2026-01-01",
+  },
+];
+
+const sampleUnitsWithHop: DBUnit[] = [
+  ...sampleUnits,
+  { id: "U-HOP", name: "hộp", status: "ACTIVE", created_at: "2026-01-01" },
+];
+
+describe("Ticket 6c: PurchaseOrderForm sections (Thông tin phiếu, Hàng nhập, Thanh toán)", () => {
+  it("renders section headings 'Thông tin phiếu', 'Hàng nhập', and 'Thanh toán' with text-sm text-text-secondary and not bold", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    const hShared = screen.getByText("Thông tin phiếu");
+    const hLines = screen.getByText("Hàng nhập");
+    const hPayment = screen.getByText("Thanh toán");
+
+    for (const h of [hShared, hLines, hPayment]) {
+      expect(h).toBeInTheDocument();
+      expect(h.className).toContain("text-sm");
+      expect(h.className).toContain("text-text-secondary");
+      expect(h.className).not.toMatch(/\bfont-(bold|semibold)\b/);
+    }
+  });
+
+  it("hides Thuế, Chiết khấu, Ghi chú behind tap row 'Thuế, chiết khấu, ghi chú' when empty/zero, and tapping opens them", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    const toggleBtn = screen.getByText("Thuế, chiết khấu, ghi chú");
+    expect(toggleBtn).toBeInTheDocument();
+
+    const taxInput = screen.getByLabelText("Thuế");
+    const discountInput = screen.getByLabelText("Chiết khấu");
+    const notesInput = screen.getByPlaceholderText("Ví dụ: giao buổi sáng");
+
+    expect(taxInput.closest(".hidden") || taxInput).not.toBeVisible();
+    expect(discountInput.closest(".hidden") || discountInput).not.toBeVisible();
+    expect(notesInput.closest(".hidden") || notesInput).not.toBeVisible();
+
+    fireEvent.click(toggleBtn);
+    expect(taxInput).toBeVisible();
+    expect(discountInput).toBeVisible();
+    expect(notesInput).toBeVisible();
+  });
+
+  it("tap row 'Thuế, chiết khấu, ghi chú' starts open when any value is non-zero or non-empty", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-DISCOUNT",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "50000",
+            total_amount: "40000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "10000",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [],
+        }}
+      />
+    );
+
+    const discountInput = screen.getByLabelText("Chiết khấu");
+    expect(discountInput).toBeVisible();
+  });
+});
+
+describe("Ticket 6c: PurchaseOrderForm FormActionBar save bar", () => {
+  it("create page renders FormActionBar with 'Tạo', 'Lưu nháp', and 'Bỏ'", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lưu nháp" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
+  it("edit page renders FormActionBar with 'Cập nhật & Hoàn thành' and 'Bỏ thay đổi'", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-EDIT",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "100000",
+            total_amount: "100000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [],
+        }}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "Cập nhật & Hoàn thành" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
+  });
+});
+
+describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", () => {
+  const lineOngTho = {
+    id: "POL-1",
+    purchase_order_id: "PO-1",
+    item_id: "ITEM-ONGTHO",
+    purchased_item_id: "ITEM-ONGTHO",
+    quantity: "10",
+    unit: "hộp",
+    unit_cost: "38000",
+    subtotal: "380000",
+    conversion_id: "CONV-ONGTHO",
+  };
+
+  it("renders collapsed PhoneRow with item name, line total, and unit breakdown ('Sữa đặc Ông Thọ' … '380,000đ' … '10 hộp × 38,000đ')", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItemsWithOngTho}
+        conversions={sampleConversionsWithOngTho}
+        units={sampleUnitsWithHop}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-1",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "380000",
+            total_amount: "380000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [lineOngTho as any],
+        }}
+      />
+    );
+
+    expect(screen.getByText("Sữa đặc Ông Thọ")).toBeInTheDocument();
+    expect(screen.getByText("380,000đ")).toBeInTheDocument();
+    expect(screen.getByText("10 hộp × 38,000đ")).toBeInTheDocument();
+  });
+
+  it("tapping a collapsed line opens it in place showing its inputs, 'Xong', and 'Xoá dòng', and clicking 'Xong' closes it", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItemsWithOngTho}
+        conversions={sampleConversionsWithOngTho}
+        units={sampleUnitsWithHop}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-1",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "380000",
+            total_amount: "380000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [lineOngTho as any],
+        }}
+      />
+    );
+
+    const collapsedRow = screen.getByText("10 hộp × 38,000đ");
+    fireEvent.click(collapsedRow);
+
+    const doneBtn = screen.getByRole("button", { name: "Xong" });
+    const deleteLineBtn = screen.getByRole("button", { name: "Xoá dòng" });
+    expect(doneBtn).toBeVisible();
+    expect(deleteLineBtn).toBeVisible();
+
+    fireEvent.click(doneBtn);
+    expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
+    expect(screen.getByText("10 hộp × 38,000đ")).toBeInTheDocument();
+  });
+
+  it("corner absolute X button is removed on the phone", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItemsWithOngTho}
+        conversions={sampleConversionsWithOngTho}
+        units={sampleUnitsWithHop}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-1",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "380000",
+            total_amount: "380000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [lineOngTho as any],
+        }}
+      />
+    );
+
+    const absoluteX = document.querySelector(".absolute.top-4.right-4");
+    if (absoluteX) {
+      expect(absoluteX.className).toMatch(/\bhidden\b/);
+      expect(absoluteX.className).toMatch(/\bmd:(block|flex|inline-flex)\b/);
+    } else {
+      expect(absoluteX).toBeNull();
+    }
+  });
+
+  it("openIndex rule: newly added line opens immediately", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItemsWithOngTho}
+        conversions={sampleConversionsWithOngTho}
+        units={sampleUnitsWithHop}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
+
+    expect(screen.getByRole("button", { name: "Xong" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Xoá dòng" })).toBeVisible();
+  });
+
+  it("openIndex rule (a): pressing 'Tạo' on Phiếu nhập when line 2 has no quantity opens line 2 (its inputs become visible / it is the expanded line) with border-danger", async () => {
+    const line1 = {
+      purchased_item_id: "ITEM-1",
+      unit: "kg",
+      conversion_id: "CONV-1",
+      quantity: "5",
+      subtotal: "100000",
+    };
+    const line2 = {
+      purchased_item_id: "ITEM-ONGTHO",
+      unit: "hộp",
+      conversion_id: "CONV-ONGTHO",
+      quantity: "",
+      subtotal: "0",
+    };
+
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItemsWithOngTho}
+        conversions={sampleConversionsWithOngTho}
+        units={sampleUnitsWithHop}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-ERR",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "100000",
+            total_amount: "100000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [line1 as any, line2 as any],
+        }}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
+
+    const createBtn = screen.getByRole("button", { name: "Tạo" });
+    fireEvent.click(createBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Xong" })).toBeInTheDocument();
+    });
+
+    const dangerBox = document.querySelector(".border-danger");
+    expect(dangerBox).not.toBeNull();
+  });
+
+  it("openIndex rule (b): pressing 'Tạo' while a line is open still submits that line's full quantity", async () => {
+    mockSavePurchaseOrder.mockResolvedValueOnce({ success: true, po_id: "PO-SUBMITTED" });
+
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItemsWithOngTho}
+        conversions={sampleConversionsWithOngTho}
+        units={sampleUnitsWithHop}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-OPEN",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            payment_method: "CASH",
+            status: "DRAFT",
+            subtotal: "380000",
+            total_amount: "380000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [lineOngTho as any],
+        }}
+      />
+    );
+
+    const collapsed = screen.getByText("10 hộp × 38,000đ");
+    fireEvent.click(collapsed);
+    expect(screen.getByRole("button", { name: "Xong" })).toBeInTheDocument();
+
+    const createBtn = screen.getByRole("button", { name: "Tạo" });
+    fireEvent.click(createBtn);
+
+    await waitFor(() => {
+      expect(mockSavePurchaseOrder).toHaveBeenCalledTimes(1);
+    });
+
+    const formData = mockSavePurchaseOrder.mock.calls[0][0] as FormData;
+    const linesSubmitted = JSON.parse(formData.get("lines_json") as string);
+    expect(linesSubmitted[0].quantity).toBe("10");
+    expect(linesSubmitted[0].subtotal).toBe("380000");
+  });
+
+  it("openIndex rule (c): open line 3, delete line 1, the open line is still the same item (now line 2)", () => {
+    const lines3 = [
+      { purchased_item_id: "ITEM-1", unit: "kg", conversion_id: "CONV-1", quantity: "1", subtotal: "50000" },
+      { purchased_item_id: "ITEM-DUONG", unit: "kg", conversion_id: "CONV-DUONG", quantity: "2", subtotal: "60000" },
+      { purchased_item_id: "ITEM-TRA", unit: "kg", conversion_id: "CONV-TRA", quantity: "3", subtotal: "90000" },
+    ];
+
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItemsWithOngTho}
+        conversions={sampleConversionsWithOngTho}
+        units={sampleUnitsWithHop}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-3",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "200000",
+            total_amount: "200000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: lines3 as any,
+        }}
+      />
+    );
+
+    const line3Row = screen.getByText("Trà đen");
+    fireEvent.click(line3Row);
+    expect(screen.getByRole("button", { name: "Xong" })).toBeInTheDocument();
+
+    const deleteButtons = screen.getAllByRole("button", { name: /Xoá/i });
+    fireEvent.click(deleteButtons[0]);
+
+    expect(screen.queryByText("Cà phê Robusta")).toBeNull();
+    const openCard = screen.getByRole("button", { name: "Xong" }).closest('[data-testid="po-line-card"]') || screen.getByRole("button", { name: "Xong" }).parentElement;
+    expect(openCard?.textContent).toContain("Trà đen");
+    expect(openCard?.textContent).not.toContain("Đường cát");
+  });
+
+  it("openIndex rule: deleting the open line sets openIndex = null so all lines collapse", () => {
+    const lines2 = [
+      { purchased_item_id: "ITEM-1", unit: "kg", conversion_id: "CONV-1", quantity: "1", subtotal: "50000" },
+      { purchased_item_id: "ITEM-DUONG", unit: "kg", conversion_id: "CONV-DUONG", quantity: "2", subtotal: "60000" },
+    ];
+
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItemsWithOngTho}
+        conversions={sampleConversionsWithOngTho}
+        units={sampleUnitsWithHop}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-2",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "110000",
+            total_amount: "110000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: lines2 as any,
+        }}
+      />
+    );
+
+    const line2Row = screen.getByText("Đường cát");
+    fireEvent.click(line2Row);
+    expect(screen.getByRole("button", { name: "Xong" })).toBeInTheDocument();
+
+    const deleteOpenLineBtn = screen.getByRole("button", { name: "Xoá dòng" });
+    fireEvent.click(deleteOpenLineBtn);
+
+    expect(screen.queryByText("Đường cát")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
+    expect(screen.getByText("Cà phê Robusta")).toBeInTheDocument();
+  });
+
+  it("openIndex rule: a restored draft starts with all lines collapsed", () => {
+    mockSearchParams = new URLSearchParams("draft=1");
+    const storedDraft = {
+      savedAt: Date.now(),
+      state: {
+        supplierId: "SUP-1",
+        sourceId: "SRC-1",
+        supplierInvoiceCode: "",
+        transactionDate: null,
+        notes: "",
+        lines: [
+          { purchased_item_id: "ITEM-1", unit: "kg", conversion_id: "CONV-1", quantity: "1", subtotal: "50000" },
+          { purchased_item_id: "ITEM-ONGTHO", unit: "hộp", conversion_id: "CONV-ONGTHO", quantity: "10", subtotal: "380000" },
+        ],
+        shippingFee: 0,
+        taxAmount: 0,
+        voucherAmount: 0,
+        discountAmount: 0,
+        paymentMethod: "CASH",
+        bankAccountId: "",
+      },
+    };
+    localStorage.setItem("fnb:po-draft:new", JSON.stringify(storedDraft));
+
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItemsWithOngTho}
+        conversions={sampleConversionsWithOngTho}
+        units={sampleUnitsWithHop}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
+    expect(screen.getByText("Cà phê Robusta")).toBeInTheDocument();
+    expect(screen.getByText("Sữa đặc Ông Thọ")).toBeInTheDocument();
+  });
+});
+
 

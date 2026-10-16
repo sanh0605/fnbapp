@@ -28,16 +28,9 @@ const OLD_44 = "min-h-[44px]";
 const NEW_48 = "min-h-[48px] md:min-h-[40px]";
 const TINY = /text-\[(?:[1-9]|1[01])(?:\.\d+)?px\]/;
 
-const OWED_44: string[] = [
-  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx",
-  "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx",
-  "app/admin/inventory/purchase-orders/components/PurchaseOrderLines.tsx",
-  "app/admin/inventory/purchase-orders/components/PurchaseOrderTotals.tsx",
-];
+const OWED_44: string[] = [];
 
-const OWED_TINY: string[] = [
-
-];
+const OWED_TINY: string[] = [];
 
 describe("BR-UI-014 phone control size", () => {
   it("the five shared controls are 48 px on a phone", () => {

@@ -998,9 +998,34 @@ describe("IssueSlipClient two columns on a computer (owner 2026-10-10)", () => {
     expect(shared.textContent).toContain("Đã điền đủ");
     expect(lines.querySelector("table")).not.toBeNull();
     expect(money.textContent).toContain("Tổng giá trị xuất");
-    expect(money.textContent).toContain("Ghi phiếu xuất");
-    expect(money.textContent).toContain("Quay lại");
+    expect(container.textContent).toContain("Ghi phiếu xuất");
+    expect(container.textContent).toContain("Quay lại");
     expectBefore(shared, lines);
     expectBefore(lines, money);
   });
 });
+
+describe("Ticket 6c: IssueSlipClient single FormActionBar replacing both bars", () => {
+  it("renders exactly one FormActionBar for the whole form replacing both today's desktop and phone action bars", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+
+    // Today's code renders two bars (desktop and mobile). Target design has exactly one FormActionBar.
+    const submitButtons = Array.from(container.querySelectorAll("button")).filter(b =>
+      b.textContent?.includes("Ghi phiếu xuất"),
+    );
+    expect(submitButtons).toHaveLength(1);
+    expect(submitButtons[0].textContent?.trim()).toBe("Ghi phiếu xuất (1 dòng)");
+  });
+
+  it("dynamically updates the single FormActionBar button text when lines are added ('Ghi phiếu xuất (2 dòng)')", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    await clickButtonWithText(container, "+ Thêm mặt hàng");
+
+    const submitButtons = Array.from(container.querySelectorAll("button")).filter(b =>
+      b.textContent?.includes("Ghi phiếu xuất"),
+    );
+    expect(submitButtons).toHaveLength(1);
+    expect(submitButtons[0].textContent?.trim()).toBe("Ghi phiếu xuất (2 dòng)");
+  });
+});
+

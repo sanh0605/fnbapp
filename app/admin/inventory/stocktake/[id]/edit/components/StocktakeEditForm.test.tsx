@@ -97,6 +97,37 @@ describe("StocktakeEditForm (BR-INV-012)", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.queryByLabelText(/lý do/i)).toBeNull();
     expect(screen.getByRole("button", { name: "Lưu" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Bỏ" }).getAttribute("href")).toBe("/admin/inventory/stocktake/STK-001");
+    expect(screen.getByRole("button", { name: /Bỏ/ })).toBeInTheDocument();
   });
 });
+
+describe("Ticket 6c: StocktakeEditForm FormActionBar and phone layout", () => {
+  it("uses FormActionBar with 'Lưu' and cancel button", () => {
+    render(<StocktakeEditForm detail={DETAIL} />);
+
+    const saveBtn = screen.getByRole("button", { name: "Lưu" });
+    expect(saveBtn).toBeInTheDocument();
+
+    const cancelBtn = screen.getByRole("button", { name: /Bỏ/ });
+    expect(cancelBtn).toBeInTheDocument();
+    fireEvent.click(cancelBtn);
+    expect(push).toHaveBeenCalledWith("/admin/inventory/stocktake/STK-001");
+  });
+
+  it("on phone layout: each line has name + unit on the left and a 48px number box 7rem wide on the right", () => {
+    const { container } = render(<StocktakeEditForm detail={DETAIL} />);
+    const lineEl = lineOf(container, "SKL-00004");
+    expect(lineEl).toBeInTheDocument();
+
+    expect(lineEl.textContent).toContain("Bột cà phê truyền thống Phin Đậm");
+    expect(lineEl.textContent).toContain("g");
+
+    const input = lineEl.querySelector("input")!;
+    expect(input).toBeInTheDocument();
+    expect(input.className).toContain("min-h-[48px]");
+
+    const inputContainer = input.closest(".w-28, .w-\\[7rem\\]") || input;
+    expect(inputContainer.className).toMatch(/\b(w-28|w-\[7rem\])\b/);
+  });
+});
+

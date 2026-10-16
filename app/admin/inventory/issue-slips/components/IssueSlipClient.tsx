@@ -25,6 +25,7 @@ import { formatNumber } from "@/lib/shared/format";
 import { numberTextToValue } from "@/lib/shared/money-digits";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 
 type DraftLine = {
   purchasedItemId: string;
@@ -342,7 +343,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                             type="button"
                             variant="delete"
                             onClick={() => removeLine(index)}
-                            className="min-h-[44px] md:min-h-[40px] min-w-[44px] p-0"
+                            className="min-h-[48px] md:min-h-[40px] min-w-[44px] p-0"
                             aria-label="Xoá dòng"
                           >
                             ✕
@@ -358,7 +359,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                       type="button"
                       variant="secondary"
                       onClick={addLine}
-                      className="w-full"
+                      className="w-full min-h-[48px] md:min-h-[40px]"
                     >
                       + Thêm mặt hàng
                     </Button>
@@ -386,24 +387,6 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                 )}
               </div>
             </div>
-
-            <div className="space-y-3 pt-2">
-              <Button
-                variant="primary"
-                onClick={handleSubmit}
-                loading={submitting}
-                className="w-full min-h-[44px] md:min-h-[40px]"
-              >
-                Ghi phiếu xuất ({lines.length} dòng)
-              </Button>
-              <Button
-                href="/admin/inventory/issue-slips"
-                variant="secondary"
-                className="w-full"
-              >
-                Quay lại
-              </Button>
-            </div>
           </div>
         </div>
       </div>
@@ -419,7 +402,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
             <SaigonDateTimeInput
               value={issuedAtLocal}
               onChange={setIssuedAtLocal}
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[44px] md:min-h-[40px]"
+              className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[48px] md:min-h-[40px]"
             />
             {affectedMonths.length > 0 && (
               <p className="mt-1.5 text-xs text-warning">
@@ -449,7 +432,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                     type="button"
                     variant="delete"
                     onClick={() => removeLine(index)}
-                    className="absolute top-2 right-2 min-h-[44px] md:min-h-[40px] min-w-[44px] p-0"
+                    className="absolute top-2 right-2 min-h-[48px] md:min-h-[40px] min-w-[44px] p-2"
                     aria-label="Xoá dòng"
                   >
                     ✕
@@ -529,27 +512,30 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
           type="button"
           variant="secondary"
           onClick={addLine}
-          className="w-full"
+          className="w-full min-h-[48px] md:min-h-[40px]"
         >
           + Thêm mặt hàng
         </Button>
+      </div>
 
-        {/* Action buttons */}
-        <div className="space-y-3 pt-2">
+      {/* Single FormActionBar replacing both previous action bars */}
+      <div className="sticky bottom-[calc(58px+env(safe-area-inset-bottom))] md:bottom-0 z-30 bg-surface-card border-t border-border py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="grid grid-cols-2 gap-3 md:flex md:items-center md:justify-end md:ml-auto">
+          <Button
+            href="/admin/inventory/issue-slips"
+            variant="secondary"
+            className="w-full md:w-auto min-h-[48px] md:min-h-[40px]"
+          >
+            Quay lại
+          </Button>
           <Button
             variant="primary"
             onClick={handleSubmit}
             loading={submitting}
-            className="w-full min-h-[44px] md:min-h-[40px]"
+            disabled={submitting}
+            className="w-full md:w-auto min-h-[48px] md:min-h-[40px]"
           >
             Ghi phiếu xuất ({lines.length} dòng)
-          </Button>
-          <Button
-            href="/admin/inventory/issue-slips"
-            variant="secondary"
-            className="w-full"
-          >
-            Quay lại
           </Button>
         </div>
       </div>

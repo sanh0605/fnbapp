@@ -34,11 +34,7 @@ function formsOf(page: string): string[] {
 const forms = [...new Set(pages(join(root, "app", "admin")).flatMap(formsOf))].sort();
 const usesBar = (path: string) => /from "@\/components\/ui\/FormActionBar"/.test(readFileSync(join(root, path), "utf8"));
 
-const OWED = [
-  "app/admin/inventory/issue-slips/components/IssueSlipClient.tsx",
-  "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx",
-  "app/admin/inventory/stocktake/[id]/edit/components/StocktakeEditForm.tsx",
-];
+const OWED: string[] = [];
 
 describe("BR-UI-015 create and edit forms end with FormActionBar", () => {
   it("finds the forms behind the create and edit pages", () => {
