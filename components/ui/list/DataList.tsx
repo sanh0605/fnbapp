@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { confirm } from "@/lib/shared/dialog";
 import { Button } from "@/components/ui/Button";
-import { TotalCard } from "@/components/ui/Table";
+import { PhoneRow, type PhoneRowData } from "./PhoneRow";
 import type { SortDir } from "./sort";
 
 export interface DataColumn<T> {
@@ -28,7 +28,8 @@ export interface DataListProps<T> {
   getName: (row: T) => string; // used in messages, e.g. "Vinamilk"
   getHref: (row: T) => string; // whole row / card opens this
   columns: DataColumn<T>[];
-  renderCard: (row: T) => React.ReactNode; // phone card body
+  phoneRow?: (row: T) => PhoneRowData;
+  renderCard?: (row: T) => React.ReactNode; // phone card body
   sort?: {
     key: string;
     dir: SortDir;
@@ -119,6 +120,7 @@ export function DataList<T>({
   getName,
   getHref,
   columns,
+  phoneRow,
   renderCard,
   sort,
   removal,
@@ -288,7 +290,7 @@ export function DataList<T>({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {statusResult && (
         <div
           role="status"
@@ -308,7 +310,7 @@ export function DataList<T>({
       )}
 
       {removal && selectedCount > 0 && (
-        <div className="bg-primary-soft/50 border border-primary/20 rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="sticky bottom-[calc(58px+env(safe-area-inset-bottom))] md:static z-30 order-last md:order-none bg-primary-soft md:bg-primary-soft/50 border border-primary/20 rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm font-medium text-text-primary">
             {deletingProgress
               ? `Đang ${removal.verb.toLowerCase()} ${deletingProgress.current}/${deletingProgress.total}…`
@@ -347,7 +349,7 @@ export function DataList<T>({
                 aria-label="Sắp xếp"
                 value={sort.href(sort.key, sort.dir)}
                 onChange={(e) => router.replace(e.target.value)}
-                className="w-full bg-surface-card border border-border text-text-primary text-sm rounded-lg px-3 py-2 min-h-[44px] md:min-h-[40px] focus:ring-2 focus:ring-primary outline-none"
+                className="w-full bg-surface-card border border-border text-text-primary text-sm rounded-lg px-3 py-2 min-h-[48px] md:min-h-[40px] focus:ring-2 focus:ring-primary outline-none"
               >
                 {sortableColumns.map((col) => (
                   <React.Fragment key={col.key}>
@@ -372,7 +374,7 @@ export function DataList<T>({
                   setSelectedIds(new Set());
                 }
               }}
-              className="text-sm font-medium text-primary hover:text-primary-hover px-3 py-1.5 rounded-lg border border-border hover:bg-surface-secondary transition min-h-[44px] md:min-h-[40px] flex items-center justify-center shrink-0"
+              className="text-sm font-medium text-primary hover:text-primary-hover px-3 py-1.5 rounded-lg border border-border hover:bg-surface-secondary transition min-h-[48px] md:min-h-[40px] flex items-center justify-center shrink-0"
             >
               {isMobileSelecting ? "Xong" : "Chọn"}
             </button>
@@ -551,96 +553,77 @@ export function DataList<T>({
           </table>
         </div>
 
-        {/* Phone Cards */}
+        {/* Phone Rows */}
         <div className="md:hidden flex flex-col divide-y divide-border">
-          {totals && (
-            <TotalCard
-              title={totals.label}
-              items={columns
-                .filter(
-                  (col) =>
-                    totals.values[col.key] !== undefined &&
-                    totals.values[col.key] !== null
-                )
-                .map((col) => ({
-                  label: col.header,
-                  value: totals.values[col.key],
-                }))}
-            />
-          )}
+          {totals && (() => {
+            const totalCols = columns.filter(
+              (col) =>
+                totals.values[col.key] !== undefined &&
+                totals.values[col.key] !== null
+            );
+            if (totalCols.length === 0) return null;
+            return (
+              <div className="px-4 py-2 bg-primary-soft text-sm text-text-primary tabular-nums">
+                {totals.label}:{" "}
+                {totalCols.length === 1
+                  ? totals.values[totalCols[0].key]
+                  : totalCols.map((col, i) => (
+                      <React.Fragment key={col.key}>
+                        {i > 0 && " · "}
+                        {col.header} {totals.values[col.key]}
+                      </React.Fragment>
+                    ))}
+              </div>
+            );
+          })()}
           {rows.map((row) => {
             const id = getId(row);
             const name = getName(row);
             const href = getHref(row);
             const isRemovable = isRowRemovable(row);
             const isSelected = selectedIds.has(id);
-            const verb = removal?.rowVerb ? removal.rowVerb(row) : removal?.verb;
+            const content = phoneRow ? <PhoneRow {...phoneRow(row)} /> : renderCard?.(row);
 
-            return (
-              <div
-                key={id}
-                className={`relative p-4 hover:bg-surface-secondary/50 transition-colors ${
-                  isSelected ? "bg-primary-soft/30" : ""
-                }`}
-              >
-                {removal && isMobileSelecting && isRemovable && (
-                  <div className="relative z-20 mb-2 flex items-center gap-2">
+            if (isMobileSelecting) {
+              if (isRemovable) {
+                return (
+                  <label
+                    key={id}
+                    className={`px-4 py-2.5 min-h-[48px] flex items-center gap-3 cursor-pointer hover:bg-surface-secondary/50 transition-colors ${
+                      isSelected ? "bg-primary-soft/30" : ""
+                    }`}
+                  >
                     <input
                       type="checkbox"
                       aria-label={`Chọn ${name}`}
                       checked={isSelected}
                       onChange={() => toggleSelectRow(id)}
-                      className="w-5 h-5 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                      className="w-5 h-5 shrink-0 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
                     />
-                    <span className="text-sm font-medium text-text-primary">
-                      Chọn {name}
-                    </span>
-                  </div>
-                )}
+                    <div className="flex-1 min-w-0">{content}</div>
+                  </label>
+                );
+              }
+              return (
+                <div
+                  key={id}
+                  className="px-4 py-2.5 min-h-[48px]"
+                >
+                  {content}
+                </div>
+              );
+            }
 
-                {isMobileSelecting ? (
-                  isRemovable ? (
-                    <button
-                      type="button"
-                      onClick={() => toggleSelectRow(id)}
-                      className="w-full text-left focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px] md:min-h-[40px]"
-                    >
-                      {renderCard(row)}
-                    </button>
-                  ) : (
-                    <div className="w-full text-left min-h-[44px] md:min-h-[40px]">
-                      {renderCard(row)}
-                    </div>
-                  )
-                ) : (
-                  <Link
-                    href={href}
-                    className={`block focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none min-h-[44px] md:min-h-[40px] ${
-                      removal && isRemovable ? "pr-12" : ""
-                    }`}
-                  >
-                    {renderCard(row)}
-                  </Link>
-                )}
-
-                {removal && !isMobileSelecting && isRemovable && (
-                  <div className="absolute top-2 right-2 z-20">
-                    <button
-                      type="button"
-                      title={verb}
-                      aria-label={`${verb} ${name}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveSingle(row);
-                      }}
-                      className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-danger rounded-lg hover:bg-danger/10 transition-colors"
-                    >
-                      <TrashIcon />
-                      <span className="sr-only">{verb}</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+            return (
+              <Link
+                key={id}
+                href={href}
+                className={`block px-4 py-2.5 min-h-[48px] hover:bg-surface-secondary/50 transition-colors focus:ring-2 focus:ring-inset focus:ring-focus-ring outline-none ${
+                  isSelected ? "bg-primary-soft/30" : ""
+                }`}
+              >
+                {content}
+              </Link>
             );
           })}
         </div>

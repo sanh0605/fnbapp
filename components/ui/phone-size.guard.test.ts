@@ -16,18 +16,21 @@ function sources(dir: string): string[] {
     return name.endsWith(".tsx") && !name.endsWith(".test.tsx") ? [full] : [];
   });
 }
+// Drawn only by the till (app/pos/components/ItemConfigModal.tsx), which keeps its own look (BR-UI-005).
+const TILL_ONLY = ["components/ui/OptionGroupPicker.tsx"];
 const files = ["app", "components"]
   .flatMap(d => sources(join(root, d)))
-  .map(f => ({ path: relative(root, f).split(sep).join("/"), src: readFileSync(f, "utf8") }));
+  .map(f => ({ path: relative(root, f).split(sep).join("/"), src: readFileSync(f, "utf8") }))
+  .filter(f => !TILL_ONLY.includes(f.path));
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 
-const OLD_44 = "min-h-[44px] md:min-h-[40px]";
-const TINY = /text-\[(?:9|10|11)px\]/;
+const OLD_44 = "min-h-[44px]";
+const NEW_48 = "min-h-[48px] md:min-h-[40px]";
+const TINY = /text-\[(?:[1-9]|1[01])(?:\.\d+)?px\]/;
 
 const OWED_44: string[] = [
   "app/admin/brands/components/BrandForm.tsx",
-  "app/admin/components/AdminSidebar.tsx",
-  "app/admin/components/MoreSheet.tsx",
+  "app/admin/dashboard-settings/components/DashboardSettingsForm.tsx",
   "app/admin/inventory/assets/[id]/components/AssetItemDetailView.tsx",
   "app/admin/inventory/assets/components/DisposeAssetForm.tsx",
   "app/admin/inventory/conversions/components/ConversionForm.tsx",
@@ -38,7 +41,9 @@ const OWED_44: string[] = [
   "app/admin/inventory/purchase-orders/components/PurchaseOrderForm.tsx",
   "app/admin/inventory/purchase-orders/components/PurchaseOrderLines.tsx",
   "app/admin/inventory/purchase-orders/components/PurchaseOrderTotals.tsx",
+  "app/admin/inventory/stocktake/[id]/components/StocktakeCountView.tsx",
   "app/admin/orders/[id]/edit/components/OrderEditForm.tsx",
+  "app/admin/orders/[id]/void/components/VoidOrderForm.tsx",
   "app/admin/outlets/components/OutletForm.tsx",
   "app/admin/products/ProductsClient.tsx",
   "app/admin/products/categories/[id]/components/ProductCategoryDetailView.tsx",
@@ -50,26 +55,15 @@ const OWED_44: string[] = [
   "app/admin/reports/pnl/components/PnlMonthCards.tsx",
   "app/admin/reports/sales/page.tsx",
   "app/admin/suppliers/[id]/components/SupplierDetailView.tsx",
-  "components/ui/Button.tsx",
-  "components/ui/DateRangeButton.tsx",
-  "components/ui/NumberInput.tsx",
-  "components/ui/SearchableSelect.tsx",
-  "components/ui/Select.tsx",
-  "components/ui/TextInput.tsx",
-  "components/ui/detail/DetailHeader.tsx",
-  "components/ui/detail/RemoveRecordButton.tsx",
-  "components/ui/list/DataList.tsx",
-  "components/ui/list/FilterCard.tsx",
-  "components/ui/list/ListPagination.tsx",
+  "app/error.tsx",
+  "app/global-error.tsx",
 ];
 
 const OWED_TINY: string[] = [
   "app/admin/activity-log/components/ActivityLogClient.tsx",
   "app/admin/brands/components/BrandsClient.tsx",
-  "app/admin/components/PhoneNavBar.tsx",
   "app/admin/finance/bank-accounts/components/BankAccountsClient.tsx",
   "app/admin/finance/categories/components/CategoriesClient.tsx",
-  "app/admin/finance/components/CashBookClient.tsx",
   "app/admin/finance/monthly-items/components/MonthlyItemsClient.tsx",
   "app/admin/inventory/categories/components/CategoriesClient.tsx",
   "app/admin/inventory/conversions/components/ConversionForm.tsx",
@@ -86,23 +80,25 @@ const OWED_TINY: string[] = [
   "app/admin/reports/components/SalesCharts.tsx",
   "app/admin/reports/issued/EventCard.tsx",
   "app/admin/reports/issued/page.tsx",
+  "app/admin/reports/pnl/components/pnl-display.tsx",
   "app/admin/reports/pnl/components/PnlMonthCards.tsx",
+  "app/admin/reports/pnl/components/PnlTableView.tsx",
   "app/admin/reports/sales/page.tsx",
   "app/admin/users/components/RoleBadge.tsx",
   "app/admin/users/components/UsersClient.tsx",
 ];
 
 describe("BR-UI-014 phone control size", () => {
-  // turns green in Task 2
-  it.fails("the five shared controls are 48 px on a phone", () => {
+  it("the five shared controls are 48 px on a phone", () => {
     const off = ["Button", "TextInput", "Select", "NumberInput", "SearchableSelect"]
       .map(n => `components/ui/${n}.tsx`)
-      .filter(p => !read(p).includes("min-h-[48px] md:min-h-[40px]"));
+      .filter(p => !read(p).includes(NEW_48));
+    // SearchableSelect needs the class on the trigger and on each option
+    if (read("components/ui/SearchableSelect.tsx").split(NEW_48).length < 3) off.push("SearchableSelect needs 2");
     expect(off).toEqual([]);
   });
 
-  // turns green in Task 2
-  it.fails("Field label is text-sm, hint and error are text-[13px]", () => {
+  it("Field label is text-sm, hint and error are text-[13px]", () => {
     const src = read("components/ui/Field.tsx");
     expect(src).toMatch(/<label[^>]*\btext-sm\b/);
     expect(src.match(/<p[^>]*\btext-\[13px\]/g) ?? []).toHaveLength(2);

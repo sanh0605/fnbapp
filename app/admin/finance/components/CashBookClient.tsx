@@ -415,72 +415,6 @@ export default function CashBookClient({
     return row.href;
   };
 
-  const renderCard = (row: CashBookRow) => {
-    const isCancelled = row.status === "CANCELLED";
-    const isDayRow = row.kind === "SALE" || row.kind === "PURCHASE";
-
-    return (
-      <div className={`flex flex-col gap-2 ${isCancelled ? "opacity-60" : ""}`}>
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <div className="text-sm text-text-primary">
-              {row.groupLabel}
-            </div>
-            <div className="text-[11px] text-text-muted mt-0.5 font-mono">
-              {row.id ? `${row.id} · ` : ""}
-              {formatDate(row.date)}
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className="text-text-primary">
-              {money(row.amount)}
-            </span>
-            {!isDayRow &&
-              (row.status === "ACTIVE" ? (
-                <Badge variant="success">Đang dùng</Badge>
-              ) : (
-                <Badge variant="neutral">Đã huỷ</Badge>
-              ))}
-          </div>
-        </div>
-        <div className="text-xs text-text-secondary pt-1 border-t border-border/50 flex flex-col gap-1">
-          <div className="flex justify-between">
-            <span className="text-text-muted">Bên:</span>
-            <span>{row.sideLabel}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-text-muted">Cách trả:</span>
-            <span>{row.methodLabel}</span>
-          </div>
-          {row.accountLabel !== "—" && (
-            <div className="flex justify-between">
-              <span className="text-text-muted">Tài khoản:</span>
-              <span>{row.accountLabel}</span>
-            </div>
-          )}
-          {row.monthlyItemName && (
-            <div className="flex justify-between">
-              <span className="text-text-muted">Khoản chi hằng tháng:</span>
-              <span>{row.monthlyItemName}</span>
-            </div>
-          )}
-          {row.note && (
-            <div className="flex justify-between">
-              <span className="text-text-muted">Ghi chú:</span>
-              <span className="truncate max-w-[200px]">{row.note}</span>
-            </div>
-          )}
-          {row.creator !== "—" && (
-            <div className="flex justify-between">
-              <span className="text-text-muted">Người tạo:</span>
-              <span>{row.creator}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   const removal =
     status === "ACTIVE"
       ? {
@@ -515,6 +449,9 @@ export default function CashBookClient({
   const closingDateLabel =
     formatVnDay(resolvedRange.end) || formatDate(resolvedRange.end);
 
+  const activeCount =
+    1 + (kind !== "ALL" ? 1 : 0) + (status !== "ALL" ? 1 : 0);
+
   return (
     <div className="space-y-6">
       {/* 1. FilterCard */}
@@ -522,18 +459,8 @@ export default function CashBookClient({
         onApply={handleApplyFilters}
         onClear={handleClearFilter}
         showClear={Boolean(search.trim() || status !== "ACTIVE" || kind !== "ALL")}
-      >
-        <div className="shrink-0 w-full md:w-auto">
-          <label className="block text-[13px] font-medium text-text-primary mb-1">
-            Thời gian
-          </label>
-          <DateRangeButton
-            value={range}
-            today={today}
-            onChange={handleDateRangeChange}
-          />
-        </div>
-        <div className="flex-1 min-w-[200px]">
+        activeCount={activeCount}
+        search={
           <Field label="Tìm kiếm" htmlFor="cashbook-search">
             <TextInput
               id="cashbook-search"
@@ -542,6 +469,17 @@ export default function CashBookClient({
               onChange={(e) => setSearch(e.target.value)}
             />
           </Field>
+        }
+      >
+        <div className="shrink-0 w-full md:w-auto">
+          <label className="block text-sm font-medium text-text-primary mb-1">
+            Thời gian
+          </label>
+          <DateRangeButton
+            value={range}
+            today={today}
+            onChange={handleDateRangeChange}
+          />
         </div>
         <div className="shrink-0 w-full md:w-44">
           <Field label="Loại" htmlFor="cashbook-kind">
@@ -662,7 +600,48 @@ export default function CashBookClient({
         getName={(r) => `${r.groupLabel} (${money(r.amount)})`}
         getHref={getRowHref}
         columns={columns}
-        renderCard={renderCard}
+        phoneRow={(row) => {
+          const isCancelled = row.status === "CANCELLED";
+          const metaText = [
+            formatDate(row.date),
+            row.note && row.note !== "—" ? row.note : null,
+            row.accountLabel && row.accountLabel !== "—" ? row.accountLabel : null,
+          ]
+            .filter(Boolean)
+            .join(" · ");
+          return {
+            title: isCancelled ? (
+              <span className="opacity-60">{row.groupLabel}</span>
+            ) : (
+              row.groupLabel
+            ),
+            value: isCancelled ? (
+              <span className="opacity-60">{money(row.amount)}</span>
+            ) : (
+              money(row.amount)
+            ),
+            meta: isCancelled ? (
+              <span className="opacity-60">{metaText}</span>
+            ) : (
+              metaText
+            ),
+            badge: isCancelled ? (
+              <Badge variant="neutral">Đã huỷ</Badge>
+            ) : (
+              <Badge
+                variant={
+                  row.sideLabel === "Thu"
+                    ? "success"
+                    : row.sideLabel === "Chi"
+                      ? "danger"
+                      : "neutral"
+                }
+              >
+                {row.sideLabel}
+              </Badge>
+            ),
+          };
+        }}
         totals={{
           label: "Tổng (không tính huỷ, chuyển tiền)",
           values: {

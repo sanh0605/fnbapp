@@ -149,7 +149,7 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="inline-flex items-center min-h-[44px] md:min-h-[40px] px-3.5 border border-border rounded-lg text-sm text-text-primary no-underline hover:bg-surface-card/10"
+                    className="inline-flex items-center min-h-[48px] md:min-h-[40px] px-3.5 border border-border rounded-lg text-sm text-text-primary no-underline hover:bg-surface-card/10"
                   >
                     {item.name}
                   </Link>
@@ -162,14 +162,14 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
         <div className="mt-2 border-t border-border pt-4 flex flex-col gap-2">
           <div className="text-[13px] font-bold text-text-muted">Tài khoản</div>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-2 min-h-[44px] md:min-h-[40px] px-3.5 border border-border rounded-lg text-sm text-text-primary">
+            <div className="inline-flex items-center gap-2 min-h-[48px] md:min-h-[40px] px-3.5 border border-border rounded-lg text-sm text-text-primary">
               <span className="font-medium">{session?.user?.name || "Admin User"}</span>
               <span className="text-text-muted capitalize">({(session?.user as any)?.role || "Admin"})</span>
             </div>
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="inline-flex items-center min-h-[44px] md:min-h-[40px] px-4 border border-border rounded-lg text-sm text-text-primary bg-surface-card cursor-pointer hover:bg-danger/10 hover:text-danger hover:border-danger/30 transition-colors"
+              className="inline-flex items-center min-h-[48px] md:min-h-[40px] px-4 border border-border rounded-lg text-sm text-text-primary bg-surface-card cursor-pointer hover:bg-danger/10 hover:text-danger hover:border-danger/30 transition-colors"
             >
               Đăng xuất
             </button>

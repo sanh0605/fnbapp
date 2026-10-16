@@ -82,7 +82,7 @@ export function TableHeaderCell({
     // too; its figures stay right in the body cells.
     statement
       ? "px-3 py-2 whitespace-nowrap text-left font-semibold text-text-secondary"
-      : "px-4 py-3 text-[13px] text-left font-semibold text-text-secondary",
+      : "px-3 py-2 md:px-4 md:py-3 whitespace-nowrap text-[13px] text-left font-semibold text-text-secondary",
   ]
     .filter(Boolean)
     .join(" ");
@@ -196,7 +196,7 @@ export function TableCell({
   // (look) or any statement row sets them on the <tr>, so its cells inherit
   // them and only pad.
   const inherit = Boolean(look) || Boolean(statement);
-  const pad = statement && tight ? "px-1 py-1" : inherit ? "px-3 py-2" : "px-4 py-3 text-sm font-normal";
+  const pad = statement && tight ? "px-1 py-1" : inherit ? "px-3 py-2" : "px-3 py-2 md:px-4 md:py-3 text-sm font-normal";
   const colour =
     tone === "negative" ? "text-danger" : tone === "muted" ? "text-text-secondary" : inherit ? "" : "text-text-primary";
   const baseClasses = [

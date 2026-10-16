@@ -24,7 +24,7 @@ export function DetailHeader({
         <BackLink
           href={backHref}
           label={backLabel}
-          className="text-sm font-medium text-primary hover:text-primary-hover no-underline inline-flex items-center gap-1 min-h-[44px] md:min-h-[40px]"
+          className="text-sm font-medium text-primary hover:text-primary-hover no-underline inline-flex items-center gap-1 min-h-[48px] md:min-h-[40px]"
         />
       </div>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

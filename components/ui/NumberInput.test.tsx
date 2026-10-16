@@ -255,10 +255,10 @@ describe("BR-UI-005 NumberInput: a limit that changes under the number", () => {
 });
 
 describe("NumberInput height by device (owner 2026-10-11 trial)", () => {
-  it("is 44px on a phone and 40px on a computer", () => {
+  it("is 48px on a phone and 40px on a computer", () => {
     render(<NumberInput id="qty" decimals={0} />);
     const cls = box().className;
-    expect(cls).toContain("min-h-[44px]");
+    expect(cls).toContain("min-h-[48px]");
     expect(cls).toContain("md:min-h-[40px]");
   });
 });

@@ -192,7 +192,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
         tabIndex={isOpen ? -1 : 0}
         onKeyDown={handleTriggerKey}
         aria-label={placeholder}
-        className={`w-full min-w-0 border border-border rounded-lg px-3 py-2 bg-surface-card cursor-pointer flex justify-between items-center gap-2 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none ${className || ''}`}
+        className={`w-full min-w-0 min-h-[48px] md:min-h-[40px] border border-border rounded-lg px-3 py-2 bg-surface-card cursor-pointer flex justify-between items-center gap-2 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none ${className || ''}`}
         onClick={() => {
           setIsOpen(!isOpen);
           if (!isOpen) setSearchTerm("");
@@ -257,7 +257,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
                         ref={(el) => { optionRefs.current[idx] = el; }}
                         role="option"
                         aria-selected={isSelected}
-                        className={`px-4 py-2 text-sm cursor-pointer min-h-[44px] md:min-h-[40px] flex items-center whitespace-normal break-words ${
+                        className={`px-4 py-2 text-sm cursor-pointer min-h-[48px] md:min-h-[40px] flex items-center whitespace-normal break-words ${
                           isSelected ? 'bg-primary-soft text-primary font-medium' : 'text-text-primary'
                         } ${idx === activeIndex ? 'ring-2 ring-inset ring-focus-ring bg-primary-soft' : 'hover:bg-primary-soft'}`}
                         onClick={() => {

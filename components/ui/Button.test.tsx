@@ -20,12 +20,12 @@ describe("BR-UI-005 Button", () => {
     const link = screen.getByRole("link", { name: "Tạo nhà cung cấp" });
     expect(link.getAttribute("href")).toBe("/admin/suppliers/new");
     expect(link.className).toContain("bg-primary");
-    expect(link.className).toContain("min-h-[44px]");
+    expect(link.className).toContain("min-h-[48px]");
   });
 
-  it.each(["primary", "secondary", "delete", "danger"] as const)("%s is 44px tall", variant => {
+  it.each(["primary", "secondary", "delete", "danger"] as const)("%s is 48px tall", variant => {
     render(<Button variant={variant}>Bấm</Button>);
-    expect(screen.getByRole("button", { name: "Bấm" }).className).toContain("min-h-[44px]");
+    expect(screen.getByRole("button", { name: "Bấm" }).className).toContain("min-h-[48px]");
   });
 
   it("Phụ is white with a thin border, not the grey that looks switched off", () => {
@@ -73,10 +73,10 @@ describe("BR-UI-005 Button", () => {
 });
 
 describe("Button height by device (owner 2026-10-11 trial)", () => {
-  it.each(["primary", "secondary", "delete", "danger"] as const)("%s is 44px on a phone and 40px on a computer", variant => {
+  it.each(["primary", "secondary", "delete", "danger"] as const)("%s is 48px on a phone and 40px on a computer", variant => {
     render(<Button variant={variant}>Bấm</Button>);
     const cls = screen.getByRole("button", { name: "Bấm" }).className;
-    expect(cls).toContain("min-h-[44px]");
+    expect(cls).toContain("min-h-[48px]");
     expect(cls).toContain("md:min-h-[40px]");
   });
 });

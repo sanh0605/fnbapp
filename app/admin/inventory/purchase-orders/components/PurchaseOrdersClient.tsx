@@ -189,23 +189,12 @@ export default function PurchaseOrdersClient({
     []
   );
 
-  const renderCard = (po: PurchaseOrderRow) => (
-    <div className="space-y-2">
-      <div className="flex justify-between items-start gap-2">
-        <span className="font-mono text-xs text-primary">{po.id}</span>
-        <span className="tabular-nums text-text-primary text-base font-medium">
-          {formatNumber(po.totalAmount)}đ
-        </span>
-      </div>
-      <div className="text-text-primary line-clamp-2 leading-tight">{po.supplierName}</div>
-      <div className="flex justify-between items-end gap-2">
-        <div className="text-xs text-text-secondary">
-          {po.dateText} · {po.sourceName} · {po.paymentLabel}
-        </div>
-        <div>{renderStatusBadge(po.status)}</div>
-      </div>
-    </div>
-  );
+  const activeCount =
+    (searching ? 0 : 1) +
+    (draft.status !== "ALL" ? 1 : 0) +
+    (draft.pay !== "ALL" ? 1 : 0) +
+    (draft.supplier !== "ALL" ? 1 : 0) +
+    (searchParams.get("account") ? 1 : 0);
 
   return (
     <div className="space-y-6 pb-20">
@@ -216,7 +205,6 @@ export default function PurchaseOrdersClient({
           <Button
             href="/admin/inventory/purchase-orders/new"
             variant="primary"
-            className="w-full md:w-auto"
           >
             Tạo
           </Button>
@@ -227,6 +215,17 @@ export default function PurchaseOrdersClient({
         onApply={() => setApplyRequested(true)}
         onClear={handleClear}
         showClear={showClear}
+        activeCount={activeCount}
+        search={
+          <Field label="Tìm kiếm" htmlFor="search-input">
+            <TextInput
+              id="search-input"
+              placeholder="Ví dụ: PO-181"
+              value={draft.q}
+              onChange={(e) => setField("q", e.target.value)}
+            />
+          </Field>
+        }
       >
         <div className="w-full md:w-auto shrink-0">
           <DateRangeButton
@@ -236,16 +235,6 @@ export default function PurchaseOrdersClient({
             disabled={searching}
             disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
           />
-        </div>
-        <div className="flex-1 min-w-[200px]">
-          <Field label="Tìm kiếm" htmlFor="search-input">
-            <TextInput
-              id="search-input"
-              placeholder="Ví dụ: PO-181"
-              value={draft.q}
-              onChange={(e) => setField("q", e.target.value)}
-            />
-          </Field>
         </div>
         <div className="w-full md:w-40">
           <Field label="Trạng thái" htmlFor="status-select">
@@ -306,7 +295,12 @@ export default function PurchaseOrdersClient({
             )}`
           }
           columns={columns}
-          renderCard={renderCard}
+          phoneRow={(po) => ({
+            title: po.supplierName,
+            value: `${formatNumber(po.totalAmount)}đ`,
+            meta: [po.dateText, po.id, po.paymentLabel].join(" · "),
+            badge: renderStatusBadge(po.status),
+          })}
           totals={{
             label: "Tổng (không tính huỷ, nháp)",
             values: { totalAmount: formatNumber(pageData.totals.totalAmount) },
