@@ -72,7 +72,8 @@ describe("ProductTypeForm", () => {
     const drinkCheckbox = screen.getByLabelText("Là thức uống (tính là ly)") as HTMLInputElement;
     expect(drinkCheckbox.checked).toBe(true);
 
-    expect(screen.getByRole("button", { name: "Cập nhật" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
 
   it("'Bỏ' navigates to returnTo without submitting", () => {
@@ -82,6 +83,29 @@ describe("ProductTypeForm", () => {
     expect(push).toHaveBeenCalledWith("/admin/products/types?q=tra");
     expect(saveProductType).not.toHaveBeenCalled();
     expect(updateProductType).not.toHaveBeenCalled();
+  });
+
+  it("shows FormActionBar with 'Tạo' and 'Bỏ' on create mode (BR-UI-015)", () => {
+    render(<ProductTypeForm returnTo="/admin/products/types" />);
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
+  });
+
+  it("shows FormActionBar with 'Lưu thay đổi' and 'Bỏ thay đổi' on edit mode (BR-UI-015)", () => {
+    render(<ProductTypeForm initialData={sampleType} returnTo="/admin/products/types" />);
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    const cancelButton = screen.getByRole("button", { name: "Bỏ thay đổi" });
+    expect(cancelButton).toBeInTheDocument();
+    fireEvent.click(cancelButton);
+    expect(push).toHaveBeenCalledWith("/admin/products/types");
+  });
+
+  it("controls use min-h-[48px] md:min-h-[40px] (BR-UI-014)", () => {
+    render(<ProductTypeForm returnTo="/admin/products/types" />);
+    const checkboxLabel = screen.getByLabelText("Là thức uống (tính là ly)").closest("label");
+    expect(checkboxLabel?.className).toContain("min-h-[48px]");
+    expect(checkboxLabel?.className).toContain("md:min-h-[40px]");
+    expect(checkboxLabel?.className).not.toContain("min-h-[44px]");
   });
 
   it("submits form and calls saveProductType with is_drink on when checked", async () => {

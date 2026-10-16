@@ -227,7 +227,7 @@ export default function ProductForm({
                 Các size
               </h3>
               {!priceReadOnly && (
-              <Button variant="secondary" type="button" onClick={addVariant} className="min-h-[44px] md:min-h-[40px]">
+              <Button variant="secondary" type="button" onClick={addVariant} className="min-h-[48px] md:min-h-[40px]">
                 <Plus className="w-4 h-4 mr-1"/> Thêm size
               </Button>
               )}
@@ -305,7 +305,7 @@ export default function ProductForm({
                   return (
                     <label
                       key={group.id}
-                      className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[44px] md:min-h-[40px] p-2.5 rounded-xl border border-border bg-surface-card hover:bg-surface-secondary/50 transition-colors"
+                      className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[48px] md:min-h-[40px] p-2.5 rounded-xl border border-border bg-surface-card hover:bg-surface-secondary/50 transition-colors"
                     >
                       <input
                         type="checkbox"

@@ -137,7 +137,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                       </TableCell>
                       <TableCell align="right">
                         {line.gross_line_total > line.net_line_total && (
-                          <div className="text-[11px] text-text-muted line-through">
+                          <div className="text-xs text-text-muted line-through">
                             {formatNumber(line.gross_line_total)}
                           </div>
                         )}

@@ -73,10 +73,11 @@ describe("UserForm boxes (wave K6)", () => {
 });
 
 describe("UserForm", () => {
-  it("renders on the page and immediately shows the username input and Bỏ button, with Vietnamese-only role options", () => {
+  it("renders on the page and immediately shows the username input and Tạo/Bỏ buttons, with Vietnamese-only role options", () => {
     render(<UserForm returnTo="/admin/users" />);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByLabelText(/^Tên đăng nhập( \*)?$/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Nhân viên" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Quản lý" })).toBeInTheDocument();
@@ -103,7 +104,7 @@ describe("UserForm", () => {
     render(<UserForm returnTo="/admin/users?role=STAFF" />);
     fireEvent.change(screen.getByLabelText(/^Tên đăng nhập( \*)?$/), { target: { value: "nhanvien01" } });
     fireEvent.change(screen.getByLabelText(/^Mật khẩu( \*)?$/), { target: { value: "123456" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu Nhân Sự" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/users?role=STAFF"));
     expect(refresh).toHaveBeenCalled();
   });
@@ -113,7 +114,7 @@ describe("UserForm", () => {
     render(<UserForm returnTo="/admin/users" />);
     fireEvent.change(screen.getByLabelText(/^Tên đăng nhập( \*)?$/), { target: { value: "nhanvien01" } });
     fireEvent.change(screen.getByLabelText(/^Mật khẩu( \*)?$/), { target: { value: "123456" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu Nhân Sự" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Ten dang nhap da ton tai"));
     expect(push).not.toHaveBeenCalled();
     expect(screen.getByLabelText(/^Tên đăng nhập( \*)?$/)).toHaveValue("nhanvien01");

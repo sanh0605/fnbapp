@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { TextInput } from "@/components/ui/TextInput";
 import { Alert } from "@/components/ui/Alert";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBProductCategory, DBProductType } from "@/types/db";
 
@@ -95,24 +96,11 @@ export function ProductCategoryForm({ initialData, types = [], returnTo: rawRetu
             </Select>
           </Field>
         </div>
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật" : "Tạo"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

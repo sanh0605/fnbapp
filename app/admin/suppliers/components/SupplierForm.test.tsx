@@ -89,10 +89,12 @@ beforeEach(() => {
 });
 
 describe("SupplierForm", () => {
-  it("renders the fields on the page, not in a dialog", () => {
+  it("renders the fields on the page, not in a dialog, and shows Tạo and Bỏ buttons", () => {
     render(<SupplierForm returnTo="/admin/suppliers" />);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByLabelText(/^Tên nhà cung cấp/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
   });
 
   it("prefills every field when editing", () => {
@@ -104,13 +106,15 @@ describe("SupplierForm", () => {
     );
     expect(screen.getByLabelText(/^Tên nhà cung cấp/)).toHaveValue("Cửa hàng ABC");
     expect(screen.getByLabelText(/^Số điện thoại/)).toHaveValue("0901234567");
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
 
   it("after a successful add, goes to returnTo and refreshes", async () => {
     mocks.addSupplier.mockResolvedValue({});
     render(<SupplierForm returnTo="/admin/suppliers?q=ABC" />);
     fireEvent.change(screen.getByLabelText(/^Tên nhà cung cấp/), { target: { value: "Cửa hàng ABC" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu nhà cung cấp" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/suppliers?q=ABC"));
     expect(refresh).toHaveBeenCalled();
   });
@@ -119,7 +123,7 @@ describe("SupplierForm", () => {
     mocks.addSupplier.mockResolvedValue({ error: "Tên đã tồn tại" });
     render(<SupplierForm returnTo="/admin/suppliers" />);
     fireEvent.change(screen.getByLabelText(/^Tên nhà cung cấp/), { target: { value: "Cửa hàng ABC" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu nhà cung cấp" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Tên đã tồn tại"));
     expect(push).not.toHaveBeenCalled();
     expect(screen.getByLabelText(/^Tên nhà cung cấp/)).toHaveValue("Cửa hàng ABC");
@@ -130,7 +134,7 @@ describe("SupplierForm", () => {
     mocks.confirm.mockResolvedValue(false);
     render(<SupplierForm returnTo="/admin/suppliers" />);
     fireEvent.change(screen.getByLabelText(/^Tên nhà cung cấp/), { target: { value: "Cửa hàng ABD" } });
-    fireEvent.click(screen.getByRole("button", { name: "Lưu nhà cung cấp" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => expect(mocks.confirm).toHaveBeenCalled());
     expect(mocks.addSupplier).toHaveBeenCalledTimes(1);
     expect(push).not.toHaveBeenCalled();
@@ -153,7 +157,7 @@ describe("SupplierForm", () => {
       />
     );
     expect(screen.getByLabelText(/^Tên nhà cung cấp/)).toHaveValue("Đại Phát");
-    fireEvent.click(screen.getByRole("button", { name: "Lưu nhà cung cấp" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => {
       expect(push).toHaveBeenCalledWith(
         "/admin/inventory/purchase-orders/new?draft=1&newSupplier=SUP-9"

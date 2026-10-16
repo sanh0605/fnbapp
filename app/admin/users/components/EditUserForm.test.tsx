@@ -58,13 +58,13 @@ beforeEach(() => {
 });
 
 describe("EditUserForm", () => {
-  it("renders username disabled and shows Bỏ and Cập nhật nhân sự buttons", () => {
+  it("renders username disabled and shows Bỏ thay đổi and Lưu thay đổi buttons", () => {
     render(<EditUserForm user={userFixture()} returnTo="/admin/users" />);
     const usernameInput = screen.getByLabelText("Tên đăng nhập");
     expect(usernameInput).toBeDisabled();
     expect(usernameInput).toHaveValue("nhanvien01");
-    expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Cập nhật nhân sự" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
   });
 
   it("renders role options with Vietnamese-only labels (no English)", () => {
@@ -92,7 +92,7 @@ describe("EditUserForm", () => {
   it("after a successful update, navigates to returnTo and refreshes", async () => {
     mocks.updateUser.mockResolvedValue({});
     render(<EditUserForm user={userFixture()} returnTo="/admin/users?role=STAFF" />);
-    fireEvent.click(screen.getByRole("button", { name: "Cập nhật nhân sự" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/admin/users?role=STAFF"));
     expect(refresh).toHaveBeenCalled();
   });
@@ -100,14 +100,14 @@ describe("EditUserForm", () => {
   it("on error stays on the page and shows error alert", async () => {
     mocks.updateUser.mockResolvedValue({ error: "Lỗi cập nhật người dùng" });
     render(<EditUserForm user={userFixture()} returnTo="/admin/users" />);
-    fireEvent.click(screen.getByRole("button", { name: "Cập nhật nhân sự" }));
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Lỗi cập nhật người dùng"));
     expect(push).not.toHaveBeenCalled();
   });
 
-  it("Bỏ goes to returnTo without saving", () => {
+  it("Bỏ thay đổi goes to returnTo without saving", () => {
     render(<EditUserForm user={userFixture()} returnTo="/admin/users?q=test" />);
-    fireEvent.click(screen.getByRole("button", { name: "Bỏ" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bỏ thay đổi" }));
     expect(push).toHaveBeenCalledWith("/admin/users?q=test");
     expect(mocks.updateUser).not.toHaveBeenCalled();
   });

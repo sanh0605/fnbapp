@@ -12,6 +12,7 @@ import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Alert } from "@/components/ui/Alert";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import type { DBModifierGroup, DBProductCategory, DBProduct } from "@/types/db";
 
 export interface ModifierGroupFormProps {
@@ -241,7 +242,7 @@ export function ModifierGroupForm({
             <div className="flex items-center pt-2 md:pt-7 col-span-1 md:col-span-2">
               <label
                 htmlFor={`${formId}-allow_standalone`}
-                className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[44px] md:min-h-[40px]"
+                className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[48px] md:min-h-[40px]"
               >
                 <input
                   type="checkbox"
@@ -302,7 +303,7 @@ export function ModifierGroupForm({
                         <label
                           key={p.id}
                           htmlFor={`${formId}-prod-${p.id}`}
-                          className={`flex items-center gap-2 cursor-pointer text-sm font-normal p-2.5 rounded-lg border transition-colors min-h-[44px] md:min-h-[40px] ${
+                          className={`flex items-center gap-2 cursor-pointer text-sm font-normal p-2.5 rounded-lg border transition-colors min-h-[48px] md:min-h-[40px] ${
                             isChecked
                               ? "bg-primary-soft/30 border-primary text-text-primary"
                               : "bg-surface-card border-border text-text-secondary hover:border-border-hover"
@@ -327,24 +328,11 @@ export function ModifierGroupForm({
           </div>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật" : "Tạo"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

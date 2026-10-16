@@ -3,7 +3,7 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { addUser } from "@/app/admin/users/actions";
-import { Button } from "@/components/ui/Button";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
@@ -77,24 +77,12 @@ export function UserForm({ returnTo: rawReturnTo, canGrantAdmin = true }: UserFo
             </Select>
           </Field>
         </div>
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            Lưu Nhân Sự
-          </Button>
-        </div>
+
+        <FormActionBar
+          mode="create"
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

@@ -9,6 +9,7 @@ import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Alert } from "@/components/ui/Alert";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import { safeReturnTo } from "@/lib/shared/return-to";
 import type { DBModifier, DBModifierGroup } from "@/types/db";
 import { StandaloneToppingSwitch } from "./StandaloneToppingSwitch";
@@ -132,7 +133,7 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
             <div className="flex items-center pt-2 md:pt-7">
               <label
                 htmlFor={`${formId}-is_default`}
-                className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[44px] md:min-h-[40px]"
+                className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[48px] md:min-h-[40px]"
               >
                 <input
                   type="checkbox"
@@ -189,24 +190,11 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
           </div>
         )}
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-border">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(returnTo)}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            className="w-full sm:w-auto"
-          >
-            {isEdit ? "Cập nhật" : "Lưu tuỳ chọn"}
-          </Button>
-        </div>
+        <FormActionBar
+          mode={isEdit ? "edit" : "create"}
+          loading={loading}
+          onCancel={() => router.push(returnTo)}
+        />
       </form>
     </div>
   );

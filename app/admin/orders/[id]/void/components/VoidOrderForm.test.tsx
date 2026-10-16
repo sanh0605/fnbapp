@@ -179,4 +179,15 @@ describe("VoidOrderForm", () => {
       expect(submitBtn).not.toBeDisabled();
     });
   });
+
+  it("phone lines use min-h-[48px] md:min-h-[40px] (BR-UI-014)", () => {
+    const order = makeOrder();
+    render(<VoidOrderForm order={order} detailHref="/admin/orders/ORD-123" />);
+
+    const phoneList = screen.getByTestId("phone-lines-list");
+    const firstRow = phoneList.firstElementChild as HTMLElement;
+    expect(firstRow.className).toContain("min-h-[48px]");
+    expect(firstRow.className).toContain("md:min-h-[40px]");
+    expect(firstRow.className).not.toContain("min-h-[44px]");
+  });
 });

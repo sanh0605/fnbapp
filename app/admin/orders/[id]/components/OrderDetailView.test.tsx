@@ -362,5 +362,35 @@ describe("OrderDetailView promotions (Phiếu G7)", () => {
     expect(screen.getByText("-5,100")).toBeInTheDocument();
     expect(screen.queryByText("Khuyến mãi hệ thống")).toBeNull();
   });
+
+  it("does not use sub-12px text (e.g. text-[11px]) on discounted lines (BR-UI-014)", () => {
+    const detail = makeDetail("COMPLETED", {
+      lines: [
+        {
+          id: "line-1",
+          order_id: "ORD-1",
+          line_no: 1,
+          product_id: "PROD-1",
+          product_snapshot_json: "{}",
+          variant_id: "VAR-1",
+          variant_snapshot_json: "{}",
+          qty: 1,
+          unit_price: 50000,
+          modifiers_snapshot_json: "[]",
+          gross_line_total: 60000,
+          promo_discount: 10000,
+          manual_item_discount: 0,
+          order_discount_allocation: 0,
+          net_line_total: 50000,
+          promo_discount_reason: "",
+          product_name: "Cà phê sữa",
+          size_name: "M",
+          modifiers: [],
+        },
+      ],
+    });
+    const { container } = render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
+    expect(container.querySelector(".text-\\[11px\\]")).toBeNull();
+  });
 });
 

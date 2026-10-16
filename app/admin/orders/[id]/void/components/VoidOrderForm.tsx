@@ -99,7 +99,7 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
           {order.lines.map((line, idx) => (
             <div
               key={idx}
-              className="p-3 rounded-lg border border-border bg-surface-card flex items-center justify-between gap-3 min-h-[44px]"
+              className="p-3 rounded-lg border border-border bg-surface-card flex items-center justify-between gap-3 min-h-[48px] md:min-h-[40px]"
             >
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-text-primary truncate">
