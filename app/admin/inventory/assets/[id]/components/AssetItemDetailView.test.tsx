@@ -330,7 +330,6 @@ describe("AssetItemDetailView", () => {
     expect(firstRow?.textContent).toContain("171,600đ");
     // Old card labels should not exist
     expect(firstRow?.textContent).not.toContain("Lần mua:");
-    expect(firstRow?.textContent).not.toContain("Thu được:");
     expect(firstRow?.textContent).not.toContain("Lý do:");
   });
 

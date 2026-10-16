@@ -306,6 +306,7 @@ export function DisposeAssetForm({
 
         <FormActionBar
           mode="create"
+          submitLabel="Xác nhận"
           loading={loading}
           onCancel={() => router.push(returnTo)}
         />

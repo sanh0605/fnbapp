@@ -111,7 +111,7 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSaving || !editReason.trim() || !isPaymentValid) {
+    if (isSaving) {
       return;
     }
     setInlineError(null);
@@ -380,18 +380,20 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
             />
           </div>
 
-          <div className="p-4 flex flex-col gap-3 bg-surface-card border-t border-border">
-            {inlineError && (
+          {inlineError && (
+            <div className="px-4 py-3">
               <Alert variant="danger">
                 {inlineError}
               </Alert>
-            )}
-            <FormActionBar
-              mode="edit"
-              loading={isSaving}
-              onCancel={() => router.push(viewUrl)}
-            />
-          </div>
+            </div>
+          )}
+
+          <FormActionBar
+            mode="edit"
+            loading={isSaving}
+            disabled={!editReason.trim() || !isPaymentValid}
+            onCancel={() => router.push(viewUrl)}
+          />
         </div>
       </form>
     </DetailFrame>

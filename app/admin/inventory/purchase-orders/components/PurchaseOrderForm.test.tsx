@@ -1001,7 +1001,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
   };
 
   it("renders collapsed PhoneRow with item name, line total, and unit breakdown ('Sữa đặc Ông Thọ' … '380,000đ' … '10 hộp × 38,000đ')", () => {
-    render(
+    const { container } = render(
       <PurchaseOrderForm
         suppliers={sampleSuppliers}
         sources={sampleSources}
@@ -1028,13 +1028,14 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
       />
     );
 
-    expect(screen.getByText("Sữa đặc Ông Thọ")).toBeInTheDocument();
-    expect(screen.getByText("380,000đ")).toBeInTheDocument();
-    expect(screen.getByText("10 hộp × 38,000đ")).toBeInTheDocument();
+    const phoneRow = container.querySelector(".md\\:hidden") as HTMLElement;
+    expect(within(phoneRow).getByText("Sữa đặc Ông Thọ")).toBeInTheDocument();
+    expect(within(phoneRow).getByText("380,000đ")).toBeInTheDocument();
+    expect(within(phoneRow).getByText("10 hộp × 38,000đ")).toBeInTheDocument();
   });
 
   it("tapping a collapsed line opens it in place showing its inputs, 'Xong', and 'Xoá dòng', and clicking 'Xong' closes it", () => {
-    render(
+    const { container } = render(
       <PurchaseOrderForm
         suppliers={sampleSuppliers}
         sources={sampleSources}
@@ -1061,17 +1062,19 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
       />
     );
 
-    const collapsedRow = screen.getByText("10 hộp × 38,000đ");
+    const phoneRow = container.querySelector(".md\\:hidden") as HTMLElement;
+    const collapsedRow = within(phoneRow).getByText("10 hộp × 38,000đ");
     fireEvent.click(collapsedRow);
 
-    const doneBtn = screen.getByRole("button", { name: "Xong" });
-    const deleteLineBtn = screen.getByRole("button", { name: "Xoá dòng" });
+    const phoneActions = container.querySelector(".flex.md\\:hidden") as HTMLElement;
+    const doneBtn = within(phoneActions).getByRole("button", { name: "Xong" });
+    const deleteLineBtn = within(phoneActions).getByRole("button", { name: "Xoá dòng" });
     expect(doneBtn).toBeVisible();
     expect(deleteLineBtn).toBeVisible();
 
     fireEvent.click(doneBtn);
     expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
-    expect(screen.getByText("10 hộp × 38,000đ")).toBeInTheDocument();
+    expect(within(phoneRow).getByText("10 hộp × 38,000đ")).toBeInTheDocument();
   });
 
   it("corner absolute X button is removed on the phone", () => {
@@ -1112,7 +1115,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
   });
 
   it("openIndex rule: newly added line opens immediately", () => {
-    render(
+    const { container } = render(
       <PurchaseOrderForm
         suppliers={sampleSuppliers}
         sources={sampleSources}
@@ -1125,8 +1128,9 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
 
     fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
 
-    expect(screen.getByRole("button", { name: "Xong" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Xoá dòng" })).toBeVisible();
+    const phoneActions = container.querySelector(".flex.md\\:hidden") as HTMLElement;
+    expect(within(phoneActions).getByRole("button", { name: "Xong" })).toBeVisible();
+    expect(within(phoneActions).getByRole("button", { name: "Xoá dòng" })).toBeVisible();
   });
 
   it("openIndex rule (a): pressing 'Tạo' on Phiếu nhập when line 2 has no quantity opens line 2 (its inputs become visible / it is the expanded line) with border-danger", async () => {
@@ -1145,7 +1149,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
       subtotal: "0",
     };
 
-    render(
+    const { container } = render(
       <PurchaseOrderForm
         suppliers={sampleSuppliers}
         sources={sampleSources}
@@ -1174,11 +1178,12 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
 
     expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
 
-    const createBtn = screen.getByRole("button", { name: "Tạo" });
+    const createBtn = screen.getByRole("button", { name: /Tạo|Cập nhật/ });
     fireEvent.click(createBtn);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Xong" })).toBeInTheDocument();
+      const phoneActions = container.querySelector(".flex.md\\:hidden") as HTMLElement;
+      expect(within(phoneActions).getByRole("button", { name: "Xong" })).toBeInTheDocument();
     });
 
     const dangerBox = document.querySelector(".border-danger");
@@ -1188,7 +1193,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
   it("openIndex rule (b): pressing 'Tạo' while a line is open still submits that line's full quantity", async () => {
     mockSavePurchaseOrder.mockResolvedValueOnce({ success: true, po_id: "PO-SUBMITTED" });
 
-    render(
+    const { container } = render(
       <PurchaseOrderForm
         suppliers={sampleSuppliers}
         sources={sampleSources}
@@ -1216,11 +1221,13 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
       />
     );
 
-    const collapsed = screen.getByText("10 hộp × 38,000đ");
+    const phoneRow = container.querySelector(".md\\:hidden") as HTMLElement;
+    const collapsed = within(phoneRow).getByText("10 hộp × 38,000đ");
     fireEvent.click(collapsed);
-    expect(screen.getByRole("button", { name: "Xong" })).toBeInTheDocument();
+    const phoneActions = container.querySelector(".flex.md\\:hidden") as HTMLElement;
+    expect(within(phoneActions).getByRole("button", { name: "Xong" })).toBeInTheDocument();
 
-    const createBtn = screen.getByRole("button", { name: "Tạo" });
+    const createBtn = screen.getByRole("button", { name: /Tạo|Cập nhật/ });
     fireEvent.click(createBtn);
 
     await waitFor(() => {
@@ -1240,7 +1247,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
       { purchased_item_id: "ITEM-TRA", unit: "kg", conversion_id: "CONV-TRA", quantity: "3", subtotal: "90000" },
     ];
 
-    render(
+    const { container } = render(
       <PurchaseOrderForm
         suppliers={sampleSuppliers}
         sources={sampleSources}
@@ -1267,9 +1274,12 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
       />
     );
 
-    const line3Row = screen.getByText("Trà đen");
+    const cards = container.querySelectorAll('[data-testid="po-line-card"]');
+    const line3PhoneRow = cards[2].querySelector(".md\\:hidden") as HTMLElement;
+    const line3Row = within(line3PhoneRow).getByText("Trà đen");
     fireEvent.click(line3Row);
-    expect(screen.getByRole("button", { name: "Xong" })).toBeInTheDocument();
+    const phoneActions = cards[2].querySelector(".flex.md\\:hidden") as HTMLElement;
+    expect(within(phoneActions).getByRole("button", { name: "Xong" })).toBeInTheDocument();
 
     const deleteButtons = screen.getAllByRole("button", { name: /Xoá/i });
     fireEvent.click(deleteButtons[0]);
@@ -1286,7 +1296,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
       { purchased_item_id: "ITEM-DUONG", unit: "kg", conversion_id: "CONV-DUONG", quantity: "2", subtotal: "60000" },
     ];
 
-    render(
+    const { container } = render(
       <PurchaseOrderForm
         suppliers={sampleSuppliers}
         sources={sampleSources}
@@ -1313,16 +1323,21 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
       />
     );
 
-    const line2Row = screen.getByText("Đường cát");
+    const cards = container.querySelectorAll('[data-testid="po-line-card"]');
+    const line2PhoneRow = cards[1].querySelector(".md\\:hidden") as HTMLElement;
+    const line2Row = within(line2PhoneRow).getByText("Đường cát");
     fireEvent.click(line2Row);
-    expect(screen.getByRole("button", { name: "Xong" })).toBeInTheDocument();
+    const phoneActions = cards[1].querySelector(".flex.md\\:hidden") as HTMLElement;
+    expect(within(phoneActions).getByRole("button", { name: "Xong" })).toBeInTheDocument();
 
-    const deleteOpenLineBtn = screen.getByRole("button", { name: "Xoá dòng" });
+    const deleteOpenLineBtn = within(phoneActions).getByRole("button", { name: "Xoá dòng" });
     fireEvent.click(deleteOpenLineBtn);
 
     expect(screen.queryByText("Đường cát")).toBeNull();
     expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
-    expect(screen.getByText("Cà phê Robusta")).toBeInTheDocument();
+    const remainingCards = container.querySelectorAll('[data-testid="po-line-card"]');
+    const remainingPhoneRow = remainingCards[0].querySelector(".md\\:hidden") as HTMLElement;
+    expect(within(remainingPhoneRow).getByText("Cà phê Robusta")).toBeInTheDocument();
   });
 
   it("openIndex rule: a restored draft starts with all lines collapsed", () => {
@@ -1349,7 +1364,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
     };
     localStorage.setItem("fnb:po-draft:new", JSON.stringify(storedDraft));
 
-    render(
+    const { container } = render(
       <PurchaseOrderForm
         suppliers={sampleSuppliers}
         sources={sampleSources}
@@ -1361,8 +1376,11 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
     );
 
     expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
-    expect(screen.getByText("Cà phê Robusta")).toBeInTheDocument();
-    expect(screen.getByText("Sữa đặc Ông Thọ")).toBeInTheDocument();
+    const cards = container.querySelectorAll('[data-testid="po-line-card"]');
+    const row0 = cards[0].querySelector(".md\\:hidden") as HTMLElement;
+    const row1 = cards[1].querySelector(".md\\:hidden") as HTMLElement;
+    expect(within(row0).getByText("Cà phê Robusta")).toBeInTheDocument();
+    expect(within(row1).getByText("Sữa đặc Ông Thọ")).toBeInTheDocument();
   });
 });
 

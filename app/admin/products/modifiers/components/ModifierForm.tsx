@@ -3,7 +3,6 @@
 import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { saveModifierAction } from "@/app/admin/products/modifiers/actions";
-import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";

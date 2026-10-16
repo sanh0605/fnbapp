@@ -782,14 +782,16 @@ describe("IssueSlipClient -- Responsive redesign (desktop table & mobile cards)"
     expect(phoneCards[0].textContent).toContain("24 hộp");
   });
 
-  it("a 'Quay lại' link to /admin/inventory/issue-slips exists", async () => {
+  it("a 'Bỏ' button to /admin/inventory/issue-slips exists", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
-    const backLinks = Array.from(
-      container.querySelectorAll<HTMLAnchorElement>('a[href="/admin/inventory/issue-slips"]'),
-    );
-    expect(backLinks.length).toBeGreaterThanOrEqual(1);
-    const hasQuayLai = backLinks.some(link => link.textContent?.trim() === "Quay lại");
-    expect(hasQuayLai).toBe(true);
+    const cancelButton = Array.from(
+      container.querySelectorAll<HTMLButtonElement>("button"),
+    ).find(b => b.textContent?.trim() === "Bỏ");
+    expect(cancelButton).toBeDefined();
+    await act(async () => {
+      cancelButton?.click();
+    });
+    expect(mocks.routerPush).toHaveBeenCalledWith("/admin/inventory/issue-slips");
   });
 
   it("'✕' is absent with one line, present after '+ Thêm mặt hàng'", async () => {
@@ -999,7 +1001,7 @@ describe("IssueSlipClient two columns on a computer (owner 2026-10-10)", () => {
     expect(lines.querySelector("table")).not.toBeNull();
     expect(money.textContent).toContain("Tổng giá trị xuất");
     expect(container.textContent).toContain("Ghi phiếu xuất");
-    expect(container.textContent).toContain("Quay lại");
+    expect(container.textContent).toContain("Bỏ");
     expectBefore(shared, lines);
     expectBefore(lines, money);
   });

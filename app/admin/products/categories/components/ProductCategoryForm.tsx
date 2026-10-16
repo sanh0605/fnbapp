@@ -3,7 +3,6 @@
 import { useState, useId, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { saveCategory, updateCategory } from "@/app/admin/products/categories/actions";
-import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { TextInput } from "@/components/ui/TextInput";

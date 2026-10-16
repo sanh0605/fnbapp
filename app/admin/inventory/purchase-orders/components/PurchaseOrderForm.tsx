@@ -514,42 +514,32 @@ export default function PurchaseOrderForm({
         </div>
       </div>
 
-      <div className="sticky bottom-[calc(58px+env(safe-area-inset-bottom))] md:bottom-0 z-30 bg-surface-card border-t border-border py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 mt-6">
-        <div className="text-sm text-text-muted" />
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 md:ml-auto">
+      <FormActionBar
+        mode={isEdit ? "edit" : "create"}
+        submitLabel={isEdit ? "Cập nhật & Hoàn thành" : undefined}
+        onSubmit={() => handleSubmit("COMPLETED")}
+        loading={loading}
+        onCancel={() =>
+          router.push(
+            isEdit && po.id
+              ? `/admin/inventory/purchase-orders/${po.id}`
+              : "/admin/inventory/purchase-orders"
+          )
+        }
+      >
+        {!(isEdit && po.status === "COMPLETED") && (
           <Button
             type="button"
             variant="secondary"
-            onClick={() => router.push(isEdit && po.id ? `/admin/inventory/purchase-orders/${po.id}` : "/admin/inventory/purchase-orders")}
+            loading={loading && submittingStatus === "DRAFT"}
             disabled={loading}
-            className="w-full sm:w-auto min-h-[48px] md:min-h-[40px]"
+            onClick={() => handleSubmit("DRAFT")}
+            className="w-full md:w-auto"
           >
-            {isEdit ? "Bỏ thay đổi" : "Bỏ"}
+            Lưu nháp
           </Button>
-          {!(isEdit && po.status === "COMPLETED") && (
-            <Button
-              type="button"
-              variant="secondary"
-              loading={loading && submittingStatus === "DRAFT"}
-              disabled={loading}
-              onClick={() => handleSubmit("DRAFT")}
-              className="w-full sm:w-auto min-h-[48px] md:min-h-[40px]"
-            >
-              Lưu nháp
-            </Button>
-          )}
-          <Button
-            type="button"
-            variant="primary"
-            loading={loading && submittingStatus === "COMPLETED"}
-            disabled={loading}
-            onClick={() => handleSubmit("COMPLETED")}
-            className="w-full sm:w-auto min-h-[48px] md:min-h-[40px]"
-          >
-            {isEdit ? "Cập nhật & Hoàn thành" : "Tạo"}
-          </Button>
-        </div>
-      </div>
+        )}
+      </FormActionBar>
     </>
   );
 }

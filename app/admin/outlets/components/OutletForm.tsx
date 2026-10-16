@@ -168,7 +168,7 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
                 />
               </Field>
             </div>
-            <p className="text-[13px] text-text-secondary">
+            <p className="text-[13px] md:text-xs text-text-secondary">
               Để trống nếu chưa muốn hệ thống nhắc giờ mở/đóng cửa cho điểm bán này.
             </p>
           </div>

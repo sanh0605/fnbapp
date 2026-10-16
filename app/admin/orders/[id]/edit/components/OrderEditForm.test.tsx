@@ -236,6 +236,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
       fireEvent.change(textarea, { target: { value: "Chỉnh tỷ lệ tiền mặt/chuyển khoản" } });
 
       const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
+      expect(submitButton).not.toBeDisabled();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -264,6 +265,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
       fireEvent.change(textarea, { target: { value: "Thử lưu lệch" } });
 
       const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
+      expect(submitButton).toBeDisabled();
       fireEvent.click(submitButton);
 
       expect(changeOrderPayments).not.toHaveBeenCalled();
@@ -287,6 +289,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
       fireEvent.change(textarea, { target: { value: "Khách trả toàn bộ tiền mặt" } });
 
       const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
+      expect(submitButton).not.toBeDisabled();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -313,6 +316,7 @@ describe("OrderEditForm (Đổi cách trả)", () => {
       fireEvent.change(textarea, { target: { value: "Cập nhật đơn một cách trả" } });
 
       const submitButton = screen.getByRole("button", { name: "Lưu thay đổi" });
+      expect(submitButton).not.toBeDisabled();
       fireEvent.click(submitButton);
 
       await waitFor(() => {

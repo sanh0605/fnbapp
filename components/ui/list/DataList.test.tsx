@@ -843,6 +843,7 @@ describe("DataList phoneRow (BR-UI-018)", () => {
 
     const phoneTitle = screen.getAllByText("Circle K").find((el) => el.closest(".md\\:hidden"))!;
     expect(phoneTitle).toBeDefined();
+    expect(phoneTitle.closest("a")).toBeNull();
     const phoneContainer = phoneTitle.closest(".md\\:hidden") as HTMLElement;
 
     const checkbox = within(phoneContainer).getByRole("checkbox", { name: "Chọn Circle K" });

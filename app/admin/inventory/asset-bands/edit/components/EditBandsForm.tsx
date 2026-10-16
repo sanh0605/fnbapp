@@ -366,7 +366,7 @@ export function EditBandsForm({
         </div>
 
         {/* Note */}
-        <p className="text-[13px] text-text-muted">
+        <p className="text-[13px] md:text-xs text-text-muted">
           Sửa khung chỉ áp dụng cho tài sản mua sau khi lưu -- tài sản đã có giữ nguyên số tháng đã tính lúc mua.
         </p>
 

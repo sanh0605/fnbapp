@@ -392,7 +392,7 @@ Thông tin bị bỏ khỏi dòng điện thoại vẫn có ở trang chi tiết
 - `app/admin/reports/sales/components/SalesByDaySection.tsx`, `PaymentBreakdownSection.tsx`, `SalesCharts` (chỉ cỡ chữ);
 - `app/admin/reports/sales/OutletBreakdownSection.tsx`, `app/admin/reports/sales/page.tsx` (chỉ cỡ chữ);
 - `app/admin/reports/components/ProductTable.tsx` (mỗi size một cột);
-- `app/admin/reports/issued/page.tsx` cùng `ItemCard.tsx` (thành bảng) và `EventCard.tsx` (danh sách sự kiện: giữ dạng danh sách, đổi sang `PhoneRow`);
+- `app/admin/reports/issued/page.tsx` cùng thẻ hàng cũ (thành bảng; file thẻ đã xoá 2026-10-16) và `EventCard.tsx` (danh sách sự kiện: giữ dạng danh sách, đổi sang `PhoneRow`);
 - `app/admin/reports/pnl/components/PnlMonthCards.tsx` (giữ dạng bấm mở từng tháng, chỉ đổi cỡ chữ), `pnl-display.tsx` và `PnlTableView.tsx` (chữ 10.5 / 11.5 px lên 12 px);
 - `app/admin/finance/components/CashBookMonthsClient.tsx`.
 

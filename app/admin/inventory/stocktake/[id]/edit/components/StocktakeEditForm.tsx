@@ -2,7 +2,6 @@
 
 import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { formatNumber } from "@/lib/shared/format";
@@ -119,28 +118,11 @@ export function StocktakeEditForm({ detail }: { detail: Detail }) {
         <Alert variant="danger">{error}</Alert>
       )}
 
-      <div className="sticky bottom-[calc(58px+env(safe-area-inset-bottom))] md:bottom-0 z-30 bg-surface-card border-t border-border py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="grid grid-cols-2 gap-3 md:flex md:items-center md:justify-end md:ml-auto">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push(`/admin/inventory/stocktake/${encodeURIComponent(detail.id)}`)}
-            disabled={loading}
-            className="w-full md:w-auto min-h-[48px] md:min-h-[40px]"
-          >
-            Bỏ
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={loading}
-            disabled={loading}
-            className="w-full md:w-auto min-h-[48px] md:min-h-[40px]"
-          >
-            Lưu
-          </Button>
-        </div>
-      </div>
+      <FormActionBar
+        mode="edit"
+        loading={loading}
+        onCancel={() => router.push(`/admin/inventory/stocktake/${encodeURIComponent(detail.id)}`)}
+      />
     </form>
   );
 }

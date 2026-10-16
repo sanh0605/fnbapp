@@ -518,27 +518,13 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         </Button>
       </div>
 
-      {/* Single FormActionBar replacing both previous action bars */}
-      <div className="sticky bottom-[calc(58px+env(safe-area-inset-bottom))] md:bottom-0 z-30 bg-surface-card border-t border-border py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="grid grid-cols-2 gap-3 md:flex md:items-center md:justify-end md:ml-auto">
-          <Button
-            href="/admin/inventory/issue-slips"
-            variant="secondary"
-            className="w-full md:w-auto min-h-[48px] md:min-h-[40px]"
-          >
-            Quay lại
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            loading={submitting}
-            disabled={submitting}
-            className="w-full md:w-auto min-h-[48px] md:min-h-[40px]"
-          >
-            Ghi phiếu xuất ({lines.length} dòng)
-          </Button>
-        </div>
-      </div>
+      <FormActionBar
+        mode="create"
+        submitLabel={`Ghi phiếu xuất (${lines.length} dòng)`}
+        onSubmit={handleSubmit}
+        loading={submitting}
+        onCancel={() => router.push("/admin/inventory/issue-slips")}
+      />
     </div>
   );
 }

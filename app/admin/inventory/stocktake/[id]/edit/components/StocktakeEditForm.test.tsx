@@ -96,19 +96,19 @@ describe("StocktakeEditForm (BR-INV-012)", () => {
     render(<StocktakeEditForm detail={DETAIL} />);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.queryByLabelText(/lý do/i)).toBeNull();
-    expect(screen.getByRole("button", { name: "Lưu" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Bỏ/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
 });
 
 describe("Ticket 6c: StocktakeEditForm FormActionBar and phone layout", () => {
-  it("uses FormActionBar with 'Lưu' and cancel button", () => {
+  it("uses FormActionBar with 'Lưu thay đổi' and cancel button", () => {
     render(<StocktakeEditForm detail={DETAIL} />);
 
-    const saveBtn = screen.getByRole("button", { name: "Lưu" });
+    const saveBtn = screen.getByRole("button", { name: "Lưu thay đổi" });
     expect(saveBtn).toBeInTheDocument();
 
-    const cancelBtn = screen.getByRole("button", { name: /Bỏ/ });
+    const cancelBtn = screen.getByRole("button", { name: "Bỏ thay đổi" });
     expect(cancelBtn).toBeInTheDocument();
     fireEvent.click(cancelBtn);
     expect(push).toHaveBeenCalledWith("/admin/inventory/stocktake/STK-001");

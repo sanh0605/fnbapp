@@ -266,7 +266,7 @@ describe("PromotionsClient", () => {
       />,
     );
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
-    expect(within(phone).getByText("Toàn hệ thống · Toàn bộ đơn hàng")).toBeInTheDocument();
+    expect(within(phone).getByText("Toàn hệ thống · Toàn đơn")).toBeInTheDocument();
     expect(within(phone).queryByText(/→/)).toBeNull();
   });
 });

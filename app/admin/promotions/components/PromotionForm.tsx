@@ -3,7 +3,6 @@
 import { useState, useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
 import { savePromotion } from "@/app/admin/promotions/actions";
-import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
@@ -317,6 +316,19 @@ export function PromotionForm({
           <h3 className="text-sm text-text-secondary">Mức giảm</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div>
+              <Field label="Đối tượng giảm giá" htmlFor={`${formId}-type`}>
+                <Select
+                  id={`${formId}-type`}
+                  value={type}
+                  onChange={(e) => handleTypeChange(e.target.value)}
+                >
+                  <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
+                  <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
+                </Select>
+              </Field>
+            </div>
+
+            <div>
               <Field label="Hình thức giảm giá" htmlFor={`${formId}-discountType`}>
                 <Select
                   id={`${formId}-discountType`}
@@ -401,20 +413,6 @@ export function PromotionForm({
         {/* Section 4: Món áp dụng */}
         <div className="space-y-4 pt-4 border-t border-border">
           <h3 className="text-sm text-text-secondary">Món áp dụng</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-            <div>
-              <Field label="Đối tượng giảm giá" htmlFor={`${formId}-type`}>
-                <Select
-                  id={`${formId}-type`}
-                  value={type}
-                  onChange={(e) => handleTypeChange(e.target.value)}
-                >
-                  <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
-                  <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
-                </Select>
-              </Field>
-            </div>
-          </div>
 
         {type === "PRODUCT_DISCOUNT" && (
           <div className="border-t border-border pt-4 mt-2">

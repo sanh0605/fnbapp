@@ -440,7 +440,7 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
     expect(mocks.routerPush).toHaveBeenCalledWith("/admin/inventory/assets/SPM-COC");
   });
 
-  it("shows FormActionBar with 'Tạo' and 'Bỏ'", async () => {
+  it("shows FormActionBar with 'Xác nhận' and 'Bỏ'", async () => {
     mocks.previewDisposalCharge.mockResolvedValue({ charge: 0 });
     const container = await renderTracked(
       <DisposeAssetForm
@@ -452,7 +452,7 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
     await flush();
 
     const buttons = Array.from(container.querySelectorAll("button")).map((b) => b.textContent?.trim());
-    expect(buttons).toContain("Tạo");
+    expect(buttons).toContain("Xác nhận");
     expect(buttons).toContain("Bỏ");
   });
 });
