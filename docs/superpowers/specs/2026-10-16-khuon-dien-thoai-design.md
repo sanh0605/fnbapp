@@ -41,17 +41,17 @@ Năm câu hiện trạng:
    - đang tải.
 
    Thiết kế này thêm hai trạng thái:
-   - Khung lọc đóng hoặc mở. Bấm nút "Lọc" để đổi. Khung đóng sẵn khi mở trang.
+   - Khung lọc đóng hoặc mở. Bấm nút "Bộ lọc" để đổi. Khung đóng sẵn khi mở trang. Chỉ danh sách có ô tìm hoặc có ô lọc mới gập; báo cáo giữ khung lọc như hôm nay.
    - Mỗi dòng hàng trong biểu mẫu nhiều dòng thu gọn hoặc mở ra. Bấm vào dòng để mở, bấm "Xong" để thu lại. Mỗi lúc chỉ mở một dòng.
 2. **Nút.**
    - "Tạo" nằm cùng hàng với tiêu đề.
-   - "Lọc (n)": n là số bộ lọc đang bật, nút này mở và đóng khung lọc.
+   - "Bộ lọc (n)": n là số bộ lọc đang thu hẹp danh sách (khoảng ngày cũng tính), nút này mở và đóng khung lọc. Không đặt tên "Lọc" để khỏi trùng nút "Lọc" bên trong.
    - Trong khung lọc có "Lọc" và "Xoá lọc".
    - "Chọn" / "Xong".
    - Bấm cả dòng để mở trang chi tiết.
-   - Trong chế độ chọn có thanh "Xoá (n)" hoặc "Ngừng dùng (n)" như hôm nay.
+   - Trong chế độ chọn có thanh "Xoá (n)" hoặc "Ngừng dùng (n)" như hôm nay. Trên điện thoại thanh này dính ở đáy màn hình, ngay trên thanh menu dưới, để đánh dấu dòng cuối trang vẫn thấy nút.
 
-   Nút thùng rác trên từng dòng **bỏ trên điện thoại**: nó chiếm 44 px bề ngang và dễ bấm nhầm. Xoá vẫn làm được bằng chế độ chọn, hoặc ở trang chi tiết (`RemoveRecordButton`). Máy tính giữ nút thùng rác.
+   Nút thùng rác trên từng dòng **bỏ trên điện thoại**: nó chiếm 44 px bề ngang và dễ bấm nhầm. Xoá vẫn làm được bằng chế độ chọn, hoặc ở trang chi tiết (`RemoveRecordButton`). Máy tính giữ nút thùng rác. Cái giá: xoá một dòng từ danh sách trên điện thoại cần 3 lần bấm ("Chọn", đánh dấu, "Xoá") thay vì 1; điểm này nằm trong danh sách chủ quán duyệt.
 
    Ở biểu mẫu:
    - Thanh lưu chung `FormActionBar` (`BR-UI-015`).
@@ -77,7 +77,7 @@ Câu thêm cho việc này:
 6. **Điện thoại không hiện gì mà máy tính hiện, và người dùng xem ở đâu?** Các cột phụ của bảng. Mở dòng sẽ ra trang chi tiết, nơi có đủ mọi trường.
 7. **Tên dài.**
    - Dòng chính được xuống tối đa 2 dòng rồi mới cắt bằng "…". Hướng dẫn của Apple khuyên xuống dòng trước khi cắt.
-   - Dòng phụ cắt ở 1 dòng.
+   - Dòng phụ xuống tối đa 2 dòng rồi cắt. Thông tin quan trọng nhất đặt trước, để phần bị cắt là phần ít cần.
    - Danh sách chọn vẫn hiện tên đầy đủ (`BR-UI-010`).
 8. **Máy tính bảng và xoay ngang.** Từ 768 px trở lên dùng bảng máy tính như hôm nay. Điện thoại xoay ngang vẫn dưới 768 px nên vẫn dùng dòng gọn.
 9. **Chữ phóng to theo cài đặt điện thoại.** Cỡ chữ tính bằng `rem`, nên dòng cao lên theo chữ chứ không đè lên nhau.
@@ -116,18 +116,19 @@ phoneRow: (row: T) => {
 
 Cách vẽ một dòng:
 - Tầng 1 cỡ 16 px, màu chữ chính. Tên được xuống tối đa 2 dòng; số bên phải dùng chữ số đều hàng (`tabular-nums`) và không xuống dòng.
-- Tầng 2 cỡ 14 px, màu chữ phụ (`text-text-secondary`, tương phản khoảng 7:1). Cắt ở 1 dòng.
+- Tầng 2 cỡ 14 px, màu chữ phụ (`text-text-secondary`, tương phản khoảng 7:1). Xuống tối đa 2 dòng rồi cắt; phần quan trọng đặt trước.
 - Không chữ đậm, đúng `BR-UI-003` và phép kiểm `list-rows.guard`.
 - Đệm trên dưới 10 px, hai bên 16 px. Dòng một tầng tên cao khoảng 64 px, mỗi dòng là một vùng bấm.
 - Không còn nút thùng rác trên từng dòng.
-- Ở chế độ chọn, ô đánh dấu nằm bên trái dòng, vùng bấm 48 px. Bấm vào đâu trên dòng cũng là đánh dấu.
+- Ở chế độ chọn, ô đánh dấu nằm bên trái dòng, vùng bấm 48 px. Bấm vào đâu trên dòng cũng là đánh dấu (cả dòng là nhãn của ô đánh dấu).
 
 Tổng (`BR-UI-004`) trên điện thoại là **một dải mỏng** ngay trên danh sách, ví dụ "Tổng (không tính huỷ, nháp): 12,450,000đ". Nhiều giá trị thì nối bằng " · ", hết chỗ thì xuống dòng. Dải này thay cho thẻ tổng cao hôm nay.
 
 Phần đầu trang trên điện thoại:
 - Tiêu đề bên trái, nút "Tạo" bên phải, cùng một hàng.
-- Khung lọc thu lại còn một hàng: ô tìm (nếu danh sách có) và nút "Lọc (n)". Bấm "Lọc (n)" thì các ô lọc mở ra ngay tại chỗ, không phải hộp nổi (`BR-DATA-007`).
-- Bộ lọc ngày (`BR-UI-007`) nằm trong phần mở ra. Bên dưới hàng lọc có một dòng chữ nhỏ ghi khoảng ngày đang lọc, ví dụ "1/10 – 16/10", để không ai quên mình đang lọc.
+- Khung lọc thu lại còn một hàng: ô tìm (nếu danh sách có) và nút "Bộ lọc (n)". Bấm nút thì các ô lọc mở ra ngay tại chỗ, không phải hộp nổi (`BR-DATA-007`).
+- Bộ lọc ngày (`BR-UI-007`) nằm trong phần mở ra. Số trên nút cho biết đang lọc; không thêm dòng tóm tắt riêng (ít code hơn, cùng tác dụng).
+- Danh sách chỉ có ô tìm (không có ô lọc nào) thì không có nút gập.
 
 Ví dụ, Phiếu nhập trên điện thoại:
 
@@ -154,9 +155,15 @@ Phần thông tin chung đầu trang chi tiết (`FieldList`) giữ cách "nhãn
 2. Ô nhập, ô chọn, ô số và nút cao **48 px** trên điện thoại (hôm nay 44 px). Máy tính giữ 40 px.
 3. Nhãn ô 14 px (hôm nay 13 px), dòng gợi ý và dòng lỗi 13 px (hôm nay 12 px). Chữ trong ô 16 px; `app/globals.css` đã đặt sẵn để iPhone không tự phóng to màn hình.
 4. Biểu mẫu dài chia thành từng phần, mỗi phần có tiêu đề nhỏ. Ví dụ Phiếu nhập có ba phần: "Thông tin phiếu", "Hàng nhập", "Thanh toán". Biểu mẫu dưới 6 ô thì không chia.
-5. Ô **không bắt buộc** mà ít dùng thì cất sau "Thêm thông tin", bấm để mở tại chỗ. Phần đó tự mở khi một ô trong đó đã có giá trị hoặc đang báo lỗi. Ô bắt buộc không bao giờ bị cất. Danh sách ô bị cất ghi trong kế hoạch, mỗi biểu mẫu một dòng.
+5. Ô **không bắt buộc** mà dữ liệu thật cho thấy ít dùng (điền ở dưới 10% số phiếu đã lưu) thì cất sau một dòng bấm mở tại chỗ. Phần đó tự mở khi một ô trong đó đã có giá trị hoặc đang báo lỗi. Ô bắt buộc không bao giờ bị cất. Đo 2026-10-16:
+   - Phiếu nhập (206 phiếu): Ghi chú 0, Thuế 14, Chiết khấu 15, nên cất ba ô này. Mã hoá đơn 64, Phí vận chuyển 45, Voucher 46 thì vẫn để hiện.
+   - Sổ thu chi: Ghi chú có ở 41/41 dòng, nên không cất.
+   - Khuyến mãi mới có 2 chương trình, chưa đủ dữ liệu để quyết, nên không cất ô nào.
+   - Các biểu mẫu còn lại dưới 6 ô, nên không cất.
 6. Thanh lưu chung `FormActionBar` cho đủ 19 trang còn nợ (`BR-UI-015` đã duyệt).
-7. Biểu mẫu nhiều dòng hàng: Phiếu nhập, Phiếu xuất, Kiểm kê, Sửa đơn.
+7. Biểu mẫu nhiều dòng hàng là **Phiếu nhập** và **Phiếu xuất**.
+   - Sửa kiểm kê không thêm hay bớt dòng. Mỗi dòng ở đó là tên hàng và đơn vị bên trái, ô số 48 px bên phải.
+   - Sửa đơn chỉ có tối đa 2 phần thanh toán, nên giữ nguyên cách xếp và chỉ đổi cỡ.
    - Mỗi dòng hiện thu gọn như mục 3.2.
    - Bấm vào dòng thì nó mở ngay tại chỗ, hiện các ô số lượng, đơn vị và đơn giá, cùng "Xong" và "Xoá dòng".
    - Thêm hàng: ô chọn "Thêm hàng…" ở cuối danh sách dòng. Chọn xong, dòng mới mở sẵn để nhập số lượng.
@@ -169,13 +176,14 @@ Các chỗ đổi:
 - Tổng quan 7 ngày;
 - Doanh số theo ngày và theo món;
 - Hàng đã xuất;
-- Lãi lỗ theo tháng;
 - Sổ thu chi theo tháng.
 
-Năm chỗ này đổi từ thẻ dọc sang **bảng gọn**:
+Lãi lỗ theo tháng giữ dạng từng tháng bấm mở ra công thức và nguồn số (`PnlMonthCards`), vì bảng không giữ được phần mở ra đó; chỉ đổi cỡ chữ.
+
+Bốn chỗ này đổi từ thẻ dọc sang **bảng gọn**:
 - Cột đầu (ngày, tên món, khoản mục) đứng yên.
-- Các cột số kéo ngang được. Mép phải có bóng mờ báo còn cột.
-- Chữ 14 px, dòng cao 44 px.
+- Các cột số kéo ngang được. Cột cuối bị mép màn hình cắt ngang cho thấy còn cột; Playwright cuối đợt xem lại, nếu chưa rõ mới thêm bóng mờ.
+- Chữ 14 px, đệm ô gọn trên điện thoại (`px-3 py-2`, như kiểu `statement`), tiêu đề cột không xuống dòng.
 - Dòng tổng nằm dưới tiêu đề như trên máy tính (`BR-UI-004`).
 
 Cách này theo NN/g: dữ liệu số cần so theo cột thì giữ bảng. Điều này **đổi luật** "Trên điện thoại: không dùng bảng ngang" trong `.claude/rules/ui-devices.md`. Luật mới:
@@ -232,9 +240,9 @@ Mỗi đợt đều qua: soát độc lập (agent `reviewer`), năm lệnh ki�
 
 Theo uỷ quyền, đã chọn trước theo khuyến nghị:
 
-1. Danh sách trên điện thoại dùng dòng gọn hai tầng thay cho thẻ, và bỏ nút thùng rác trên từng dòng (xoá qua "Chọn" hoặc trang chi tiết).
+1. Danh sách trên điện thoại dùng dòng gọn hai tầng thay cho thẻ, và bỏ nút thùng rác trên từng dòng (xoá qua "Chọn" với thanh xoá dính đáy màn hình, hoặc trang chi tiết; 3 lần bấm thay vì 1).
 2. Ô và nút trên điện thoại cao 48 px thay vì 44 px. Điều này đổi `BR-UI-014`.
 3. Trong một dòng, tầng 2 nhỏ hơn và nhạt hơn tầng 1. `BR-UI-003` vẫn đúng ở chỗ không chữ đậm, nhưng hai tầng khác cỡ chữ.
 4. Báo cáo số trên điện thoại dùng bảng kéo ngang, cột đầu đứng yên. Điều này đổi luật "không dùng bảng ngang".
-5. Khung lọc trên điện thoại đóng sẵn, mở bằng "Lọc (n)".
+5. Khung lọc trên điện thoại đóng sẵn, mở bằng "Bộ lọc (n)".
 6. Ô không bắt buộc ít dùng cất sau "Thêm thông tin".
