@@ -198,16 +198,16 @@ export default function StockOnHandClient({
         }
         columns={columns}
         phoneRow={(row) => {
-          const daysNode = renderDaysLeft(row);
           const isWarningBadge =
             !row.inactive &&
-            React.isValidElement(daysNode) &&
-            (daysNode.props as { variant?: string }).variant === "warning";
+            row.onHand >= 0 &&
+            (row.daysLeft === "OUT" ||
+              (typeof row.daysLeft === "number" && row.daysLeft <= 7));
 
           const badge = row.inactive ? (
             <Badge variant="neutral">Ngừng dùng</Badge>
           ) : isWarningBadge ? (
-            daysNode
+            renderDaysLeft(row)
           ) : undefined;
 
           const daysText =

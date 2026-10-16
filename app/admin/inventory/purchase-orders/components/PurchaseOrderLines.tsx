@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
@@ -18,9 +15,9 @@ export interface PurchaseOrderLinesProps {
   addLine: () => void;
   removeLine: (index: number) => void;
   updateLine: (index: number, field: string, value: any) => void;
-  openIndex?: number | null;
-  setOpenIndex?: (index: number | null) => void;
-  errorIndex?: number | null;
+  openIndex: number | null;
+  setOpenIndex: (index: number | null) => void;
+  errorIndex: number | null;
 }
 
 export function PurchaseOrderLines({
@@ -32,13 +29,10 @@ export function PurchaseOrderLines({
   addLine,
   removeLine,
   updateLine,
-  openIndex: externalOpenIndex,
-  setOpenIndex: externalSetOpenIndex,
-  errorIndex = null,
+  openIndex,
+  setOpenIndex,
+  errorIndex,
 }: PurchaseOrderLinesProps) {
-  const [internalOpenIndex, setInternalOpenIndex] = useState<number | null>(null);
-  const openIndex = externalOpenIndex !== undefined ? externalOpenIndex : internalOpenIndex;
-  const setOpenIndex = externalSetOpenIndex !== undefined ? externalSetOpenIndex : setInternalOpenIndex;
 
   return (
     <div className="mb-6">
@@ -69,11 +63,13 @@ export function PurchaseOrderLines({
               (c: any) => c.purchased_item_id === line.purchased_item_id && c.status !== "INACTIVE"
             );
             const conv = conversions.find((c: any) => c.id === line.conversion_id);
-            const unitName =
+            const rawUnit =
               conv?.purchased_unit ||
               line.unit ||
               units.find((x: any) => x.id === conv?.from_unit_id)?.name ||
               "";
+            const p = String(rawUnit).trim();
+            const unitName = units.find((x: any) => x.id === p || x.name === p)?.name || p;
 
             const unitPrice =
               Number(line.quantity) > 0 ? Number(line.subtotal) / Number(line.quantity) : 0;
@@ -90,18 +86,17 @@ export function PurchaseOrderLines({
                 }`}
               >
                 {/* Collapsed phone view */}
-                <div
-                  className={`md:hidden ${isOpen ? "hidden" : "block cursor-pointer"}`}
+                <button
+                  type="button"
+                  className={`w-full text-left min-h-[48px] md:hidden ${isOpen ? "hidden" : "block"}`}
                   onClick={() => setOpenIndex(index)}
-                  role="button"
-                  tabIndex={0}
                 >
                   <PhoneRow
                     title={itemName}
                     value={`${formatNumber(Number(line.subtotal) || 0)}đ`}
-                    meta={`${line.quantity || 0} ${unitName} × ${formatNumber(Math.round(unitPrice))}đ`}
+                    meta={`${formatNumber(Number(line.quantity) || 0)} ${unitName} × ${formatNumber(Math.round(unitPrice))}đ`}
                   />
-                </div>
+                </button>
 
                 {/* Form inputs: always shown on desktop (md:block); on phone only shown when isOpen */}
                 <div className={isOpen ? "block" : "hidden md:block"}>

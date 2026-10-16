@@ -120,7 +120,7 @@ describe("Ticket 6c: StocktakeEditForm FormActionBar and phone layout", () => {
     expect(lineEl).toBeInTheDocument();
 
     expect(lineEl.textContent).toContain("Bột cà phê truyền thống Phin Đậm");
-    expect(lineEl.textContent).toContain("g");
+    expect(lineEl.textContent).toMatch(/Sổ lúc đếm.*\d.*g/);
 
     const input = lineEl.querySelector("input")!;
     expect(input).toBeInTheDocument();

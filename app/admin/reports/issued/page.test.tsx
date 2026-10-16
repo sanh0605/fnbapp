@@ -165,4 +165,25 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     expect(monthsTab.getAttribute("href")).toContain("range=CUSTOM");
     expect(monthsTab.getAttribute("href")).toContain("tab=months");
   });
+
+  it("events tab on phone renders total strip above the events list (BR-UI-004, BR-UI-018)", async () => {
+    const page = await IssuedValueReportPage({
+      searchParams: Promise.resolve({ tab: "events" }),
+    });
+
+    render(page);
+
+    const phoneContainer = document.querySelector(".md\\:hidden") as HTMLElement;
+    expect(phoneContainer).toBeInTheDocument();
+
+    const totalStrip = within(phoneContainer).getByText(/Tổng cộng:\s*8,454,110đ/);
+    expect(totalStrip).toBeInTheDocument();
+
+    const eventList = phoneContainer.querySelector(".divide-y") as HTMLElement;
+    expect(eventList).toBeInTheDocument();
+
+    // Total strip must precede the event list
+    expect(totalStrip.compareDocumentPosition(eventList) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });
+

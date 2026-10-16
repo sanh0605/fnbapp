@@ -138,18 +138,6 @@ export default function PurchaseOrderForm({
   const [errorIndex, setErrorIndex] = useState<number | null>(null);
   const [submittingStatus, setSubmittingStatus] = useState<string | null>(null);
 
-  const hasExtraValue = () => {
-    return Boolean(
-      (initialData?.po?.tax_amount && Number(initialData.po.tax_amount) !== 0) ||
-      (copySeed?.tax_amount && Number(copySeed.tax_amount) !== 0) ||
-      (initialData?.po?.discount_amount && Number(initialData.po.discount_amount) !== 0) ||
-      (copySeed?.discount_amount && Number(copySeed.discount_amount) !== 0) ||
-      (initialData?.po?.notes && initialData.po.notes.trim() !== "") ||
-      (copySeed?.notes && copySeed.notes.trim() !== "")
-    );
-  };
-  const [showExtra, setShowExtra] = useState(() => hasExtraValue());
-
   useEffect(() => {
     if (restoredRef.current) return;
     restoredRef.current = true;
@@ -172,19 +160,11 @@ export default function PurchaseOrderForm({
       if (draft.notes !== undefined) setNotes(draft.notes);
       if (Array.isArray(draft.lines)) {
         setLines(draft.lines);
-        setOpenIndex(null);
       }
       if (draft.shippingFee !== undefined) setShippingFee(Number(draft.shippingFee));
       if (draft.taxAmount !== undefined) setTaxAmount(Number(draft.taxAmount));
       if (draft.voucherAmount !== undefined) setVoucherAmount(Number(draft.voucherAmount));
       if (draft.discountAmount !== undefined) setDiscountAmount(Number(draft.discountAmount));
-      if (
-        (draft.taxAmount && Number(draft.taxAmount) !== 0) ||
-        (draft.discountAmount && Number(draft.discountAmount) !== 0) ||
-        (draft.notes && draft.notes.trim() !== "")
-      ) {
-        setShowExtra(true);
-      }
       if (draft.paymentMethod !== undefined) {
         setPaymentMethod(
           draft.paymentMethod === "CASH" || draft.paymentMethod === "BANK_TRANSFER"
@@ -210,20 +190,17 @@ export default function PurchaseOrderForm({
   }, []);
 
   const addLine = () => {
-    setLines((prev) => {
-      const next = [
-        ...prev,
-        {
-          purchased_item_id: "",
-          unit: "",
-          quantity: "",
-          subtotal: 0,
-          conversion_rate: "",
-        },
-      ];
-      setOpenIndex(prev.length);
-      return next;
-    });
+    setOpenIndex(lines.length);
+    setLines((prev) => [
+      ...prev,
+      {
+        purchased_item_id: "",
+        unit: "",
+        quantity: "",
+        subtotal: 0,
+        conversion_rate: "",
+      },
+    ]);
   };
 
   const removeLine = (index: number) => {
@@ -234,12 +211,7 @@ export default function PurchaseOrderForm({
       if (index < prev) return prev - 1;
       return prev;
     });
-    setErrorIndex((prev) => {
-      if (prev === null) return null;
-      if (prev === index) return null;
-      if (index < prev) return prev - 1;
-      return prev;
-    });
+    setErrorIndex(null);
   };
 
   const updateLine = (index: number, field: string, value: any) => {
@@ -454,16 +426,6 @@ export default function PurchaseOrderForm({
               />
             </Field>
           </div>
-          <div className={showExtra ? "" : "hidden"} style={showExtra ? undefined : { display: "none" }}>
-            <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
-              <TextInput
-                id={`${formId}-notes`}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Ví dụ: giao buổi sáng"
-              />
-            </Field>
-          </div>
         </div>
 
         <div
@@ -508,8 +470,8 @@ export default function PurchaseOrderForm({
             bankAccounts={bankAccounts}
             paymentError={paymentError}
             setPaymentError={setPaymentError}
-            showExtra={showExtra}
-            setShowExtra={setShowExtra}
+            notes={notes}
+            setNotes={setNotes}
           />
         </div>
       </div>
@@ -518,7 +480,8 @@ export default function PurchaseOrderForm({
         mode={isEdit ? "edit" : "create"}
         submitLabel={isEdit ? "Cập nhật & Hoàn thành" : undefined}
         onSubmit={() => handleSubmit("COMPLETED")}
-        loading={loading}
+        loading={loading && submittingStatus === "COMPLETED"}
+        disabled={loading}
         onCancel={() =>
           router.push(
             isEdit && po.id

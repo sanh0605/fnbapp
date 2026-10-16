@@ -1384,4 +1384,161 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
   });
 });
 
+describe("Ticket 6c-2: PurchaseOrderLines & PurchaseOrderTotals enhancements", () => {
+  const lineWithRawUnit = {
+    purchased_item_id: "ITEM-1",
+    unit: "U-1",
+    conversion_id: "CONV-1",
+    quantity: "1000",
+    subtotal: "50000000",
+  };
+
+  it("collapsed row uses <button type='button' className='w-full text-left'> instead of div role='button'", () => {
+    const { container } = render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-BTN",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "50000000",
+            total_amount: "50000000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [lineWithRawUnit as any],
+        }}
+      />
+    );
+
+    const cards = container.querySelectorAll('[data-testid="po-line-card"]');
+    const collapsedBtn = cards[0].querySelector("button.w-full.text-left") as HTMLButtonElement;
+    expect(collapsedBtn).toBeInTheDocument();
+    expect(collapsedBtn.type).toBe("button");
+    expect(cards[0].querySelector('div[role="button"]')).toBeNull();
+  });
+
+  it("meta unit shows unit NAME (not raw id) and formats quantity with formatNumber (1000 -> 1,000)", () => {
+    const { container } = render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-UNIT",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            subtotal: "50000000",
+            total_amount: "50000000",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [lineWithRawUnit as any],
+        }}
+      />
+    );
+
+    const cards = container.querySelectorAll('[data-testid="po-line-card"]');
+    const phoneRow = cards[0].querySelector(".md\\:hidden") as HTMLElement;
+    expect(within(phoneRow).getByText(/1,000 kg × 50,000đ/)).toBeInTheDocument();
+    expect(phoneRow.textContent).not.toContain("U-1");
+  });
+
+  it("moves 'Ghi chú' into folded block in 'Thanh toán' (form-money), not in 'Thông tin phiếu' (form-shared)", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    const sharedBlock = screen.getByTestId("form-shared");
+    expect(within(sharedBlock).queryByLabelText("Ghi chú")).toBeNull();
+
+    const moneyBlock = screen.getByTestId("form-money");
+    expect(within(moneyBlock).getByLabelText("Ghi chú")).toBeInTheDocument();
+  });
+
+  it("folded block is open whenever Thuế, Chiết khấu, or Ghi chú has a value, and toggle is disabled", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+        initialData={{
+          po: {
+            id: "PO-NOTES",
+            supplier_id: "SUP-1",
+            source_id: "SRC-1",
+            status: "DRAFT",
+            notes: "Ghi chú giao sáng",
+            subtotal: "0",
+            total_amount: "0",
+            shipping_cost: "0",
+            tax_amount: "0",
+            discount_amount: "0",
+            transaction_date: "2026-10-01",
+            created_at: "2026-10-01",
+          },
+          lines: [],
+        }}
+      />
+    );
+
+    const moneyBlock = screen.getByTestId("form-money");
+    const toggleBtn = within(moneyBlock).getByRole("button", { name: /Thuế, chiết khấu, ghi chú/i });
+    expect(toggleBtn).toBeDisabled();
+
+    const notesInput = within(moneyBlock).getByLabelText("Ghi chú") as HTMLInputElement;
+    expect(notesInput.value).toBe("Ghi chú giao sáng");
+    const foldedContainer = notesInput.closest(".space-y-2");
+    expect(foldedContainer).not.toBeNull();
+    expect(foldedContainer?.className).not.toContain("hidden");
+  });
+
+  it("toggle line in Thanh toán is at least 48px tall on phone (min-h-[48px] md:min-h-[40px])", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    const moneyBlock = screen.getByTestId("form-money");
+    const toggleBtn = within(moneyBlock).getByRole("button", { name: /Thuế, chiết khấu, ghi chú/i });
+    expect(toggleBtn.className).toContain("min-h-[48px]");
+    expect(toggleBtn.className).toContain("md:min-h-[40px]");
+  });
+});
+
+
 

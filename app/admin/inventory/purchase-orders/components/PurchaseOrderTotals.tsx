@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Field } from "@/components/ui/Field";
+import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { formatNumber } from "@/lib/shared/format";
 import type { DBBankAccount } from "@/types/db";
@@ -25,6 +27,8 @@ export interface PurchaseOrderTotalsProps {
   bankAccounts: DBBankAccount[];
   paymentError: string | null;
   setPaymentError: (err: string | null) => void;
+  notes: string;
+  setNotes: (notes: string) => void;
   showExtra?: boolean;
   setShowExtra?: (show: boolean | ((prev: boolean) => boolean)) => void;
 }
@@ -48,9 +52,19 @@ export function PurchaseOrderTotals({
   bankAccounts,
   paymentError,
   setPaymentError,
-  showExtra = false,
+  notes,
+  setNotes,
+  showExtra,
   setShowExtra,
 }: PurchaseOrderTotalsProps) {
+  const hasValue = Boolean(
+    (taxAmount && Number(taxAmount) !== 0) ||
+    (discountAmount && Number(discountAmount) !== 0) ||
+    (notes && notes.trim() !== "")
+  );
+  const [userOpen, setUserOpen] = useState(false);
+  const isExpanded = hasValue || (showExtra !== undefined ? showExtra : userOpen);
+
   return (
     <>
       <h3 className="text-sm text-text-secondary mb-3">Thanh toán</h3>
@@ -90,14 +104,22 @@ export function PurchaseOrderTotals({
 
           <button
             type="button"
-            onClick={() => setShowExtra?.((prev: boolean) => !prev)}
-            className="text-sm text-primary hover:underline py-1 flex items-center justify-between w-full"
+            disabled={hasValue}
+            onClick={() => {
+              if (hasValue) return;
+              if (setShowExtra) {
+                setShowExtra((prev: boolean) => !prev);
+              } else {
+                setUserOpen((prev) => !prev);
+              }
+            }}
+            className="text-sm text-primary hover:underline py-1 flex items-center justify-between w-full min-h-[48px] md:min-h-[40px] disabled:no-underline disabled:cursor-default"
           >
             <span>Thuế, chiết khấu, ghi chú</span>
-            <span className="text-xs text-text-muted">{showExtra ? "▲" : "▼"}</span>
+            <span className="text-xs text-text-muted">{isExpanded ? "▲" : "▼"}</span>
           </button>
 
-          <div className={showExtra ? "space-y-2" : "hidden"} style={showExtra ? undefined : { display: "none" }}>
+          <div className={isExpanded ? "space-y-2" : "hidden"}>
             <div className="flex justify-between items-center text-sm gap-2">
               <span className="text-text-secondary">Thuế (+):</span>
               <div className="w-28 md:w-32">
@@ -123,6 +145,16 @@ export function PurchaseOrderTotals({
                   onValueChange={(v) => setDiscountAmount(v ?? 0)}
                 />
               </div>
+            </div>
+            <div className="pt-1">
+              <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
+                <TextInput
+                  id={`${formId}-notes`}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Ví dụ: giao buổi sáng"
+                />
+              </Field>
             </div>
           </div>
         </div>

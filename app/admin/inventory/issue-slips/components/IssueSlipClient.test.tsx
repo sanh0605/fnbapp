@@ -313,7 +313,10 @@ describe("IssueSlipClient -- package-size counting produces the base quantity se
     await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
     expect(mocks.routerPush).toHaveBeenCalledTimes(1);
 
-    await clickButtonWithText(container, "Ghi phiếu xuất (1 dòng)");
+    const savingBtn = findButtonWithText(container, "Đang lưu…");
+    expect(savingBtn).toBeDefined();
+    expect(savingBtn?.disabled).toBe(true);
+    await fireClick(savingBtn!);
     expect(mocks.createIssueSlip).toHaveBeenCalledTimes(1);
   });
 
@@ -549,7 +552,7 @@ describe("IssueSlipClient -- manages an add/remove line list (D9)", () => {
     await clickButtonWithText(container, "+ Thêm mặt hàng");
     expect(getLineBlocks(container)).toHaveLength(2);
 
-    const removeBtn = getLineBlocks(container)[0].querySelector('button[aria-label="Xoá dòng"]');
+    const removeBtn = (getLineBlocks(container)[1] || getLineBlocks(container)[0]).querySelector('button[aria-label="Xoá dòng"]');
     await fireClick(removeBtn!);
     expect(getLineBlocks(container)).toHaveLength(1);
   });
@@ -713,7 +716,7 @@ describe("IssueSlipClient -- M3, tap targets carry the 48px class, not the 32px 
   it("the remove-line button carries the p-2 padding class that gives it a real hit area", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     await clickButtonWithText(container, "+ Thêm mặt hàng");
-    const removeBtn = getLineBlocks(container)[0].querySelector('button[aria-label="Xoá dòng"]');
+    const removeBtn = (getLineBlocks(container)[1] || getLineBlocks(container)[0]).querySelector('button[aria-label="Xoá dòng"]');
     expect(removeBtn?.className).toContain("p-2");
   });
 });
@@ -1030,4 +1033,190 @@ describe("Ticket 6c: IssueSlipClient single FormActionBar replacing both bars", 
     expect(submitButtons[0].textContent?.trim()).toBe("Ghi phiếu xuất (2 dòng)");
   });
 });
+
+describe("Ticket 6c-2: Phiếu xuất phone lines (spec 3.3 item 7)", () => {
+  const item1 = item({
+    id: "SPM-001",
+    name: "Sữa tươi Vinamilk",
+    packageLines: [
+      pkg({ conversionId: "QD-001", sizeLabel: "Thùng 12 hộp", conversionRate: 12, purchasedUnitName: "Thùng" }),
+      pkg({ conversionId: "QD-002", sizeLabel: "Hộp lẻ", conversionRate: 1, purchasedUnitName: "Hộp" }),
+    ],
+  });
+  const item2 = item({
+    id: "SPM-002",
+    name: "Đường cát",
+    unitName: "kg",
+    packageLines: [
+      pkg({ conversionId: "QD-003", sizeLabel: "Bao 25kg", conversionRate: 25, purchasedUnitName: "Bao" }),
+    ],
+  });
+  const item3 = item({
+    id: "SPM-003",
+    name: "Cà phê hạt",
+    unitName: "kg",
+    packageLines: [
+      pkg({ conversionId: "QD-004", sizeLabel: "Túi 1kg", conversionRate: 1, purchasedUnitName: "Túi" }),
+    ],
+  });
+
+  it("each line shows collapsed as PhoneRow button with min-h-[48px], title, value, meta", async () => {
+    mocks.getIssueUnitCostsAt.mockResolvedValue({
+      unitCostByItem: { "SPM-001": 10000 },
+    });
+    const container = await renderTracked(<IssueSlipClient items={[item1]} />);
+    const phone = container.querySelector(".md\\:hidden") as HTMLElement;
+    const cards = phone.querySelectorAll('[data-testid="issue-line-card"]');
+    expect(cards).toHaveLength(1);
+
+    const collapsedBtn = cards[0].querySelector("button") as HTMLButtonElement;
+    expect(collapsedBtn).toBeInTheDocument();
+    expect(collapsedBtn.className).toContain("min-h-[48px]");
+    expect(collapsedBtn.className).toContain("w-full");
+    expect(collapsedBtn.className).toContain("text-left");
+
+    // Initially unselected line: "Chưa chọn hàng"
+    expect(within(collapsedBtn).getByText("Chưa chọn hàng")).toBeInTheDocument();
+  });
+
+  it("tapping a collapsed line opens it in place showing inputs, 'Xong', and when > 1 line 'Xoá dòng'", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item1]} />);
+    const phone = container.querySelector(".md\\:hidden") as HTMLElement;
+    const card = phone.querySelector('[data-testid="issue-line-card"]') as HTMLElement;
+
+    // Initially collapsed: Xong is not shown
+    expect(within(card).queryByRole("button", { name: "Xong" })).toBeNull();
+
+    // Tap collapsed button to open
+    const collapsedBtn = card.querySelector("button") as HTMLButtonElement;
+    await fireClick(collapsedBtn);
+
+    // Now open: Xong is shown, but Xoá dòng is NOT shown because only 1 line
+    expect(within(card).getByRole("button", { name: "Xong" })).toBeInTheDocument();
+    expect(within(card).queryByRole("button", { name: "Xoá dòng" })).toBeNull();
+
+    // Select item, package, and set quantity
+    await selectItemInBlock(card, "Sữa tươi Vinamilk");
+    await selectPackage(card, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(card), "3");
+
+    // Tap Xong to collapse
+    await clickButtonWithText(card, "Xong");
+    expect(within(card).queryByRole("button", { name: "Xong" })).toBeNull();
+
+    // Collapsed row displays title, meta (<qty> <unit label> · Quy ra <convertedDisplay>)
+    expect(within(card).getByText("Sữa tươi Vinamilk")).toBeInTheDocument();
+    expect(within(card).getByText(/3 Thùng 12 hộp · Quy ra 36 hộp/)).toBeInTheDocument();
+
+    // Old corner ✕ is not present
+    expect(card.querySelector(".absolute.top-2.right-2")).toBeNull();
+  });
+
+  it("newly added line opens immediately", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item1]} />);
+    await clickButtonWithText(container, "+ Thêm mặt hàng");
+
+    const phone = container.querySelector(".md\\:hidden") as HTMLElement;
+    const cards = phone.querySelectorAll('[data-testid="issue-line-card"]');
+    expect(cards).toHaveLength(2);
+
+    // Card 1 is newly added and open
+    expect(within(cards[1] as HTMLElement).getByRole("button", { name: "Xong" })).toBeInTheDocument();
+    expect(within(cards[1] as HTMLElement).getByRole("button", { name: "Xoá dòng" })).toBeInTheDocument();
+
+    // Card 0 is collapsed
+    expect(within(cards[0] as HTMLElement).queryByRole("button", { name: "Xong" })).toBeNull();
+  });
+
+  it("deleting the open line collapses all lines", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item1]} />);
+    await clickButtonWithText(container, "+ Thêm mặt hàng");
+
+    const phone = container.querySelector(".md\\:hidden") as HTMLElement;
+    const cards = phone.querySelectorAll('[data-testid="issue-line-card"]');
+    // Card 1 is open; click Xoá dòng on card 1
+    const deleteBtn = within(cards[1] as HTMLElement).getByRole("button", { name: "Xoá dòng" });
+    await fireClick(deleteBtn);
+
+    // Now 1 card remaining, collapsed (no Xong button)
+    const remainingCards = phone.querySelectorAll('[data-testid="issue-line-card"]');
+    expect(remainingCards).toHaveLength(1);
+    expect(within(remainingCards[0] as HTMLElement).queryByRole("button", { name: "Xong" })).toBeNull();
+  });
+
+  it("open line 3, delete line 1: the open line is still the same item (now line 2)", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item1, item2, item3]} />);
+    const phone = container.querySelector(".md\\:hidden") as HTMLElement;
+    await selectItemInBlock(phone.querySelectorAll('[data-testid="issue-line-card"]')[0] as HTMLElement, "Sữa tươi Vinamilk");
+
+    await clickButtonWithText(container, "+ Thêm mặt hàng");
+    await selectItemInBlock(phone.querySelectorAll('[data-testid="issue-line-card"]')[1] as HTMLElement, "Đường cát");
+
+    await clickButtonWithText(container, "+ Thêm mặt hàng");
+    await selectItemInBlock(phone.querySelectorAll('[data-testid="issue-line-card"]')[2] as HTMLElement, "Cà phê hạt");
+
+    // Line 3 is currently open
+    const cards = phone.querySelectorAll('[data-testid="issue-line-card"]');
+    expect(within(cards[2] as HTMLElement).getByRole("button", { name: "Xong" })).toBeInTheDocument();
+
+    // Delete line 1 (index 0) via desktop table remove button
+    const desktop = container.querySelector(".hidden.md\\:block") as HTMLElement;
+    const desktopDeleteButtons = desktop.querySelectorAll('button[aria-label="Xoá dòng"]');
+    await fireClick(desktopDeleteButtons[0]);
+
+    // Now 2 lines remain: Đường cát (0) and Cà phê hạt (1). Cà phê hạt (now index 1) is still open!
+    const cardsRemaining = phone.querySelectorAll('[data-testid="issue-line-card"]');
+    expect(cardsRemaining).toHaveLength(2);
+    expect(within(cardsRemaining[1] as HTMLElement).getByRole("button", { name: "Xong" })).toBeInTheDocument();
+    expect(within(cardsRemaining[1] as HTMLElement).getByText("Cà phê hạt")).toBeInTheDocument();
+  });
+
+  it("when 'Ghi phiếu xuất' is pressed and a line is invalid, that line opens and gets border-danger", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item1]} />);
+    await clickButtonWithText(container, "+ Thêm mặt hàng");
+    const phone = container.querySelector(".md\\:hidden") as HTMLElement;
+    const cards = phone.querySelectorAll('[data-testid="issue-line-card"]');
+
+    // Fill line 1
+    await selectItemInBlock(cards[0] as HTMLElement, "Sữa tươi Vinamilk");
+    await selectPackage(cards[0] as HTMLElement, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(cards[0] as HTMLElement), "2");
+
+    // Close line 2 by tapping Xong
+    await clickButtonWithText(cards[1] as HTMLElement, "Xong");
+
+    // Both lines collapsed
+    expect(within(phone).queryByRole("button", { name: "Xong" })).toBeNull();
+
+    // Press Ghi phiếu xuất
+    await clickButtonWithText(container, "Ghi phiếu xuất (2 dòng)");
+
+    // Line 2 (index 1) had no item, so it should open and have border-danger
+    const cardsAfterSubmit = phone.querySelectorAll('[data-testid="issue-line-card"]');
+    expect(within(cardsAfterSubmit[1] as HTMLElement).getByRole("button", { name: "Xong" })).toBeInTheDocument();
+    expect(cardsAfterSubmit[1].className).toContain("border-danger");
+  });
+
+  it("inputs of a collapsed line keep their values", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item1]} />);
+    const phone = container.querySelector(".md\\:hidden") as HTMLElement;
+    const card = phone.querySelector('[data-testid="issue-line-card"]') as HTMLElement;
+
+    // Open line, fill inputs
+    await fireClick(card.querySelector("button")!);
+    await selectItemInBlock(card, "Sữa tươi Vinamilk");
+    await selectPackage(card, "Thùng 12 hộp");
+    await setInputValue(findQtyInput(card), "7");
+
+    // Collapse
+    await clickButtonWithText(card, "Xong");
+    expect(within(card).queryByRole("button", { name: "Xong" })).toBeNull();
+
+    // Reopen line
+    await fireClick(card.querySelector("button")!);
+    expect(within(card).getByRole("button", { name: "Xong" })).toBeInTheDocument();
+    expect(findQtyInput(card).value).toBe("7");
+  });
+});
+
 

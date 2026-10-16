@@ -148,6 +148,9 @@ export default async function IssuedValueReportPage(
               Mỗi dòng làm tròn riêng theo số thật của nó -- cộng tay các dòng có thể lệch vài đồng so với tổng ở trên, số ở trên mới là số đúng.
             </p>
             <div className="md:hidden space-y-3">
+              <div className="px-4 py-2 bg-primary-soft text-sm text-text-primary tabular-nums">
+                Tổng cộng: {formatNumber(report.grandTotal)}đ
+              </div>
               <div className="divide-y divide-border bg-surface-card rounded-xl border border-border px-4">
                 {report.events.map((event) => (
                   <EventCard
@@ -159,9 +162,6 @@ export default async function IssuedValueReportPage(
                     value={event.value}
                   />
                 ))}
-              </div>
-              <div className="px-4 py-2 bg-primary-soft text-sm text-text-primary tabular-nums">
-                Tổng cộng: {formatNumber(report.grandTotal)}đ
               </div>
             </div>
             <div className="hidden md:block">
