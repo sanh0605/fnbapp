@@ -646,9 +646,10 @@ describe("PurchaseOrderForm two columns (owner 2026-10-10)", () => {
     const money = screen.getByTestId("form-money");
     expect(within(shared).getByText("Nhà cung cấp")).toBeInTheDocument();
     expect(within(shared).getByText("Mã hoá đơn")).toBeInTheDocument();
-    expect(within(shared).getByText("Ghi chú")).toBeInTheDocument();
     expect(within(lines).getByText("Hàng nhập")).toBeInTheDocument();
     expect(within(money).getByText(/Tổng tiền hàng/)).toBeInTheDocument();
+    fireEvent.click(within(money).getByText("Thuế, chiết khấu, ghi chú"));
+    expect(within(money).getByText("Ghi chú")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Lưu nháp" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
   });
@@ -893,14 +894,15 @@ describe("Ticket 6c: PurchaseOrderForm sections (Thông tin phiếu, Hàng nhậ
     const discountInput = screen.getByLabelText("Chiết khấu");
     const notesInput = screen.getByPlaceholderText("Ví dụ: giao buổi sáng");
 
-    expect(taxInput.closest(".hidden") || taxInput).not.toBeVisible();
-    expect(discountInput.closest(".hidden") || discountInput).not.toBeVisible();
-    expect(notesInput.closest(".hidden") || notesInput).not.toBeVisible();
+    const foldContainer = taxInput.closest(".hidden, .space-y-2") as HTMLElement;
+    expect(foldContainer).toHaveClass("hidden");
 
     fireEvent.click(toggleBtn);
-    expect(taxInput).toBeVisible();
-    expect(discountInput).toBeVisible();
-    expect(notesInput).toBeVisible();
+    expect(foldContainer).not.toHaveClass("hidden");
+    expect(foldContainer).toHaveClass("space-y-2");
+    expect(taxInput).toBeInTheDocument();
+    expect(discountInput).toBeInTheDocument();
+    expect(notesInput).toBeInTheDocument();
   });
 
   it("tap row 'Thuế, chiết khấu, ghi chú' starts open when any value is non-zero or non-empty", () => {
@@ -984,6 +986,46 @@ describe("Ticket 6c: PurchaseOrderForm FormActionBar save bar", () => {
 
     expect(screen.getByRole("button", { name: "Cập nhật & Hoàn thành" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
+  });
+
+  it("pressing Enter in a box does not save (form prevents default submit)", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    const input = screen.getByPlaceholderText("Ví dụ: INV-20231201");
+    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
+    const form = input.closest("form")!;
+    fireEvent.submit(form);
+
+    expect(mockSavePurchaseOrder).not.toHaveBeenCalled();
+  });
+
+  it("typing in a box shows 'Có thay đổi chưa lưu' on FormActionBar", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    expect(screen.queryByText("Có thay đổi chưa lưu")).toBeNull();
+
+    const input = screen.getByPlaceholderText("Ví dụ: INV-20231201");
+    fireEvent.input(input, { target: { value: "INV-NEW" } });
+
+    expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
   });
 });
 
@@ -1133,7 +1175,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
     expect(within(phoneActions).getByRole("button", { name: "Xoá dòng" })).toBeVisible();
   });
 
-  it("openIndex rule (a): pressing 'Tạo' on Phiếu nhập when line 2 has no quantity opens line 2 (its inputs become visible / it is the expanded line) with border-danger", async () => {
+  it("openIndex rule (a): pressing 'Cập nhật & Hoàn thành' on Phiếu nhập when line 2 has no quantity opens line 2 (its inputs become visible / it is the expanded line) with border-danger", async () => {
     const line1 = {
       purchased_item_id: "ITEM-1",
       unit: "kg",
@@ -1178,7 +1220,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
 
     expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
 
-    const createBtn = screen.getByRole("button", { name: /Tạo|Cập nhật/ });
+    const createBtn = screen.getByRole("button", { name: "Cập nhật & Hoàn thành" });
     fireEvent.click(createBtn);
 
     await waitFor(() => {
@@ -1190,7 +1232,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
     expect(dangerBox).not.toBeNull();
   });
 
-  it("openIndex rule (b): pressing 'Tạo' while a line is open still submits that line's full quantity", async () => {
+  it("openIndex rule (b): pressing 'Cập nhật & Hoàn thành' while a line is open still submits that line's full quantity", async () => {
     mockSavePurchaseOrder.mockResolvedValueOnce({ success: true, po_id: "PO-SUBMITTED" });
 
     const { container } = render(
@@ -1227,7 +1269,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
     const phoneActions = container.querySelector(".flex.md\\:hidden") as HTMLElement;
     expect(within(phoneActions).getByRole("button", { name: "Xong" })).toBeInTheDocument();
 
-    const createBtn = screen.getByRole("button", { name: /Tạo|Cập nhật/ });
+    const createBtn = screen.getByRole("button", { name: "Cập nhật & Hoàn thành" });
     fireEvent.click(createBtn);
 
     await waitFor(() => {

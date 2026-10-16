@@ -258,7 +258,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
   }
 
   return (
-    <div className="space-y-6">
+    <form noValidate onSubmit={e => e.preventDefault()} className="space-y-6">
       {error && <Alert variant="danger">{error}</Alert>}
 
       {/* Desktop view (md and up) */}
@@ -594,6 +594,6 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         loading={submitting}
         onCancel={() => router.push("/admin/inventory/issue-slips")}
       />
-    </div>
+    </form>
   );
 }

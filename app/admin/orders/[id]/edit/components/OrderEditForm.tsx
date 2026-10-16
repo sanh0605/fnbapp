@@ -151,11 +151,11 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
         subtitle={orderNo}
       />
 
-      <form
-        onSubmit={handleSave}
-        data-testid="form-layout"
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start"
-      >
+      <form onSubmit={handleSave}>
+        <div
+          data-testid="form-layout"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start"
+        >
         {/* Summary of order as sold (Desktop: left 2/3, Phone: stacked above) */}
         <div
           data-testid="form-lines"
@@ -387,15 +387,16 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
               </Alert>
             </div>
           )}
-
-          <FormActionBar
-            mode="edit"
-            loading={isSaving}
-            disabled={!editReason.trim() || !isPaymentValid}
-            onCancel={() => router.push(viewUrl)}
-          />
         </div>
-      </form>
-    </DetailFrame>
+      </div>
+
+      <FormActionBar
+        mode="edit"
+        loading={isSaving}
+        disabled={!editReason.trim() || !isPaymentValid}
+        onCancel={() => router.push(viewUrl)}
+      />
+    </form>
+  </DetailFrame>
   );
 }

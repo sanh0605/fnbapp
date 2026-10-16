@@ -433,5 +433,19 @@ describe("PromotionForm sections and FormActionBar (BR-UI-014, BR-UI-015)", () =
     expect(container.querySelector(".text-\\[10px\\]")).toBeNull();
     expect(container.querySelector(".text-\\[11px\\]")).toBeNull();
   });
+
+  it("renders 'Áp dụng cho toàn đơn' under 'Món áp dụng' for whole-order discount", () => {
+    render(
+      <PromotionForm
+        brands={mockBrands}
+        categories={mockCategories}
+        products={mockProducts}
+        variants={mockVariants}
+        returnTo="/admin/promotions"
+      />
+    );
+    expect(screen.getByText("Áp dụng cho toàn đơn")).toBeInTheDocument();
+  });
 });
+
 

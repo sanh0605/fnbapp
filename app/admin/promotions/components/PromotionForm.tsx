@@ -414,8 +414,8 @@ export function PromotionForm({
         <div className="space-y-4 pt-4 border-t border-border">
           <h3 className="text-sm text-text-secondary">Món áp dụng</h3>
 
-        {type === "PRODUCT_DISCOUNT" && (
-          <div className="border-t border-border pt-4 mt-2">
+          {type === "PRODUCT_DISCOUNT" ? (
+            <div>
             <div className="flex justify-between items-center mb-3">
               <div>
                 <h4 className="text-sm font-bold text-text-primary">Chọn món áp dụng</h4>
@@ -533,6 +533,8 @@ export function PromotionForm({
               })}
             </div>
           </div>
+        ) : (
+          <p className="text-sm text-text-muted">Áp dụng cho toàn đơn</p>
         )}
         </div>
 

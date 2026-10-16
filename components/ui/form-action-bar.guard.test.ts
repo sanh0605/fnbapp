@@ -32,7 +32,10 @@ function formsOf(page: string): string[] {
 }
 
 const forms = [...new Set(pages(join(root, "app", "admin")).flatMap(formsOf))].sort();
-const usesBar = (path: string) => /from "@\/components\/ui\/FormActionBar"/.test(readFileSync(join(root, path), "utf8"));
+const usesBar = (path: string) => {
+  const content = readFileSync(join(root, path), "utf8");
+  return /from "@\/components\/ui\/FormActionBar"/.test(content) && content.includes("<FormActionBar");
+};
 
 const OWED: string[] = [];
 

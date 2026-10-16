@@ -366,8 +366,9 @@ describe("OrderEditForm two columns (owner 2026-10-10)", () => {
     expect(within(lines).getByText("Khách trả")).toBeInTheDocument();
     expect(within(money).getByText("Thanh toán")).toBeInTheDocument();
     expect(within(money).getByLabelText("Lý do chỉnh sửa")).toBeInTheDocument();
-    expect(within(money).getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
-    expect(within(money).getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
+    const form = layout.closest("form")!;
+    expect(within(form).getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
+    expect(within(form).getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
 
   it("on a phone the dishes come before the payment and the buttons", () => {

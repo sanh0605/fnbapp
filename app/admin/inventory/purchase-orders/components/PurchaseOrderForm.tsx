@@ -313,7 +313,7 @@ export default function PurchaseOrderForm({
   };
 
   return (
-    <>
+    <form noValidate onSubmit={(e) => e.preventDefault()}>
       {restoreFailed && (
         <Alert variant="warning" className="mb-6">
           Không khôi phục được phiếu đang nhập dở
@@ -321,7 +321,7 @@ export default function PurchaseOrderForm({
       )}
       <div
         data-testid="form-layout"
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start lg:grid-rows-[auto_1fr]"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start lg:grid-rows-[auto_1fr] mb-6"
       >
         <div
           data-testid="form-shared"
@@ -503,6 +503,6 @@ export default function PurchaseOrderForm({
           </Button>
         )}
       </FormActionBar>
-    </>
+    </form>
   );
 }

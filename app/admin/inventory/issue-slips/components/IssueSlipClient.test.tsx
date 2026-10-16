@@ -1032,6 +1032,30 @@ describe("Ticket 6c: IssueSlipClient single FormActionBar replacing both bars", 
     expect(submitButtons).toHaveLength(1);
     expect(submitButtons[0].textContent?.trim()).toBe("Ghi phiếu xuất (2 dòng)");
   });
+
+  it("pressing Enter in a box does not save (form prevents default, FormActionBar uses button type)", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    const form = container.querySelector("form")!;
+    expect(form).toBeInTheDocument();
+
+    const input = container.querySelector("input") as HTMLInputElement;
+    await act(async () => {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+
+    expect(mocks.createIssueSlip).not.toHaveBeenCalled();
+  });
+
+  it("typing in a box shows 'Có thay đổi chưa lưu' on FormActionBar", async () => {
+    const container = await renderTracked(<IssueSlipClient items={[item()]} />);
+    expect(within(container).queryByText("Có thay đổi chưa lưu")).toBeNull();
+
+    const input = container.querySelector("input") as HTMLInputElement;
+    await setInputValue(input, "2026-08-17T10:00");
+
+    expect(within(container).getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
+  });
 });
 
 describe("Ticket 6c-2: Phiếu xuất phone lines (spec 3.3 item 7)", () => {
@@ -1105,8 +1129,9 @@ describe("Ticket 6c-2: Phiếu xuất phone lines (spec 3.3 item 7)", () => {
     expect(within(card).queryByRole("button", { name: "Xong" })).toBeNull();
 
     // Collapsed row displays title, meta (<qty> <unit label> · Quy ra <convertedDisplay>)
-    expect(within(card).getByText("Sữa tươi Vinamilk")).toBeInTheDocument();
-    expect(within(card).getByText(/3 Thùng 12 hộp · Quy ra 36 hộp/)).toBeInTheDocument();
+    const phoneRow = card.querySelector("button") as HTMLElement;
+    expect(within(phoneRow).getByText("Sữa tươi Vinamilk")).toBeInTheDocument();
+    expect(within(phoneRow).getByText(/3 Thùng 12 hộp · Quy ra 36 hộp/)).toBeInTheDocument();
 
     // Old corner ✕ is not present
     expect(card.querySelector(".absolute.top-2.right-2")).toBeNull();
@@ -1168,7 +1193,8 @@ describe("Ticket 6c-2: Phiếu xuất phone lines (spec 3.3 item 7)", () => {
     const cardsRemaining = phone.querySelectorAll('[data-testid="issue-line-card"]');
     expect(cardsRemaining).toHaveLength(2);
     expect(within(cardsRemaining[1] as HTMLElement).getByRole("button", { name: "Xong" })).toBeInTheDocument();
-    expect(within(cardsRemaining[1] as HTMLElement).getByText("Cà phê hạt")).toBeInTheDocument();
+    const combobox = (cardsRemaining[1] as HTMLElement).querySelector('[role="combobox"]') as HTMLElement;
+    expect(within(combobox).getByText("Cà phê hạt")).toBeInTheDocument();
   });
 
   it("when 'Ghi phiếu xuất' is pressed and a line is invalid, that line opens and gets border-danger", async () => {
