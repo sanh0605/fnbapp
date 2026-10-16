@@ -227,7 +227,15 @@ export default function ProductForm({
                 Các size
               </h3>
               {!priceReadOnly && (
-              <Button variant="secondary" type="button" onClick={addVariant} className="min-h-[48px] md:min-h-[40px]">
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={(e) => {
+                  e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                  addVariant();
+                }}
+                className="min-h-[48px] md:min-h-[40px]"
+              >
                 <Plus className="w-4 h-4 mr-1"/> Thêm size
               </Button>
               )}
@@ -275,7 +283,10 @@ export default function ProductForm({
                         variant="delete"
                         type="button"
                         className="self-end sm:self-auto"
-                        onClick={() => removeVariant(vIdx)}
+                        onClick={(e) => {
+                          e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                          removeVariant(vIdx);
+                        }}
                       >
                         Xoá size
                       </Button>

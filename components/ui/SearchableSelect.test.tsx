@@ -73,6 +73,68 @@ describe("SearchableSelect", () => {
     
     expect(screen.getByRole("listbox")).toBeInTheDocument();
   });
+
+  it("dispatches bubbling native change event to form on pick, but not on open/close without picking", () => {
+    const options = [
+      { id: "1", label: "Option 1" },
+      { id: "2", label: "Option 2" },
+    ];
+    const onFormChange = vi.fn();
+    const onChange = vi.fn();
+
+    render(
+      <form data-testid="f">
+        <SearchableSelect options={options} value="1" onChange={onChange} />
+      </form>
+    );
+
+    const form = screen.getByTestId("f");
+    form.addEventListener("change", onFormChange);
+
+    const trigger = screen.getByRole("combobox");
+
+    // Open and close without picking: not called
+    fireEvent.click(trigger);
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    fireEvent.keyDown(trigger, { key: "Escape" });
+    expect(onFormChange).not.toHaveBeenCalled();
+
+    // Reopen and pick an option: called once
+    fireEvent.click(trigger);
+    const option2 = screen.getByText("Option 2");
+    fireEvent.click(option2);
+
+    expect(onChange).toHaveBeenCalledWith("2");
+    expect(onFormChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("dispatches bubbling native change event to form when picking with keyboard", () => {
+    const options = [
+      { id: "1", label: "Option 1" },
+      { id: "2", label: "Option 2" },
+    ];
+    const onFormChange = vi.fn();
+    const onChange = vi.fn();
+
+    render(
+      <form data-testid="f">
+        <SearchableSelect options={options} value="1" onChange={onChange} />
+      </form>
+    );
+
+    const form = screen.getByTestId("f");
+    form.addEventListener("change", onFormChange);
+
+    const trigger = screen.getByRole("combobox");
+    fireEvent.click(trigger);
+
+    const input = screen.getByRole("textbox", { name: "Tìm trong danh sách" });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "Enter" });
+
+    expect(onChange).toHaveBeenCalledWith("2");
+    expect(onFormChange).toHaveBeenCalledTimes(1);
+  });
 });
 
 // BR-UI-010 (2026-10-08): a long name in a pick list is shown whole. The owner

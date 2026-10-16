@@ -556,7 +556,10 @@ function ConversionRowsSection({
         <Button
           type="button"
           variant="secondary"
-          onClick={addUnitRow}
+          onClick={(e) => {
+            e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+            addUnitRow();
+          }}
           className="w-full sm:w-auto"
         >
           + Thêm đơn vị mua
@@ -603,7 +606,10 @@ function ConversionRowsSection({
                   <Button
                     type="button"
                     variant="delete"
-                    onClick={() => removeUnitRow(idx)}
+                    onClick={(e) => {
+                      e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                      removeUnitRow(idx);
+                    }}
                     aria-label="Xoá đơn vị mua"
                   >
                     ✕

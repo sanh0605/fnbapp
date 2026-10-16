@@ -362,7 +362,10 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                           <Button
                             type="button"
                             variant="delete"
-                            onClick={() => removeLine(index)}
+                            onClick={(e) => {
+                              e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                              removeLine(index);
+                            }}
                             className="min-h-[48px] md:min-h-[40px] min-w-[48px] md:min-w-[40px] p-0"
                             aria-label="Xoá dòng"
                           >
@@ -378,7 +381,10 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={addLine}
+                      onClick={(e) => {
+                        e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                        addLine();
+                      }}
                       className="w-full min-h-[48px] md:min-h-[40px]"
                     >
                       + Thêm mặt hàng
@@ -533,7 +539,10 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         <Button
                           type="button"
                           variant="secondary"
-                          onClick={() => removeLine(index)}
+                          onClick={(e) => {
+                            e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                            removeLine(index);
+                          }}
                           className="min-h-[48px] text-danger"
                           aria-label="Xoá dòng"
                         >
@@ -575,7 +584,10 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         <Button
           type="button"
           variant="secondary"
-          onClick={addLine}
+          onClick={(e) => {
+            e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+            addLine();
+          }}
           className="w-full min-h-[48px] md:min-h-[40px]"
         >
           + Thêm mặt hàng

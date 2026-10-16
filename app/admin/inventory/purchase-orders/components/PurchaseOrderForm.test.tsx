@@ -1654,6 +1654,26 @@ describe("Ticket 6c-2: PurchaseOrderLines & PurchaseOrderTotals enhancements", (
     expect(toggleBtn.className).toContain("min-h-[48px]");
     expect(toggleBtn.className).toContain("md:min-h-[40px]");
   });
+
+  it("shows 'Có thay đổi chưa lưu' when add line button is clicked", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    expect(screen.queryByText("Có thay đổi chưa lưu")).toBeNull();
+
+    const addBtn = screen.getByRole("button", { name: /\+ Thêm mặt hàng/i });
+    fireEvent.click(addBtn);
+
+    expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
+  });
 });
 
 

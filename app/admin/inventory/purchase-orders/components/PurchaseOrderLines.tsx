@@ -46,7 +46,10 @@ export function PurchaseOrderLines({
           <Button
             type="button"
             variant="secondary"
-            onClick={addLine}
+            onClick={(e) => {
+              e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+              addLine();
+            }}
             className="min-h-[48px] md:min-h-[40px]"
           >
             + Thêm mặt hàng đầu tiên
@@ -103,7 +106,10 @@ export function PurchaseOrderLines({
                   <Button
                     type="button"
                     variant="delete"
-                    onClick={() => removeLine(index)}
+                    onClick={(e) => {
+                      e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                      removeLine(index);
+                    }}
                     aria-label="Xoá dòng"
                     className="hidden md:inline-flex absolute top-4 right-4 min-h-[40px] min-w-[40px] p-0"
                   >
@@ -225,7 +231,10 @@ export function PurchaseOrderLines({
                       <Button
                         type="button"
                         variant="secondary"
-                        onClick={() => removeLine(index)}
+                        onClick={(e) => {
+                          e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                          removeLine(index);
+                        }}
                         className="min-h-[48px] text-danger"
                       >
                         Xoá dòng
@@ -248,7 +257,10 @@ export function PurchaseOrderLines({
           <Button
             type="button"
             variant="secondary"
-            onClick={addLine}
+            onClick={(e) => {
+              e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+              addLine();
+            }}
             className="mt-4 w-full min-h-[48px] md:min-h-[40px]"
           >
             + Thêm mặt hàng
