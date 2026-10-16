@@ -135,7 +135,6 @@ describe("startStocktakeSession item list", () => {
       created_by_id: "admin-1",
       created_by_name: "Admin",
       created_at: "2026-08-05T00:00:00Z",
-      notes: "",
     });
 
     const result = await stocktakeActions.startStocktakeSession();
@@ -143,12 +142,7 @@ describe("startStocktakeSession item list", () => {
     expect(result).toEqual({ success: true });
     expect(mocks.openStocktakeSessionAtomic).toHaveBeenCalledTimes(1);
     const { items } = mocks.openStocktakeSessionAtomic.mock.calls[0][0];
-    const itemTypes = items.map((item: { itemType: string }) => item.itemType);
-
-    expect(itemTypes).not.toContain("SEMI_PRODUCT");
-    expect(itemTypes).not.toContain("BASE_INGREDIENT");
-    expect(itemTypes).toEqual(["PURCHASED_ITEM"]);
-    expect(items).toHaveLength(1);
+    expect(items).toEqual([{ itemReference: "SPM-001" }]);
     // ACTIVE items never trigger the C17 purchase/issue lookup.
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
     // The dropped table must not even be queried any more.
@@ -175,7 +169,7 @@ describe("startStocktakeSession item list", () => {
     });
     mocks.openStocktakeSessionAtomic.mockResolvedValue({
       id: "STK-020", status: "OPEN", created_by_id: "admin-1", created_by_name: "Admin",
-      created_at: "2026-08-30T00:00:00Z", notes: "",
+      created_at: "2026-08-30T00:00:00Z",
     });
 
     const result = await stocktakeActions.startStocktakeSession();
@@ -186,7 +180,7 @@ describe("startStocktakeSession item list", () => {
     // above) -- on-hand is never even computed for them here, let alone
     // filtered on.
     expect(mocks.findAllNoCache).not.toHaveBeenCalled();
-    expect(items).toEqual([{ itemReference: "SPM-EMPTY", itemType: "PURCHASED_ITEM" }]);
+    expect(items).toEqual([{ itemReference: "SPM-EMPTY" }]);
   });
 
   // 2026-08-21:
@@ -208,7 +202,7 @@ describe("startStocktakeSession item list", () => {
     });
     mocks.openStocktakeSessionAtomic.mockResolvedValue({
       id: "STK-003", status: "OPEN", created_by_id: "admin-1", created_by_name: "Admin",
-      created_at: "2026-08-21T00:00:00Z", notes: "",
+      created_at: "2026-08-21T00:00:00Z",
     });
 
     const result = await stocktakeActions.startStocktakeSession();
@@ -249,7 +243,7 @@ describe("startStocktakeSession item list", () => {
     });
     mocks.openStocktakeSessionAtomic.mockResolvedValue({
       id: "STK-004", status: "OPEN", created_by_id: "admin-1", created_by_name: "Admin",
-      created_at: "2026-09-01T00:00:00Z", notes: "",
+      created_at: "2026-09-01T00:00:00Z",
     });
 
     const result = await stocktakeActions.startStocktakeSession();
@@ -296,7 +290,7 @@ describe("startStocktakeSession item list", () => {
     });
     mocks.openStocktakeSessionAtomic.mockResolvedValue({
       id: "STK-010", status: "OPEN", created_by_id: "admin-1", created_by_name: "Admin",
-      created_at: "2026-08-26T00:00:00Z", notes: "",
+      created_at: "2026-08-26T00:00:00Z",
     });
 
     const result = await stocktakeActions.startStocktakeSession();
@@ -337,14 +331,14 @@ describe("startStocktakeSession item list", () => {
     });
     mocks.openStocktakeSessionAtomic.mockResolvedValue({
       id: "STK-002", status: "OPEN", created_by_id: "admin-1", created_by_name: "Admin",
-      created_at: "2026-08-07T00:00:00Z", notes: "",
+      created_at: "2026-08-07T00:00:00Z",
     });
 
     const result = await stocktakeActions.startStocktakeSession();
 
     expect(result).toEqual({ success: true });
     const { items } = mocks.openStocktakeSessionAtomic.mock.calls[0][0];
-    expect(items).toEqual([{ itemReference: "SPM-OLD", itemType: "PURCHASED_ITEM" }]);
+    expect(items).toEqual([{ itemReference: "SPM-OLD" }]);
   });
 
   it("C17: an inactive purchased item is dropped once its on-hand reaches zero", async () => {
@@ -396,11 +390,11 @@ describe("getStocktakeSessionData package lines", () => {
   it("attaches one package line per ACTIVE conversion, reusing buildPackageLines", async () => {
     mocks.findAllWhere.mockImplementation((table: string) => {
       if (table === "stocktake_sessions") {
-        return Promise.resolve([{ id: "STK-001", status: "OPEN", created_by_name: "Admin", created_at: "2026-08-08T00:00:00Z", notes: "" }]);
+        return Promise.resolve([{ id: "STK-001", status: "OPEN", created_by_name: "Admin", created_at: "2026-08-08T00:00:00Z" }]);
       }
       if (table === "stocktake_lines") {
         return Promise.resolve([
-          { id: "SKL-00001", session_id: "STK-001", item_reference: "SPM-033", item_type: "PURCHASED_ITEM", counted_qty: null, theoretical_at_count: null, counted_at: null },
+          { id: "SKL-00001", session_id: "STK-001", item_reference: "SPM-033", counted_qty: null, theoretical_at_count: null, counted_at: null },
         ]);
       }
       return Promise.resolve([]);
@@ -429,14 +423,14 @@ describe("getStocktakeSessionData package lines", () => {
     expect(line.packageLines.some(p => p.conversionId === "QD-999")).toBe(false);
   });
 
-  it("gives a legacy BASE_INGREDIENT line an empty packageLines, not a crash", async () => {
+  it("gives a line whose item is not a purchased item an empty packageLines, not a crash", async () => {
     mocks.findAllWhere.mockImplementation((table: string) => {
       if (table === "stocktake_sessions") {
-        return Promise.resolve([{ id: "STK-001", status: "OPEN", created_by_name: "Admin", created_at: "2026-08-08T00:00:00Z", notes: "" }]);
+        return Promise.resolve([{ id: "STK-001", status: "OPEN", created_by_name: "Admin", created_at: "2026-08-08T00:00:00Z" }]);
       }
       if (table === "stocktake_lines") {
         return Promise.resolve([
-          { id: "SKL-legacy", session_id: "STK-001", item_reference: "ING-028", item_type: "BASE_INGREDIENT", counted_qty: null, theoretical_at_count: null, counted_at: null },
+          { id: "SKL-legacy", session_id: "STK-001", item_reference: "ING-028", counted_qty: null, theoretical_at_count: null, counted_at: null },
         ]);
       }
       return Promise.resolve([]);
@@ -524,12 +518,12 @@ describe("editing a confirmed stocktake (BR-INV-012)", () => {
   const ADMIN = { ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } };
   const MANAGER = { ok: true, actor: { id: "mgr-1", name: "Quản lý", role: "MANAGER" } };
   const session = (id: string, status: string, confirmedAt: string | null) => ({
-    id, status, created_by_name: "Admin", created_at: "2026-08-09T14:00:00Z", notes: "",
+    id, status, created_by_name: "Admin", created_at: "2026-08-09T14:00:00Z",
     confirmed_by_name: confirmedAt ? "Admin" : null, confirmed_at: confirmedAt, reversed_at: null,
   });
   const lines = [
-    { id: "SKL-00007", session_id: "STK-001", item_reference: "SPM-007", item_type: "PURCHASED_ITEM", counted_qty: 1.5, theoretical_at_count: 2 },
-    { id: "SKL-00004", session_id: "STK-001", item_reference: "SPM-004", item_type: "PURCHASED_ITEM", counted_qty: 4, theoretical_at_count: 6 },
+    { id: "SKL-00007", session_id: "STK-001", item_reference: "SPM-007", counted_qty: 1.5, theoretical_at_count: 2 },
+    { id: "SKL-00004", session_id: "STK-001", item_reference: "SPM-004", counted_qty: 4, theoretical_at_count: 6 },
   ];
 
   // findAllWhere ignores filters in the shared mock; honour `eq` here.
@@ -687,9 +681,9 @@ describe("stocktake list and session data", () => {
     Stock_Issues: [] as any[],
   };
   const line = (id: string, session: string, item: string, counted: number | null, book: number | null) =>
-    ({ id, session_id: session, item_reference: item, item_type: "PURCHASED_ITEM", counted_qty: counted, theoretical_at_count: book, counted_at: null });
+    ({ id, session_id: session, item_reference: item, counted_qty: counted, theoretical_at_count: book, counted_at: null });
   const session = (id: string, status: string, extra: any = {}) =>
-    ({ id, status, created_by_name: "Admin", created_at: "2026-09-01T00:00:00Z", confirmed_at: null, confirmed_by_name: null, notes: "", ...extra });
+    ({ id, status, created_by_name: "Admin", created_at: "2026-09-01T00:00:00Z", confirmed_at: null, confirmed_by_name: null, ...extra });
 
   beforeEach(() => {
     vi.clearAllMocks();

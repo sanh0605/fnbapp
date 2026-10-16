@@ -3,7 +3,7 @@ import { buildIssueSlipDetail } from "./issue-slip-detail";
 import type { IssueRowRecord } from "./issue-slip-status";
 
 const base = { source: "MANUAL", session_id: null, note: "Khác", created_at: null, reverses_issue_id: null } as const;
-const slip = { id: "ISL-00076", issued_at: "2026-09-28T11:20:00Z", note: "Khác", created_by_id: "USR-002", created_by_name: "tuyen2612", created_at: "2026-09-29T03:21:58Z" };
+const slip = { id: "ISL-00076", issued_at: "2026-09-28T11:20:00Z", created_by_id: "USR-002", created_by_name: "tuyen2612", created_at: "2026-09-29T03:21:58Z" };
 const issues: IssueRowRecord[] = [
   { ...base, id: "ISS-00192", purchased_item_id: "SPM-038", issued_at: slip.issued_at, base_quantity: 2000, issue_slip_id: "ISL-00076" },
   { ...base, id: "ISS-00196", purchased_item_id: "SPM-070", issued_at: slip.issued_at, base_quantity: 1, issue_slip_id: "ISL-00076" },
@@ -23,6 +23,10 @@ const input = {
 describe("buildIssueSlipDetail", () => {
   it("carries the unit cost map through untouched", () => {
     expect(buildIssueSlipDetail(input).unitCostByItem).toEqual({ "SPM-038": 36.8030816 });
+  });
+
+  it("reads no note from the slip (column dropped by 0136)", () => {
+    expect(buildIssueSlipDetail(input)).not.toHaveProperty("note");
   });
 
   it("ISL-00076: lines, values, editable", () => {

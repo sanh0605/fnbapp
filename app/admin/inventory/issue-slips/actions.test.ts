@@ -421,7 +421,7 @@ describe("cancelIssueSlip (Plan D D14, U9-U12)", () => {
 function mockSlipTables() {
   const tables: Record<string, any[]> = {
     Issue_Slips: [
-      { id: "ISL-00076", issued_at: "2026-09-28T11:20:00+00:00", note: "Khác", created_by_id: "u1", created_by_name: "tuyen2612", created_at: "2026-09-28T11:21:00+00:00" },
+      { id: "ISL-00076", issued_at: "2026-09-28T11:20:00+00:00", created_by_id: "u1", created_by_name: "tuyen2612", created_at: "2026-09-28T11:21:00+00:00" },
     ],
     Stock_Issues: [
       { id: "ISS-00192", purchased_item_id: "SPM-038", issued_at: "2026-09-28T11:20:00+00:00", base_quantity: 2000, source: "MANUAL", session_id: null, note: "Khác", reverses_issue_id: null, issue_slip_id: "ISL-00076" },
@@ -457,11 +457,11 @@ describe("getIssueSlipsPage", () => {
     mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
   });
 
-  it("lists the slip with its reason and creator", async () => {
+  it("lists the slip with its creator", async () => {
     mockSlipTables();
     const page = await issueSlipActions.getIssueSlipsPage({});
     expect(page.total).toBe(1);
-    expect(page.rows[0]).toMatchObject({ id: "ISL-00076", kind: "SLIP", reason: "Khác", createdByName: "tuyen2612" });
+    expect(page.rows[0]).toMatchObject({ id: "ISL-00076", kind: "SLIP", createdByName: "tuyen2612" });
   });
 
   it("throws when the caller is not allowed", async () => {

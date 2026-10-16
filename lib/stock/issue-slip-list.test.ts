@@ -7,9 +7,9 @@ const line = (id: string, slip: string | null, item: string, qty: number, at: st
   note: null, created_at: null, reverses_issue_id: null, issue_slip_id: slip, ...over,
 });
 const slips: IssueSlipRecord[] = [
-  { id: "ISL-00076", issued_at: "2026-09-28T11:20:00Z", note: "Khác", created_by_id: "USR-002", created_by_name: "tuyen2612", created_at: "2026-09-29T03:21:58Z" },
-  { id: "ISL-00077", issued_at: "2026-09-29T03:22:00Z", note: "Khác", created_by_id: "USR-002", created_by_name: "tuyen2612", created_at: "2026-09-29T03:22:25Z" },
-  { id: "ISL-00041", issued_at: "2026-07-09T14:49:00Z", note: "Hao hụt / hư hỏng", created_by_id: "USR-001", created_by_name: "admin", created_at: "2026-09-01T14:49:57Z" },
+  { id: "ISL-00076", issued_at: "2026-09-28T11:20:00Z", created_by_id: "USR-002", created_by_name: "tuyen2612", created_at: "2026-09-29T03:21:58Z" },
+  { id: "ISL-00077", issued_at: "2026-09-29T03:22:00Z", created_by_id: "USR-002", created_by_name: "tuyen2612", created_at: "2026-09-29T03:22:25Z" },
+  { id: "ISL-00041", issued_at: "2026-07-09T14:49:00Z", created_by_id: "USR-001", created_by_name: "admin", created_at: "2026-09-01T14:49:57Z" },
 ];
 const issues: IssueRowRecord[] = [
   line("ISS-00192", "ISL-00076", "SPM-038", 2000, "2026-09-28T11:20:00Z"),
@@ -37,6 +37,10 @@ describe("listIssueSlipsPage", () => {
     expect(p.rows.map(r => r.id)).toEqual(["ISL-00077", "ISL-00076"]);
     expect(p.total).toBe(2);
     expect(p.totals.value).toBe(Math.round(42493.2898 + 73606.1633 + 36404.6));
+  });
+
+  it("a row carries no reason (the slip has no note column after 0136)", () => {
+    expect(page({ kind: "CANCELLED" }).rows[0]).not.toHaveProperty("reason");
   });
 
   it("slip value is the sum of its active lines, rounded for display", () => {
@@ -74,7 +78,7 @@ describe("listIssueSlipsPage", () => {
 describe("listIssueSlipsPage totals (BR-UI-004)", () => {
   // 21 live slips (20 on page 1, 1 beyond) of 100,4đ each, plus a cancelled slip.
   const many: IssueSlipRecord[] = Array.from({ length: 21 }, (_, i) => ({
-    id: `ISL-${String(200 + i)}`, issued_at: `2026-09-${String(i + 1).padStart(2, "0")}T05:00:00Z`, note: "Khác",
+    id: `ISL-${String(200 + i)}`, issued_at: `2026-09-${String(i + 1).padStart(2, "0")}T05:00:00Z`,
     created_by_id: "USR-001", created_by_name: "admin", created_at: null,
   }));
   const manyIssues: IssueRowRecord[] = [
@@ -83,7 +87,7 @@ describe("listIssueSlipsPage totals (BR-UI-004)", () => {
     line("ISS-401", null, "SPM-067", -1, "2026-09-03T05:00:00Z", { reverses_issue_id: "ISS-400" }),
   ];
   const cancelledSlip: IssueSlipRecord = {
-    id: "ISL-041", issued_at: "2026-09-02T05:00:00Z", note: "Khác", created_by_id: "USR-001", created_by_name: "admin", created_at: null,
+    id: "ISL-041", issued_at: "2026-09-02T05:00:00Z", created_by_id: "USR-001", created_by_name: "admin", created_at: null,
   };
   const values = new Map<string, number>([["ISS-400", 99999], ["ISS-401", -99999]]);
   many.forEach((_, i) => values.set(`ISS-${300 + i}`, 100.4));

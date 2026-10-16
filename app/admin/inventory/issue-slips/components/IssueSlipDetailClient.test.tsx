@@ -87,7 +87,6 @@ const defaultDetail: IssueSlipDetail = {
   id: "ISL-00076",
   issuedAt: "2026-09-28T18:20:00Z",
   dateText: "28/09/2026 18:20",
-  note: "Khác",
   createdByName: "tuyen2612",
   lines: [
     {
@@ -309,15 +308,9 @@ describe("IssueSlipDetailClient", () => {
     expect(back?.getAttribute("href")).toBe("/admin/inventory/issue-slips?kind=SLIP&page=2");
   });
 
-  describe("Reason (note) display rules (BR-INV-014)", () => {
-    it("renders 'Lý do: Khác' when note is 'Khác'", () => {
-      const detailWithNote = { ...defaultDetail, note: "Khác" };
-      render(<IssueSlipDetailClient detail={detailWithNote} items={mockItems} />);
-      expect(screen.getByText("Lý do:", { exact: false })).toHaveTextContent("Lý do: Khác");
-    });
-
-    it("does not render 'Lý do:' at all when note is empty", () => {
-      const detailEmptyNote = { ...defaultDetail, note: "" };
+  describe("Slip has no reason line (BR-INV-014)", () => {
+    it("does not render 'Lý do:' on an active slip", () => {
+      const detailEmptyNote = { ...defaultDetail };
       render(<IssueSlipDetailClient detail={detailEmptyNote} items={mockItems} />);
       expect(screen.queryByText(/Lý do:/)).not.toBeInTheDocument();
     });
@@ -325,7 +318,6 @@ describe("IssueSlipDetailClient", () => {
     it("still renders 'Lý do huỷ:' when cancelled", () => {
       const detailCancelled = {
         ...defaultDetail,
-        note: "",
         cancellation: { at: "2026-09-29T10:00:00Z", dateText: "29/09/2026 17:00", reason: "Sai số lượng" },
         canEdit: false,
       };

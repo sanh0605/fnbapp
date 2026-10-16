@@ -17,7 +17,7 @@ const NO_NAME = "—";
 export type IssueSlipKind = "SLIP" | "CANCELLED";
 export interface IssueSlipListFilters { q?: string; kind?: string; person?: string; from?: string; to?: string; page?: string }
 export interface IssueSlipListRow {
-  id: string; href: string; kind: IssueSlipKind; reason: string; dateText: string;
+  id: string; href: string; kind: IssueSlipKind; dateText: string;
   createdByName: string; value: number;
 }
 export interface IssueSlipListPage {
@@ -58,7 +58,7 @@ export function listIssueSlipsPage(input: {
     candidates.push({
       row: {
         id: slip.id, href: `/admin/inventory/issue-slips/${slip.id}`,
-        kind: cancelled ? "CANCELLED" : "SLIP", reason: (slip.note ?? "").trim(),
+        kind: cancelled ? "CANCELLED" : "SLIP",
         dateText: formatDateTimeFull(slip.issued_at), createdByName: slip.created_by_name ?? NO_NAME, value,
       },
       exactValue,

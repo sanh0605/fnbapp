@@ -1,14 +1,11 @@
 import { getSupabaseClient } from "@/lib/db/supabase";
 
-export type StocktakeItemType = "BASE_INGREDIENT" | "SEMI_PRODUCT" | "PURCHASED_ITEM";
-
 export type StocktakeSessionRow = {
   id: string;
   status: "OPEN" | "CONFIRMED" | "REVERSED";
   created_by_id: string;
   created_by_name: string;
   created_at: string;
-  notes: string;
 };
 
 export type StocktakeLineResultRow = {
@@ -23,7 +20,6 @@ export type StocktakeLineResultRow = {
 export type StocktakeApplyRow = {
   lineId: string;
   itemReference: string;
-  itemType: StocktakeItemType;
   countedQty: number;
   theoreticalAtCount: number;
   currentTheoreticalQty: number;
@@ -67,14 +63,14 @@ export type StocktakeRecomputedLine = {
 export async function openStocktakeSessionAtomic(input: {
   createdById: string;
   createdByName: string;
-  items: Array<{ itemReference: string; itemType: StocktakeItemType }>;
-  notes?: string;
+  items: Array<{ itemReference: string }>;
 }): Promise<StocktakeSessionRow> {
   const { data, error } = await getSupabaseClient().rpc("open_stocktake_session_atomic", {
     p_created_by_id: input.createdById,
     p_created_by_name: input.createdByName,
-    p_items: input.items.map(i => ({ item_reference: i.itemReference, item_type: i.itemType })),
-    p_notes: input.notes ?? "",
+    // item_type has no column default until 0136 runs; the old function inserts what we send.
+    p_items: input.items.map(i => ({ item_reference: i.itemReference, item_type: "PURCHASED_ITEM" })),
+    p_notes: "",
   });
   if (error) {
     throw new Error(`open_stocktake_session_atomic: ${error.message}`);
@@ -223,7 +219,6 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
     rows?: Array<{
       line_id?: string;
       item_reference?: string;
-      item_type?: StocktakeItemType;
       counted_qty?: number;
       theoretical_at_count?: number;
       current_theoretical_qty?: number;
@@ -245,7 +240,6 @@ function parseApplyResult(data: unknown): StocktakeApplyResult {
   const rows = (result.rows || []).map(row => ({
     lineId: row.line_id || "",
     itemReference: row.item_reference || "",
-    itemType: row.item_type || "BASE_INGREDIENT",
     countedQty: Number(row.counted_qty) || 0,
     theoreticalAtCount: Number(row.theoretical_at_count) || 0,
     currentTheoreticalQty: Number(row.current_theoretical_qty) || 0,

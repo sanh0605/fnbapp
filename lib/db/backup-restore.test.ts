@@ -366,3 +366,19 @@ describe("rows from a bundle taken before migration 0135", () => {
     expect(calls.map(c => c.rows)).toEqual([[{ id: "O1" }]]);
   });
 });
+
+describe("rows from a bundle taken before migration 0136", () => {
+  it("drops issue_slips.note, stocktake_sessions.notes and stocktake_lines.item_type", async () => {
+    const calls: Array<{ table: string; rows: unknown[] }> = [];
+    const client = fakeClient((table, rows) => (calls.push({ table, rows }), { error: null }));
+    const bundle = fakeBundle({
+      issue_slips: [{ id: "L1", note: "" }],
+      stocktake_sessions: [{ id: "S1", notes: "" }],
+      stocktake_lines: [{ id: "K1", item_type: "PURCHASED_ITEM" }],
+    });
+
+    await restoreBundleToTarget(bundle, client, ["issue_slips", "stocktake_sessions", "stocktake_lines"], 500);
+
+    expect(calls.map(c => c.rows)).toEqual([[{ id: "L1" }], [{ id: "S1" }], [{ id: "K1" }]]);
+  });
+});

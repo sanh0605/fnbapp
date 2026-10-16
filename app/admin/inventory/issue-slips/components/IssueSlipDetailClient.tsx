@@ -262,11 +262,6 @@ export default function IssueSlipDetailClient({
               <span>
                 Người ghi: <b className="text-text-primary font-medium">{detail.createdByName}</b>
               </span>
-              {detail.note?.trim() ? (
-                <span>
-                  Lý do: <b className="text-text-primary font-medium">{detail.note.trim()}</b>
-                </span>
-              ) : null}
             </div>
             {detail.cancellation && detail.cancellation.reason && (
               <div className="text-sm text-text-secondary">

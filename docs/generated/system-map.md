@@ -76,7 +76,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - cash_entries (id, entry_date, category_id, amount, payment_method, bank_account_id, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name, or, monthly_item_id, asset_disposal_id) status: ACTIVE, CANCELLED
 - cash_transfers (id, transfer_date, amount, from_account_id, to_account_id, note, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, CANCELLED
 - dashboard_settings (id, stale_stocktake_days, open_stocktake_days, reminder_start_day, food_product_ids, topping_type_id, updated_at, updated_by_id, updated_by_name)
-- issue_slips (id, issued_at, note, created_by_id, created_by_name, created_at)
+- issue_slips (id, issued_at, created_by_id, created_by_name, created_at)
 - item_categories (id, name, system_type, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - modifier_group_products (id, group_id, product_id)
 - modifier_groups (id, name, selection_mode, max_total, allow_standalone, sort_order, status, created_at, updated_at) status: ACTIVE, INACTIVE
@@ -101,8 +101,8 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - purchase_sources (id, name, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - purchased_items (id, name, item_category_id, status, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at, is_non_inventory) status: ACTIVE, INACTIVE, DELETED
 - stock_issues (id, purchased_item_id, issued_at, base_quantity, source, session_id, note, created_at, reverses_issue_id, issue_slip_id)
-- stocktake_lines (id, session_id, item_reference, item_type, counted_qty, theoretical_at_count, counted_at, and)
-- stocktake_sessions (id, status, created_by_id, created_by_name, created_at, confirmed_by_id, confirmed_by_name, confirmed_at, notes, updated_at, reversed_by_id, reversed_by_name, reversed_at, reversed_reason, is_shrinkage) status: OPEN, CONFIRMED, CANCELLED
+- stocktake_lines (id, session_id, item_reference, counted_qty, theoretical_at_count, counted_at, and)
+- stocktake_sessions (id, status, created_by_id, created_by_name, created_at, confirmed_by_id, confirmed_by_name, confirmed_at, updated_at, reversed_by_id, reversed_by_name, reversed_at, reversed_reason, is_shrinkage) status: OPEN, CONFIRMED, CANCELLED
 - suppliers (id, name, tax_id, address, links, status, created_at, phone, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at) status: ACTIVE, INACTIVE, DELETED
 - units (id, name, status, created_at, description) status: ACTIVE, INACTIVE, DELETED
 - uom_conversions (id, purchased_item_id, base_unit, purchased_unit, conversion_rate, status, created_at, updated_at, purchase_only) status: ACTIVE, INACTIVE, DELETED
