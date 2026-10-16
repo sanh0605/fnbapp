@@ -188,7 +188,6 @@ export interface DBUser {
 export interface DBUnit {
   id: string;
   name: string;
-  abbreviation: string;
   description?: string | null;
   status: string;
   created_at: string;
@@ -216,7 +215,6 @@ export interface DBPurchasedItem {
   id: string;
   name: string;
   item_category_id: string;
-  default_unit_id: string;
   status: string;
   created_at: string;
   // 2026-08-21: same concept as base_ingredients.is_non_inventory, needed
@@ -231,7 +229,6 @@ export interface DBAssetDepreciationBand {
   min_unit_price: number;
   max_unit_price: number | null;
   term_months: number;
-  status: string;
   created_at: string;
   updated_at: string;
 }

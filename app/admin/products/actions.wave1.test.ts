@@ -46,7 +46,7 @@ beforeEach(() => {
   mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "a", name: "Admin", role: "ADMIN" } });
   mocks.requireOwner.mockResolvedValue({ ok: true, actor: { id: "a", name: "Admin", role: "ADMIN" } });
   for (const k of Object.keys(TABLES)) delete TABLES[k];
-  TABLES.Products = [{ id: "PROD-1", name: "Trà đào", status: "ACTIVE", image_url: "https://img/tra-dao.jpg" }];
+  TABLES.Products = [{ id: "PROD-1", name: "Trà đào", status: "ACTIVE" }];
   TABLES.Product_Variants = [{ id: "VAR-1", product_id: "PROD-1", size_name: "M", price: 30000, status: "ACTIVE" }];
   TABLES.Modifiers = [];
   mocks.findAll.mockImplementation(async (sheet: string) => TABLES[sheet] ?? []);
@@ -56,28 +56,6 @@ beforeEach(() => {
     priceHistoryCount: input.expectedPriceHistoryCount,
     removedVariantCount: input.removedVariantIds.length,
   }));
-});
-
-describe("F2 saveProduct keeps the stored picture", () => {
-  it("edit with no picture in the form sends the stored image_url, not an empty one", async () => {
-    const res = await saveProduct(editForm([{ id: "VAR-1", size_name: "M", price: 30000 }]));
-    expect(res.error).toBeUndefined();
-    expect(mocks.saveProductAtomic.mock.calls[0][0].product.image_url).toBe("https://img/tra-dao.jpg");
-  });
-
-  it("a picture sent by the form wins over the stored one", async () => {
-    await saveProduct(editForm([{ id: "VAR-1", size_name: "M", price: 30000 }], { image_url: "https://img/new.jpg" }));
-    expect(mocks.saveProductAtomic.mock.calls[0][0].product.image_url).toBe("https://img/new.jpg");
-  });
-
-  it("a new dish still gets an empty picture", async () => {
-    const fd = new FormData();
-    fd.append("category_id", "CAT-001");
-    fd.append("name", "Món mới");
-    fd.append("variants_json", JSON.stringify([{ size_name: "M", price: 1000 }]));
-    await saveProduct(fd);
-    expect(mocks.saveProductAtomic.mock.calls[0][0].product.image_url).toBe("");
-  });
 });
 
 describe("F6 a linked topping cannot get a second size", () => {

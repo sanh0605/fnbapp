@@ -67,7 +67,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 ```
 
 ## Tables
-- asset_depreciation_bands (id, min_unit_price, max_unit_price, term_months, status, created_at, updated_at)
+- asset_depreciation_bands (id, min_unit_price, max_unit_price, term_months, created_at, updated_at)
 - asset_disposals (id, asset_id, quantity, disposed_date, reason, created_by_id, created_by_name, created_at)
 - assets (id, purchased_item_id, purchase_order_line_id, name_snapshot, acquired_date, unit_cost, quantity, term_months, status, created_at, updated_at, total_cost)
 - bank_accounts (id, name, bank_name, account_number, status, created_at, created_by_id, created_by_name, updated_at, updated_by_id, updated_by_name) status: ACTIVE, INACTIVE
@@ -90,21 +90,21 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - outlets (id, code, name, brand_id, address, status, start_date, end_date, created_at, updated_at, open_time, close_time)
 - pos_drafts (id, cart_json, status, created_at, updated_at, timestamp, name, brand_id, created_by_id, created_by_name, outlet_id) status: OPEN, SUBMITTED, ABANDONED
 - product_categories (id, name, status, created_at, type_id, icon) status: ACTIVE, INACTIVE, DELETED
-- product_price_history (id, variant_id, old_price, new_price, reason, effective_at, created_at)
+- product_price_history (id, variant_id, old_price, new_price, effective_at, created_at)
 - product_types (id, name, is_drink, created_at)
 - product_variants (id, product_id, size_name, price, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
-- products (id, name, category_id, status, image_url, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at) status: ACTIVE, INACTIVE, DELETED
+- products (id, name, category_id, status, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at) status: ACTIVE, INACTIVE, DELETED
 - promotions (id, name, brand_id, code, type, discount_type, discount_value, applicable_products_json, start_date, end_date, status, created_at, updated_at, min_order_value, stackable) status: ACTIVE, INACTIVE, DELETED
 - purchase_order_edits (id, purchase_order_id, edited_by_id, edited_by_name, edited_at, previous_status, previous_subtotal_amount, previous_line_count, new_subtotal_amount, new_line_count)
-- purchase_order_lines (id, purchase_order_id, purchased_item_id, unit, quantity, unit_price, subtotal, conversion_id, base_unit, base_quantity, created_at)
+- purchase_order_lines (id, purchase_order_id, purchased_item_id, unit, quantity, unit_price, subtotal, conversion_id, base_quantity, created_at)
 - purchase_orders (id, supplier_id, source_id, transaction_date, supplier_invoice_code, notes, subtotal_amount, shipping_fee, tax_amount, voucher_amount, discount_amount, total_amount, status, created_by_id, created_by_name, created_at, updated_at, payment_method, bank_account_id, cancelled_at, cancelled_by_id, cancelled_by_name, cancel_reason) status: DRAFT, COMPLETED, CANCELLED
 - purchase_sources (id, name, status, created_at) status: ACTIVE, INACTIVE, DELETED
-- purchased_items (id, name, item_category_id, default_unit_id, status, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at, is_non_inventory) status: ACTIVE, INACTIVE, DELETED
+- purchased_items (id, name, item_category_id, status, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at, is_non_inventory) status: ACTIVE, INACTIVE, DELETED
 - stock_issues (id, purchased_item_id, issued_at, base_quantity, source, session_id, note, created_at, reverses_issue_id, issue_slip_id)
 - stocktake_lines (id, session_id, item_reference, item_type, counted_qty, theoretical_at_count, counted_at, and)
 - stocktake_sessions (id, status, created_by_id, created_by_name, created_at, confirmed_by_id, confirmed_by_name, confirmed_at, notes, updated_at, reversed_by_id, reversed_by_name, reversed_at, reversed_reason, is_shrinkage) status: OPEN, CONFIRMED, CANCELLED
-- suppliers (id, name, tax_id, address, links, status, created_at, phone, parent_id, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at) status: ACTIVE, INACTIVE, DELETED
-- units (id, name, abbreviation, status, created_at, description) status: ACTIVE, INACTIVE, DELETED
+- suppliers (id, name, tax_id, address, links, status, created_at, phone, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at) status: ACTIVE, INACTIVE, DELETED
+- units (id, name, status, created_at, description) status: ACTIVE, INACTIVE, DELETED
 - uom_conversions (id, purchased_item_id, base_unit, purchased_unit, conversion_rate, status, created_at, updated_at, purchase_only) status: ACTIVE, INACTIVE, DELETED
 - users (id, username, password_hash, name, role, status, created_at, updated_at) status: ACTIVE, INACTIVE, DELETED
 

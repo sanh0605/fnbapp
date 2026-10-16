@@ -82,7 +82,6 @@ const sampleItems: DBPurchasedItem[] = [
     id: "ITEM-1",
     name: "Cà phê Robusta",
     item_category_id: "CAT-1",
-    default_unit_id: "U-1",
     status: "ACTIVE",
     created_at: "2026-01-01",
     is_non_inventory: false,
@@ -94,7 +93,7 @@ const sampleConversions: DBUOMConversion[] = [
 ];
 
 const sampleUnits: DBUnit[] = [
-  { id: "U-1", name: "kg", abbreviation: "kg", status: "ACTIVE", created_at: "2026-01-01" },
+  { id: "U-1", name: "kg", status: "ACTIVE", created_at: "2026-01-01" },
 ];
 
 const sampleAccounts: DBBankAccount[] = [
@@ -358,7 +357,6 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
       id: "ITEM-VOI",
       name: "Vòi rót rượu",
       item_category_id: "CAT-1",
-      default_unit_id: "U-CAI",
       status: "ACTIVE",
       created_at: "2026-01-01",
       is_non_inventory: false,
@@ -382,7 +380,7 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
   ];
 
   const seedUnits: DBUnit[] = [
-    { id: "U-CAI", name: "Cái", abbreviation: "Cái", status: "ACTIVE", created_at: "2026-01-01" },
+    { id: "U-CAI", name: "Cái", status: "ACTIVE", created_at: "2026-01-01" },
   ];
 
   const po147Seed: PurchaseOrderCopySeed = {

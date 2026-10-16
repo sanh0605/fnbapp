@@ -33,7 +33,6 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
   const id = String(formData.get("id") || "");
   const categoryId = String(formData.get("category_id") || "");
   const name = String(formData.get("name") || "");
-  const imageUrl = String(formData.get("image_url") || "");
   const variantsJson = String(formData.get("variants_json") || "");
   const warningConfirmed = formData.get("duplicate_warning_confirmed") === "true";
   if (!name || !categoryId || !variantsJson) {
@@ -124,10 +123,6 @@ export async function saveProduct(formData: FormData): Promise<ActionResponse> {
         ...(isEdit ? { id } : {}),
         category_id: categoryId,
         name,
-        // F2: the form sends no picture; keep the stored one on edit.
-        image_url: imageUrl || (isEdit
-          ? String((allProducts as any[]).find((p) => p.id === id)?.image_url || "")
-          : ""),
         status: "ACTIVE",
         created_at: new Date().toISOString(),
       },

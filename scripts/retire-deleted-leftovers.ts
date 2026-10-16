@@ -21,10 +21,8 @@ import { createClient } from "@supabase/supabase-js";
 const apply = process.argv.includes("--apply");
 
 const UNIT_REFS = [
-  ["purchased_items", "default_unit_id"],
   ["uom_conversions", "base_unit"],
   ["uom_conversions", "purchased_unit"],
-  ["purchase_order_lines", "base_unit"],
   ["purchase_order_lines", "unit"],
 ] as const;
 

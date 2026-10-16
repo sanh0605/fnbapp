@@ -20,7 +20,7 @@ export function buildItemStockById(input: {
   );
   const unitNameById = new Map(input.units.map(u => [u.id, u.name]));
   // Same source as the issue-slip screen: the ACTIVE conversion's base unit,
-  // because purchased_items.default_unit_id is null on every row.
+  // because purchased_items.default_unit_id no longer exists (dropped by 0133).
   const baseUnitIdByItem = new Map<string, string>();
   for (const c of input.conversions) {
     if (c.status !== "ACTIVE") continue;

@@ -153,14 +153,29 @@ export async function updateUnit(formData: FormData): Promise<ActionResponse> {
 // section A3: RESTRICT foreign keys reference units.id -- checked in this
 // order, stopping at the first match, so a unit blocked by more than one
 // source still gets one clear sentence rather than a merged one.
-// purchase_order_lines is checked last -- historical rows are the least
-// likely real-world cause. semi_products and production_items were dropped
+// purchase_order_lines is checked FIRST: since 0133 a line has no base_unit of
+// its own, so it counts when its conversion's base_unit is this unit, and such
+// a conversion would otherwise be reported with a hint (delete the conversion)
+// that is a dead end while history still points at it. semi_products and production_items were dropped
 // with their tables (migration 0105, 2026-09-28); their checks were removed
 // here in step. base_ingredients was dropped earlier (migration 0090,
 // 2026-09-01) but this check still queried it until 2026-09-28 -- deleting
 // an otherwise-unused unit reached the dead branch and errored with
 // "relation does not exist" instead of succeeding; removed here too.
 async function findUnitDeleteBlocker(unitId: string): Promise<UnitBlockerFinding | null> {
+  const baseConversions = await findAllWhere<{ id: string }>(
+    "UOM_Conversions", { eq: { base_unit: unitId } },
+  );
+  const poLines = baseConversions.length === 0 ? [] : await findAllWhere<{ purchased_item_id: string }>(
+    "Purchase_Order_Lines", { in: { conversion_id: baseConversions.map(c => c.id) } },
+  );
+  if (poLines.length > 0) {
+    const items = await findAllWhere<{ name: string }>(
+      "Purchased_Items", { eq: { id: poLines[0].purchased_item_id }, limit: 1 },
+    );
+    return { kind: "purchase_order_lines", count: poLines.length, ownerName: items[0]?.name || poLines[0].purchased_item_id };
+  }
+
   const conversionsByPurchasedUnit = await findAllWhere<{ purchased_item_id: string }>(
     "UOM_Conversions", { eq: { purchased_unit: unitId }, limit: 1 },
   );
@@ -175,23 +190,6 @@ async function findUnitDeleteBlocker(unitId: string): Promise<UnitBlockerFinding
       "Purchased_Items", { eq: { id: blockingConversion.purchased_item_id }, limit: 1 },
     );
     return { kind: "uom_conversions", count: 1, ownerName: items[0]?.name || blockingConversion.purchased_item_id };
-  }
-
-  const purchasedItems = await findAllWhere<{ name: string }>(
-    "Purchased_Items", { eq: { default_unit_id: unitId }, limit: 1 },
-  );
-  if (purchasedItems[0]) {
-    return { kind: "purchased_items", count: 1, ownerName: purchasedItems[0].name };
-  }
-
-  const poLines = await findAllWhere<{ purchased_item_id: string }>(
-    "Purchase_Order_Lines", { eq: { base_unit: unitId } },
-  );
-  if (poLines.length > 0) {
-    const items = await findAllWhere<{ name: string }>(
-      "Purchased_Items", { eq: { id: poLines[0].purchased_item_id }, limit: 1 },
-    );
-    return { kind: "purchase_order_lines", count: poLines.length, ownerName: items[0]?.name || poLines[0].purchased_item_id };
   }
 
   return null;

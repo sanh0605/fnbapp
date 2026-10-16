@@ -79,7 +79,7 @@ async function loadItemNameMaps() {
     findAll("UOM_Conversions"),
   ]);
   const unitNameById = new Map<string, string>((units as any[]).map(u => [u.id, u.name]));
-  // purchased_items.default_unit_id is null on every row; the unit is the
+  // purchased_items.default_unit_id no longer exists (dropped by 0133); the unit is the
   // ACTIVE conversion's base unit, as on Phiếu xuất (lib/stock/item-stock-display.ts).
   const baseUnitIdByItem = new Map<string, string>();
   for (const c of conversions as any[]) {

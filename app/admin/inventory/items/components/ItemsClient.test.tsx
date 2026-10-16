@@ -50,7 +50,6 @@ const ITEMS: DBPurchasedItem[] = [
     id: "SPM-002",
     name: "Sữa tươi Mlekovita",
     item_category_id: "CAT-1",
-    default_unit_id: "UNT-ML",
     status: "ACTIVE",
     is_non_inventory: false,
     created_at: "2026-01-01T00:00:00Z",
@@ -59,7 +58,6 @@ const ITEMS: DBPurchasedItem[] = [
     id: "SPM-003",
     name: "Cà phê Robusta",
     item_category_id: "CAT-1",
-    default_unit_id: "UNT-G",
     status: "ACTIVE",
     is_non_inventory: false,
     created_at: "2026-01-01T00:00:00Z",
@@ -83,8 +81,8 @@ const CONVERSIONS: DBUOMConversion[] = [
 ];
 
 const UNITS: DBUnit[] = [
-  { id: "UNT-ML", name: "ml", abbreviation: "", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
-  { id: "UNT-HOP", name: "Hộp", abbreviation: "", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
+  { id: "UNT-ML", name: "ml", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
+  { id: "UNT-HOP", name: "Hộp", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
 ];
 
 afterEach(() => {
@@ -216,7 +214,6 @@ describe("ItemsClient", () => {
         item_category_id: "CAT-1",
         status: "ACTIVE",
         is_non_inventory: false,
-        default_unit_id: "",
         created_at: "2026-01-01T00:00:00Z",
       },
       {
@@ -225,7 +222,6 @@ describe("ItemsClient", () => {
         item_category_id: "CAT-1",
         status: "ACTIVE",
         is_non_inventory: true,
-        default_unit_id: "",
         created_at: "2026-01-01T00:00:00Z",
       },
       {
@@ -234,7 +230,6 @@ describe("ItemsClient", () => {
         item_category_id: "CAT-1",
         status: "ACTIVE",
         is_non_inventory: false,
-        default_unit_id: "",
         created_at: "2026-01-01T00:00:00Z",
       },
     ];
@@ -272,7 +267,6 @@ describe("ItemsClient", () => {
         item_category_id: "CAT-1",
         status: "ACTIVE",
         is_non_inventory: true,
-        default_unit_id: "",
         created_at: "2026-01-01T00:00:00Z",
       },
       {
@@ -281,7 +275,6 @@ describe("ItemsClient", () => {
         item_category_id: "CAT-1",
         status: "ACTIVE",
         is_non_inventory: false,
-        default_unit_id: "",
         created_at: "2026-01-01T00:00:00Z",
       },
       {
@@ -290,7 +283,6 @@ describe("ItemsClient", () => {
         item_category_id: "CAT-1",
         status: "ACTIVE",
         is_non_inventory: false,
-        default_unit_id: "",
         created_at: "2026-01-01T00:00:00Z",
       },
       {
@@ -299,7 +291,6 @@ describe("ItemsClient", () => {
         item_category_id: "CAT-1",
         status: "ACTIVE",
         is_non_inventory: false,
-        default_unit_id: "",
         created_at: "2026-01-01T00:00:00Z",
       },
     ];

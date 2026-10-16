@@ -57,12 +57,12 @@ const suppliers: DBSupplier[] = [
 ];
 const sources: DBPurchaseSource[] = [{ id: "SRC-1", name: "Shopee", status: "ACTIVE", created_at: "2026-01-01" }];
 const items: DBPurchasedItem[] = [
-  { id: "ITEM-1", name: "Cà phê Robusta", item_category_id: "CAT-1", default_unit_id: "U-1", status: "ACTIVE", created_at: "2026-01-01", is_non_inventory: false },
+  { id: "ITEM-1", name: "Cà phê Robusta", item_category_id: "CAT-1", status: "ACTIVE", created_at: "2026-01-01", is_non_inventory: false },
 ];
 const conversions: DBUOMConversion[] = [
   { id: "CONV-1", purchased_item_id: "ITEM-1", from_unit_id: "U-1", to_unit_id: "U-1", factor: "1", purchased_unit: "kg", base_unit: "kg", conversion_rate: "1", status: "ACTIVE", purchase_only: false, created_at: "2026-01-01" },
 ];
-const units: DBUnit[] = [{ id: "U-1", name: "kg", abbreviation: "kg", status: "ACTIVE", created_at: "2026-01-01" }];
+const units: DBUnit[] = [{ id: "U-1", name: "kg", status: "ACTIVE", created_at: "2026-01-01" }];
 const accounts: DBBankAccount[] = [];
 
 function order(status: "DRAFT" | "COMPLETED"): { po: DBPurchaseOrder; lines: DBPurchaseOrderLine[] } {

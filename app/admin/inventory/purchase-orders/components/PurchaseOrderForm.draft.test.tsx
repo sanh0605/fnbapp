@@ -92,7 +92,6 @@ function createItem(overrides: Partial<DBPurchasedItem> = {}): DBPurchasedItem {
     id: "ITEM-1",
     name: "Cà phê Robusta",
     item_category_id: "CAT-1",
-    default_unit_id: "UNIT-1",
     status: "ACTIVE",
     created_at: "2026-01-01T00:00:00Z",
     is_non_inventory: false,
@@ -121,7 +120,6 @@ function createUnit(overrides: Partial<DBUnit> = {}): DBUnit {
   return {
     id: "UNIT-1",
     name: "kg",
-    abbreviation: "kg",
     status: "ACTIVE",
     created_at: "2026-01-01T00:00:00Z",
     ...overrides,

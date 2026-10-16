@@ -28,7 +28,6 @@ vi.mock("@/app/admin/inventory/actions", () => ({
 const unit: DBUnit = {
   id: "UNT-001",
   name: "Hộp",
-  abbreviation: "",
   description: "Hộp giấy 1000ml",
   status: "ACTIVE",
   created_at: "2026-01-01T00:00:00Z",
@@ -86,7 +85,6 @@ describe("UnitDetailView", () => {
     const noDescUnit: DBUnit = {
       id: "UNT-002",
       name: "Bộ",
-      abbreviation: "",
       status: "ACTIVE",
       created_at: "2026-01-01T00:00:00Z",
     };

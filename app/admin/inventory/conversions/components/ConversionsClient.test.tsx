@@ -35,8 +35,8 @@ vi.mock("../actions", () => ({
 }));
 
 const ITEMS: DBPurchasedItem[] = [
-  { id: "ITEM-1", name: "Sữa đặc", item_category_id: "CAT-1", default_unit_id: "UNT-LON", status: "ACTIVE", is_non_inventory: false, created_at: "2026-01-01T00:00:00Z" },
-  { id: "ITEM-2", name: "Trà đen", item_category_id: "CAT-1", default_unit_id: "UNT-G", status: "ACTIVE", is_non_inventory: false, created_at: "2026-01-01T00:00:00Z" },
+  { id: "ITEM-1", name: "Sữa đặc", item_category_id: "CAT-1", status: "ACTIVE", is_non_inventory: false, created_at: "2026-01-01T00:00:00Z" },
+  { id: "ITEM-2", name: "Trà đen", item_category_id: "CAT-1", status: "ACTIVE", is_non_inventory: false, created_at: "2026-01-01T00:00:00Z" },
 ];
 
 const CONVERSIONS: DBUOMConversion[] = [
@@ -69,10 +69,10 @@ const CONVERSIONS: DBUOMConversion[] = [
 ];
 
 const UNITS: DBUnit[] = [
-  { id: "UNT-THUNG", name: "Thùng", abbreviation: "", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
-  { id: "UNT-LON", name: "Lon", abbreviation: "", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
-  { id: "UNT-GOI", name: "Gói", abbreviation: "", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
-  { id: "UNT-G", name: "g", abbreviation: "", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
+  { id: "UNT-THUNG", name: "Thùng", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
+  { id: "UNT-LON", name: "Lon", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
+  { id: "UNT-GOI", name: "Gói", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
+  { id: "UNT-G", name: "g", status: "ACTIVE", created_at: "2026-01-01T00:00:00Z" },
 ];
 
 afterEach(() => {

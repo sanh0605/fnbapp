@@ -32,6 +32,8 @@ không đọc theo số liệu trong bất cứ tài liệu nào khác.
 Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh doanh) ghi
 "hạ tầng/kỹ thuật" ở cột khái niệm, không gán ý nghĩa kinh doanh cho nó.
 
+Migration `0133` (6d đợt 1b) bỏ 7 cột rỗng hoặc tính lại được: `purchased_items.default_unit_id`, `suppliers.parent_id`, `units.abbreviation`, `product_price_history.reason`, `asset_depreciation_bands.status`, `purchase_order_lines.base_unit` (đơn vị gốc lấy từ quy đổi của dòng), `products.image_url`.
+
 | Bảng | Khái niệm (VN) | Vai trò (1 dòng) |
 |---|---|---|
 | `asset_depreciation_bands` | Bảng khấu hao tài sản | Đơn giá tài sản trong khoảng nào thì phân bổ chi phí trong bao nhiêu tháng; chủ quán tự sửa bảng này |
@@ -57,7 +59,7 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 | `outlets` | Điểm bán | Một chỗ bán hàng thực tế; kho dùng chung, không tách theo điểm bán |
 | `pos_drafts` | Giỏ hàng tạm | Giỏ hàng đang thao tác trên máy bán hàng, trước khi đặt thành đơn chính thức |
 | `product_categories` | Nhóm món | Danh mục phân loại món trong thực đơn; từ migration `0109` mỗi nhóm có cột `type_id` (bắt buộc) chỉ loại món; từ migration `0130` có cột `icon` (chữ tượng hình hiện trên thẻ món ở máy bán hàng, để trống = không hiện) |
-| `product_price_history` | Lịch sử đổi giá | Mỗi lần đổi giá một cỡ món, kèm giá cũ/mới và lý do |
+| `product_price_history` | Lịch sử đổi giá | Mỗi lần đổi giá một cỡ món, kèm giá cũ/mới |
 | `product_types` | Loại món | Thức uống, Thức ăn, Topping; mỗi nhóm món thuộc đúng một loại, loại Thức uống (`is_drink`) là thứ Tổng quan đếm thành ly (migration `0109`) |
 | `product_variants` | Cỡ món | Một cỡ/biến thể của một món, mỗi cỡ có giá riêng |
 | `products` | Món | Một món trong thực đơn |

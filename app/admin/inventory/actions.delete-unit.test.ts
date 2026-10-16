@@ -92,29 +92,13 @@ describe("deleteUnit -- names what is blocking it, and still blocks it", () => {
     expect(mocks.remove).not.toHaveBeenCalled();
   });
 
-  it("refuses via purchased_items.default_unit_id, naming the item", async () => {
-    mocks.findAllWhere.mockImplementation((sheet: string, filters: any) => {
-      if (sheet === "Units") return Promise.resolve([{ id: "U-013", name: "Cuộn" }]);
-      if (sheet === "UOM_Conversions") return Promise.resolve([]);
-      if (sheet === "Purchased_Items" && filters.eq.default_unit_id === "U-013") {
-        return Promise.resolve([{ name: "Túi đựng rác" }]);
-      }
-      return Promise.resolve([]);
-    });
-
-    const res = await deleteUnit(formData({ id: "U-013" }));
-
-    expect(res.error).toBe(
-      "Không xoá được đơn vị Cuộn vì đang được dùng trong mặt hàng mua Túi đựng rác. Đổi đơn vị mặc định của mặt hàng đó trước.",
-    );
-  });
-
   it("refuses via purchase_order_lines with the frozen-history hint, not an actionable one", async () => {
     mocks.findAllWhere.mockImplementation((sheet: string, filters: any) => {
       if (sheet === "Units") return Promise.resolve([{ id: "UNT-099", name: "Thùng" }]);
+      // 0133: the line no longer holds base_unit; it is found through its conversion.
+      if (sheet === "UOM_Conversions" && filters.eq.base_unit === "UNT-099") return Promise.resolve([{ id: "QD-001", purchased_item_id: "SPM-050" }]);
       if (sheet === "UOM_Conversions") return Promise.resolve([]);
-      if (sheet === "Purchased_Items" && filters.eq.default_unit_id) return Promise.resolve([]);
-      if (sheet === "Purchase_Order_Lines" && filters.eq.base_unit === "UNT-099") {
+      if (sheet === "Purchase_Order_Lines" && filters.in.conversion_id[0] === "QD-001") {
         return Promise.resolve([{ purchased_item_id: "SPM-050" }, { purchased_item_id: "SPM-050" }]);
       }
       if (sheet === "Purchased_Items" && filters.eq.id === "SPM-050") {
