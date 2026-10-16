@@ -162,6 +162,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
       return prev;
     });
     setErrorIndex(null);
+    setError(null); // its "Dòng N" may now name the wrong line
   }
 
   function updateLine(index: number, patch: Partial<DraftLine>) {
@@ -446,9 +447,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
             const lineValueDisplay = computed?.lineValueDisplay ?? "—";
 
             const itemName = item?.name || "Chưa chọn hàng";
-            const qtyDisplay = line.packageQty
-              ? formatDecimal(Number(line.packageQty) || 0, { maxDigits: 3 })
-              : "0";
+            const qtyDisplay = formatDecimal(computed?.parsedQty ?? 0, { maxDigits: 3 });
             const unitLabel = option?.label || "";
             const meta = `${qtyDisplay}${unitLabel ? ` ${unitLabel}` : ""} · Quy ra ${convertedDisplay}`;
 

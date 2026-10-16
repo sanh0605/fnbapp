@@ -53,4 +53,27 @@ describe("PhoneNavBar", () => {
     
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
+
+  it("renders POS button with visible text 'Bán hàng' and calls onOpenPos on click", () => {
+    const onOpenPos = vi.fn();
+    render(<PhoneNavBar onOpenPos={onOpenPos} />);
+
+    expect(screen.getByText("Bán hàng")).toBeInTheDocument();
+    expect(screen.queryByText("Máy bán hàng")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Bán hàng"));
+    expect(onOpenPos).toHaveBeenCalledTimes(1);
+  });
+
+  it("gives every nav label whitespace-nowrap so none can wrap", () => {
+    render(<PhoneNavBar onOpenPos={vi.fn()} />);
+
+    // 5 items share the bar: 3 route slots (Tổng quan, Phiếu nhập, Phiếu xuất), Thêm, Bán hàng
+    const labels = ["Tổng quan", "Phiếu nhập", "Phiếu xuất", "Thêm", "Bán hàng"];
+    for (const text of labels) {
+      const el = screen.getByText(text);
+      expect(el.className).toContain("whitespace-nowrap");
+    }
+  });
 });
+

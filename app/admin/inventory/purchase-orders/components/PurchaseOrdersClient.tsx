@@ -28,6 +28,11 @@ function formatEmptyRangePart(range: RangeValue): string {
   return `${preset} (${rest.join(" · ")})`;
 }
 
+function formatShortDate(dateText: string): string {
+  const match = dateText.match(/^(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(\d{1,2}:\d{2})/);
+  return match ? `${match[1]} ${match[2]}` : dateText;
+}
+
 export interface PurchaseOrdersClientProps {
   pageData: PurchaseOrderListPage & { suppliers: { id: string; name: string }[] };
   range: RangeValue;
@@ -295,7 +300,7 @@ export default function PurchaseOrdersClient({
           phoneRow={(po) => ({
             title: po.supplierName,
             value: `${formatNumber(po.totalAmount)}đ`,
-            meta: [po.dateText, po.id, po.paymentLabel].join(" · "),
+            meta: [formatShortDate(po.dateText), po.id, po.paymentLabel].join(" · "),
             badge: renderStatusBadge(po.status),
           })}
           totals={{

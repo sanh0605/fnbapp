@@ -16,7 +16,7 @@ export function PhoneRow({ title, value, meta, badge }: PhoneRowData) {
       </div>
       {(meta != null || badge != null) && (
         <div className="mt-0.5 flex items-start justify-between gap-3">
-          <div className="min-w-0 line-clamp-2 break-words text-sm text-text-secondary">{meta}</div>
+          <div className="min-w-0 truncate text-sm text-text-secondary">{meta}</div>
           {badge != null && <div className="shrink-0 flex items-center gap-1">{badge}</div>}
         </div>
       )}

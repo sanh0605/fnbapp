@@ -249,4 +249,40 @@ describe("PurchaseOrdersClient", () => {
       searchParams.delete("account");
     }
   });
+
+  it("phoneRow meta uses short date (day/month and hour:minute) while desktop column keeps full dateText", () => {
+    const dataWithRow: typeof pageData = {
+      ...pageData,
+      total: 1,
+      firstIndex: 1,
+      lastIndex: 1,
+      rows: [
+        {
+          id: "PO-206",
+          dateText: "15/10/2026 18:34:59",
+          supplierName: "Nhà cung cấp C",
+          sourceName: "Shopee",
+          status: "COMPLETED",
+          totalAmount: 350000,
+          paymentLabel: "Tiền mặt",
+        },
+      ],
+    };
+
+    const { container } = render(
+      <PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={dataWithRow} />
+    );
+
+    // Desktop table keeps full dateText
+    const table = container.querySelector("table");
+    expect(table).toBeTruthy();
+    expect(within(table!).getByText("15/10/2026 18:34:59")).toBeInTheDocument();
+
+    // Phone row meta uses short date
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
+    expect(phone).toBeTruthy();
+    expect(within(phone!).getByText("15/10 18:34 · PO-206 · Tiền mặt")).toBeInTheDocument();
+    expect(phone!.textContent).not.toContain("15/10/2026 18:34:59");
+  });
 });
+
