@@ -73,11 +73,13 @@ Mọi kế hoạch mở đầu bằng mục hiện trạng, năm câu đánh s�
 |---|---|
 | Ghi vào dữ liệu thật | Mặc định chạy thử; `--apply` mới ghi; in số dòng và đối tượng trước khi ghi |
 | Đẩy code ra ngoài (push, deploy) | Không có uỷ quyền trước cho lần sau |
-| Chạy migration lên máy chủ thật | Duyệt riêng, tách khỏi duyệt push |
-| Xoá file tài liệu | Kiểm ai đang trích dẫn trước khi xoá |
+| Chạy migration lên máy chủ thật | Duyệt riêng, tách khỏi duyệt push. Ghi sổ (`migration repair`) đi kèm trong cùng câu duyệt, không hỏi riêng |
+| Xoá file code, tài liệu, công cụ trong repo | Không hỏi (git giữ lịch sử); kiểm ai đang trích dẫn trước khi xoá, báo lại cuối lượt |
 | Xoá dữ liệu (dòng, cột còn giá trị, bảng) | Không tự xoá. Gom lại hỏi ở bước cuối, sau khi mọi việc khác đã xong. Chủ quán chốt 2026-10-17: *"Không được xóa bất kỳ dữ liệu nào. Nếu xóa thì sau khi phải hỏi ý kiến của anh, và tốt nhất là báo anh ở bước cuối cùng sau khi đã hoàn tất tất cả các việc"* |
 
 Một câu trả lời chỉ duyệt một việc. "Chạy migration và đẩy không?" mà nhận "đẩy đi" thì chỉ được đẩy.
+
+Chỉ những việc trong bảng trên mới vào bảng hỏi. Còn lại tự làm rồi báo một lần cuối lượt: đọc, tìm, truy vấn chỉ đọc; viết code, chạy test, gộp nhánh trên máy; chọn cách kiểm và phương án kỹ thuật; câu hỏi thiết kế theo khuyến nghị. Chủ quán chốt 2026-10-17: *"Làm sao để trong bảng asking em chỉ hỏi anh những việc quan trọng liên quan đến dữ liệu, push github? Còn lại em có thể tự thực hiện ?"*, chọn "Ghi vào luật".
 
 Mấy lệnh trên gõ bằng công cụ Bash, không phải PowerShell. Bị từ chối thì đổi công cụ,
 không nhờ phiên khác chạy.
