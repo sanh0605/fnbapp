@@ -686,7 +686,11 @@ export default function POSScreen({
       processingOrder: order,
       retry: isRetry,
     });
-    addToast("error", "Chưa gửi được đơn", errorMsg);
+    addToast(
+      "error",
+      "Chưa gửi được đơn",
+      errorMsg === NETWORK_ERROR_MSG ? "Kiểm tra mạng rồi bấm Gửi lại." : errorMsg
+    );
   };
 
   const handleConfirmCheckoutRef = useRef<(method: string, payments?: any[]) => void>(() => {});
