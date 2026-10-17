@@ -603,12 +603,12 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
 });
 
 
-// Owner 2026-10-17 plan: sections stacked top to bottom on a computer (shared, lines, money).
+// Plan 2026-10-17 (wave 2a): sections stacked top to bottom on a computer (shared, lines, money).
 function expectBefore(a: Element, b: Element) {
   expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 }
 
-describe("PurchaseOrderForm sections stacked top to bottom on a computer (owner 2026-10-17 plan)", () => {
+describe("PurchaseOrderForm sections stacked top to bottom on a computer (plan 2026-10-17, wave 2a)", () => {
   function renderForm() {
     return render(
       <PurchaseOrderForm

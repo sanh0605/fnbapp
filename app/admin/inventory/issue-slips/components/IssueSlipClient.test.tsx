@@ -974,13 +974,13 @@ describe("IssueSlipClient -- Row 3 Giá trị xuất", () => {
 
 
 
-// Owner 2026-10-17 plan: sections stacked top to bottom on a computer (shared, lines, money).
+// Plan 2026-10-17 (wave 2a): sections stacked top to bottom on a computer (shared, lines, money).
 function expectBefore(a: Element, b: Element) {
   expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 }
 
-describe("IssueSlipClient sections stacked top to bottom on a computer (owner 2026-10-17 plan)", () => {
-  it("sections stacked top to bottom on a computer (owner 2026-10-17 plan)", async () => {
+describe("IssueSlipClient sections stacked top to bottom on a computer (plan 2026-10-17, wave 2a)", () => {
+  it("shared boxes, then the line table, then the money block, with no three-column grid", async () => {
     const container = await renderTracked(<IssueSlipClient items={[itemWithRealUnit]} />);
     const q = (id: string) => container.querySelectorAll(`[data-testid="${id}"]`);
     // One of each: the phone view keeps its own layout, without these marks.
