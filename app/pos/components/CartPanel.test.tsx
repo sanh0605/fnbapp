@@ -7,7 +7,29 @@ import { CartPanel } from "./CartPanel";
 // Owns the step state the way POSScreen does; isPayStepOpen only sets where it starts.
 function CartPanelWithState(props: any) {
   const [isPayStepOpen, setIsPayStepOpen] = React.useState(props.isPayStepOpen ?? false);
-  return <CartPanel {...props} isPayStepOpen={isPayStepOpen} setIsPayStepOpen={setIsPayStepOpen} />;
+  const [userCustomDiscount, setUserCustomDiscount] = React.useState<number | null>(
+    props.userCustomDiscount ?? null
+  );
+  const [userCustomDiscountType, setUserCustomDiscountType] = React.useState(
+    props.userCustomDiscountType ?? "VND"
+  );
+  return (
+    <CartPanel
+      {...props}
+      isPayStepOpen={isPayStepOpen}
+      setIsPayStepOpen={setIsPayStepOpen}
+      userCustomDiscount={userCustomDiscount}
+      setUserCustomDiscount={(val: number | null) => {
+        setUserCustomDiscount(val);
+        props.setUserCustomDiscount?.(val);
+      }}
+      userCustomDiscountType={userCustomDiscountType}
+      setUserCustomDiscountType={(t: any) => {
+        setUserCustomDiscountType(t);
+        props.setUserCustomDiscountType?.(t);
+      }}
+    />
+  );
 }
 
 afterEach(() => {
@@ -95,7 +117,7 @@ describe("Discount (R3)", () => {
       expect(setUserCustomDiscount).toHaveBeenCalledWith(81_000);
     });
 
-    it("clamps negative discount to 0", () => {
+    it("a typed minus sign is dropped: -10000 applies 10,000", () => {
       const setUserCustomDiscount = vi.fn();
       render(
         <CartPanel
@@ -107,7 +129,24 @@ describe("Discount (R3)", () => {
       fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(discountInput, { target: { value: "-10000" } });
-      expect(setUserCustomDiscount).toHaveBeenCalledWith(0);
+      expect(discountInput).toHaveValue("10,000");
+      expect(setUserCustomDiscount).toHaveBeenCalledWith(10_000);
+    });
+
+    it("groups thousands while typing in order discount box (shows 10,000 and reflects discount)", () => {
+      const setUserCustomDiscount = vi.fn();
+      render(
+        <CartPanel
+          {...defaultProps}
+          setUserCustomDiscount={setUserCustomDiscount}
+          userCustomDiscountType="VND"
+        />
+      );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
+      const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(discountInput, { target: { value: "10000" } });
+      expect(discountInput).toHaveValue("10,000");
+      expect(setUserCustomDiscount).toHaveBeenCalledWith(10_000);
     });
 
     it("clamps percent discount above 100 to 100 (e.g. 101 -> 100)", () => {
@@ -123,6 +162,62 @@ describe("Discount (R3)", () => {
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(discountInput, { target: { value: "101" } });
       expect(setUserCustomDiscount).toHaveBeenCalledWith(100);
+    });
+
+    it("order box in % mode accepts '12.5'", () => {
+      const setUserCustomDiscount = vi.fn();
+      render(
+        <CartPanel
+          {...defaultProps}
+          setUserCustomDiscount={setUserCustomDiscount}
+          userCustomDiscountType="PERCENT"
+        />
+      );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
+      const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(discountInput, { target: { value: "12.5" } });
+      expect(discountInput).toHaveValue("12.5");
+      expect(setUserCustomDiscount).toHaveBeenCalledWith(12.5);
+    });
+
+    it("order box: 12.5 in % mode, press VNĐ -> box shows '13' and 13 is applied", () => {
+      const setUserCustomDiscount = vi.fn();
+      render(
+        <CartPanelWithState
+          {...defaultProps}
+          userCustomDiscountType="PERCENT"
+          setUserCustomDiscount={setUserCustomDiscount}
+        />
+      );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
+      const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(discountInput, { target: { value: "12.5" } });
+      expect(discountInput).toHaveValue("12.5");
+      expect(setUserCustomDiscount).toHaveBeenCalledWith(12.5);
+
+      fireEvent.click(screen.getByRole("button", { name: "VNĐ" }));
+      expect(discountInput).toHaveValue("13");
+      expect(setUserCustomDiscount).toHaveBeenLastCalledWith(13);
+    });
+
+    it("shows max message when typing above limit and applied discount equals limit", () => {
+      const setUserCustomDiscount = vi.fn();
+      render(
+        <CartPanelWithState
+          {...defaultProps}
+          setUserCustomDiscount={setUserCustomDiscount}
+          userCustomDiscountType="VND"
+        />
+      );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
+      const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(discountInput, { target: { value: "150000" } });
+      expect(discountInput).toHaveValue("81,000");
+
+      fireEvent.change(discountInput, { target: { value: "810000" } });
+      expect(screen.getByText("Tối đa 81,000đ")).toBeInTheDocument();
+      expect(discountInput).toHaveValue("810,000");
+      expect(setUserCustomDiscount).toHaveBeenLastCalledWith(81_000);
     });
   });
 
@@ -233,6 +328,18 @@ describe("Discount (R3)", () => {
       expect(
         screen.getByText(/Lỗi thanh toán \(Chia tiền mặt \+ chuyển khoản\)/)
       ).toBeInTheDocument();
+    });
+
+    it("groups thousands while typing in split-payment box (shows 10,000 and reflects total)", () => {
+      render(<CartPanelWithState {...defaultProps} totalAmount={50_000} />);
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      fireEvent.click(screen.getByRole("button", { name: "Chia tiền mặt + chuyển khoản" }));
+      const splitInput = screen.getByLabelText("Số tiền phần thanh toán");
+      fireEvent.change(splitInput, { target: { value: "10000" } });
+      expect(splitInput).toHaveValue("10,000");
+      fireEvent.click(screen.getByRole("button", { name: "Thêm phần thanh toán" }));
+      // 50,000 total − 10,000 entered: "Còn thiếu" reads 40,000
+      expect(screen.getByText("40,000")).toBeInTheDocument();
     });
   });
 });

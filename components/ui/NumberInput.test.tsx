@@ -181,6 +181,22 @@ describe("BR-UI-005 NumberInput: mistakes show under the box, never in a bubble"
     expect(screen.getByText("Nhập số không quá 3,200.")).toBeInTheDocument();
   });
 
+  it("shows max message while typing above limit, before blur, and removes it when back within limit", () => {
+    render(<NumberInput id="qty" decimals={0} max={100} />);
+    fireEvent.change(box(), { target: { value: "150" } });
+    expect(screen.getByText("Nhập số không quá 100.")).toBeInTheDocument();
+    fireEvent.change(box(), { target: { value: "50" } });
+    expect(screen.queryByText("Nhập số không quá 100.")).not.toBeInTheDocument();
+  });
+
+  it("keeps the message when a typed character is refused", () => {
+    render(<NumberInput id="qty" decimals={2} max={100} />);
+    fireEvent.change(box(), { target: { value: "150.12" } });
+    expect(screen.getByText("Nhập số không quá 100.")).toBeInTheDocument();
+    fireEvent.change(box(), { target: { value: "150.123" } });
+    expect(screen.getByText("Nhập số không quá 100.")).toBeInTheDocument();
+  });
+
   it("typing again clears the message", () => {
     render(<NumberInput id="qty" decimals={0} min={2} />);
     fireEvent.change(box(), { target: { value: "1" } });

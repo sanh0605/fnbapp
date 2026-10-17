@@ -8,6 +8,7 @@ import { CartItemRow } from "./CartItemRow";
 import { formatNumber } from "@/lib/shared/format";
 import { confirm } from "@/lib/shared/dialog";
 import { calculateItemTotal, calculateItemGross, clampDiscount } from "./cart-pricing";
+import { NumberInput } from "@/components/ui/NumberInput";
 
 interface CartPanelProps {
   cart: any[];
@@ -106,7 +107,7 @@ export function CartPanel({
   const [isSplitPaymentOpen, setIsSplitPaymentOpen] = useState(false);
   const [splitPayments, setSplitPayments] = useState<{ method: "CASH" | "BANK_TRANSFER", amount: number, reference: string }[]>([]);
   const [splitMethodInput, setSplitMethodInput] = useState<"CASH" | "BANK_TRANSFER">("CASH");
-  const [splitAmountInput, setSplitAmountInput] = useState("");
+  const [splitAmountInput, setSplitAmountInput] = useState<number | null>(null);
   const [splitReferenceInput, setSplitReferenceInput] = useState("");
 
   const prevCartLengthRef = useRef(cart.length);
@@ -125,6 +126,7 @@ export function CartPanel({
   }, [cart.length, appliedPromoCode, userCustomDiscount]);
 
   const calculateSubtotal = () => cart.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+  const orderDiscountLimit = userCustomDiscountType === "PERCENT" ? 100 : calculateSubtotal();
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
 
   const calculateCartBaseTotal = () =>
@@ -138,7 +140,7 @@ export function CartPanel({
     const amount = Number(splitAmountInput);
     if (amount <= 0) return;
     setSplitPayments([...splitPayments, { method: splitMethodInput, amount, reference: splitReferenceInput }]);
-    setSplitAmountInput("");
+    setSplitAmountInput(null);
     setSplitReferenceInput("");
   };
 
@@ -252,13 +254,13 @@ export function CartPanel({
 
                   <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                     {processingOrder.items.map((item: any, idx: number) => {
+                      const names = item.modifiers.map((m: any) => m.name).join(" · ");
                       return (
                         <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-border pb-2">
                           <div className="min-w-0 flex-1">
                             <p className="font-bold text-text-primary break-words">{item.product_name}</p>
                             <p className="text-[10px] text-text-secondary">
-                              Size {item.size_name}
-                              {item.modifiers.length > 0 && ` • +${item.modifiers.map((m: any) => m.name).join(", ")}`}
+                              {item.size_name}{item.modifiers.length > 0 && ` · ${names}`}
                             </p>
                             <p className="text-[10px] text-text-secondary font-medium mt-0.5">Số lượng: {item.qty}</p>
                           </div>
@@ -447,7 +449,7 @@ export function CartPanel({
                             onClick={() => {
                               setUserCustomDiscountType("VND");
                               if (userCustomDiscount !== null) {
-                                setUserCustomDiscount(clampDiscount(userCustomDiscount, "VND", calculateSubtotal()));
+                                setUserCustomDiscount(clampDiscount(Math.round(userCustomDiscount), "VND", calculateSubtotal()));
                               }
                             }}
                             className={`px-4 py-2.5 min-h-[44px] text-xs font-bold transition-colors disabled:opacity-50 ${
@@ -476,21 +478,28 @@ export function CartPanel({
                             %
                           </button>
                         </div>
-                        <input
-                          aria-label="Giảm giá tùy chỉnh"
-                          type="number"
-                          inputMode="numeric"
-                          min="0"
-                          placeholder="Ví dụ: 10,000"
-                          disabled={!!isCheckingOut}
-                          value={userCustomDiscount === 0 || userCustomDiscount === null ? "" : userCustomDiscount}
-                          onChange={(e) => {
-                            const val = e.target.value === "" ? null : Number(e.target.value);
-                            const clamped = clampDiscount(val, userCustomDiscountType, calculateSubtotal());
-                            setUserCustomDiscount(clamped);
-                          }}
-                          className="flex-1 w-full px-3 py-2 border border-border rounded-button focus:outline-none focus:border-primary text-right font-medium text-sm min-h-[44px] h-11 disabled:opacity-50"
-                        />
+                        <div className="flex-1 min-w-0 [&_input]:min-h-[44px]">
+                          <NumberInput
+                            id="pos-order-discount"
+                            aria-label="Giảm giá tùy chỉnh"
+                            decimals={userCustomDiscountType === "PERCENT" ? 2 : 0}
+                            zeroIsEmpty
+                            value={userCustomDiscount}
+                            onValueChange={(val) => {
+                              const clamped = clampDiscount(val, userCustomDiscountType, calculateSubtotal());
+                              setUserCustomDiscount(clamped);
+                            }}
+                            disabled={!!isCheckingOut}
+                            max={orderDiscountLimit}
+                            maxMessage={
+                              userCustomDiscountType === "PERCENT"
+                                ? "Tối đa 100%"
+                                : `Tối đa ${formatNumber(orderDiscountLimit)}đ`
+                            }
+                            example="10,000"
+                            unit={userCustomDiscountType === "PERCENT" ? "%" : "đ"}
+                          />
+                        </div>
                         {userCustomDiscount !== null && (
                           <button
                             type="button"
@@ -573,7 +582,7 @@ export function CartPanel({
                     type="button"
                     onClick={() => {
                       setSplitPayments([]);
-                      setSplitAmountInput("");
+                      setSplitAmountInput(null);
                       setSplitReferenceInput("");
                       setSplitMethodInput("CASH");
                       setIsSplitPaymentOpen(true);
@@ -687,16 +696,20 @@ export function CartPanel({
                     <option value="CASH">Tiền mặt</option>
                     <option value="BANK_TRANSFER">Chuyển khoản</option>
                   </select>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="Ví dụ: 100,000"
-                    value={splitAmountInput}
-                    onChange={(e) => setSplitAmountInput(e.target.value)}
-                    className="border border-border rounded-button px-3 py-2 text-sm bg-surface-card min-h-[44px]"
-                    required
-                    min="1"
-                  />
+                  <div className="min-w-0 [&_input]:min-h-[44px]">
+                    <NumberInput
+                      id="pos-split-amount"
+                      aria-label="Số tiền phần thanh toán"
+                      decimals={0}
+                      zeroIsEmpty
+                      required
+                      min={1}
+                      example="100,000"
+                      unit="đ"
+                      value={splitAmountInput}
+                      onValueChange={setSplitAmountInput}
+                    />
+                  </div>
                 </div>
                 {splitMethodInput === "BANK_TRANSFER" && (
                   <input

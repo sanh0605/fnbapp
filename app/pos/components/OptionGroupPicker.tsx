@@ -106,14 +106,14 @@ export function OptionGroupPicker({
                       onClick={() => onChange(pickOne(picks, g, opt))}
                       aria-pressed={isLit}
                       data-lit={isLit ? "true" : undefined}
-                      className={`w-full flex items-center min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] text-left transition-colors ${
+                      className={`w-full flex items-center gap-2 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] text-left transition-colors ${
                         isLit
                           ? "border-primary bg-primary-soft text-primary font-bold"
                           : "bg-surface-card text-text-primary font-medium hover:bg-page"
                       }`}
                     >
                       <span
-                        className={`break-words ${
+                        className={`min-w-0 [overflow-wrap:anywhere] ${
                           isLit ? "text-primary font-bold" : "text-text-primary font-medium"
                         }`}
                       >
@@ -159,7 +159,7 @@ export function OptionGroupPicker({
                     >
                       <div className="flex items-center gap-1.5 min-w-0 flex-1">
                         <span
-                          className={`break-words ${
+                          className={`min-w-0 [overflow-wrap:anywhere] ${
                             count > 0 ? "text-primary font-bold" : "text-text-primary font-medium"
                           }`}
                         >
@@ -235,7 +235,7 @@ export function OptionGroupPicker({
                   className="flex justify-between items-center gap-2 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 bg-surface-card text-[18px] md:text-[16px]"
                 >
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="text-text-primary font-medium break-words">{p.name}</span>
+                    <span className="text-text-primary font-medium min-w-0 [overflow-wrap:anywhere]">{p.name}</span>
                     {priceNum > 0 && (
                       <span className="text-xs text-text-secondary mt-0.5 whitespace-nowrap">
                         +{formatNumber(priceNum)}
