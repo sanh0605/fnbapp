@@ -94,6 +94,18 @@ describe("POSScreen (Step 3 & 5)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Tiền mặt" }));
   }
 
+  function clickProduct(name: string) {
+    const el = screen.getAllByText(name)[0];
+    if (!el) throw new Error(`product tile not found: ${name}`);
+    fireEvent.click(el);
+  }
+
+  function clickProductButton(name: string) {
+    const buttons = screen.getAllByRole("button", { name });
+    if (buttons.length === 0) throw new Error(`product button not found: ${name}`);
+    fireEvent.click(buttons[0]);
+  }
+
   describe("R5: Search without accents", () => {
     it("typing 'bac xiu' finds 'Bạc xỉu'", () => {
       render(<POSScreen {...defaultProps} />);
@@ -101,7 +113,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       const searchInput = screen.getByPlaceholderText("Ví dụ: Trà đào");
       fireEvent.change(searchInput, { target: { value: "bac xiu" } });
 
-      expect(screen.getByText("Bạc xỉu")).toBeInTheDocument();
+      expect(screen.getAllByText("Bạc xỉu").length).toBeGreaterThan(0);
       expect(screen.queryByText("Đường đen sữa tươi")).toBeNull();
       expect(screen.queryByText("Trà đào")).toBeNull();
     });
@@ -112,7 +124,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       const searchInput = screen.getByPlaceholderText("Ví dụ: Trà đào");
       fireEvent.change(searchInput, { target: { value: "DUONG" } });
 
-      expect(screen.getByText("Đường đen sữa tươi")).toBeInTheDocument();
+      expect(screen.getAllByText("Đường đen sữa tươi").length).toBeGreaterThan(0);
       expect(screen.queryByText("Bạc xỉu")).toBeNull();
       expect(screen.queryByText("Trà đào")).toBeNull();
     });
@@ -139,8 +151,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       // Click on a product to open modal, then add to cart
-      const productCard = screen.getByText("Bạc xỉu");
-      fireEvent.click(productCard);
+      clickProduct("Bạc xỉu");
 
       const addBtn = screen.getByRole("button", { name: /^Thêm vào đơn/ });
       fireEvent.click(addBtn);
@@ -167,7 +178,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       // Start checkout via Thanh toán -> Tiền mặt
@@ -187,7 +198,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     it("Enter while offline sends nothing", async () => {
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       fireEvent(window, new Event("offline"));
@@ -200,7 +211,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     it("the first Enter opens the step (heading 'Khách trả bằng gì?', focus on Tiền mặt) and sends nothing", async () => {
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
@@ -213,10 +224,10 @@ describe("POSScreen (Step 3 & 5)", () => {
     it("Enter while the item modal is open (a product card clicked so ItemPicker shows) sends nothing and does not call confirm", () => {
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
-      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      clickProduct("Đường đen sữa tươi");
       expect(screen.getByRole("button", { name: /^Thêm vào đơn/ })).toBeInTheDocument();
 
       (document.activeElement as HTMLElement)?.blur?.();
@@ -242,7 +253,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     it("Enter with focus on a button does not send order", async () => {
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       const draftBtn = screen.getByRole("button", { name: "Lưu Nháp" });
@@ -266,7 +277,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(submitOrderV2).not.toHaveBeenCalled();
 
       // Add line to cart
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       // A repeat Enter (repeat: true) does nothing
@@ -281,6 +292,104 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(submitOrderV2).not.toHaveBeenCalled();
     });
 
+    it("holding Enter does not pay cash: auto-repeat keydown on focused Tiền mặt has defaultPrevented=true and does not call submitOrderV2", async () => {
+      render(<POSScreen {...defaultProps} />);
+
+      clickProduct("Bạc xỉu");
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      // Open method step
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      const cashBtn = screen.getByRole("button", { name: "Tiền mặt" });
+      expect(cashBtn).toBeInTheDocument();
+      cashBtn.focus();
+      expect(document.activeElement).toBe(cashBtn);
+
+      // Dispatch a keydown Enter with repeat: true on it
+      const enterEvent = new KeyboardEvent("keydown", {
+        key: "Enter",
+        code: "Enter",
+        repeat: true,
+        bubbles: true,
+        cancelable: true,
+      });
+      cashBtn.dispatchEvent(enterEvent);
+
+      expect(enterEvent.defaultPrevented).toBe(true);
+      expect(submitOrderV2).not.toHaveBeenCalled();
+    });
+
+    it("a deliberate second Enter (repeat: false) on focused Tiền mặt does not prevent default", async () => {
+      render(<POSScreen {...defaultProps} />);
+
+      clickProduct("Bạc xỉu");
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      // Open method step
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      const cashBtn = screen.getByRole("button", { name: "Tiền mặt" });
+      cashBtn.focus();
+      expect(document.activeElement).toBe(cashBtn);
+
+      // Deliberate keydown Enter with repeat: false
+      const enterEvent = new KeyboardEvent("keydown", {
+        key: "Enter",
+        code: "Enter",
+        repeat: false,
+        bubbles: true,
+        cancelable: true,
+      });
+      cashBtn.dispatchEvent(enterEvent);
+
+      expect(enterEvent.defaultPrevented).toBe(false);
+    });
+
+    it("two quick clicks on Tiền mặt call submitOrderV2 once", async () => {
+      let resolveSubmit: (val: any) => void;
+      vi.mocked(submitOrderV2).mockImplementation(
+        () => new Promise((resolve) => { resolveSubmit = resolve; }) as any
+      );
+
+      render(<POSScreen {...defaultProps} />);
+
+      clickProduct("Bạc xỉu");
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      const cashBtn = screen.getByRole("button", { name: "Tiền mặt" });
+
+      // Two quick clicks on Tiền mặt
+      fireEvent.click(cashBtn);
+      fireEvent.click(cashBtn);
+
+      expect(submitOrderV2).toHaveBeenCalledTimes(1);
+
+      resolveSubmit!({ success: true });
+    });
+
+    it("two quick clicks on Chuyển khoản call submitOrderV2 once", async () => {
+      let resolveSubmit: (val: any) => void;
+      vi.mocked(submitOrderV2).mockImplementation(
+        () => new Promise((resolve) => { resolveSubmit = resolve; }) as any
+      );
+
+      render(<POSScreen {...defaultProps} />);
+
+      clickProduct("Bạc xỉu");
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      const transferBtn = screen.getByRole("button", { name: "Chuyển khoản" });
+
+      // Two quick clicks on Chuyển khoản
+      fireEvent.click(transferBtn);
+      fireEvent.click(transferBtn);
+
+      expect(submitOrderV2).toHaveBeenCalledTimes(1);
+
+      resolveSubmit!({ success: true });
+    });
+
     it("sending empties the cart and closes the step", async () => {
       let resolveSubmit: (val: any) => void;
       vi.mocked(submitOrderV2).mockImplementationOnce(
@@ -289,7 +398,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       // Open method step
@@ -309,7 +418,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     it("adding a dish while the step is open closes it", async () => {
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       // Open method step
@@ -317,7 +426,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
 
       // Add second dish
-      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      clickProduct("Đường đen sữa tươi");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       // Adding a dish while the step is open closes it
@@ -337,7 +446,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       // Add Bạc xỉu to cart
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       // Checkout
@@ -351,7 +460,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
 
       // Click product card while checkout is pending
-      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      clickProduct("Đường đen sữa tươi");
 
       // Product modal does not open and nothing is added to cart
       expect(screen.queryByRole("button", { name: /^Thêm vào đơn/ })).toBeNull();
@@ -369,7 +478,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       // Add Bạc xỉu with manual discount
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       const discountInput = screen.getByLabelText("Giảm giá sản phẩm");
       fireEvent.change(discountInput, { target: { value: "5000" } });
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
@@ -417,7 +526,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} promotions={[samplePromo]} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       // Apply promo code: SALE10
@@ -466,7 +575,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       });
 
       // Next cart: add Đường đen sữa tươi
-      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      clickProduct("Đường đen sữa tươi");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       // Check that next cart has no discount applied and no promo code carried over;
@@ -491,7 +600,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       startCashCheckout();
@@ -520,7 +629,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       startCashCheckout();
@@ -550,7 +659,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       startCashCheckout();
@@ -570,7 +679,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       startCashCheckout();
@@ -595,7 +704,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.change(searchInput, { target: { value: "tra dao" } });
 
       // Trà đào is visible
-      expect(screen.getByText("Trà đào")).toBeInTheDocument();
+      expect(screen.getAllByText("Trà đào")[0]).toBeInTheDocument();
 
       // No tab should be highlighted with bg-primary
       expect(screen.getByRole("button", { name: "Bán chạy" }).className).not.toContain("bg-primary");
@@ -615,7 +724,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       startCashCheckout();
@@ -646,7 +755,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       startCashCheckout();
@@ -673,7 +782,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       startCashCheckout();
@@ -683,7 +792,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       });
 
       // Adding a dish through the picker removes the strip
-      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      clickProduct("Đường đen sữa tươi");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       await waitFor(() => {
@@ -701,7 +810,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       // Add initial dish (frozen cart)
-      fireEvent.click(screen.getByText("Bạc xỉu"));
+      clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       startCashCheckout();
@@ -714,7 +823,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
 
       // Opening a dish adds nothing (and picker does not open while pending)
-      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      clickProduct("Đường đen sữa tươi");
       expect(screen.queryByRole("button", { name: /^Thêm vào đơn/ })).toBeNull();
       expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
 
@@ -734,7 +843,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     it("focus on a button does not block Escape closing modal or '+' opening cart", () => {
       render(<POSScreen {...defaultProps} />);
 
-      const productBtn = screen.getByText("Bạc xỉu").closest("button")!;
+      const productBtn = screen.getAllByText("Bạc xỉu")[0].closest("button")!;
       productBtn.focus();
       expect(document.activeElement).toBe(productBtn);
 
@@ -769,7 +878,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     it("tapping the dish name opens the dish window", () => {
       render(<POSScreen {...defaultProps} />);
 
-      const dishBtn = screen.getByRole("button", { name: "Cà phê đen" });
+      const dishBtn = screen.getAllByRole("button", { name: "Cà phê đen" })[0];
       fireEvent.click(dishBtn);
 
       expect(screen.getByRole("button", { name: /^Thêm vào đơn/ })).toBeInTheDocument();
@@ -782,7 +891,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     it("with nothing applied, the disclosure is closed and the promo-code box is not in the page", () => {
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByRole("button", { name: "Cà phê đen" }));
+      clickProductButton("Cà phê đen");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       const disclosureBtn = screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i });
@@ -804,7 +913,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} promotions={[samplePromo]} />);
 
-      fireEvent.click(screen.getByRole("button", { name: "Bạc xỉu" }));
+      clickProductButton("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
       const disclosureBtn = screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i });
@@ -826,7 +935,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       // 1st checkout fails -> adds 1 error notice
-      fireEvent.click(screen.getByRole("button", { name: "Bạc xỉu" }));
+      clickProductButton("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
       startCashCheckout();
 
@@ -837,7 +946,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       // 4 later successful checkouts -> 4 success notices added, capped at 3 non-error notices
       for (let i = 0; i < 4; i++) {
-        fireEvent.click(screen.getByRole("button", { name: "Cà phê đen" }));
+        clickProductButton("Cà phê đen");
         fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
         startCashCheckout();
         await waitFor(() => {
@@ -860,7 +969,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       render(<POSScreen {...defaultProps} />);
 
-      fireEvent.click(screen.getByRole("button", { name: "Bạc xỉu" }));
+      clickProductButton("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
       fireEvent.click(screen.getByRole("button", { name: "Lưu Nháp" }));
 
@@ -883,7 +992,7 @@ describe("POSScreen (Step 3 & 5)", () => {
         />
       );
 
-      fireEvent.click(screen.getByRole("button", { name: "Món chưa có giá" }));
+      clickProductButton("Món chưa có giá");
 
       const region = screen.getByRole("region", { name: "Thông báo" });
       expect(within(region).getByText("Món này chưa cấu hình size & giá.")).toBeInTheDocument();

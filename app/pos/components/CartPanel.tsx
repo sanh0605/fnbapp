@@ -47,8 +47,8 @@ interface CartPanelProps {
   promotions: any[];
   appliedPromoCode: string | null;
   onResendFailedOrder: () => void;
-  isPayStepOpen?: boolean;
-  setIsPayStepOpen?: (open: boolean) => void;
+  isPayStepOpen: boolean;
+  setIsPayStepOpen: (open: boolean) => void;
 }
 
 export function CartPanel({
@@ -89,15 +89,9 @@ export function CartPanel({
   promotions,
   appliedPromoCode,
   onResendFailedOrder,
-  isPayStepOpen: isPayStepOpenProp,
-  setIsPayStepOpen: setIsPayStepOpenProp,
+  isPayStepOpen,
+  setIsPayStepOpen,
 }: CartPanelProps) {
-  const [internalIsPayStepOpen, setInternalIsPayStepOpen] = useState(false);
-  const isPayStepOpen = isPayStepOpenProp !== undefined ? isPayStepOpenProp : internalIsPayStepOpen;
-  const setIsPayStepOpen = (open: boolean) => {
-    setInternalIsPayStepOpen(open);
-    setIsPayStepOpenProp?.(open);
-  };
   const cashButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -105,12 +99,6 @@ export function CartPanel({
       cashButtonRef.current?.focus();
     }
   }, [isPayStepOpen]);
-
-  useEffect(() => {
-    if (isPayStepOpenProp === undefined) {
-      setInternalIsPayStepOpen(false);
-    }
-  }, [cart, isPayStepOpenProp]);
 
   const [isPromoOpen, setIsPromoOpen] = useState(
     () => Boolean(appliedPromoCode) || userCustomDiscount !== null
@@ -177,11 +165,10 @@ export function CartPanel({
             setIsPayStepOpen(false);
             setIsCartOpen(true);
           }}
-          className="fixed bottom-4 left-3 right-3 h-16 min-h-[64px] rounded-button bg-primary text-on-primary flex items-center justify-between px-4 z-30 md:hidden shadow-lg active:scale-[0.99] transition-transform pb-[env(safe-area-inset-bottom)] font-bold text-base"
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-3 right-3 h-16 min-h-[64px] rounded-button bg-primary text-on-primary flex items-center justify-between px-4 z-30 md:hidden shadow-panel active:scale-[0.99] transition-transform font-bold text-base"
         >
           <span>{totalItems} · {formatNumber(totalAmount)}đ</span>
           <span className="font-extrabold">Thanh toán ›</span>
-          <span className="sr-only">{totalItems} · {formatNumber(totalAmount)}đ · Thanh toán ›</span>
         </button>
       )}
 
@@ -330,7 +317,7 @@ export function CartPanel({
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="font-bold">
-                    Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : lastCheckoutError.method === "SPLIT" ? "Nhiều hình thức" : "Tiền mặt"})
+                    Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : lastCheckoutError.method === "SPLIT" ? "Chia tiền mặt + chuyển khoản" : "Tiền mặt"})
                   </p>
                   <p className="text-[11px] text-danger mt-0.5 break-words">{lastCheckoutError.error}</p>
                 </div>
@@ -567,7 +554,6 @@ export function CartPanel({
                   </h3>
                   <button
                     ref={cashButtonRef}
-                    autoFocus
                     type="button"
                     onClick={() => handleConfirmCheckout("Tien mat")}
                     disabled={!isOnline || !!isCheckingOut}
@@ -600,7 +586,6 @@ export function CartPanel({
                   <button
                     type="button"
                     onClick={() => setIsPayStepOpen(false)}
-                    disabled={!!isCheckingOut}
                     className="w-full text-text-secondary hover:text-text-primary hover:bg-page font-medium text-sm py-2 rounded-button transition-colors flex justify-center items-center min-h-[44px]"
                   >
                     ‹ Quay lại đơn

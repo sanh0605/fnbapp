@@ -708,8 +708,6 @@ export default function POSScreen({
     addToast("error", "Chưa gửi được đơn", refusal || "Kiểm tra mạng rồi bấm Gửi lại.");
   };
 
-  const handleConfirmCheckoutRef = useRef<(method: string, payments?: any[]) => void>(() => {});
-
   const resetAfterSale = (draftId?: string | null) => {
     checkoutAttemptRef.current = null;
     clientCapturedAtRef.current = null;
@@ -907,10 +905,6 @@ export default function POSScreen({
   };
 
   useEffect(() => {
-    handleConfirmCheckoutRef.current = handleConfirmCheckout;
-  });
-
-  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
       if (
@@ -931,7 +925,10 @@ export default function POSScreen({
         setEditingLineId(null);
         setIsCartOpen(false);
       } else if (e.key === "Enter") {
-        if (e.repeat) return;
+        if (e.repeat) {
+          e.preventDefault();
+          return;
+        }
         if (activeEl?.tagName === "BUTTON") return;
         if (
           cart.length > 0 &&

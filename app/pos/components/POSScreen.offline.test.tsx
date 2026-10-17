@@ -36,6 +36,12 @@ afterEach(() => {
   cleanup();
 });
 
+function clickProduct(name: string) {
+  const el = screen.getAllByText(name)[0];
+  if (!el) throw new Error(`product not found: ${name}`);
+  fireEvent.click(el);
+}
+
 describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
   it("offline: pay buttons are disabled, offline banner is shown, and Enter key sends nothing", async () => {
     Object.defineProperty(window.navigator, "onLine", {
@@ -62,7 +68,7 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     ).toBeInTheDocument();
 
     // Add item to cart
-    fireEvent.click(screen.getByText("Cà phê đen"));
+    clickProduct("Cà phê đen");
     fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
     // Thanh toán button is disabled while offline (BR-SALE-020)
@@ -93,7 +99,7 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     );
 
     // Add item to cart
-    fireEvent.click(screen.getByText("Cà phê đen"));
+    clickProduct("Cà phê đen");
     fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
     // Checkout with cash (BR-SALE-020: Thanh toán then Tiền mặt)
@@ -156,7 +162,7 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     );
 
     // Add item to cart
-    fireEvent.click(screen.getByText("Cà phê đen"));
+    clickProduct("Cà phê đen");
     fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
     // Checkout with cash (BR-SALE-020: Thanh toán then Tiền mặt)
@@ -212,7 +218,7 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     );
 
     // Add item to cart
-    fireEvent.click(screen.getByText("Cà phê đen"));
+    clickProduct("Cà phê đen");
     fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
     // Checkout with cash (BR-SALE-020: Thanh toán then Tiền mặt)
@@ -230,5 +236,38 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     // Refusal shows no "Gửi lại" or "Thử lại" button
     expect(screen.queryByRole("button", { name: "Gửi lại" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Thử lại" })).toBeNull();
+  });
+
+  it("cart has a line, open the step, go offline: Tiền mặt, Chuyển khoản and Chia tiền mặt + chuyển khoản are disabled", async () => {
+    render(
+      <POSScreen
+        brandId="BR-1"
+        outletId="OUT-1"
+        categories={[CATEGORY]}
+        products={[PRODUCT]}
+        variants={VARIANTS}
+        modifiers={[]}
+        bestSellers={[PRODUCT.id]}
+      />
+    );
+
+    // Cart has a line
+    clickProduct("Cà phê đen");
+    fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+    // Open the step
+    fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+    expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tiền mặt" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Chuyển khoản" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Chia tiền mặt + chuyển khoản" })).not.toBeDisabled();
+
+    // Go offline the way the offline tests simulate it
+    fireEvent(window, new Event("offline"));
+
+    // Tiền mặt, Chuyển khoản and the split button are disabled
+    expect(screen.getByRole("button", { name: "Tiền mặt" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Chuyển khoản" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Chia tiền mặt + chuyển khoản" })).toBeDisabled();
   });
 });

@@ -4,6 +4,12 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import React from "react";
 import { CartPanel } from "./CartPanel";
 
+// Owns the step state the way POSScreen does; isPayStepOpen only sets where it starts.
+function CartPanelWithState(props: any) {
+  const [isPayStepOpen, setIsPayStepOpen] = React.useState(props.isPayStepOpen ?? false);
+  return <CartPanel {...props} isPayStepOpen={isPayStepOpen} setIsPayStepOpen={setIsPayStepOpen} />;
+}
+
 afterEach(() => {
   cleanup();
 });
@@ -60,6 +66,8 @@ describe("Discount (R3)", () => {
     appliedPromotions: [],
     promotions: [],
     appliedPromoCode: null,
+    isPayStepOpen: false,
+    setIsPayStepOpen: vi.fn(),
   };
 
   describe("R3 Discount box clamping", () => {
@@ -140,7 +148,7 @@ describe("Discount (R3)", () => {
 
   describe("Cash checkout (BR-SALE-020)", () => {
     it("asserts Tiền mặt comes before Chuyển khoản in document order", () => {
-      render(<CartPanel {...defaultProps} />);
+      render(<CartPanelWithState {...defaultProps} />);
       fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
       const cashButton = screen.getByRole("button", { name: "Tiền mặt" });
       const transferButton = screen.getByRole("button", { name: "Chuyển khoản" });
@@ -151,7 +159,7 @@ describe("Discount (R3)", () => {
 
     it("clicking Tiền mặt calls handleConfirmCheckout with 'Tien mat' once", () => {
       const handleConfirmCheckout = vi.fn();
-      render(<CartPanel {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
+      render(<CartPanelWithState {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
       fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
       const cashButton = screen.getByRole("button", { name: "Tiền mặt" });
       fireEvent.click(cashButton);
@@ -162,13 +170,13 @@ describe("Discount (R3)", () => {
 
   describe("Task 5a: Cart payment flow and method step (BR-SALE-020)", () => {
     it("renders one 'Thanh toán' button and no 'TIỀN MẶT' in the order view", () => {
-      render(<CartPanel {...defaultProps} />);
+      render(<CartPanelWithState {...defaultProps} />);
       expect(screen.getByRole("button", { name: "Thanh toán" })).toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /TIỀN MẶT/i })).toBeNull();
     });
 
     it("clicking 'Thanh toán' shows 'Khách trả bằng gì?', and Tiền mặt has focus", () => {
-      render(<CartPanel {...defaultProps} />);
+      render(<CartPanelWithState {...defaultProps} />);
       fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
       expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
       expect(document.activeElement).toBe(screen.getByRole("button", { name: "Tiền mặt" }));
@@ -176,37 +184,55 @@ describe("Discount (R3)", () => {
 
     it("Tiền mặt calls checkout with 'Tien mat'; Chuyển khoản calls it with 'Chuyen khoan'", () => {
       const handleConfirmCheckout = vi.fn();
-      const { unmount } = render(<CartPanel {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
+      const { unmount } = render(<CartPanelWithState {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
       fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
       fireEvent.click(screen.getByRole("button", { name: "Tiền mặt" }));
       expect(handleConfirmCheckout).toHaveBeenCalledWith("Tien mat");
 
       unmount();
       handleConfirmCheckout.mockClear();
-      render(<CartPanel {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
+      render(<CartPanelWithState {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
       fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
       fireEvent.click(screen.getByRole("button", { name: "Chuyển khoản" }));
       expect(handleConfirmCheckout).toHaveBeenCalledWith("Chuyen khoan");
     });
 
-    it("offline: Thanh toán is disabled; offline with the step open: Tiền mặt and Chuyển khoản are disabled", () => {
-      const { rerender } = render(<CartPanel {...defaultProps} isOnline={false} />);
+    it("offline: Thanh toán is disabled; offline with the step open: Tiền mặt, Chuyển khoản, and Chia tiền mặt + chuyển khoản are disabled", () => {
+      const { unmount } = render(<CartPanelWithState {...defaultProps} isOnline={false} isPayStepOpen={false} />);
       expect(screen.getByRole("button", { name: "Thanh toán" })).toBeDisabled();
+      unmount();
 
       // Offline with the step open
-      rerender(<CartPanel {...defaultProps} isOnline={false} {...({ isPayStepOpen: true } as any)} />);
+      render(<CartPanelWithState {...defaultProps} isOnline={false} isPayStepOpen={true} />);
       expect(screen.getByRole("button", { name: "Tiền mặt" })).toBeDisabled();
       expect(screen.getByRole("button", { name: "Chuyển khoản" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Chia tiền mặt + chuyển khoản" })).toBeDisabled();
     });
 
     it("Quay lại đơn returns to the order view", () => {
-      render(<CartPanel {...defaultProps} />);
+      render(<CartPanelWithState {...defaultProps} />);
       fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
       expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
 
       fireEvent.click(screen.getByRole("button", { name: /Quay lại đơn/i }));
       expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
       expect(screen.getByRole("button", { name: "Thanh toán" })).toBeInTheDocument();
+    });
+
+    it("error strip displays 'Chia tiền mặt + chuyển khoản' when lastCheckoutError method is SPLIT", () => {
+      render(
+        <CartPanelWithState
+          {...defaultProps}
+          lastCheckoutError={{
+            method: "SPLIT",
+            error: "Lỗi kết nối",
+            retry: false,
+          }}
+        />
+      );
+      expect(
+        screen.getByText(/Lỗi thanh toán \(Chia tiền mặt \+ chuyển khoản\)/)
+      ).toBeInTheDocument();
     });
   });
 });

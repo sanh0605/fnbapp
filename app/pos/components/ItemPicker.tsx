@@ -150,7 +150,7 @@ export function ItemPicker({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:max-h-[60%] md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border min-h-0">
+      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:max-h-[60%] md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border">
         <div className="w-11 h-1.5 rounded-full bg-border mx-auto mt-2 shrink-0 md:hidden" />
 
         <div className="flex items-center justify-between px-4 py-1.5 md:px-3.5 md:pt-3 md:pb-2 shrink-0">

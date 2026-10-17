@@ -729,6 +729,7 @@ describe("POSScreen ItemPicker", () => {
     const cartLines = Array.from(document.querySelectorAll("h4")).filter(
       h => h.textContent?.includes("Cà phê đá")
     );
+    expect(cartLines).toHaveLength(1);
     const cartRow = cartLines[0].closest("div[class*='relative overflow-hidden']") || cartLines[0].parentElement!;
     const qtyEl = cartRow.querySelector('button[aria-label="Giảm số lượng"]')?.nextElementSibling;
     expect(qtyEl).not.toBeNull();
@@ -861,16 +862,16 @@ describe("POSScreen ItemPicker", () => {
     const cartLines = Array.from(document.querySelectorAll("h4"));
     expect(cartLines).toHaveLength(2);
 
-    const lineAHeading = cartLines.find(h => h.textContent?.includes("Cà phê đá"))!;
-    expect(lineAHeading).not.toBeNull();
+    const lineAHeading = cartLines.find(h => h.textContent?.includes("Cà phê đá"));
+    expect(lineAHeading).toBeDefined();
 
     // Click cart line A to open picker in edit mode
-    await fireClick(lineAHeading);
+    await fireClick(lineAHeading!);
     const updateBtn = addToCartButton();
     expect(updateBtn.textContent?.trim().startsWith("Cập nhật")).toBe(true);
 
     // Remove line A from the cart while picker is open (labelled "Xoá" in CartItemRow)
-    const cartRowA = lineAHeading.closest("div[class*='relative overflow-hidden']") || lineAHeading.parentElement!;
+    const cartRowA = lineAHeading!.closest("div[class*='relative overflow-hidden']") || lineAHeading!.parentElement!;
     const removeBtnA = cartRowA.querySelector('button[aria-label="Xoá"]') as HTMLButtonElement;
     expect(removeBtnA).not.toBeNull();
     await fireClick(removeBtnA);
@@ -935,14 +936,32 @@ describe("POSScreen ItemPicker", () => {
     const trungVariants = [
       { id: "v-trung", product_id: "p-trung", size_name: "1 quả", price: 5000 },
     ];
+    const cfd = makeProduct("p-cfd", "Cà phê đá");
+    const cfdVariants = [
+      { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
+    ];
+    const toppingGroup = {
+      id: "MG-TOPPING",
+      name: "Thêm Topping",
+      selection_mode: "MANY" as const,
+      max_total: null,
+      allow_standalone: true,
+      sort_order: 50,
+      status: "ACTIVE",
+    };
+    const toppingOptions = [
+      { id: "opt-kem-muoi", group_id: "MG-TOPPING", name: "Kem muối", price: 4000, status: "ACTIVE" },
+    ];
 
     await renderTracked(
       <POSScreen
         categories={[CATEGORY]}
-        products={[trung]}
-        variants={trungVariants}
-        modifiers={[]}
-        bestSellers={[trung.id]}
+        products={[trung, cfd]}
+        variants={[...trungVariants, ...cfdVariants]}
+        modifiers={toppingOptions}
+        optionGroups={[toppingGroup]}
+        optionGroupLinks={[{ group_id: "MG-TOPPING", product_id: cfd.id }]}
+        bestSellers={[trung.id, cfd.id]}
       />
     );
 
@@ -955,13 +974,13 @@ describe("POSScreen ItemPicker", () => {
     expect(cartHeadings).toHaveLength(0);
 
     // Picker is open with submit button
-    expect(addToCartButton()).not.toBeNull();
+    addToCartButton();
 
     // Size group heading "Cỡ ly" is present
     const sizeHeading = Array.from(document.querySelectorAll("span")).find(
       el => el.textContent?.trim() === "Cỡ ly"
     );
-    expect(sizeHeading).not.toBeNull();
+    expect(sizeHeading).toBeDefined();
 
     // No other option group headers (only size group)
     const otherGroupHeaders = Array.from(document.querySelectorAll("span")).filter(

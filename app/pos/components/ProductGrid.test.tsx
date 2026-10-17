@@ -101,14 +101,72 @@ describe("ProductGrid empty states and Task 3a behaviour", () => {
       />
     );
 
-    // hasPromo reaches card -> shows "Khuyến mãi"
-    expect(screen.getByText("Khuyến mãi")).toBeInTheDocument();
+    // hasPromo reaches card / row -> shows "Khuyến mãi"
+    expect(screen.getAllByText("Khuyến mãi").length).toBeGreaterThan(0);
 
     // hasOptions reaches card -> shows "Có tuỳ chọn"
     expect(screen.getByText("Có tuỳ chọn")).toBeInTheDocument();
 
-    // onProductClick reaches card -> clicking card calls onProductClick(product)
-    fireEvent.click(screen.getByRole("button", { name: "Cà phê đen" }));
+    // onProductClick reaches card / row -> clicking calls onProductClick(product)
+    const buttons = screen.getAllByRole("button", { name: "Cà phê đen" });
+    expect(buttons.length).toBe(2);
+    fireEvent.click(buttons[0]);
     expect(onProductClick).toHaveBeenCalledWith(product);
+  });
+
+  it("swipes between tabs on phone (max-width: 767px), but ignores swipe on desktop", () => {
+    const setActiveCategory = vi.fn();
+    const originalMatchMedia = window.matchMedia;
+
+    const matchMediaMock = vi.fn().mockImplementation((query: string) => ({
+      matches: query.includes("max-width: 767px"),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+    window.matchMedia = matchMediaMock;
+
+    try {
+      const { container } = render(
+        <ProductGrid
+          {...defaultProps}
+          categories={[{ id: "CAT-1", name: "Cà phê" }]}
+          activeCategory="BEST_SELLERS"
+          setActiveCategory={setActiveCategory}
+        />
+      );
+
+      const swipeArea = container.querySelector("div[class*='overflow-y-auto min-h-[200px]']")!;
+      if (!swipeArea) throw new Error("swipe area not found");
+
+      // Swipe left (next tab) on phone
+      fireEvent.touchStart(swipeArea, { touches: [{ clientX: 200, clientY: 100 }] });
+      fireEvent.touchEnd(swipeArea, { changedTouches: [{ clientX: 100, clientY: 100 }] });
+      expect(setActiveCategory).toHaveBeenCalledWith("ALL");
+
+      setActiveCategory.mockClear();
+
+      // On desktop (matches: false)
+      matchMediaMock.mockImplementation(() => ({
+        matches: false,
+        media: "",
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+
+      fireEvent.touchStart(swipeArea, { touches: [{ clientX: 200, clientY: 100 }] });
+      fireEvent.touchEnd(swipeArea, { changedTouches: [{ clientX: 100, clientY: 100 }] });
+      expect(setActiveCategory).not.toHaveBeenCalled();
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
   });
 });
