@@ -22,6 +22,7 @@ When a rule changes, preserve the old decision in Git/audit evidence and record 
 | Domain file | Contents | Code family |
 |---|---|---|
 | [`docs/02-rules/business-rules/sales.md`](sales.md) | Sales and order rules | `BR-SALE-*` |
+| [`docs/02-rules/business-rules/till.md`](till.md) | Till: choosing a dish, cart lines, the Thanh toán step | `BR-SALE-019`, `BR-SALE-020` |
 | [`docs/02-rules/business-rules/cogs.md`](cogs.md) | COGS and reporting rules | `BR-COGS-*` |
 | [`docs/02-rules/business-rules/inventory.md`](inventory.md) | Inventory, issue slips, production rules | `BR-INV-*` |
 | [`docs/02-rules/business-rules/stocktake.md`](stocktake.md) | Stocktake: blank lines, cancelling, editing, confirming | `BR-INV-010`, `BR-INV-011`, `BR-INV-012`, `BR-INV-017` |

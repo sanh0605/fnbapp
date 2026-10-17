@@ -176,7 +176,7 @@ Every edit rebuilt the order from today's catalog. The new version credited the 
 
 2026-10-15 (spec R4; owner rule 2026-09-28, no hard-coding what he may change): `product_categories.icon` holds the emoji shown on a dish card at the till, set on the dish-group form. Blank means no icon on the card, not a default cup. Up to 8 characters (one emoji can be several code units), refused with "Biểu tượng tối đa 8 ký tự". Migration `0130` (run 2026-10-15, before the push that ships the form) backfills only the three groups the old keyword table really matched: Cà phê ☕, Trà 🍵, Yogurt 🥛; Giải trí, Thức ăn and Topping get no icon (the old fallback cup was wrong there).
 
-2026-10-17 (till redo, mockup A, chosen under the owner's 2026-10-15 delegation): the icon shows on the dish-group tab at the top of the till, no longer on each dish card. The card shows the dish name and its size buttons with prices instead.
+2026-10-17 (till redo, mockup A, chosen under the owner's 2026-10-15 delegation): the icon shows on the dish-group tab at the top of the till, no longer on each dish card. The card shows the dish name and its size buttons with prices instead. The size buttons are reversed the same day by `BR-SALE-019` (`docs/02-rules/business-rules/till.md`).
 
 ### BR-SALE-018 — TIỀN MẶT sends the order at once; the till does not count change
 
@@ -185,4 +185,5 @@ Every edit rebuilt the order from today's catalog. The new version credited the 
 - TIỀN MẶT sends a cash order straight away. The Enter key asks once, "Xác nhận thanh toán TIỀN MẶT cho đơn hàng?", then sends — both as before R2. Enter does nothing while a dish or draft window is open.
 - No amount the customer handed over is asked, and no change is shown.
 - TIỀN MẶT stays on the left and CHUYỂN KHOẢN on the right (2026-10-17, till redo). Both send at once, so a cashier who taps by position would record cash as a transfer if the two swapped.
+- **Changed 2026-10-17 (owner, `BR-SALE-020` in `docs/02-rules/business-rules/till.md`):** the two cart buttons become one Thanh toán button followed by a method step. The no-change-count part above stays.
 - Nothing was ever stored by the step, so no data changes.
