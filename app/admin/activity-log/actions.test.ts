@@ -89,7 +89,7 @@ describe("getActivityLogEvents", () => {
     expect(orderSearch.ilike).toHaveBeenCalledWith("order_no", "%PHD001%");
     expect(events.eq).toHaveBeenCalledWith("event_type", "VOIDED");
     // The picker shows labels, the log stores logins: the label of two same-named people picks only one login.
-    expect(events.in).toHaveBeenCalledWith("actor_name", ["Admin (admin2)", "admin2"]);
+    expect(events.in).toHaveBeenCalledWith("actor_name", ["admin2"]);
     expect(events.gte).toHaveBeenCalledWith("event_at", "2026-07-01T00:00:00.000Z");
     expect(events.lte).toHaveBeenCalledWith("event_at", "2026-07-31T23:59:59.999Z");
     expect(events.or).toHaveBeenCalledWith(
@@ -132,5 +132,28 @@ describe("getActivityLogEvents", () => {
     expect(events.or).toHaveBeenCalledWith(
       'id.ilike.%tài chí%,reason.ilike.%tài chí%,actor_name.ilike.%tài chí%,actor_name.in.("tuyen2612")',
     );
+  });
+
+  describe("the person filter maps a picker value back to the stored logins", () => {
+    const actorLogins = async (users: { id: string; username: string; name: string | null }[], actor: string) => {
+      const events = query({ data: [], count: 0, error: null });
+      const usersQuery = query({ data: users, error: null });
+      mocks.getSupabaseClient.mockReturnValue({
+        from: (table: string) => (table === "order_events" ? events : table === "users" ? usersQuery : query({ data: [], error: null })),
+      });
+      await getActivityLogEvents({ actor });
+      return events.in.mock.calls[0][1];
+    };
+
+    it("a label equal to another person's login picks only the person who owns that label", async () => {
+      // B's label is "lan", which is also A's login.
+      const users = [{ id: "u1", username: "lan", name: "Lan Anh" }, { id: "u2", username: "b2", name: "lan" }];
+      expect(await actorLogins(users, "lan")).toEqual(["b2"]);
+    });
+
+    it("an old plain-name link finds every staff who shares that name", async () => {
+      const users = [{ id: "u1", username: "admin", name: "Admin" }, { id: "u2", username: "admin2", name: "Admin" }];
+      expect(await actorLogins(users, "Admin")).toEqual(["admin", "admin2"]);
+    });
   });
 });

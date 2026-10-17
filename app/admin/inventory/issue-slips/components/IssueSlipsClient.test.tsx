@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, within } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import IssueSlipsClient from "./IssueSlipsClient";
 import type { IssueSlipListPage } from "@/lib/stock/issue-slip-list";
 
@@ -54,6 +54,7 @@ const defaultPageData: IssueSlipListPage = {
   lastIndex: 0,
   rangeError: false,
   people: ["admin", "tuyen2612"],
+  personLabel: null,
   totals: { count: 0, value: 0 },
 };
 
@@ -88,6 +89,19 @@ describe("IssueSlipsClient", () => {
     expect(options).toHaveLength(3);
     expect(options.map(o => o.textContent)).toEqual(["Tất cả", "Phiếu xuất", "Đã huỷ"]);
     expect(options.map(o => o.getAttribute("value"))).toEqual(["ALL", "SLIP", "CANCELLED"]);
+  });
+
+  it("an old ?person=<login> link preselects that person's label, and a new pick still wins", () => {
+    searchParams.set("person", "tuyen2612");
+    try {
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={{ ...defaultPageData, people: ["admin", "Tài Chí Tuyền"], personLabel: "Tài Chí Tuyền" }} />);
+      const select = screen.getByLabelText("Người ghi") as HTMLSelectElement;
+      expect(select.value).toBe("Tài Chí Tuyền");
+      fireEvent.change(select, { target: { value: "admin" } });
+      expect(select.value).toBe("admin");
+    } finally {
+      searchParams.delete("person");
+    }
   });
 
   // BR-UI-003 / BR-UI-005 and Review Focus 4 (wave K3).

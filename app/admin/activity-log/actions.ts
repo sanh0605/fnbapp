@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/auth/auth";
-import { buildStaffNameResolver, staffPickerLabels } from "@/lib/auth/staff-names";
+import { buildStaffNameResolver, staffLabel, staffPickerLabels } from "@/lib/auth/staff-names";
 import { findAllWhereInBatches } from "@/lib/db/tables";
 import { getSupabaseClient } from "@/lib/db/supabase";
 
@@ -76,10 +76,14 @@ export async function getActivityLogEvents(
     .from("order_events")
     .select("*", { count: "exact" });
   if (filters.type) eventsQuery = eventsQuery.eq("event_type", filters.type);
-  // The picker shows labels but the log stores logins: map the label back to its login(s).
+  // The picker shows labels but the log stores logins: map the value back to its login(s).
+  // An old link may carry a login or a plain name, tried in that order after the label.
   if (filters.actor) {
-    const logins = users.filter(u => pickerLabels.get(u.username) === filters.actor).map(u => u.username);
-    eventsQuery = eventsQuery.in("actor_name", [filters.actor, ...logins]);
+    const keys: ((u: typeof users[number]) => string | undefined)[] = [
+      u => pickerLabels.get(u.username), u => u.username, u => staffLabel(u).name,
+    ];
+    const hits = keys.map(key => users.filter(u => key(u) === filters.actor).map(u => u.username));
+    eventsQuery = eventsQuery.in("actor_name", hits.find(h => h.length) ?? [filters.actor]);
   }
   if (filters.from) eventsQuery = eventsQuery.gte("event_at", filters.from);
   if (filters.to) eventsQuery = eventsQuery.lte("event_at", filters.to);

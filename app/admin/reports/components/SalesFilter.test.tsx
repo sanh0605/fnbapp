@@ -170,6 +170,23 @@ describe("SalesFilter brand box (wave K5)", () => {
     expect(pushed().get("staffName")).toBe("tuyen2612");
   });
 
+  it("two staff with the same name stay two different choices in the staff box", () => {
+    render(
+      <SalesFilter
+        brands={[]}
+        users={[
+          { id: "USR-001", username: "admin", name: "Admin", status: "ACTIVE" },
+          { id: "USR-004", username: "admin2", name: "Admin", status: "ACTIVE" },
+        ]}
+        categories={[]}
+        range={THIS_MONTH}
+        today={TODAY}
+      />,
+    );
+    expect(screen.getByRole("option", { name: "Admin (admin)" })).toHaveAttribute("value", "admin");
+    expect(screen.getByRole("option", { name: "Admin (admin2)" })).toHaveAttribute("value", "admin2");
+  });
+
   it("renders only ACTIVE brands, users, and categories in the dropdowns", () => {
     render(
       <SalesFilter

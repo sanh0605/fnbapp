@@ -91,6 +91,38 @@ describe("listIssueSlipsPage", () => {
     expect(run({ person: "admin2" }).rows.map(r => r.id)).toEqual(["ISL-00076"]);
   });
 
+  describe("old links and look-alike labels", () => {
+    const run = (us: typeof users, logins: [string, string], filters = {}) => listIssueSlipsPage({
+      slips: [{ ...slips[0], created_by_name: logins[0] }, { ...slips[1], created_by_name: logins[1] }],
+      issues, items, lineValues, filters,
+      staffName: buildStaffNameResolver(us), pickerLabels: staffPickerLabels(us),
+    });
+    const twins = [
+      { id: "USR-001", username: "admin", name: "Admin" },
+      { id: "USR-004", username: "admin2", name: "Admin" },
+    ];
+    const mixed = [
+      { id: "USR-A", username: "lan", name: "Lan Anh" },
+      { id: "USR-B", username: "b2", name: "lan" },
+    ];
+
+    it("a label equal to another person's login picks only the person who owns that label", () => {
+      // B's label is "lan", which is also A's login; ISL-00077 is B's slip.
+      expect(run(mixed, ["lan", "b2"], { person: "lan" }).rows.map(r => r.id)).toEqual(["ISL-00077"]);
+    });
+
+    it("an old plain-name link finds every staff who shares that name", () => {
+      expect(run(twins, ["admin", "admin2"], { person: "Admin" }).rows.map(r => r.id)).toEqual(["ISL-00077", "ISL-00076"]);
+    });
+
+    it("returns the picker label when the link matched exactly one person, else null", () => {
+      expect(run(twins, ["admin", "admin2"], { person: "admin2" }).personLabel).toBe("Admin (admin2)");
+      expect(run(twins, ["admin", "admin2"], { person: "Admin (admin2)" }).personLabel).toBe("Admin (admin2)");
+      expect(run(twins, ["admin", "admin2"], { person: "Admin" }).personLabel).toBeNull();
+      expect(run(twins, ["admin", "admin2"]).personLabel).toBeNull();
+    });
+  });
+
   it("keeps the stored text for a person missing from users", () => {
     const p = listIssueSlipsPage({ slips, issues, items, lineValues, filters: {}, staffName: buildStaffNameResolver([]), pickerLabels: new Map() });
     expect(p.rows.map(r => r.createdByName)).toEqual(["tuyen2612", "tuyen2612"]);

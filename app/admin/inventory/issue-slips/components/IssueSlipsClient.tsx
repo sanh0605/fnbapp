@@ -235,7 +235,7 @@ export default function IssueSlipsClient({
           <Field label="Người ghi" htmlFor="person-select">
             <Select
               id="person-select"
-              value={draft.person}
+              value={draft.person === searchParams.get("person") ? pageData.personLabel ?? draft.person : draft.person}
               onChange={(e) => setField("person", e.target.value)}
             >
               <option value="ALL">Tất cả</option>

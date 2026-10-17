@@ -24,6 +24,8 @@ export interface IssueSlipListRow {
 export interface IssueSlipListPage {
   rows: IssueSlipListRow[]; total: number; page: number; pageCount: number;
   firstIndex: number; lastIndex: number; rangeError: boolean; people: string[];
+  // The picker label of the one person the person filter matched (an old link may carry a login); else null.
+  personLabel: string | null;
   // BR-UI-004: value total over every matched row (all pages), rounded once from
   // the exact sum (BR-DATA-005). Cancelled slips never count (BR-ACCESS-003).
   totals: { count: number; value: number };
@@ -84,12 +86,16 @@ export function listIssueSlipsPage(input: {
   const endMs = to && range ? range.endUtc.getTime() : Infinity;
   const kind = filters.kind === "SLIP" || filters.kind === "CANCELLED" ? filters.kind : null;
 
-  // The picker value is a label; an old link carries the login.
+  // The picker value is a label; an old link carries a login or a plain name, tried in that order.
   const person = filters.person && filters.person !== "ALL" ? filters.person : null;
+  const personKey = [(c: Candidate) => c.pickerLabel, (c: Candidate) => c.login, (c: Candidate) => c.row.createdByName]
+    .find(key => candidates.some(c => key(c) === person));
+  const isPerson = (c: Candidate) => personKey?.(c) === person;
+  const personLabels = new Set(candidates.filter(isPerson).map(c => c.pickerLabel));
 
   const matched = candidates.filter(c => {
     if (kind ? c.row.kind !== kind : c.row.kind === "CANCELLED") return false;
-    if (person && c.pickerLabel !== person && c.login !== person) return false;
+    if (person && !isPerson(c)) return false;
     if (c.timeMs < startMs || c.timeMs > endMs) return false;
     return !term || c.haystack.includes(term);
   });
@@ -112,5 +118,6 @@ export function listIssueSlipsPage(input: {
   return {
     rows: slice.map(c => c.row), total, page, pageCount,
     firstIndex: total === 0 ? 0 : start + 1, lastIndex: start + slice.length, rangeError, people, totals,
+    personLabel: personLabels.size === 1 ? [...personLabels][0] : null,
   };
 }
