@@ -35,7 +35,7 @@ brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-
 - A type can be deleted only by the owner (`requireOwner()`), and only while no group uses it. A refusal names the groups, for example "Loại món đang được dùng ở nhóm: Cà phê, Trà.".
 - Tổng quan counts a cup by this mark (`BR-SALE-007`).
 
-**Behaviour change — 2026-10-15 (Biểu tượng nhóm món, `BR-SALE-017`, migration `0130`, runs before the push):** the Nhóm món form has a "Biểu tượng" box. The emoji shows on the dish cards at the till; blank means no icon (no default cup). Trimmed; more than 8 characters is refused with "Biểu tượng tối đa 8 ký tự". The till no longer guesses an icon from the group name. The return-to links on the dish pages go through the shared `safeReturnTo`.
+**Behaviour change — 2026-10-15 (Biểu tượng nhóm món, `BR-SALE-017`, migration `0130`, runs before the push):** the Nhóm món form has a "Biểu tượng" box. The emoji shows at the till (on the dish cards until 2026-10-17; since the till redo, on the dish-group tab); blank means no icon (no default cup). Trimmed; more than 8 characters is refused with "Biểu tượng tối đa 8 ký tự". The till no longer guesses an icon from the group name. The return-to links on the dish pages go through the shared `safeReturnTo`.
 
 **Reviewed, no behaviour change — 2026-10-14:** `app/admin/products/modifiers/actions.ts` one message spelled "Thiếu mã tuỳ chọn" instead of "tùy" (`BR-UI-001`); no logic changed.
 
