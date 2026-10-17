@@ -350,13 +350,13 @@ export function UiFeedbackTool() {
 
       <div style={{ pointerEvents: "auto" }}>
         {!picking && (
-          <button ref={triggerButtonRef} type="button" onClick={toggleOpen} style={{ ...buttonStyle, bottom: isMobile ? 150 : 88 }}>
+          <button ref={triggerButtonRef} type="button" onClick={toggleOpen} style={{ ...buttonStyle, bottom: isMobile ? "calc(150px + env(safe-area-inset-bottom))" : 88 }}>
             {isOpen ? "Đóng" : "Góp ý"}
           </button>
         )}
 
         {isOpen && !composing && (
-          <div ref={panelRef} style={{ ...panelStyle, bottom: isMobile ? 206 : 144 }}>
+          <div ref={panelRef} style={{ ...panelStyle, bottom: isMobile ? "calc(206px + env(safe-area-inset-bottom))" : 144 }}>
             <div style={{ fontWeight: 600, marginBottom: 10 }}>Góp ý giao diện</div>
             <button type="button" style={actionButtonStyle} onClick={startPicking}>
               Chọn phần tử để góp ý
@@ -484,7 +484,7 @@ export function UiFeedbackTool() {
         )}
 
         {composing && (
-          <div ref={panelRef} style={{ ...panelStyle, bottom: isMobile ? 206 : 144 }}>
+          <div ref={panelRef} style={{ ...panelStyle, bottom: isMobile ? "calc(206px + env(safe-area-inset-bottom))" : 144 }}>
             <div style={{ fontWeight: 600, marginBottom: 10 }}>
               {pendingFingerprint ? "Ghi chú cho phần tử đã chọn" : "Góp ý chung"}
             </div>
