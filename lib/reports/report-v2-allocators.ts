@@ -54,6 +54,7 @@ export function breakdownRevenueByProduct(
 
     // Modifier rows (each modifier is its own pseudo-product for revenue attribution)
     for (const mod of modifiers) {
+      if (Number(mod.price) === 0) continue; // 0đ choices (Ít đá, Ít ngọt) are not toppings and carry no revenue
       const modKey = `MOD:${mod.id}`;
       if (!map.has(modKey)) {
         map.set(modKey, {
