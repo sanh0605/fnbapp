@@ -115,7 +115,7 @@ export function ToastStack({
       role="region"
       aria-live="polite"
       aria-label="Thông báo"
-      className="fixed top-3 left-1/2 -translate-x-1/2 w-[min(92vw,28rem)] flex flex-col gap-2 z-[70]"
+      className="fixed top-16 left-1/2 -translate-x-1/2 w-[min(92vw,28rem)] flex flex-col gap-2 z-[70]"
     >
       {toasts.map((toast) => {
         const config = KIND_CONFIG[toast.kind];

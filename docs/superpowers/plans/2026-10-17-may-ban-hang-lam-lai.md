@@ -219,7 +219,7 @@ There is no `action` field: no notice offers one, because "Gửi lại" stays th
 
 **Look** (mockup board "Notice"):
 - **The stack:**
-  - fixed, top centre (`top-3 left-1/2 -translate-x-1/2`);
+  - fixed, top centre, below the till's 56 px header (`top-16 left-1/2 -translate-x-1/2`; was `top-3` until Playwright showed an error notice covering Nháp and Đăng xuất);
   - width `min(92vw, 28rem)`, gap 8 px, `z-[70]`;
   - `role="region" aria-live="polite" aria-label="Thông báo"`.
 - **Each notice:**
@@ -309,7 +309,7 @@ Also a memo, `productsWithOptions: Set<string>`, holding the ids of products tha
 1. **Notices.** Replace POSScreen's own toast markup and `addToast` with `ToastItem[]` state and `<ToastStack>`, applying the drop rule from Hiện trạng 3. Messages:
    - paid: "Thanh toán thành công", success, nothing else;
    - back online: "Đã có mạng trở lại", info;
-   - send failed: title "Chưa gửi được đơn", detail = the message today's code shows, error;
+   - send failed: title "Chưa gửi được đơn", detail = the server's refusal, or "Kiểm tra mạng rồi bấm Gửi lại." when the network failed (so the title is not repeated), error;
    - logout while the cart has items: "Lưu nháp hoặc thanh toán trước khi đăng xuất", warning;
    - a draft could not be saved or deleted, or the current cart could not be saved before opening a draft: error, with today's wording as the detail. These replace the `alert(...)` calls at ~222, ~228 and ~264, and the toast at ~243;
    - a dish with no size: "Món này chưa cấu hình size & giá.", warning. This replaces the `alert` at ~385, which stays as a guard.

@@ -98,7 +98,7 @@ export function CartItemRow({
           onClick={() => currentProduct && openProductModal(currentProduct, idx)}
         >
           <div className="flex-1 min-w-0">
-            <h4 className="text-[15px] font-semibold text-text-primary leading-snug hover:text-primary transition-colors line-clamp-1">
+            <h4 className="text-[15px] font-semibold text-text-primary leading-snug hover:text-primary transition-colors break-words">
               {item.product_name}
             </h4>
 
@@ -107,7 +107,7 @@ export function CartItemRow({
               {optionsText && (
                 <>
                   <span aria-hidden="true">·</span>
-                  <span className="line-clamp-1">{optionsText}</span>
+                  <span className="break-words">{optionsText}</span>
                 </>
               )}
             </div>

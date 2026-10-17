@@ -259,7 +259,7 @@ export function CartPanel({
                       return (
                         <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-border pb-2">
                           <div className="min-w-0 flex-1">
-                            <p className="font-bold text-text-primary truncate">{item.product_name}</p>
+                            <p className="font-bold text-text-primary break-words">{item.product_name}</p>
                             <p className="text-[10px] text-text-secondary">
                               Size {item.size_name}
                               {item.modifiers.length > 0 && ` • +${item.modifiers.map((m: any) => m.name).join(", ")}`}
@@ -323,7 +323,7 @@ export function CartPanel({
                   <p className="font-bold">
                     Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : lastCheckoutError.method === "SPLIT" ? "Nhiều hình thức" : "Tiền mặt"})
                   </p>
-                  <p className="text-[11px] text-danger mt-0.5 truncate">{lastCheckoutError.error}</p>
+                  <p className="text-[11px] text-danger mt-0.5 break-words">{lastCheckoutError.error}</p>
                 </div>
               </div>
               {lastCheckoutError.retry && (
