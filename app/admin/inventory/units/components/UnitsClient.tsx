@@ -72,7 +72,9 @@ export default function UnitsClient({
     () => ["id", ...columns.map((c) => c.key)],
     [columns],
   );
-  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const { key: parsedKey, dir: parsedDir } = parseSort(rawSort, rawDir, validSortKeys, "name");
+  const sortKey = parsedKey;
+  const sortDir = rawSort ? parsedDir : "asc";
   const sortParam = rawSort ? sortKey : undefined;
   const dirParam = rawSort ? sortDir : undefined;
 

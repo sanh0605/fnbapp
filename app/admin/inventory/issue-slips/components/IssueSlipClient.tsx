@@ -343,7 +343,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         </div>
                       </TableCell>
                       <TableCell align="right">
-                        <div className="min-w-[8rem]">
+                        <div className="min-w-[9rem]">
                           <NumberInput
                             id={`issue-qty-${index}`}
                             decimals={3}
@@ -514,7 +514,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         ))}
                       </Select>
                     </div>
-                    <div className="w-24 shrink-0">
+                    <div className="w-36 shrink-0">
                       <label className="block text-xs font-medium text-text-muted mb-1">Số lượng</label>
                       <NumberInput
                         id={`issue-qty-m-${index}`}

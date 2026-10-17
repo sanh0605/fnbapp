@@ -180,7 +180,7 @@ export function DisposeAssetForm({
           </div>
         ) : (
           <div className="text-sm text-text-secondary">
-            Mua {formatDateTimeFull(selectedLot.acquiredDate)} · giá một cái {formatNumber(Math.round(selectedLot.unitCost))}đ · còn {selectedLot.remainingQuantity}
+            Mua {formatDateTimeFull(selectedLot.acquiredDate)} · giá một cái {formatNumber(Math.round(selectedLot.unitCost))}đ
           </div>
         )}
 
@@ -291,7 +291,7 @@ export function DisposeAssetForm({
           />
         </Field>
 
-        <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
+        <div className="p-3 bg-warning/10 rounded-lg border border-warning/20 mb-6">
           <div className="text-xs text-warning-active mb-1">
             Sẽ ghi nhận chi phí tháng này
           </div>

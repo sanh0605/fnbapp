@@ -97,8 +97,8 @@ describe("StocktakeCountView (Screen 2)", () => {
     // Since mockSession has a BLANK line, active tab defaults to Chưa đếm
     const chuaDemBtn = screen.getByRole("button", { name: /Chưa đếm \(1\)/ });
     expect(chuaDemBtn).toBeInTheDocument();
-    // In primary variant (active tab), Button has bg-primary class
-    expect(chuaDemBtn.className).toContain("bg-primary");
+    // The active tab is a pressed chip
+    expect(chuaDemBtn).toHaveAttribute("aria-pressed", "true");
 
     // Only LINE-1 should be visible under Chưa đếm
     expect(screen.getAllByText("Bột cà phê truyền thống Phin Đậm").length).toBeGreaterThanOrEqual(1);
@@ -1329,5 +1329,109 @@ describe("StocktakeCountView (Screen 2)", () => {
     expect(
       screen.queryByText("Chưa lưu được: mất kết nối mạng. Bấm vào ô rồi bấm ra ngoài để thử lại.")
     ).not.toBeInTheDocument();
+  });
+
+  it("BR-INV-023: auto-saves on blur, input has min-h-[48px], and integer package count uses inputMode numeric", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValueOnce({
+      countedQty: 42,
+      theoreticalAtCount: 6000,
+    } as any);
+
+    render(<StocktakeCountView session={mockSession} />);
+
+    // Computer-table legacy input has touch target >= 48px
+    const mobileInput = screen.getAllByLabelText("Số đếm Bột cà phê truyền thống Phin Đậm")[0];
+    expect(mobileInput.className).toContain("min-h-[48px]");
+
+    fireEvent.change(mobileInput, { target: { value: "42" } });
+    fireEvent.blur(mobileInput, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(saveStocktakeLine).toHaveBeenCalledWith("LINE-1", 42);
+    });
+
+    // Check package lines session has inputMode numeric
+    const packageSession: StocktakeSessionView = {
+      ...mockSession,
+      lines: [
+        {
+          ...mockSession.lines[0],
+          id: "LINE-PKG",
+          packageLines: [
+            {
+              conversionId: "CONV-1",
+              purchasedItemId: "SPM-004",
+              purchasedItemName: "Bột cà phê truyền thống Phin Đậm",
+              sizeLabel: "Thùng 24 lon",
+              conversionRate: 24,
+              baseUnitName: "lon",
+              purchasedUnitName: "Thùng",
+            },
+          ],
+        },
+      ],
+    };
+    cleanup();
+    render(<StocktakeCountView session={packageSession} />);
+    const pkgInput = screen.getAllByLabelText("Thùng 24 lon")[0];
+    expect(pkgInput.getAttribute("inputMode")).toBe("numeric");
+    expect(pkgInput.className).toContain("min-h-[48px]");
+  });
+
+  it("renders phone count rows as a compact divide-y list of PhoneRow (BR-UI-018)", () => {
+    const { container } = render(<StocktakeCountView session={mockSession} />);
+    fireEvent.click(screen.getByRole("button", { name: /Tất cả \(3\)/ }));
+
+    const mobileList = container.querySelector(".lg\\:hidden");
+    expect(mobileList).not.toBeNull();
+    expect(mobileList?.className).toContain("divide-y");
+    expect(mobileList?.className).not.toContain("space-y-3");
+
+    const rows = mobileList?.querySelectorAll(":scope > div");
+    expect(rows?.length).toBeGreaterThan(0);
+    const firstRow = rows?.[0];
+    expect(firstRow?.className).toContain("px-4");
+    expect(firstRow?.className).toContain("py-2.5");
+    expect(firstRow?.className).not.toContain("rounded-2xl");
+    expect(firstRow?.className).not.toContain("p-4");
+
+    // Line 1 has item name and count box
+    expect(firstRow?.textContent).toContain("Bột cà phê truyền thống Phin Đậm");
+    // Line 2 has system qty, diff and starts with Sổ:
+    const secondLine = firstRow?.querySelector(".text-text-secondary")?.textContent?.trim();
+    expect(secondLine?.startsWith("Sổ:")).toBe(true);
+    expect(firstRow?.textContent).toContain("Sổ: 6,000 g");
+  });
+
+  it("selected tab has aria-pressed='true' and does not have the class bg-primary", () => {
+    render(<StocktakeCountView session={mockSession} />);
+    const selectedTab = screen.getByRole("button", { name: /Chưa đếm \(1\)/ });
+    expect(selectedTab).toHaveAttribute("aria-pressed", "true");
+    expect(selectedTab).not.toHaveClass("bg-primary");
+  });
+
+  it("BR-INV-023: phone legacy box auto-saves on blur", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValueOnce({
+      countedQty: 42,
+      theoreticalAtCount: 6000,
+    } as any);
+
+    render(<StocktakeCountView session={mockSession} />);
+
+    // Phone legacy input has touch target >= 48px
+    const phoneInput = screen.getAllByLabelText("Số đếm Bột cà phê truyền thống Phin Đậm")[1];
+    expect(phoneInput.id).toBe("m-legacy-qty-LINE-1");
+    expect(phoneInput.className).toContain("min-h-[48px]");
+
+    fireEvent.change(phoneInput, { target: { value: "42" } });
+    fireEvent.blur(phoneInput, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(saveStocktakeLine).toHaveBeenCalledWith("LINE-1", 42);
+    });
   });
 });

@@ -113,20 +113,20 @@ export default async function PurchaseOrderDetail(
           Sửa phiếu
         </Button>
       )}
-      {canCancel && (
-        <Button
-          href={`/admin/inventory/purchase-orders/${po.id}/cancel`}
-          variant="delete"
-        >
-          Huỷ phiếu
-        </Button>
-      )}
       {canClone && (
         <Button
           href={`/admin/inventory/purchase-orders/new?copyFrom=${encodeURIComponent(po.id)}`}
           variant="secondary"
         >
           Nhân bản
+        </Button>
+      )}
+      {canCancel && (
+        <Button
+          href={`/admin/inventory/purchase-orders/${po.id}/cancel`}
+          variant="delete"
+        >
+          Huỷ phiếu
         </Button>
       )}
     </>
@@ -150,9 +150,16 @@ export default async function PurchaseOrderDetail(
     </Badge>
   );
 
-  const subtitle = `Ngày tạo: ${formatDateTimeFull(po.created_at)} | Ngày giao dịch: ${
-    po.transaction_date ? formatDateTimeFull(po.transaction_date) : "—"
-  }`;
+  const subtitle = (
+    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-text-muted">
+      <span>Ngày tạo: {formatDateTimeFull(po.created_at)}</span>
+      <span className="hidden sm:inline text-border">|</span>
+      <span>
+        Ngày giao dịch:{" "}
+        {po.transaction_date ? formatDateTimeFull(po.transaction_date) : "—"}
+      </span>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -164,7 +171,7 @@ export default async function PurchaseOrderDetail(
       <DetailHeader
         backHref={returnTo}
         backLabel="Phiếu nhập"
-        title={`${isDraft ? "Tiếp tục tạo phiếu nhập" : "Chi tiết phiếu nhập"}: ${po.id}`}
+        title={isDraft ? `Tiếp tục tạo phiếu nhập\u00A0${po.id}` : `Phiếu nhập\u00A0${po.id}`}
         subtitle={subtitle}
         badge={badge}
         actions={actions}

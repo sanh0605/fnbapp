@@ -899,5 +899,38 @@ describe("DataList phoneRow (BR-UI-018)", () => {
     const deleteBtn = screen.getByRole("button", { name: "Xoá 1 dòng đã chọn" });
     expect(deleteBtn.closest(".sticky")).not.toBeNull();
   });
-});
 
+  it("renders th with whitespace-nowrap when col.nowrap is true, and without it when false", () => {
+    const testCols: DataColumn<SampleSupplier>[] = [
+      {
+        key: "id",
+        header: "Mã",
+        nowrap: true,
+        render: (r) => r.id,
+      },
+      {
+        key: "name",
+        header: "Tên",
+        render: (r) => r.name,
+      },
+    ];
+
+    render(
+      <DataList
+        rows={suppliers}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+        columns={testCols}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    const thWithNowrap = screen.getByRole("columnheader", { name: "Mã" });
+    const thWithoutNowrap = screen.getByRole("columnheader", { name: "Tên" });
+
+    expect(thWithNowrap).toHaveClass("whitespace-nowrap");
+    expect(thWithoutNowrap).not.toHaveClass("whitespace-nowrap");
+  });
+});

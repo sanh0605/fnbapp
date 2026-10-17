@@ -16,6 +16,7 @@ export interface DataColumn<T> {
   sortValue?: (row: T) => string | number | null | undefined;
   align?: "right";
   secondary?: boolean;
+  nowrap?: boolean;
 }
 
 export interface RemoveResult {
@@ -415,7 +416,7 @@ export function DataList<T>({
                       aria-sort={ariaSort}
                       className={`px-6 py-3 text-[13px] text-left font-semibold text-text-secondary ${
                         col.secondary ? "hidden xl:table-cell" : ""
-                      }`}
+                      }${col.nowrap ? " whitespace-nowrap" : ""}`}
                     >
                       {isSortable && sort ? (
                         <Link

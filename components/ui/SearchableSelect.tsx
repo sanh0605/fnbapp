@@ -199,7 +199,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
           if (!isOpen) setSearchTerm("");
         }}
       >
-        <span className={`${selectedOption ? "text-text-primary" : "text-text-secondary"} min-w-0 line-clamp-2 break-words`}>
+        <span className={`${selectedOption ? "text-text-primary" : "text-text-muted"} min-w-0 line-clamp-2 break-words`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <svg className="w-4 h-4 shrink-0 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

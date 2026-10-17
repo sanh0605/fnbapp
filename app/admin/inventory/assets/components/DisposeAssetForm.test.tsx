@@ -321,7 +321,8 @@ describe("DisposeAssetForm -- lot picker and disposal", () => {
     const radios = container.querySelectorAll('input[type="radio"]');
     expect(radios.length).toBe(0);
     expect(container.textContent).toContain("Mua 04/04/2026 00:00:00");
-    expect(container.textContent).toContain("còn 1");
+    expect(container.textContent).toContain("Còn lại: 1 cái");
+    expect(container.textContent).not.toContain("còn 1");
   });
 
   it("calls previewDisposalCharge for initialLotId once a quantity is typed", async () => {

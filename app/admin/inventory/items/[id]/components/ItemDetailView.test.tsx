@@ -431,7 +431,7 @@ describe("ItemDetailView", () => {
     expect(firstRow?.className).not.toContain("p-4");
 
     // PhoneRow: line 1 has conversion formula, line 2 has badge
-    expect(firstRow?.textContent).toContain("1 Hộp = 1000 ml");
+    expect(firstRow?.textContent).toContain("1 Hộp = 1,000 ml");
     expect(firstRow?.textContent).toContain("Đang dùng");
   });
 });

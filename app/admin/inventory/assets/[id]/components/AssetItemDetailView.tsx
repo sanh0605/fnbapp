@@ -80,8 +80,6 @@ export function AssetItemDetailView({
   );
 
   const fields: Field[] = [
-    { label: "Mã hàng", value: detail.item.itemId },
-    { label: "Tên", value: detail.item.name },
     {
       label: "Còn / Đã mua",
       value: `${detail.item.remainingQuantity} / ${detail.item.quantity} cái`,

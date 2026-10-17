@@ -21,16 +21,14 @@ export function BandDetailView({
   const editHref = `/admin/inventory/asset-bands/edit?returnTo=${encodeURIComponent(detailUrl)}`;
 
   const fields: Field[] = [
-    { label: "Mã", value: band.id },
     { label: "Đơn giá", value: formatBandRange(band) },
     { label: "Số tháng khấu hao", value: `${band.term_months} tháng` },
-    { label: "Ghi chú", value: "Sửa khung chỉ áp dụng cho tài sản mua sau đó." },
   ];
 
   const headerActions = (
     <div className="flex flex-wrap items-center gap-2">
       <Button href={editHref} variant="secondary">
-        Sửa
+        Chỉnh sửa
       </Button>
     </div>
   );

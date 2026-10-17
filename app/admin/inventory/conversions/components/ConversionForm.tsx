@@ -150,7 +150,7 @@ export function ConversionForm({
               placeholder="Ví dụ: Thùng 24 lon"
             />
           </Field>
-          <Field label="Tỷ lệ quy đổi" htmlFor={`${formId}-conversionRate`}>
+          <Field label="Hệ số quy đổi" htmlFor={`${formId}-conversionRate`}>
             <NumberInput
               id={`${formId}-conversionRate`}
               decimals={6}

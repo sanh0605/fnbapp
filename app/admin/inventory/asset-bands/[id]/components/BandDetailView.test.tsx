@@ -58,19 +58,19 @@ describe("BandDetailView", () => {
     // Title = formatBandRange(band)
     expect(screen.getAllByText("Dưới 200,000đ").length).toBeGreaterThan(0);
 
-    // Fields: Mã, Đơn giá, Số tháng khấu hao, and note
+    // Fields: Đơn giá, Số tháng khấu hao
     expect(screen.getAllByText("KH-001").length).toBeGreaterThan(0);
     expect(screen.getByText("12 tháng")).toBeInTheDocument();
     expect(
-      screen.getByText("Sửa khung chỉ áp dụng cho tài sản mua sau đó.")
-    ).toBeInTheDocument();
+      screen.queryByText("Sửa khung chỉ áp dụng cho tài sản mua sau đó.")
+    ).toBeNull();
   });
 
-  it("'Sửa' href goes to /admin/inventory/asset-bands/edit with returnTo = detail url", () => {
+  it("'Chỉnh sửa' href goes to /admin/inventory/asset-bands/edit with returnTo = detail url", () => {
     const returnTo = "/admin/inventory/asset-bands";
     render(<BandDetailView band={BAND} returnTo={returnTo} />);
 
-    const editLink = screen.getByRole("link", { name: "Sửa" });
+    const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
     const detailUrl = `/admin/inventory/asset-bands/${BAND.id}?returnTo=${encodeURIComponent(returnTo)}`;
     const expectedEditHref = `/admin/inventory/asset-bands/edit?returnTo=${encodeURIComponent(detailUrl)}`;
 

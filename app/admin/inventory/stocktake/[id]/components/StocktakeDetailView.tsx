@@ -144,36 +144,32 @@ export function StocktakeDetailView({
 
       {/* Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3 pt-2">
-        <Button
-          variant={activeTab === "ALL" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("ALL")}
-          className="text-xs md:text-sm"
-        >
-          Tất cả ({allCount})
-        </Button>
-        {hasBlank && (
-          <Button
-            variant={activeTab === "BLANK" ? "primary" : "secondary"}
-            onClick={() => setActiveTab("BLANK")}
-            className="text-xs md:text-sm"
-          >
-            Chưa đếm ({blankCount})
-          </Button>
-        )}
-        <Button
-          variant={activeTab === "OFF" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("OFF")}
-          className="text-xs md:text-sm"
-        >
-          Lệch ({offCount})
-        </Button>
-        <Button
-          variant={activeTab === "MATCH" ? "primary" : "secondary"}
-          onClick={() => setActiveTab("MATCH")}
-          className="text-xs md:text-sm"
-        >
-          Khớp ({matchCount})
-        </Button>
+        {[
+          { id: "ALL" as const, label: "Tất cả", count: allCount, show: true },
+          { id: "BLANK" as const, label: "Chưa đếm", count: blankCount, show: hasBlank },
+          { id: "OFF" as const, label: "Lệch", count: offCount, show: true },
+          { id: "MATCH" as const, label: "Khớp", count: matchCount, show: true },
+        ]
+          .filter((tab) => tab.show)
+          .map((tab) => {
+            // Same chips as the counting screen (StocktakeCountView)
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setActiveTab(tab.id)}
+                className={`rounded-full px-3 min-h-[48px] md:min-h-[40px] text-xs md:text-sm font-medium border ${
+                  active
+                    ? "bg-primary-soft text-primary border-primary/20"
+                    : "bg-surface-card text-text-primary border-border"
+                }`}
+              >
+                {tab.label} ({tab.count})
+              </button>
+            );
+          })}
       </div>
 
       {/* Search box */}

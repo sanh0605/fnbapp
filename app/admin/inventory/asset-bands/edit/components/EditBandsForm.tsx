@@ -289,7 +289,7 @@ export function EditBandsForm({
             return (
               <div
                 key={row.clientId}
-                className="p-4 rounded-xl border border-border bg-surface-card space-y-3 relative"
+                className="py-4 border-b border-border space-y-3 relative last:border-b-0"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-text-secondary uppercase">
@@ -380,7 +380,7 @@ export function EditBandsForm({
 
         {/* Note */}
         <p className="text-[13px] md:text-xs text-text-muted">
-          Sửa khung chỉ áp dụng cho tài sản mua sau khi lưu -- tài sản đã có giữ nguyên số tháng đã tính lúc mua.
+          Tài sản đã có giữ nguyên số tháng đã tính lúc mua.
         </p>
 
         <FormActionBar

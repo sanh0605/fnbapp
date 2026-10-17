@@ -63,4 +63,20 @@ describe("CategoryForm on-page behaviour", () => {
     fireEvent.click(screen.getByRole("button", { name: "Bỏ thay đổi" }));
     expect(push).toHaveBeenCalledWith("/admin/inventory/categories");
   });
+
+  it("shows explanation of chosen type as helper text under the select", () => {
+    render(<CategoryForm returnTo="/admin/inventory/categories" />);
+    // Defaults to RAW
+    expect(screen.getByText("Có tính quy đổi, có trong công thức")).toBeInTheDocument();
+
+    // Change to CONSUMABLE
+    fireEvent.change(screen.getByLabelText(/^Đặc tính/), { target: { value: "CONSUMABLE" } });
+    expect(screen.getByText("Kiểm kê định kỳ")).toBeInTheDocument();
+    expect(screen.queryByText("Có tính quy đổi, có trong công thức")).toBeNull();
+
+    // Change to EQUIPMENT
+    fireEvent.change(screen.getByLabelText(/^Đặc tính/), { target: { value: "EQUIPMENT" } });
+    expect(screen.queryByText("Kiểm kê định kỳ")).toBeNull();
+    expect(screen.queryByText("Có tính quy đổi, có trong công thức")).toBeNull();
+  });
 });

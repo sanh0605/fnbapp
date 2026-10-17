@@ -274,7 +274,6 @@ describe("PurchasedItemForm -- conversions for consumables, rendered UI (Batch 1
     await setSelectValue(categorySelect, "NHH-001");
 
     // BR-UI-001 (owner 2026-10-06): Vietnamese only, no "(RAW)" twin.
-    expect(document.body.textContent).toContain("Hàng hoá chế biến");
     expect(document.body.textContent).not.toContain("(RAW)");
     expect(document.body.textContent).not.toContain("Liên kết Nhóm Nguyên Liệu");
     expect(document.body.textContent).toContain("Đơn vị gốc");

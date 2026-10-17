@@ -74,8 +74,8 @@ describe("IssueSlipsClient", () => {
     const table = screen.getByRole("table");
     const tableScope = within(table);
 
-    // Should render badges for desktop table (1x each)
-    expect(tableScope.getAllByText("Phiếu xuất")).toHaveLength(1);
+    // Normal slips do not show badge; only cancelled slips do
+    expect(tableScope.queryByText("Phiếu xuất")).toBeNull();
     expect(tableScope.queryByText("Kiểm kê")).toBeNull();
     expect(tableScope.getAllByText("Đã huỷ")).toHaveLength(1);
   });
@@ -135,7 +135,7 @@ describe("IssueSlipsClient", () => {
       expect(within(phone).getByText("100đ")).toBeInTheDocument();
       expect(within(phone).getByText("ISL-01 · admin")).toBeInTheDocument();
       expect(within(phone).getByText("ISL-03 · admin")).toBeInTheDocument();
-      expect(within(phone).getAllByText("Phiếu xuất")).toHaveLength(2);
+      expect(within(phone).queryByText("Phiếu xuất")).toBeNull();
     });
   });
 

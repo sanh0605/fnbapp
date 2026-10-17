@@ -153,7 +153,7 @@ describe("ConversionDetailView", () => {
     // Fields
     expect(screen.getAllByText("QD-001").length).toBeGreaterThan(0);
     expect(screen.getByText("Hộp")).toBeInTheDocument();
-    expect(screen.getByText("1000")).toBeInTheDocument();
+    expect(screen.getByText("1,000")).toBeInTheDocument();
     expect(screen.getByText("ml")).toBeInTheDocument();
     expect(screen.getByText("Không")).toBeInTheDocument(); // purchase_only is false
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);

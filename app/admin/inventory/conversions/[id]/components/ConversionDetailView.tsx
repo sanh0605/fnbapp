@@ -9,6 +9,7 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { deleteConversionAction } from "@/app/admin/inventory/conversions/actions";
+import { formatNumber } from "@/lib/shared/format";
 import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
 
 export interface ConversionDetailViewProps {
@@ -47,7 +48,6 @@ export function ConversionDetailView({
     : conversion.base_unit;
 
   const fields: Field[] = [
-    { label: "Mã", value: conversion.id },
     {
       label: "Hàng hoá",
       value: (
@@ -60,7 +60,7 @@ export function ConversionDetailView({
       ),
     },
     { label: "Đơn vị mua", value: purchasedUnitName },
-    { label: "Hệ số", value: String(conversion.conversion_rate) },
+    { label: "Hệ số", value: formatNumber(conversion.conversion_rate) },
     { label: "Đơn vị gốc", value: baseUnitName },
     {
       label: "Chỉ cách mua",

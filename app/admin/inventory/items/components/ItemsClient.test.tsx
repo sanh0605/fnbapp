@@ -214,7 +214,7 @@ describe("ItemsClient", () => {
     );
 
     const table = screen.getByRole("table");
-    expect(within(table).getByText("1 Hộp = 1000 ml")).toBeInTheDocument();
+    expect(within(table).getByText("1 Hộp = 1,000 ml")).toBeInTheDocument();
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("Sữa tươi Mlekovita")).toBeInTheDocument();
@@ -222,7 +222,7 @@ describe("ItemsClient", () => {
     expect(within(phone).getByText("SPM-002 · Nguyên liệu")).toBeInTheDocument();
     expect(within(phone).getByText("SPM-099 · Nguyên liệu")).toBeInTheDocument();
     expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
-    expect(within(phone).queryByText("1 Hộp = 1000 ml")).toBeNull();
+    expect(within(phone).queryByText("1 Hộp = 1,000 ml")).toBeNull();
   });
 
   it("renders stock column with figures and text kinds, and no link for 'Xem ở Tài sản'", () => {

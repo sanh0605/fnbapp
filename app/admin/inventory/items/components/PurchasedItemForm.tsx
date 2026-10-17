@@ -356,11 +356,7 @@ export function PurchasedItemForm({
 
           {isRaw && (
             <div className="pt-4 border-t border-border space-y-4">
-              <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
-                Đây là nhóm <strong>Hàng hoá chế biến</strong>.
-              </div>
-
- {/* 
+              {/*
                   section 5.1: the base unit belongs to the item, not to
                   this group -- it no longer comes from the ingredient
                   above, it is chosen here, the same way CONSUMABLE and
@@ -551,7 +547,7 @@ function ConversionRowsSection({
 }) {
   return (
     <div className="bg-page p-4 rounded-xl border border-border">
-      <div className="flex justify-between items-center mb-3">
+      <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
         <h4 className="text-sm font-bold text-text-primary">Quy đổi đơn vị mua</h4>
         <Button
           type="button"
@@ -560,7 +556,7 @@ function ConversionRowsSection({
             e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
             addUnitRow();
           }}
-          className="w-full sm:w-auto"
+          className="w-auto whitespace-nowrap"
         >
           + Thêm đơn vị mua
         </Button>
