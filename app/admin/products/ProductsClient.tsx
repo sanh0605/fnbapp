@@ -181,7 +181,7 @@ export default function ProductsClient({
         },
         render: (product) => {
           const sizeTexts = (product.variants || []).map(
-            (v) => `${v.size_name} ${formatNumber(v.price)}`,
+            (v) => `${v.size_name} ${formatNumber(v.price)}đ`,
           );
           const text = sizeTexts.join(" · ");
           return (
@@ -386,7 +386,7 @@ export default function ProductsClient({
             sizesSummary = "Không có size nào đang bán";
           } else {
             const sizeTexts = (product.variants || []).map(
-              (v) => `${v.size_name} ${formatNumber(v.price)}`,
+              (v) => `${v.size_name} ${formatNumber(v.price)}đ`,
             );
             sizesSummary = sizeTexts.join(" · ");
           }

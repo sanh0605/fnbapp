@@ -156,6 +156,6 @@ describe("IssueSlipsClient", () => {
     };
     render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={withTotals} />);
     expect(screen.getAllByText("Tổng (không tính huỷ)").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("2,108").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("2,108đ").length).toBeGreaterThan(0);
   });
 });

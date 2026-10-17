@@ -357,9 +357,9 @@ describe("OrderDetailView promotions (Phiếu G7)", () => {
     render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
 
     expect(screen.getByText("202607 - GIẢM 10K")).toBeInTheDocument();
-    expect(screen.getByText("-20,000")).toBeInTheDocument();
+    expect(screen.getByText("-20,000đ")).toBeInTheDocument();
     expect(screen.getByText("KHAITRUONG")).toBeInTheDocument();
-    expect(screen.getByText("-5,100")).toBeInTheDocument();
+    expect(screen.getByText("-5,100đ")).toBeInTheDocument();
     expect(screen.queryByText("Khuyến mãi hệ thống")).toBeNull();
   });
 

@@ -137,7 +137,7 @@ export default function ModifiersClient({
         sortValue: (m) => Number(m.price) || 0,
         render: (m) => (
           <span className="text-text-primary text-sm tabular-nums">
-            {formatNumber(m.price)}
+            {formatNumber(m.price)}đ
           </span>
         ),
       },
@@ -255,7 +255,7 @@ export default function ModifiersClient({
         columns={columns}
         phoneRow={(m) => ({
           title: m.name,
-          value: formatNumber(m.price),
+          value: `${formatNumber(m.price)}đ`,
           meta: [
             getGroupName(m),
             m.id,

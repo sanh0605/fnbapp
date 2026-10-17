@@ -305,7 +305,7 @@ export default function PurchaseOrdersClient({
           })}
           totals={{
             label: "Tổng (không tính huỷ, nháp)",
-            values: { totalAmount: formatNumber(pageData.totals.totalAmount) },
+            values: { totalAmount: `${formatNumber(pageData.totals.totalAmount)}đ` },
           }}
           empty={
             <EmptyState

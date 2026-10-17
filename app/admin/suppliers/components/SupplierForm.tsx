@@ -124,7 +124,7 @@ export function SupplierForm({
           />
         </Field>
 
-        <Field label="Ghi chú / links" htmlFor={`${formId}-links`}>
+        <Field label="Ghi chú / liên kết" htmlFor={`${formId}-links`}>
           <textarea
             id={`${formId}-links`}
             name="links"

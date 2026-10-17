@@ -1,18 +1,18 @@
 import React from "react";
 
-export function RoleBadge({ role }: { role: string }) {
-  const colorClass =
-    role === "ADMIN"
-      ? "bg-danger/10 text-danger-active border-danger/20"
-      : role === "MANAGER"
-      ? "bg-warning/10 text-warning-active border-warning/20"
-      : "bg-primary-soft text-primary-active border-primary/20";
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: "Quản trị viên",
+  MANAGER: "Quản lý",
+  STAFF: "Nhân viên",
+  SYSTEM: "Hệ thống",
+};
 
+export function RoleBadge({ role }: { role: string }) {
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${colorClass}`}
+      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border border-border bg-surface-secondary text-text-secondary"
     >
-      {role}
+      {ROLE_LABELS[role] ?? role}
     </span>
   );
 }

@@ -258,7 +258,7 @@ export default function AssetsClient({
         })}
         totals={{
           label: "Tổng (không tính đã thanh lý hết)",
-          values: { remainingValue: formatNumber(assetTotals.remainingValue) },
+          values: { remainingValue: `${formatNumber(assetTotals.remainingValue)}đ` },
         }}
         sort={{
           key: sortKey,

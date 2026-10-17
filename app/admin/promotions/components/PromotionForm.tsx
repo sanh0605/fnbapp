@@ -322,7 +322,7 @@ export function PromotionForm({
                   value={type}
                   onChange={(e) => handleTypeChange(e.target.value)}
                 >
-                  <option value="ORDER_DISCOUNT">Đơn hàng (Tổng bill)</option>
+                  <option value="ORDER_DISCOUNT">Đơn hàng (Tổng hoá đơn)</option>
                   <option value="PRODUCT_DISCOUNT">Món ăn cụ thể</option>
                 </Select>
               </Field>

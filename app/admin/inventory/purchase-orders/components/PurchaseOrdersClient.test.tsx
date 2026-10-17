@@ -233,7 +233,7 @@ describe("PurchaseOrdersClient", () => {
     };
     render(<PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={withTotals} />);
     expect(screen.getAllByText("Tổng (không tính huỷ, nháp)").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("12,345,678").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("12,345,678đ").length).toBeGreaterThan(0);
   });
 
   it("recognises account parameter in URL, showing Xoá lọc and deleting account on clear", () => {

@@ -347,9 +347,6 @@ export default function ActivityLogClient({
                         <span className="font-extrabold text-sm text-text-primary">
                           Đơn hàng {evt.order_no}
                         </span>
-                        <span className="text-xs text-text-muted font-medium">
-                          ({evt.id})
-                        </span>
                       </div>
 
                       <div className="text-xs text-text-secondary space-y-1">
@@ -365,31 +362,17 @@ export default function ActivityLogClient({
                             {evt.actor_name}
                           </span>
                         </p>
-                        {evt.from_version !== undefined && evt.to_version !== undefined && (
-                          <p className="flex items-center gap-1.5">
-                            <span className="text-text-muted">Phiên bản:</span>
-                            <span className="font-mono bg-surface-secondary border border-border rounded px-1 text-xs">
-                              v{evt.from_version || 0} ➔ v{evt.to_version}
-                            </span>
-                          </p>
-                        )}
                         {evt.reason && (
                           <p className="mt-1 pt-1 border-t border-border">
                             <span className="text-text-muted">Lý do:</span>{" "}
                             <span className="font-medium text-text-primary italic">
-                              "{evt.reason}"
+                              "{evt.reason === "POS checkout" ? "Bán tại máy bán hàng" : evt.reason}"
                             </span>
                           </p>
                         )}
                       </div>
 
                       {renderDelta(evt.delta_json)}
-                    </div>
-
-                    <div className="shrink-0 flex items-center md:self-stretch justify-end">
-                      <span className="text-xs text-text-muted font-medium bg-surface-secondary border border-border rounded px-2.5 py-1">
-                        Mã đơn: {evt.order_id}
-                      </span>
                     </div>
                   </div>
                 </div>

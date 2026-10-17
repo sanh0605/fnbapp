@@ -91,8 +91,8 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                         <TableCell align="right">
                           {formatDecimal(Number(line.quantity), { maxDigits: 3 })}
                         </TableCell>
-                        <TableCell align="right">{formatNumber(line.unitPrice)}</TableCell>
-                        <TableCell align="right">{formatNumber(line.subtotal)}</TableCell>
+                        <TableCell align="right">{formatNumber(line.unitPrice)}đ</TableCell>
+                        <TableCell align="right">{formatNumber(line.subtotal)}đ</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -109,11 +109,11 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-text-primary break-words">{line.itemName}</p>
                       <p className="text-xs text-text-muted">
-                        {formatDecimal(Number(line.quantity), { maxDigits: 3 })} · {line.unitName} · {formatNumber(line.unitPrice)}
+                        {formatDecimal(Number(line.quantity), { maxDigits: 3 })} · {line.unitName} · {formatNumber(line.unitPrice)}đ
                       </p>
                     </div>
                     <div className="text-right font-medium text-text-primary whitespace-nowrap">
-                      {formatNumber(line.subtotal)}
+                      {formatNumber(line.subtotal)}đ
                     </div>
                   </div>
                 ))}
@@ -186,23 +186,29 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
           <div className="space-y-3 text-sm">
             <div className="flex justify-between text-text-secondary">
               <span>Tổng tiền hàng:</span>
-              <span className="font-medium text-text-primary">{formatNumber(order.subtotalAmount)}</span>
+              <span className="font-medium text-text-primary">{formatNumber(order.subtotalAmount)}đ</span>
             </div>
             <div className="flex justify-between text-text-secondary">
               <span>Phí vận chuyển:</span>
-              <span className="font-medium text-text-primary">+{formatNumber(order.shippingFee)}</span>
+              <span className="font-medium text-text-primary">
+                {Number(order.shippingFee) === 0 ? "0đ" : `+${formatNumber(order.shippingFee)}đ`}
+              </span>
             </div>
             <div className="flex justify-between text-text-secondary">
               <span>Thuế:</span>
-              <span className="font-medium text-text-primary">+{formatNumber(order.taxAmount)}</span>
+              <span className="font-medium text-text-primary">
+                {Number(order.taxAmount) === 0 ? "0đ" : `+${formatNumber(order.taxAmount)}đ`}
+              </span>
             </div>
             <div className="flex justify-between text-text-secondary">
               <span>Voucher/Giảm giá:</span>
-              <span className="font-medium text-danger">-{formatNumber(order.discountTotal)}</span>
+              <span className="font-medium text-danger">
+                {Number(order.discountTotal) === 0 ? "0đ" : `-${formatNumber(order.discountTotal)}đ`}
+              </span>
             </div>
             <div className="pt-3 border-t border-border flex justify-between font-semibold text-base">
               <span className="text-text-primary">Tổng cộng:</span>
-              <span className="text-primary">{formatNumber(order.totalAmount)}</span>
+              <span className="text-primary">{formatNumber(order.totalAmount)}đ</span>
             </div>
           </div>
 

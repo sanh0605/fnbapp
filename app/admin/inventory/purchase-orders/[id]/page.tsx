@@ -234,8 +234,8 @@ export default async function PurchaseOrderDetail(
                               <TableCell align="right">
                                 {formatDecimal(Number(line.quantity), { maxDigits: 3 })}
                               </TableCell>
-                              <TableCell align="right">{formatNumber(line.unit_price)}</TableCell>
-                              <TableCell align="right">{formatNumber(line.subtotal)}</TableCell>
+                              <TableCell align="right">{formatNumber(line.unit_price)}đ</TableCell>
+                              <TableCell align="right">{formatNumber(line.subtotal)}đ</TableCell>
                             </TableRow>
                           );
                         })}
@@ -272,26 +272,35 @@ export default async function PurchaseOrderDetail(
                 lines={[
                   {
                     label: "Tổng tiền hàng",
-                    value: formatNumber(po.subtotal_amount),
+                    value: `${formatNumber(po.subtotal_amount)}đ`,
                   },
                   {
                     label: "Phí vận chuyển",
-                    value: `+${formatNumber(po.shipping_fee)}`,
+                    value:
+                      Number(po.shipping_fee) === 0
+                        ? "0đ"
+                        : `+${formatNumber(po.shipping_fee)}đ`,
                   },
                   {
                     label: "Thuế",
-                    value: `+${formatNumber(po.tax_amount)}`,
+                    value:
+                      Number(po.tax_amount) === 0
+                        ? "0đ"
+                        : `+${formatNumber(po.tax_amount)}đ`,
                   },
                   {
                     label: "Voucher/Giảm giá",
-                    value: `-${formatNumber(
-                      Number(po.voucher_amount || 0) + Number(po.discount_amount || 0)
-                    )}`,
+                    value:
+                      Number(po.voucher_amount || 0) + Number(po.discount_amount || 0) === 0
+                        ? "0đ"
+                        : `-${formatNumber(
+                            Number(po.voucher_amount || 0) + Number(po.discount_amount || 0)
+                          )}đ`,
                   },
                 ]}
                 total={{
                   label: "Tổng cộng",
-                  value: formatNumber(po.total_amount),
+                  value: `${formatNumber(po.total_amount)}đ`,
                 }}
               />
 

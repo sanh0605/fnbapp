@@ -266,7 +266,7 @@ export default function IssueSlipsClient({
           })}
           totals={{
             label: "Tổng (không tính huỷ)",
-            values: { value: formatNumber(pageData.totals.value) },
+            values: { value: `${formatNumber(pageData.totals.value)}đ` },
           }}
           empty={
             <EmptyState
