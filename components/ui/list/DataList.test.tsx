@@ -120,6 +120,45 @@ describe("DataList", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
+  it("shows danger alert with error message when remove fails", async () => {
+    confirmMock.mockResolvedValue(true);
+    const removeMock = vi.fn().mockImplementation(async (id: string) => {
+      if (id === "NCC-029") {
+        return { error: "Không xoá được Vinamilk: đã có 12 phiếu nhập." };
+      }
+      return {};
+    });
+
+    render(
+      <DataList
+        rows={suppliers}
+        getId={(r: SampleSupplier) => r.id}
+        getName={(r: SampleSupplier) => r.name}
+        getHref={(r: SampleSupplier) => `/admin/suppliers/${r.id}`}
+        columns={columns}
+        phoneRow={(r: SampleSupplier) => ({ title: r.name })}
+        removal={{
+          verb: "Xoá",
+          confirmMessage: (count) => `Xoá ${count} nhà cung cấp đã chọn?`,
+          remove: removeMock,
+        }}
+        empty={<div>Trống</div>}
+      />
+    );
+
+    const binBtn = screen.getAllByRole("button", { name: "Xoá Vinamilk" })[0];
+    fireEvent.click(binBtn);
+
+    await waitFor(() => {
+      expect(removeMock).toHaveBeenCalledWith("NCC-029");
+    });
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Không xoá được Vinamilk: đã có 12 phiếu nhập."
+    );
+    expect(screen.getByRole("alert")).toHaveClass("text-danger");
+  });
+
   it("calls confirm when clicking trash icon for Circle K, but cancels if confirm returns false", async () => {
     confirmMock.mockResolvedValue(false);
     const removeMock = vi.fn();

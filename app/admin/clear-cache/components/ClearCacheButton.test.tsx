@@ -22,6 +22,7 @@ describe("ClearCacheButton", () => {
     expect(button.className).toContain("w-full");
     expect(button.className).toContain("md:w-auto");
     expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.queryByRole("status")).toBeNull();
   });
 
   it("clicking the button calls clearProductCache once and shows success alert", async () => {
@@ -37,7 +38,7 @@ describe("ClearCacheButton", () => {
     });
 
     await waitFor(() => {
-      const alert = screen.getByRole("alert");
+      const alert = screen.getByRole("status");
       expect(alert).toHaveTextContent("Đã làm mới bộ nhớ đệm.");
     });
   });

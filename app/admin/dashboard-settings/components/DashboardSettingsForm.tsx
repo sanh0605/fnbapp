@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
+import { Alert } from "@/components/ui/Alert";
 import type { DBDashboardSettings, DBProduct, DBProductType } from "@/types/db";
 import { saveDashboardSettings } from "../actions";
 
@@ -97,13 +98,9 @@ export function DashboardSettingsForm({
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-6">
         {generalError && (
-          <div
-            role="alert"
-            aria-live="polite"
-            className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20"
-          >
+          <Alert variant="danger">
             {generalError}
-          </div>
+          </Alert>
         )}
 
         <div

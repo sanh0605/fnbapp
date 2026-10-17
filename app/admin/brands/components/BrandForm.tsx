@@ -9,6 +9,7 @@ import { TextInput } from "@/components/ui/TextInput";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
 import { safeReturnTo } from "@/lib/shared/return-to";
+import { Alert } from "@/components/ui/Alert";
 import type { DBBrand } from "@/types/db";
 
 interface BrandFormProps {
@@ -60,9 +61,9 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">

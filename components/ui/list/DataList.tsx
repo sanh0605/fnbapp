@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { confirm } from "@/lib/shared/dialog";
+import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
 import { PhoneRow, type PhoneRowData } from "./PhoneRow";
@@ -262,26 +263,21 @@ export function DataList<T>({
       )
     : null;
 
+  const statusBox = statusResult && (
+    <div className="space-y-2">
+      {successMessage && <Alert variant="success">{successMessage}</Alert>}
+      {statusResult.errors.length > 0 && (
+        <Alert variant="danger">
+          {statusResult.errors.map((err, i) => <div key={i}>{err}</div>)}
+        </Alert>
+      )}
+    </div>
+  );
+
   if (rows.length === 0) {
     return (
       <div className="space-y-4">
-        {statusResult && (
-          <div
-            role="status"
-            className="bg-surface-secondary border border-border rounded-xl p-4 text-sm space-y-1"
-          >
-            {successMessage && (
-              <div className="text-text-primary font-medium">
-                {successMessage}
-              </div>
-            )}
-            {statusResult.errors.map((err, i) => (
-              <div key={i} className="text-danger font-medium">
-                {err}
-              </div>
-            ))}
-          </div>
-        )}
+        {statusBox}
         <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden p-8">
           {empty}
         </div>
@@ -291,23 +287,7 @@ export function DataList<T>({
 
   return (
     <div className="flex flex-col gap-4 md:block md:space-y-4">
-      {statusResult && (
-        <div
-          role="status"
-          className="bg-surface-secondary border border-border rounded-xl p-4 text-sm space-y-1"
-        >
-          {successMessage && (
-            <div className="text-text-primary font-medium">
-              {successMessage}
-            </div>
-          )}
-          {statusResult.errors.map((err, i) => (
-            <div key={i} className="text-danger font-medium">
-              {err}
-            </div>
-          ))}
-        </div>
-      )}
+      {statusBox}
 
       {removal && selectedCount > 0 && (
         <div className="sticky bottom-[calc(58px+env(safe-area-inset-bottom))] md:static z-30 order-last md:order-none bg-primary-soft md:bg-primary-soft/50 border border-primary/20 rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">

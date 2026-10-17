@@ -14,6 +14,7 @@ import type { DBPromotion, DBBrand, DBProduct, DBProductVariant, DBProductCatego
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { safeReturnTo } from "@/lib/shared/return-to";
 import { SaigonDateTimeInput } from "@/components/ui/SaigonDateTimeInput";
+import { Alert } from "@/components/ui/Alert";
 
 interface PromotionFormProps {
   initialData?: DBPromotion;
@@ -236,9 +237,9 @@ export function PromotionForm({
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div role="alert" aria-live="polite" className="bg-danger/10 text-danger text-sm px-4 py-3 rounded-xl border border-danger/20 font-medium">
-            ⚠️ {error}
-          </div>
+          <Alert variant="danger">
+            {error}
+          </Alert>
         )}
 
         {/* Section 1: Chương trình */}

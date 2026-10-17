@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 
 export default function ChangePasswordPage() {
   const formId = useId();
@@ -73,9 +74,9 @@ export default function ChangePasswordPage() {
         />
 
         {error && (
-          <div className="bg-danger/10 text-danger p-3 rounded-lg text-sm text-center mb-6 border border-danger/20">
+          <Alert variant="danger" className="mb-6">
             {error}
-          </div>
+          </Alert>
         )}
         
         {success && (

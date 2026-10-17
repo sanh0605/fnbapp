@@ -3,6 +3,7 @@
 import { useState, useRef, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Alert } from "@/components/ui/Alert";
 
 function getSafeCallbackUrl(raw: string | null | undefined): string | null {
   if (!raw) return null;
@@ -79,9 +80,9 @@ function LoginFormContent({ title }: { title: string }) {
         </div>
 
         {error && (
-          <div aria-live="polite" className="bg-danger/10 text-danger p-3 rounded-lg text-sm text-center mb-4 border border-danger/20">
+          <Alert variant="danger" className="mb-4">
             {error}
-          </div>
+          </Alert>
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
