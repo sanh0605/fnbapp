@@ -12,10 +12,10 @@ export function renderPriceRange(sizes: { variant?: any; price?: number }[]) {
   const maxPrice = listPrices[listPrices.length - 1];
   return (
     <>
-      {formatNumber(minPrice)}
+      <span className="whitespace-nowrap">{formatNumber(minPrice)}</span>
       {maxPrice !== minPrice && (
-        <small className="text-[15px] font-medium text-text-secondary whitespace-nowrap">
-          {" "}– {formatNumber(maxPrice)}
+        <small className="text-[15px] font-medium text-text-secondary">
+          {" "}– <span className="whitespace-nowrap">{formatNumber(maxPrice)}</span>
         </small>
       )}
     </>
@@ -48,7 +48,7 @@ export function ProductCard({
       aria-label={product.name}
       onClick={onOpen}
       disabled={disabled}
-      className={`w-full min-h-[90px] h-auto rounded-card px-3.5 py-3 flex flex-col justify-between text-left transition-colors disabled:opacity-50 ${
+      className={`w-full min-h-[90px] rounded-card px-3.5 py-3 flex flex-col justify-between text-left transition-colors disabled:opacity-50 ${
         isSelected
           ? "border-2 border-primary bg-primary-soft"
           : "border border-border bg-surface-card hover:border-primary/40"
@@ -65,9 +65,9 @@ export function ProductCard({
         )}
       </div>
 
-      <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 mt-auto pt-1">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 pt-1">
         {sizes.length > 0 ? (
-          <span className="text-[17px] font-extrabold text-primary leading-none whitespace-nowrap">
+          <span className="text-[17px] font-extrabold text-primary leading-none">
             {renderPriceRange(sizes)}
           </span>
         ) : (

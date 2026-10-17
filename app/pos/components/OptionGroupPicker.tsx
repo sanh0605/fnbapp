@@ -113,7 +113,7 @@ export function OptionGroupPicker({
                       }`}
                     >
                       <span
-                        className={`truncate ${
+                        className={`break-words ${
                           isLit ? "text-primary font-bold" : "text-text-primary font-medium"
                         }`}
                       >
@@ -159,7 +159,7 @@ export function OptionGroupPicker({
                     >
                       <div className="flex items-center gap-1.5 min-w-0 flex-1">
                         <span
-                          className={`truncate ${
+                          className={`break-words ${
                             count > 0 ? "text-primary font-bold" : "text-text-primary font-medium"
                           }`}
                         >
@@ -175,7 +175,7 @@ export function OptionGroupPicker({
                         onClick={(e) => e.stopPropagation()}
                       >
                         {priceNum > 0 && (
-                          <span className="text-[16px] md:text-[15px] text-text-secondary font-normal mr-1 whitespace-nowrap shrink-0">
+                          <span className="text-[16px] md:text-[15px] text-text-secondary font-normal mr-1 whitespace-nowrap">
                             +{formatNumber(priceNum)}
                           </span>
                         )}
@@ -184,7 +184,7 @@ export function OptionGroupPicker({
                             type="button"
                             onClick={() => removeManyPortion(opt.id)}
                             aria-label={`Bớt một phần ${opt.name}`}
-                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold text-lg transition-colors text-primary hover:bg-surface-card shrink-0"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold text-lg transition-colors text-primary hover:bg-surface-card"
                           >
                             −
                           </button>
@@ -194,7 +194,7 @@ export function OptionGroupPicker({
                           onClick={() => addManyPortion(g, opt)}
                           disabled={!canAdd}
                           aria-label={`Thêm một phần ${opt.name}`}
-                          className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold transition-colors shrink-0 ${
+                          className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold transition-colors ${
                             canAdd
                               ? "text-primary"
                               : "text-text-muted opacity-40 cursor-not-allowed"
@@ -235,7 +235,7 @@ export function OptionGroupPicker({
                   className="flex justify-between items-center gap-2 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 bg-surface-card text-[18px] md:text-[16px]"
                 >
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="text-text-primary font-medium truncate">{p.name}</span>
+                    <span className="text-text-primary font-medium break-words">{p.name}</span>
                     {priceNum > 0 && (
                       <span className="text-xs text-text-secondary mt-0.5 whitespace-nowrap">
                         +{formatNumber(priceNum)}

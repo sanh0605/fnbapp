@@ -205,7 +205,7 @@ export function ItemPicker({
                       }`}
                     >
                       <span
-                        className={`truncate ${
+                        className={`break-words ${
                           isSelected ? "text-primary font-bold" : "text-text-primary font-medium"
                         }`}
                       >

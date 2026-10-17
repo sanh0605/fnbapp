@@ -9,7 +9,7 @@ export default function POSLoading() {
         <div className="bg-surface-card px-4 py-2 flex items-center gap-2 border-b border-border">
            <div className="h-10 bg-border rounded w-full"></div>
         </div>
-        <div className="flex-1 overflow-auto p-0 md:p-4 bg-page/50">
+        <div className="flex-1 overflow-auto md:p-4 bg-page/50">
           <div className="flex flex-col md:hidden bg-surface-card">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div
@@ -22,7 +22,7 @@ export default function POSLoading() {
             ))}
           </div>
 
-          <div className="hidden md:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="hidden md:grid sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
              {[1,2,3,4,5,6,7,8,9,10].map(i => (
                <div key={i} className="h-40 bg-surface-card rounded-xl border border-border"></div>
              ))}
