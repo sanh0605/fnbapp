@@ -57,7 +57,8 @@ const panelStyle: React.CSSProperties = {
 
 const buttonStyle: React.CSSProperties = {
   position: "fixed",
-  bottom: 16,
+  top: "50%",
+  transform: "translateY(-50%)",
   right: 16,
   zIndex: 2147483000,
   background: "#4f46e5",
@@ -350,7 +351,7 @@ export function UiFeedbackTool() {
 
       <div style={{ pointerEvents: "auto" }}>
         {!picking && (
-          <button ref={triggerButtonRef} type="button" onClick={toggleOpen} style={{ ...buttonStyle, bottom: isMobile ? "calc(150px + env(safe-area-inset-bottom))" : 88 }}>
+          <button ref={triggerButtonRef} type="button" onClick={toggleOpen} style={buttonStyle}>
             {isOpen ? "Đóng" : "Góp ý"}
           </button>
         )}

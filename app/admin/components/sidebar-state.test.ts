@@ -25,13 +25,25 @@ describe("sidebar state", () => {
 
       const children3 = [{ href: '/admin/finance' }];
       expect(activeChildHref('/admin/orders', children3)).toBe(null);
+
+      const khoChildren = [
+        { href: '/admin/inventory/stock' },
+        { href: '/admin/inventory/issue-slips' },
+        { href: '/admin/inventory/stocktake' },
+        { href: '/admin/inventory/items' },
+        { href: '/admin/inventory/assets' },
+      ];
+      expect(activeChildHref('/admin/inventory/conversions', khoChildren)).toBe('/admin/inventory/items');
+      expect(activeChildHref('/admin/inventory/conversions/new', khoChildren)).toBe('/admin/inventory/items');
+      expect(activeChildHref('/admin/inventory/conversions/conv-1/edit', khoChildren)).toBe('/admin/inventory/items');
     });
   });
 
   it("finds the group of the current page by the longest matching link", () => {
     expect(activeGroupName("/admin/inventory/purchase-orders/PO-191")).toBe("Nhập hàng");
     expect(activeGroupName("/admin/products/categories")).toBe("Bán hàng");
-    expect(activeGroupName("/admin/inventory/conversions")).toBe(null);
+    expect(activeGroupName("/admin/inventory/conversions")).toBe("Kho");
+    expect(activeGroupName("/admin/inventory/conversions/new")).toBe("Kho");
     expect(activeGroupName("/admin")).toBe("Tổng quan");
   });
 });

@@ -734,6 +734,12 @@ describe("DataList wears the table template", () => {
     expect(phoneTotal.compareDocumentPosition(phoneFirstRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("totals label cell on desktop has whitespace-nowrap", () => {
+    renderList({ totals: { label: "Tổng (không tính huỷ)", values: { name: "3 nhà cung cấp" } } });
+    const labelCell = screen.getByText("Tổng (không tính huỷ)").closest("td");
+    expect(labelCell?.className).toContain("whitespace-nowrap");
+  });
+
   it("multi-value totals strip joins items with · on the phone", () => {
     renderList({
       totals: {

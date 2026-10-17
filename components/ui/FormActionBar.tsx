@@ -36,9 +36,39 @@ export function FormActionBar({
     form.addEventListener("input", handleDirty);
     form.addEventListener("change", handleDirty);
 
+    const updatePosition = () => {
+      const el = barRef.current;
+      if (!el) return;
+      el.style.marginTop = "";
+      const scrollParent = el.closest(".overflow-y-auto");
+      const parentBottom = scrollParent
+        ? scrollParent.getBoundingClientRect().bottom
+        : window.innerHeight;
+      const isMobile = window.innerWidth < 768;
+      const targetBottom = isMobile ? parentBottom - 58 : parentBottom;
+      const currentBottom = el.getBoundingClientRect().bottom;
+      if (currentBottom > 0 && parentBottom > 0) {
+        const diff = targetBottom - currentBottom;
+        if (diff > 0) {
+          el.style.marginTop = `${diff}px`;
+        }
+      }
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      observer = new ResizeObserver(updatePosition);
+      observer.observe(form);
+    }
+
     return () => {
       form.removeEventListener("input", handleDirty);
       form.removeEventListener("change", handleDirty);
+      window.removeEventListener("resize", updatePosition);
+      observer?.disconnect();
     };
   }, []);
 
