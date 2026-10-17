@@ -66,6 +66,7 @@
    - **Pay:** the same three buttons with the same labels and rules. New look:
      - CHUYỂN KHOẢN as a brown outline;
      - TIỀN MẶT solid brown, both 56 px;
+     - TIỀN MẶT stays on the left and CHUYỂN KHOẢN on the right, as before the redo (Task 3b review: both send at once, so a swap would record cash as a transfer for a cashier who taps by position);
      - "Nhiều hình thức" a 44 px text button across both.
    - **"Khuyến mãi, giảm giá":** a disclosure button, closed by default.
      - It opens today's promo-code box and order-discount box in place (not a popup).

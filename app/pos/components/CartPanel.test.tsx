@@ -65,6 +65,7 @@ describe("Discount (R3)", () => {
   describe("R3 Discount box clamping", () => {
     it("has inputMode='numeric' on whole-order discount box", () => {
       render(<CartPanel {...defaultProps} />);
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       expect(discountInput).toHaveAttribute("inputMode", "numeric");
     });
@@ -78,6 +79,7 @@ describe("Discount (R3)", () => {
           userCustomDiscountType="VND"
         />
       );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(discountInput, { target: { value: "150000" } });
 
@@ -94,6 +96,7 @@ describe("Discount (R3)", () => {
           userCustomDiscountType="VND"
         />
       );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(discountInput, { target: { value: "-10000" } });
       expect(setUserCustomDiscount).toHaveBeenCalledWith(0);
@@ -108,13 +111,43 @@ describe("Discount (R3)", () => {
           userCustomDiscountType="PERCENT"
         />
       );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(discountInput, { target: { value: "101" } });
       expect(setUserCustomDiscount).toHaveBeenCalledWith(100);
     });
   });
 
+  describe("Task 3b: Promo disclosure", () => {
+    it("with nothing applied, the disclosure is closed and the promo-code box is not in the page", () => {
+      render(<CartPanel {...defaultProps} appliedPromoCode={null} userCustomDiscount={null} />);
+
+      const disclosureBtn = screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i });
+      expect(disclosureBtn).toHaveAttribute("aria-expanded", "false");
+      expect(screen.queryByLabelText("Mã giảm giá")).toBeNull();
+      expect(screen.queryByLabelText("Giảm giá tùy chỉnh")).toBeNull();
+    });
+
+    it("with an applied promo code, the disclosure is open", () => {
+      render(<CartPanel {...defaultProps} appliedPromoCode="SALE10" />);
+
+      const disclosureBtn = screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i });
+      expect(disclosureBtn).toHaveAttribute("aria-expanded", "true");
+      expect(screen.getByLabelText("Mã giảm giá")).toBeInTheDocument();
+      expect(screen.getByText("Mã: SALE10")).toBeInTheDocument();
+    });
+  });
+
   describe("Cash checkout", () => {
+    it("asserts TIỀN MẶT comes before CHUYỂN KHOẢN in document order", () => {
+      render(<CartPanel {...defaultProps} />);
+      const cashButton = screen.getByRole("button", { name: /TIỀN MẶT/i });
+      const transferButton = screen.getByRole("button", { name: /CHUYỂN KHOẢN/i });
+      expect(
+        cashButton.compareDocumentPosition(transferButton) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+    });
+
     it("clicking TIỀN MẶT calls handleConfirmCheckout with 'Tien mat' once", () => {
       const handleConfirmCheckout = vi.fn();
       render(<CartPanel {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
@@ -125,3 +158,4 @@ describe("Discount (R3)", () => {
     });
   });
 });
+

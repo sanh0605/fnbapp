@@ -101,7 +101,7 @@ lib/stock/stocktake-transaction.ts -> stocktake_sessions (write)
 - purchase_sources (id, name, status, created_at) status: ACTIVE, INACTIVE, DELETED
 - purchased_items (id, name, item_category_id, status, created_at, updated_at, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at, is_non_inventory) status: ACTIVE, INACTIVE, DELETED
 - stock_issues (id, purchased_item_id, issued_at, base_quantity, source, session_id, note, created_at, reverses_issue_id, issue_slip_id)
-- stocktake_lines (id, session_id, item_reference, counted_qty, theoretical_at_count, counted_at, and)
+- stocktake_lines (id, session_id, item_reference, counted_qty, theoretical_at_count, counted_at, and, package_counts)
 - stocktake_sessions (id, status, created_by_id, created_by_name, created_at, confirmed_by_id, confirmed_by_name, confirmed_at, updated_at, reversed_by_id, reversed_by_name, reversed_at, reversed_reason, is_shrinkage) status: OPEN, CONFIRMED, CANCELLED
 - suppliers (id, name, tax_id, address, links, status, created_at, phone, duplicate_warning_confirmed, duplicate_warning_confirmed_by, duplicate_warning_confirmed_at) status: ACTIVE, INACTIVE, DELETED
 - units (id, name, status, created_at, description) status: ACTIVE, INACTIVE, DELETED

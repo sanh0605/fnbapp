@@ -7,7 +7,9 @@ import { describe, expect, it } from "vitest";
 const ALLOWED_HEX = new Set([
   "#F7F5F0", "#FFFFFF", "#1F1B16", "#5E574E", "#E4DFD5", "#8A5A1F", "#F2E8D8", "#B3261E",
   // pie-chart shades of the primary, CategoryPieChart.tsx
-  "#A57A45", "#BF9A6B", "#D6BC96", "#E9DBC4", "#5E3D14", "#744B19", "#C9A77C", "#DCC7A6"
+  "#A57A45", "#BF9A6B", "#D6BC96", "#E9DBC4", "#5E3D14", "#744B19", "#C9A77C", "#DCC7A6",
+  // notice caution and info, plan 2026-10-17-may-ban-hang-lam-lai.md Task 2
+  "#9A6700", "#3B5B7A"
 ]);
 // Hover and pressed shades of the primary: allowed in globals.css only.
 const HOVER_SHADES = new Set(["#744B19", "#5E3D14"]);

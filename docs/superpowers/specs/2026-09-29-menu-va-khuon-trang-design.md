@@ -117,6 +117,9 @@ thấy trang tên "Phiếu nhập", không phải "Quản lý Nhập Hàng".
 Ngoài 4 màu còn hai sắc trung tính, không tính là màu: chữ phụ `#5E574E` và đường
 kẻ `#E4DFD5`.
 
+Thêm 2026-10-17 (làm lại máy bán hàng, `BR-UI-020`): hai màu chỉ dùng cho thông báo,
+vàng đậm `#9A6700` (nhắc nhở, mất mạng) và xanh xám `#3B5B7A` (tin báo).
+
 **Cách làm:** giữ nguyên tên màu trong code, chỉ đổi giá trị ở một chỗ
 (`app/globals.css`). Tên màu hiện dùng 1.851 lần trong 137 file giao diện (đo 29/09), nên
 viết lại từng chỗ là việc lớn mà không đổi gì thấy được.

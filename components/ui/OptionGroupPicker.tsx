@@ -87,13 +87,13 @@ export function OptionGroupPicker({ groups, picks, onChange }: OptionGroupPicker
                       data-lit={isLit ? "true" : undefined}
                       className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors min-h-[44px] ${
                         isLit
-                          ? "border-warning bg-warning/10"
+                          ? "border-primary bg-primary-soft"
                           : "border-border bg-surface-card hover:bg-page"
                       }`}
                     >
                       <span
                         className={`font-bold text-sm ${
-                          isLit ? "text-warning" : "text-text-primary"
+                          isLit ? "text-primary" : "text-text-primary"
                         }`}
                       >
                         {opt.name}

@@ -37,7 +37,7 @@ vi.mock("@/lib/shared/dialog", () => ({
 }));
 
 import { submitOrderV2, savePOSDraft } from "@/app/pos/actions";
-import { confirm } from "@/lib/shared/dialog";
+import { alert, confirm } from "@/lib/shared/dialog";
 import POSScreen from "./POSScreen";
 
 afterEach(() => {
@@ -61,6 +61,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     { id: "P1", name: "Bạc xỉu", category_id: "CAT-1", status: "ACTIVE" },
     { id: "P2", name: "Đường đen sữa tươi", category_id: "CAT-1", status: "ACTIVE" },
     { id: "P3", name: "Trà đào", category_id: "CAT-2", status: "ACTIVE" },
+    { id: "P4", name: "Cà phê đen", category_id: "CAT-1", status: "ACTIVE" },
   ];
 
   const sampleCategories = [
@@ -72,6 +73,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     { id: "V1", product_id: "P1", size_name: "M", price: 29000 },
     { id: "V2", product_id: "P2", size_name: "M", price: 35000 },
     { id: "V3", product_id: "P3", size_name: "M", price: 30000 },
+    { id: "V4", product_id: "P4", size_name: "M", price: 25000 },
   ];
 
   const defaultProps = {
@@ -84,7 +86,7 @@ describe("POSScreen (Step 3 & 5)", () => {
     promotions: [],
     outletId: "OUT-1",
     brandId: "BR-1",
-    bestSellers: ["P1", "P2", "P3"],
+    bestSellers: ["P1", "P2", "P3", "P4"],
   };
 
   describe("R5: Search without accents", () => {
@@ -135,7 +137,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       const productCard = screen.getByText("Bạc xỉu");
       fireEvent.click(productCard);
 
-      const addBtn = screen.getByRole("button", { name: /THÊM/i });
+      const addBtn = screen.getByRole("button", { name: /^THÊM -/ });
       fireEvent.click(addBtn);
 
       // Cart now has items
@@ -156,7 +158,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       // Add item to cart
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
       fireEvent.keyDown(window, { key: "Enter" });
@@ -175,7 +177,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       // First Enter: starts checkout
       fireEvent.keyDown(window, { key: "Enter" });
@@ -195,7 +197,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent(window, new Event("offline"));
 
@@ -210,7 +212,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
 
@@ -223,10 +225,10 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.click(screen.getByText("Đường đen sữa tươi"));
-      expect(screen.getByRole("button", { name: /THÊM/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^THÊM -/ })).toBeInTheDocument();
 
       (document.activeElement as HTMLElement)?.blur?.();
 
@@ -242,7 +244,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
 
@@ -264,7 +266,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       const draftBtn = screen.getByRole("button", { name: "Lưu Nháp" });
       draftBtn.focus();
@@ -289,7 +291,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       // Add Bạc xỉu to cart
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       // Checkout
       fireEvent.keyDown(window, { key: "Enter" });
@@ -305,12 +307,12 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByText("Đường đen sữa tươi"));
 
       // Product modal does not open and nothing is added to cart
-      expect(screen.queryByRole("button", { name: /THÊM/i })).toBeNull();
+      expect(screen.queryByRole("button", { name: /^THÊM -/ })).toBeNull();
       expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
 
       resolveFirstCall!({ success: true });
       await waitFor(() => {
-        expect(screen.getByText("Thanh toán thành công!")).toBeInTheDocument();
+        expect(screen.getByText("Thanh toán thành công")).toBeInTheDocument();
       });
     });
 
@@ -323,9 +325,10 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByText("Bạc xỉu"));
       const discountInput = screen.getByLabelText("Giảm giá sản phẩm");
       fireEvent.change(discountInput, { target: { value: "5000" } });
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       // Set manual order discount: 3,000
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
       const orderDiscountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(orderDiscountInput, { target: { value: "3000" } });
 
@@ -368,9 +371,10 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} promotions={[samplePromo]} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       // Apply promo code: SALE10
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
       const promoInput = screen.getByLabelText("Mã giảm giá");
       fireEvent.change(promoInput, { target: { value: "SALE10" } });
       fireEvent.click(screen.getByRole("button", { name: "Áp dụng" }));
@@ -387,6 +391,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       await waitFor(() => {
         expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại")[0]).toBeInTheDocument();
       });
+      expect(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i })).toHaveAttribute("aria-expanded", "true");
       expect(submitOrderV2).toHaveBeenCalledTimes(1);
 
       const firstCallArgs = vi.mocked(submitOrderV2).mock.calls[0];
@@ -415,9 +420,13 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       // Next cart: add Đường đen sữa tươi
       fireEvent.click(screen.getByText("Đường đen sữa tươi"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
-      // Check that next cart has no discount applied and no promo code carried over
+      // Check that next cart has no discount applied and no promo code carried over;
+      // the promo disclosure starts closed on a new order
+      const disclosure = screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i });
+      expect(disclosure).toHaveAttribute("aria-expanded", "false");
+      fireEvent.click(disclosure);
       const newOrderDiscountInput = screen.getByLabelText("Giảm giá tùy chỉnh") as HTMLInputElement;
       expect(newOrderDiscountInput.value).toBe("");
       expect(screen.queryByText("Giảm giá Hoá đơn")).toBeNull();
@@ -436,7 +445,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
 
@@ -465,7 +474,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
 
@@ -483,7 +492,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       resolveSecondCall!({ success: true });
       await waitFor(() => {
-        expect(screen.getByText("Thanh toán thành công!")).toBeInTheDocument();
+        expect(screen.getByText("Thanh toán thành công")).toBeInTheDocument();
       });
     });
   });
@@ -495,7 +504,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
 
@@ -515,7 +524,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
 
@@ -531,7 +540,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       // Active tab starts at BEST_SELLERS
-      const bestSellersBtn = screen.getByRole("button", { name: "🔥 Bán chạy" });
+      const bestSellersBtn = screen.getByRole("button", { name: "Bán chạy" });
       expect(bestSellersBtn.className).toContain("bg-primary");
 
       // Search for "Trà đào" (which is in CAT-2, not in CAT-1 or active tab)
@@ -542,10 +551,10 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(screen.getByText("Trà đào")).toBeInTheDocument();
 
       // No tab should be highlighted with bg-primary
-      expect(screen.getByRole("button", { name: "🔥 Bán chạy" }).className).not.toContain("bg-primary");
+      expect(screen.getByRole("button", { name: "Bán chạy" }).className).not.toContain("bg-primary");
       expect(screen.getByRole("button", { name: "Tất cả món" }).className).not.toContain("bg-primary");
-      expect(screen.getByRole("button", { name: "Cà phê" }).className).not.toContain("bg-primary");
-      expect(screen.getByRole("button", { name: "Trà" }).className).not.toContain("bg-primary");
+      expect(screen.getByRole("button", { name: "☕ Cà phê" }).className).not.toContain("bg-primary");
+      expect(screen.getByRole("button", { name: "🍵 Trà" }).className).not.toContain("bg-primary");
     });
   });
 
@@ -560,7 +569,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
 
@@ -591,7 +600,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
       fireEvent.keyDown(window, { key: "Enter" });
 
@@ -617,14 +626,14 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       // Open item config modal
       fireEvent.click(productBtn);
-      expect(screen.getByRole("button", { name: /THÊM/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /^THÊM -/ })).toBeInTheDocument();
 
       // Ensure focus is on a button
       productBtn.focus();
 
       // Press Escape -> item modal closes
       fireEvent.keyDown(window, { key: "Escape" });
-      expect(screen.queryByRole("button", { name: /THÊM/i })).toBeNull();
+      expect(screen.queryByRole("button", { name: /^THÊM -/ })).toBeNull();
 
       // Focus a button again
       productBtn.focus();
@@ -640,4 +649,228 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(cartContainer().className).not.toContain("translate-y-full");
     });
   });
+
+  describe("Task 3a: Quick add and product card", () => {
+    it("tapping 'Thêm Cà phê đen M' adds one line of size M, quantity 1", () => {
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Thêm Cà phê đen M" }));
+
+      expect(screen.queryByRole("button", { name: /^THÊM -/ })).toBeNull();
+      expect(screen.getAllByRole("heading", { level: 4 })).toHaveLength(1);
+      const lineHeading = screen.getByRole("heading", { name: "Cà phê đen", level: 4 });
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("Size M")).toBeInTheDocument();
+      expect(within(cartRow).getByText("1")).toBeInTheDocument();
+    });
+
+    it("tapping 'Thêm Cà phê đen M' twice gives quantity 2", () => {
+      render(<POSScreen {...defaultProps} />);
+
+      const sizeBtn = screen.getByRole("button", { name: "Thêm Cà phê đen M" });
+      fireEvent.click(sizeBtn);
+      fireEvent.click(sizeBtn);
+
+      expect(screen.getAllByRole("heading", { level: 4 })).toHaveLength(1);
+      const lineHeading = screen.getByRole("heading", { name: "Cà phê đen", level: 4 });
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("Size M")).toBeInTheDocument();
+      expect(within(cartRow).getByText("2")).toBeInTheDocument();
+    });
+
+    it("while a send is pending, a size tap adds nothing, and after the send fails the cart equals the frozen cart", async () => {
+      let resolveSubmit: (value: any) => void;
+      vi.mocked(submitOrderV2).mockImplementationOnce(
+        () => new Promise((resolve) => { resolveSubmit = resolve; }) as any
+      );
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Thêm Bạc xỉu M" }));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+      await waitFor(() => {
+        expect(submitOrderV2).toHaveBeenCalledTimes(1);
+      });
+
+      // Cart is empty while checking out; tapping a size button adds nothing
+      fireEvent.click(screen.getByRole("button", { name: "Thêm Cà phê đen M" }));
+      expect(screen.queryByRole("heading", { level: 4 })).toBeNull();
+
+      resolveSubmit!({ success: false, retry: true, error: "Network timeout" });
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Gửi lại" })).toBeInTheDocument();
+      });
+
+      const headings = screen.getAllByRole("heading", { level: 4 });
+      expect(headings).toHaveLength(1);
+      expect(headings[0]).toHaveTextContent("Bạc xỉu");
+      expect(screen.queryByRole("heading", { name: "Cà phê đen", level: 4 })).toBeNull();
+    });
+
+    it("after a failed send, a size tap removes the 'Gửi lại' strip", async () => {
+      vi.mocked(submitOrderV2).mockResolvedValueOnce({
+        success: false,
+        retry: true,
+        error: "Network timeout",
+      } as any);
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Thêm Bạc xỉu M" }));
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Gửi lại" })).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Thêm Cà phê đen M" }));
+
+      expect(screen.queryByRole("button", { name: "Gửi lại" })).toBeNull();
+    });
+
+    it("after a size tap, Enter opens the cash confirm and the quantity stays 1", async () => {
+      vi.mocked(confirm).mockResolvedValueOnce(false);
+
+      render(<POSScreen {...defaultProps} />);
+
+      const sizeBtn = screen.getByRole("button", { name: "Thêm Cà phê đen M" });
+      sizeBtn.focus();
+      fireEvent.click(sizeBtn);
+
+      expect(document.activeElement).not.toBe(sizeBtn);
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      await waitFor(() => {
+        expect(confirm).toHaveBeenCalledTimes(1);
+      });
+
+      const lineHeading = screen.getByRole("heading", { name: "Cà phê đen", level: 4 });
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("1")).toBeInTheDocument();
+    });
+
+    it("tapping the dish name opens the dish window", () => {
+      render(<POSScreen {...defaultProps} />);
+
+      const dishBtn = screen.getByRole("button", { name: "Cà phê đen" });
+      fireEvent.click(dishBtn);
+
+      expect(screen.getByRole("button", { name: /^THÊM -/ })).toBeInTheDocument();
+      // No cart line yet: the window's own "Chọn Size" heading is the only h4.
+      expect(screen.queryByRole("heading", { level: 4, name: "Cà phê đen" })).toBeNull();
+    });
+  });
+
+  describe("Task 3b: Header, cart column, and notices", () => {
+    it("with nothing applied, the disclosure is closed and the promo-code box is not in the page", () => {
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Thêm Cà phê đen M" }));
+
+      const disclosureBtn = screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i });
+      expect(disclosureBtn).toHaveAttribute("aria-expanded", "false");
+      expect(screen.queryByLabelText("Mã giảm giá")).toBeNull();
+    });
+
+    it("with an applied promo code, the disclosure is open", () => {
+      const samplePromo = {
+        id: "PROMO-1",
+        code: "SALE10",
+        name: "Giảm 10k",
+        status: "ACTIVE",
+        start_date: "2020-01-01",
+        type: "ORDER_DISCOUNT",
+        discount_amount: 10000,
+        brand_id: "BR-1",
+      };
+
+      render(<POSScreen {...defaultProps} promotions={[samplePromo]} />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Thêm Bạc xỉu M" }));
+
+      const disclosureBtn = screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i });
+      fireEvent.click(disclosureBtn);
+
+      fireEvent.change(screen.getByLabelText("Mã giảm giá"), { target: { value: "SALE10" } });
+      fireEvent.click(screen.getByRole("button", { name: "Áp dụng" }));
+
+      expect(disclosureBtn).toHaveAttribute("aria-expanded", "true");
+      expect(screen.getByLabelText("Mã giảm giá")).toBeInTheDocument();
+      expect(screen.getByText("Mã: SALE10")).toBeInTheDocument();
+    });
+
+    it("an error notice survives four later success notices", async () => {
+      vi.mocked(submitOrderV2)
+        .mockResolvedValueOnce({ success: false, retry: true, error: "Network timeout" } as any)
+        .mockResolvedValue({ success: true } as any);
+
+      render(<POSScreen {...defaultProps} />);
+
+      // 1st checkout fails -> adds 1 error notice
+      fireEvent.click(screen.getByRole("button", { name: "Thêm Bạc xỉu M" }));
+      fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
+
+      const region = screen.getByRole("region", { name: "Thông báo" });
+      await waitFor(() => {
+        expect(within(region).getByText("Chưa gửi được đơn")).toBeInTheDocument();
+      });
+
+      // 4 later successful checkouts -> 4 success notices added, capped at 3 non-error notices
+      for (let i = 0; i < 4; i++) {
+        fireEvent.click(screen.getByRole("button", { name: "Thêm Cà phê đen M" }));
+        fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
+        await waitFor(() => {
+          expect(submitOrderV2).toHaveBeenCalledTimes(i + 2);
+        });
+      }
+
+      // Error notice is never dropped; at most 3 non-error notices remain
+      await waitFor(() => {
+        expect(within(region).getByText("Chưa gửi được đơn")).toBeInTheDocument();
+        expect(within(region).getAllByText("Thanh toán thành công")).toHaveLength(3);
+      });
+    });
+
+    it("draft-save failure shows an error notice, not a dialog", async () => {
+      vi.mocked(savePOSDraft).mockResolvedValueOnce({
+        success: false,
+        error: "Không kết nối được cơ sở dữ liệu",
+      } as any);
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Thêm Bạc xỉu M" }));
+      fireEvent.click(screen.getByRole("button", { name: "Lưu Nháp" }));
+
+      const region = screen.getByRole("region", { name: "Thông báo" });
+      await waitFor(() => {
+        expect(
+          within(region).getByText("Lỗi lưu đơn nháp: Không kết nối được cơ sở dữ liệu")
+        ).toBeInTheDocument();
+      });
+      expect(alert).not.toHaveBeenCalled();
+    });
+
+    it("a dish with no size shows a warning notice, not a dialog", () => {
+      const noSizeProduct = { id: "P-NOSIZE", name: "Món chưa có giá", category_id: "CAT-1", status: "ACTIVE" };
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...sampleProducts, noSizeProduct]}
+          bestSellers={[...defaultProps.bestSellers, "P-NOSIZE"]}
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Món chưa có giá" }));
+
+      const region = screen.getByRole("region", { name: "Thông báo" });
+      expect(within(region).getByText("Món này chưa cấu hình size & giá.")).toBeInTheDocument();
+      expect(alert).not.toHaveBeenCalled();
+      expect(screen.queryByRole("button", { name: /^THÊM -/ })).toBeNull();
+    });
+  });
 });
+

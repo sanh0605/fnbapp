@@ -105,7 +105,8 @@ function addToCartButton(): HTMLButtonElement {
 }
 
 function modifierRow(modName: string): HTMLElement {
-  const nameSpan = Array.from(document.querySelectorAll("span")).find(
+  const modalRoot = addToCartButton().closest(".fixed") || document;
+  const nameSpan = Array.from(modalRoot.querySelectorAll("span")).find(
     s => s.textContent === modName,
   );
   if (!nameSpan) throw new Error(`modifier row not found: "${modName}"`);

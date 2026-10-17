@@ -160,13 +160,13 @@ export function ItemConfigModal({
                   <button
                     key={v.id}
                     onClick={() => setSelectedVariant(v)}
-                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${selectedVariant?.id === v.id ? "border-warning bg-warning/10" : "border-border bg-surface-card hover:border-warning/30"}`}
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${selectedVariant?.id === v.id ? "border-primary bg-primary-soft" : "border-border bg-surface-card hover:border-primary/30"}`}
                   >
-                    <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-warning" : "text-text-primary"}`}>{v.size_name}</span>
+                    <span className={`font-bold text-sm ${selectedVariant?.id === v.id ? "text-primary" : "text-text-primary"}`}>{v.size_name}</span>
                     {hasPromo ? (
                       <div className="flex flex-col items-center">
                         <span className="text-xs text-text-muted line-through">{formatNumber(v.price)}</span>
-                        <span className="text-sm font-black text-warning">{formatNumber(promoPrice)}</span>
+                        <span className="text-sm font-black text-primary">{formatNumber(promoPrice)}</span>
                       </div>
                     ) : (
                       <span className="text-sm font-black text-text-primary">{formatNumber(v.price)}</span>
@@ -195,14 +195,14 @@ export function ItemConfigModal({
                 <button
                   type="button"
                   onClick={() => setItemDiscountType("VND")}
-                  className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-warning/10 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
+                  className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "VND" ? "bg-primary-soft text-primary" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                 >
                   VNĐ
                 </button>
                 <button
                   type="button"
                   onClick={() => setItemDiscountType("PERCENT")}
-                  className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-warning/10 text-warning" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
+                  className={`px-3 py-1.5 text-sm font-bold transition-colors ${itemDiscountType === "PERCENT" ? "bg-primary-soft text-primary" : "bg-page text-text-secondary hover:bg-surface-secondary"}`}
                 >
                   %
                 </button>
@@ -229,14 +229,14 @@ export function ItemConfigModal({
             <div className="flex items-center gap-3 bg-surface-secondary rounded-xl p-1.5 shrink-0 h-14">
               <button
                 onClick={() => setSelectedQty(Math.max(1, selectedQty - 1))}
-                className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-warning transition-colors"
+                className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-primary transition-colors"
               >
                 -
               </button>
               <span className="text-lg font-black w-6 text-center text-text-primary">{selectedQty}</span>
               <button
                 onClick={() => setSelectedQty(selectedQty + 1)}
-                className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-warning transition-colors"
+                className="w-10 h-10 flex items-center justify-center bg-surface-card rounded-lg shadow-sm text-text-secondary font-bold text-xl hover:text-primary transition-colors"
               >
                 +
               </button>
@@ -244,7 +244,7 @@ export function ItemConfigModal({
 
             <button
               onClick={addToCart}
-              className="flex-1 bg-warning text-white py-2 px-3 rounded-xl hover:bg-warning/90 active:scale-[0.98] transition-colors transition-transform flex flex-col items-center justify-center h-14"
+              className="flex-1 bg-primary text-on-primary py-2 px-3 rounded-xl hover:bg-primary-hover active:scale-[0.98] transition-colors transition-transform flex flex-col items-center justify-center h-14"
             >
               <div className="font-bold text-sm lg:text-base flex flex-col items-center">
                 <span>{isEditing ? "CẬP NHẬT" : "THÊM"} - {formatNumber(currentItemFinalTotal)}</span>

@@ -4,53 +4,66 @@ import { formatNumber } from "@/lib/shared/format";
 
 interface ProductCardProps {
   product: any;
-  category: any;
-  basePrice: number;
-  promoPrice?: number;
-  onClick: () => void;
+  sizes: { variant: any; price: number }[];
+  hasPromo: boolean;
+  hasOptions: boolean;
+  disabled: boolean;
+  onOpen: () => void;
+  onQuickAdd: (variant: any) => void;
 }
 
 export function ProductCard({
   product,
-  category,
-  basePrice,
-  promoPrice,
-  onClick,
+  sizes,
+  hasPromo,
+  hasOptions,
+  disabled,
+  onOpen,
+  onQuickAdd,
 }: ProductCardProps) {
-  const hasIcon = Boolean(category?.icon);
-
   return (
-    <button
-      onClick={onClick}
-      className="bg-surface-card rounded-2xl border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col transition-all duration-200 text-left relative w-full h-full focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:scale-[1.02] active:scale-[0.98] will-change-transform p-3 md:p-4 min-h-[88px] md:min-h-[100px] justify-between"
-    >
-      <div className="w-full">
-        <div className="flex items-start justify-between gap-1 mb-1">
-          {hasIcon && <span className="text-xl shrink-0 leading-none">{category.icon}</span>}
-          {promoPrice !== undefined && (
-            <span className="ml-auto bg-danger text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 shadow-sm">
-              KM
-            </span>
-          )}
+    <div className="bg-surface-card border border-border rounded-card p-3 flex flex-col justify-between gap-2">
+      <button
+        type="button"
+        onClick={onOpen}
+        disabled={disabled}
+        className="text-left w-full min-h-[44px] disabled:opacity-50"
+      >
+        <div className="text-[15px] font-semibold text-text-primary leading-snug line-clamp-2">
+          {product.name}
         </div>
-        <h3 className="font-semibold text-text-primary text-sm leading-tight line-clamp-2 md:text-base">{product.name}</h3>
-      </div>
-      <div className="mt-2 w-full">
-        {promoPrice !== undefined ? (
-          <div className="flex flex-col">
-            <span className="text-[11px] text-text-muted line-through leading-none mb-0.5">
-              {formatNumber(basePrice)}
-            </span>
-            <span className="text-danger font-bold text-sm leading-tight md:text-base">
-              {formatNumber(promoPrice)}
-            </span>
-          </div>
-        ) : (
-          <div className="text-text-primary font-bold text-sm leading-tight md:text-base">
-            {formatNumber(basePrice)}
-          </div>
+        {hasOptions && (
+          <div className="text-xs text-text-secondary mt-0.5">Có tuỳ chọn</div>
         )}
+        {hasPromo && (
+          <span className="inline-block mt-1 bg-primary-soft text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
+            Khuyến mãi
+          </span>
+        )}
+      </button>
+
+      <div className="flex flex-wrap gap-1.5">
+        {sizes.map((size) => (
+          <button
+            key={size.variant.id}
+            type="button"
+            disabled={disabled}
+            aria-label={`Thêm ${product.name} ${size.variant.size_name}`}
+            onClick={(e) => {
+              onQuickAdd(size.variant);
+              e.currentTarget.blur();
+            }}
+            className="flex-1 basis-[4.5rem] min-h-[44px] bg-primary-soft rounded-button px-2 py-1 flex flex-col items-center justify-center disabled:opacity-50"
+          >
+            <div className="text-xs text-text-secondary leading-tight">
+              {size.variant.size_name}
+            </div>
+            <div className="text-sm font-bold text-primary leading-tight">
+              {formatNumber(size.price)}
+            </div>
+          </button>
+        ))}
       </div>
-    </button>
+    </div>
   );
 }

@@ -58,12 +58,12 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
 
     // Banner indicates disconnection and no selling
     expect(
-      screen.getByText("⚠️ Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại")
+      screen.getByText("Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại")
     ).toBeInTheDocument();
 
     // Add item to cart
     fireEvent.click(screen.getByText("Cà phê đen"));
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
     // The three payment buttons are disabled while offline
     const offlineBtns = screen.getAllByRole("button", { name: /NGOẠI TUYẾN/i });
@@ -98,7 +98,7 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
 
     // Add item to cart
     fireEvent.click(screen.getByText("Cà phê đen"));
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
     // Click TIỀN MẶT (sends at once, BR-SALE-018)
     fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
@@ -160,7 +160,7 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
 
     // Add item to cart
     fireEvent.click(screen.getByText("Cà phê đen"));
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
     // Click TIỀN MẶT (sends at once, BR-SALE-018)
     fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
@@ -215,7 +215,7 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
 
     // Add item to cart
     fireEvent.click(screen.getByText("Cà phê đen"));
-    fireEvent.click(screen.getByRole("button", { name: /THÊM/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
     // Click TIỀN MẶT (sends at once, BR-SALE-018)
     fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
