@@ -247,7 +247,7 @@ export async function saveStocktakeLine(
 - **Under a package line's boxes:**
   - any box has a number: "= 162 Cái" (`formatNumber(total)` + `line.unitName`);
   - otherwise, the line has a count but no `packageCounts`: "Đã lưu: 162 Cái".
-- After a save, update the line's `countedQty`, `state` and difference from the returned `countedQty`, as the current code does. Null sets `BLANK`.
+- After a save, update the line's `countedQty`, `state` and difference from the returned `countedQty` and `theoreticalAtCount` (the book figure the server stored). Null sets `BLANK`.
 - Desktop: the "Thao tác" column becomes "Trạng thái" and holds the status text. Phone: the status text sits where the button was.
 
 Tests (titles carry `BR-INV-023`):
