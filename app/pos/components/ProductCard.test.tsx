@@ -8,6 +8,7 @@ afterEach(() => {
   cleanup();
 });
 
+// one-tap size buttons removed by BR-SALE-019
 describe("ProductCard (Task 3a)", () => {
   const sampleProduct = {
     id: "P1",
@@ -19,11 +20,18 @@ describe("ProductCard (Task 3a)", () => {
     { variant: { id: "V2", product_id: "P1", size_name: "L", price: 32000 }, price: 28000 },
   ];
 
-  it("renders dish name button and one quick-add button per size with formatted price and no emoji or 'đ'", () => {
-    const { container } = render(
+  // Task 4a Test 7
+  it("the dish card has no 'Thêm … 360ml' buttons", () => {
+    const productWith360 = { id: "P-CFD", name: "Cà phê đá" };
+    const sizesWith360 = [
+      { variant: { id: "V-360", product_id: "P-CFD", size_name: "360ml", price: 15000 }, price: 15000 },
+      { variant: { id: "V-500", product_id: "P-CFD", size_name: "500ml", price: 18000 }, price: 18000 },
+    ];
+
+    render(
       <ProductCard
-        product={sampleProduct}
-        sizes={sampleSizes}
+        product={productWith360}
+        sizes={sizesWith360}
         hasPromo={false}
         hasOptions={false}
         disabled={false}
@@ -32,21 +40,8 @@ describe("ProductCard (Task 3a)", () => {
       />
     );
 
-    expect(container.firstElementChild?.tagName).toBe("DIV");
-    expect(screen.getByRole("button", { name: "Cà phê đen" })).toBeInTheDocument();
-
-    const sizeM = screen.getByRole("button", { name: "Thêm Cà phê đen M" });
-    const sizeL = screen.getByRole("button", { name: "Thêm Cà phê đen L" });
-    expect(sizeM).toHaveTextContent("M");
-    expect(sizeM).toHaveTextContent("25,000");
-    expect(sizeM.textContent).not.toContain("đ");
-    expect(sizeL).toHaveTextContent("L");
-    expect(sizeL).toHaveTextContent("28,000");
-
-    expect(screen.queryByText("☕")).toBeNull();
-    expect(screen.queryByText("🥤")).toBeNull();
-    expect(screen.queryByText("Có tuỳ chọn")).toBeNull();
-    expect(screen.queryByText("Khuyến mãi")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Thêm .* 360ml/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Thêm / })).toBeNull();
   });
 
   it("shows 'Có tuỳ chọn' when hasOptions is true and 'Khuyến mãi' tag when hasPromo is true", () => {
@@ -69,9 +64,8 @@ describe("ProductCard (Task 3a)", () => {
     expect(promoTag.className).toContain("text-primary");
   });
 
-  it("calls onOpen when tapping dish name and calls onQuickAdd(variant) + blurs when tapping a size button", () => {
+  it("calls onOpen when tapping dish name", () => {
     const onOpen = vi.fn();
-    const onQuickAdd = vi.fn();
 
     render(
       <ProductCard
@@ -81,25 +75,15 @@ describe("ProductCard (Task 3a)", () => {
         hasOptions={false}
         disabled={false}
         onOpen={onOpen}
-        onQuickAdd={onQuickAdd}
+        onQuickAdd={vi.fn()}
       />
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Cà phê đen" }));
     expect(onOpen).toHaveBeenCalledTimes(1);
-    expect(onQuickAdd).not.toHaveBeenCalled();
-
-    const sizeBtn = screen.getByRole("button", { name: "Thêm Cà phê đen M" });
-    sizeBtn.focus();
-    expect(document.activeElement).toBe(sizeBtn);
-
-    fireEvent.click(sizeBtn);
-    expect(onQuickAdd).toHaveBeenCalledTimes(1);
-    expect(onQuickAdd).toHaveBeenCalledWith(sampleSizes[0].variant);
-    expect(document.activeElement).not.toBe(sizeBtn);
   });
 
-  it("disables top button and all size buttons when disabled is true", () => {
+  it("disables card button when disabled is true", () => {
     render(
       <ProductCard
         product={sampleProduct}
@@ -113,7 +97,5 @@ describe("ProductCard (Task 3a)", () => {
     );
 
     expect(screen.getByRole("button", { name: "Cà phê đen" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Thêm Cà phê đen M" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Thêm Cà phê đen L" })).toBeDisabled();
   });
 });

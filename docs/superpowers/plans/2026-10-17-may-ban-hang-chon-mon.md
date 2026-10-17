@@ -283,7 +283,6 @@ Facts already checked on 2026-10-17:
 
 Read `supabase/migrations/0119_modifier_groups.sql` for:
 - the `modifier_group_products.id` convention, `group_id || ':' || product_id`;
-- `modifiers.group_name`, which is still read and must equal the group name;
 - the advisory-lock pattern;
 - the name index.
 
@@ -297,7 +296,7 @@ The SQL file is one transaction. It opens with `begin;` and ends with `commit;` 
    - Độ ngọt, sort_order 10;
    - Đá, sort_order 20.
    Ids are the next `MG-###` above the current maximum, computed in SQL. A duplicate name is refused by the existing unique index, so no extra guard is needed.
-4. Seven options, all price 0, ACTIVE, `product_id` null, `max_qty` null, `group_id` and `group_name` set:
+4. Seven options, all price 0, ACTIVE, `product_id` null, `max_qty` null, `group_id` set (`modifiers.group_name` was dropped by migration 0120):
    - Độ ngọt: Bình thường (`is_default` true), Ít ngọt, Không đường;
    - Đá: Bình thường (`is_default` true), Ít đá, Không đá, Đá riêng.
    Ids are the next `MOD-###` above the current maximum, in that order. The gap at MOD-007 is never filled.
@@ -390,7 +389,7 @@ Footer:
 - The main button reads "Thêm vào đơn · <total>", or "Cập nhật · <total>" when editing. The total is the promo-aware figure `ItemConfigModal` computes today.
 - "Giảm giá món" is a collapsed disclosure. It starts open when the line being edited has a discount. Inside it:
   - the VND/% toggle;
-  - a box with `type="text"`, `inputMode="numeric"` and placeholder "0", digits only, clamped by `clampDiscount`.
+  - a box with `type="text"`, `inputMode="numeric"` and placeholder "Ví dụ: 2" (`BR-UI-009`), digits only, clamped by `clampDiscount`.
 
 Submit:
 - `modifiers: orderPicks(picks, groups)`.

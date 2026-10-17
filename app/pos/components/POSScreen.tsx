@@ -15,10 +15,10 @@ import {
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { stripDiacritics } from "@/lib/shared/duplicate-name-guard";
-import { calculateItemTotal, addQuickLine } from "./cart-pricing";
+import { calculateItemTotal, addOrMergeLine } from "./cart-pricing";
 import { ProductGrid } from "./ProductGrid";
 import { CartPanel } from "./CartPanel";
-import { ItemConfigModal, type ItemConfigSubmission } from "./ItemConfigModal";
+import { ItemPicker, type ItemConfigSubmission } from "./ItemPicker";
 import { DraftsModal } from "./DraftsModal";
 import { confirm } from "@/lib/shared/dialog";
 import { ToastStack, type ToastItem, type ToastKind } from "@/components/ui/Toast";
@@ -98,7 +98,7 @@ export default function POSScreen({
   const [isCheckingOut, setIsCheckingOut] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<any[]>([]);
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
-  const [editingCartIndex, setEditingCartIndex] = useState<number | null>(null);
+  const [editingLineId, setEditingLineId] = useState<string | null>(null);
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const checkoutAttemptRef = useRef<PosCheckoutAttempt | null>(null);
   // Captured once per logical checkout attempt (i.e. once per distinct cart)
@@ -396,13 +396,19 @@ export default function POSScreen({
     [products, optionGroups, optionGroupLinks, modifiers],
   );
 
-  const handleQuickAdd = (product: any, variant: any) => {
-    if (isCheckingOut) return;
-    setCart(c => addQuickLine(c, product, variant));
-    setLastCheckoutError(null);
-  };
+  const editingLine = useMemo(
+    () => (editingLineId !== null ? cart.find((l) => l.id === editingLineId) ?? null : null),
+    [cart, editingLineId],
+  );
 
-  const openProductModal = (product: any, editIndex: number | null = null) => {
+  useEffect(() => {
+    if (editingLineId !== null && !cart.some((l) => l.id === editingLineId)) {
+      setSelectedProduct(null);
+      setEditingLineId(null);
+    }
+  }, [cart, editingLineId]);
+
+  const openProductModal = (product: any, editIndex: number | string | null = null) => {
     if (isCheckingOut) return;
     const prodVariants = variants.filter((v: any) => v.product_id === product.id);
     if (prodVariants.length === 0) {
@@ -411,7 +417,13 @@ export default function POSScreen({
     }
 
     setSelectedProduct(product);
-    setEditingCartIndex(editIndex);
+    if (typeof editIndex === "number") {
+      setEditingLineId(cart[editIndex]?.id ?? null);
+    } else if (typeof editIndex === "string") {
+      setEditingLineId(editIndex);
+    } else {
+      setEditingLineId(null);
+    }
   };
 
   // Assembles the cart line from the child's submitted configuration. The
@@ -419,9 +431,9 @@ export default function POSScreen({
   // emits it on submit; only the parent knows the cart-line id rule and the
   // cart array itself.
   const handleItemConfigSubmit = (config: ItemConfigSubmission) => {
-    if (isCheckingOut) return;
-    const cartItem = {
-      id: editingCartIndex !== null ? cart[editingCartIndex].id : Date.now().toString(),
+    if (isCheckingOut || !selectedProduct) return;
+    const line = {
+      id: editingLineId ?? crypto.randomUUID(),
       product_id: selectedProduct.id,
       product_name: selectedProduct.name,
       variant_id: config.variant.id,
@@ -430,19 +442,23 @@ export default function POSScreen({
       modifiers: config.modifiers,
       qty: config.qty,
       discount_amount: config.discountAmount,
-      discount_type: config.discountType
+      discount_type: config.discountType,
     };
 
-    if (editingCartIndex !== null) {
-      const newCart = [...cart];
-      newCart[editingCartIndex] = cartItem;
-      setCart(newCart);
+    if (editingLineId !== null) {
+      setCart((c) => {
+        const idx = c.findIndex((l) => l.id === editingLineId);
+        if (idx === -1) return c;
+        const next = [...c];
+        next[idx] = { ...line, id: editingLineId };
+        return next;
+      });
     } else {
-      setCart([...cart, cartItem]);
+      setCart((c) => addOrMergeLine(c, line));
     }
 
     setSelectedProduct(null);
-    setEditingCartIndex(null);
+    setEditingLineId(null);
     setLastCheckoutError(null);
   };
 
@@ -717,6 +733,8 @@ export default function POSScreen({
 
   const handleConfirmCheckout = async (method: string, payments?: any[]) => {
     if (cart.length === 0 || !isOnline || isCheckingOut) return;
+    setSelectedProduct(null);
+    setEditingLineId(null);
     setIsCheckingOut(method);
     setLastCheckoutError(null);
 
@@ -909,6 +927,7 @@ export default function POSScreen({
         e.preventDefault();
         setIsDraftModalOpen(false);
         setSelectedProduct(null);
+        setEditingLineId(null);
         setIsCartOpen(false);
       } else if (e.key === "Enter") {
         if (activeEl?.tagName === "BUTTON" || enterConfirmOpenRef.current) return;
@@ -1014,6 +1033,7 @@ export default function POSScreen({
 
         <ProductGrid
           categories={categories}
+          products={products}
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}
           searchQuery={searchQuery}
@@ -1022,10 +1042,34 @@ export default function POSScreen({
           variants={variants}
           promoVariantsMap={promoVariantsMap}
           productsWithOptions={productsWithOptions}
+          selectedProductId={selectedProduct?.id ?? null}
           onProductClick={(p) => openProductModal(p)}
-          onQuickAdd={handleQuickAdd}
           disabled={!!isCheckingOut}
-        />
+        >
+          {selectedProduct && (
+            <ItemPicker
+              // F2b (regression from F2): the picker has no focus trap, so the
+              // tiles and cart rows can still be activated while it is open.
+              // The key forces a remount (fresh useState initialisers) whenever
+              // the product or the cart line being edited changes.
+              key={`${selectedProduct.id}-${editingLineId ?? "new"}`}
+              product={selectedProduct}
+              variants={variants}
+              groups={optionGroupsForProduct(selectedProduct.id, optionGroups, optionGroupLinks, modifiers)}
+              promoVariantsMap={promoVariantsMap}
+              promotions={promotions || []}
+              brandId={brandId || ""}
+              appliedPromoCode={appliedPromoCode}
+              initialLine={editingLine}
+              isEditing={editingLineId !== null}
+              onSubmit={handleItemConfigSubmit}
+              onClose={() => {
+                setSelectedProduct(null);
+                setEditingLineId(null);
+              }}
+            />
+          )}
+        </ProductGrid>
       </div>
 
       <CartPanel
@@ -1067,36 +1111,6 @@ export default function POSScreen({
         appliedPromoCode={appliedPromoCode}
         onResendFailedOrder={() => handleResendOrder()}
       />
-
-      {/* Product Selection Modal (Popup Chọn Món) */}
-      {selectedProduct && (
-        <ItemConfigModal
-          // F2b (regression from F2): the modal has no focus trap (OPEN-ITEMS
-          // 40), so the tiles and cart rows behind it can still be reached by
-          // keyboard while it is open. Without a key, a second
-          // openProductModal call while already mounted only changes props --
-          // React reconciles the same component instance in place, so the
-          // useState initialisers that seed variant/modifiers/qty/discount
-          // from `initialLine` never re-run, and the modal keeps the previous
-          // product's configuration under the new product's name. The key
-          // forces a remount (fresh useState initialisers) whenever the
-          // product or the cart line being edited changes -- exactly what
-          // openProductModal's own setters used to do before F2 moved that
-          // state into the child.
-          key={`${selectedProduct.id}-${editingCartIndex ?? "new"}`}
-          product={selectedProduct}
-          variants={variants}
-          groups={optionGroupsForProduct(selectedProduct.id, optionGroups, optionGroupLinks, modifiers)}
-          promoVariantsMap={promoVariantsMap}
-          promotions={promotions || []}
-          brandId={brandId || ""}
-          appliedPromoCode={appliedPromoCode}
-          initialLine={editingCartIndex !== null ? cart[editingCartIndex] : null}
-          isEditing={editingCartIndex !== null}
-          onSubmit={handleItemConfigSubmit}
-          onClose={() => setSelectedProduct(null)}
-        />
-      )}
 
 
 

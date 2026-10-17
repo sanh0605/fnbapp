@@ -78,7 +78,7 @@ async function openProductByName(name: string) {
 
 function addToCartButton(): HTMLButtonElement {
   const btn = Array.from(document.querySelectorAll("button")).find(
-    b => b.textContent?.startsWith("THÊM") || b.textContent?.startsWith("CẬP NHẬT"),
+    b => b.textContent?.trim().startsWith("Thêm vào đơn") || b.textContent?.trim().startsWith("Cập nhật"),
   );
   if (!btn) throw new Error("add/update button not found");
   return btn as HTMLButtonElement;

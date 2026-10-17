@@ -16,12 +16,9 @@ function sources(dir: string): string[] {
     return name.endsWith(".tsx") && !name.endsWith(".test.tsx") ? [full] : [];
   });
 }
-// Drawn only by the till (app/pos/components/ItemConfigModal.tsx), which keeps its own look (BR-UI-005).
-const TILL_ONLY = ["components/ui/OptionGroupPicker.tsx"];
 const files = ["app", "components"]
   .flatMap(d => sources(join(root, d)))
-  .map(f => ({ path: relative(root, f).split(sep).join("/"), src: readFileSync(f, "utf8") }))
-  .filter(f => !TILL_ONLY.includes(f.path));
+  .map(f => ({ path: relative(root, f).split(sep).join("/"), src: readFileSync(f, "utf8") }));
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 
 const OLD_44 = "min-h-[44px]";

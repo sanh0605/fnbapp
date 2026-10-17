@@ -112,7 +112,7 @@ Ví dụ số thật (giá ngày 2026-10-17):
 
 **Cả hai:**
 - **Giảm giá món** không còn mở sẵn. Nó là một dòng gập "Giảm giá món" ở chân khung, bấm mới mở ra.
-- Ô nhập ở đó là ô số không có mũi tên tăng giảm (`inputMode="numeric"`), gợi ý "0".
+- Ô nhập ở đó là ô số không có mũi tên tăng giảm (`inputMode="numeric"`), gợi ý "Ví dụ: 2" (luật `BR-UI-009`: ô trống chỉ hiện ví dụ).
 - Size xếp từ rẻ đến đắt.
 
 ## 6. Thanh toán (bản B2, `BR-SALE-020`)
@@ -188,4 +188,4 @@ These are written by a script that does a dry run by default and writes only wit
 - **Test phải đổi:** test của nút size một chạm (`ProductCard`, `ProductGrid`, `POSScreen`), test hai nút trả tiền (`CartPanel`, `POSScreen.checkoutToast`, `POSScreen.offline`), test phím Enter (`POSScreen.test.tsx`), test `addQuickLine`.
 - **Tài liệu:**
   - `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md:49` ("one tap") ghi lại theo `BR-SALE-019`;
-  - kế hoạch cũ `docs/superpowers/plans/2026-10-17-may-ban-hang-lam-lai.md` xoá khi kế hoạch mới xong (đã gộp, `notices.md` đang trích nó).
+  - kế hoạch cũ của lần làm lại máy bán hàng (bản A) đã xoá khi kế hoạch này xong; `notices.md` nay trích luật `BR-UI-020`.

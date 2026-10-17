@@ -98,7 +98,7 @@ async function openProductByName(name: string) {
 
 function addToCartButton(): HTMLButtonElement {
   const btn = Array.from(document.querySelectorAll("button")).find(
-    b => b.textContent?.startsWith("THÊM") || b.textContent?.startsWith("CẬP NHẬT"),
+    b => b.textContent?.trim().startsWith("Thêm vào đơn") || b.textContent?.trim().startsWith("Cập nhật"),
   );
   if (!btn) throw new Error("add/update button not found");
   return btn as HTMLButtonElement;
@@ -106,34 +106,37 @@ function addToCartButton(): HTMLButtonElement {
 
 function modifierRow(modName: string): HTMLElement {
   const modalRoot = addToCartButton().closest(".fixed") || document;
-  const nameSpan = Array.from(modalRoot.querySelectorAll("span")).find(
-    s => s.textContent === modName,
+  const nameSpan = Array.from(modalRoot.querySelectorAll("span, div, button")).find(
+    s => s.textContent?.includes(modName),
   );
   if (!nameSpan) throw new Error(`modifier row not found: "${modName}"`);
   // span -> "flex flex-col" name block -> row div (name block + button block)
-  return nameSpan.parentElement!.parentElement as HTMLElement;
+  return (nameSpan.closest("div.flex") || nameSpan.parentElement!) as HTMLElement;
 }
 
 function modifierButtons(modName: string) {
-  const row = modifierRow(modName);
-  const buttons = Array.from(row.querySelectorAll("button"));
-  const minusBtn = buttons.find(b => b.textContent?.trim() === "-")!;
-  const plusBtn = buttons.find(b => b.textContent?.trim() === "+")!;
-  const countSpan = Array.from(row.querySelectorAll("span")).find(
-    s => /^\d+$/.test(s.textContent?.trim() || ""),
-  )!;
+  const minusBtn = document.querySelector(
+    `button[aria-label="Bớt một phần ${modName}"]`
+  ) as HTMLButtonElement;
+  const plusBtn = document.querySelector(
+    `button[aria-label="Thêm một phần ${modName}"]`
+  ) as HTMLButtonElement;
+  if (!minusBtn || !plusBtn) throw new Error(`modifier buttons not found: "${modName}"`);
+  // The option's row shows "×N" next to its name once picked; no mark means 0.
+  const row = minusBtn.parentElement!.parentElement!;
+  const countSpan = { textContent: row.textContent?.match(/×(\d+)/)?.[1] ?? "0" };
   return { minusBtn, plusBtn, countSpan };
 }
 
 function qtyControls() {
-  const box = Array.from(document.querySelectorAll("div")).find(d =>
-    d.className.includes("bg-surface-secondary rounded-xl p-1.5"),
-  );
-  if (!box) throw new Error("quantity control box not found");
-  const buttons = Array.from(box.querySelectorAll("button"));
-  const minusBtn = buttons.find(b => b.textContent?.trim() === "-")!;
-  const plusBtn = buttons.find(b => b.textContent?.trim() === "+")!;
-  const qtySpan = box.querySelector("span") as HTMLElement;
+  const minusBtn = document.querySelector('button[aria-label="Bớt"]') as HTMLButtonElement;
+  const plusBtn = document.querySelector('button[aria-label="Thêm số lượng"]') as HTMLButtonElement;
+  const sharedParent = minusBtn?.parentElement;
+  const qtySpan = sharedParent
+    ? (Array.from(sharedParent.children).find(
+        el => el !== minusBtn && el !== plusBtn && /^\d+$/.test(el.textContent?.trim() || "")
+      ) as HTMLElement)
+    : (undefined as any);
   return { minusBtn, plusBtn, qtySpan };
 }
 
@@ -533,7 +536,7 @@ describe("POSScreen item-configuration modal", () => {
     await fireClick(qtyControls().plusBtn); // qty = 2
     await clickButtonWithText("%");
     await setInputValue(discountInput(), "10");
-    expect(addToCartButton().textContent?.startsWith("THÊM")).toBe(true);
+    expect(addToCartButton().textContent?.startsWith("Thêm vào đơn")).toBe(true);
     await fireClick(addToCartButton());
 
     // Modal closed after add.
@@ -542,7 +545,7 @@ describe("POSScreen item-configuration modal", () => {
     // Reopen via the cart line (edit mode).
     await clickElementContainingText("h4", product.name);
 
-    expect(addToCartButton().textContent?.startsWith("CẬP NHẬT")).toBe(true);
+    expect(addToCartButton().textContent?.startsWith("Cập nhật")).toBe(true);
     expect(qtyControls().qtySpan.textContent).toBe("2");
     expect(modifierButtons("Đá").countSpan.textContent).toBe("1");
     expect(discountInput().value).toBe("10");
@@ -645,5 +648,281 @@ describe("POSScreen item-configuration modal", () => {
 
     expect(qtyControls().qtySpan.textContent).toBe("1");
     expect(addToCartButton().textContent).toContain(formatNumber(15000));
+  });
+
+  // Task 4a Test 1
+  it("Tapping 'Cà phê đá' adds nothing to the cart and shows the 'Cỡ ly' group with 360ml lit", async () => {
+    const cfd = makeProduct("p-cfd", "Cà phê đá");
+    const cfdVariants = [
+      { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
+      { id: "v-500", product_id: "p-cfd", size_name: "500ml", price: 18000 },
+    ];
+
+    await renderTracked(
+      <POSScreen
+        categories={[CATEGORY]}
+        products={[cfd]}
+        variants={cfdVariants}
+        modifiers={[]}
+        bestSellers={[cfd.id]}
+      />
+    );
+
+    await openProductByName("Cà phê đá");
+
+    // Nothing added to the cart
+    const cartHeadings = Array.from(document.querySelectorAll("h4")).filter(
+      h => h.textContent?.includes("Cà phê đá")
+    );
+    expect(cartHeadings).toHaveLength(0);
+
+    // Shows "Cỡ ly" group
+    const sizeHeading = Array.from(document.querySelectorAll("h3, h4, h5, div, span")).find(
+      el => el.textContent?.trim() === "Cỡ ly"
+    );
+    expect(sizeHeading).toBeDefined();
+
+    // 360ml is lit (role="radio" and aria-checked="true")
+    const radioButtons = Array.from(document.querySelectorAll("button[role='radio']"));
+    const size360Btn = radioButtons.find(b => b.textContent?.includes("360ml"));
+    expect(size360Btn).toBeDefined();
+    expect(size360Btn?.getAttribute("aria-checked")).toBe("true");
+  });
+
+  // Task 4a Test 2
+  it("Two adds of the same picks in a different order give one cart line with qty 3", async () => {
+    const cfd = makeProduct("p-cfd", "Cà phê đá");
+    const cfdVariants = [
+      { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
+    ];
+    const toppingGroup = {
+      id: "MG-TOPPING",
+      name: "Thêm Topping",
+      selection_mode: "MANY" as const,
+      max_total: null,
+      allow_standalone: true,
+      sort_order: 50,
+      status: "ACTIVE",
+    };
+    const toppingOptions = [
+      { id: "opt-kem-muoi", group_id: "MG-TOPPING", name: "Kem muối", price: 4000, status: "ACTIVE" },
+      { id: "opt-tran-chau", group_id: "MG-TOPPING", name: "Trân châu", price: 5000, status: "ACTIVE" },
+    ];
+
+    await renderTracked(
+      <POSScreen
+        categories={[CATEGORY]}
+        products={[cfd]}
+        variants={cfdVariants}
+        modifiers={toppingOptions}
+        optionGroups={[toppingGroup]}
+        optionGroupLinks={[{ group_id: "MG-TOPPING", product_id: cfd.id }]}
+        bestSellers={[cfd.id]}
+      />
+    );
+
+    // 1st add: 2 x (360ml + Kem muối + Trân châu)
+    await openProductByName("Cà phê đá");
+    await fireClick(qtyControls().plusBtn); // qty 2
+    await fireClick(Array.from(document.querySelectorAll("button")).find(b => b.getAttribute("aria-label")?.startsWith("Thêm một phần Kem muối") || b.textContent?.includes("Kem muối"))!);
+    await fireClick(Array.from(document.querySelectorAll("button")).find(b => b.getAttribute("aria-label")?.startsWith("Thêm một phần Trân châu") || b.textContent?.includes("Trân châu"))!);
+    await fireClick(addToCartButton());
+
+    // 2nd add: 1 x (360ml + Trân châu + Kem muối) in different order
+    await openProductByName("Cà phê đá");
+    await fireClick(Array.from(document.querySelectorAll("button")).find(b => b.getAttribute("aria-label")?.startsWith("Thêm một phần Trân châu") || b.textContent?.includes("Trân châu"))!);
+    await fireClick(Array.from(document.querySelectorAll("button")).find(b => b.getAttribute("aria-label")?.startsWith("Thêm một phần Kem muối") || b.textContent?.includes("Kem muối"))!);
+    await fireClick(addToCartButton());
+
+    // Expect exactly one cart line with qty 3
+    const cartLines = Array.from(document.querySelectorAll("h4")).filter(
+      h => h.textContent?.includes("Cà phê đá")
+    );
+    expect(cartLines).toHaveLength(1);
+    const cartRow = cartLines[0].closest("div[class*='relative overflow-hidden']") || cartLines[0].parentElement!;
+    expect(cartRow.textContent).toContain("3");
+  });
+
+  // Task 4a Test 3
+  it("A different pick gives a second line", async () => {
+    const cfd = makeProduct("p-cfd", "Cà phê đá");
+    const cfdVariants = [
+      { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
+    ];
+    const toppingGroup = {
+      id: "MG-TOPPING",
+      name: "Thêm Topping",
+      selection_mode: "MANY" as const,
+      max_total: null,
+      allow_standalone: true,
+      sort_order: 50,
+      status: "ACTIVE",
+    };
+    const toppingOptions = [
+      { id: "opt-kem-muoi", group_id: "MG-TOPPING", name: "Kem muối", price: 4000, status: "ACTIVE" },
+      { id: "opt-tran-chau", group_id: "MG-TOPPING", name: "Trân châu", price: 5000, status: "ACTIVE" },
+    ];
+
+    await renderTracked(
+      <POSScreen
+        categories={[CATEGORY]}
+        products={[cfd]}
+        variants={cfdVariants}
+        modifiers={toppingOptions}
+        optionGroups={[toppingGroup]}
+        optionGroupLinks={[{ group_id: "MG-TOPPING", product_id: cfd.id }]}
+        bestSellers={[cfd.id]}
+      />
+    );
+
+    // 1st add: 360ml + Kem muối
+    await openProductByName("Cà phê đá");
+    await fireClick(Array.from(document.querySelectorAll("button")).find(b => b.getAttribute("aria-label")?.startsWith("Thêm một phần Kem muối") || b.textContent?.includes("Kem muối"))!);
+    await fireClick(addToCartButton());
+
+    // 2nd add: 360ml + Trân châu (different pick!)
+    await openProductByName("Cà phê đá");
+    await fireClick(Array.from(document.querySelectorAll("button")).find(b => b.getAttribute("aria-label")?.startsWith("Thêm một phần Trân châu") || b.textContent?.includes("Trân châu"))!);
+    await fireClick(addToCartButton());
+
+    // Expect two separate cart lines
+    const cartLines = Array.from(document.querySelectorAll("h4")).filter(
+      h => h.textContent?.includes("Cà phê đá")
+    );
+    expect(cartLines).toHaveLength(2);
+  });
+
+  // Task 4a Test 4
+  it("Editing a line, then Cập nhật, keeps the line count", async () => {
+    const cfd = makeProduct("p-cfd", "Cà phê đá");
+    const cfdVariants = [
+      { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
+    ];
+
+    await renderTracked(
+      <POSScreen
+        categories={[CATEGORY]}
+        products={[cfd]}
+        variants={cfdVariants}
+        modifiers={[]}
+        bestSellers={[cfd.id]}
+      />
+    );
+
+    // Add 1 line
+    await openProductByName("Cà phê đá");
+    await fireClick(addToCartButton());
+
+    const cartLinesBefore = Array.from(document.querySelectorAll("h4")).filter(
+      h => h.textContent?.includes("Cà phê đá")
+    );
+    expect(cartLinesBefore).toHaveLength(1);
+
+    // Click cart line to edit
+    await fireClick(cartLinesBefore[0]);
+
+    // Button reads "Cập nhật"
+    const updateBtn = addToCartButton();
+    expect(updateBtn.textContent?.trim().startsWith("Cập nhật")).toBe(true);
+
+    // Tap Cập nhật
+    await fireClick(updateBtn);
+
+    // Cart line count is unchanged (still 1)
+    const cartLinesAfter = Array.from(document.querySelectorAll("h4")).filter(
+      h => h.textContent?.includes("Cà phê đá")
+    );
+    expect(cartLinesAfter).toHaveLength(1);
+  });
+
+  // Task 4a Test 5
+  it("Editing line A, then removing A from the cart, then tapping Cập nhật: the picker closes, nothing crashes, and the cart is unchanged", async () => {
+    const cfd = makeProduct("p-cfd", "Cà phê đá");
+    const cfdVariants = [
+      { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
+    ];
+
+    await renderTracked(
+      <POSScreen
+        categories={[CATEGORY]}
+        products={[cfd]}
+        variants={cfdVariants}
+        modifiers={[]}
+        bestSellers={[cfd.id]}
+      />
+    );
+
+    // Add 1 line
+    await openProductByName("Cà phê đá");
+    await fireClick(addToCartButton());
+
+    const cartLine = Array.from(document.querySelectorAll("h4")).find(
+      h => h.textContent?.includes("Cà phê đá")
+    )!;
+
+    // Click cart line to open picker in edit mode
+    await fireClick(cartLine);
+    const updateBtn = addToCartButton();
+    expect(updateBtn.textContent?.trim().startsWith("Cập nhật")).toBe(true);
+
+    // Remove line A from the cart while picker is open (labelled "Xoá" in CartItemRow)
+    const cartRow = cartLine.closest("div[class*='relative overflow-hidden']") || cartLine.parentElement!;
+    const removeBtn = cartRow.querySelector('button[aria-label="Xoá"]') as HTMLButtonElement;
+    expect(removeBtn).toBeDefined();
+    await fireClick(removeBtn);
+
+    // Tap Cập nhật
+    await fireClick(updateBtn);
+
+    // Picker closes without crashing, cart remains 0 lines
+    expect(Array.from(document.querySelectorAll("button")).find(
+      b => b.textContent?.trim().startsWith("Cập nhật")
+    )).toBeUndefined();
+
+    const remainingLines = Array.from(document.querySelectorAll("h4")).filter(
+      h => h.textContent?.includes("Cà phê đá")
+    );
+    expect(remainingLines).toHaveLength(0);
+  });
+
+  // Task 4a Test 8
+  it("Trứng luộc opens the picker with only the size group", async () => {
+    const trung = makeProduct("p-trung", "Trứng luộc");
+    const trungVariants = [
+      { id: "v-trung", product_id: "p-trung", size_name: "1 quả", price: 5000 },
+    ];
+
+    await renderTracked(
+      <POSScreen
+        categories={[CATEGORY]}
+        products={[trung]}
+        variants={trungVariants}
+        modifiers={[]}
+        bestSellers={[trung.id]}
+      />
+    );
+
+    await openProductByName("Trứng luộc");
+
+    // Nothing added to the cart on open
+    const cartHeadings = Array.from(document.querySelectorAll("h4")).filter(
+      h => h.textContent?.includes("Trứng luộc")
+    );
+    expect(cartHeadings).toHaveLength(0);
+
+    // Picker is open with submit button
+    expect(addToCartButton()).toBeDefined();
+
+    // Size group heading "Cỡ ly" is present
+    const sizeHeading = Array.from(document.querySelectorAll("h3, h4, h5, div, span")).find(
+      el => el.textContent?.trim() === "Cỡ ly"
+    );
+    expect(sizeHeading).toBeDefined();
+
+    // No other option group headers (only size group)
+    const otherGroupHeaders = Array.from(document.querySelectorAll("h3, h4, h5")).filter(
+      el => el.textContent?.trim() === "Thêm Topping" || el.textContent?.trim() === "Độ ngọt" || el.textContent?.trim() === "Đá"
+    );
+    expect(otherGroupHeaders).toHaveLength(0);
   });
 });
