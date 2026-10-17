@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { safeReturnTo } from "@/lib/shared/return-to";
+import { Alert } from "@/components/ui/Alert";
 
 interface UserFormProps {
   returnTo?: string;
@@ -42,9 +43,9 @@ export function UserForm({ returnTo: rawReturnTo, canGrantAdmin = true }: UserFo
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form id="user-form" onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
           <Field label="Tên nhân viên" htmlFor={`${formId}-name`} required>

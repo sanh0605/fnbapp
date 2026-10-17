@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/Select";
 import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
 import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
 import { safeReturnTo } from "@/lib/shared/return-to";
+import { Alert } from "@/components/ui/Alert";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
 // <input type="time"> wants "HH:MM"; Postgres time comes back "HH:MM:SS".
@@ -82,9 +83,9 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div role="alert" aria-live="polite" className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+          <Alert variant="danger">
             {error}
-          </div>
+          </Alert>
         )}
 
         {isEdit ? (

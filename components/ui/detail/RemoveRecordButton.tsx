@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { confirm } from "@/lib/shared/dialog";
 import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 
 export interface RemoveRecordButtonProps {
   verb: string;
@@ -59,12 +60,9 @@ export function RemoveRecordButton({
         {verb}
       </Button>
       {error && (
-        <div
-          role="alert"
-          className="text-sm font-medium text-danger bg-danger/10 border border-danger/20 rounded-lg p-3"
-        >
+        <Alert variant="danger">
           {error}
-        </div>
+        </Alert>
       )}
     </div>
   );

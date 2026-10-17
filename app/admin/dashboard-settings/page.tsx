@@ -2,6 +2,7 @@ import { findAll } from "@/lib/db/tables";
 import { getProductTypes } from "@/app/admin/products/types/actions";
 import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Alert } from "@/components/ui/Alert";
 import type { DBProduct } from "@/types/db";
 import { getDashboardSettings } from "./actions";
 import { DashboardSettingsForm } from "./components/DashboardSettingsForm";
@@ -32,13 +33,9 @@ export default async function DashboardSettingsPage() {
           title="Cài đặt Tổng quan"
           subtitle="Chỉnh các mốc báo động và các cột của bảng 7 ngày."
         />
-        <div
-          role="alert"
-          aria-live="polite"
-          className="p-4 bg-danger/10 text-danger text-sm rounded-xl border border-danger/20"
-        >
+        <Alert variant="danger">
           Chưa có dòng cài đặt. Báo lại cho người làm phần mềm.
-        </div>
+        </Alert>
       </div>
     );
   }
