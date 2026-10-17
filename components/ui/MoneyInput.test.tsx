@@ -29,7 +29,8 @@ describe("BR-CASH-005 MoneyInput", () => {
     const visible = getVisible();
     expect(visible.className).toContain("min-h-[48px]");
     expect(visible.className).toContain("md:min-h-[40px]");
-    expect(visible.className).toContain("text-sm");
+    expect(visible.className).toContain("text-base");
+    expect(visible.className).toContain("md:text-sm");
   });
 
   it("groups thousands as the owner types 1,5,0,0,0,0 and submits plain digits", () => {

@@ -143,7 +143,6 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
               dateFormat="dd/MM/yyyy"
               showTimeSelect={false}
               placeholderText="DD/MM/YYYY"
-              className="w-full border border-border rounded-lg px-3 py-2 min-h-[48px] md:min-h-[40px] outline-none focus:ring-2 focus:ring-focus-ring text-text-primary"
             />
           </Field>
 

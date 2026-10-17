@@ -20,7 +20,7 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
         inputMode={computedInputMode}
         className={`w-full min-h-[48px] md:min-h-[40px] rounded-button bg-surface-card border ${
           invalid ? "border-danger" : "border-border"
-        } px-3 text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50`}
+        } px-3 text-base md:text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50`}
         {...props}
       />
     );

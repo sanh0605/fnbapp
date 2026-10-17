@@ -15,7 +15,8 @@ describe("Select", () => {
     const select = screen.getByRole("combobox");
     expect(select.className).toContain("min-h-[48px]");
     expect(select.className).toContain("md:min-h-[40px]");
-    expect(select.className).toContain("text-sm");
+    expect(select.className).toContain("text-base");
+    expect(select.className).toContain("md:text-sm");
     expect(select.className).toContain("appearance-none");
   });
 

@@ -95,7 +95,7 @@ export function DayInput({ label, value, onChange, error }: DayInputProps) {
           onKeyDown={handleKeyDown}
           className={`w-full min-h-[48px] md:min-h-[40px] rounded-button bg-surface-card border ${
             error ? "border-danger" : "border-border"
-          } px-3 pr-12 md:pr-10 text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50`}
+          } px-3 pr-12 md:pr-10 text-base md:text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50`}
         />
         <div className="absolute right-0 h-full flex items-center">
           <CustomDatePicker

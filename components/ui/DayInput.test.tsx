@@ -69,6 +69,7 @@ describe("DayInput", () => {
     const input = screen.getByLabelText("Từ ngày");
     expect(input.className).toContain("min-h-[48px]");
     expect(input.className).toContain("md:min-h-[40px]");
-    expect(input.className).toContain("text-sm");
+    expect(input.className).toContain("text-base");
+    expect(input.className).toContain("md:text-sm");
   });
 });

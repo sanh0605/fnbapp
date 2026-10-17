@@ -56,7 +56,7 @@ describe("SearchableSelect", () => {
     expect(onChange).toHaveBeenCalledWith("2");
   });
 
-  it("renders trigger box with shared height classes, text-sm, and rounded-button matching Select", () => {
+  it("renders trigger box with shared height classes, text-base, md:text-sm, and rounded-button matching Select", () => {
     const options = [
       { id: "1", label: "Option 1" },
     ];
@@ -64,7 +64,8 @@ describe("SearchableSelect", () => {
     const trigger = screen.getByRole("combobox");
     expect(trigger.className).toContain("min-h-[48px]");
     expect(trigger.className).toContain("md:min-h-[40px]");
-    expect(trigger.className).toContain("text-sm");
+    expect(trigger.className).toContain("text-base");
+    expect(trigger.className).toContain("md:text-sm");
     expect(trigger.className).toContain("rounded-button");
   });
 

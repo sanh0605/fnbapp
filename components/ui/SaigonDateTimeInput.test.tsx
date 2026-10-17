@@ -122,7 +122,8 @@ describe("SaigonDateTimeInput", () => {
     const input = container.querySelector("input") as HTMLInputElement;
     expect(input.className).toContain("min-h-[48px]");
     expect(input.className).toContain("md:min-h-[40px]");
-    expect(input.className).toContain("text-sm");
+    expect(input.className).toContain("text-base");
+    expect(input.className).toContain("md:text-sm");
   });
 
   it("guard: no .tsx file under app/ contains type=\"datetime-local\"", () => {
