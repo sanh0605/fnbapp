@@ -141,7 +141,7 @@ export function CartItemRow({
           <button
             type="button"
             onClick={() => removeFromCart(idx)}
-            className="hidden md:flex w-11 h-11 min-h-[44px] min-w-[44px] rounded-button text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors items-center justify-center"
+            className="hidden md:flex min-h-[44px] min-w-[44px] rounded-button text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors items-center justify-center"
             aria-label="Xoá"
           >
             <Trash2 className="w-4 h-4" />

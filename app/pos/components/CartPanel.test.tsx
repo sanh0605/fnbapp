@@ -139,6 +139,15 @@ describe("Discount (R3)", () => {
   });
 
   describe("Cash checkout", () => {
+    it("asserts TIỀN MẶT comes before CHUYỂN KHOẢN in document order", () => {
+      render(<CartPanel {...defaultProps} />);
+      const cashButton = screen.getByRole("button", { name: /TIỀN MẶT/i });
+      const transferButton = screen.getByRole("button", { name: /CHUYỂN KHOẢN/i });
+      expect(
+        cashButton.compareDocumentPosition(transferButton) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+    });
+
     it("clicking TIỀN MẶT calls handleConfirmCheckout with 'Tien mat' once", () => {
       const handleConfirmCheckout = vi.fn();
       render(<CartPanel {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);

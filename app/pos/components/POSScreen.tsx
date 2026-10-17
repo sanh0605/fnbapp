@@ -128,7 +128,7 @@ export default function POSScreen({
           nonErrorCount--;
         }
       }
-      return [...next, detail !== undefined ? { id, kind, title, detail } : { id, kind, title }];
+      return [...next, { id, kind, title, detail }];
     });
   };
 
@@ -964,12 +964,12 @@ export default function POSScreen({
             {isOnline ? (
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-primary-soft text-primary border border-border shrink-0">
                 <span className="w-2 h-2 rounded-full bg-primary"></span>
-                <span className="hidden xl:inline">Trực tuyến</span>
+                <span className="sr-only xl:not-sr-only">Trực tuyến</span>
               </span>
             ) : (
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-danger/20 shrink-0">
                 <span className="w-2 h-2 rounded-full bg-danger animate-ping"></span>
-                <span className="hidden xl:inline">Ngoại tuyến</span>
+                <span className="sr-only xl:not-sr-only">Ngoại tuyến</span>
               </span>
             )}
           </div>

@@ -391,6 +391,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       await waitFor(() => {
         expect(screen.getAllByText("Chưa gửi được đơn — kiểm tra mạng rồi bấm Gửi lại")[0]).toBeInTheDocument();
       });
+      expect(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i })).toHaveAttribute("aria-expanded", "true");
       expect(submitOrderV2).toHaveBeenCalledTimes(1);
 
       const firstCallArgs = vi.mocked(submitOrderV2).mock.calls[0];
@@ -421,7 +422,11 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByText("Đường đen sữa tươi"));
       fireEvent.click(screen.getByRole("button", { name: /^THÊM -/ }));
 
-      // Check that next cart has no discount applied and no promo code carried over
+      // Check that next cart has no discount applied and no promo code carried over;
+      // the promo disclosure starts closed on a new order
+      const disclosure = screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i });
+      expect(disclosure).toHaveAttribute("aria-expanded", "false");
+      fireEvent.click(disclosure);
       const newOrderDiscountInput = screen.getByLabelText("Giảm giá tùy chỉnh") as HTMLInputElement;
       expect(newOrderDiscountInput.value).toBe("");
       expect(screen.queryByText("Giảm giá Hoá đơn")).toBeNull();
@@ -823,8 +828,10 @@ describe("POSScreen (Step 3 & 5)", () => {
       }
 
       // Error notice is never dropped; at most 3 non-error notices remain
-      expect(within(region).getByText("Chưa gửi được đơn")).toBeInTheDocument();
-      expect(within(region).getAllByText("Thanh toán thành công")).toHaveLength(3);
+      await waitFor(() => {
+        expect(within(region).getByText("Chưa gửi được đơn")).toBeInTheDocument();
+        expect(within(region).getAllByText("Thanh toán thành công")).toHaveLength(3);
+      });
     });
 
     it("draft-save failure shows an error notice, not a dialog", async () => {

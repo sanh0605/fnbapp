@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ShoppingCart, X, Tag, ChevronDown, AlertCircle } from "lucide-react";
 
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
@@ -98,11 +98,20 @@ export function CartPanel({
   const [splitAmountInput, setSplitAmountInput] = useState("");
   const [splitReferenceInput, setSplitReferenceInput] = useState("");
 
+  const prevCartLengthRef = useRef(cart.length);
+
   useEffect(() => {
     if (appliedPromoCode || userCustomDiscount !== null) {
       setIsPromoOpen(true);
     }
   }, [appliedPromoCode, userCustomDiscount]);
+
+  useEffect(() => {
+    if (prevCartLengthRef.current === 0 && cart.length > 0) {
+      setIsPromoOpen(Boolean(appliedPromoCode) || userCustomDiscount !== null);
+    }
+    prevCartLengthRef.current = cart.length;
+  }, [cart.length, appliedPromoCode, userCustomDiscount]);
 
   const calculateSubtotal = () => cart.reduce((sum, item) => sum + calculateItemTotal(item), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
@@ -342,11 +351,6 @@ export function CartPanel({
                   <span className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-primary shrink-0" />
                     <span>Khuyến mãi, giảm giá</span>
-                    {(appliedPromotions.length > 0 || appliedPromoCode || userCustomDiscount !== null) && (
-                      <span className="text-[11px] font-bold text-primary bg-primary-soft px-2 py-0.5 rounded-full">
-                        Đã áp dụng
-                      </span>
-                    )}
                   </span>
                   <ChevronDown
                     className={`w-4 h-4 shrink-0 transition-transform ${isPromoOpen ? "rotate-180" : ""}`}
@@ -550,30 +554,6 @@ export function CartPanel({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => handleConfirmCheckout("Chuyen khoan")}
-                  disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
-                  className="flex-1 bg-surface-card border-2 border-primary text-primary font-bold text-sm py-3.5 rounded-button hover:bg-primary-soft active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[56px]"
-                >
-                  {!isOnline ? (
-                    <span>NGOẠI TUYẾN</span>
-                  ) : isCheckingOut ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      <span>Đang gửi…</span>
-                    </>
-                  ) : (
-                    <span>CHUYỂN KHOẢN</span>
-                  )}
-                </button>
-                <button
-                  type="button"
                   onClick={() => handleConfirmCheckout("Tien mat")}
                   disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
                   className="flex-1 bg-primary text-on-primary font-bold text-sm py-3.5 rounded-button shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[56px]"
@@ -594,6 +574,30 @@ export function CartPanel({
                     </>
                   ) : (
                     <span>TIỀN MẶT</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleConfirmCheckout("Chuyen khoan")}
+                  disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
+                  className="flex-1 bg-surface-card border-2 border-primary text-primary font-bold text-sm py-3.5 rounded-button hover:bg-primary-soft active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[56px]"
+                >
+                  {!isOnline ? (
+                    <span>NGOẠI TUYẾN</span>
+                  ) : isCheckingOut ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Đang gửi…</span>
+                    </>
+                  ) : (
+                    <span>CHUYỂN KHOẢN</span>
                   )}
                 </button>
               </div>
@@ -677,6 +681,7 @@ export function CartPanel({
                       <button
                         type="button"
                         onClick={() => removeSplitPayment(idx)}
+                        aria-label="Xoá dòng thanh toán"
                         className="text-danger font-bold min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-danger/10 rounded-button"
                       >
                         <X className="w-4 h-4" />
