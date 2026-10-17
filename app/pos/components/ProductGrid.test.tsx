@@ -172,4 +172,16 @@ describe("ProductGrid empty states and Task 3a behaviour", () => {
       window.matchMedia = originalMatchMedia;
     }
   });
+
+  it("renders a decorative scroll fade in the category rail with pointer-events-none and lg:block", () => {
+    render(<ProductGrid {...defaultProps} />);
+
+    const nav = screen.getByRole("navigation", { name: "Danh mục món" });
+    // the fade is the rail's last child, after the category list
+    const fade = nav.lastElementChild!;
+
+    expect(fade.getAttribute("aria-hidden")).toBe("true");
+    // -bottom-2 sticks it to the nav's outer edge, past its 8 px bottom padding
+    expect(fade).toHaveClass("lg:block", "pointer-events-none", "sticky", "-bottom-2");
+  });
 });
