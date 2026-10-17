@@ -1,6 +1,6 @@
 # Bộ lọc thời gian kiểu Looker: thiết kế
 
-Trạng thái: chủ quán đã chọn mọi điểm nghiệp vụ 2026-10-09, sau khi bấm thử trang mẫu. Chủ quán duyệt bản thiết kế 2026-10-09; kế hoạch: `docs/superpowers/plans/2026-10-09-bo-loc-thoi-gian.md`, chủ quán duyệt 2026-10-09. Dựng xong trên nhánh 2026-10-09, chờ đẩy.
+Trạng thái: chủ quán đã chọn mọi điểm nghiệp vụ 2026-10-09, sau khi bấm thử trang mẫu. Chủ quán duyệt bản thiết kế và kế hoạch 2026-10-09. Dựng xong 2026-10-09, đã đẩy 2026-10-15 (`feebd7ee`).
 
 Nguồn:
 - Luật: `BR-UI-007` trong `docs/02-rules/business-rules/screens.md` (toàn bộ lựa chọn của chủ quán ngày 2026-10-09, kèm lời gốc). Chỉ lọc theo ngày, không theo giờ: `BR-DATA-006` trong `docs/02-rules/business-rules/data-integrity.md`.

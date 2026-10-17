@@ -59,7 +59,7 @@ Source of every rule below: the owner's notes typed with the preview's "Góp ý"
 
 ### BR-UI-007 — Date filters work like Looker Studio's
 
-**Status:** `APPROVED` direction — owner 2026-10-06: *"Các bộ lọc thời gian hiện tại chưa đồng nhất. Anh muốn bộ lọc phải có cách lọc như của Looker hoặc Data Studio."* Owner chose every point on 2026-10-09 (below); built on the branch `feat/no-popups` 2026-10-09, not yet pushed. Design: `docs/superpowers/specs/2026-10-09-bo-loc-thoi-gian-design.md`. Whole days only, as `BR-DATA-006` already says.
+**Status:** `APPROVED` direction — owner 2026-10-06: *"Các bộ lọc thời gian hiện tại chưa đồng nhất. Anh muốn bộ lọc phải có cách lọc như của Looker hoặc Data Studio."* Owner chose every point on 2026-10-09 (below); built on the branch `feat/no-popups` 2026-10-09, pushed 2026-10-15 in `feebd7ee`. Design: `docs/superpowers/specs/2026-10-09-bo-loc-thoi-gian-design.md`. Whole days only, as `BR-DATA-006` already says.
 
 Owner choices on 2026-10-09, after trying a clickable sample (two styles, computer and phone):
 - **Looker style.** The filter is one button naming the range in use, for example "Tháng này · 01/10/2026 – 31/10/2026". He passed over the Sổ thu chi dropdown in favour of this; he said *"Máy tính đang hiện tốt"*.
@@ -81,7 +81,7 @@ Owner choices on 2026-10-09, after trying a clickable sample (two styles, comput
   - **One day compares two ways:** with the day before, and with the same weekday a week earlier. For Friday 09/10 that is Thursday 08/10 and Friday 02/10. Both lines of the removed Báo cáo ngày live on here.
   - **Only Tổng quan and Doanh số compare.** Lãi lỗ does not, because its months already stand side by side.
   - **Tổng quan loses its figure boxes, its filter and its comparison when the new Tổng quan is built** (owner 2026-10-14: *"Mấy ô số đó anh thấy khá vô nghĩa nên làm gì khác cho nó có nghĩa hơn, nếu chưa thì ưu tiên làm trước các cảnh báo, báo động"*). Alerts take the top of the page. After that only Doanh số compares. Design: `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md`.
-  - Built on the branch `feat/no-popups` 2026-10-14, not yet pushed. The page shows, from the top:
+  - Built on the branch `feat/no-popups` 2026-10-14, pushed 2026-10-15 in `feebd7ee`. The page shows, from the top:
     - "Cần xử lý": orders the till failed to resend; items with negative stock; too long since the last confirmed stock count (default 30 days); a stock count left open too long (default 2 days); and missing monthly expenses (`BR-CASH-009`).
     - The 7-day table (`BR-SALE-007`): a table on both; on a phone the day column stays put and the rest scrolls sideways (`BR-UI-019`, 2026-10-16).
   - The owner sets the thresholds and the table's columns in Cài đặt → Cài đặt Tổng quan. Changing them applies at once, and nothing past is stored.
@@ -144,13 +144,13 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 **Status:** `APPROVED` — owner 2026-10-11 asked for pages that look neat, with readable text, boxes neither too tall nor crammed (*"các ô không bị quá cao hay cũng không bị dồn quá nhiều thông tin"*); a trial went on 8386 that day, and on 2026-10-14 he kept it: *"Làm theo em khuyến nghị và tiếp tục"*. Built on the branch `feat/no-popups` 2026-10-11 (shared button, text box, select, number box and list).
 
 - **On a computer** a box or button is 40 px tall (was 44) and a list row about 45 px (was 53–73). A row with a delete button is no taller than one without.
-- **On a phone** a box, button or pick-list option is 48 px tall (44 px until 2026-10-16). Chosen on the owner's behalf under his 2026-10-16 delegation, when he asked for phone screens *"dễ thấy chữ và dễ bấm"*; Material's 48 dp touch target. Guard `components/ui/phone-size.guard.test.ts`. Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.3. Being built on the branch `feat/khuon-dien-thoai` from 2026-10-16, not yet pushed; the guard lists what is still 44 px.
+- **On a phone** a box, button or pick-list option is 48 px tall (44 px until 2026-10-16). Chosen on the owner's behalf under his 2026-10-16 delegation, when he asked for phone screens *"dễ thấy chữ và dễ bấm"*; Material's 48 dp touch target. Guard `components/ui/phone-size.guard.test.ts`. Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.3. Built on the branch `feat/khuon-dien-thoai` from 2026-10-16, pushed 2026-10-17 in `ceca80e9`; the guard lists what is still 44 px.
 - **Text on a phone:** a box's label 14 px, its hint and error 13 px, what is typed 16 px. Nothing outside the till is smaller than 12 px. On a computer text stays 14 px.
 - A form with few boxes puts them two to a row on a computer and one per row on a phone (`BR-UI-012`).
 
 ### BR-UI-015 — One footer on every create and edit form, always in reach
 
-**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation (*"Đúng, làm vậy"*: pending design questions take the recommended option, reviewed together at the end). Spec `docs/superpowers/specs/2026-10-15-khuon-chung-design.md` section 2.1. Built 2026-10-15 on Tạo món and Sửa món (`components/ui/FormActionBar.tsx`, branch feat/khuon-chung-ban-hang-kho, not yet pushed); the other 24 forms follow as their area is audited, tracked by the shrink-only list in `components/ui/form-action-bar.guard.test.ts`.
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation (*"Đúng, làm vậy"*: pending design questions take the recommended option, reviewed together at the end). Spec `docs/superpowers/specs/2026-10-15-khuon-chung-design.md` section 2.1. Built 2026-10-15 on Tạo món and Sửa món (`components/ui/FormActionBar.tsx`, branch feat/khuon-chung-ban-hang-kho, pushed 2026-10-15 in `0d708b72`); the other 24 forms follow as their area is audited, tracked by the shrink-only list in `components/ui/form-action-bar.guard.test.ts`.
 
 - Counted 2026-10-15: the last button of a form reads "Bỏ" 27 times, "Tạo" 20, "Lưu" 3, "Cập nhật" 7, plus "Lưu món", "Lưu thông tin", "Lưu Nhân Sự", "Lưu Thương Hiệu", "Lưu Quy Đổi". 0 forms keep the button in view on a long page.
 - **A create page** ends with "Tạo" (`BR-UI-002`) and "Bỏ"; **an edit page** with "Lưu thay đổi" and "Bỏ thay đổi". A page with its own act keeps its word ("Ghi phiếu", "Xác nhận huỷ", "Lưu nháp").
@@ -169,7 +169,7 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 
 ### BR-UI-017 — Report pages share one frame
 
-**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation, as `BR-UI-015`. Spec section 2.3. Built 2026-10-15 for Doanh số, Hàng đã xuất, Lãi lỗ and the "Theo tháng" tab of Sổ thu chi, not yet pushed.
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation, as `BR-UI-015`. Spec section 2.3. Built 2026-10-15 for Doanh số, Hàng đã xuất, Lãi lỗ and the "Theo tháng" tab of Sổ thu chi, pushed 2026-10-15 in `4b837522`.
 
 - Top to bottom: the title; one filter bar (date range per `BR-UI-007`, outlet where the report can split by outlet); the headline figures for the range; the detail table with its total row (`BR-UI-004`).
 - Exporting to a file is left out until someone keeping the books asks for it.
@@ -177,7 +177,7 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 
 ### BR-UI-018 — Phone lists are two-line rows, not cards
 
-**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation. His words: *"Các nơi trên điện thoại dùng thẻ để thay thế bảng thì nên có cách khác vì càng nhiều thẻ thì lại càng dài."* Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.1; on the list of points he reviews at the end of the phone batch. Being built on the branch `feat/khuon-dien-thoai` from 2026-10-16, not yet pushed. All 25 lists moved 2026-10-16; `DataList` now requires `phoneRow`, and guard `components/ui/phone-rows.guard.test.ts` checks every list screen passes it.
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation. His words: *"Các nơi trên điện thoại dùng thẻ để thay thế bảng thì nên có cách khác vì càng nhiều thẻ thì lại càng dài."* Spec `docs/superpowers/specs/2026-10-16-khuon-dien-thoai-design.md` section 3.1; on the list of points he reviews at the end of the phone batch. Built on the branch `feat/khuon-dien-thoai` from 2026-10-16, pushed 2026-10-17 in `ceca80e9`. All 25 lists moved 2026-10-16; `DataList` now requires `phoneRow`, and guard `components/ui/phone-rows.guard.test.ts` checks every list screen passes it.
 
 - Measured 2026-10-16: a Phiếu nhập card was about 110 px tall, so 3–4 fitted on a phone's first screen.
 - Line 1: the name on the left, the one number on the right. Line 2, smaller and grey: the other facts, most important first, at most two lines; one status badge on the right. No bold (`BR-UI-003`).
@@ -188,7 +188,7 @@ Built for every screen in wave K1 on 2026-10-08: every number on screen, the POS
 
 ### BR-UI-019 — Phone reports keep their table
 
-**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation, with `BR-UI-018`. Spec section 3.4; on his end-of-batch review list. Being built on the branch `feat/khuon-dien-thoai`, not yet pushed. It replaces the phone rule "no sideways tables" in `.claude/rules/ui-devices.md` for number reports only.
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-16 delegation, with `BR-UI-018`. Spec section 3.4; on his end-of-batch review list. Built on the branch `feat/khuon-dien-thoai`, pushed 2026-10-17 in `ceca80e9`. It replaces the phone rule "no sideways tables" in `.claude/rules/ui-devices.md` for number reports only.
 
 - Tổng quan's 7-day table, Doanh số by day and by dish, Hàng đã xuất, and Sổ thu chi by month show a compact table on a phone: the first column (day, dish, line) stays put, the number columns scroll sideways, the total row sits under the header as on a computer.
 - Lãi lỗ theo tháng keeps its month cards, because each month opens to show its formula and sources, which a table cannot hold.
