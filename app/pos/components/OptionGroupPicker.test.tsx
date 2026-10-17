@@ -87,15 +87,16 @@ describe("OptionGroupPicker (Task 5 Step 1)", () => {
       />
     );
 
-    const normalBtn = screen.getByRole("button", { name: /Bình thường/i });
-    const lessBtn = screen.getByRole("button", { name: /Ít đường/i });
+    const normalBtn = screen.getByRole("radio", { name: /Bình thường/i });
+    const lessBtn = screen.getByRole("radio", { name: /Ít đường/i });
 
-    expect(normalBtn).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("radiogroup", { name: "Mức đường" })).toBeInTheDocument();
+    expect(normalBtn).toHaveAttribute("aria-checked", "true");
     expect(normalBtn.className).toContain("border-primary");
     expect(normalBtn.className).toContain("bg-primary-soft");
     expect(normalBtn.querySelector("span")?.className).toContain("text-primary");
 
-    expect(lessBtn).toHaveAttribute("aria-pressed", "false");
+    expect(lessBtn).toHaveAttribute("aria-checked", "false");
     expect(lessBtn.className).not.toContain("border-primary");
   });
 
@@ -109,7 +110,7 @@ describe("OptionGroupPicker (Task 5 Step 1)", () => {
       />
     );
 
-    const oatBtn = screen.getByRole("button", { name: /Sữa yến mạch/i });
+    const oatBtn = screen.getByRole("radio", { name: /Sữa yến mạch/i });
     fireEvent.click(oatBtn);
 
     expect(onChange).toHaveBeenCalledTimes(1);
@@ -222,7 +223,7 @@ describe("OptionGroupPicker (Task 5 Step 1)", () => {
       />
     );
 
-    const oatBtn = screen.getByRole("button", { name: /Sữa yến mạch/i });
+    const oatBtn = screen.getByRole("radio", { name: /Sữa yến mạch/i });
     fireEvent.click(oatBtn);
 
     expect(onChange).toHaveBeenCalledWith([]);
@@ -242,7 +243,7 @@ describe("OptionGroupPicker (Task 5 Step 1)", () => {
       />
     );
 
-    const freshBtn = screen.getByRole("button", { name: /Sữa tươi/i });
+    const freshBtn = screen.getByRole("radio", { name: /Sữa tươi/i });
     fireEvent.click(freshBtn);
 
     expect(onChange).toHaveBeenCalledWith([]);

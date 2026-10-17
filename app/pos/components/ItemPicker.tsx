@@ -27,6 +27,7 @@ interface ItemPickerProps {
   appliedPromoCode?: string | null;
   initialLine: any | null;
   isEditing: boolean;
+  sizeLabel?: string;
   onSubmit: (config: ItemConfigSubmission) => void;
   onClose: () => void;
 }
@@ -41,6 +42,7 @@ export function ItemPicker({
   appliedPromoCode,
   initialLine,
   isEditing,
+  sizeLabel = "Cỡ ly",
   onSubmit,
   onClose,
 }: ItemPickerProps) {
@@ -170,15 +172,15 @@ export function ItemPicker({
         </div>
 
         <div className="flex-1 overflow-y-auto min-h-0 px-3 pb-3 md:px-3.5 md:pb-2.5">
-          <div className="flex flex-col md:grid md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 md:gap-2.5">
-            {/* Group 1: Cỡ ly */}
+          <div className="flex flex-col md:grid md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] md:items-start gap-3 md:gap-2.5">
+            {/* Group 1: Size */}
             <div className="bg-surface-card border border-border rounded-card overflow-hidden flex flex-col">
               <div className="flex items-center gap-2.5 min-h-[46px] md:min-h-[42px] px-3.5 md:px-2.5 bg-surface-secondary border-b border-border shrink-0">
                 <b className="w-[26px] h-[26px] md:w-6 md:h-6 rounded-full bg-primary text-on-primary text-[14px] md:text-[13px] font-extrabold flex items-center justify-center shrink-0">
                   1
                 </b>
                 <span className="text-[17px] md:text-[16px] font-extrabold text-text-primary">
-                  Cỡ ly
+                  {sizeLabel}
                 </span>
                 {selectedVariant && (
                   <span className="ml-auto text-[14px] font-bold text-primary md:hidden">
@@ -187,7 +189,7 @@ export function ItemPicker({
                 )}
               </div>
 
-              <div className="flex flex-col" role="radiogroup" aria-label="Cỡ ly">
+              <div className="flex flex-col" role="radiogroup" aria-label={sizeLabel}>
                 {prodVariants.map((v: any) => {
                   const isSelected = selectedVariant?.id === v.id;
                   const hasPromo = promoVariantsMap.has(v.id);

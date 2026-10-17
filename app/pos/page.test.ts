@@ -127,6 +127,46 @@ describe("POSPage does not offer a product with no ACTIVE variant left", () => {
   });
 });
 
+// The size heading ("Cỡ" for food, "Cỡ ly" for drinks) is cosmetic: a failed
+// Product_Types read must leave is_drink undefined, never take the till down.
+describe("POSPage tells POSScreen which categories are drinks", () => {
+  const load = (productTypes: () => Promise<any[]>) => {
+    mocks.findAll.mockImplementation(async (sheet: string) => {
+      if (sheet === "Outlets") return [{ id: "OUT-001", brand_id: "BR-001", status: "ACTIVE" }];
+      if (sheet === "Product_Categories") {
+        return [
+          { id: "CAT-DRINK", status: "ACTIVE", type_id: "PT-001" },
+          { id: "CAT-FOOD", status: "ACTIVE", type_id: "PT-002" },
+        ];
+      }
+      if (sheet === "Product_Types") return productTypes();
+      return [];
+    });
+    return POSPage({ params: {}, searchParams: { outletId: "OUT-001" } } as any) as Promise<any>;
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getServerSession.mockResolvedValue({ user: { name: "Cashier" } });
+    mocks.getPOSBestSellerProductIds.mockResolvedValue([]);
+  });
+
+  it("marks a category is_drink from its product type", async () => {
+    const element = await load(async () => [{ id: "PT-001", is_drink: true }, { id: "PT-002", is_drink: false }]);
+
+    expect(element.props.categories.map((c: any) => c.is_drink)).toEqual([true, false]);
+  });
+
+  it("still opens the till, is_drink undefined, when the product types fail to load", async () => {
+    const element = await load(async () => {
+      throw new Error("Product_Types unavailable");
+    });
+
+    expect(element.props.categories).toHaveLength(2);
+    expect(element.props.categories.map((c: any) => c.is_drink)).toEqual([undefined, undefined]);
+  });
+});
+
 // F1 (2026-10-14 audit): a stopped outlet must not open the till, though the
 // stop-confirmation text promises it. Wrong value before the fix: the page
 // rendered POSScreen for any outlet that existed.
