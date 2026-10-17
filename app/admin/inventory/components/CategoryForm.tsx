@@ -10,6 +10,11 @@ import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { FormActionBar } from "@/components/ui/FormActionBar";
 
+const TYPE_EXPLANATIONS: Record<string, string> = {
+  RAW: "Có tính quy đổi, có trong công thức",
+  CONSUMABLE: "Kiểm kê định kỳ",
+};
+
 interface CategoryFormProps {
   initialData?: any;
   returnTo?: string;
@@ -20,6 +25,7 @@ export function CategoryForm({ initialData, returnTo: rawReturnTo }: CategoryFor
   const formId = useId();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [systemType, setSystemType] = useState<string>(initialData?.system_type || "RAW");
   const isEdit = !!initialData;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -62,11 +68,13 @@ export function CategoryForm({ initialData, returnTo: rawReturnTo }: CategoryFor
         <Field
           label="Đặc tính"
           htmlFor={`${formId}-system_type`}
+          hint={TYPE_EXPLANATIONS[systemType]}
         >
           <Select
             id={`${formId}-system_type`}
             name="system_type"
-            defaultValue={initialData?.system_type}
+            value={systemType}
+            onChange={(e) => setSystemType(e.target.value)}
           >
             <option value="RAW">Nguyên liệu</option>
             <option value="CONSUMABLE">Vật tư</option>

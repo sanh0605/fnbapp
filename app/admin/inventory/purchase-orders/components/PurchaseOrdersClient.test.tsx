@@ -278,10 +278,40 @@ describe("PurchaseOrdersClient", () => {
     expect(table).toBeTruthy();
     expect(within(table!).getByText("15/10/2026 18:34:59")).toBeInTheDocument();
 
-    // Phone row meta uses code first and full dateText
+    // Phone row meta puts source name first (when not "—"), followed by code, dateText, payment
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
     expect(phone).toBeTruthy();
-    expect(within(phone!).getByText("PO-206 · 15/10/2026 18:34:59 · Tiền mặt")).toBeInTheDocument();
+    expect(within(phone!).getByText("Shopee · PO-206 · 15/10/2026 18:34:59 · Tiền mặt")).toBeInTheDocument();
+    expect(within(phone!).getByText("Nhà cung cấp C")).toBeInTheDocument();
+  });
+
+  it("keeps 'Không rõ' as phone title when supplier name is 'Không rõ', not swapping with source name", () => {
+    const dataWithRow: typeof pageData = {
+      ...pageData,
+      total: 1,
+      firstIndex: 1,
+      lastIndex: 1,
+      rows: [
+        {
+          id: "PO-207",
+          dateText: "15/10/2026 18:34:59",
+          supplierName: "Không rõ",
+          sourceName: "Shopee",
+          status: "COMPLETED",
+          totalAmount: 100000,
+          paymentLabel: "Tiền mặt",
+        },
+      ],
+    };
+
+    const { container } = render(
+      <PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={dataWithRow} />
+    );
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
+    expect(phone).toBeTruthy();
+    expect(within(phone!).getByText("Không rõ")).toBeInTheDocument();
+    expect(within(phone!).getByText("Shopee · PO-207 · 15/10/2026 18:34:59 · Tiền mặt")).toBeInTheDocument();
   });
 });
 

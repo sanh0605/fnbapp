@@ -249,7 +249,6 @@ export default function ConversionsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
-        activeCount={search.trim() ? 1 : 0}
         search={
           <div className="shrink-0 w-full md:w-64">
             <Field label="Tìm hàng hoá" htmlFor="conversions-search">

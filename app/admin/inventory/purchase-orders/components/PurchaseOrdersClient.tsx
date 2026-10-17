@@ -28,10 +28,6 @@ function formatEmptyRangePart(range: RangeValue): string {
   return `${preset} (${rest.join(" · ")})`;
 }
 
-function formatShortDate(dateText: string): string {
-  const match = dateText.match(/^(\d{1,2}\/\d{1,2})(?:\/\d{2,4})?\s+(\d{1,2}:\d{2})/);
-  return match ? `${match[1]} ${match[2]}` : dateText;
-}
 
 export interface PurchaseOrdersClientProps {
   pageData: PurchaseOrderListPage & { suppliers: { id: string; name: string }[] };
@@ -160,7 +156,7 @@ export default function PurchaseOrdersClient({
       },
       {
         key: "supplierName",
-        header: "Nhà cung cấp",
+        header: (<span className="whitespace-nowrap">Nhà cung cấp</span> as any),
         render: (po) => (
           <span className="text-text-primary truncate max-w-[280px]" title={po.supplierName}>
             {po.supplierName}
@@ -169,7 +165,7 @@ export default function PurchaseOrdersClient({
       },
       {
         key: "sourceName",
-        header: "Nguồn mua",
+        header: (<span className="whitespace-nowrap">Nguồn mua</span> as any),
         render: (po) => <span className="text-text-primary whitespace-nowrap">{po.sourceName}</span>,
       },
       {
@@ -179,7 +175,7 @@ export default function PurchaseOrdersClient({
       },
       {
         key: "paymentLabel",
-        header: "Hình thức thanh toán",
+        header: (<span className="whitespace-nowrap">Hình thức thanh toán</span> as any),
         render: (po) => (
           <span className="text-text-secondary whitespace-nowrap">{po.paymentLabel}</span>
         ),
@@ -298,9 +294,16 @@ export default function PurchaseOrdersClient({
           }
           columns={columns}
           phoneRow={(po) => ({
-            title: (!po.supplierName || po.supplierName === "Không rõ") ? (po.sourceName || "Không rõ") : po.supplierName,
+            title: po.supplierName,
             value: `${formatNumber(po.totalAmount)}đ`,
-            meta: [po.id, po.dateText, po.paymentLabel].filter(Boolean).join(" · "),
+            meta: [
+              po.sourceName && po.sourceName !== "—" ? po.sourceName : null,
+              po.id,
+              po.dateText,
+              po.paymentLabel,
+            ]
+              .filter(Boolean)
+              .join(" · "),
             badge: renderStatusBadge(po.status),
           })}
           totals={{

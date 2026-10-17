@@ -101,8 +101,14 @@ export default function ItemsClient({
     return map;
   }, [categories]);
 
-  const columns: DataColumn<DBPurchasedItem>[] = useMemo(
-    () => [
+  const columns: DataColumn<DBPurchasedItem>[] = useMemo(() => {
+    const nonSelfConversions = conversions.filter((c) => {
+      const pUnit = getUnitName(c.purchased_unit, units);
+      const bUnit = getUnitName(c.base_unit, units);
+      return !(pUnit === bUnit && Number(c.conversion_rate) === 1);
+    });
+
+    return [
       {
         key: "id",
         header: "Mã",
@@ -163,13 +169,9 @@ export default function ItemsClient({
         header: "Quy đổi",
         secondary: true,
         sortValue: (item) => {
-          const itemConversions = conversions.filter((c) => {
-            if (c.purchased_item_id !== item.id) return false;
-            const pUnit = getUnitName(c.purchased_unit, units);
-            const bUnit = getUnitName(c.base_unit, units);
-            if (pUnit === bUnit && Number(c.conversion_rate) === 1) return false;
-            return true;
-          });
+          const itemConversions = nonSelfConversions.filter(
+            (c) => c.purchased_item_id === item.id,
+          );
           if (itemConversions.length === 0) return null;
           return itemConversions
             .map(
@@ -179,13 +181,9 @@ export default function ItemsClient({
             .join(", ");
         },
         render: (item) => {
-          const itemConversions = conversions.filter((c) => {
-            if (c.purchased_item_id !== item.id) return false;
-            const pUnit = getUnitName(c.purchased_unit, units);
-            const bUnit = getUnitName(c.base_unit, units);
-            if (pUnit === bUnit && Number(c.conversion_rate) === 1) return false;
-            return true;
-          });
+          const itemConversions = nonSelfConversions.filter(
+            (c) => c.purchased_item_id === item.id,
+          );
           if (itemConversions.length === 0) return <span className="text-text-muted">—</span>;
           return (
             <div className="flex flex-col gap-0.5 text-xs text-text-secondary">
@@ -199,9 +197,8 @@ export default function ItemsClient({
           );
         },
       },
-    ],
-    [categoryMap, conversions, units, stockById],
-  );
+    ];
+  }, [categoryMap, conversions, units, stockById]);
 
   const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
   const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");

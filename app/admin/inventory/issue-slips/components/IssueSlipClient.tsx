@@ -596,15 +596,13 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         </Button>
       </div>
 
-      <div className="[&_button:last-child]:!flex-[2] [&_button:first-child]:!flex-initial [&_button:first-child]:!px-6 [&_button:last-child]:whitespace-nowrap">
-        <FormActionBar
-          mode="create"
-          submitLabel={`Ghi phiếu xuất (${lines.length} dòng)`}
-          onSubmit={handleSubmit}
-          loading={submitting}
-          onCancel={() => router.push("/admin/inventory/issue-slips")}
-        />
-      </div>
+      <FormActionBar
+        mode="create"
+        submitLabel={`Ghi phiếu xuất (${lines.length} dòng)`}
+        onSubmit={handleSubmit}
+        loading={submitting}
+        onCancel={() => router.push("/admin/inventory/issue-slips")}
+      />
     </form>
   );
 }

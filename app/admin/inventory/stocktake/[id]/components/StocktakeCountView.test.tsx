@@ -1341,7 +1341,7 @@ describe("StocktakeCountView (Screen 2)", () => {
 
     render(<StocktakeCountView session={mockSession} />);
 
-    // Mobile legacy input has touch target >= 48px
+    // Computer-table legacy input has touch target >= 48px
     const mobileInput = screen.getAllByLabelText("Số đếm Bột cà phê truyền thống Phin Đậm")[0];
     expect(mobileInput.className).toContain("min-h-[48px]");
 
@@ -1378,5 +1378,29 @@ describe("StocktakeCountView (Screen 2)", () => {
     const pkgInput = screen.getAllByLabelText("Thùng 24 lon")[0];
     expect(pkgInput.getAttribute("inputMode")).toBe("numeric");
     expect(pkgInput.className).toContain("min-h-[48px]");
+  });
+
+  it("renders phone count rows as a compact divide-y list of PhoneRow (BR-UI-018)", () => {
+    const { container } = render(<StocktakeCountView session={mockSession} />);
+    fireEvent.click(screen.getByRole("button", { name: /Tất cả \(3\)/ }));
+
+    const mobileList = container.querySelector(".lg\\:hidden");
+    expect(mobileList).not.toBeNull();
+    expect(mobileList?.className).toContain("divide-y");
+    expect(mobileList?.className).not.toContain("space-y-3");
+
+    const rows = mobileList?.querySelectorAll(":scope > div");
+    expect(rows?.length).toBeGreaterThan(0);
+    const firstRow = rows?.[0];
+    expect(firstRow?.className).toContain("px-4");
+    expect(firstRow?.className).toContain("py-2.5");
+    expect(firstRow?.className).not.toContain("rounded-2xl");
+    expect(firstRow?.className).not.toContain("p-4");
+
+    // Line 1 has item name and count box
+    expect(firstRow?.textContent).toContain("Bột cà phê truyền thống Phin Đậm");
+    // Line 2 has unit, system qty, diff
+    expect(firstRow?.textContent).toContain("g");
+    expect(firstRow?.textContent).toContain("Sổ: 6,000 g");
   });
 });

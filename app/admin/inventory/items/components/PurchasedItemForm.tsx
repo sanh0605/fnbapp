@@ -356,13 +356,7 @@ export function PurchasedItemForm({
 
           {isRaw && (
             <div className="pt-4 border-t border-border space-y-4">
-              {(activeCategory?.name === "Hàng hoá chế biến" || (activeCategory as any)?.system_type === "PROCESSED") && (
-                <div className="p-3 bg-primary-soft text-primary-active text-sm rounded-lg border border-primary/20">
-                  Đây là nhóm <strong>Hàng hoá chế biến</strong>.
-                </div>
-              )}
-
- {/* 
+              {/*
                   section 5.1: the base unit belongs to the item, not to
                   this group -- it no longer comes from the ingredient
                   above, it is chosen here, the same way CONSUMABLE and
@@ -553,8 +547,8 @@ function ConversionRowsSection({
 }) {
   return (
     <div className="bg-page p-4 rounded-xl border border-border">
-      <div className="flex justify-between items-center gap-2 mb-3">
-        <h4 className="text-sm font-bold text-text-primary whitespace-nowrap">Quy đổi đơn vị mua</h4>
+      <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
+        <h4 className="text-sm font-bold text-text-primary">Quy đổi đơn vị mua</h4>
         <Button
           type="button"
           variant="secondary"

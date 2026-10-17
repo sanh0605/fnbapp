@@ -148,6 +148,12 @@ describe("SearchableSelect", () => {
     expect(onChange).toHaveBeenCalledWith("2");
     expect(onFormChange).toHaveBeenCalledTimes(1);
   });
+
+  it("shows placeholder text in muted text colour when no value is chosen", () => {
+    render(<SearchableSelect options={[{ id: "1", label: "Option 1" }]} value="" onChange={() => {}} placeholder="Chọn..." />);
+    const placeholder = screen.getByText("Chọn...");
+    expect(placeholder.className).toContain("text-text-muted");
+  });
 });
 
 // BR-UI-010 (2026-10-08): a long name in a pick list is shown whole. The owner

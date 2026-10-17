@@ -172,7 +172,6 @@ export default function StockOnHandClient({
       <FilterCard
         onClear={handleClear}
         showClear={Boolean(search)}
-        activeCount={search.trim() ? 1 : 0}
         search={
           <div className="shrink-0 w-full md:w-80">
             <Field label="Tìm kiếm" htmlFor="stock-search">

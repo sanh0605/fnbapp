@@ -148,7 +148,6 @@ export function ConversionForm({
               value={selectedUnitName}
               onChange={setSelectedUnitName}
               placeholder="Ví dụ: Thùng 24 lon"
-              className="[&>span.text-text-secondary]:!text-text-muted"
             />
           </Field>
           <Field label="Hệ số quy đổi" htmlFor={`${formId}-conversionRate`}>

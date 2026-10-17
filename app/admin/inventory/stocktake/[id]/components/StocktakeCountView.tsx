@@ -574,7 +574,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
             key={tab.id}
             variant={activeTab === tab.id ? "primary" : "secondary"}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`text-xs md:text-sm ${activeTab === tab.id ? "!bg-primary-soft !text-primary border-primary/20" : ""}`}
+            className="text-xs md:text-sm"
           >
             {tab.label} ({tab.count})
           </Button>
@@ -621,7 +621,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                     <TableHead>
                       <TableHeaderCell>Mặt hàng</TableHeaderCell>
                       <TableHeaderCell><span className="whitespace-nowrap">Sổ lúc đếm</span></TableHeaderCell>
-                      <TableHeaderCell><span className="whitespace-nowrap">Số đếm</span></TableHeaderCell>
+                      <TableHeaderCell><div className="w-40"><span className="whitespace-nowrap">Số đếm</span></div></TableHeaderCell>
                       <TableHeaderCell><span className="whitespace-nowrap">Chênh lệch</span></TableHeaderCell>
                       <TableHeaderCell><span className="whitespace-nowrap">Trạng thái</span></TableHeaderCell>
                     </TableHead>
@@ -649,7 +649,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                             </TableCell>
 
                             <TableCell>
-                              <div onBlur={(e) => handleLineBlur(line.id, e)}>
+                              <div onBlur={(e) => handleLineBlur(line.id, e)} className="w-40">
                                 {isPackage ? (
                                   <div className="space-y-1">
                                     <div className="flex flex-wrap gap-2">
@@ -688,7 +688,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                                   </div>
                                 ) : (
                                   <div className="flex flex-col gap-1">
-                                    <div className="w-32">
+                                    <div className="w-40">
                                       <NumberInput
                                         id={`legacy-qty-${line.id}`}
                                         decimals={3}
@@ -721,95 +721,102 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                   </Table>
                 </div>
 
-                {/* Mobile Stacked Cards Layout */}
-                <div className="lg:hidden space-y-3">
+                {/* Mobile Phone Rows Layout */}
+                <div className="lg:hidden divide-y divide-border bg-surface-card rounded-card border border-border">
                   {groupLines.map((line) => {
                     const isPackage = line.packageLines.length > 0;
-                    const isCounted = line.countedQty !== null;
+
+                    const meta = (
+                      <span>
+                        {line.unitName ? `${line.unitName} · ` : ""}
+                        Sổ:{" "}
+                        {line.theoreticalAtCount !== null
+                          ? `${formatNumber(line.theoreticalAtCount)}${line.unitName ? ` ${line.unitName}` : ""}`
+                          : "—"}{" "}
+                        · {renderLineDifference(line)}
+                      </span>
+                    );
+
+                    const statusBadge = (
+                      <div className="text-xs text-right max-w-[12rem]">
+                        {renderLineStatus(line.id, line.countedQty)}
+                      </div>
+                    );
 
                     return (
                       <div
                         key={line.id}
                         data-testid={`card-${line.id}`}
-                        className={`bg-surface-card rounded-2xl border p-4 space-y-3 ${
-                          isCounted ? "border-success/60" : "border-border"
-                        }`}
+                        className="px-4 py-2.5"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <span className="font-medium text-text-primary block break-words">
-                              {line.itemName}
-                            </span>
-                            <span className="text-xs text-text-secondary">
-                              Sổ sách:{" "}
-                              {line.theoreticalAtCount !== null
-                                ? `${formatNumber(line.theoreticalAtCount)} ${line.unitName}`
-                                : "—"}
-                            </span>
-                          </div>
-                          {!isPackage && (
-                            <div className="w-36 shrink-0" onBlur={(e) => handleLineBlur(line.id, e)}>
-                              <NumberInput
-                                id={`m-legacy-qty-${line.id}`}
-                                decimals={3}
-                                min={0}
-                                example="1,250.5"
-                                aria-label={`Số đếm ${line.itemName}`}
-                                disabled={isPreviewing}
-                                value={legacyInputs[line.id] ?? null}
-                                onValueChange={(v) => {
-                                  setLegacyInputs((prev) => ({ ...prev, [line.id]: v }));
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Mobile Inputs for Package */}
-                        {isPackage && (
-                          <div onBlur={(e) => handleLineBlur(line.id, e)}>
-                            <div className="space-y-1">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {line.packageLines.map((pkg) => {
-                                  const val = packageInputs[line.id]?.[pkg.conversionId];
-                                  return (
-                                    <label key={pkg.conversionId} className="flex flex-col gap-1">
-                                      <span className="text-xs text-text-secondary">
-                                        {pkg.sizeLabel}
-                                      </span>
-                                      <NumberInput
-                                        id={`m-pkg-${line.id}-${pkg.conversionId}`}
-                                        decimals={0}
-                                        min={0}
-                                        example="12"
-                                        aria-label={pkg.sizeLabel}
-                                        disabled={isPreviewing}
-                                        value={val === undefined ? null : val}
-                                        onValueChange={(v) => {
-                                          setPackageInputs((prev) => ({
-                                            ...prev,
-                                            [line.id]: {
-                                              ...(prev[line.id] || {}),
-                                              [pkg.conversionId]: v,
-                                            },
-                                          }));
-                                        }}
-                                      />
-                                    </label>
-                                  );
-                                })}
+                        {isPackage ? (
+                          <div onBlur={(e) => handleLineBlur(line.id, e)} className="space-y-2">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 text-base font-medium text-text-primary line-clamp-2 break-words">
+                                {line.itemName}
                               </div>
                               {renderPackageLineTotal(line)}
                             </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {line.packageLines.map((pkg) => {
+                                const val = packageInputs[line.id]?.[pkg.conversionId];
+                                return (
+                                  <label key={pkg.conversionId} className="flex flex-col gap-1">
+                                    <span className="text-xs text-text-secondary">
+                                      {pkg.sizeLabel}
+                                    </span>
+                                    <NumberInput
+                                      id={`m-pkg-${line.id}-${pkg.conversionId}`}
+                                      decimals={0}
+                                      min={0}
+                                      example="12"
+                                      aria-label={pkg.sizeLabel}
+                                      disabled={isPreviewing}
+                                      value={val === undefined ? null : val}
+                                      onValueChange={(v) => {
+                                        setPackageInputs((prev) => ({
+                                          ...prev,
+                                          [line.id]: {
+                                            ...(prev[line.id] || {}),
+                                            [pkg.conversionId]: v,
+                                          },
+                                        }));
+                                      }}
+                                    />
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            <div className="flex items-start justify-between gap-3 text-sm text-text-secondary">
+                              <div className="min-w-0 line-clamp-2 break-words">{meta}</div>
+                              <div className="shrink-0">{statusBadge}</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div onBlur={(e) => handleLineBlur(line.id, e)}>
+                            <PhoneRow
+                              title={<span className="font-medium text-text-primary">{line.itemName}</span>}
+                              value={
+                                <div className="w-32">
+                                  <NumberInput
+                                    id={`m-legacy-qty-${line.id}`}
+                                    decimals={3}
+                                    min={0}
+                                    example="1,250.5"
+                                    aria-label={`Số đếm ${line.itemName}`}
+                                    disabled={isPreviewing}
+                                    value={legacyInputs[line.id] ?? null}
+                                    onValueChange={(v) => {
+                                      setLegacyInputs((prev) => ({ ...prev, [line.id]: v }));
+                                    }}
+                                  />
+                                </div>
+                              }
+                              meta={meta}
+                              badge={statusBadge}
+                            />
                           </div>
                         )}
-
-                        <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
-                          <div>{renderLineDifference(line)}</div>
-                          <div className="text-right">
-                            {renderLineStatus(line.id, line.countedQty)}
-                          </div>
-                        </div>
                       </div>
                     );
                   })}

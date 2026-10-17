@@ -180,7 +180,7 @@ export function DisposeAssetForm({
           </div>
         ) : (
           <div className="text-sm text-text-secondary">
-            Mua {formatDateTimeFull(selectedLot.acquiredDate)} · giá một cái {formatNumber(Math.round(selectedLot.unitCost))}đ · còn {selectedLot.remainingQuantity}
+            Mua {formatDateTimeFull(selectedLot.acquiredDate)} · giá một cái {formatNumber(Math.round(selectedLot.unitCost))}đ
           </div>
         )}
 
