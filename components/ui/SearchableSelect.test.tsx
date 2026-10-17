@@ -56,6 +56,18 @@ describe("SearchableSelect", () => {
     expect(onChange).toHaveBeenCalledWith("2");
   });
 
+  it("renders trigger box with shared height classes, text-sm, and rounded-button matching Select", () => {
+    const options = [
+      { id: "1", label: "Option 1" },
+    ];
+    render(<SearchableSelect options={options} value="1" onChange={() => {}} />);
+    const trigger = screen.getByRole("combobox");
+    expect(trigger.className).toContain("min-h-[48px]");
+    expect(trigger.className).toContain("md:min-h-[40px]");
+    expect(trigger.className).toContain("text-sm");
+    expect(trigger.className).toContain("rounded-button");
+  });
+
   it("does not close when clicking inside portal list", () => {
     const options = [
       { id: "1", label: "Option 1" },

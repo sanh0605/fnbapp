@@ -115,6 +115,16 @@ describe("SaigonDateTimeInput", () => {
     expect(input.value).toBe("05/10/2026 00:05");
   });
 
+  it("renders visible input with shared height classes min-h-[48px] and md:min-h-[40px]", async () => {
+    const container = await renderTracked(
+      <SaigonDateTimeInput value="2026-10-05T15:42" onChange={() => {}} />
+    );
+    const input = container.querySelector("input") as HTMLInputElement;
+    expect(input.className).toContain("min-h-[48px]");
+    expect(input.className).toContain("md:min-h-[40px]");
+    expect(input.className).toContain("text-sm");
+  });
+
   it("guard: no .tsx file under app/ contains type=\"datetime-local\"", () => {
     const appDir = path.join(process.cwd(), "app");
     const tsxFiles = getTsxFiles(appDir);

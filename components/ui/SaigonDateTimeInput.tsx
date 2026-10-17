@@ -43,7 +43,7 @@ export function SaigonDateTimeInput({
   value,
   onChange,
   clearable,
-  className,
+  className = "w-full min-h-[48px] md:min-h-[40px] rounded-button bg-surface-card border border-border px-3 pr-12 md:pr-10 text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50",
 }: SaigonDateTimeInputProps) {
   return (
     <CustomDatePicker

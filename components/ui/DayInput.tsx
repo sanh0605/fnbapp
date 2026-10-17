@@ -18,7 +18,7 @@ const CalendarButton = forwardRef<HTMLButtonElement, any>(({ onClick }, ref) => 
     type="button"
     onClick={onClick}
     ref={ref}
-    className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-text-primary focus:outline-none"
+    className="min-h-[48px] md:min-h-[40px] min-w-[48px] md:min-w-[40px] flex items-center justify-center text-text-muted hover:text-text-primary focus:outline-none"
     tabIndex={-1}
     aria-label="Chọn ngày"
   >
@@ -93,9 +93,11 @@ export function DayInput({ label, value, onChange, error }: DayInputProps) {
           onChange={(e) => setText(e.target.value)}
           onBlur={handleBlurOrEnter}
           onKeyDown={handleKeyDown}
-          className="w-full border border-border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-focus-ring pr-12"
+          className={`w-full min-h-[48px] md:min-h-[40px] rounded-button bg-surface-card border ${
+            error ? "border-danger" : "border-border"
+          } px-3 pr-12 md:pr-10 text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50`}
         />
-        <div className="absolute right-0 h-full flex items-center pr-2">
+        <div className="absolute right-0 h-full flex items-center">
           <CustomDatePicker
             selected={parseIsoToLocal(value)}
             onChange={handleDateSelect}
