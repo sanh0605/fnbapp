@@ -174,8 +174,8 @@ describe("StockOnHandClient", () => {
     // "Chưa kiểm lần nào" for null lastCountedAt
     expect(screen.getAllByText(/Chưa kiểm lần nào/).length).toBeGreaterThan(0);
 
-    // Formatted date dd/mm/yyyy in Asia/Saigon for non-null lastCountedAt
-    expect(screen.getAllByText(/09\/08\/2026/).length).toBeGreaterThan(0);
+    // Formatted date dd/mm/yyyy HH:mm:ss in Asia/Saigon for non-null lastCountedAt
+    expect(screen.getAllByText(/09\/08\/2026 07:00:00/).length).toBeGreaterThan(0);
   });
 
   it("accent-blind search finds 'Trứng gà' when typing 'trung ga', and displays empty state when no match", () => {
@@ -299,7 +299,7 @@ describe("StockOnHandClient", () => {
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(
-      within(phone).getByText("74,414đ · Nguyên liệu · Kiểm lần cuối 09/08/2026"),
+      within(phone).getByText("74,414đ · Nguyên liệu · Kiểm lần cuối 09/08/2026 07:00:00"),
     ).toBeInTheDocument();
     expect(
       within(phone).getByText("0đ · Nguyên liệu · Chưa kiểm lần nào"),

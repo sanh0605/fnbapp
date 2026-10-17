@@ -1,5 +1,5 @@
 import { formatNumber } from "@/lib/shared/format";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { PhoneRow } from "@/components/ui/list/PhoneRow";
 
 export function EventCard({
@@ -15,7 +15,7 @@ export function EventCard({
   itemCount: number;
   value: number;
 }) {
-  const dateLabel = formatDate(at);
+  const dateLabel = formatDateTimeFull(at);
   return (
     <div className="py-2.5">
       <PhoneRow

@@ -107,7 +107,7 @@ describe("getDashboardData", () => {
   });
 
   it("flags a stocktake that was never done", async () => {
-    expect((await getDashboardData()).stocktake.stale).toEqual({ lastConfirmedDay: null, daysSince: null });
+    expect((await getDashboardData()).stocktake.stale).toEqual({ lastConfirmedDay: null, lastConfirmedAt: null, daysSince: null });
   });
 
   it("reminds September (past its start day, no entry) and not October (14 < 25)", async () => {
@@ -134,7 +134,7 @@ describe("getDashboardData", () => {
     ];
     const { stocktake } = await getDashboardData();
     expect(mocks.findAllWhere).toHaveBeenCalledWith("Stocktake_Sessions", { in: { status: ["OPEN", "CONFIRMED"] } });
-    expect(stocktake.stale).toEqual({ lastConfirmedDay: "2026-08-02", daysSince: 73 });
+    expect(stocktake.stale).toEqual({ lastConfirmedDay: "2026-08-02", lastConfirmedAt: "2026-08-02T03:00:00Z", daysSince: 73 });
     expect(stocktake.openTooLong.map((s) => s.id)).toEqual(["S2"]);
   });
 

@@ -9,7 +9,7 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
-import { formatDate, formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { confirm } from "@/lib/shared/dialog";
 import { cancelCashEntry, deleteCashEntry } from "@/app/admin/finance/actions";
@@ -62,7 +62,7 @@ export function CashEntryDetailView({
     setActionError(null);
     const approved = await confirm({
       title: "Huỷ dòng sổ",
-      message: `Huỷ dòng ngày ${formatDate(entry.entry_date)}, số tiền ${amountStr}? Dòng vẫn hiện trong danh sách nhưng không tính vào tổng nữa.`,
+      message: `Huỷ dòng ngày ${formatDateTimeFull(entry.entry_date)}, số tiền ${amountStr}? Dòng vẫn hiện trong danh sách nhưng không tính vào tổng nữa.`,
       okText: "Huỷ dòng",
       cancelText: "Đóng",
       variant: "warning",
@@ -93,7 +93,7 @@ export function CashEntryDetailView({
 
   const fields: Field[] = [
     { label: "Mã", value: entry.id },
-    { label: "Ngày", value: formatDate(entry.entry_date) },
+    { label: "Ngày", value: formatDateTimeFull(entry.entry_date) },
     { label: "Nhóm", value: category?.name ?? "—" },
     ...(monthlyItemName ? [{ label: "Khoản chi hằng tháng", value: monthlyItemName }] : []),
     { label: "Bên", value: category ? KIND_LABEL[category.kind] : "—" },
@@ -104,7 +104,7 @@ export function CashEntryDetailView({
     { label: "Người tạo", value: entry.created_by_name && entry.created_by_name.length > 0 ? entry.created_by_name : "—" },
     {
       label: "Ghi sổ lúc",
-      value: entry.created_at ? formatDateTime(entry.created_at) : "—",
+      value: formatDateTimeFull(entry.created_at),
     },
     { label: "Trạng thái", value: statusBadge },
   ];
@@ -131,7 +131,7 @@ export function CashEntryDetailView({
           <RemoveRecordButton
             verb="Xoá hẳn"
             name={entry.id}
-            confirmMessage={`Xoá hẳn dòng ngày ${formatDate(entry.entry_date)}, số tiền ${amountStr}? Không thể hoàn tác.`}
+            confirmMessage={`Xoá hẳn dòng ngày ${formatDateTimeFull(entry.entry_date)}, số tiền ${amountStr}? Không thể hoàn tác.`}
             remove={async () => {
               const fd = new FormData();
               fd.set("id", entry.id);

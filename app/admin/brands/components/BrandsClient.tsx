@@ -8,7 +8,7 @@ import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { Field } from "@/components/ui/Field";
@@ -103,8 +103,8 @@ export default function BrandsClient({
         header: "Ngày bắt đầu",
         sortValue: (b) => b.start_date || "",
         render: (b) => (
-          <span className="text-text-secondary text-sm">
-            {b.start_date ? formatDate(b.start_date) : "—"}
+          <span className="text-text-secondary text-sm whitespace-nowrap">
+            {formatDateTimeFull(b.start_date) || "—"}
           </span>
         ),
       },
@@ -217,7 +217,7 @@ export default function BrandsClient({
         columns={columns}
         phoneRow={(b) => ({
           title: b.name,
-          meta: [b.id, b.code, b.start_date ? `Từ ${formatDate(b.start_date)}` : null]
+          meta: [b.id, b.code, b.start_date ? `Từ ${formatDateTimeFull(b.start_date)}` : null]
             .filter(Boolean)
             .join(" · "),
         })}

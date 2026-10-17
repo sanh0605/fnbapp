@@ -2,7 +2,7 @@ import { getIssuedValueReport } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/shared/format";
-import { formatDate, saigonToday, formatMonthLabel } from "@/lib/shared/datetime";
+import { formatDateTimeFull, saigonToday, formatMonthLabel } from "@/lib/shared/datetime";
 import { readMonthRangeParams, type RawParams } from "@/lib/shared/date-range-params";
 import { DateRangeUrlButton } from "@/components/ui/DateRangeUrlButton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -191,7 +191,7 @@ export default async function IssuedValueReportPage(
                           {event.kind === "STOCKTAKE" ? "Kiểm kê" : "Phiếu xuất"}
                         </span>
                       </TableCell>
-                      <TableCell>{formatDate(event.at)}</TableCell>
+                      <TableCell><span className="whitespace-nowrap">{formatDateTimeFull(event.at)}</span></TableCell>
                       <TableCell>{event.label}</TableCell>
                       <TableCell align="right">{event.itemCount}</TableCell>
                       <TableCell align="right" tone="negative">{formatNumber(event.value)}đ</TableCell>

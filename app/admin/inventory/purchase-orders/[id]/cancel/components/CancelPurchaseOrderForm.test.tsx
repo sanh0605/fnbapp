@@ -50,7 +50,7 @@ describe("CancelPurchaseOrderForm (BR-INV-015)", () => {
       },
       lines: [],
       blockedMessages: [
-        "Huỷ phiếu này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32) chỉ còn 21 trái, phiếu có 60 trái. Hàng của phiếu đã được dùng, nên phiếu này là thật.",
+        "Huỷ phiếu này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32:00) chỉ còn 21 trái, phiếu có 60 trái. Hàng của phiếu đã được dùng, nên phiếu này là thật.",
       ],
       assets: [],
     };
@@ -59,7 +59,7 @@ describe("CancelPurchaseOrderForm (BR-INV-015)", () => {
 
     expect(
       screen.getByText(
-        "Huỷ phiếu này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32) chỉ còn 21 trái, phiếu có 60 trái. Hàng của phiếu đã được dùng, nên phiếu này là thật."
+        "Huỷ phiếu này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32:00) chỉ còn 21 trái, phiếu có 60 trái. Hàng của phiếu đã được dùng, nên phiếu này là thật."
       )
     ).toBeInTheDocument();
     expect(screen.queryByRole("textbox")).toBeNull();

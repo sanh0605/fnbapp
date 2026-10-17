@@ -386,8 +386,10 @@ describe("validateDisposalDate", () => {
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected refusal");
     expect(result.error).toContain("tương lai");
-    expect(result.error).toContain("01/01/2026"); // states the valid range, not just "invalid"
-    expect(result.error).toContain("31/08/2026");
+    // states the valid range and the refused day, each as a full date-time (BR-DATA-006)
+    expect(result.error).toContain("(01/01/2026 00:00:00)");
+    expect(result.error).toContain("(31/08/2026 00:00:00)");
+    expect(result.error).toContain("15/09/2026 00:00:00 là ngày trong tương lai");
   });
 
   it("refuses a date before the asset was acquired", () => {
@@ -395,7 +397,8 @@ describe("validateDisposalDate", () => {
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected refusal");
     expect(result.error).toContain("trước ngày mua");
-    expect(result.error).toContain("01/01/2026");
+    expect(result.error).toContain("(01/01/2026 00:00:00)");
+    expect(result.error).toContain("31/12/2025 00:00:00 là trước ngày mua");
   });
 
   // The load-bearing case: a backdate well into the past, still on or

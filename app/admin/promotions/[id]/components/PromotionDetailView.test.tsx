@@ -72,7 +72,7 @@ describe("PromotionDetailView", () => {
     expect(screen.getAllByText(/15\/07\/2026 12:59:00/).length).toBeGreaterThan(0);
   });
 
-  it("leaves a plain date start_date as a plain date without seconds", () => {
+  it("shows a day-only start_date as 00:00:00 (BR-DATA-006)", () => {
     render(
       <PromotionDetailView
         promo={{ ...samplePromo, start_date: "2026-07-01" }}
@@ -82,8 +82,7 @@ describe("PromotionDetailView", () => {
         returnTo="/admin/promotions"
       />,
     );
-    expect(screen.getAllByText("01/07/2026").length).toBeGreaterThan(0);
-    expect(screen.queryByText(/01\/07\/2026 00:00/)).toBeNull();
+    expect(screen.getAllByText("01/07/2026 00:00:00").length).toBeGreaterThan(0);
   });
 
   it("renders 'Món áp dụng (N)' section for PRODUCT_DISCOUNT", () => {

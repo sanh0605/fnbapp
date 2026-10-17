@@ -7,7 +7,7 @@ import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { deleteBrand } from "@/app/admin/brands/actions";
 import type { DBBrand } from "@/types/db";
 
@@ -57,7 +57,7 @@ export function BrandDetailView({
     { label: "Mã đơn hàng", value: brand.code || "—" },
     {
       label: "Ngày bắt đầu",
-      value: brand.start_date ? formatDate(brand.start_date) : "—",
+      value: formatDateTimeFull(brand.start_date) || "—",
     },
     { label: "Điểm bán", value: outletLinks },
   ];

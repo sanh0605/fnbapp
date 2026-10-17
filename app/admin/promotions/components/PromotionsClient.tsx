@@ -13,7 +13,7 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { Badge } from "@/components/ui/Badge";
-import { formatDate, formatDateTimeFull } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { deletePromotionAction } from "@/app/admin/promotions/actions";
 import type {
@@ -65,9 +65,7 @@ function isExpired(endDate: string | null | undefined): boolean {
 }
 
 function formatPromotionDate(val: string | null | undefined): string {
-  if (!val) return "—";
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return formatDate(val);
-  return formatDateTimeFull(val);
+  return formatDateTimeFull(val) || "—";
 }
 
 function formatDiscountText(promo: DBPromotion): string {

@@ -53,7 +53,7 @@ describe("BrandDetailView", () => {
     expect(screen.getAllByText("BR-001").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Phin Đi").length).toBeGreaterThan(0);
     expect(screen.getAllByText("PHD").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("27/03/2026").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("27/03/2026 00:00:00").length).toBeGreaterThan(0);
 
     const outletLink = screen.getByRole("link", { name: "Điểm bán 1" });
     expect(outletLink).toHaveAttribute("href", "/admin/outlets/OUT-001");

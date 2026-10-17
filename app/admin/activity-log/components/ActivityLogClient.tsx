@@ -8,7 +8,7 @@ import { Select } from "@/components/ui/Select";
 import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
@@ -359,7 +359,7 @@ export default function ActivityLogClient({
                         <p className="flex items-center gap-1.5">
                           <span className="text-text-muted">Thời gian:</span>
                           <span className="font-medium text-text-secondary">
-                            {formatDateTime(evt.event_at)}
+                            {formatDateTimeFull(evt.event_at)}
                           </span>
                         </p>
                         <p className="flex items-center gap-1.5">

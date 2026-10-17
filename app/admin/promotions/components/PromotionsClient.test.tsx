@@ -196,7 +196,7 @@ describe("PromotionsClient", () => {
     expect(within(phone).queryByText("PRM-004")).toBeNull();
   });
 
-  it("leaves a plain date start_date (day with no time) as a plain date without seconds", () => {
+  it("shows a day-only start_date as 00:00:00 (BR-DATA-006)", () => {
     const promoWithPlainDate: DBPromotion = {
       ...samplePromotions[0],
       start_date: "2026-06-01",
@@ -211,8 +211,7 @@ describe("PromotionsClient", () => {
         canDelete={false}
       />,
     );
-    expect(screen.getAllByText("01/06/2026").length).toBeGreaterThan(0);
-    expect(screen.queryByText(/01\/06\/2026 00:00/)).toBeNull();
+    expect(screen.getAllByText("01/06/2026 00:00:00").length).toBeGreaterThan(0);
   });
 
   it("renders in default order newest code first", () => {

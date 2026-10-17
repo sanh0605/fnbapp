@@ -8,7 +8,7 @@ import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
@@ -133,8 +133,8 @@ export default function UsersClient({
         header: "Ngày tạo",
         sortValue: (u) => u.created_at || "",
         render: (u) => (
-          <span className="text-text-muted">
-            {u.created_at ? formatDate(u.created_at) : "—"}
+          <span className="text-text-muted whitespace-nowrap">
+            {formatDateTimeFull(u.created_at) || "—"}
           </span>
         ),
       },
@@ -285,7 +285,7 @@ export default function UsersClient({
             meta: [
               showLogin ? u.username : null,
               u.id,
-              u.created_at ? `Tạo ${formatDate(u.created_at)}` : null,
+              u.created_at ? `Tạo ${formatDateTimeFull(u.created_at)}` : null,
             ]
               .filter(Boolean)
               .join(" · "),

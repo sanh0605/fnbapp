@@ -1,4 +1,4 @@
-import { formatDate, formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatDecimal } from "@/lib/shared/format";
 
 // BR-INV-015: turns the JSON of purchase_order_cancel_check and
@@ -99,9 +99,9 @@ export function describeCancelBlocker(b: CancelBlocker): string {
     case "ALREADY_CANCELLED":
       return "Phiếu đã huỷ rồi.";
     case "STOCKTAKE":
-      return `Phiếu ngày ${formatDate(b.orderAt)} nằm trước lần kiểm kê ${b.stocktakeId} (${formatDate(b.confirmedAt)}), nên không huỷ được: lần kiểm kê đã đếm lại hàng trên kệ.`;
+      return `Phiếu ngày ${formatDateTimeFull(b.orderAt)} nằm trước lần kiểm kê ${b.stocktakeId} (${formatDateTimeFull(b.confirmedAt)}), nên không huỷ được: lần kiểm kê đã đếm lại hàng trên kệ.`;
     case "NEGATIVE":
-      return `Huỷ phiếu này làm tồn kho âm: ${b.itemName} lúc thấp nhất (${formatDateTime(b.lowAt)}) chỉ còn ${formatDecimal(b.lowBalance, { maxDigits: 2 })} ${b.baseUnit}, phiếu có ${formatDecimal(b.orderQty, { maxDigits: 2 })} ${b.baseUnit}. Hàng của phiếu đã được dùng, nên phiếu này là thật.`;
+      return `Huỷ phiếu này làm tồn kho âm: ${b.itemName} lúc thấp nhất (${formatDateTimeFull(b.lowAt)}) chỉ còn ${formatDecimal(b.lowBalance, { maxDigits: 2 })} ${b.baseUnit}, phiếu có ${formatDecimal(b.orderQty, { maxDigits: 2 })} ${b.baseUnit}. Hàng của phiếu đã được dùng, nên phiếu này là thật.`;
     case "DISPOSED":
       return `Tài sản ${b.assetId} ${b.name} của phiếu đã thanh lý, nên không huỷ được phiếu.`;
   }

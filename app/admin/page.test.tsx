@@ -72,7 +72,7 @@ describe("admin dashboard clock (A6)", () => {
   it("shows the update time in Saigon, not 7 hours behind", async () => {
     const tree = await AdminDashboard({ searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join("");
-    expect(text).toContain("Cập nhật lúc: 06:30:00");
+    expect(text).toContain("Cập nhật lúc: 15/09/2026 06:30:00");
   });
 });
 

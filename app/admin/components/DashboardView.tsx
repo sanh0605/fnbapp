@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { formatNumber } from "@/lib/shared/format";
-import { formatVnDay, formatVnDayWithWeekday } from "@/lib/shared/datetime";
+import { formatDateTimeFull, formatVnDayWithWeekday } from "@/lib/shared/datetime";
 import {
   Table,
   TableHead,
@@ -62,7 +62,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
               >
                 <div>
                   {data.stocktake.stale.lastConfirmedDay
-                    ? `${data.stocktake.stale.daysSince} ngày chưa kiểm kê (lần cuối ${formatVnDay(data.stocktake.stale.lastConfirmedDay)})`
+                    ? `${data.stocktake.stale.daysSince} ngày chưa kiểm kê (lần cuối ${formatDateTimeFull(data.stocktake.stale.lastConfirmedAt)})`
                     : "Chưa kiểm kê lần nào"}
                 </div>
               </Link>
@@ -75,7 +75,7 @@ export function DashboardView({ data }: { data: DashboardData }) {
                 className="block p-3 rounded-card border border-warning/30 bg-warning/10 text-text-primary hover:bg-warning/15 transition-colors"
               >
                 <div>
-                  Phiếu kiểm kê mở từ {formatVnDay(session.openedDay)}, đã {session.daysOpen} ngày chưa xác nhận
+                  Phiếu kiểm kê mở từ {formatDateTimeFull(session.openedAt)}, đã {session.daysOpen} ngày chưa xác nhận
                 </div>
               </Link>
             ))}
