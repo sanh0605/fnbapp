@@ -46,6 +46,7 @@ const mockSession: StocktakeSessionView = {
       countedQty: 4000,
       theoreticalAtCount: 6000,
       countedAt: "2026-08-09T15:00:00.000Z",
+      packageCounts: null,
       packageLines: [],
       groupName: "Nguyên liệu",
       state: "OFF",

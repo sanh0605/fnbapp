@@ -12,9 +12,9 @@ export type StocktakeLineResultRow = {
   id: string;
   session_id: string;
   item_reference: string;
-  counted_qty: number;
-  theoretical_at_count: number;
-  counted_at: string;
+  counted_qty: number | null;
+  theoretical_at_count: number | null;
+  counted_at: string | null;
 };
 
 export type StocktakeApplyRow = {
@@ -79,11 +79,13 @@ export async function openStocktakeSessionAtomic(input: {
 
 export async function saveStocktakeLineAtomic(input: {
   lineId: string;
-  countedQty: number;
+  countedQty: number | null;
+  packageCounts: Record<string, number> | null;
 }): Promise<StocktakeLineResultRow> {
   const { data, error } = await getSupabaseClient().rpc("save_stocktake_line_atomic", {
     p_line_id: input.lineId,
     p_counted_qty: input.countedQty,
+    p_package_counts: input.packageCounts,
   });
   if (error) {
     throw new Error(`save_stocktake_line_atomic: ${error.message}`);

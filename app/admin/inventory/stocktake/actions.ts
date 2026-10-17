@@ -32,6 +32,8 @@ export interface StocktakeLineView {
   countedQty: number | null;
   theoreticalAtCount: number | null;
   countedAt: string | null;
+  // BR-INV-023: sealed packages typed per conversion id; null for lines never split (counted before 0137, or direct quantity).
+  packageCounts: Record<string, number> | null;
   // Plan D D6: the purchased item's package conversions; empty when it has none.
   packageLines: PackageLine[];
   // Phân loại hàng name, for grouping.
@@ -343,6 +345,10 @@ export async function getStocktakeSessionData(id: string): Promise<StocktakeSess
           countedQty: counted,
           theoreticalAtCount: book,
           countedAt: line.counted_at,
+          // package_counts is absent until 0137 runs; jsonb numbers may arrive as strings.
+          packageCounts: line.package_counts
+            ? Object.fromEntries(Object.entries(line.package_counts).map(([k, v]) => [k, Number(v)]))
+            : null,
           packageLines: packageLinesByPurchasedItem.get(line.item_reference) ?? [],
           groupName: categoryNameById.get(categoryIdByItem.get(line.item_reference) ?? "") ?? "",
           state: counted === null ? "BLANK" : counted === book ? "MATCH" : "OFF",
@@ -417,14 +423,36 @@ export async function startStocktakeSession(): Promise<ActionResponse> {
   }
 }
 
-export async function saveStocktakeLine(lineId: string, countedQty: number): Promise<ActionResponse> {
+// value: conversionId -> whole sealed packages, a base quantity, or null to clear the line (BR-INV-023).
+export async function saveStocktakeLine(
+  lineId: string,
+  value: Record<string, number> | number | null,
+): Promise<ActionResponse & { countedQty?: number | null }> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
   try {
-    await saveStocktakeLineAtomic({ lineId, countedQty });
-    revalidatePath(PATH);
-    return ok();
+    let countedQty: number | null = null;
+    let packageCounts: Record<string, number> | null = null;
+    if (typeof value === "number") {
+      if (!Number.isFinite(value) || value < 0) return fail("Số lượng phải là số không âm");
+      countedQty = value;
+    } else if (value && Object.keys(value).length > 0) {
+      const line = (await findAllWhere<any>("stocktake_lines", { eq: { id: lineId }, limit: 1 }))[0];
+      const conversions = ((await findAll("UOM_Conversions")) as any[]).filter(
+        c => c.purchased_item_id === line?.item_reference && c.status === "ACTIVE" && c.purchase_only !== true,
+      );
+      countedQty = 0;
+      for (const [conversionId, packages] of Object.entries(value)) {
+        const conversion = conversions.find(c => c.id === conversionId);
+        if (!conversion) return fail("Kiểu đóng gói không thuộc mặt hàng này");
+        if (!Number.isInteger(packages) || packages < 0) return fail("Chỉ nhập số nguyên gói còn nguyên seal");
+        countedQty += packages * Number(conversion.conversion_rate);
+      }
+      packageCounts = value;
+    }
+    const row = await saveStocktakeLineAtomic({ lineId, countedQty, packageCounts });
+    return ok({ countedQty: row.counted_qty === null ? null : Number(row.counted_qty) });
   } catch (error: unknown) {
     return describeActionError(error);
   }
