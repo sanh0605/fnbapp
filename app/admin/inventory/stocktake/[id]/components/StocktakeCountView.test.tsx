@@ -97,8 +97,8 @@ describe("StocktakeCountView (Screen 2)", () => {
     // Since mockSession has a BLANK line, active tab defaults to Chưa đếm
     const chuaDemBtn = screen.getByRole("button", { name: /Chưa đếm \(1\)/ });
     expect(chuaDemBtn).toBeInTheDocument();
-    // In primary variant (active tab), Button has bg-primary class
-    expect(chuaDemBtn.className).toContain("bg-primary");
+    // The active tab is a pressed chip
+    expect(chuaDemBtn).toHaveAttribute("aria-pressed", "true");
 
     // Only LINE-1 should be visible under Chưa đếm
     expect(screen.getAllByText("Bột cà phê truyền thống Phin Đậm").length).toBeGreaterThanOrEqual(1);
@@ -1410,7 +1410,6 @@ describe("StocktakeCountView (Screen 2)", () => {
     const selectedTab = screen.getByRole("button", { name: /Chưa đếm \(1\)/ });
     expect(selectedTab).toHaveAttribute("aria-pressed", "true");
     expect(selectedTab).not.toHaveClass("bg-primary");
-    expect(selectedTab.classList.contains("bg-primary")).toBe(false);
   });
 
   it("BR-INV-023: phone legacy box auto-saves on blur", async () => {
@@ -1425,6 +1424,7 @@ describe("StocktakeCountView (Screen 2)", () => {
 
     // Phone legacy input has touch target >= 48px
     const phoneInput = screen.getAllByLabelText("Số đếm Bột cà phê truyền thống Phin Đậm")[1];
+    expect(phoneInput.id).toBe("m-legacy-qty-LINE-1");
     expect(phoneInput.className).toContain("min-h-[48px]");
 
     fireEvent.change(phoneInput, { target: { value: "42" } });

@@ -934,5 +934,3 @@ describe("DataList phoneRow (BR-UI-018)", () => {
     expect(thWithoutNowrap).not.toHaveClass("whitespace-nowrap");
   });
 });
-
-
