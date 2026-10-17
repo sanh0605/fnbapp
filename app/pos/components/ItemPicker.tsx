@@ -294,7 +294,7 @@ export function ItemPicker({
                 <NumberInput
                   id="pos-item-discount"
                   aria-label="Giảm giá sản phẩm"
-                  decimals={0}
+                  decimals={itemDiscountType === "PERCENT" ? 2 : 0}
                   zeroIsEmpty
                   value={itemDiscount || null}
                   onValueChange={(val) => {
@@ -350,12 +350,11 @@ export function ItemPicker({
             <button
               type="button"
               onClick={addToCart}
-              className="flex-1 md:flex-none bg-primary text-on-primary h-[60px] md:h-[52px] min-h-[44px] px-3 md:px-5 rounded-card md:rounded-button hover:bg-primary-hover active:scale-[0.98] transition-all flex flex-col items-center justify-center"
+              className="flex-1 md:flex-none min-w-0 bg-primary text-on-primary h-[60px] md:h-[52px] min-h-[44px] px-3 md:px-5 rounded-card md:rounded-button hover:bg-primary-hover active:scale-[0.98] transition-all flex flex-col items-center justify-center"
             >
-              <div className="font-extrabold text-[15px] md:text-[17px] leading-tight whitespace-nowrap">
-                <span>
-                  {isEditing ? "Cập nhật" : "Thêm vào đơn"} · {formatNumber(currentItemFinalTotal)}
-                </span>
+              <div className="font-extrabold text-[15px] md:text-[17px] leading-tight text-center md:whitespace-nowrap">
+                <span className="whitespace-nowrap">{isEditing ? "Cập nhật" : "Thêm vào đơn"} ·</span>{" "}
+                <span className="whitespace-nowrap">{formatNumber(currentItemFinalTotal)}</span>
               </div>
               {(currentItemManualDiscountAmount > 0 || currentItemPromoDiscountAmount > 0) && (
                 <div className="text-xs text-on-primary/80 line-through font-medium mt-0.5 whitespace-nowrap">

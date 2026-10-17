@@ -55,7 +55,7 @@ export function ProductCard({
       }`}
     >
       <div className="flex items-start justify-between gap-1.5 min-w-0">
-        <div className="text-[18px] font-bold text-text-primary leading-tight">
+        <div className="text-[18px] font-bold text-text-primary leading-tight min-w-0 [overflow-wrap:anywhere]">
           {product.name}
         </div>
         {hasPromo && (

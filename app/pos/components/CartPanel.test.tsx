@@ -3,12 +3,33 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import React from "react";
 import { CartPanel } from "./CartPanel";
-import { clampDiscount } from "./cart-pricing";
 
 // Owns the step state the way POSScreen does; isPayStepOpen only sets where it starts.
 function CartPanelWithState(props: any) {
   const [isPayStepOpen, setIsPayStepOpen] = React.useState(props.isPayStepOpen ?? false);
-  return <CartPanel {...props} isPayStepOpen={isPayStepOpen} setIsPayStepOpen={setIsPayStepOpen} />;
+  const [userCustomDiscount, setUserCustomDiscount] = React.useState<number | null>(
+    props.userCustomDiscount ?? null
+  );
+  const [userCustomDiscountType, setUserCustomDiscountType] = React.useState(
+    props.userCustomDiscountType ?? "VND"
+  );
+  return (
+    <CartPanel
+      {...props}
+      isPayStepOpen={isPayStepOpen}
+      setIsPayStepOpen={setIsPayStepOpen}
+      userCustomDiscount={userCustomDiscount}
+      setUserCustomDiscount={(val: number | null) => {
+        setUserCustomDiscount(val);
+        props.setUserCustomDiscount?.(val);
+      }}
+      userCustomDiscountType={userCustomDiscountType}
+      setUserCustomDiscountType={(t: any) => {
+        setUserCustomDiscountType(t);
+        props.setUserCustomDiscountType?.(t);
+      }}
+    />
+  );
 }
 
 afterEach(() => {
@@ -96,8 +117,7 @@ describe("Discount (R3)", () => {
       expect(setUserCustomDiscount).toHaveBeenCalledWith(81_000);
     });
 
-    it("clamps negative discount to 0", () => {
-      expect(clampDiscount(-10_000, "VND", 81_000)).toBe(0);
+    it("a typed minus sign is dropped: -10000 applies 10,000", () => {
       const setUserCustomDiscount = vi.fn();
       render(
         <CartPanel
@@ -110,6 +130,7 @@ describe("Discount (R3)", () => {
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(discountInput, { target: { value: "-10000" } });
       expect(discountInput).toHaveValue("10,000");
+      expect(setUserCustomDiscount).toHaveBeenCalledWith(10_000);
     });
 
     it("groups thousands while typing in order discount box (shows 10,000 and reflects discount)", () => {
@@ -143,10 +164,26 @@ describe("Discount (R3)", () => {
       expect(setUserCustomDiscount).toHaveBeenCalledWith(100);
     });
 
-    it("shows max message when typing above limit and applied discount equals limit", () => {
+    it("order box in % mode accepts '12.5'", () => {
       const setUserCustomDiscount = vi.fn();
       render(
         <CartPanel
+          {...defaultProps}
+          setUserCustomDiscount={setUserCustomDiscount}
+          userCustomDiscountType="PERCENT"
+        />
+      );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
+      const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(discountInput, { target: { value: "12.5" } });
+      expect(discountInput).toHaveValue("12.5");
+      expect(setUserCustomDiscount).toHaveBeenCalledWith(12.5);
+    });
+
+    it("shows max message when typing above limit and applied discount equals limit", () => {
+      const setUserCustomDiscount = vi.fn();
+      render(
+        <CartPanelWithState
           {...defaultProps}
           setUserCustomDiscount={setUserCustomDiscount}
           userCustomDiscountType="VND"
@@ -155,9 +192,12 @@ describe("Discount (R3)", () => {
       fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(discountInput, { target: { value: "150000" } });
-      fireEvent.blur(discountInput);
+      expect(discountInput).toHaveValue("81,000");
+
+      fireEvent.change(discountInput, { target: { value: "810000" } });
       expect(screen.getByText("Tối đa 81,000đ")).toBeInTheDocument();
-      expect(setUserCustomDiscount).toHaveBeenCalledWith(81_000);
+      expect(discountInput).toHaveValue("810,000");
+      expect(setUserCustomDiscount).toHaveBeenLastCalledWith(81_000);
     });
   });
 

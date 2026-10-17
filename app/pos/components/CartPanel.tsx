@@ -254,13 +254,13 @@ export function CartPanel({
 
                   <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                     {processingOrder.items.map((item: any, idx: number) => {
+                      const names = item.modifiers.map((m: any) => m.name).join(", ");
                       return (
                         <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-border pb-2">
                           <div className="min-w-0 flex-1">
                             <p className="font-bold text-text-primary break-words">{item.product_name}</p>
                             <p className="text-[10px] text-text-secondary">
-                              {item.size_name}
-                              {item.modifiers.length > 0 && ` • +${item.modifiers.map((m: any) => m.name).join(", ")}`}
+                              {item.size_name}{item.modifiers.length > 0 && ` · ${names}`}
                             </p>
                             <p className="text-[10px] text-text-secondary font-medium mt-0.5">Số lượng: {item.qty}</p>
                           </div>
@@ -482,7 +482,7 @@ export function CartPanel({
                           <NumberInput
                             id="pos-order-discount"
                             aria-label="Giảm giá tùy chỉnh"
-                            decimals={0}
+                            decimals={userCustomDiscountType === "PERCENT" ? 2 : 0}
                             zeroIsEmpty
                             value={userCustomDiscount}
                             onValueChange={(val) => {

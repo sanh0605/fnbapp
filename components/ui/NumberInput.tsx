@@ -187,13 +187,19 @@ export function NumberInput({
       zeroIsEmpty,
     });
 
-    setBoxError("");
-
     if (!result.accepted) {
+      setBoxError("");
       setCommaHint(false);
       e.target.value = result.display;
       e.target.setSelectionRange(result.caret, result.caret);
       return;
+    }
+
+    const val = numberTextToValue(result.text);
+    if (max !== undefined && val !== null && val > max) {
+      setBoxError(maxMessage ?? `Nhập số không quá ${formatNumber(max)}.`);
+    } else {
+      setBoxError("");
     }
 
     setCommaHint(result.commaHint);
@@ -201,7 +207,7 @@ export function NumberInput({
     if (result.text !== text) {
       pendingCaretRef.current = result.caret;
       setText(result.text);
-      onValueChange?.(numberTextToValue(result.text));
+      onValueChange?.(val);
     } else {
       e.target.value = result.display;
       e.target.setSelectionRange(result.caret, result.caret);
