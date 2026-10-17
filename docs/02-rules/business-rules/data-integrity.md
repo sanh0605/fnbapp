@@ -52,9 +52,9 @@ If a post-apply invariant fails, stop further writes and compare against the app
 
 *"Tất cả mọi thứ đều phải được tính chính xác. Đối với hiển thị trên hệ thống thì làm tròn đến chữ số hàng đơn vị và không có số thập phân. Đối với dữ liệu lưu trữ thì nên lưu số để backend tính toán chứ không nên lưu kết quả."*
 
-- **No calculation rounds an intermediate figure.** 200.000đ depreciated over 6 months is 33.333,33…đ every month, and the six add to 200.000đ — not five months of 33.333đ and a sixth of 33.335đ.
+- **No calculation rounds an intermediate figure.** 200.000đ depreciated over 6 months is 33.333,33…đ every month, and the six add to 200.000đ — not five months of 33.333đ and a sixth of 33.335đ. <!-- undated-ok -->
 - **Rounding happens only where a number is shown:** to the nearest whole đồng, or whole base unit for a quantity, halves away from zero, no decimals (percentages and larger units: last point).
-- **A shown total is the rounded exact total, never a sum of rounded cells.** A row of months can therefore differ from its total by a đồng or two — three months of 100,4đ show 100 each and a total of 301. The screen says so where it happens; no cell is nudged to hide it.
+- **A shown total is the rounded exact total, never a sum of rounded cells.** A row of months can therefore differ from its total by a đồng or two — three months of 100,4đ show 100 each and a total of 301. The screen says so where it happens; no cell is nudged to hide it. <!-- undated-ok -->
 - **Store the numbers a figure comes from, not the figure.** Reports read source rows and recompute on every read.
 - **Money that really changed hands stays whole đồng:** an order's total, a discount on a bill, what was paid to a supplier. Those record what happened; nobody pays half a đồng.
 - **Percentages and larger-unit quantities keep decimals** (owner decision 2026-09-11, the same day: *"% thì nên hiện 2 số thập phân"*): a percentage shows exactly two decimals ("18,13%"); a quantity shown in a larger unit keeps up to two ("1,5 hộp", "20,62 cây", the 2026-08-30 rule in `lib/stock/issue-slip-onhand-display.ts`). Only money and quantities in the base unit are whole.
@@ -135,7 +135,7 @@ Apps Script validates the response, schema version, and expected table keys befo
 
 **Status:** `APPROVED`
 
-Begin migration planning when the serialized bundle reaches the warning threshold in the backup policy (currently 20 MB), and move the production destination by 25 MB or earlier if runtime/reliability limits are reached.
+Begin migration planning when the serialized bundle reaches the warning threshold in the backup policy (currently 20 MB), and move the production destination by 25 MB or earlier if runtime/reliability limits are reached. <!-- undated-ok -->
 
 ### BR-BACKUP-005 — Restore requires separate approval
 

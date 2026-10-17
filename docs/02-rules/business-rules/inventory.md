@@ -80,7 +80,7 @@ This is the edge Sonnet named while reviewing `BR-INV-007`: an item that always 
 
 When a count exceeds the theoretical quantity but stays within everything ever purchased, the system accepts it and records **hàng tìm lại được**: the quantity returns to stock at the weighted average it left at, which leaves the average unchanged and closes the discrepancy permanently.
 
-**What the case really is.** Under `BR-INV-007` the usual cause is a sealed package missed at an earlier count, expensed then, and found now. Goods thought consumed have reappeared. Concretely: a 1 kg bag of `Dâu sấy` worth 596.000đ.
+**What the case really is.** Under `BR-INV-007` the usual cause is a sealed package missed at an earlier count, expensed then, and found now. Goods thought consumed have reappeared. Concretely (example of 2026-08-07): a 1 kg bag of `Dâu sấy` worth 596.000đ.
 
 **Why the first proposal was withdrawn.** It was to correct the ingredient quantity and record no issue at all. Sonnet's challenge showed that a purchased item's theoretical quantity is recomputed every time as `purchase_order_lines − stock_issues` and never reads `stock_ledger`, so correcting the ingredient closes nothing: the same discrepancy would reappear **at every future count, for ever**. It had been described to the owner as a one-off note; it would have been a prompt that never stopped. The costing stayed correct throughout — no event reached the replay — but the description was wrong, and the owner was told so before deciding.
 
@@ -109,7 +109,7 @@ When a count exceeds the theoretical quantity but stays within everything ever p
 - **Buttons.**
   - The detail page has "Chỉnh sửa". In edit mode the user picks one line, several, or all, then "Xoá".
   - "Huỷ phiếu" stays, and does the same thing to every remaining line.
-  - If every line is deleted, the slip asks whether to cancel the slip. If the user declines, at least one line must be entered before the slip can be saved. Owner's words: *"nút huỷ phiếu vẫn để, nếu xoá hết dòng thì phiếu sẽ hỏi người dùng về việc huỷ phiếu. Nếu không huỷ phiếu thì yêu cầu người dùng nhập ít nhất 1 dòng để lưu phiếu."*
+  - If every line is deleted, the slip asks whether to cancel the slip. If the user declines, at least one line must be entered before the slip can be saved. Owner's words: *"nút huỷ phiếu vẫn để, nếu xoá hết dòng thì phiếu sẽ hỏi người dùng về việc huỷ phiếu. Nếu không huỷ phiếu thì yêu cầu người dùng nhập ít nhất 1 dòng để lưu phiếu."* <!-- undated-ok -->
 - **Who.** The owner and managers (`requireAdmin()`), as today. Nothing is deleted outright, so the "only ADMIN deletes" rule does not apply.
 - **Lines before a confirmed stocktake cannot be deleted.** This means any line whose issue date is on or before the confirmed date of the most recent confirmed stocktake. That count already put the goods back on the book as found stock. Returning them again would leave the book that much above the shelf. The screen says why and points to the next count. The reversal from `0058` had no such block; `0106` adds it to `reverse_manual_issue_atomic`, `cancel_issue_slip_atomic` and `edit_issue_slip_atomic`.
 

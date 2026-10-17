@@ -46,7 +46,7 @@ purchase orders, and nobody types a sale or a purchase into the cash book by
 hand — that would count it twice. Hand-typed rows remain for everything else:
 running costs, other income, capital put in.
 
-**Exception.** Two rows (1.728.578đ by transfer, 6.683.290đ in cash,
+**Exception (2026-09-11).** Two rows (1.728.578đ by transfer, 6.683.290đ in cash,
 8.411.868đ together) are sales revenue whose order data was lost while the app
 was being set up and rebuilt. The import put them under "Thu khác" and dated
 them 2026-09-02, the day the owner wrote them into his sheet. On 2026-09-11 the
@@ -69,7 +69,7 @@ only; it is not a route for future sales.
 sheet held 54 rows; 38 were imported. Six rows of tắc and chanh (529.000đ) were
 already entered as purchase orders, matched amount for amount, so importing them
 would have counted them twice. Ten rows of đá viên and túi đựng khoai
-(2.967.000đ) are catalogued purchased items with no purchase order yet; the
+(2.967.000đ, 2026-09-11) are catalogued purchased items with no purchase order yet; the
 owner chose to record them as purchase orders himself ("Chuyển sang đơn
 nhập"). The rule that follows: anything bought that is in the purchased-item
 catalogue goes through a purchase order, never through the cash book.
@@ -131,7 +131,7 @@ An income category that counts in profit and loss can carry a second flag, "Tín
 
 - **Only an income category that counts in profit and loss** can carry it. The form hides the box otherwise and clears it when the category switches to Chi or stops counting in profit and loss; the server refuses it ("Chỉ nhóm Thu có tính vào lãi lỗ mới đánh dấu được là doanh thu bán hàng."); a database check refuses it a third time (migration `0102`).
 - **It sits on the category, not on each row**, like `affects_pnl` (`BR-CASH-003`). Changing it moves every past month of that category, so on a category that already has rows the form asks before saving.
-- **Only the owner sets it.** The migration adds the column as false everywhere; after release the owner ticks it on "Doanh thu ghi tay" (`CFC-006`) himself. Until then that category's two rows show under Thu khác, and April's revenue reads 8.411.868đ short while net profit is unchanged.
+- **Only the owner sets it.** The migration adds the column as false everywhere; after release the owner ticks it on "Doanh thu ghi tay" (`CFC-006`) himself. Until then that category's two rows showed under Thu khác, and April's revenue read 8.411.868đ short while net profit was unchanged. Measured 2026-10-18: the box is ticked on `CFC-006`, the only category carrying it.
 
 ### BR-CASH-007 — Opening and closing balances, for cash and bank apart and together
 

@@ -20,7 +20,7 @@ Migration `0105` gỡ 10 bảng bỏ hoang, chủ quán duyệt 2026-09-28:
 
 Migration `0129` gỡ `pos_sync_failures` (máy bán hàng không còn bán ngoại tuyến).
 
-Trước đó đã gỡ 6 bảng: `stock_ledger`,
+Trước đó đã gỡ 6 bảng: `stock_ledger`, <!-- undated-ok -->
 `inventory_balances` (migration `0096`, Phase D — sổ kho cũ, thay bằng
 `stock_issues`), `base_ingredients` (migration `0090` — nhóm nguyên liệu bậc
 hai, chủ quán quyết định xoá 2026-09-01), và `backdated_ledger_events`,
@@ -34,10 +34,10 @@ Bảng plumbing (chỉ phục vụ máy chạy, không mang khái niệm kinh do
 
 Migration `0133` (6d đợt 1b) bỏ 7 cột rỗng hoặc tính lại được: `purchased_items.default_unit_id`, `suppliers.parent_id`, `units.abbreviation`, `product_price_history.reason`, `asset_depreciation_bands.status`, `purchase_order_lines.base_unit` (đơn vị gốc lấy từ quy đổi của dòng), `products.image_url`.
 
-| Bảng | Khái niệm (VN) | Vai trò (1 dòng) |
+| Bảng | Khái niệm (VN) | Vai trò (1 dòng) | <!-- undated-ok -->
 |---|---|---|
 | `asset_depreciation_bands` | Bảng khấu hao tài sản | Đơn giá tài sản trong khoảng nào thì phân bổ chi phí trong bao nhiêu tháng; chủ quán tự sửa bảng này |
-| `asset_disposals` | Thanh lý tài sản | Ghi một tài sản được bán/cho/bỏ; chỉ thêm dòng mới, không sửa lịch sử cũ; số tiền thu được nằm ở dòng sổ thu chi trỏ về đây (`cash_entries.asset_disposal_id`), không có dòng thì là 0đ |
+| `asset_disposals` | Thanh lý tài sản | Ghi một tài sản được bán/cho/bỏ; chỉ thêm dòng mới, không sửa lịch sử cũ; số tiền thu được nằm ở dòng sổ thu chi trỏ về đây (`cash_entries.asset_disposal_id`), không có dòng thì là 0đ | <!-- undated-ok -->
 | `assets` | Tài sản/dụng cụ | Một dòng cho mỗi lần mua tài sản, không phải mỗi cái vật lý; giữ giá vốn phân bổ và thời hạn khấu hao |
 | `bank_accounts` | Tài khoản ngân hàng | Tài khoản nhận/chi tiền chuyển khoản; dòng sổ thu chi chuyển khoản phải chỉ vào một tài khoản ở đây |
 | `brands` | Thương hiệu | Nhãn gắn với điểm bán, ví dụ Phin Đi, Uchako |

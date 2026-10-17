@@ -94,7 +94,7 @@ Confirmed 2026-09-08 by worked example before the decision was recorded: a count
 
 The cost of a purchased item is the line amount **plus its share of shipping and tax, minus its share of vouchers and discounts**, allocated across the order's lines in proportion to line value. An item worth 20% of an order absorbs 20% of its shipping and 20% of its discount.
 
-**Found by the owner refusing a figure.** Told the first stocktake would book 52.773.374đ of purchases, he replied that it could not possibly be that much. It could not: that is the sum of line subtotals, while **49.149.880đ** is what was paid. The difference is +648.200đ shipping, −4.049.790đ vouchers, −221.904đ discounts.
+**Found by the owner refusing a figure (2026-08-09).** Told the first stocktake would book 52.773.374đ of purchases, he replied that it could not possibly be that much. It could not: that is the sum of line subtotals, while **49.149.880đ** is what was paid. The difference is +648.200đ shipping, −4.049.790đ vouchers, −221.904đ discounts.
 
 **The gap was not a reporting slip, it was in the engine.** `buildIssueCostingPurchases` feeds `purchase_order_lines.subtotal` into the costing replay, and shipping, vouchers and discounts are recorded only on the order header, so they reached no unit cost. Every figure the issue-based engine would have produced was overstated by **3.623.494đ, about 7,4%**. **18 of 63** completed orders carry a voucher, 19 carry shipping, 10 carry a discount — not an edge case.
 

@@ -42,9 +42,9 @@ table of its own.
 
 1. **States, and how each is set.** An asset's business state is derived, not
    stored: `summarizeAsset` classifies it as still depreciating, term-ended (worth
-   0đ but still owned), or disposed, from the frozen purchase fields plus the sum
+   0đ but still owned), or disposed, from the frozen purchase fields plus the sum <!-- undated-ok -->
    of its disposals. The register answers "what the shop owns," not "what still
-   has value" — an asset whose depreciation term has ended stays listed at 0đ
+   has value" — an asset whose depreciation term has ended stays listed at 0đ <!-- undated-ok -->
    until it is disposed. A separate `status` flag (`ACTIVE`/`INACTIVE`) exists only
    to hide a genuine data-entry mistake; it is not how disposal is decided. A
    depreciation band simply exists in `asset_depreciation_bands`; there is no
