@@ -15,6 +15,7 @@ import { Select } from "@/components/ui/Select";
 import { Field } from "@/components/ui/Field";
 import { deleteUserAction } from "@/app/admin/users/actions";
 import { RoleBadge } from "./RoleBadge";
+import { staffLabel } from "@/lib/auth/staff-names";
 import type { DBUser } from "@/types/db";
 
 export interface UsersClientProps {
@@ -108,13 +109,13 @@ export default function UsersClient({
       {
         key: "name",
         header: "Tên nhân viên",
-        sortValue: (u) => u.name?.trim() || u.username,
+        sortValue: (u) => staffLabel(u).name,
         render: (u) => {
-          const hasDistinctName = Boolean(u.name && u.name.trim() !== "" && u.name.trim() !== u.username);
+          const { name, showLogin } = staffLabel(u);
           return (
             <div>
-              <div className="text-text-primary">{u.name?.trim() || u.username}</div>
-              {hasDistinctName && (
+              <div className="text-text-primary">{name}</div>
+              {showLogin && (
                 <div className="text-xs text-text-muted">{u.username}</div>
               )}
             </div>
@@ -146,7 +147,8 @@ export default function UsersClient({
     [columns],
   );
   // Default sort is code (id), descending (newest code first)
-  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const { key: parsedKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const sortKey = parsedKey === "username" ? "name" : parsedKey;
   const sortParam = rawSort ? sortKey : undefined;
   const dirParam = rawSort ? sortDir : undefined;
 
@@ -167,8 +169,7 @@ export default function UsersClient({
   }, [users, search, role]);
 
   const sortedUsers = useMemo(() => {
-    const effectiveKey = sortKey === "username" ? "name" : sortKey;
-    const col = columns.find((c) => c.key === effectiveKey);
+    const col = columns.find((c) => c.key === sortKey);
     return col?.sortValue
       ? sortRows(filteredUsers, col.sortValue, sortDir)
       : filteredUsers;
@@ -272,17 +273,17 @@ export default function UsersClient({
       <DataList
         rows={slice.rows}
         getId={(u) => u.id}
-        getName={(u) => u.name?.trim() || u.username}
+        getName={(u) => staffLabel(u).name}
         getHref={(u) =>
           `/admin/users/${encodeURIComponent(u.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
         phoneRow={(u) => {
-          const hasDistinctName = Boolean(u.name && u.name.trim() !== "" && u.name.trim() !== u.username);
+          const { name, showLogin } = staffLabel(u);
           return {
-            title: u.name?.trim() || u.username,
+            title: name,
             meta: [
-              hasDistinctName ? u.username : null,
+              showLogin ? u.username : null,
               u.id,
               u.created_at ? `Tạo ${formatDate(u.created_at)}` : null,
             ]

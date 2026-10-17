@@ -188,4 +188,19 @@ describe("UsersClient", () => {
     expect(screen.getAllByText("Tài Chí Tuyền").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/tuyen2612/).length).toBeGreaterThan(0);
   });
+
+  it("shows sort arrow on 'Tên nhân viên' header for sort=name and sort=username", () => {
+    mockSearchParams = new URLSearchParams("sort=name&dir=asc");
+    const { unmount } = render(<UsersClient users={mockUsers} canDelete={true} />);
+    const thName = screen.getByRole("columnheader", { name: /Tên nhân viên/ });
+    expect(thName).toHaveAttribute("aria-sort", "ascending");
+    expect(thName).toHaveTextContent("▲");
+    unmount();
+
+    mockSearchParams = new URLSearchParams("sort=username&dir=desc");
+    render(<UsersClient users={mockUsers} canDelete={true} />);
+    const thUsername = screen.getByRole("columnheader", { name: /Tên nhân viên/ });
+    expect(thUsername).toHaveAttribute("aria-sort", "descending");
+    expect(thUsername).toHaveTextContent("▼");
+  });
 });

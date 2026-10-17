@@ -5,6 +5,7 @@ import EditUserForm from "@/app/admin/users/components/EditUserForm";
 import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
+import { staffLabel } from "@/lib/auth/staff-names";
 
 export const dynamic = "force-dynamic";
 
@@ -51,16 +52,15 @@ export default async function EditUserPage(
     ? rawReturnTo
     : `/admin/users/${encodeURIComponent(user.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
 
-  const hasDistinctName = Boolean(user.name && user.name.trim() !== "" && user.name.trim() !== user.username);
-  const displayName = user.name?.trim() || user.username;
+  const { name, showLogin } = staffLabel(user);
 
   return (
     <DetailFrame>
       <DetailHeader
         backHref={detailHref}
-        backLabel={displayName}
+        backLabel={name}
         title="Chỉnh sửa"
-        subtitle={hasDistinctName ? `${displayName} · ${user.username}` : user.username}
+        subtitle={showLogin ? `${name} · ${user.username}` : user.username}
       />
       <EditUserForm user={user} returnTo={detailHref} canGrantAdmin={canGrantAdmin} />
     </DetailFrame>
