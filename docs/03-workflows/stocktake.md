@@ -106,6 +106,6 @@ others. Migration 0082 (Phase C) removed that function's `stock_ledger` write
 before Phase D dropped the table itself (migration 0096); the current function
 body does not reference `stock_ledger`.
 
-A session carries no free-text note and a line carries no item type: the code stopped reading `stocktake_sessions.notes` and `stocktake_lines.item_type` (every line is a purchased item); migration 0136 drops both columns (written 2026-10-17, not yet run).
+A session carries no free-text note and a line carries no item type: the code stopped reading `stocktake_sessions.notes` and `stocktake_lines.item_type` (every line is a purchased item); migration 0136 dropped both columns on 2026-10-17, and the code no longer sends `item_type`.
 
 > Measured against source: 2026-09-03 — via docs/generated/system-map.md

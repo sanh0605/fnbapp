@@ -87,7 +87,7 @@ Không đổi gì chủ quán nhìn thấy. Mỗi file xoá đã grep: không ch
   phí sai, BR-COGS-006), `app/api/revalidate`, hàm phụ chết ở `lib/db`, kiểu dữ liệu chết ở `types/db.ts`
   và `lib/sales/order-types.ts`, CSS chết ở `globals.css`. Sửa kèm các danh sách canh nhắc tới chúng.
 - **Script đã chạy xong:** `clear-issue-slip-notes`, `relink-orphan-assets`, `retire-misfiled-assets`,
-  `import-cash-entries` (+ dữ liệu mẫu), `check-purchase-order-cancel` — 14 file, 1.637 dòng.
+  `import-cash-entries` (+ dữ liệu mẫu), `check-purchase-order-cancel` — 14 file, 1.637 dòng. **Đã xoá 2026-10-17** (chủ quán duyệt "Xoá cả 14 file", cùng dữ liệu mẫu).
 - **Phép thử canh bảng đã gỡ:** 16 file `tests/migrations/` (sản xuất, điều chỉnh tồn, khoá kiểm toán…).
   Lý do xoá: mỗi file canh một thứ không còn tồn tại.
 - **Thư viện:** gỡ `googleapis` (111 MB, không file nào dùng).
