@@ -90,7 +90,7 @@ function makeDetail(
 }
 
 describe("OrderDetailView", () => {
-  it("shows Đổi cách trả and Huỷ đơn links in DetailHeader for COMPLETED order", () => {
+  it("shows Sửa đơn and Huỷ đơn links in DetailHeader for COMPLETED order", () => {
     const detail = makeDetail("COMPLETED");
     const brands = [{ id: "BRD-1", name: "Phin Đi" }];
     const returnTo = "/admin/orders?payment=Tien+mat";
@@ -100,7 +100,7 @@ describe("OrderDetailView", () => {
     expect(screen.getByText("ORD000001")).toBeDefined();
     expect(screen.getByText("Phin Đi")).toBeDefined();
 
-    const editLink = screen.getByRole("link", { name: "Đổi cách trả" });
+    const editLink = screen.getByRole("link", { name: "Sửa đơn" });
     expect(editLink).toBeDefined();
     expect(editLink.getAttribute("href")).toBe(
       `/admin/orders/ORD-1/edit?returnTo=${encodeURIComponent(returnTo)}`
@@ -113,11 +113,11 @@ describe("OrderDetailView", () => {
     );
   });
 
-  it("does not show Đổi cách trả or Huỷ đơn for VOIDED order", () => {
+  it("does not show Sửa đơn or Huỷ đơn for VOIDED order", () => {
     const detail = makeDetail("VOIDED");
     render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
 
-    expect(screen.queryByRole("link", { name: "Đổi cách trả" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Sửa đơn" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Huỷ đơn" })).toBeNull();
     expect(screen.getByText("Đã huỷ")).toBeDefined();
   });
@@ -241,8 +241,8 @@ describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
     expect(lines.className).toContain("lg:col-span-2");
     const side = screen.getByTestId("detail-side");
     expect(side.textContent).toContain("Khách trả");
-    // Đổi cách trả and Huỷ đơn are in DetailHeader right corner
-    expect(screen.getByRole("link", { name: "Đổi cách trả" })).toBeDefined();
+    // Sửa đơn and Huỷ đơn are in DetailHeader right corner
+    expect(screen.getByRole("link", { name: "Sửa đơn" })).toBeDefined();
     expect(screen.getByRole("link", { name: "Huỷ đơn" })).toBeDefined();
   });
 

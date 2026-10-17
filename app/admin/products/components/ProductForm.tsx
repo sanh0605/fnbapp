@@ -282,7 +282,7 @@ export default function ProductForm({
                       <Button
                         variant="delete"
                         type="button"
-                        className="self-end sm:self-auto sm:mt-6 min-h-[48px] md:min-h-[40px]"
+                        className="self-end sm:self-auto sm:mt-6"
                         onClick={(e) => {
                           e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
                           removeVariant(vIdx);

@@ -34,16 +34,6 @@ vi.mock("@/app/admin/products/modifiers/actions", () => ({
   setModifierStatus: (...args: any[]) => setModifierStatusMock(...args),
 }));
 
-const standaloneSwitchMock = vi.fn((props: any) => (
-  <div data-testid="mock-standalone-switch" data-modifier-id={props.modifierId}>
-    StandaloneToppingSwitchMock
-  </div>
-));
-
-vi.mock("@/app/admin/products/modifiers/components/StandaloneToppingSwitch", () => ({
-  StandaloneToppingSwitch: (props: any) => standaloneSwitchMock(props),
-}));
-
 afterEach(() => {
   cleanup();
   document.body.innerHTML = "";
@@ -193,7 +183,7 @@ describe("ModifierDetailView", () => {
         } as DBModifier}
         product={null}
         groupName="Mức đường"
-        allowStandalone={false}
+        allowStandalone={true}
         groupSelectionMode="ONE"
         canDelete={false}
         returnTo="/admin/products/modifiers"
@@ -209,7 +199,8 @@ describe("ModifierDetailView", () => {
     expect(screen.getByText("Không giới hạn")).toBeInTheDocument();
 
     // Bán độc lập is "—"
-    expect(screen.getByText("Bán độc lập")).toBeInTheDocument();
+    const row = screen.getByText("Bán độc lập").closest<HTMLElement>("div.grid")!;
+    expect(within(row).getByText("—")).toBeInTheDocument();
   });
 
   it("shows numeric 'Tối đa mỗi món' when max_qty is set", () => {

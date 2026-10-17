@@ -167,8 +167,6 @@ export default function CategoriesClient({
   };
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
-  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
-  const activeCount = appliedSearch.trim() ? 1 : 0;
 
   const removal = {
     verb: "Xoá",
@@ -203,7 +201,6 @@ export default function CategoriesClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
-        activeCount={activeCount}
         search={
           <div className="shrink-0 w-full md:w-64">
             <Field label="Tìm nhóm" htmlFor="categories-search">

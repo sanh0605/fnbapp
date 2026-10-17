@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { confirm } from "@/lib/shared/dialog";
+import { Button } from "@/components/ui/Button";
 
 export interface RemoveRecordButtonProps {
   verb: string;
@@ -48,15 +49,15 @@ export function RemoveRecordButton({
 
   return (
     <div className="flex flex-col gap-2">
-      <button
+      <Button
         type="button"
+        variant="delete"
         title={`${verb} ${name}`}
-        disabled={isPending}
+        loading={isPending}
         onClick={handleClick}
-        className="px-4 py-2 text-sm font-medium text-danger border border-danger/30 rounded-lg hover:bg-danger/10 transition min-h-[48px] md:min-h-[40px] flex items-center justify-center disabled:opacity-50"
       >
-        {isPending ? "Đang xử lý..." : verb}
-      </button>
+        {verb}
+      </Button>
       {error && (
         <div
           role="alert"

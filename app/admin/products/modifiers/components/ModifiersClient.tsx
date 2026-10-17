@@ -213,8 +213,6 @@ export default function ModifiersClient({
     },
   };
 
-  const activeCount = search.trim() ? 1 : 0;
-
   return (
     <div className="space-y-6">
       <ListPageHeader
@@ -234,7 +232,6 @@ export default function ModifiersClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
-        activeCount={activeCount}
         search={
           <div className="shrink-0 w-full md:w-64">
             <Field label="Tìm tuỳ chọn" htmlFor="modifiers-search">

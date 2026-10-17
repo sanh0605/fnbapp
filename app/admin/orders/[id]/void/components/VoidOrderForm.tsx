@@ -157,14 +157,14 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
             variant="danger"
             loading={isSubmitting}
             disabled={!reason.trim() || isSubmitting}
-            className="w-full min-h-[48px] md:min-h-[40px]"
+            className="w-full"
           >
             Xác nhận huỷ
           </Button>
           <Button
             href={detailHref}
             variant="secondary"
-            className="w-full min-h-[48px] md:min-h-[40px]"
+            className="w-full"
           >
             Quay lại
           </Button>
