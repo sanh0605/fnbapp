@@ -271,7 +271,7 @@ export function ItemPicker({
                   type="button"
                   onClick={() => {
                     setItemDiscountType("VND");
-                    setItemDiscount((prev) => clampDiscount(Math.round(prev), "VND", lineSubtotal) ?? 0);
+                    setItemDiscount((prev) => Math.round(prev));
                   }}
                   className={`px-3 min-h-[44px] text-sm font-bold transition-colors ${
                     itemDiscountType === "VND"

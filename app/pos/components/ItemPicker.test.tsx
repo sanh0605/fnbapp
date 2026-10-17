@@ -324,4 +324,37 @@ describe("ItemPicker", () => {
       expect.objectContaining({ discountAmount: 18_000 })
     );
   });
+
+  it("item box: 12.5 in % mode, press VNĐ -> box shows '13' and 13 is applied", () => {
+    const onSubmit = vi.fn();
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={null}
+        isEditing={false}
+        onSubmit={onSubmit}
+        onClose={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Giảm giá món/i }));
+    fireEvent.click(screen.getByRole("button", { name: "%" }));
+    const discountInput = screen.getByLabelText("Giảm giá sản phẩm");
+    fireEvent.change(discountInput, { target: { value: "12.5" } });
+    expect(discountInput).toHaveValue("12.5");
+
+    fireEvent.click(screen.getByRole("button", { name: "VNĐ" }));
+    expect(discountInput).toHaveValue("13");
+
+    fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ discountAmount: 13 })
+    );
+  });
 });
+
