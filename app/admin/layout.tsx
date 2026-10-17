@@ -117,8 +117,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-surface-card/50 relative">
         {/* Content Scroll */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-          <div className="max-w-screen-xl mx-auto w-full pb-24 md:pb-0">
+        <div className="flex-1 overflow-y-auto px-4 pt-4 md:px-6 md:pt-6 lg:px-8 lg:pt-8">
+          <div className="max-w-screen-xl mx-auto w-full pb-24 md:pb-6 lg:pb-8">
             {children}
           </div>
         </div>
