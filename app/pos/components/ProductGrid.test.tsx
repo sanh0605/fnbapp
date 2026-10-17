@@ -101,8 +101,8 @@ describe("ProductGrid empty states and Task 3a behaviour", () => {
       />
     );
 
-    // hasPromo reaches card / row -> shows "Khuyến mãi"
-    expect(screen.getAllByText("Khuyến mãi").length).toBeGreaterThan(0);
+    // hasPromo reaches both the phone row and the card -> "Khuyến mãi" twice
+    expect(screen.getAllByText("Khuyến mãi")).toHaveLength(2);
 
     // hasOptions reaches card -> shows "Có tuỳ chọn"
     expect(screen.getByText("Có tuỳ chọn")).toBeInTheDocument();
@@ -110,8 +110,11 @@ describe("ProductGrid empty states and Task 3a behaviour", () => {
     // onProductClick reaches card / row -> clicking calls onProductClick(product)
     const buttons = screen.getAllByRole("button", { name: "Cà phê đen" });
     expect(buttons.length).toBe(2);
+    // jsdom applies no CSS, so both lists are clickable: the phone row, then the card
     fireEvent.click(buttons[0]);
-    expect(onProductClick).toHaveBeenCalledWith(product);
+    fireEvent.click(buttons[1]);
+    expect(onProductClick).toHaveBeenCalledTimes(2);
+    expect(onProductClick).toHaveBeenNthCalledWith(2, product);
   });
 
   it("swipes between tabs on phone (max-width: 767px), but ignores swipe on desktop", () => {
