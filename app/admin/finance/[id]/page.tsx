@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { findById } from "@/lib/db/tables";
 import { resolveActor } from "@/lib/auth/auth";
+import { loadStaffNameResolver } from "@/lib/auth/staff-names";
 import { getCashCategories } from "@/app/admin/finance/categories/actions";
 import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
 import { safeReturnTo } from "@/lib/shared/return-to";
@@ -17,11 +18,12 @@ export default async function CashEntryDetailPage(
 ) {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const [entry, categories, accounts, auth] = await Promise.all([
+  const [entry, categories, accounts, auth, staffName] = await Promise.all([
     findById("Cash_Entries", params.id) as Promise<DBCashEntry | null>,
     getCashCategories(),
     getBankAccounts(),
     resolveActor(),
+    loadStaffNameResolver(),
   ]);
 
   if (!entry) {
@@ -44,7 +46,7 @@ export default async function CashEntryDetailPage(
 
   return (
     <CashEntryDetailView
-      entry={entry}
+      entry={{ ...entry, created_by_name: staffName(entry.created_by_name, entry.created_by_id) }}
       categories={categories}
       accounts={accounts}
       monthlyItemName={monthlyItem?.name}

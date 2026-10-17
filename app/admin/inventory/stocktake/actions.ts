@@ -3,6 +3,7 @@
 import { findAll, findAllNoCache, findAllWhere } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
+import { loadStaffNameResolver } from "@/lib/auth/staff-names";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import {
@@ -157,12 +158,13 @@ export async function getStocktakeDetail(id: string): Promise<StocktakeDetailVie
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [found, confirmed, open, lines, { nameById, unitNameByItemId }] = await Promise.all([
+  const [found, confirmed, open, lines, { nameById, unitNameByItemId }, staffName] = await Promise.all([
     findAllWhere<any>("stocktake_sessions", { eq: { id }, limit: 1 }),
     findAllWhere<any>("stocktake_sessions", { eq: { status: "CONFIRMED" } }),
     findAllWhere<any>("stocktake_sessions", { eq: { status: "OPEN" }, limit: 1 }),
     findAllWhere<any>("stocktake_lines", { eq: { session_id: id } }),
     loadItemNameMaps(),
+    loadStaffNameResolver(),
   ]);
   const session = found[0];
   if (!session) return null;
@@ -183,9 +185,9 @@ export async function getStocktakeDetail(id: string): Promise<StocktakeDetailVie
   return {
     id: session.id,
     status: session.status,
-    createdByName: session.created_by_name,
+    createdByName: staffName(session.created_by_name, session.created_by_id) ?? "",
     confirmedAt: session.confirmed_at ?? null,
-    confirmedByName: session.confirmed_by_name ?? null,
+    confirmedByName: staffName(session.confirmed_by_name, session.confirmed_by_id),
     reversedAt: session.reversed_at ?? null,
     lines: lines
       .map(line => ({
@@ -251,10 +253,11 @@ export async function listStocktakeSessions(): Promise<StocktakeListRow[]> {
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [sessions, lines, { issues, purchases, costedIssues }] = await Promise.all([
+  const [sessions, lines, { issues, purchases, costedIssues }, staffName] = await Promise.all([
     findAllNoCache("stocktake_sessions") as Promise<any[]>,
     findAllNoCache("stocktake_lines") as Promise<any[]>,
     loadStocktakeCosting(),
+    loadStaffNameResolver(),
   ]);
   const lineValues = computeIssueLineValues(purchases, costedIssues);
   const unitCosts = computeUnitCostsAt(purchases, costedIssues, new Date().toISOString(), lines.map(l => l.item_reference));
@@ -284,7 +287,9 @@ export async function listStocktakeSessions(): Promise<StocktakeListRow[]> {
         id: s.id,
         status: s.status,
         at: s.confirmed_at ?? s.created_at,
-        personName: s.confirmed_by_name ?? s.created_by_name,
+        personName: (s.confirmed_by_name
+          ? staffName(s.confirmed_by_name, s.confirmed_by_id)
+          : staffName(s.created_by_name, s.created_by_id)) ?? "",
         countedLines: own.filter(l => l.counted_qty !== null).length,
         totalLines: own.length,
         shortValue: shortExact === null ? null : displayMoney(shortExact),
@@ -304,9 +309,10 @@ export async function getStocktakeSessionData(id: string): Promise<StocktakeSess
   const session = (await findAllWhere<any>("stocktake_sessions", { eq: { id }, limit: 1 }))[0];
   if (!session) return null;
 
-  const [lines, costing] = await Promise.all([
+  const [lines, costing, staffName] = await Promise.all([
     findAllWhere<any>("stocktake_lines", { eq: { session_id: id } }),
     loadStocktakeCosting(),
+    loadStaffNameResolver(),
   ]);
   const { nameById, unitNameById, unitNameByItemId, purchasedItems, itemCategories } = costing.maps;
   const packageLinesByPurchasedItem = await loadPackageLinesByPurchasedItem(nameById, unitNameById);
@@ -322,10 +328,10 @@ export async function getStocktakeSessionData(id: string): Promise<StocktakeSess
   return {
     id: session.id,
     status: session.status,
-    createdByName: session.created_by_name,
+    createdByName: staffName(session.created_by_name, session.created_by_id) ?? "",
     createdAt: session.created_at,
     confirmedAt: session.confirmed_at ?? null,
-    confirmedByName: session.confirmed_by_name ?? null,
+    confirmedByName: staffName(session.confirmed_by_name, session.confirmed_by_id),
     lines: lines
       .map((line): StocktakeLineView => {
         const counted = line.counted_qty !== null ? Number(line.counted_qty) : null;

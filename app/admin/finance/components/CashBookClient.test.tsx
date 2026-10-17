@@ -584,6 +584,17 @@ describe("CashBookClient", () => {
     expect(alerts.length).toBeGreaterThan(0);
   });
 
+  it("search finds a row by the staff name shown or by the stored login", () => {
+    const named = { ...ce040Hand, creator: "Tài Chí Tuyền", creatorLogin: "tuyen2612" };
+    render(<CashBookClient {...defaultProps} rows={[named, ce032Hand]} initialStatus="ALL" />);
+    const searchInput = screen.getByLabelText("Tìm kiếm");
+    for (const term of ["tuyen2612", "tài chí"]) {
+      fireEvent.change(searchInput, { target: { value: term } });
+      expect(screen.getByText("CE-040")).toBeInTheDocument();
+      expect(screen.queryByText("CE-032")).toBeNull();
+    }
+  });
+
   it("search box filters rows by query and allows clearing", () => {
     render(<CashBookClient {...defaultProps} rows={[ce040Hand, ce032Hand]} initialStatus="ALL" />);
     const searchInput = screen.getByLabelText("Tìm kiếm");

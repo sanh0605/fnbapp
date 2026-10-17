@@ -16,7 +16,7 @@ import { getActivityLogEvents } from "./actions";
 
 function query(result: unknown) {
   const builder: Record<string, any> = {};
-  for (const method of ["select", "eq", "gte", "lte", "ilike", "limit", "or", "not", "order", "range"]) {
+  for (const method of ["select", "eq", "in", "gte", "lte", "ilike", "limit", "or", "not", "order", "range"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder.then = (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) =>
@@ -51,7 +51,8 @@ describe("getActivityLogEvents", () => {
         order_id: "order-1",
         event_type: "VOIDED",
         event_at: "2026-07-24T10:00:00.000Z",
-        actor_name: "Admin",
+        actor_id: "u1",
+        actor_name: "admin",
         delta_json: { voided: true },
       }],
       count: 41,
@@ -61,10 +62,10 @@ describe("getActivityLogEvents", () => {
     // name only, not from a capped, unordered scan of the log.
     const actors = query({
       data: [
-        { id: "u2", name: "Cashier" },
-        { id: "u1", name: "Admin" },
-        { id: "u3", name: "Admin" },
-        { id: "u4", name: null },
+        { id: "u2", username: "cashier", name: "Cashier" },
+        { id: "u1", username: "admin", name: "Admin" },
+        { id: "u3", username: "admin2", name: "Admin" },
+        { id: "u4", username: "ghost", name: null },
       ],
       error: null,
     });
@@ -87,7 +88,8 @@ describe("getActivityLogEvents", () => {
 
     expect(orderSearch.ilike).toHaveBeenCalledWith("order_no", "%PHD001%");
     expect(events.eq).toHaveBeenCalledWith("event_type", "VOIDED");
-    expect(events.eq).toHaveBeenCalledWith("actor_name", "Admin");
+    // The picker shows names, the log stores logins: filter by every login of that name.
+    expect(events.in).toHaveBeenCalledWith("actor_name", ["Admin", "admin", "admin2"]);
     expect(events.gte).toHaveBeenCalledWith("event_at", "2026-07-01T00:00:00.000Z");
     expect(events.lte).toHaveBeenCalledWith("event_at", "2026-07-31T23:59:59.999Z");
     expect(events.or).toHaveBeenCalledWith(
@@ -103,11 +105,12 @@ describe("getActivityLogEvents", () => {
     expect(result.events).toEqual([expect.objectContaining({
       id: "event-1",
       order_no: "PHD001001",
+      actor_name: "Admin",
       delta_json: JSON.stringify({ voided: true }),
     })]);
     expect(result.totalCount).toBe(41);
     expect(result.itemsPerPage).toBe(20);
     expect(result.actors).toEqual(["Admin", "Cashier"]);
-    expect(actors.select).toHaveBeenCalledWith("id, name");
+    expect(actors.select).toHaveBeenCalledWith("id, username, name");
   });
 });

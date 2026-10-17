@@ -55,6 +55,7 @@ describe("admin user client payloads", () => {
     findAllMock.mockResolvedValue([{
       id: "USR-001",
       username: "owner",
+      name: "Chủ quán",
       password_hash: "bcrypt-secret",
       password: "legacy-secret",
       reset_token: "reset-secret",
@@ -66,6 +67,7 @@ describe("admin user client payloads", () => {
     await expect(getUsers()).resolves.toEqual([{
       id: "USR-001",
       username: "owner",
+      name: "Chủ quán",
       role: "ADMIN",
       status: "ACTIVE",
       created_at: "2026-07-17T00:00:00.000Z",
@@ -211,7 +213,7 @@ describe("admin user client payloads", () => {
       const { addUser, updateUser } = await import("./actions");
       asManager();
       findAllMock.mockResolvedValue([owner, manager, staff]);
-      expect(await addUser(form({ username: "newbie", role: "STAFF", password: "secret1" }))).toEqual({ success: true });
+      expect(await addUser(form({ username: "newbie", name: "Newbie", role: "STAFF", password: "secret1" }))).toEqual({ success: true });
       expect(await updateUser(form({ id: "USR-004", role: "MANAGER", password: "newpass1" }))).toEqual({ success: true });
       expect(updateMock).toHaveBeenCalledTimes(1);
     });
@@ -219,9 +221,60 @@ describe("admin user client payloads", () => {
     it("an ADMIN can still grant ADMIN and edit an ADMIN account", async () => {
       const { addUser, updateUser } = await import("./actions");
       findAllMock.mockResolvedValue([owner, staff]);
-      expect(await addUser(form({ username: "o2", role: "ADMIN", password: "secret1" }))).toEqual({ success: true });
+      expect(await addUser(form({ username: "o2", name: "O Hai", role: "ADMIN", password: "secret1" }))).toEqual({ success: true });
       expect(await updateUser(form({ id: "USR-004", role: "ADMIN", password: "" }))).toEqual({ success: true });
       expect(await updateUser(form({ id: "USR-001", role: "ADMIN", password: "newpass1" }))).toEqual({ success: true });
+    });
+  });
+
+  describe("staff name (B1)", () => {
+    const form = (fields: Record<string, string>) => {
+      const fd = new FormData();
+      for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+      return fd;
+    };
+    const staff = { id: "USR-004", username: "staff", role: "STAFF", status: "ACTIVE" };
+    const msg = "Tên nhân viên phải từ 1 đến 60 ký tự.";
+
+    it("getUsers returns the stored name", async () => {
+      const { getUsers } = await import("./actions");
+      findAllMock.mockResolvedValue([{ ...staff, name: "Tài Chí Tuyền", created_at: "x" }]);
+      expect((await getUsers())[0].name).toBe("Tài Chí Tuyền");
+    });
+
+    it("addUser stores the trimmed name", async () => {
+      const { addUser } = await import("./actions");
+      findAllMock.mockResolvedValue([]);
+      expect(await addUser(form({ username: "tuyen", name: "  Tài Chí Tuyền ", role: "STAFF", password: "secret1" })))
+        .toEqual({ success: true });
+      expect(insertMock.mock.calls[0][1].name).toBe("Tài Chí Tuyền");
+    });
+
+    it("addUser refuses a missing, blank or over-60-character name and inserts nothing", async () => {
+      const { addUser } = await import("./actions");
+      findAllMock.mockResolvedValue([]);
+      const base = { username: "tuyen", role: "STAFF", password: "secret1" };
+      expect(await addUser(form(base))).toEqual({ error: msg });
+      expect(await addUser(form({ ...base, name: "   " }))).toEqual({ error: msg });
+      expect(await addUser(form({ ...base, name: "a".repeat(61) }))).toEqual({ error: msg });
+      expect(insertMock).not.toHaveBeenCalled();
+    });
+
+    it("updateUser saves the trimmed name; an absent name leaves it alone", async () => {
+      const { updateUser } = await import("./actions");
+      findAllMock.mockResolvedValue([staff]);
+      await updateUser(form({ id: "USR-004", role: "STAFF", password: "", name: " Lan " }));
+      expect(updateMock).toHaveBeenLastCalledWith("Users", "USR-004", { role: "STAFF", name: "Lan" });
+      await updateUser(form({ id: "USR-004", role: "STAFF", password: "" }));
+      expect(updateMock).toHaveBeenLastCalledWith("Users", "USR-004", { role: "STAFF" });
+    });
+
+    it("updateUser refuses a blank or over-60-character name and updates nothing", async () => {
+      const { updateUser } = await import("./actions");
+      findAllMock.mockResolvedValue([staff]);
+      expect(await updateUser(form({ id: "USR-004", role: "STAFF", password: "", name: "  " }))).toEqual({ error: msg });
+      expect(await updateUser(form({ id: "USR-004", role: "STAFF", password: "", name: "a".repeat(61) }))).toEqual({ error: msg });
+      expect(updateMock).not.toHaveBeenCalled();
     });
   });
 

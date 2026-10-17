@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildStaffNameResolver } from "@/lib/auth/staff-names";
 import { listIssueSlipsPage } from "./issue-slip-list";
 import type { IssueRowRecord, IssueSlipRecord } from "./issue-slip-status";
 
@@ -29,7 +30,11 @@ const lineValues = new Map<string, number>([
   ["ISS-00192", 73606.1633], ["ISS-00196", 36404.6], ["ISS-00197", 42493.2898],
   ["ISS-00119", 48600], ["ISS-00122", -48600], ["ISS-00001", 13550], ["ISS-00002", -2000],
 ]);
-const page = (filters = {}) => listIssueSlipsPage({ slips, issues, items, lineValues, filters });
+const staffName = buildStaffNameResolver([
+  { id: "USR-001", username: "admin", name: "ADMIN" },
+  { id: "USR-002", username: "tuyen2612", name: "Tài Chí Tuyền" },
+]);
+const page = (filters = {}) => listIssueSlipsPage({ slips, issues, items, lineValues, filters, staffName });
 
 describe("listIssueSlipsPage", () => {
   it("Tất cả hides cancelled slips and lists no stocktake row (BR-INV-022), newest first", () => {
@@ -56,9 +61,19 @@ describe("listIssueSlipsPage", () => {
     expect(page({ q: "baking", kind: "CANCELLED" }).rows.map(r => r.id)).toEqual(["ISL-00041"]);
   });
 
-  it("filters by person and lists every person once", () => {
-    expect(page({ person: "tuyen2612" }).rows.map(r => r.id)).toEqual(["ISL-00077", "ISL-00076"]);
-    expect(page().people).toEqual(["admin", "tuyen2612"]);
+  it("shows the staff name, not the stored login, and lists every person once", () => {
+    expect(page().rows.map(r => r.createdByName)).toEqual(["Tài Chí Tuyền", "Tài Chí Tuyền"]);
+    expect(page().people).toEqual(["ADMIN", "Tài Chí Tuyền"]);
+  });
+
+  it("filters by the staff name shown in the person list", () => {
+    expect(page({ person: "Tài Chí Tuyền" }).rows.map(r => r.id)).toEqual(["ISL-00077", "ISL-00076"]);
+    expect(page({ person: "tuyen2612" }).rows).toEqual([]);
+  });
+
+  it("keeps the stored text for a person missing from users", () => {
+    const p = listIssueSlipsPage({ slips, issues, items, lineValues, filters: {}, staffName: buildStaffNameResolver([]) });
+    expect(p.rows.map(r => r.createdByName)).toEqual(["tuyen2612", "tuyen2612"]);
   });
 
   it("a from-date after the to-date is an error and does not filter", () => {
@@ -70,7 +85,7 @@ describe("listIssueSlipsPage", () => {
   it("pages 20 rows and clamps an out-of-range page", () => {
     const many = Array.from({ length: 45 }, (_, i) => ({ ...slips[0], id: `ISL-9${String(i).padStart(4, "0")}` }));
     const manyLines = many.map((s, i) => line(`ISS-9${i}`, s.id, "SPM-038", 1, s.issued_at));
-    const p = listIssueSlipsPage({ slips: many, issues: manyLines, items, lineValues: new Map(), filters: { page: "9" } });
+    const p = listIssueSlipsPage({ slips: many, issues: manyLines, items, lineValues: new Map(), filters: { page: "9" }, staffName });
     expect(p).toMatchObject({ page: 3, pageCount: 3, firstIndex: 41, lastIndex: 45, total: 45 });
   });
 });
@@ -92,7 +107,7 @@ describe("listIssueSlipsPage totals (BR-UI-004)", () => {
   const values = new Map<string, number>([["ISS-400", 99999], ["ISS-401", -99999]]);
   many.forEach((_, i) => values.set(`ISS-${300 + i}`, 100.4));
   const run = (filters = {}) => listIssueSlipsPage({
-    slips: [...many, cancelledSlip], issues: manyIssues, items, lineValues: values, filters,
+    slips: [...many, cancelledSlip], issues: manyIssues, items, lineValues: values, filters, staffName,
   });
 
   it("totals every live slip the filter matches, rounded once from the exact sum", () => {

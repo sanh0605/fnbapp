@@ -1,3 +1,4 @@
+import type { StaffNameResolver } from "@/lib/auth/staff-names";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import type { PackageLine } from "@/lib/stock/stocktake-package-lines";
@@ -26,9 +27,9 @@ export function buildIssueSlipDetail(input: {
   slip: IssueSlipRecord; issues: IssueRowRecord[]; sessions: StocktakeSessionRecord[];
   items: { id: string; name: string }[]; baseUnitNameByItem: Map<string, string>;
   packageLinesByItem: Map<string, PackageLine[]>; lineValues: Map<string, number>;
-  unitCostByItem: Record<string, number>;
+  unitCostByItem: Record<string, number>; staffName: StaffNameResolver;
 }): IssueSlipDetail {
-  const { slip, issues, sessions, items, baseUnitNameByItem, packageLinesByItem, lineValues, unitCostByItem } = input;
+  const { slip, issues, sessions, items, baseUnitNameByItem, packageLinesByItem, lineValues, unitCostByItem, staffName } = input;
   const reversed = reversedIssueIds(issues);
   const cancel = slipCancellation(slip.id, issues, reversed);
   const lockRaw = stocktakeLock(slip.issued_at, sessions);
@@ -62,7 +63,7 @@ export function buildIssueSlipDetail(input: {
     : null;
   return {
     id: slip.id, issuedAt: slip.issued_at, dateText: formatDateTimeFull(slip.issued_at),
-    createdByName: slip.created_by_name ?? "",
+    createdByName: staffName(slip.created_by_name, slip.created_by_id) ?? "",
     lines, totalValue: cancel ? 0 : displayMoney(exactTotal),
     cancellation, lock, canEdit: !cancellation && !lock, unitCostByItem,
   };

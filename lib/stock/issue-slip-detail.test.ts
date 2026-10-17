@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildIssueSlipDetail } from "./issue-slip-detail";
+import { buildStaffNameResolver } from "@/lib/auth/staff-names";
 import type { IssueRowRecord } from "./issue-slip-status";
 
 const base = { source: "MANUAL", session_id: null, note: "Khác", created_at: null, reverses_issue_id: null } as const;
@@ -18,11 +19,16 @@ const input = {
   ]),
   lineValues: new Map([["ISS-00192", 73606.1633], ["ISS-00196", 36404.6]]),
   unitCostByItem: { "SPM-038": 36.8030816 },
+  staffName: buildStaffNameResolver([{ id: "USR-002", username: "tuyen2612", name: "Tài Chí Tuyền" }]),
 };
 
 describe("buildIssueSlipDetail", () => {
   it("carries the unit cost map through untouched", () => {
     expect(buildIssueSlipDetail(input).unitCostByItem).toEqual({ "SPM-038": 36.8030816 });
+  });
+
+  it("keeps the stored text when the person is not in users", () => {
+    expect(buildIssueSlipDetail({ ...input, staffName: buildStaffNameResolver([]) }).createdByName).toBe("tuyen2612");
   });
 
   it("reads no note from the slip (column dropped by 0136)", () => {
@@ -33,7 +39,7 @@ describe("buildIssueSlipDetail", () => {
     const d = buildIssueSlipDetail(input);
     expect(d.lines.map(l => [l.name, l.quantityText, l.value])).toEqual([
       ["Sữa yến mạch Oatside", "2 Hộp (2,000 ml)", 73606], ["Giấy lót chống tràn", "1 Xấp", 36405]]);
-    expect(d).toMatchObject({ totalValue: 110011, canEdit: true, cancellation: null, lock: null, createdByName: "tuyen2612" });
+    expect(d).toMatchObject({ totalValue: 110011, canEdit: true, cancellation: null, lock: null, createdByName: "Tài Chí Tuyền" });
   });
 
   it("a slip dated before STK-001 is locked, not editable", () => {

@@ -180,6 +180,7 @@ export interface DBSupplier {
 export interface DBUser {
   id: string;
   username: string;
+  name?: string | null;
   role: "STAFF" | "MANAGER" | "ADMIN";
   status: string;
   created_at: string;

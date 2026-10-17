@@ -153,6 +153,22 @@ describe("purchase order cancellation and permissions (BR-INV-015)", () => {
     getServerSession.mockResolvedValue({ user: { role: "ADMIN" } });
   });
 
+  it("shows the staff name of who cancelled, not the stored login", async () => {
+    findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Users" ? [{ id: "USR-002", username: "tuyen2612", name: "Tài Chí Tuyền" }] : []);
+    findById.mockResolvedValue({
+      id: "PO-065", status: "CANCELLED", cancel_reason: "Nhập trùng", cancelled_by_id: "USR-002",
+      cancelled_by_name: "tuyen2612", cancelled_at: "2026-10-05T10:00:00Z", created_at: "2026-10-01T00:00:00Z",
+    });
+    try {
+      const tree = await PurchaseOrderDetail({ params: Promise.resolve({ id: "PO-065" }), searchParams: Promise.resolve({}) });
+      expect(collectText(tree as ReactNode).join(" ").replace(/\s+/g, " ")).toContain("Huỷ bởi Tài Chí Tuyền");
+    } finally {
+      findAll.mockReset();
+      findAll.mockResolvedValue([]);
+    }
+  });
+
   it("A cancelled order shows details, no form, no Sửa phiếu, no Huỷ phiếu", async () => {
     findById.mockResolvedValue({
       id: "PO-065",

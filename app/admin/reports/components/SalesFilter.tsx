@@ -168,7 +168,7 @@ function SalesFilterInner({
               onChange={(e) => setStaffName(e.target.value)}
             >
               <option value="">Tất cả</option>
-              {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
+              {activeUsers.map(u => <option key={u.id} value={u.username}>{u.name || u.username}</option>)}
             </Select>
           </Field>
         </div>

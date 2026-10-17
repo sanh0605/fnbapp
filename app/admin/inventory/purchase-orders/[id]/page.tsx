@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth";
+import { loadStaffNameResolver } from "@/lib/auth/staff-names";
 import { redirect, notFound } from "next/navigation";
 import { findById, findAll } from "@/lib/db/tables";
 import { activeOrOnOrder } from "@/lib/purchasing/active-or-on-order";
@@ -41,7 +42,7 @@ export default async function PurchaseOrderDetail(
   }
   const role = (session.user as any)?.role || "STAFF";
 
-  const [po, lines, allItems, allUnits, allSuppliers, allConversions, allSources, allBankAccounts] =
+  const [po, lines, allItems, allUnits, allSuppliers, allConversions, allSources, allBankAccounts, staffName] =
     await Promise.all([
       findById("Purchase_Orders", params.id),
       findAll("Purchase_Order_Lines"),
@@ -51,6 +52,7 @@ export default async function PurchaseOrderDetail(
       findAll("UOM_Conversions"),
       findAll("Purchase_Sources"),
       findAll("Bank_Accounts"),
+      loadStaffNameResolver(),
     ]);
 
   if (!po) {
@@ -176,7 +178,7 @@ export default async function PurchaseOrderDetail(
 
       {isCancelled && (
         <Alert variant="info">
-          Lý do huỷ: {po.cancel_reason} · Huỷ bởi {po.cancelled_by_name} lúc{" "}
+          Lý do huỷ: {po.cancel_reason} · Huỷ bởi {staffName(po.cancelled_by_name, po.cancelled_by_id)} lúc{" "}
           {formatDateTimeFull(po.cancelled_at)}
         </Alert>
       )}

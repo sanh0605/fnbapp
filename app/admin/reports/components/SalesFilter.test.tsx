@@ -154,6 +154,22 @@ describe("SalesFilter brand box (wave K5)", () => {
     expect(q.get("brandId")).toBe("BRD-1");
   });
 
+  it("the staff box shows the name but filters by the login the orders store", () => {
+    render(
+      <SalesFilter
+        brands={[]}
+        users={[{ id: "USR-002", username: "tuyen2612", name: "Tài Chí Tuyền", status: "ACTIVE" } as any]}
+        categories={[]}
+        range={THIS_MONTH}
+        today={TODAY}
+      />,
+    );
+    expect(screen.getByRole("option", { name: "Tài Chí Tuyền" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/^Nhân viên/), { target: { value: "tuyen2612" } });
+    fireEvent.click(screen.getByRole("button", { name: "Lọc" }));
+    expect(pushed().get("staffName")).toBe("tuyen2612");
+  });
+
   it("renders only ACTIVE brands, users, and categories in the dropdowns", () => {
     render(
       <SalesFilter

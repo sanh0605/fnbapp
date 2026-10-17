@@ -15,6 +15,9 @@ const ROLES = ["STAFF", "MANAGER", "ADMIN"];
 // BR-ACCESS-004: same set requireOwner() accepts; requireAdmin() also lets MANAGER in.
 const isOwnerRole = (role: string) => role === "ADMIN" || role === "SYSTEM";
 const GRANT_ADMIN_DENIED = "Chỉ chủ quán mới cấp được vai Chủ quán.";
+const NAME_MAX = 60;
+const NAME_INVALID = `Tên nhân viên phải từ 1 đến ${NAME_MAX} ký tự.`;
+const nameValid = (name: string) => name.length >= 1 && name.length <= NAME_MAX;
 
 type DBUserRow =DBUser & Record<string, unknown>;
 
@@ -22,6 +25,7 @@ function toClientUser(user: DBUserRow): DBUser {
   return {
     id: user.id,
     username: user.username,
+    name: user.name,
     role: user.role,
     status: user.status,
     created_at: user.created_at,
@@ -75,10 +79,12 @@ export async function addUser(formData: FormData): Promise<ActionResponse> {
   const username = formData.get("username") as string;
   const role = formData.get("role") as string;
   const password = formData.get("password") as string;
+  const name = String(formData.get("name") ?? "").trim();
 
   if (!username || !role || !password) return fail("Vui lòng điền đủ thông tin");
   if (!ROLES.includes(role)) return fail("Vai trò không hợp lệ");
   if (role === "ADMIN" && !isOwnerRole(auth.actor.role)) return fail(GRANT_ADMIN_DENIED);
+  if (!nameValid(name)) return fail(NAME_INVALID);
 
   try {
     const users = await findAll(SHEET);
@@ -90,7 +96,7 @@ export async function addUser(formData: FormData): Promise<ActionResponse> {
     const password_hash = await bcrypt.hash(password, 10);
     const created_at = new Date().toISOString();
 
-    await insert(SHEET, { id, username, password_hash, role, status: "ACTIVE", created_at });
+    await insert(SHEET, { id, username, name, password_hash, role, status: "ACTIVE", created_at });
     revalidatePath(PATH);
     return ok();
   } catch (error: unknown) {
@@ -130,9 +136,13 @@ export async function updateUser(formData: FormData): Promise<ActionResponse> {
   const id = formData.get("id") as string;
   const role = formData.get("role") as string;
   const password = formData.get("password") as string;
+  // Absent field = leave the stored name alone; a present one must be valid.
+  const rawName = formData.get("name");
+  const name = rawName === null ? null : String(rawName).trim();
 
   if (!id || !role) return fail("Thiếu thông tin bắt buộc");
   if (!ROLES.includes(role)) return fail("Vai trò không hợp lệ");
+  if (name !== null && !nameValid(name)) return fail(NAME_INVALID);
   const isOwner = isOwnerRole(auth.actor.role);
 
   try {
@@ -145,6 +155,7 @@ export async function updateUser(formData: FormData): Promise<ActionResponse> {
       return fail("Không thể hạ vai tài khoản chủ quán cuối cùng.");
     }
     const dataToUpdate: Record<string, string> = { role };
+    if (name !== null) dataToUpdate.name = name;
 
     if (password && password.trim() !== "") {
       dataToUpdate.password_hash = await bcrypt.hash(password, 10);

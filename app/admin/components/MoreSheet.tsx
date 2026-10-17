@@ -6,9 +6,11 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { NAV_GROUPS } from "../nav-items";
 import { X } from "lucide-react";
+import { useMyStaffName } from "./useMyStaffName";
 
 export function MoreSheet({ onClose }: { onClose: () => void }) {
   const { data: session } = useSession();
+  const myName = useMyStaffName(session?.user?.name);
   const pathname = usePathname();
   const containerRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -163,7 +165,7 @@ export function MoreSheet({ onClose }: { onClose: () => void }) {
           <div className="text-[13px] font-bold text-text-muted">Tài khoản</div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-2 min-h-[48px] md:min-h-[40px] px-3.5 border border-border rounded-lg text-sm text-text-primary">
-              <span className="font-medium">{session?.user?.name || "Admin User"}</span>
+              <span className="font-medium">{myName || "Admin User"}</span>
               <span className="text-text-muted capitalize">({(session?.user as any)?.role || "Admin"})</span>
             </div>
             <button

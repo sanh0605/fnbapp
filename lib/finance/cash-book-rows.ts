@@ -1,3 +1,4 @@
+import type { StaffNameResolver } from "@/lib/auth/staff-names";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import type {
   DBBankAccount,
@@ -21,7 +22,8 @@ export interface CashBookRow {
   methodLabel: string; // "Tiền mặt" | "Chuyển khoản" | "Két → ACB - Phin Di"
   accountLabel: string; // "—" when none
   note: string; // "23 đơn", "2 đơn nhập", hand note, transfer note
-  creator: string; // "—" for day rows
+  creator: string; // staff name; "—" for day rows
+  creatorLogin?: string; // stored login, so the search finds either; absent on day rows
   status: "ACTIVE" | "CANCELLED";
   monthlyItemName: string | null; // the monthly expense item a hand row settles
   href: string; // no returnTo; the client appends it for HAND and TRANSFER
@@ -64,6 +66,7 @@ export function buildCashBookRows(input: {
   categories: DBCashCategory[];
   accounts: DBBankAccount[];
   monthlyItems: DBMonthlyExpenseItem[];
+  staffName: StaffNameResolver;
 }): CashBookRow[] {
   const accountNames = new Map(input.accounts.map((a) => [a.id, a.name]));
   const categoryById = new Map(input.categories.map((c) => [c.id, c]));
@@ -106,7 +109,8 @@ export function buildCashBookRows(input: {
       methodLabel: methodText(e.payment_method),
       accountLabel: accountText(e.bank_account_id, accountNames),
       note: e.note ?? "",
-      creator: e.created_by_name ?? NONE,
+      creator: input.staffName(e.created_by_name, e.created_by_id) ?? NONE,
+      creatorLogin: e.created_by_name ?? NONE,
       status: e.status,
       monthlyItemName: e.monthly_item_id ? (monthlyNames.get(e.monthly_item_id) ?? null) : null,
       href: `/admin/finance/${e.id}`,
@@ -125,7 +129,8 @@ export function buildCashBookRows(input: {
       methodLabel: `${endText(t.from_account_id, accountNames)} → ${endText(t.to_account_id, accountNames)}`,
       accountLabel: NONE,
       note: t.note,
-      creator: t.created_by_name ?? NONE,
+      creator: input.staffName(t.created_by_name, t.created_by_id) ?? NONE,
+      creatorLogin: t.created_by_name ?? NONE,
       status: t.status,
       monthlyItemName: null,
       href: `/admin/finance/transfers/${t.id}`,

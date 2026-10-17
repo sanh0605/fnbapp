@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/auth/auth";
+import { buildStaffNameResolver } from "@/lib/auth/staff-names";
 import { findAllWhereInBatches } from "@/lib/db/tables";
 import { getSupabaseClient } from "@/lib/db/supabase";
 
@@ -62,11 +63,23 @@ export async function getActivityLogEvents(
     matchingOrderIds = (data || []).map((order: any) => String(order.id));
   }
 
+  // B5: the person picker lists the Users table (id, login and name only -- never
+  // password_hash), so a newer person is never missing the way they were from
+  // an unordered, row-capped scan of the log.
+  const actorResult = await supabase.from("users").select("id, username, name");
+  if (actorResult.error) throw new Error(`Activity-log actors: ${actorResult.error.message}`);
+  const users = (actorResult.data || []) as { id: string; username: string; name: string | null }[];
+  const staffName = buildStaffNameResolver(users);
+
   let eventsQuery: any = supabase
     .from("order_events")
     .select("*", { count: "exact" });
   if (filters.type) eventsQuery = eventsQuery.eq("event_type", filters.type);
-  if (filters.actor) eventsQuery = eventsQuery.eq("actor_name", filters.actor);
+  // The picker shows names but the log stores logins: match every login with that name.
+  if (filters.actor) {
+    const logins = users.filter(u => u.name?.trim() === filters.actor).map(u => u.username);
+    eventsQuery = eventsQuery.in("actor_name", [filters.actor, ...logins]);
+  }
   if (filters.from) eventsQuery = eventsQuery.gte("event_at", filters.from);
   if (filters.to) eventsQuery = eventsQuery.lte("event_at", filters.to);
   if (q) {
@@ -84,14 +97,8 @@ export async function getActivityLogEvents(
     .order("event_at", { ascending: false })
     .range(offset, offset + ACTIVITY_LOG_ITEMS_PER_PAGE - 1);
 
-  // B5: the person picker lists the Users table (id and name only -- never
-  // password_hash), so a newer person is never missing the way they were from
-  // an unordered, row-capped scan of the log.
-  const actorsQuery = supabase.from("users").select("id, name");
-
-  const [eventResult, actorResult] = await Promise.all([eventsQuery, actorsQuery]);
+  const eventResult = await eventsQuery;
   if (eventResult.error) throw new Error(`Activity-log events: ${eventResult.error.message}`);
-  if (actorResult.error) throw new Error(`Activity-log actors: ${actorResult.error.message}`);
 
   const pageEvents = eventResult.data || [];
   const pageOrderIds = Array.from(new Set<string>(
@@ -109,6 +116,7 @@ export async function getActivityLogEvents(
   return {
     events: pageEvents.map((event: any) => ({
       ...event,
+      actor_name: staffName(event.actor_name, event.actor_id) ?? "",
       order_no: orderNoById.get(String(event.order_id)) || "Không rõ",
       delta_json: typeof event.delta_json === "string"
         ? event.delta_json
@@ -119,8 +127,8 @@ export async function getActivityLogEvents(
     totalCount: Number(eventResult.count) || 0,
     itemsPerPage: ACTIVITY_LOG_ITEMS_PER_PAGE,
     actors: Array.from(new Set(
-      (actorResult.data || [])
-        .map((row: any) => String(row.name || "").trim())
+      users
+        .map(row => String(row.name || "").trim())
         .filter(Boolean),
     )).sort((left, right) => left.localeCompare(right)),
   };

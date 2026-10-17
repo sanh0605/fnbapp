@@ -18,6 +18,8 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }));
 
+vi.mock("./actions", () => ({ getMyStaffName: async () => "Tài Chí Tuyền" }));
+
 function Wrapper() {
   const [isOpen, setIsOpen] = useState(true);
   return isOpen ? <MoreSheet onClose={() => setIsOpen(false)} /> : null;
@@ -34,6 +36,12 @@ describe("MoreSheet", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
     expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("shows the staff name in the account block, not the session login", async () => {
+    render(<Wrapper />);
+    expect(await screen.findByText("Tài Chí Tuyền")).toBeInTheDocument();
+    expect(screen.queryByText("Admin User")).toBeNull();
   });
 
   it("closes on Escape", async () => {

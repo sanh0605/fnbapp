@@ -1,3 +1,4 @@
+import type { StaffNameResolver } from "@/lib/auth/staff-names";
 import { displayMoney } from "@/lib/reports/display-rounding";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { toSaigonUtcRange } from "@/lib/shared/report-time";
@@ -40,8 +41,9 @@ function ms(value: string | null | undefined): number {
 export function listIssueSlipsPage(input: {
   slips: IssueSlipRecord[]; issues: IssueRowRecord[];
   items: { id: string; name: string }[]; lineValues: Map<string, number>; filters: IssueSlipListFilters;
+  staffName: StaffNameResolver;
 }): IssueSlipListPage {
-  const { slips, issues, lineValues, filters } = input;
+  const { slips, issues, lineValues, filters, staffName } = input;
   const itemName = new Map(input.items.map(i => [i.id, i.name]));
   const reversed = reversedIssueIds(issues);
   const sumValues = (lines: IssueRowRecord[]) =>
@@ -59,7 +61,7 @@ export function listIssueSlipsPage(input: {
       row: {
         id: slip.id, href: `/admin/inventory/issue-slips/${slip.id}`,
         kind: cancelled ? "CANCELLED" : "SLIP",
-        dateText: formatDateTimeFull(slip.issued_at), createdByName: slip.created_by_name ?? NO_NAME, value,
+        dateText: formatDateTimeFull(slip.issued_at), createdByName: staffName(slip.created_by_name, slip.created_by_id) ?? NO_NAME, value,
       },
       exactValue,
       timeMs: ms(slip.issued_at), createdMs: ms(slip.created_at),

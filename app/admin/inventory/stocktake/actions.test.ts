@@ -31,6 +31,16 @@ vi.mock("@/lib/stock/stocktake-transaction", () => ({
   editConfirmedStocktakeAtomic: mocks.editConfirmedStocktakeAtomic,
 }));
 
+// The real resolver over a fixed user list, so no test here reads the Users table.
+vi.mock("@/lib/auth/staff-names", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/lib/auth/staff-names")>();
+  return {
+    ...real,
+    loadStaffNameResolver: async () =>
+      real.buildStaffNameResolver([{ id: "USR-002", username: "tuyen2612", name: "Tài Chí Tuyền" }]),
+  };
+});
+
 import * as stocktakeActions from "./actions";
 
 describe("stocktake confirmation actions", () => {
@@ -861,6 +871,24 @@ describe("stocktake list and session data", () => {
     ];
     expect(await stocktakeActions.getStocktakeSessionData("STK-001")).toMatchObject({ confirmedAt: "2026-08-09T15:02:00Z", confirmedByName: "Chủ" });
     expect(await stocktakeActions.getStocktakeSessionData("STK-002")).toMatchObject({ confirmedAt: null, confirmedByName: null });
+  });
+
+  it("shows the staff name for who started and who confirmed, in the list and on the session", async () => {
+    tables.stocktake_sessions = [session("STK-001", "CONFIRMED", {
+      created_by_id: "USR-002", created_by_name: "tuyen2612",
+      confirmed_at: "2026-08-09T15:02:00Z", confirmed_by_id: "USR-002", confirmed_by_name: "tuyen2612",
+    })];
+    const [row] = await stocktakeActions.listStocktakeSessions();
+    expect(row.personName).toBe("Tài Chí Tuyền");
+    expect(await stocktakeActions.getStocktakeSessionData("STK-001")).toMatchObject({
+      createdByName: "Tài Chí Tuyền", confirmedByName: "Tài Chí Tuyền" });
+    expect(await stocktakeActions.getStocktakeDetail("STK-001")).toMatchObject({
+      createdByName: "Tài Chí Tuyền", confirmedByName: "Tài Chí Tuyền" });
+  });
+
+  it("keeps the stored text for a person missing from users", async () => {
+    tables.stocktake_sessions = [session("STK-002", "OPEN", { created_by_id: "USR-404", created_by_name: "ghost" })];
+    expect(await stocktakeActions.getStocktakeSessionData("STK-002")).toMatchObject({ createdByName: "ghost" });
   });
 
   it("session data: null for an unknown id", async () => {

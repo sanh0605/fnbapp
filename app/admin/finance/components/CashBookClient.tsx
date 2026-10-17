@@ -349,7 +349,7 @@ export default function CashBookClient({
         const matchGroup = (row.groupLabel || "").toLocaleLowerCase("vi").includes(q);
         const matchNote = (row.note || "").toLocaleLowerCase("vi").includes(q);
         const matchAccount = (row.accountLabel || "").toLocaleLowerCase("vi").includes(q);
-        const matchCreator = (row.creator || "").toLocaleLowerCase("vi").includes(q);
+        const matchCreator = `${row.creator || ""} ${row.creatorLogin || ""}`.toLocaleLowerCase("vi").includes(q);
         const matchMonthly = row.monthlyItemName
           ? String(row.monthlyItemName).toLocaleLowerCase("vi").includes(q)
           : false;
