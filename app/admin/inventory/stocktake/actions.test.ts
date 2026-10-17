@@ -447,6 +447,95 @@ describe("getStocktakeSessionData package lines", () => {
   });
 });
 
+describe("saveStocktakeLine package counts (BR-INV-023)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requireAdmin.mockResolvedValue({ ok: true, actor: { id: "admin-1", name: "Admin", role: "ADMIN" } });
+    mocks.findAllWhere.mockResolvedValue([{ id: "SKL-00106", session_id: "STK-002", item_reference: "SPM-106" }]);
+    mocks.findAll.mockResolvedValue([
+      { id: "QD-162", purchased_item_id: "SPM-106", conversion_rate: 50, status: "ACTIVE", purchase_only: false },
+      { id: "QD-069", purchased_item_id: "SPM-106", conversion_rate: 1, status: "ACTIVE", purchase_only: false },
+      { id: "QD-070", purchased_item_id: "SPM-106", conversion_rate: 100, status: "ACTIVE", purchase_only: true },
+      { id: "QD-038", purchased_item_id: "SPM-033", conversion_rate: 100, status: "ACTIVE", purchase_only: false },
+    ]);
+    mocks.saveStocktakeLineAtomic.mockImplementation(async (i: any) => ({
+      counted_qty: i.countedQty,
+      theoretical_at_count: i.countedQty === null ? null : "200.5",
+    }));
+  });
+
+  it("BR-INV-023: a save returns the book figure from the rpc row as a number", async () => {
+    const result = await stocktakeActions.saveStocktakeLine("SKL-00106", 5);
+    expect(result).toEqual({ success: true, countedQty: 5, theoreticalAtCount: 200.5 });
+  });
+
+  it("BR-INV-023: package counts are converted on the server and stored with the total", async () => {
+    const result = await stocktakeActions.saveStocktakeLine("SKL-00106", { "QD-162": 3, "QD-069": 12 });
+    expect(mocks.saveStocktakeLineAtomic).toHaveBeenCalledWith({
+      lineId: "SKL-00106", countedQty: 162, packageCounts: { "QD-162": 3, "QD-069": 12 },
+    });
+    expect(result).toMatchObject({ success: true, countedQty: 162 });
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("BR-INV-023: refuses a conversion that belongs to another item", async () => {
+    const result = await stocktakeActions.saveStocktakeLine("SKL-00106", { "QD-038": 1 });
+    expect(result).toEqual({ error: "Kiểu đóng gói không thuộc mặt hàng này" });
+    expect(mocks.saveStocktakeLineAtomic).not.toHaveBeenCalled();
+  });
+
+  it("BR-INV-023: refuses a purchase-only conversion", async () => {
+    const result = await stocktakeActions.saveStocktakeLine("SKL-00106", { "QD-070": 1 });
+    expect(result).toEqual({ error: "Kiểu đóng gói không thuộc mặt hàng này" });
+  });
+
+  it.each([2.5, -1])("BR-INV-023: refuses %s packages", async (n) => {
+    const result = await stocktakeActions.saveStocktakeLine("SKL-00106", { "QD-162": n });
+    expect(result).toEqual({ error: "Chỉ nhập số nguyên gói còn nguyên seal" });
+    expect(mocks.saveStocktakeLineAtomic).not.toHaveBeenCalled();
+  });
+
+  it("BR-INV-023: null clears the line back to not counted", async () => {
+    const result = await stocktakeActions.saveStocktakeLine("SKL-00106", null);
+    expect(mocks.saveStocktakeLineAtomic).toHaveBeenCalledWith({ lineId: "SKL-00106", countedQty: null, packageCounts: null });
+    expect(result).toMatchObject({ success: true, countedQty: null, theoreticalAtCount: null });
+  });
+
+  it("BR-INV-023: an empty object clears like null", async () => {
+    await stocktakeActions.saveStocktakeLine("SKL-00106", {});
+    expect(mocks.saveStocktakeLineAtomic).toHaveBeenCalledWith({ lineId: "SKL-00106", countedQty: null, packageCounts: null });
+  });
+
+  it("BR-INV-023: a plain number is sent as the base quantity with no package split", async () => {
+    await stocktakeActions.saveStocktakeLine("SKL-00106", 5);
+    expect(mocks.saveStocktakeLineAtomic).toHaveBeenCalledWith({ lineId: "SKL-00106", countedQty: 5, packageCounts: null });
+  });
+
+  it("BR-INV-023: refuses a negative or non-finite number", async () => {
+    expect(await stocktakeActions.saveStocktakeLine("SKL-00106", -1)).toHaveProperty("error");
+    expect(await stocktakeActions.saveStocktakeLine("SKL-00106", Number.NaN)).toHaveProperty("error");
+    expect(mocks.saveStocktakeLineAtomic).not.toHaveBeenCalled();
+  });
+
+  it("BR-INV-023: getStocktakeSessionData returns packageCounts as numbers, null when the column is missing", async () => {
+    mocks.findAllNoCache.mockResolvedValue([]);
+    mocks.findAllWhere.mockImplementation((table: string) => Promise.resolve(
+      table === "stocktake_sessions"
+        ? [{ id: "STK-002", status: "OPEN", created_by_name: "Admin", created_at: "2026-10-17T00:00:00Z" }]
+        : table === "stocktake_lines"
+          ? [
+              { id: "L1", session_id: "STK-002", item_reference: "SPM-106", counted_qty: 162, theoretical_at_count: 200, counted_at: "x", package_counts: { "QD-162": "3", "QD-069": 12 } },
+              { id: "L2", session_id: "STK-002", item_reference: "SPM-106", counted_qty: null, theoretical_at_count: null, counted_at: null },
+            ]
+          : [],
+    ));
+    const data = await stocktakeActions.getStocktakeSessionData("STK-002");
+    const byId = Object.fromEntries(data!.lines.map(l => [l.id, l]));
+    expect(byId.L1.packageCounts).toEqual({ "QD-162": 3, "QD-069": 12 });
+    expect(byId.L2.packageCounts).toBeNull();
+  });
+});
+
 describe("reverseConfirmedStocktakeSession (Plan D D14, U1-U6)", () => {
   beforeEach(() => {
     vi.clearAllMocks();

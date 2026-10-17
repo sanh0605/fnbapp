@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { PhoneRow } from "@/components/ui/list/PhoneRow";
@@ -33,6 +33,18 @@ interface StocktakeCountViewProps {
   session: StocktakeSessionView;
 }
 
+function getInitialSavedValues(lines: StocktakeLineView[]) {
+  const initial: Record<string, Record<string, number> | number | null> = {};
+  for (const line of lines) {
+    if (line.packageLines.length > 0) {
+      initial[line.id] = line.packageCounts ? { ...line.packageCounts } : null;
+    } else {
+      initial[line.id] = line.countedQty !== null ? line.countedQty : null;
+    }
+  }
+  return initial;
+}
+
 export function StocktakeCountView({ session }: StocktakeCountViewProps) {
   const router = useRouter();
 
@@ -53,21 +65,38 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
   } = useStocktakeLinesFilter(lines, hasBlankInitial ? "BLANK" : "ALL");
 
   // Per-line package card inputs & save state
-  const [packageInputs, setPackageInputs] = useState<Record<string, Record<string, string>>>({});
-  const [legacyInputs, setLegacyInputs] = useState<Record<string, string>>(() =>
+  const [packageInputs, setPackageInputs] = useState<Record<string, Record<string, number | null>>>(() => {
+    const initial: Record<string, Record<string, number | null>> = {};
+    for (const l of session.lines) {
+      if (l.packageLines.length > 0 && l.packageCounts) {
+        initial[l.id] = { ...l.packageCounts };
+      }
+    }
+    return initial;
+  });
+  const [legacyInputs, setLegacyInputs] = useState<Record<string, number | null>>(() =>
     Object.fromEntries(
       session.lines
         .filter((l) => l.packageLines.length === 0 && l.countedQty !== null)
-        .map((l) => [l.id, String(l.countedQty)])
+        .map((l) => [l.id, l.countedQty])
     )
   );
-  const [savingLineId, setSavingLineId] = useState<string | null>(null);
+  const [savingLineIds, setSavingLineIds] = useState<Record<string, boolean>>({});
   const [lineErrors, setLineErrors] = useState<Record<string, string>>({});
-  const [confirmedLines, setConfirmedLines] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
-      session.lines.filter((l) => l.countedQty !== null).map((l) => [l.id, true])
-    )
-  );
+
+  const linesRef = useRef(lines);
+  linesRef.current = lines;
+
+  const packageInputsRef = useRef(packageInputs);
+  packageInputsRef.current = packageInputs;
+
+  const legacyInputsRef = useRef(legacyInputs);
+  legacyInputsRef.current = legacyInputs;
+
+  const lastSavedValuesRef = useRef(getInitialSavedValues(session.lines));
+  const lineErrorsRef = useRef<Record<string, string>>({});
+  const needsSaveAgainRef = useRef<Map<string, boolean>>(new Map());
+  const savingPromisesRef = useRef<Map<string, Promise<any>>>(new Map());
 
   // Session cancel state
   const [confirmingCancelInline, setConfirmingCancelInline] = useState(false);
@@ -108,121 +137,186 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
     return "Tạm tính: 0đ";
   }, [lines]);
 
-  // Save a package-based line
-  async function handleSavePackageLine(line: StocktakeLineView) {
-    const lineValues = packageInputs[line.id] || {};
-    let sumBaseQty = 0;
-    let anyFilled = false;
-    for (const pkg of line.packageLines) {
-      const raw = lineValues[pkg.conversionId];
-      if (raw === undefined || raw.trim() === "") continue;
-      anyFilled = true;
-      const parsed = Number(raw);
-      if (!Number.isFinite(parsed) || parsed < 0) {
-        setLineErrors((prev) => ({
-          ...prev,
-          [line.id]: `Số lượng "${pkg.sizeLabel}" không hợp lệ.`,
-        }));
-        return;
-      }
-      if (!Number.isInteger(parsed)) {
-        setLineErrors((prev) => ({
-          ...prev,
-          [line.id]: `"${pkg.sizeLabel}": chỉ nhập số nguyên gói còn nguyên seal (quy tắc BR-INV-007) -- không ước lượng phần lẻ.`,
-        }));
-        return;
-      }
-      sumBaseQty += parsed * pkg.conversionRate;
+  function isEqualValue(
+    a: Record<string, number> | number | null,
+    b: Record<string, number> | number | null
+  ): boolean {
+    if (a === b) return true;
+    if (a === null || b === null) return false;
+    if (typeof a === "number" || typeof b === "number") {
+      return a === b;
     }
-
-    if (!anyFilled) {
-      setLineErrors((prev) => ({ ...prev, [line.id]: "Cần nhập số đếm" }));
-      return;
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+    if (keysA.length !== keysB.length) return false;
+    for (const k of keysA) {
+      if (a[k] !== b[k]) return false;
     }
-
-    setSavingLineId(line.id);
-    setLineErrors((prev) => ({ ...prev, [line.id]: "" }));
-
-    const res = await saveStocktakeLine(line.id, sumBaseQty);
-    setSavingLineId(null);
-
-    if (res?.error) {
-      setLineErrors((prev) => ({ ...prev, [line.id]: res.error || "Lỗi lưu số đếm" }));
-      return;
-    }
-
-    setConfirmedLines((prev) => ({ ...prev, [line.id]: true }));
-    setLines((prev) =>
-      prev.map((l) => {
-        if (l.id !== line.id) return l;
-        const counted = sumBaseQty;
-        const book = l.theoreticalAtCount;
-        const state = counted === book ? "MATCH" : "OFF";
-        const diffVal =
-          book !== null && l.unitCost !== null
-            ? Math.round((counted - book) * l.unitCost)
-            : null;
-        return {
-          ...l,
-          countedQty: counted,
-          state,
-          diffValue: diffVal,
-          countedAt: new Date().toISOString(),
-        };
-      })
-    );
+    return true;
   }
 
-  // Save a legacy single-input line
-  async function handleSaveLegacyLine(line: StocktakeLineView) {
-    const raw = legacyInputs[line.id];
-    if (raw === undefined || raw.trim() === "") {
-      setLineErrors((prev) => ({ ...prev, [line.id]: "Cần nhập số đếm" }));
-      return;
-    }
-    const qty = Number(raw);
-    if (!Number.isFinite(qty) || qty < 0) {
-      setLineErrors((prev) => ({ ...prev, [line.id]: "Số đếm không hợp lệ" }));
-      return;
-    }
+  function buildLineValue(lineId: string): Record<string, number> | number | null {
+    const line = linesRef.current.find((l) => l.id === lineId);
+    if (!line) return null;
 
-    setSavingLineId(line.id);
-    setLineErrors((prev) => ({ ...prev, [line.id]: "" }));
-
-    const res = await saveStocktakeLine(line.id, qty);
-    setSavingLineId(null);
-
-    if (res?.error) {
-      setLineErrors((prev) => ({ ...prev, [line.id]: res.error || "Lỗi lưu số đếm" }));
-      return;
+    if (line.packageLines.length > 0) {
+      const lineVals = packageInputsRef.current[lineId] || {};
+      const result: Record<string, number> = {};
+      let hasAny = false;
+      for (const pkg of line.packageLines) {
+        const val = lineVals[pkg.conversionId];
+        if (val !== undefined && val !== null) {
+          result[pkg.conversionId] = val;
+          hasAny = true;
+        }
+      }
+      return hasAny ? result : null;
     }
 
-    setConfirmedLines((prev) => ({ ...prev, [line.id]: true }));
-    setLines((prev) =>
-      prev.map((l) => {
-        if (l.id !== line.id) return l;
-        const counted = qty;
-        const book = l.theoreticalAtCount;
-        const state = counted === book ? "MATCH" : "OFF";
-        const diffVal =
-          book !== null && l.unitCost !== null
-            ? Math.round((counted - book) * l.unitCost)
-            : null;
-        return {
-          ...l,
-          countedQty: counted,
-          state,
-          diffValue: diffVal,
-          countedAt: new Date().toISOString(),
-        };
-      })
-    );
+    const val = legacyInputsRef.current[lineId];
+    if (val === undefined || val === null) return null;
+    return val;
+  }
+
+  async function performSave(lineId: string) {
+    if (savingPromisesRef.current.has(lineId)) {
+      needsSaveAgainRef.current.set(lineId, true);
+      return;
+    }
+
+    const valToSave = buildLineValue(lineId);
+    const lastVal = lastSavedValuesRef.current[lineId];
+    const lastFailed = Boolean(lineErrorsRef.current[lineId]);
+
+    if (isEqualValue(valToSave, lastVal) && !lastFailed) {
+      return;
+    }
+
+    setSavingLineIds((prev) => ({ ...prev, [lineId]: true }));
+
+    const promise = (async () => {
+      try {
+        const res = await saveStocktakeLine(lineId, valToSave);
+        if (res?.error) {
+          const errMsg = res.error;
+          lineErrorsRef.current[lineId] = errMsg;
+          setLineErrors((prev) => ({ ...prev, [lineId]: errMsg }));
+        } else {
+          lastSavedValuesRef.current[lineId] = valToSave;
+          delete lineErrorsRef.current[lineId];
+          setLineErrors((prev) => {
+            const next = { ...prev };
+            delete next[lineId];
+            return next;
+          });
+
+          const newCountedQty = res.countedQty !== undefined ? res.countedQty : null;
+          setLines((prev) =>
+            prev.map((l) => {
+              if (l.id !== lineId) return l;
+              const counted = newCountedQty;
+              const book =
+                newCountedQty === null
+                  ? null
+                  : res.theoreticalAtCount !== undefined
+                  ? res.theoreticalAtCount
+                  : l.theoreticalAtCount;
+              const state = counted === null ? "BLANK" : counted === book ? "MATCH" : "OFF";
+              const diffVal =
+                counted !== null && book !== null && l.unitCost !== null
+                  ? Math.round((counted - book) * l.unitCost)
+                  : null;
+              return {
+                ...l,
+                countedQty: counted,
+                theoreticalAtCount: book,
+                packageCounts:
+                  typeof valToSave === "object" && valToSave !== null ? valToSave : null,
+                state,
+                diffValue: diffVal,
+                countedAt: counted !== null ? new Date().toISOString() : null,
+              };
+            })
+          );
+        }
+      } catch {
+        const errMsg = "mất kết nối mạng";
+        lineErrorsRef.current[lineId] = errMsg;
+        setLineErrors((prev) => ({ ...prev, [lineId]: errMsg }));
+      } finally {
+        savingPromisesRef.current.delete(lineId);
+        setSavingLineIds((prev) => ({ ...prev, [lineId]: false }));
+        if (needsSaveAgainRef.current.get(lineId)) {
+          needsSaveAgainRef.current.set(lineId, false);
+          performSave(lineId);
+        }
+      }
+    })();
+
+    savingPromisesRef.current.set(lineId, promise);
+  }
+
+  function handleLineBlur(lineId: string, e: React.FocusEvent<HTMLElement>) {
+    if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget as Node)) {
+      return;
+    }
+    performSave(lineId);
+  }
+
+  function renderLineStatus(lineId: string, countedQty: number | null) {
+    if (savingLineIds[lineId]) {
+      return <span className="text-text-secondary">Đang lưu…</span>;
+    }
+    const error = lineErrors[lineId];
+    if (error) {
+      return (
+        <span className="text-danger">
+          Chưa lưu được: {error}. Bấm vào ô rồi bấm ra ngoài để thử lại.
+        </span>
+      );
+    }
+    if (countedQty !== null) {
+      return <span className="text-success font-medium">✓ Đã lưu</span>;
+    }
+    return null;
+  }
+
+  function renderPackageLineTotal(line: StocktakeLineView) {
+    const lineVals = packageInputs[line.id] || {};
+    let hasAny = false;
+    let total = 0;
+    for (const pkg of line.packageLines) {
+      const val = lineVals[pkg.conversionId];
+      if (val !== undefined && val !== null) {
+        hasAny = true;
+        total += val * pkg.conversionRate;
+      }
+    }
+
+    if (hasAny) {
+      const formatted = formatNumber(total);
+      const text = line.unitName ? `= ${formatted} ${line.unitName}` : `= ${formatted}`;
+      return <div className="text-xs text-text-secondary pt-0.5">{text}</div>;
+    }
+
+    if (line.countedQty !== null && !line.packageCounts) {
+      const formatted = formatNumber(line.countedQty);
+      const text = line.unitName ? `Đã lưu: ${formatted} ${line.unitName}` : `Đã lưu: ${formatted}`;
+      return <div className="text-xs text-text-secondary pt-0.5">{text}</div>;
+    }
+
+    return null;
   }
 
   // Preview action
   async function handlePreview() {
     setPreviewLoading(true);
     setGlobalError(null);
+
+    while (savingPromisesRef.current.size > 0) {
+      await Promise.all(Array.from(savingPromisesRef.current.values()));
+    }
+
     const res = await getStocktakeConfirmPreview(session.id);
     setPreviewLoading(false);
     if (res?.error || !res?.preview) {
@@ -526,14 +620,11 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                       <TableHeaderCell>Sổ lúc đếm</TableHeaderCell>
                       <TableHeaderCell>Số đếm</TableHeaderCell>
                       <TableHeaderCell>Chênh lệch</TableHeaderCell>
-                      <TableHeaderCell>Thao tác</TableHeaderCell>
+                      <TableHeaderCell>Trạng thái</TableHeaderCell>
                     </TableHead>
                     <TableBody>
                       {groupLines.map((line) => {
                         const isPackage = line.packageLines.length > 0;
-                        const isConfirmed = confirmedLines[line.id] ?? (line.countedQty !== null);
-                        const isSaving = savingLineId === line.id;
-                        const error = lineErrors[line.id];
 
                         return (
                           <TableRow key={line.id}>
@@ -555,100 +646,69 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                             </TableCell>
 
                             <TableCell>
-                              {isPackage ? (
-                                <div className="space-y-1">
-                                  <div className="grid grid-cols-2 gap-2">
-                                    {line.packageLines.map((pkg) => {
-                                      const val = packageInputs[line.id]?.[pkg.conversionId] ?? "";
-                                      return (
-                                        <div key={pkg.conversionId} className="flex flex-col gap-0.5">
-                                          <span className="text-xs text-text-secondary">
-                                            {pkg.sizeLabel}
-                                          </span>
-                                          <div className="w-28">
-                                            <NumberInput
-                                              id={`pkg-${line.id}-${pkg.conversionId}`}
-                                              decimals={3}
-                                              min={0}
-                                              example="12"
-                                              aria-label={pkg.sizeLabel}
-                                              disabled={isPreviewing || isSaving}
-                                              value={val === "" ? null : Number(val)}
-                                              onValueChange={(v) => {
-                                                const str = v === null ? "" : String(v);
-                                                setPackageInputs((prev) => ({
-                                                  ...prev,
-                                                  [line.id]: {
-                                                    ...(prev[line.id] || {}),
-                                                    [pkg.conversionId]: str,
-                                                  },
-                                                }));
-                                                setConfirmedLines((prev) => ({
-                                                  ...prev,
-                                                  [line.id]: false,
-                                                }));
-                                                setLineErrors((prev) => ({
-                                                  ...prev,
-                                                  [line.id]: "",
-                                                }));
-                                              }}
-                                            />
+                              <div onBlur={(e) => handleLineBlur(line.id, e)}>
+                                {isPackage ? (
+                                  <div className="space-y-1">
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {line.packageLines.map((pkg) => {
+                                        const val = packageInputs[line.id]?.[pkg.conversionId];
+                                        return (
+                                          <div key={pkg.conversionId} className="flex flex-col gap-0.5">
+                                            <span className="text-xs text-text-secondary">
+                                              {pkg.sizeLabel}
+                                            </span>
+                                            <div className="w-28">
+                                              <NumberInput
+                                                id={`pkg-${line.id}-${pkg.conversionId}`}
+                                                decimals={0}
+                                                min={0}
+                                                example="12"
+                                                aria-label={pkg.sizeLabel}
+                                                disabled={isPreviewing}
+                                                value={val === undefined ? null : val}
+                                                onValueChange={(v) => {
+                                                  setPackageInputs((prev) => ({
+                                                    ...prev,
+                                                    [line.id]: {
+                                                      ...(prev[line.id] || {}),
+                                                      [pkg.conversionId]: v,
+                                                    },
+                                                  }));
+                                                }}
+                                              />
+                                            </div>
                                           </div>
-                                        </div>
-                                      );
-                                    })}
+                                        );
+                                      })}
+                                    </div>
+                                    {renderPackageLineTotal(line)}
                                   </div>
-                                  {error && <span className="text-danger text-xs">{error}</span>}
-                                </div>
-                              ) : (
-                                <div className="flex flex-col gap-1">
-                                  <div className="w-32">
-                                    <NumberInput
-                                      id={`legacy-qty-${line.id}`}
-                                      decimals={3}
-                                      min={0}
-                                      example="1,250.5"
-                                      aria-label={`Số đếm ${line.itemName}`}
-                                      disabled={isPreviewing || isSaving}
-                                      value={
-                                        legacyInputs[line.id] === undefined || legacyInputs[line.id] === ""
-                                          ? null
-                                          : Number(legacyInputs[line.id])
-                                      }
-                                      onValueChange={(v) => {
-                                        const str = v === null ? "" : String(v);
-                                        setLegacyInputs((prev) => ({ ...prev, [line.id]: str }));
-                                        setConfirmedLines((prev) => ({ ...prev, [line.id]: false }));
-                                        setLineErrors((prev) => ({ ...prev, [line.id]: "" }));
-                                      }}
-                                    />
+                                ) : (
+                                  <div className="flex flex-col gap-1">
+                                    <div className="w-32">
+                                      <NumberInput
+                                        id={`legacy-qty-${line.id}`}
+                                        decimals={3}
+                                        min={0}
+                                        example="1,250.5"
+                                        aria-label={`Số đếm ${line.itemName}`}
+                                        disabled={isPreviewing}
+                                        value={legacyInputs[line.id] ?? null}
+                                        onValueChange={(v) => {
+                                          setLegacyInputs((prev) => ({ ...prev, [line.id]: v }));
+                                        }}
+                                      />
+                                    </div>
                                   </div>
-                                  {error && <span className="text-danger text-xs">{error}</span>}
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </TableCell>
 
                             <TableCell>{renderLineDifference(line)}</TableCell>
 
                             <TableCell align="right">
-                              <div className="flex items-center justify-end gap-2">
-                                {isConfirmed ? (
-                                  <span className="text-xs text-success font-medium">✓ Đã lưu</span>
-                                ) : line.countedQty !== null ? (
-                                  <span className="text-xs text-warning">Đã sửa</span>
-                                ) : null}
-                                <Button
-                                  variant={isConfirmed || isPreviewing ? "secondary" : "primary"}
-                                  onClick={() =>
-                                    isPackage
-                                      ? handleSavePackageLine(line)
-                                      : handleSaveLegacyLine(line)
-                                  }
-                                  loading={isSaving}
-                                  disabled={isPreviewing}
-                                >
-                                  {isPackage ? "Xác nhận" : "Lưu"}
-                                </Button>
+                              <div className="text-xs text-right">
+                                {renderLineStatus(line.id, line.countedQty)}
                               </div>
                             </TableCell>
                           </TableRow>
@@ -662,16 +722,14 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                 <div className="lg:hidden space-y-3">
                   {groupLines.map((line) => {
                     const isPackage = line.packageLines.length > 0;
-                    const isConfirmed = confirmedLines[line.id] ?? (line.countedQty !== null);
-                    const isSaving = savingLineId === line.id;
-                    const error = lineErrors[line.id];
+                    const isCounted = line.countedQty !== null;
 
                     return (
                       <div
                         key={line.id}
                         data-testid={`card-${line.id}`}
                         className={`bg-surface-card rounded-2xl border p-4 space-y-3 ${
-                          isConfirmed ? "border-success/60" : "border-border"
+                          isCounted ? "border-success/60" : "border-border"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -686,89 +744,67 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                                 : "—"}
                             </span>
                           </div>
-                          {isConfirmed ? (
-                            <span className="text-xs text-success font-medium">✓ Đã lưu</span>
-                          ) : line.countedQty !== null ? (
-                            <span className="text-xs text-warning">Đã sửa</span>
-                          ) : null}
                         </div>
 
                         {/* Mobile Inputs */}
-                        {isPackage ? (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {line.packageLines.map((pkg) => {
-                              const val = packageInputs[line.id]?.[pkg.conversionId] ?? "";
-                              return (
-                                <label key={pkg.conversionId} className="flex flex-col gap-1">
-                                  <span className="text-xs text-text-secondary">
-                                    {pkg.sizeLabel}
-                                  </span>
-                                  <NumberInput
-                                    id={`m-pkg-${line.id}-${pkg.conversionId}`}
-                                    decimals={3}
-                                    min={0}
-                                    example="12"
-                                    aria-label={pkg.sizeLabel}
-                                    disabled={isPreviewing || isSaving}
-                                    value={val === "" ? null : Number(val)}
-                                    onValueChange={(v) => {
-                                      const str = v === null ? "" : String(v);
-                                      setPackageInputs((prev) => ({
-                                        ...prev,
-                                        [line.id]: {
-                                          ...(prev[line.id] || {}),
-                                          [pkg.conversionId]: str,
-                                        },
-                                      }));
-                                      setConfirmedLines((prev) => ({
-                                        ...prev,
-                                        [line.id]: false,
-                                      }));
-                                      setLineErrors((prev) => ({ ...prev, [line.id]: "" }));
-                                    }}
-                                  />
-                                </label>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="w-full">
-                            <NumberInput
-                              id={`m-legacy-qty-${line.id}`}
-                              decimals={3}
-                              min={0}
-                              example="1,250.5"
-                              aria-label={`Số đếm ${line.itemName}`}
-                              disabled={isPreviewing || isSaving}
-                              value={
-                                legacyInputs[line.id] === undefined || legacyInputs[line.id] === ""
-                                  ? null
-                                  : Number(legacyInputs[line.id])
-                              }
-                              onValueChange={(v) => {
-                                const str = v === null ? "" : String(v);
-                                setLegacyInputs((prev) => ({ ...prev, [line.id]: str }));
-                                setConfirmedLines((prev) => ({ ...prev, [line.id]: false }));
-                                setLineErrors((prev) => ({ ...prev, [line.id]: "" }));
-                              }}
-                            />
-                          </div>
-                        )}
-
-                        {error && <div className="text-danger text-xs">{error}</div>}
+                        <div onBlur={(e) => handleLineBlur(line.id, e)}>
+                          {isPackage ? (
+                            <div className="space-y-1">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {line.packageLines.map((pkg) => {
+                                  const val = packageInputs[line.id]?.[pkg.conversionId];
+                                  return (
+                                    <label key={pkg.conversionId} className="flex flex-col gap-1">
+                                      <span className="text-xs text-text-secondary">
+                                        {pkg.sizeLabel}
+                                      </span>
+                                      <NumberInput
+                                        id={`m-pkg-${line.id}-${pkg.conversionId}`}
+                                        decimals={0}
+                                        min={0}
+                                        example="12"
+                                        aria-label={pkg.sizeLabel}
+                                        disabled={isPreviewing}
+                                        value={val === undefined ? null : val}
+                                        onValueChange={(v) => {
+                                          setPackageInputs((prev) => ({
+                                            ...prev,
+                                            [line.id]: {
+                                              ...(prev[line.id] || {}),
+                                              [pkg.conversionId]: v,
+                                            },
+                                          }));
+                                        }}
+                                      />
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                              {renderPackageLineTotal(line)}
+                            </div>
+                          ) : (
+                            <div className="w-full">
+                              <NumberInput
+                                id={`m-legacy-qty-${line.id}`}
+                                decimals={3}
+                                min={0}
+                                example="1,250.5"
+                                aria-label={`Số đếm ${line.itemName}`}
+                                disabled={isPreviewing}
+                                value={legacyInputs[line.id] ?? null}
+                                onValueChange={(v) => {
+                                  setLegacyInputs((prev) => ({ ...prev, [line.id]: v }));
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
 
                         <div className="flex items-center justify-between pt-2 border-t border-border/50">
                           <div className="text-xs">{renderLineDifference(line)}</div>
-                          <Button
-                            variant={isConfirmed || isPreviewing ? "secondary" : "primary"}
-                            onClick={() =>
-                              isPackage ? handleSavePackageLine(line) : handleSaveLegacyLine(line)
-                            }
-                            loading={isSaving}
-                            disabled={isPreviewing}
-                          >
-                            {isPackage ? "Xác nhận" : "Lưu"}
-                          </Button>
+                          <div className="text-xs text-right">
+                            {renderLineStatus(line.id, line.countedQty)}
+                          </div>
                         </div>
                       </div>
                     );

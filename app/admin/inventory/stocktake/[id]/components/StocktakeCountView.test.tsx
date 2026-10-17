@@ -54,6 +54,7 @@ const mockSession: StocktakeSessionView = {
       state: "BLANK",
       unitCost: 148,
       diffValue: null,
+      packageCounts: null,
     },
     {
       id: "LINE-2",
@@ -68,6 +69,7 @@ const mockSession: StocktakeSessionView = {
       state: "OFF",
       unitCost: 32000,
       diffValue: -64000,
+      packageCounts: null,
     },
     {
       id: "LINE-3",
@@ -82,6 +84,7 @@ const mockSession: StocktakeSessionView = {
       state: "MATCH",
       unitCost: 15000,
       diffValue: 0,
+      packageCounts: null,
     },
   ],
 };
@@ -155,6 +158,7 @@ describe("StocktakeCountView (Screen 2)", () => {
           state: "OFF",
           unitCost: null,
           diffValue: null,
+          packageCounts: null,
         },
       ],
     };
@@ -219,6 +223,7 @@ describe("StocktakeCountView (Screen 2)", () => {
           state: "OFF",
           unitCost: null,
           diffValue: null,
+          packageCounts: null,
         },
       ],
     };
@@ -279,6 +284,7 @@ describe("StocktakeCountView (Screen 2)", () => {
           state: "OFF",
           unitCost: null,
           diffValue: null,
+          packageCounts: null,
         },
         {
           id: "SKL-00002",
@@ -293,6 +299,7 @@ describe("StocktakeCountView (Screen 2)", () => {
           state: "OFF",
           unitCost: null,
           diffValue: null,
+          packageCounts: null,
         },
       ],
     };
@@ -381,8 +388,10 @@ describe("StocktakeCountView (Screen 2)", () => {
     expect(screen.getByText("SPM-999: 12 → 9")).toBeInTheDocument();
   });
 
-  it("all pack boxes blank does not call saveStocktakeLine and shows error", async () => {
+  it("all pack boxes blank on an unsaved line sends nothing on blur (BR-INV-023)", async () => {
     const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+
     const session: StocktakeSessionView = {
       id: "STK-PKG-01",
       status: "OPEN",
@@ -414,18 +423,19 @@ describe("StocktakeCountView (Screen 2)", () => {
           state: "BLANK",
           unitCost: 20000,
           diffValue: null,
+          packageCounts: null,
         },
       ],
     };
 
     render(<StocktakeCountView session={session} />);
 
-    // Click "Xác nhận" without typing any count in the package box
-    const confirmButtons = screen.getAllByRole("button", { name: "Xác nhận" });
-    fireEvent.click(confirmButtons[0]);
+    // Focus into the package box and blur without typing
+    const inputs = screen.getAllByLabelText("Thùng 24 lon");
+    fireEvent.blur(inputs[0], { relatedTarget: null });
 
     expect(saveStocktakeLine).not.toHaveBeenCalled();
-    expect(screen.getAllByText("Cần nhập số đếm").length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Chưa lưu được/)).not.toBeInTheDocument();
   });
 
   it("renders preview rows on phone as a divide-y list of PhoneRow", async () => {
@@ -450,6 +460,7 @@ describe("StocktakeCountView (Screen 2)", () => {
           state: "OFF",
           unitCost: 30000,
           diffValue: -60000,
+          packageCounts: null,
         },
       ],
     };
@@ -505,5 +516,818 @@ describe("StocktakeCountView (Screen 2)", () => {
 
     // Old card text "Dự kiến sau áp dụng:" should not exist
     expect(firstRow?.textContent).not.toContain("Dự kiến sau áp dụng:");
+  });
+
+  it("typing in two boxes then blurring out of the line sends one call with both numbers (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValue({ countedQty: 162 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "SKL-00106",
+          itemReference: "SPM-00106",
+          itemName: "Ly Nhựa PET 98 - 16OZ - 500ml",
+          unitName: "Cái",
+          countedQty: null,
+          theoreticalAtCount: 200,
+          countedAt: null,
+          packageLines: [
+            {
+              conversionId: "QD-162",
+              purchasedItemId: "SPM-00106",
+              purchasedItemName: "Ly Nhựa PET",
+              sizeLabel: "Cây",
+              conversionRate: 50,
+              baseUnitName: "Cái",
+              purchasedUnitName: "Cây",
+            },
+            {
+              conversionId: "QD-069",
+              purchasedItemId: "SPM-00106",
+              purchasedItemName: "Ly Nhựa PET",
+              sizeLabel: "Cái",
+              conversionRate: 1,
+              baseUnitName: "Cái",
+              purchasedUnitName: "Cái",
+            },
+          ],
+          groupName: "Vật tư tiêu hao",
+          state: "BLANK",
+          unitCost: 1000,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const cayInputs = screen.getAllByLabelText("Cây");
+    const caiInputs = screen.getAllByLabelText("Cái");
+
+    // Type 3 in Cây
+    fireEvent.change(cayInputs[0], { target: { value: "3" } });
+    // Focus moves to Cái (inside same line wrapper)
+    fireEvent.blur(cayInputs[0], { relatedTarget: caiInputs[0] });
+    expect(saveStocktakeLine).not.toHaveBeenCalled();
+
+    // Type 12 in Cái
+    fireEvent.change(caiInputs[0], { target: { value: "12" } });
+    // Focus leaves the line (relatedTarget outside)
+    fireEvent.blur(caiInputs[0], { relatedTarget: null });
+
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+    expect(saveStocktakeLine).toHaveBeenCalledWith("SKL-00106", {
+      "QD-162": 3,
+      "QD-069": 12,
+    });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+    });
+  });
+
+  it("re-blurring with no change sends nothing (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValue({ countedQty: 162 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "SKL-00106",
+          itemReference: "SPM-00106",
+          itemName: "Ly Nhựa PET 98 - 16OZ - 500ml",
+          unitName: "Cái",
+          countedQty: 162,
+          theoreticalAtCount: 200,
+          countedAt: "2026-10-15T10:00:00Z",
+          packageLines: [
+            {
+              conversionId: "QD-162",
+              purchasedItemId: "SPM-00106",
+              purchasedItemName: "Ly Nhựa PET",
+              sizeLabel: "Cây",
+              conversionRate: 50,
+              baseUnitName: "Cái",
+              purchasedUnitName: "Cây",
+            },
+          ],
+          groupName: "Vật tư tiêu hao",
+          state: "OFF",
+          unitCost: 1000,
+          diffValue: -38000,
+          packageCounts: { "QD-162": 3 },
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const inputs = screen.getAllByLabelText("Cây");
+    fireEvent.blur(inputs[0], { relatedTarget: null });
+
+    expect(saveStocktakeLine).not.toHaveBeenCalled();
+  });
+
+  it("clearing a saved line sends null (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValue({ countedQty: null });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "SKL-00082",
+          itemReference: "SPM-00082",
+          itemName: "Dâu sấy",
+          unitName: "g",
+          countedQty: 1100,
+          theoreticalAtCount: 1000,
+          countedAt: "2026-10-15T10:00:00Z",
+          packageLines: [
+            {
+              conversionId: "QD-038",
+              purchasedItemId: "SPM-00082",
+              purchasedItemName: "Dâu sấy",
+              sizeLabel: "Túi 100 g",
+              conversionRate: 100,
+              baseUnitName: "g",
+              purchasedUnitName: "Túi 100 g",
+            },
+            {
+              conversionId: "QD-051",
+              purchasedItemId: "SPM-00082",
+              purchasedItemName: "Dâu sấy",
+              sizeLabel: "Túi 500 g",
+              conversionRate: 500,
+              baseUnitName: "g",
+              purchasedUnitName: "Túi 500 g",
+            },
+          ],
+          groupName: "Nguyên liệu",
+          state: "OFF",
+          unitCost: 100,
+          diffValue: 10000,
+          packageCounts: { "QD-038": 1, "QD-051": 2 },
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const t100Inputs = screen.getAllByLabelText("Túi 100 g");
+    const t500Inputs = screen.getAllByLabelText("Túi 500 g");
+
+    // Clear both boxes
+    fireEvent.change(t100Inputs[0], { target: { value: "" } });
+    fireEvent.change(t500Inputs[0], { target: { value: "" } });
+
+    // Blur out of line
+    fireEvent.blur(t500Inputs[0], { relatedTarget: null });
+
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+    expect(saveStocktakeLine).toHaveBeenCalledWith("SKL-00082", null);
+
+    await waitFor(() => {
+      expect(screen.queryByText("✓ Đã lưu")).not.toBeInTheDocument();
+    });
+  });
+
+  it("an untouched line saved by the old code sends nothing on blur (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "SKL-00106",
+          itemReference: "SPM-00106",
+          itemName: "Ly Nhựa PET 98 - 16OZ - 500ml",
+          unitName: "Cái",
+          countedQty: 162,
+          theoreticalAtCount: 200,
+          countedAt: "2026-10-15T10:00:00Z",
+          packageLines: [
+            {
+              conversionId: "QD-162",
+              purchasedItemId: "SPM-00106",
+              purchasedItemName: "Ly Nhựa PET",
+              sizeLabel: "Cây",
+              conversionRate: 50,
+              baseUnitName: "Cái",
+              purchasedUnitName: "Cây",
+            },
+          ],
+          groupName: "Vật tư tiêu hao",
+          state: "OFF",
+          unitCost: 1000,
+          diffValue: -38000,
+          packageCounts: null, // Old code: countedQty present, packageCounts null
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    // Boxes are blank, text shows "Đã lưu: 162 Cái"
+    expect(screen.getAllByText("Đã lưu: 162 Cái").length).toBeGreaterThan(0);
+
+    const inputs = screen.getAllByLabelText("Cây");
+    // Focus in then out without typing
+    fireEvent.blur(inputs[0], { relatedTarget: null });
+
+    expect(saveStocktakeLine).not.toHaveBeenCalled();
+    expect(screen.getAllByText("Đã lưu: 162 Cái").length).toBeGreaterThan(0);
+  });
+
+  it("the live total text (BR-INV-023)", () => {
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "SKL-00106",
+          itemReference: "SPM-00106",
+          itemName: "Ly Nhựa PET 98 - 16OZ - 500ml",
+          unitName: "Cái",
+          countedQty: null,
+          theoreticalAtCount: 200,
+          countedAt: null,
+          packageLines: [
+            {
+              conversionId: "QD-162",
+              purchasedItemId: "SPM-00106",
+              purchasedItemName: "Ly Nhựa PET",
+              sizeLabel: "Cây",
+              conversionRate: 50,
+              baseUnitName: "Cái",
+              purchasedUnitName: "Cây",
+            },
+            {
+              conversionId: "QD-069",
+              purchasedItemId: "SPM-00106",
+              purchasedItemName: "Ly Nhựa PET",
+              sizeLabel: "Cái",
+              conversionRate: 1,
+              baseUnitName: "Cái",
+              purchasedUnitName: "Cái",
+            },
+          ],
+          groupName: "Vật tư tiêu hao",
+          state: "BLANK",
+          unitCost: 1000,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const cayInputs = screen.getAllByLabelText("Cây");
+    const caiInputs = screen.getAllByLabelText("Cái");
+
+    expect(screen.queryByText(/=/)).not.toBeInTheDocument();
+
+    // Type 3 in Cây
+    fireEvent.change(cayInputs[0], { target: { value: "3" } });
+    expect(screen.getAllByText("= 150 Cái").length).toBeGreaterThan(0);
+
+    // Type 12 in Cái
+    fireEvent.change(caiInputs[0], { target: { value: "12" } });
+    expect(screen.getAllByText("= 162 Cái").length).toBeGreaterThan(0);
+
+    // Clear both
+    fireEvent.change(cayInputs[0], { target: { value: "" } });
+    fireEvent.change(caiInputs[0], { target: { value: "" } });
+    expect(screen.queryByText(/=/)).not.toBeInTheDocument();
+  });
+
+  it("prefill from packageCounts (BR-INV-023)", () => {
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "SKL-00106",
+          itemReference: "SPM-00106",
+          itemName: "Ly Nhựa PET 98 - 16OZ - 500ml",
+          unitName: "Cái",
+          countedQty: 162,
+          theoreticalAtCount: 200,
+          countedAt: "2026-10-15T10:00:00Z",
+          packageLines: [
+            {
+              conversionId: "QD-162",
+              purchasedItemId: "SPM-00106",
+              purchasedItemName: "Ly Nhựa PET",
+              sizeLabel: "Cây",
+              conversionRate: 50,
+              baseUnitName: "Cái",
+              purchasedUnitName: "Cây",
+            },
+            {
+              conversionId: "QD-069",
+              purchasedItemId: "SPM-00106",
+              purchasedItemName: "Ly Nhựa PET",
+              sizeLabel: "Cái",
+              conversionRate: 1,
+              baseUnitName: "Cái",
+              purchasedUnitName: "Cái",
+            },
+          ],
+          groupName: "Vật tư tiêu hao",
+          state: "OFF",
+          unitCost: 1000,
+          diffValue: -38000,
+          packageCounts: { "QD-162": 3, "QD-069": 12 },
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const cayInputs = screen.getAllByLabelText("Cây");
+    const caiInputs = screen.getAllByLabelText("Cái");
+
+    expect(cayInputs[0]).toHaveValue("3");
+    expect(caiInputs[0]).toHaveValue("12");
+    expect(screen.getAllByText("= 162 Cái").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+  });
+
+  it('"Xem trước" waits for a running save (BR-INV-023)', async () => {
+    const { saveStocktakeLine, getStocktakeConfirmPreview } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(getStocktakeConfirmPreview).mockClear();
+
+    let resolveSave!: (val: any) => void;
+    const savePromise = new Promise((resolve) => {
+      resolveSave = resolve;
+    });
+    vi.mocked(saveStocktakeLine).mockReturnValue(savePromise as any);
+    vi.mocked(getStocktakeConfirmPreview).mockResolvedValue({
+      preview: {
+        sessionId: "STK-002",
+        status: "OPEN",
+        dryRun: true,
+        ledgerCount: 0,
+        issueCount: 0,
+        rows: [],
+        skippedIngredients: [],
+        planHash: "hash-preview",
+        issueIds: [],
+        recomputedLines: [],
+      },
+    });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // Save is in flight
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+
+    // Click "Xem trước"
+    fireEvent.click(screen.getByRole("button", { name: "Xem trước" }));
+
+    // getStocktakeConfirmPreview should not be called yet
+    expect(getStocktakeConfirmPreview).not.toHaveBeenCalled();
+
+    // Resolve the save
+    resolveSave({ countedQty: 5000 });
+
+    await waitFor(() => {
+      expect(getStocktakeConfirmPreview).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('no "Xác nhận"/"Lưu" row button remains (BR-INV-023)', () => {
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-PKG",
+          itemReference: "SPM-008",
+          itemName: "Sữa đặc Larosee",
+          unitName: "lon",
+          countedQty: null,
+          theoreticalAtCount: 24,
+          countedAt: null,
+          packageLines: [
+            {
+              conversionId: "CONV-1",
+              purchasedItemId: "SPM-008",
+              purchasedItemName: "Sữa đặc Larosee",
+              sizeLabel: "Thùng 24 lon",
+              conversionRate: 24,
+              baseUnitName: "lon",
+              purchasedUnitName: "Thùng",
+            },
+          ],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 20000,
+          diffValue: null,
+          packageCounts: null,
+        },
+        {
+          id: "LINE-LEG",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    expect(screen.queryByRole("button", { name: "Xác nhận" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Lưu" })).not.toBeInTheDocument();
+    expect(screen.getByText("Trạng thái")).toBeInTheDocument();
+    expect(screen.queryByText("Thao tác")).not.toBeInTheDocument();
+  });
+
+  it("a line saved while on 'Chưa đếm' stays visible with '✓ Đã lưu' and clicking 'Chưa đếm' again hides it (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValue({ countedQty: 5000 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    expect(screen.getByRole("button", { name: /Chưa đếm \(1\)/ })).toBeInTheDocument();
+    expect(screen.getAllByText("Bột cà phê").length).toBeGreaterThan(0);
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+    });
+    expect(screen.getAllByText("Bột cà phê").length).toBeGreaterThan(0);
+
+    const chuaDemBtn = screen.getByRole("button", { name: /Chưa đếm \(0\)/ });
+    expect(chuaDemBtn).toBeInTheDocument();
+
+    fireEvent.click(chuaDemBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Bột cà phê")).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("Không có mặt hàng nào phù hợp bộ lọc")).toBeInTheDocument();
+  });
+
+  it("blurring again with the same value while first save is pending does not call save again and ends as '✓ Đã lưu' (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+
+    let resolveSave!: (val: any) => void;
+    const savePromise = new Promise((resolve) => {
+      resolveSave = resolve;
+    });
+    vi.mocked(saveStocktakeLine).mockReturnValue(savePromise as any);
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // The first save is still pending
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByText("Đang lưu…").length).toBeGreaterThan(0);
+
+    // The line is blurred again with the same value
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // Still only 1 call
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+
+    // The first save resolves
+    resolveSave({ countedQty: 5000 });
+
+    // Expected: no second call, and the status ends as "✓ Đã lưu"
+    await waitFor(() => {
+      expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+    });
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Đang lưu…")).not.toBeInTheDocument();
+  });
+
+  it("uses the book figure returned by server to show Khớp (0đ) and Khớp (1) tab count (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValue({ countedQty: 162, theoreticalAtCount: 162 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: null,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    expect(screen.getByRole("button", { name: /Khớp \(0\)/ })).toBeInTheDocument();
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+    fireEvent.change(input, { target: { value: "162" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Khớp (0đ)").length).toBeGreaterThan(0);
+    });
+    expect(screen.getByRole("button", { name: /Khớp \(1\)/ })).toBeInTheDocument();
+  });
+
+  it("new value during a save sends exactly one more call with the new value when the first save resolves (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+
+    let resolveFirstSave!: (val: any) => void;
+    const firstSavePromise = new Promise((resolve) => {
+      resolveFirstSave = resolve;
+    });
+    vi.mocked(saveStocktakeLine)
+      .mockReturnValueOnce(firstSavePromise as any)
+      .mockResolvedValueOnce({ countedQty: 6000, theoreticalAtCount: 6000 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+
+    // First change to 5000 and blur
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // The first save is in flight
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+    expect(saveStocktakeLine).toHaveBeenLastCalledWith("LINE-1", 5000);
+    expect(screen.getAllByText("Đang lưu…").length).toBeGreaterThan(0);
+
+    // While save is pending, change box to 6000 and blur out again
+    fireEvent.change(input, { target: { value: "6000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // Still only 1 call went out so far
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+
+    // Resolve the first save
+    resolveFirstSave({ countedQty: 5000, theoreticalAtCount: 6000 });
+
+    // Exactly one more call goes out with the new value (6000)
+    await waitFor(() => {
+      expect(saveStocktakeLine).toHaveBeenCalledTimes(2);
+    });
+    expect(saveStocktakeLine).toHaveBeenLastCalledWith("LINE-1", 6000);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+    });
+  });
+
+  it("retries after a network failure when blurred again with the same value and shows ✓ Đã lưu on success (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+
+    // First call rejects with network failure, second call succeeds
+    vi.mocked(saveStocktakeLine)
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce({ countedQty: 5000, theoreticalAtCount: 6000 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+
+    // Enter value and blur
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // First call rejects
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+
+    // Status shows "mất kết nối mạng"
+    await waitFor(() => {
+      expect(
+        screen.getAllByText("Chưa lưu được: mất kết nối mạng. Bấm vào ô rồi bấm ra ngoài để thử lại.").length
+      ).toBeGreaterThan(0);
+    });
+
+    // Blurring out again with the same value calls again
+    fireEvent.blur(input, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(saveStocktakeLine).toHaveBeenCalledTimes(2);
+    });
+    expect(saveStocktakeLine).toHaveBeenLastCalledWith("LINE-1", 5000);
+
+    // On success, "✓ Đã lưu" shows
+    await waitFor(() => {
+      expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+    });
+    expect(
+      screen.queryByText("Chưa lưu được: mất kết nối mạng. Bấm vào ô rồi bấm ra ngoài để thử lại.")
+    ).not.toBeInTheDocument();
   });
 });
