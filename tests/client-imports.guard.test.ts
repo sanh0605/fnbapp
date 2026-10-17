@@ -11,13 +11,18 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-// `import type` is erased, so only the other imports can pull a module into the client bundle.
+// `import type` and `{ type A, type B }` are erased, so only the other imports and
+// `export … from` can pull a module into the client bundle.
 function valueImports(file: string): string[] {
   const src = readFileSync(file, "utf8");
-  return [...src.matchAll(/^import\s+(?!type\b)(?:[^"';]*?\s+from\s+)?["']([^"']+)["']/gm)].map(m => m[1]);
+  return [...src.matchAll(/^(?:import|export)\s+(?!type\b)(?:([^"';]*?)\s+from\s+)?["']([^"']+)["']/gm)]
+    .filter(m => !/^\{\s*type\s[^}]*\}$/.test(m[1] ?? "") || /,\s*(?!type\s)\w/.test(m[1]))
+    .map(m => m[2]);
 }
 
-const isClient = (file: string) => /^\s*["']use client["']/.test(readFileSync(file, "utf8"));
+// The directive may sit under a leading comment.
+const isClient = (file: string) =>
+  /^(?:\s*(?:\/\/[^\n]*|\/\*[\s\S]*?\*\/))*\s*["']use client["']/.test(readFileSync(file, "utf8"));
 
 const isServerOnly = (spec: string, file: string) =>
   /^next\/(cache|headers)$|^@\/lib\/db\//.test(spec) ||
