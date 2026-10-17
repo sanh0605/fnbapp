@@ -1399,8 +1399,39 @@ describe("StocktakeCountView (Screen 2)", () => {
 
     // Line 1 has item name and count box
     expect(firstRow?.textContent).toContain("Bột cà phê truyền thống Phin Đậm");
-    // Line 2 has unit, system qty, diff
-    expect(firstRow?.textContent).toContain("g");
+    // Line 2 has system qty, diff and starts with Sổ:
+    const secondLine = firstRow?.querySelector(".text-text-secondary")?.textContent?.trim();
+    expect(secondLine?.startsWith("Sổ:")).toBe(true);
     expect(firstRow?.textContent).toContain("Sổ: 6,000 g");
+  });
+
+  it("selected tab has aria-pressed='true' and does not have the class bg-primary", () => {
+    render(<StocktakeCountView session={mockSession} />);
+    const selectedTab = screen.getByRole("button", { name: /Chưa đếm \(1\)/ });
+    expect(selectedTab).toHaveAttribute("aria-pressed", "true");
+    expect(selectedTab).not.toHaveClass("bg-primary");
+    expect(selectedTab.classList.contains("bg-primary")).toBe(false);
+  });
+
+  it("BR-INV-023: phone legacy box auto-saves on blur", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValueOnce({
+      countedQty: 42,
+      theoreticalAtCount: 6000,
+    } as any);
+
+    render(<StocktakeCountView session={mockSession} />);
+
+    // Phone legacy input has touch target >= 48px
+    const phoneInput = screen.getAllByLabelText("Số đếm Bột cà phê truyền thống Phin Đậm")[1];
+    expect(phoneInput.className).toContain("min-h-[48px]");
+
+    fireEvent.change(phoneInput, { target: { value: "42" } });
+    fireEvent.blur(phoneInput, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(saveStocktakeLine).toHaveBeenCalledWith("LINE-1", 42);
+    });
   });
 });

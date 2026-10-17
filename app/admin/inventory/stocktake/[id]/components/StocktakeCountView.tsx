@@ -569,16 +569,24 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
           { id: "BLANK", label: "Chưa đếm", count: blankCount },
           { id: "OFF", label: "Lệch", count: offCount },
           { id: "MATCH", label: "Khớp", count: matchCount },
-        ].map((tab) => (
-          <Button
-            key={tab.id}
-            variant={activeTab === tab.id ? "primary" : "secondary"}
-            onClick={() => setActiveTab(tab.id as any)}
-            className="text-xs md:text-sm"
-          >
-            {tab.label} ({tab.count})
-          </Button>
-        ))}
+        ].map((tab) => {
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`rounded-full px-3 min-h-[48px] md:min-h-[40px] text-xs md:text-sm font-medium border ${
+                active
+                  ? "bg-primary-soft text-primary border-primary/20"
+                  : "bg-surface-card text-text-primary border-border"
+              }`}
+            >
+              {tab.label} ({tab.count})
+            </button>
+          );
+        })}
       </div>
 
       {/* Search box */}
@@ -621,7 +629,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                     <TableHead>
                       <TableHeaderCell>Mặt hàng</TableHeaderCell>
                       <TableHeaderCell><span className="whitespace-nowrap">Sổ lúc đếm</span></TableHeaderCell>
-                      <TableHeaderCell><div className="w-40"><span className="whitespace-nowrap">Số đếm</span></div></TableHeaderCell>
+                      <TableHeaderCell><div className="w-60"><span className="whitespace-nowrap">Số đếm</span></div></TableHeaderCell>
                       <TableHeaderCell><span className="whitespace-nowrap">Chênh lệch</span></TableHeaderCell>
                       <TableHeaderCell><span className="whitespace-nowrap">Trạng thái</span></TableHeaderCell>
                     </TableHead>
@@ -649,7 +657,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                             </TableCell>
 
                             <TableCell>
-                              <div onBlur={(e) => handleLineBlur(line.id, e)} className="w-40">
+                              <div onBlur={(e) => handleLineBlur(line.id, e)} className="w-60">
                                 {isPackage ? (
                                   <div className="space-y-1">
                                     <div className="flex flex-wrap gap-2">
@@ -728,7 +736,6 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
 
                     const meta = (
                       <span>
-                        {line.unitName ? `${line.unitName} · ` : ""}
                         Sổ:{" "}
                         {line.theoreticalAtCount !== null
                           ? `${formatNumber(line.theoreticalAtCount)}${line.unitName ? ` ${line.unitName}` : ""}`
@@ -797,7 +804,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                             <PhoneRow
                               title={<span className="font-medium text-text-primary">{line.itemName}</span>}
                               value={
-                                <div className="w-32">
+                                <div className="w-36 whitespace-normal">
                                   <NumberInput
                                     id={`m-legacy-qty-${line.id}`}
                                     decimals={3}

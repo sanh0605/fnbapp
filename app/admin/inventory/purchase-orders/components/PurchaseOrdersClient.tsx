@@ -28,7 +28,6 @@ function formatEmptyRangePart(range: RangeValue): string {
   return `${preset} (${rest.join(" · ")})`;
 }
 
-
 export interface PurchaseOrdersClientProps {
   pageData: PurchaseOrderListPage & { suppliers: { id: string; name: string }[] };
   range: RangeValue;
@@ -156,7 +155,8 @@ export default function PurchaseOrdersClient({
       },
       {
         key: "supplierName",
-        header: (<span className="whitespace-nowrap">Nhà cung cấp</span> as any),
+        header: "Nhà cung cấp",
+        nowrap: true,
         render: (po) => (
           <span className="text-text-primary truncate max-w-[280px]" title={po.supplierName}>
             {po.supplierName}
@@ -165,7 +165,8 @@ export default function PurchaseOrdersClient({
       },
       {
         key: "sourceName",
-        header: (<span className="whitespace-nowrap">Nguồn mua</span> as any),
+        header: "Nguồn mua",
+        nowrap: true,
         render: (po) => <span className="text-text-primary whitespace-nowrap">{po.sourceName}</span>,
       },
       {
@@ -175,7 +176,8 @@ export default function PurchaseOrdersClient({
       },
       {
         key: "paymentLabel",
-        header: (<span className="whitespace-nowrap">Hình thức thanh toán</span> as any),
+        header: "Hình thức thanh toán",
+        nowrap: true,
         render: (po) => (
           <span className="text-text-secondary whitespace-nowrap">{po.paymentLabel}</span>
         ),

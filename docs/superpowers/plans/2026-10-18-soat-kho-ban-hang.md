@@ -155,8 +155,8 @@ Chỉ `app/admin/inventory/**`, trừ `*actions*.ts`.
     - Form trên điện thoại: bỏ lớp thẻ trong (p6).
   - Đơn vị: chữ mẫu "Ví dụ: g, hộp"; xếp tên đúng chữ cái (`localeCompare` tiếng Việt, không phân biệt hoa thường).
 - **K6 Hàng hoá xem, sửa:**
-  - Banner "Đây là nhóm Hàng hoá chế biến." chỉ hiện khi đúng nhóm đó (d35, p28).
-  - Trên điện thoại, "Quy đổi đơn vị mua" và "+ Thêm đơn vị mua" không xuống dòng.
+  - Bỏ banner "Hàng hoá chế biến" vì không có phân loại nào thuộc nhóm này (chỉ có RAW, CONSUMABLE, EQUIPMENT) (d35, p28).
+  - Trên điện thoại, "Quy đổi đơn vị mua" và "+ Thêm đơn vị mua" không bị cắt chữ; màn 360 px thì nút xuống dòng dưới tiêu đề.
 - **K7 Trang xem trong Kho** (tài sản, quy đổi, hàng hoá, khung khấu hao, phân loại):
   - Bỏ dòng "Mã", "Tên" lặp lại đúng tiêu đề và dòng mã ngay trên.
   - "Chỉnh sửa", "Ngừng dùng", "Xoá" theo mục Hiện trạng 2.
