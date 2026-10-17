@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildStaffNameResolver, staffPickerLabels } from "@/lib/auth/staff-names";
+import { buildStaffNameResolver } from "@/lib/auth/staff-names";
+import { staffPickerLabels } from "@/lib/auth/staff-label";
 import { listIssueSlipsPage } from "./issue-slip-list";
 import type { IssueRowRecord, IssueSlipRecord } from "./issue-slip-status";
 

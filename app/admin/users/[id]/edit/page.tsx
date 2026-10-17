@@ -5,7 +5,7 @@ import EditUserForm from "@/app/admin/users/components/EditUserForm";
 import { safeReturnTo } from "@/lib/shared/return-to";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
-import { staffLabel } from "@/lib/auth/staff-names";
+import { staffLabel } from "@/lib/auth/staff-label";
 
 export const dynamic = "force-dynamic";
 

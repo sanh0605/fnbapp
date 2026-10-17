@@ -8,7 +8,7 @@ import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { writeRangeParams, type RangeValue } from "@/lib/shared/date-range-params";
-import { staffPickerLabels } from "@/lib/auth/staff-names";
+import { staffPickerLabels } from "@/lib/auth/staff-label";
 
 interface Brand {
   id: string;
