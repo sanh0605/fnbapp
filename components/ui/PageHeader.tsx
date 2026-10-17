@@ -1,4 +1,4 @@
-export interface PageHeaderProps {
+interface PageHeaderProps {
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;  // buttons/links on the right

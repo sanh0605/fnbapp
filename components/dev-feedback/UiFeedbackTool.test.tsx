@@ -388,7 +388,7 @@ describe("UiFeedbackTool", () => {
 
     const tab = findButton("Góp ý");
     expect(tab.style.position).toBe("fixed");
-    expect(parseFloat(tab.style.right || "0")).toBe(0);
+    expect(tab.style.right).toBe("0px");
     expect(tab.style.top).toBe("50%");
     expect(tab.style.transform).toBe("translateY(-50%)");
 
