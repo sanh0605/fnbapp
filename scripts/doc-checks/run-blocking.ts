@@ -20,8 +20,8 @@
  *    inline docs-ref-allow marker. No dead documentation pointer in code.
  *  - route-coverage: every page route from listAllPageRoutes must be declared
  *    in some flow doc's routes: block, unless its page.tsx is a pure redirect
- *    (detected from source -- no hand-maintained exempt list). Catches a new
- *    screen shipped with no flow doc.
+ *    or notFound handler (detected from source -- no hand-maintained exempt list).
+ *    Catches a new screen shipped with no flow doc.
  *  - orphan-modules: every lib/*.ts module (excluding *.test.ts) must be
  *    imported by some non-test file under app/, lib/, components/, scripts/,
  *    or supabase/, or carry an inline orphan-allow marker. A module reached
@@ -201,8 +201,8 @@ for (const full of governedTargets) {
 results.push(checkClaudeSectionRefs(claudeRefFiles, claudeHeadings));
 
 // route-coverage: every page route must be declared in some flow doc's
-// routes: block, unless its page.tsx is a pure redirect (detected from
-// source, not a hand-maintained exempt list).
+// routes: block, unless its page.tsx is a pure redirect or notFound handler
+// (detected from source, not a hand-maintained exempt list).
 const coveredRoutes = new Set<string>();
 for (const decl of decls) for (const r of decl.routes) coveredRoutes.add(r);
 
@@ -220,7 +220,7 @@ function isRedirectOnly(route: string): boolean {
   const file = routeToPageFile.get(route);
   if (!file) return false;
   const source = readFileSync(file, "utf8");
-  const hasRedirect = source.includes("redirect(");
+  const hasRedirect = source.includes("redirect(") || source.includes("notFound(");
   const hasJsxReturn = source.includes("return (") || source.includes("return <");
   return hasRedirect && !hasJsxReturn;
 }
