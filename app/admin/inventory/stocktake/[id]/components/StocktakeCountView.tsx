@@ -817,7 +817,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
       )}
 
       {/* Pinned Footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-surface-card border-t border-border p-4 shadow-lg md:sticky md:bottom-0">
+      <div className="fixed bottom-[calc(58px+env(safe-area-inset-bottom))] left-0 right-0 z-30 bg-surface-card border-t border-border p-4 shadow-lg md:sticky md:bottom-0">
         <div className="w-full">
           {confirmingCancelInline ? (
             <div className="bg-surface-card border border-danger rounded-xl p-4 space-y-3">
