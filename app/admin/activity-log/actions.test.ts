@@ -155,5 +155,10 @@ describe("getActivityLogEvents", () => {
       const users = [{ id: "u1", username: "admin", name: "Admin" }, { id: "u2", username: "admin2", name: "Admin" }];
       expect(await actorLogins(users, "Admin")).toEqual(["admin", "admin2"]);
     });
+
+    it("an actor that matches no user (a system actor) filters by exactly that stored text", async () => {
+      const users = [{ id: "u1", username: "admin", name: "Admin" }];
+      expect(await actorLogins(users, "Hệ thống")).toEqual(["Hệ thống"]);
+    });
   });
 });

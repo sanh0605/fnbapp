@@ -292,6 +292,9 @@ export default function ActivityLogClient({
               }}
             >
               <option value="ALL">Tất cả tài khoản</option>
+              {actorFilter !== "ALL" && !actors.includes(actorFilter) && (
+                <option value={actorFilter}>{actorFilter}</option>
+              )}
               {actors.map((actor) => (
                 <option key={actor} value={actor}>
                   {actor}

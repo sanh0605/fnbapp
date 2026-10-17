@@ -104,6 +104,18 @@ describe("IssueSlipsClient", () => {
     }
   });
 
+  it("with ?person=Ghost in the URL, personLabel: null, and people not containing Ghost, the select's value is Ghost and an option named Ghost exists", () => {
+    searchParams.set("person", "Ghost");
+    try {
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={{ ...defaultPageData, people: ["admin", "tuyen2612"], personLabel: null }} />);
+      const select = screen.getByLabelText("Người ghi") as HTMLSelectElement;
+      expect(select.value).toBe("Ghost");
+      expect(screen.getByRole("option", { name: "Ghost" })).toBeInTheDocument();
+    } finally {
+      searchParams.delete("person");
+    }
+  });
+
   // BR-UI-003 / BR-UI-005 and Review Focus 4 (wave K3).
   describe("shared list (wave K3)", () => {
     const rows: IssueSlipListPage = {

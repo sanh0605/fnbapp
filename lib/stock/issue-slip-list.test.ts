@@ -115,6 +115,12 @@ describe("listIssueSlipsPage", () => {
       expect(run(twins, ["admin", "admin2"], { person: "Admin" }).rows.map(r => r.id)).toEqual(["ISL-00077", "ISL-00076"]);
     });
 
+    it("a person value that matches no label, login or name shows no slips, not every slip", () => {
+      const p = run(twins, ["admin", "admin2"], { person: "nobody" });
+      expect(p.rows).toEqual([]);
+      expect(p.total).toBe(0);
+    });
+
     it("returns the picker label when the link matched exactly one person, else null", () => {
       expect(run(twins, ["admin", "admin2"], { person: "admin2" }).personLabel).toBe("Admin (admin2)");
       expect(run(twins, ["admin", "admin2"], { person: "Admin (admin2)" }).personLabel).toBe("Admin (admin2)");

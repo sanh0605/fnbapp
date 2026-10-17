@@ -77,5 +77,23 @@ describe("ActivityLogClient", () => {
     expect(screen.queryByText(/REOPENED/)).toBeNull();
     expect(screen.queryByText(/MIGRATED/)).toBeNull();
   });
+
+  it("with the initial actor 'Hệ thống' not in actors, the select's value is 'Hệ thống' and an option named 'Hệ thống' exists", () => {
+    mockSearchParams.set("actor", "Hệ thống");
+    render(
+      <ActivityLogClient
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialEvents={[]}
+        actors={["admin"]}
+        totalCount={0}
+        itemsPerPage={20}
+      />
+    );
+
+    const select = screen.getByLabelText("Tài khoản") as HTMLSelectElement;
+    expect(select.value).toBe("Hệ thống");
+    expect(screen.getByRole("option", { name: "Hệ thống" })).toBeInTheDocument();
+  });
 });
 
