@@ -152,22 +152,8 @@ describe("POSScreen (Step 3 & 5)", () => {
     });
   });
 
-  describe("Enter key cash flow (BR-SALE-018)", () => {
-    it("pressing Enter twice quickly sends one order", async () => {
-      render(<POSScreen {...defaultProps} />);
-
-      // Add item to cart
-      fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
-
-      fireEvent.keyDown(window, { key: "Enter" });
-      fireEvent.keyDown(window, { key: "Enter" });
-
-      await waitFor(() => {
-        expect(submitOrderV2).toHaveBeenCalledTimes(1);
-      });
-    });
-
+  // cash confirm on Enter removed by BR-SALE-020
+  describe("Enter key cash flow (BR-SALE-020)", () => {
     it("Enter while sending sends nothing", async () => {
       let resolveSubmit: (val: any) => void;
       vi.mocked(submitOrderV2).mockImplementationOnce(
@@ -179,15 +165,15 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent.click(screen.getByText("Bạc xỉu"));
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
-      // First Enter: starts checkout
-      fireEvent.keyDown(window, { key: "Enter" });
+      // Start checkout via Thanh toán -> Tiền mặt
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      fireEvent.click(screen.getByRole("button", { name: "Tiền mặt" }));
       await waitFor(() => {
         expect(submitOrderV2).toHaveBeenCalledTimes(1);
       });
 
-      // Second Enter while sending: does not even ask
+      // Enter while sending: sends nothing
       fireEvent.keyDown(window, { key: "Enter" });
-      expect(confirm).toHaveBeenCalledTimes(1);
       expect(submitOrderV2).toHaveBeenCalledTimes(1);
 
       resolveSubmit!({ success: true });
@@ -202,13 +188,11 @@ describe("POSScreen (Step 3 & 5)", () => {
       fireEvent(window, new Event("offline"));
 
       fireEvent.keyDown(window, { key: "Enter" });
-      expect(confirm).not.toHaveBeenCalled();
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
       expect(submitOrderV2).not.toHaveBeenCalled();
     });
 
-    it("Enter with confirm resolving false sends nothing", async () => {
-      vi.mocked(confirm).mockResolvedValueOnce(false);
-
+    it("the first Enter opens the step (heading 'Khách trả bằng gì?', focus on Tiền mặt) and sends nothing", async () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.click(screen.getByText("Bạc xỉu"));
@@ -216,8 +200,8 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       fireEvent.keyDown(window, { key: "Enter" });
 
-      await waitFor(() => expect(confirm).toHaveBeenCalledTimes(1));
-      await act(async () => {});
+      expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+      expect(document.activeElement).toBe(screen.getByRole("button", { name: "Tiền mặt" }));
       expect(submitOrderV2).not.toHaveBeenCalled();
     });
 
@@ -234,31 +218,19 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       fireEvent.keyDown(window, { key: "Enter" });
 
-      expect(confirm).not.toHaveBeenCalled();
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
       expect(submitOrderV2).not.toHaveBeenCalled();
     });
   });
 
+  // cash confirm on Enter removed by BR-SALE-020
   describe("Item 1: Enter sends exactly once, blank cart sends nothing", () => {
-    it("firing Enter calls submitOrderV2 exactly once", async () => {
-      render(<POSScreen {...defaultProps} />);
-
-      fireEvent.click(screen.getByText("Bạc xỉu"));
-      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
-
-      fireEvent.keyDown(window, { key: "Enter" });
-
-      await waitFor(() => {
-        expect(submitOrderV2).toHaveBeenCalledTimes(1);
-      });
-    });
-
     it("Enter on blank cart sends nothing", async () => {
       render(<POSScreen {...defaultProps} />);
 
       fireEvent.keyDown(window, { key: "Enter" });
 
-      expect(confirm).not.toHaveBeenCalled();
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
       expect(submitOrderV2).not.toHaveBeenCalled();
     });
 
@@ -274,8 +246,78 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       fireEvent.keyDown(window, { key: "Enter" });
 
-      expect(confirm).not.toHaveBeenCalled();
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
       expect(submitOrderV2).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Task 5a: Method step and Enter (BR-SALE-020)", () => {
+    it("Enter with lines opens the step. Enter with an empty cart does nothing. A repeat Enter (repeat: true) does nothing.", async () => {
+      render(<POSScreen {...defaultProps} />);
+
+      // Enter with an empty cart does nothing
+      fireEvent.keyDown(window, { key: "Enter" });
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
+      expect(submitOrderV2).not.toHaveBeenCalled();
+
+      // Add line to cart
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      // A repeat Enter (repeat: true) does nothing
+      fireEvent.keyDown(window, { key: "Enter", repeat: true });
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
+      expect(submitOrderV2).not.toHaveBeenCalled();
+
+      // Enter with lines opens the step
+      fireEvent.keyDown(window, { key: "Enter" });
+      expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+      expect(document.activeElement).toBe(screen.getByRole("button", { name: "Tiền mặt" }));
+      expect(submitOrderV2).not.toHaveBeenCalled();
+    });
+
+    it("sending empties the cart and closes the step", async () => {
+      let resolveSubmit: (val: any) => void;
+      vi.mocked(submitOrderV2).mockImplementationOnce(
+        () => new Promise((resolve) => { resolveSubmit = resolve; }) as any
+      );
+
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      // Open method step
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+
+      // Click Tiền mặt to start sending
+      fireEvent.click(screen.getByRole("button", { name: "Tiền mặt" }));
+
+      // Sending empties the cart and closes the step
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
+      expect(screen.queryByRole("heading", { name: "Bạc xỉu", level: 4 })).toBeNull();
+
+      resolveSubmit!({ success: true });
+    });
+
+    it("adding a dish while the step is open closes it", async () => {
+      render(<POSScreen {...defaultProps} />);
+
+      fireEvent.click(screen.getByText("Bạc xỉu"));
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      // Open method step
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+
+      // Add second dish
+      fireEvent.click(screen.getByText("Đường đen sữa tươi"));
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      // Adding a dish while the step is open closes it
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
+      expect(screen.getByRole("button", { name: "Thanh toán" })).toBeInTheDocument();
     });
   });
 

@@ -93,6 +93,12 @@ export default function POSScreen({
   const [activeCategory, setActiveCategory] = useState<string>("BEST_SELLERS");
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<any[]>([]);
+  const [isPayStepOpen, setIsPayStepOpen] = useState(false);
+
+  useEffect(() => {
+    setIsPayStepOpen(false);
+  }, [cart]);
+
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isCheckingOut, setIsCheckingOut] = useState<string | null>(null);
@@ -706,8 +712,6 @@ export default function POSScreen({
   };
 
   const handleConfirmCheckoutRef = useRef<(method: string, payments?: any[]) => void>(() => {});
-  // A second Enter before the first confirm settles must not ask (and send) again.
-  const enterConfirmOpenRef = useRef(false);
 
   const resetAfterSale = (draftId?: string | null) => {
     checkoutAttemptRef.current = null;
@@ -910,7 +914,7 @@ export default function POSScreen({
   });
 
   useEffect(() => {
-    const handleKeyDown = async (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement;
       if (
         e.target instanceof HTMLInputElement || 
@@ -930,36 +934,25 @@ export default function POSScreen({
         setEditingLineId(null);
         setIsCartOpen(false);
       } else if (e.key === "Enter") {
-        if (activeEl?.tagName === "BUTTON" || enterConfirmOpenRef.current) return;
+        if (e.repeat) return;
+        if (activeEl?.tagName === "BUTTON") return;
         if (
-          !isCheckingOut &&
-          !processingOrder &&
           cart.length > 0 &&
           isOnline &&
+          !isCheckingOut &&
+          !processingOrder &&
           !selectedProduct &&
-          !isDraftModalOpen
+          !isDraftModalOpen &&
+          !isPayStepOpen
         ) {
           e.preventDefault();
-          enterConfirmOpenRef.current = true;
-          try {
-            if (
-              await confirm({
-                title: "Xác nhận",
-                message: "Xác nhận thanh toán TIỀN MẶT cho đơn hàng?",
-                variant: "warning",
-              })
-            ) {
-              handleConfirmCheckoutRef.current("Tien mat");
-            }
-          } finally {
-            enterConfirmOpenRef.current = false;
-          }
+          setIsPayStepOpen(true);
         }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isCheckingOut, processingOrder, cart.length, isOnline, selectedProduct, isDraftModalOpen]);
+  }, [cart, isOnline, isCheckingOut, processingOrder, selectedProduct, isDraftModalOpen, isPayStepOpen]);
 
   return (
     <div className="fixed inset-0 flex bg-page text-text-primary font-sans overflow-hidden">
@@ -1077,6 +1070,8 @@ export default function POSScreen({
         products={products}
         isCartOpen={isCartOpen}
         setIsCartOpen={setIsCartOpen}
+        isPayStepOpen={isPayStepOpen}
+        setIsPayStepOpen={setIsPayStepOpen}
         saveDraft={saveDraft}
         drafts={drafts}
         setCart={setCart}

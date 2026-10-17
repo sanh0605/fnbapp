@@ -138,23 +138,75 @@ describe("Discount (R3)", () => {
     });
   });
 
-  describe("Cash checkout", () => {
-    it("asserts TIỀN MẶT comes before CHUYỂN KHOẢN in document order", () => {
+  describe("Cash checkout (BR-SALE-020)", () => {
+    it("asserts Tiền mặt comes before Chuyển khoản in document order", () => {
       render(<CartPanel {...defaultProps} />);
-      const cashButton = screen.getByRole("button", { name: /TIỀN MẶT/i });
-      const transferButton = screen.getByRole("button", { name: /CHUYỂN KHOẢN/i });
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      const cashButton = screen.getByRole("button", { name: "Tiền mặt" });
+      const transferButton = screen.getByRole("button", { name: "Chuyển khoản" });
       expect(
         cashButton.compareDocumentPosition(transferButton) & Node.DOCUMENT_POSITION_FOLLOWING
       ).toBeTruthy();
     });
 
-    it("clicking TIỀN MẶT calls handleConfirmCheckout with 'Tien mat' once", () => {
+    it("clicking Tiền mặt calls handleConfirmCheckout with 'Tien mat' once", () => {
       const handleConfirmCheckout = vi.fn();
       render(<CartPanel {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
-      const cashButton = screen.getByRole("button", { name: /TIỀN MẶT/i });
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      const cashButton = screen.getByRole("button", { name: "Tiền mặt" });
       fireEvent.click(cashButton);
       expect(handleConfirmCheckout).toHaveBeenCalledTimes(1);
       expect(handleConfirmCheckout).toHaveBeenCalledWith("Tien mat");
+    });
+  });
+
+  describe("Task 5a: Cart payment flow and method step (BR-SALE-020)", () => {
+    it("renders one 'Thanh toán' button and no 'TIỀN MẶT' in the order view", () => {
+      render(<CartPanel {...defaultProps} />);
+      expect(screen.getByRole("button", { name: "Thanh toán" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /TIỀN MẶT/i })).toBeNull();
+    });
+
+    it("clicking 'Thanh toán' shows 'Khách trả bằng gì?', and Tiền mặt has focus", () => {
+      render(<CartPanel {...defaultProps} />);
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+      expect(document.activeElement).toBe(screen.getByRole("button", { name: "Tiền mặt" }));
+    });
+
+    it("Tiền mặt calls checkout with 'Tien mat'; Chuyển khoản calls it with 'Chuyen khoan'", () => {
+      const handleConfirmCheckout = vi.fn();
+      const { unmount } = render(<CartPanel {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      fireEvent.click(screen.getByRole("button", { name: "Tiền mặt" }));
+      expect(handleConfirmCheckout).toHaveBeenCalledWith("Tien mat");
+
+      unmount();
+      handleConfirmCheckout.mockClear();
+      render(<CartPanel {...defaultProps} handleConfirmCheckout={handleConfirmCheckout} />);
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      fireEvent.click(screen.getByRole("button", { name: "Chuyển khoản" }));
+      expect(handleConfirmCheckout).toHaveBeenCalledWith("Chuyen khoan");
+    });
+
+    it("offline: Thanh toán is disabled; offline with the step open: Tiền mặt and Chuyển khoản are disabled", () => {
+      const { rerender } = render(<CartPanel {...defaultProps} isOnline={false} />);
+      expect(screen.getByRole("button", { name: "Thanh toán" })).toBeDisabled();
+
+      // Offline with the step open
+      rerender(<CartPanel {...defaultProps} isOnline={false} {...({ isPayStepOpen: true } as any)} />);
+      expect(screen.getByRole("button", { name: "Tiền mặt" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Chuyển khoản" })).toBeDisabled();
+    });
+
+    it("Quay lại đơn returns to the order view", () => {
+      render(<CartPanel {...defaultProps} />);
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: /Quay lại đơn/i }));
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
+      expect(screen.getByRole("button", { name: "Thanh toán" })).toBeInTheDocument();
     });
   });
 });

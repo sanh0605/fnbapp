@@ -126,7 +126,8 @@ describe("POSScreen checkout success toast", () => {
     });
 
     await addOneItemToCart();
-    await clickButtonWithText("TIỀN MẶT");
+    await clickButtonWithText("Thanh toán");
+    await clickButtonWithText("Tiền mặt");
     await flush();
 
     const messages = toastMessages();

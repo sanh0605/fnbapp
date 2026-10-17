@@ -65,13 +65,9 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     fireEvent.click(screen.getByText("Cà phê đen"));
     fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
-    // The three payment buttons are disabled while offline
-    const offlineBtns = screen.getAllByRole("button", { name: /NGOẠI TUYẾN/i });
-    expect(offlineBtns.length).toBeGreaterThanOrEqual(2);
-    offlineBtns.forEach(btn => expect(btn).toBeDisabled());
-
-    const splitBtn = screen.getByRole("button", { name: /Nhiều hình thức/i });
-    expect(splitBtn).toBeDisabled();
+    // Thanh toán button is disabled while offline (BR-SALE-020)
+    const payBtn = screen.getByRole("button", { name: "Thanh toán" });
+    expect(payBtn).toBeDisabled();
 
     // Enter key does nothing when offline
     fireEvent.keyDown(window, { key: "Enter" });
@@ -100,8 +96,9 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     fireEvent.click(screen.getByText("Cà phê đen"));
     fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
-    // Click TIỀN MẶT (sends at once, BR-SALE-018)
-    fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
+    // Checkout with cash (BR-SALE-020: Thanh toán then Tiền mặt)
+    fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tiền mặt" }));
 
     // Wait for failure
     await waitFor(() => {
@@ -162,8 +159,9 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     fireEvent.click(screen.getByText("Cà phê đen"));
     fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
-    // Click TIỀN MẶT (sends at once, BR-SALE-018)
-    fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
+    // Checkout with cash (BR-SALE-020: Thanh toán then Tiền mặt)
+    fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tiền mặt" }));
 
     // Wait for error
     await waitFor(() => {
@@ -217,8 +215,9 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
     fireEvent.click(screen.getByText("Cà phê đen"));
     fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
-    // Click TIỀN MẶT (sends at once, BR-SALE-018)
-    fireEvent.click(screen.getByRole("button", { name: /TIỀN MẶT/i }));
+    // Checkout with cash (BR-SALE-020: Thanh toán then Tiền mặt)
+    fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+    fireEvent.click(screen.getByRole("button", { name: "Tiền mặt" }));
 
     // Wait for refusal error
     await waitFor(() => {
