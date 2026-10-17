@@ -13,7 +13,8 @@ import {
 } from "@/lib/stock/issue-slip-status";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/auth";
-import { buildStaffNameResolver, loadStaffNameResolver, staffPickerLabels, type StaffNameUser } from "@/lib/auth/staff-names";
+import { buildStaffNameResolver, loadStaffNameResolver, type StaffNameUser } from "@/lib/auth/staff-names";
+import { staffPickerLabels } from "@/lib/auth/staff-label";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { CANCEL_REASON_MAX } from "@/lib/purchasing/purchase-order-cancel";

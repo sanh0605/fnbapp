@@ -15,7 +15,7 @@ import { Select } from "@/components/ui/Select";
 import { Field } from "@/components/ui/Field";
 import { deleteUserAction } from "@/app/admin/users/actions";
 import { RoleBadge } from "./RoleBadge";
-import { staffLabel } from "@/lib/auth/staff-names";
+import { staffLabel } from "@/lib/auth/staff-label";
 import type { DBUser } from "@/types/db";
 
 export interface UsersClientProps {

@@ -9,7 +9,7 @@ import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { formatDate } from "@/lib/shared/datetime";
 import { deleteUserAction } from "@/app/admin/users/actions";
 import { RoleBadge } from "@/app/admin/users/components/RoleBadge";
-import { staffLabel } from "@/lib/auth/staff-names";
+import { staffLabel } from "@/lib/auth/staff-label";
 import type { DBUser } from "@/types/db";
 
 export interface UserDetailViewProps {

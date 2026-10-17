@@ -1,7 +1,8 @@
 "use server";
 
 import { requireAdmin } from "@/lib/auth/auth";
-import { buildStaffNameResolver, staffLabel, staffPickerLabels } from "@/lib/auth/staff-names";
+import { buildStaffNameResolver } from "@/lib/auth/staff-names";
+import { staffLabel, staffPickerLabels } from "@/lib/auth/staff-label";
 import { findAllWhereInBatches } from "@/lib/db/tables";
 import { getSupabaseClient } from "@/lib/db/supabase";
 
