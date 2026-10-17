@@ -7,6 +7,7 @@ import { OptionGroupPicker } from "./OptionGroupPicker";
 import { orderPicks, type ProductOptionGroup } from "@/lib/sales/option-groups";
 import { priceCart, toPricePromotion, eligiblePromotionSets } from "@/lib/sales/price-cart";
 import { clampDiscount, calculateItemGross } from "./cart-pricing";
+import { NumberInput } from "@/components/ui/NumberInput";
 
 export type ItemConfigSubmission = {
   variant: any;
@@ -75,6 +76,7 @@ export function ItemPicker({
     qty: selectedQty,
     modifiers: selectedModifiers,
   });
+  const itemDiscountLimit = itemDiscountType === "PERCENT" ? 100 : lineSubtotal;
 
   useEffect(() => {
     setItemDiscount((prev) => clampDiscount(prev, itemDiscountType, lineSubtotal) ?? 0);
@@ -288,20 +290,27 @@ export function ItemPicker({
                   %
                 </button>
               </div>
-              <input
-                aria-label="Giảm giá sản phẩm"
-                type="text"
-                inputMode="numeric"
-                placeholder="Ví dụ: 2"
-                value={itemDiscount || ""}
-                onChange={(e) => {
-                  const digits = e.target.value.replace(/\D/g, "");
-                  const val = digits === "" ? 0 : Number(digits);
-                  const clamped = clampDiscount(val, itemDiscountType, lineSubtotal) ?? 0;
-                  setItemDiscount(clamped);
-                }}
-                className="flex-1 w-full px-3 py-2 border border-border rounded-button focus:ring-2 focus:ring-focus-ring outline-none min-h-[44px] h-11 text-right text-base text-text-primary bg-surface-card"
-              />
+              <div className="flex-1 min-w-0 [&_input]:min-h-[44px]">
+                <NumberInput
+                  id="pos-item-discount"
+                  aria-label="Giảm giá sản phẩm"
+                  decimals={0}
+                  zeroIsEmpty
+                  value={itemDiscount || null}
+                  onValueChange={(val) => {
+                    const clamped = clampDiscount(val, itemDiscountType, lineSubtotal);
+                    setItemDiscount(clamped ?? 0);
+                  }}
+                  max={itemDiscountLimit}
+                  maxMessage={
+                    itemDiscountType === "PERCENT"
+                      ? "Tối đa 100%"
+                      : `Tối đa ${formatNumber(itemDiscountLimit)}đ`
+                  }
+                  example="2,000"
+                  unit={itemDiscountType === "PERCENT" ? "%" : "đ"}
+                />
+              </div>
             </div>
           </div>
 

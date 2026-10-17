@@ -262,4 +262,66 @@ describe("ItemPicker", () => {
       expect.objectContaining({ qty: 105 })
     );
   });
+
+  it("groups thousands while typing in per-item discount box (shows 10,000 and reflects total)", () => {
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={null}
+        isEditing={false}
+        onSubmit={vi.fn()}
+        onClose={vi.fn()}
+      />
+    );
+
+    const disclosureBtn = screen.getByRole("button", { name: /Giảm giá món/i });
+    fireEvent.click(disclosureBtn);
+
+    const itemDiscountInput = screen.getByLabelText("Giảm giá sản phẩm");
+    fireEvent.change(itemDiscountInput, { target: { value: "10000" } });
+    expect(itemDiscountInput).toHaveValue("10,000");
+    // Variant 1 price is 18,000; with 10,000 discount, net total is 8,000
+    expect(screen.getByRole("button", { name: /Thêm vào đơn · 8,000/ })).toBeInTheDocument();
+  });
+
+  it("shows max message when typing above limit and applied discount equals limit", () => {
+    const onSubmit = vi.fn();
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={null}
+        isEditing={false}
+        onSubmit={onSubmit}
+        onClose={vi.fn()}
+      />
+    );
+
+    const disclosureBtn = screen.getByRole("button", { name: /Giảm giá món/i });
+    fireEvent.click(disclosureBtn);
+
+    const itemDiscountInput = screen.getByLabelText("Giảm giá sản phẩm");
+    // First over-limit entry: clamped value flows back into the box
+    fireEvent.change(itemDiscountInput, { target: { value: "25000" } });
+    expect(itemDiscountInput).toHaveValue("18,000");
+    // Second over-limit entry clamps to the same value, so the box keeps the text: the message must explain
+    fireEvent.change(itemDiscountInput, { target: { value: "180000" } });
+    fireEvent.blur(itemDiscountInput);
+    expect(screen.getByText("Tối đa 18,000đ")).toBeInTheDocument();
+
+    const submitBtn = screen.getByRole("button", { name: /^Thêm vào đơn/ });
+    fireEvent.click(submitBtn);
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ discountAmount: 18_000 })
+    );
+  });
 });

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import React from "react";
 import { CartPanel } from "./CartPanel";
+import { clampDiscount } from "./cart-pricing";
 
 // Owns the step state the way POSScreen does; isPayStepOpen only sets where it starts.
 function CartPanelWithState(props: any) {
@@ -96,6 +97,7 @@ describe("Discount (R3)", () => {
     });
 
     it("clamps negative discount to 0", () => {
+      expect(clampDiscount(-10_000, "VND", 81_000)).toBe(0);
       const setUserCustomDiscount = vi.fn();
       render(
         <CartPanel
@@ -107,7 +109,23 @@ describe("Discount (R3)", () => {
       fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(discountInput, { target: { value: "-10000" } });
-      expect(setUserCustomDiscount).toHaveBeenCalledWith(0);
+      expect(discountInput).toHaveValue("10,000");
+    });
+
+    it("groups thousands while typing in order discount box (shows 10,000 and reflects discount)", () => {
+      const setUserCustomDiscount = vi.fn();
+      render(
+        <CartPanel
+          {...defaultProps}
+          setUserCustomDiscount={setUserCustomDiscount}
+          userCustomDiscountType="VND"
+        />
+      );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
+      const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(discountInput, { target: { value: "10000" } });
+      expect(discountInput).toHaveValue("10,000");
+      expect(setUserCustomDiscount).toHaveBeenCalledWith(10_000);
     });
 
     it("clamps percent discount above 100 to 100 (e.g. 101 -> 100)", () => {
@@ -123,6 +141,23 @@ describe("Discount (R3)", () => {
       const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
       fireEvent.change(discountInput, { target: { value: "101" } });
       expect(setUserCustomDiscount).toHaveBeenCalledWith(100);
+    });
+
+    it("shows max message when typing above limit and applied discount equals limit", () => {
+      const setUserCustomDiscount = vi.fn();
+      render(
+        <CartPanel
+          {...defaultProps}
+          setUserCustomDiscount={setUserCustomDiscount}
+          userCustomDiscountType="VND"
+        />
+      );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
+      const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(discountInput, { target: { value: "150000" } });
+      fireEvent.blur(discountInput);
+      expect(screen.getByText("Tối đa 81,000đ")).toBeInTheDocument();
+      expect(setUserCustomDiscount).toHaveBeenCalledWith(81_000);
     });
   });
 
@@ -233,6 +268,18 @@ describe("Discount (R3)", () => {
       expect(
         screen.getByText(/Lỗi thanh toán \(Chia tiền mặt \+ chuyển khoản\)/)
       ).toBeInTheDocument();
+    });
+
+    it("groups thousands while typing in split-payment box (shows 10,000 and reflects total)", () => {
+      render(<CartPanelWithState {...defaultProps} totalAmount={50_000} />);
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      fireEvent.click(screen.getByRole("button", { name: "Chia tiền mặt + chuyển khoản" }));
+      const splitInput = screen.getByLabelText("Số tiền phần thanh toán");
+      fireEvent.change(splitInput, { target: { value: "10000" } });
+      expect(splitInput).toHaveValue("10,000");
+      fireEvent.click(screen.getByRole("button", { name: "Thêm phần thanh toán" }));
+      // 50,000 total − 10,000 entered: "Còn thiếu" reads 40,000
+      expect(screen.getByText("40,000")).toBeInTheDocument();
     });
   });
 });
