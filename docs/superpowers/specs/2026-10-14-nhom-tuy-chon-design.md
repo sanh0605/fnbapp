@@ -46,7 +46,7 @@ The example the owner approved is one Trà sữa truyền thống at 18.000đ. T
 3. **LOẠI SỮA**: Chọn một. **Sữa tươi (sẵn) 0đ** • Sữa yến mạch +8.000đ.
 4. **THÊM TOPPING**: Chọn nhiều, at most 3 portions in all, each kind at most x2.
 
-A customer ordering normally costs one tap, as today. Oat milk makes the cup 26.000đ. The cart line and the order page show only what differs from the defaults: "Ít đường, Sữa yến mạch, +Trân châu trắng x2".
+A customer ordering normally needs no extra tap: the defaults are already lit when the dish opens (since 2026-10-17 every dish with choices opens before it goes into the cart, `BR-SALE-019`). Oat milk makes the cup 26.000đ. The cart line and the order page show only what differs from the defaults: "Ít đường, Sữa yến mạch, +Trân châu trắng x2".
 
 ### Group settings (the owner sets each one on the group page)
 
