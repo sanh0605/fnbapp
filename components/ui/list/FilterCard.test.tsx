@@ -154,4 +154,17 @@ describe("FilterCard phone fold and search", () => {
     const searchRow = searchInput.parentElement?.parentElement;
     expect(searchRow).not.toContainElement(applyBtn);
   });
+
+  it("renders no 'Lọc' button when onApply is not passed, while keeping 'Xoá lọc' when showClear is true", () => {
+    render(
+      <FilterCard onClear={vi.fn()} showClear={true}>
+        <select aria-label="Trạng thái">
+          <option>Tất cả</option>
+        </select>
+      </FilterCard>,
+    );
+
+    expect(screen.queryByRole("button", { name: "Lọc" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Xoá lọc" })).toBeInTheDocument();
+  });
 });

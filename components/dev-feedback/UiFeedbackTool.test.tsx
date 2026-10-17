@@ -382,4 +382,30 @@ describe("UiFeedbackTool", () => {
 
     target.remove();
   });
+
+  it("tab sits on the right edge at mid height and open panel is anchored to its left (right offset larger than tab width)", async () => {
+    await renderInsideAppTree(<UiFeedbackTool />);
+
+    const tab = findButton("Góp ý");
+    expect(tab.style.position).toBe("fixed");
+    expect(parseFloat(tab.style.right || "0")).toBe(0);
+    expect(tab.style.top).toBe("50%");
+    expect(tab.style.transform).toBe("translateY(-50%)");
+
+    const tabWidth = parseFloat(tab.style.width);
+    expect(tabWidth).toBeGreaterThan(0);
+
+    await fireClick(tab);
+
+    const panelHeader = Array.from(document.querySelectorAll("div")).find(
+      (el) => el.textContent === "Góp ý giao diện"
+    );
+    const panel = panelHeader?.parentElement as HTMLElement;
+    expect(panel.style.position).toBe("fixed");
+    expect(panel.style.top).toBe("50%");
+    expect(panel.style.transform).toBe("translateY(-50%)");
+
+    const panelRight = parseFloat(panel.style.right);
+    expect(panelRight).toBeGreaterThan(tabWidth);
+  });
 });

@@ -474,6 +474,11 @@ describe("DataList", () => {
       const select = screen.getByRole("combobox", { name: "Sắp xếp" }) as HTMLSelectElement;
       expect(select).toBeInTheDocument();
       expect(select.className).toContain("min-h-[48px]");
+      expect(select.className).toContain("appearance-none");
+      expect(select.className).toContain("rounded-button");
+      const chevron = select.parentElement?.querySelector("svg");
+      expect(chevron).toBeInTheDocument();
+      expect(chevron?.querySelector("path")).toHaveAttribute("d", "M19 9l-7 7-7-7");
 
       const options = Array.from(select.querySelectorAll("option"));
       const optionTexts = options.map((o) => o.textContent?.trim());
