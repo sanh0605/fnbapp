@@ -177,9 +177,9 @@ export default function IssueSlipsClient({
   );
 
   const personValue =
-    (draft.person === searchParams.get("person")
+    draft.person === searchParams.get("person")
       ? pageData.personLabel ?? draft.person
-      : draft.person) || "ALL";
+      : draft.person;
 
   return (
     <div className="space-y-6 pb-20">

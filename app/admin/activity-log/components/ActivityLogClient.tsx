@@ -27,7 +27,7 @@ function formatEmptyRangePart(range: RangeValue): string {
 export interface ActivityLogClientProps {
   initialEvents: OrderEvent[];
   actors: string[];
-  actorLabel?: string | null;
+  actorLabel: string | null;
   totalCount: number;
   itemsPerPage: number;
   range: RangeValue;

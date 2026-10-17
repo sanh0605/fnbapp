@@ -116,11 +116,18 @@ describe("IssueSlipsClient", () => {
     }
   });
 
-  it("with an empty ?person= in the URL the select shows Tất cả, not a blank choice", () => {
+  it("with an empty ?person= in the URL the select shows Tất cả, not a blank choice, and Xoá lọc stays hidden", () => {
     searchParams.set("person", "");
     try {
-      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={defaultPageData} />);
+      // One row, so the empty state's own "Xoá lọc" button does not render and only the filter card's could.
+      const oneRow: IssueSlipListPage = {
+        ...defaultPageData,
+        rows: [{ id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", dateText: "29/09", createdByName: "admin", value: 100 }],
+        total: 1, firstIndex: 1, lastIndex: 1,
+      };
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={oneRow} />);
       expect((screen.getByLabelText("Người ghi") as HTMLSelectElement).value).toBe("ALL");
+      expect(screen.queryByRole("button", { name: "Xoá lọc" })).toBeNull();
     } finally {
       searchParams.delete("person");
     }

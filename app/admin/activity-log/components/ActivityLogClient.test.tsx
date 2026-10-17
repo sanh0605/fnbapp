@@ -59,6 +59,7 @@ describe("ActivityLogClient", () => {
       <ActivityLogClient range={TEST_RANGE} today={TEST_TODAY}
         initialEvents={[]}
         actors={["admin"]}
+        actorLabel={null}
         totalCount={0}
         itemsPerPage={20}
       />
@@ -86,6 +87,7 @@ describe("ActivityLogClient", () => {
         today={TEST_TODAY}
         initialEvents={[]}
         actors={["admin"]}
+        actorLabel={null}
         totalCount={0}
         itemsPerPage={20}
       />
