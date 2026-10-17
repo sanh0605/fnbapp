@@ -311,7 +311,7 @@ describe("OrderTable -- shared table (wave K4)", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(phone).not.toBeNull();
     expect(within(phone).getByText("ORD000001")).toBeInTheDocument();
-    expect(within(phone).getAllByText("60,000")).toHaveLength(2);
+    expect(within(phone).getAllByText("60,000đ")).toHaveLength(2);
     expect(within(phone).getByText("01/10/2026 19:00:00 · 1x Trà đào (L)")).toBeInTheDocument();
     expect(within(phone).getByText("Chuyển khoản")).toBeInTheDocument();
     expect(within(phone).getByText("ORD000002 · v2")).toBeInTheDocument();
@@ -335,7 +335,7 @@ describe("OrderTable -- shared table (wave K4)", () => {
       />
     );
     expect(screen.getAllByText("Tổng (không tính huỷ)").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("1,234,000").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("1,234,000đ").length).toBeGreaterThan(0);
   });
 });
 

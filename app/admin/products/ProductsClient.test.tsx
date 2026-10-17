@@ -201,7 +201,7 @@ describe("ProductsClient", () => {
     expect(uniqueCodes[1]).toBe("PROD-001");
   });
 
-  it("shows size and price text such as '360ml 20,000'", () => {
+  it("shows size and price text such as '360ml 20,000đ'", () => {
     mockSearchParams = new URLSearchParams();
     const { container } = render(
       <ProductsClient
@@ -225,7 +225,7 @@ describe("ProductsClient", () => {
     expect(screen.getAllByText(/360ml 20,000/).length).toBeGreaterThan(0);
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("Cà phê đen")).toBeInTheDocument();
-    expect(within(phone).getByText("360ml 20,000 · 500ml 25,000 · Cà phê")).toBeInTheDocument();
+    expect(within(phone).getByText("360ml 20,000đ · 500ml 25,000đ · Cà phê")).toBeInTheDocument();
     expect(within(phone).getByText("Không có size nào đang bán · Cà phê")).toBeInTheDocument();
     expect(within(phone).getAllByText("Đang bán").length).toBeGreaterThan(0);
     expect(within(phone).queryByText("PROD-001")).toBeNull();

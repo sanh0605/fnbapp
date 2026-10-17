@@ -133,15 +133,15 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                       <TableCell>{modifiersText}</TableCell>
                       <TableCell align="right">{line.qty}</TableCell>
                       <TableCell align="right" tone={discount > 0 ? "negative" : undefined}>
-                        {discount > 0 ? `-${formatNumber(discount)}` : ""}
+                        {discount > 0 ? `-${formatNumber(discount)}đ` : ""}
                       </TableCell>
                       <TableCell align="right">
                         {line.gross_line_total > line.net_line_total && (
                           <div className="text-xs text-text-muted line-through">
-                            {formatNumber(line.gross_line_total)}
+                            {formatNumber(line.gross_line_total)}đ
                           </div>
                         )}
-                        <div>{formatNumber(line.net_line_total)}</div>
+                        <div>{formatNumber(line.net_line_total)}đ</div>
                       </TableCell>
                     </TableRow>
                   );
@@ -165,7 +165,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                 (line.manual_item_discount || 0) +
                 (line.order_discount_allocation || 0);
               const discountText =
-                totalDiscount > 0 ? `Giảm: -${formatNumber(totalDiscount)}` : null;
+                totalDiscount > 0 ? `Giảm: -${formatNumber(totalDiscount)}đ` : null;
               const meta = [qtySize, modifiersText, discountText].filter(Boolean).join(" · ");
 
               return (
@@ -214,7 +214,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
             <div className="bg-page rounded-xl p-3 text-sm space-y-1">
               <div className="flex justify-between">
                 <span className="text-text-secondary">Tổng gốc</span>
-                <span className="text-text-primary">{formatNumber(currentOrder.gross_total)}</span>
+                <span className="text-text-primary">{formatNumber(currentOrder.gross_total)}đ</span>
               </div>
               {promotions.length > 0 ? (
                 promotions
@@ -222,30 +222,30 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                   .map((p, idx) => (
                     <div key={p.promotion_id || idx} className="flex justify-between text-success">
                       <span>{p.name || p.code || "Khuyến mãi"}</span>
-                      <span>-{formatNumber(p.amount)}</span>
+                      <span>-{formatNumber(p.amount)}đ</span>
                     </div>
                   ))
               ) : currentOrder.promo_discount_total > 0 ? (
                 <div className="flex justify-between text-success">
                   <span>Khuyến mãi hệ thống</span>
-                  <span>-{formatNumber(currentOrder.promo_discount_total)}</span>
+                  <span>-{formatNumber(currentOrder.promo_discount_total)}đ</span>
                 </div>
               ) : null}
               {currentOrder.manual_item_discount_total > 0 && (
                 <div className="flex justify-between text-danger">
                   <span>Giảm thủ công từng món</span>
-                  <span>-{formatNumber(currentOrder.manual_item_discount_total)}</span>
+                  <span>-{formatNumber(currentOrder.manual_item_discount_total)}đ</span>
                 </div>
               )}
               {currentOrder.manual_order_discount > 0 && (
                 <div className="flex justify-between text-danger">
                   <span>Giảm cả đơn</span>
-                  <span>-{formatNumber(currentOrder.manual_order_discount)}</span>
+                  <span>-{formatNumber(currentOrder.manual_order_discount)}đ</span>
                 </div>
               )}
               <div className="flex justify-between text-lg font-bold pt-1 border-t border-border">
                 <span className="text-text-primary">Khách trả</span>
-                <span className="text-primary">{formatNumber(currentOrder.net_total)}</span>
+                <span className="text-primary">{formatNumber(currentOrder.net_total)}đ</span>
               </div>
             </div>
           </div>
@@ -270,7 +270,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                     </div>
                     <div className="text-right">
                       <div className="text-text-secondary tabular-nums">{formatDateTimeFull(v.created_at)}</div>
-                      <div className="text-text-muted">{formatNumber(v.net_total)}</div>
+                      <div className="text-text-muted">{formatNumber(v.net_total)}đ</div>
                     </div>
                   </div>
                 ))}
@@ -290,7 +290,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                       <span className="text-text-secondary tabular-nums">{formatDateTimeFull(e.event_at)}</span>
                     </div>
                     <div className="text-text-secondary mt-0.5">
-                      {e.actor_name}: {e.reason}
+                      {e.actor_name}: {e.reason === "POS checkout" ? "Bán tại máy bán hàng" : e.reason}
                     </div>
                   </div>
                 ))}

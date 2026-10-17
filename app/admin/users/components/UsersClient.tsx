@@ -248,8 +248,8 @@ export default function UsersClient({
               onChange={(e) => setRole(parseRole(e.target.value))}
             >
               <option value="ALL">Tất cả quyền</option>
-              <option value="ADMIN">ADMIN</option>
-              <option value="MANAGER">MANAGER</option>
+              <option value="ADMIN">Quản trị viên</option>
+              <option value="MANAGER">Quản lý</option>
               <option value="STAFF">STAFF</option>
             </Select>
           </Field>

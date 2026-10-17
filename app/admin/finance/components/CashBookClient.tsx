@@ -653,7 +653,7 @@ export default function CashBookClient({
         totals={{
           label: "Tổng (không tính huỷ, chuyển tiền)",
           values: {
-            amount: `Thu ${formatNumber(rowTotals.income)} · Chi ${formatNumber(rowTotals.expense)}`,
+            amount: `Thu ${formatNumber(rowTotals.income)}đ · Chi ${formatNumber(rowTotals.expense)}đ`,
           },
         }}
         sort={{

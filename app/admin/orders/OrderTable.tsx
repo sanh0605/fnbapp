@@ -295,7 +295,7 @@ export default function OrderTable({
         align: "right",
         render: (order) => (
           <span className="tabular-nums text-text-primary text-[13px]">
-            {formatNumber(order.net_total)}
+            {formatNumber(order.net_total)}đ
           </span>
         ),
       },
@@ -424,7 +424,7 @@ export default function OrderTable({
 
             return {
               title,
-              value: formatNumber(order.net_total),
+              value: `${formatNumber(order.net_total)}đ`,
               meta,
               badge:
                 order.status === "VOIDED" ? (
@@ -438,7 +438,7 @@ export default function OrderTable({
             totals && statusFilter !== "VOIDED" && searchParams.get("status") !== "VOIDED"
               ? {
                   label: "Tổng (không tính huỷ)",
-                  values: { net_total: formatNumber(totals.netTotal) },
+                  values: { net_total: `${formatNumber(totals.netTotal)}đ` },
                 }
               : undefined
           }

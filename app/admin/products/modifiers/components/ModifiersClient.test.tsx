@@ -230,7 +230,7 @@ describe("ModifiersClient", () => {
     expect(badges.length).toBeGreaterThanOrEqual(2);
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("Dâu sấy")).toBeInTheDocument();
-    expect(within(phone).getByText("5,000")).toBeInTheDocument();
+    expect(within(phone).getByText("5,000đ")).toBeInTheDocument();
     expect(within(phone).getByText("Thêm Topping · MOD-007 · Bán độc lập: Có")).toBeInTheDocument();
     expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
   });
