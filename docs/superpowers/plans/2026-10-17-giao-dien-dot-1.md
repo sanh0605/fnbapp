@@ -45,14 +45,14 @@ Worked example on real screens (8386, 2026-10-17):
 
 ## Review focus
 
-1. A form whose footer has extra buttons ("Lưu nháp") on a 360 px phone: all buttons in one row, none wrapping its label to two lines.
+1. A form whose footer has extra buttons ("Lưu nháp") on a 360 px phone: all buttons in one row, equal widths, nothing past the screen edge. Decided 2026-10-17 at review: a label too long for its share ("Cập nhật & Hoàn thành") wraps to two lines inside its 48 px button; shorter labels stay on one line.
 2. The form footer on a phone touches the bottom menu: no strip of page showing between them at 360×780 and 390×844.
 3. The form footer on a computer touches the bottom edge of the window at 1280×720, with the last field reachable above it when scrolled to the end.
 4. A role the badge does not know (future role) still shows something readable, not blank.
 5. A status pill in a narrow column stays on one line; the column widens instead of the pill breaking.
 6. On a phone with the keyboard open in the last box of a long form, that box stays visible above the footer.
 7. "Có thay đổi chưa lưu" appearing does not make the phone footer jump taller over the box being typed in.
-8. Tạo phiếu nhập at 360 px: "Bỏ", "Lưu nháp", "Tạo" in one row, none wrapped.
+8. Tạo phiếu nhập at 360 px: "Bỏ", "Lưu nháp", "Tạo" in one row, none wrapped; a completed order's "Cập nhật & Hoàn thành" may wrap (see 1).
 9. A list in select mode on a phone: the "Xoá n dòng" bar meets the bottom menu like the form footer.
 
 ---
@@ -73,7 +73,7 @@ Worked example on real screens (8386, 2026-10-17):
 - [ ] **Step 2: the scroll container.** Measured on 8386 at the top of the page (not at the end of the scroll): the footer's bottom edge is at 688 px of 720 on a computer and 74 px above the screen bottom on a phone instead of 58, i.e. exactly the scroll container's bottom padding (`p-4 md:p-6 lg:p-8`, `app/admin/layout.tsx:120`): a sticky element sticks inside that padding. Remove only the bottom padding from the scroll container (`px-4 pt-4 md:px-6 md:pt-6 lg:px-8 lg:pt-8`) and give the inner wrapper the space instead (`pb-24 md:pb-6 lg:pb-8`; the phone `pb-24` stays, it clears the bottom menu). At the end of the scroll the footer rests at the form's end with the wrapper's padding below it; that is expected. Nothing else in the layout changes.
 - [ ] **Step 3: the footer on a phone.**
   - Its bottom offset stays `calc(58px+env(safe-area-inset-bottom))` in `FormActionBar`, `DataList`'s bar and `StocktakeCountView.tsx:820` (do not edit that file; Opus set it). The menu's top is 61 px up, so 58 tucks 3 px under the menu (menu z-40, bar z-30): no strip shows once step 2 removes the padding.
-  - Buttons always in one row on a phone: Bỏ, extra buttons, main button last on the right, equal widths. Labels may not wrap and may not be reworded; if three do not fit at 360 px, reduce the buttons' side padding.
+  - Buttons always in one row on a phone: Bỏ, extra buttons, main button last on the right, equal widths. Labels are not reworded. Side padding is smaller on the phone; a label still too long for its equal share wraps inside the button (decided at review 2026-10-17: a fixed no-wrap row pushed the third button past a 360 px screen).
   - "Có thay đổi chưa lưu" stays; on a phone it sits on its own small line above the buttons only when shown (no empty line otherwise).
 - [ ] **Step 4: "Góp ý" on a phone** sits above the bottom menu (bottom 76 px when the screen is under 768 px wide; unchanged on a computer). Inline style, as the file already does.
 - [ ] **Step 5: not-found page.** `app/admin/not-found.tsx`: Vietnamese, inside the admin frame (this file is rendered inside `app/admin/layout.tsx` automatically), using `PageHeader`/`EmptyState` from `components/ui/`: title "Không tìm thấy trang", one line "Trang này không có hoặc đã bị xoá.", one link "Về Tổng quan" to `/admin`.
