@@ -7,7 +7,7 @@ tables: stocktake_sessions, stocktake_lines, stock_issues
 brCodes: BR-INV-007, BR-COGS-007, BR-INV-010, BR-INV-011, BR-INV-012, BR-INV-022, BR-INV-023
 ```
 
-**Behaviour change — 2026-10-17 (`BR-INV-023`, migration `0137`):**
+**Behaviour change — 2026-10-17 (`BR-INV-023`, migration `0137`, ran on the server and recorded 2026-10-17, owner approved "Chạy 0137 + ghi sổ"):**
 - The counting screen has no per-line button. Moving out of a line's boxes saves that line (moving between boxes of one line does not); the line shows "Đang lưu…", "✓ Đã lưu" or a red reason.
 - Clearing every box of a saved line puts it back to "Chưa đếm".
 - Each package size's number is kept in `stocktake_lines.package_counts` and refills its box after a reload. The converted total shows under the boxes while typing.
