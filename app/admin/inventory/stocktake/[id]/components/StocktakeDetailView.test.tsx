@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { StocktakeDetailView } from "./StocktakeDetailView";
 import type { StocktakeSessionView } from "../../actions";
@@ -107,6 +107,24 @@ describe("StocktakeDetailView (Screen 3)", () => {
     );
     expect(screen.getByText("Chủ quán")).toBeInTheDocument();
     expect(screen.getByText(formatDateTimeFull("2026-10-10T09:00:00Z"))).toBeInTheDocument();
+  });
+
+  it("filter chips: no Chưa đếm chip without blank lines; the picked chip is pressed", () => {
+    render(
+      <StocktakeDetailView
+        session={confirmedSession}
+        isLatestConfirmed={true}
+        isOwner={true}
+      />
+    );
+    expect(screen.queryByRole("button", { name: /Chưa đếm/ })).toBeNull();
+    const all = screen.getByRole("button", { name: "Tất cả (1)" });
+    expect(all).toHaveAttribute("aria-pressed", "true");
+
+    const off = screen.getByRole("button", { name: "Lệch (1)" });
+    fireEvent.click(off);
+    expect(off).toHaveAttribute("aria-pressed", "true");
+    expect(all).toHaveAttribute("aria-pressed", "false");
   });
 
   it("renders stocktake line items on phone as a divide-y list of PhoneRow", () => {

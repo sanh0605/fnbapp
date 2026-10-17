@@ -565,10 +565,10 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
       {/* Tabs bar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
         {[
-          { id: "ALL", label: "Tất cả", count: allCount },
-          { id: "BLANK", label: "Chưa đếm", count: blankCount },
-          { id: "OFF", label: "Lệch", count: offCount },
-          { id: "MATCH", label: "Khớp", count: matchCount },
+          { id: "ALL" as const, label: "Tất cả", count: allCount },
+          { id: "BLANK" as const, label: "Chưa đếm", count: blankCount },
+          { id: "OFF" as const, label: "Lệch", count: offCount },
+          { id: "MATCH" as const, label: "Khớp", count: matchCount },
         ].map((tab) => {
           const active = activeTab === tab.id;
           return (
@@ -576,7 +576,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
               key={tab.id}
               type="button"
               aria-pressed={active}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`rounded-full px-3 min-h-[48px] md:min-h-[40px] text-xs md:text-sm font-medium border ${
                 active
                   ? "bg-primary-soft text-primary border-primary/20"
