@@ -274,6 +274,46 @@ describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
     // No bold classes inside list rows (BR-UI-003)
     expect(firstRow.querySelector(".font-bold")).toBeNull();
   });
+
+  it("hides Tuỳ chọn and Giảm columns when empty for all rows, shows them when present (audit d60)", () => {
+    // 1. All empty: no Tuỳ chọn and no Giảm header
+    const { unmount } = render(<OrderDetailView detail={makeDetail()} brands={[]} returnTo="/admin/orders" />);
+    const headersEmpty = screen.getAllByRole("columnheader").map(h => h.textContent);
+    expect(headersEmpty).not.toContain("Tuỳ chọn");
+    expect(headersEmpty).not.toContain("Giảm");
+    unmount();
+
+    // 2. With modifiers and discount: shows Tuỳ chọn and Giảm
+    const detailWithModAndDiscount = makeDetail("COMPLETED", {
+      lines: [
+        {
+          id: "line-2",
+          order_id: "ORD-1",
+          line_no: 1,
+          product_id: "PROD-1",
+          product_snapshot_json: "{}",
+          variant_id: "VAR-1",
+          variant_snapshot_json: "{}",
+          qty: 1,
+          unit_price: 50000,
+          modifiers_snapshot_json: "[]",
+          gross_line_total: 55000,
+          promo_discount: 5000,
+          manual_item_discount: 0,
+          order_discount_allocation: 0,
+          net_line_total: 50000,
+          promo_discount_reason: "",
+          product_name: "Trà sữa",
+          size_name: "L",
+          modifiers: [{ name: "Trân châu đen", qty: 1 }],
+        },
+      ],
+    });
+    render(<OrderDetailView detail={detailWithModAndDiscount} brands={[]} returnTo="/admin/orders" />);
+    const headersWithData = screen.getAllByRole("columnheader").map(h => h.textContent);
+    expect(headersWithData).toContain("Tuỳ chọn");
+    expect(headersWithData).toContain("Giảm");
+  });
 });
 
 describe("OrderDetailView payment parts (BR-SALE-013, owner 2026-10-14 C12)", () => {

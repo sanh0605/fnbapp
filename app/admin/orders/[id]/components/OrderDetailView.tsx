@@ -64,6 +64,17 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
   const orderNo = currentOrder.display_order_no || currentOrder.order_no;
   const voidReason = events.find((e) => e.event_type === "VOIDED")?.reason;
 
+  const hasModifiers = currentOrder.lines.some(
+    (line) => line.modifiers && line.modifiers.length > 0
+  );
+  const hasDiscount = currentOrder.lines.some(
+    (line) =>
+      (line.promo_discount || 0) +
+        (line.manual_item_discount || 0) +
+        (line.order_discount_allocation || 0) >
+      0
+  );
+
   return (
     <div className="space-y-6">
       <DetailHeader
@@ -108,9 +119,9 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
               <TableHead>
                 <TableHeaderCell>Món</TableHeaderCell>
                 <TableHeaderCell>Size</TableHeaderCell>
-                <TableHeaderCell>Tuỳ chọn</TableHeaderCell>
+                {hasModifiers && <TableHeaderCell>Tuỳ chọn</TableHeaderCell>}
                 <TableHeaderCell>SL</TableHeaderCell>
-                <TableHeaderCell>Giảm</TableHeaderCell>
+                {hasDiscount && <TableHeaderCell>Giảm</TableHeaderCell>}
                 <TableHeaderCell>Thành tiền</TableHeaderCell>
               </TableHead>
               <TableBody>
@@ -130,11 +141,13 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                     <TableRow key={idx}>
                       <TableCell>{line.product_name}</TableCell>
                       <TableCell>{line.size_name}</TableCell>
-                      <TableCell>{modifiersText}</TableCell>
+                      {hasModifiers && <TableCell>{modifiersText}</TableCell>}
                       <TableCell align="right">{line.qty}</TableCell>
-                      <TableCell align="right" tone={discount > 0 ? "negative" : undefined}>
-                        {discount > 0 ? `-${formatNumber(discount)}đ` : ""}
-                      </TableCell>
+                      {hasDiscount && (
+                        <TableCell align="right" tone={discount > 0 ? "negative" : undefined}>
+                          {discount > 0 ? `-${formatNumber(discount)}đ` : ""}
+                        </TableCell>
+                      )}
                       <TableCell align="right">
                         {line.gross_line_total > line.net_line_total && (
                           <div className="text-xs text-text-muted line-through">

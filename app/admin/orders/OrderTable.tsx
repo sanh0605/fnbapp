@@ -237,12 +237,12 @@ export default function OrderTable({
         header: "Mã đơn",
         render: (order) => (
           <div className="space-y-1">
-            <div className="flex items-center">
-              <span className="font-mono text-[13px] text-primary transition-colors">
+            <div className="flex items-center whitespace-nowrap">
+              <span className="font-mono text-[13px] text-primary transition-colors whitespace-nowrap">
                 {order.display_order_no || order.order_no}
               </span>
               {order.parent_order_id && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs bg-primary-soft text-primary">
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs bg-primary-soft text-primary whitespace-nowrap">
                   v{order.version}
                 </span>
               )}
@@ -264,7 +264,7 @@ export default function OrderTable({
         key: "created_at",
         header: "Thời gian",
         render: (order) => (
-          <span className="text-text-secondary text-[13px] tabular-nums">
+          <span className="text-text-secondary text-[13px] tabular-nums whitespace-nowrap">
             {formatDateTimeFull(order.created_at)}
           </span>
         ),

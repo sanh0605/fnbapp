@@ -505,7 +505,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(within(cartRow).getByText(/5,000/i)).toBeInTheDocument();
 
       // Order discount is preserved
-      expect((screen.getByLabelText("Giảm giá tùy chỉnh") as HTMLInputElement).value).toBe("3000");
+      expect((screen.getByLabelText("Giảm giá tùy chỉnh") as HTMLInputElement).value).toBe("3,000");
     });
 
     it("retry:true strip Gửi lại resends with same token and client_captured_at; success resets all so next cart has no discount", async () => {

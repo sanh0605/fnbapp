@@ -10,6 +10,7 @@ import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { PhoneRow } from "@/components/ui/list/PhoneRow";
+import { formatNumber } from "@/lib/shared/format";
 import { deleteCategory } from "@/app/admin/products/categories/actions";
 import type { DBProductCategory } from "@/types/db";
 
@@ -41,10 +42,8 @@ export function ProductCategoryDetailView({
   const count = dishCount !== undefined ? dishCount : dishes.length;
 
   const fields: Field[] = [
-    { label: "Mã", value: category.id },
-    { label: "Tên nhóm", value: category.name },
     { label: "Loại món", value: typeName || "—" },
-    { label: "Số món", value: `${count} món` },
+    { label: "Số món", value: `${formatNumber(count)} món` },
   ];
 
   const headerActions = (

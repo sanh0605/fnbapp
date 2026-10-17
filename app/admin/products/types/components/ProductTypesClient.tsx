@@ -175,17 +175,20 @@ export default function ProductTypesClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
+        search={
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm loại món" htmlFor="types-search">
+              <TextInput
+                id="types-search"
+                placeholder="Ví dụ: Thức uống"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
+        }
       >
-        <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm loại món" htmlFor="types-search">
-            <TextInput
-              id="types-search"
-              placeholder="Ví dụ: Thức uống"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
-        </div>
+        {null}
       </FilterCard>
 
       <DataList

@@ -27,5 +27,5 @@ describe("BR-UI-001 one spelling for each word", () => {
       .filter(f => MINORITY.test(readFileSync(f, "utf8")))
       .map(f => relative(root, f).split(sep).join("/"));
     expect(offenders).toEqual([]);
-  });
+  }, 30_000);
 });

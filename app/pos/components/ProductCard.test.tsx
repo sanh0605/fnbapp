@@ -130,7 +130,7 @@ describe("ProductCard (Task 3a)", () => {
     );
 
     const card = screen.getByRole("button", { name: "Cà phê đá" });
-    expect(card.textContent).toContain("15,000 – 18,000");
+    expect(card.textContent).toContain("15,000\u00A0– 18,000");
 
     rerender(
       <ProductCard

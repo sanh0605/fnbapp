@@ -66,7 +66,6 @@ export function ModifierGroupDetailView({
   }, [allProducts, productIds]);
 
   const fields: Field[] = [
-    { label: "Tên nhóm", value: group.name },
     {
       label: "Kiểu chọn",
       value: group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều",
@@ -145,11 +144,11 @@ export function ModifierGroupDetailView({
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
         <Button href={editHref} variant="secondary">
-          Sửa
+          Chỉnh sửa
         </Button>
         <Button
           type="button"
-          variant="secondary"
+          variant={group.status === "ACTIVE" ? "delete" : "secondary"}
           loading={isTogglingStatus}
           onClick={handleToggleStatus}
         >
@@ -205,6 +204,7 @@ export function ModifierGroupDetailView({
         backHref={returnTo}
         backLabel="Nhóm tuỳ chọn"
         title={group.name}
+        subtitle={group.id}
         actions={headerActions}
       />
 

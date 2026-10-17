@@ -105,6 +105,16 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
             </Select>
           </Field>
 
+          <Field label="Tên tuỳ chọn" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              example="Trân châu trắng"
+            />
+          </Field>
+
           <Field label="Giá thêm" htmlFor={`${formId}-price`}>
             <NumberInput
               id={`${formId}-price`}
@@ -115,16 +125,6 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
               example="5,000"
               value={price === "" ? null : Number(price)}
               onValueChange={(v) => setPrice(v === null ? "" : String(v))}
-            />
-          </Field>
-
-          <Field label="Tên tuỳ chọn" htmlFor={`${formId}-name`} required>
-            <TextInput
-              id={`${formId}-name`}
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              example="Trân châu trắng"
             />
           </Field>
 
@@ -175,7 +175,7 @@ export function ModifierForm({ initialData, productStatus, returnTo: rawReturnTo
             <div>
               <div className="text-sm font-medium text-text-primary">Bán độc lập</div>
               <div className="text-xs text-text-muted mt-0.5">
-                Bật/tắt áp dụng ngay, không cần bấm Cập nhật. Bấm Bỏ không huỷ được thao tác này.
+                Bật/tắt áp dụng ngay, không cần bấm Lưu thay đổi. Bấm Bỏ thay đổi không huỷ được thao tác này.
               </div>
             </div>
             <StandaloneToppingSwitch

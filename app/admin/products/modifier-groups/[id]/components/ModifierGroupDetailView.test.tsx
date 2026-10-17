@@ -120,7 +120,7 @@ describe("ModifierGroupDetailView", () => {
     expect(screen.queryByRole("button", { name: "Xoá" })).toBeNull();
   });
 
-  it("renders group info, options list, applied dishes, and 'Sửa' link", () => {
+  it("renders group info, options list, applied dishes, and 'Chỉnh sửa' link", () => {
     render(
       <ModifierGroupDetailView
         group={sampleGroup}
@@ -135,13 +135,13 @@ describe("ModifierGroupDetailView", () => {
 
     // Title and fields
     expect(screen.getByRole("heading", { level: 1, name: "Thêm Topping" })).toBeInTheDocument();
-    expect(screen.queryByText("MG-001")).toBeNull();
+    expect(screen.getByText("MG-001")).toBeInTheDocument();
     expect(screen.getByText("Chọn nhiều")).toBeInTheDocument();
     expect(screen.getByText("3 phần")).toBeInTheDocument();
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
 
-    // Sửa link
-    const editLink = screen.getByRole("link", { name: "Sửa" });
+    // Chỉnh sửa link
+    const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
     expect(editLink).toBeInTheDocument();
     expect(editLink.getAttribute("href")).toContain("/admin/products/modifier-groups/MG-001/edit?returnTo=");
 
@@ -239,6 +239,7 @@ describe("ModifierGroupDetailView", () => {
 
     const stopBtn = screen.getByRole("button", { name: "Ngừng dùng" });
     expect(stopBtn).toBeInTheDocument();
+    expect(stopBtn.className).toContain("border-danger");
     fireEvent.click(stopBtn);
 
     await waitFor(() => {

@@ -7,6 +7,7 @@ import { OptionGroupPicker } from "./OptionGroupPicker";
 import { orderPicks, type ProductOptionGroup } from "@/lib/sales/option-groups";
 import { priceCart, toPricePromotion, eligiblePromotionSets } from "@/lib/sales/price-cart";
 import { clampDiscount, calculateItemGross } from "./cart-pricing";
+import { NumberInput } from "@/components/ui/NumberInput";
 
 export type ItemConfigSubmission = {
   variant: any;
@@ -75,6 +76,7 @@ export function ItemPicker({
     qty: selectedQty,
     modifiers: selectedModifiers,
   });
+  const itemDiscountLimit = itemDiscountType === "PERCENT" ? 100 : lineSubtotal;
 
   useEffect(() => {
     setItemDiscount((prev) => clampDiscount(prev, itemDiscountType, lineSubtotal) ?? 0);
@@ -150,7 +152,7 @@ export function ItemPicker({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:flex-1 md:min-h-0 md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border">
+      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:flex-initial md:max-h-[70%] md:min-h-0 md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border">
         <div className="w-11 h-1.5 rounded-full bg-border mx-auto mt-2 shrink-0 md:hidden" />
 
         <div className="flex items-center justify-between px-4 py-1.5 md:px-3.5 md:pt-3 md:pb-2 shrink-0">
@@ -198,14 +200,14 @@ export function ItemPicker({
                       aria-checked={isSelected}
                       key={v.id}
                       onClick={() => setSelectedVariant(v)}
-                      className={`w-full flex items-center min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] text-left transition-colors ${
+                      className={`w-full flex items-center gap-2 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] text-left transition-colors ${
                         isSelected
                           ? "border-primary bg-primary-soft text-primary font-bold"
                           : "border-border bg-surface-card text-text-primary font-medium hover:bg-page"
                       }`}
                     >
                       <span
-                        className={`break-words ${
+                        className={`min-w-0 [overflow-wrap:anywhere] ${
                           isSelected ? "text-primary font-bold" : "text-text-primary font-medium"
                         }`}
                       >
@@ -247,7 +249,7 @@ export function ItemPicker({
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-border bg-surface-card px-4 pt-2.5 pb-5 md:px-3.5 md:py-2.5 flex flex-col gap-2.5">
+        <div className="shrink-0 border-t border-border bg-surface-card px-3.5 pt-2.5 pb-4 md:px-3.5 md:py-2.5 flex flex-col gap-2.5">
           <div>
             <button
               type="button"
@@ -267,7 +269,10 @@ export function ItemPicker({
               <div className="flex rounded-button overflow-hidden border border-border shrink-0 min-h-[44px] h-11">
                 <button
                   type="button"
-                  onClick={() => setItemDiscountType("VND")}
+                  onClick={() => {
+                    setItemDiscountType("VND");
+                    setItemDiscount((prev) => Math.round(prev));
+                  }}
                   className={`px-3 min-h-[44px] text-sm font-bold transition-colors ${
                     itemDiscountType === "VND"
                       ? "bg-primary-soft text-primary"
@@ -288,35 +293,42 @@ export function ItemPicker({
                   %
                 </button>
               </div>
-              <input
-                aria-label="Giảm giá sản phẩm"
-                type="text"
-                inputMode="numeric"
-                placeholder="Ví dụ: 2"
-                value={itemDiscount || ""}
-                onChange={(e) => {
-                  const digits = e.target.value.replace(/\D/g, "");
-                  const val = digits === "" ? 0 : Number(digits);
-                  const clamped = clampDiscount(val, itemDiscountType, lineSubtotal) ?? 0;
-                  setItemDiscount(clamped);
-                }}
-                className="flex-1 w-full px-3 py-2 border border-border rounded-button focus:ring-2 focus:ring-focus-ring outline-none min-h-[44px] h-11 text-right text-base text-text-primary bg-surface-card"
-              />
+              <div className="flex-1 min-w-0 [&_input]:min-h-[44px]">
+                <NumberInput
+                  id="pos-item-discount"
+                  aria-label="Giảm giá sản phẩm"
+                  decimals={itemDiscountType === "PERCENT" ? 2 : 0}
+                  zeroIsEmpty
+                  value={itemDiscount || null}
+                  onValueChange={(val) => {
+                    const clamped = clampDiscount(val, itemDiscountType, lineSubtotal);
+                    setItemDiscount(clamped ?? 0);
+                  }}
+                  max={itemDiscountLimit}
+                  maxMessage={
+                    itemDiscountType === "PERCENT"
+                      ? "Tối đa 100%"
+                      : `Tối đa ${formatNumber(itemDiscountLimit)}đ`
+                  }
+                  example="2,000"
+                  unit={itemDiscountType === "PERCENT" ? "%" : "đ"}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 md:gap-2.5">
             <div className="flex items-center border border-border rounded-card md:rounded-button h-[60px] md:h-[52px] md:mr-auto shrink-0 bg-surface-card">
               <button
                 type="button"
                 aria-label="Bớt"
                 disabled={selectedQty <= 1}
                 onClick={() => setSelectedQty((q) => Math.max(1, q - 1))}
-                className="w-[52px] h-[60px] md:h-[52px] min-h-[44px] flex items-center justify-center text-[26px] md:text-[24px] font-extrabold text-primary disabled:text-text-muted disabled:opacity-40 transition-colors"
+                className="w-11 md:w-[52px] h-[60px] md:h-[52px] min-h-[44px] flex items-center justify-center text-[26px] md:text-[24px] font-extrabold text-primary disabled:text-text-muted disabled:opacity-40 transition-colors"
               >
                 −
               </button>
-              <span className="w-[30px] md:w-8 text-center font-extrabold text-[22px] md:text-[20px] text-text-primary">
+              <span className="w-7 md:w-8 text-center font-extrabold text-[22px] md:text-[20px] text-text-primary">
                 {selectedQty}
               </span>
               <button
@@ -324,7 +336,7 @@ export function ItemPicker({
                 aria-label="Thêm số lượng"
                 disabled={selectedQty >= maxQty}
                 onClick={() => setSelectedQty((q) => Math.min(maxQty, q + 1))}
-                className="w-[52px] h-[60px] md:h-[52px] min-h-[44px] flex items-center justify-center text-[26px] md:text-[24px] font-extrabold text-primary disabled:text-text-muted disabled:opacity-40 transition-colors"
+                className="w-11 md:w-[52px] h-[60px] md:h-[52px] min-h-[44px] flex items-center justify-center text-[26px] md:text-[24px] font-extrabold text-primary disabled:text-text-muted disabled:opacity-40 transition-colors"
               >
                 +
               </button>
@@ -341,15 +353,14 @@ export function ItemPicker({
             <button
               type="button"
               onClick={addToCart}
-              className="flex-1 md:flex-none bg-primary text-on-primary h-[60px] md:h-[52px] min-h-[44px] px-5 rounded-card md:rounded-button hover:bg-primary-hover active:scale-[0.98] transition-all flex flex-col items-center justify-center"
+              className="flex-1 md:flex-none min-w-0 bg-primary text-on-primary h-[60px] md:h-[52px] min-h-[44px] px-3 md:px-5 rounded-card md:rounded-button hover:bg-primary-hover active:scale-[0.98] transition-all flex flex-col items-center justify-center"
             >
-              <div className="font-extrabold text-[18px] md:text-[17px] leading-tight">
-                <span>
-                  {isEditing ? "Cập nhật" : "Thêm vào đơn"} · {formatNumber(currentItemFinalTotal)}
-                </span>
+              <div className="font-extrabold text-[15px] md:text-[17px] leading-tight text-center md:whitespace-nowrap">
+                <span className="whitespace-nowrap">{isEditing ? "Cập nhật" : "Thêm vào đơn"} ·</span>{" "}
+                <span className="whitespace-nowrap">{formatNumber(currentItemFinalTotal)}</span>
               </div>
               {(currentItemManualDiscountAmount > 0 || currentItemPromoDiscountAmount > 0) && (
-                <div className="text-xs text-on-primary/80 line-through font-medium mt-0.5">
+                <div className="text-xs text-on-primary/80 line-through font-medium mt-0.5 whitespace-nowrap">
                   Gốc: {formatNumber(currentItemBaseTotal)}
                 </div>
               )}

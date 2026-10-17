@@ -246,7 +246,19 @@ describe("ProductDetailView", () => {
 
     // PhoneRow: size on line 1 left, price transition on line 1 right, timestamp on line 2
     expect(within(firstRow).getByText("360ml")).toBeInTheDocument();
-    expect(within(firstRow).getByText("— → 0")).toBeInTheDocument();
+    expect(within(firstRow).getByText("— → 0đ")).toBeInTheDocument();
     expect(within(firstRow).getByText("28/06/2026 23:27:49")).toBeInTheDocument();
+  });
+
+  it("shows 'Có' for Đã bán when product has been sold", () => {
+    render(
+      <ProductDetailView
+        product={{ ...matchaLatteProduct, neverSold: false }}
+        categoryName="Giải trí"
+        returnTo="/admin/products"
+        canDelete={false}
+      />,
+    );
+    expect(screen.getByText("Có")).toBeInTheDocument();
   });
 });

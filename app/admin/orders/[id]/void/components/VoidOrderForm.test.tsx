@@ -106,10 +106,16 @@ describe("VoidOrderForm", () => {
 
     expect(screen.getAllByText("Cà phê đen").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Bánh tráng").length).toBeGreaterThan(0);
-    expect(screen.getByText("75,000")).toBeDefined();
+    expect(screen.getByText("75,000đ")).toBeDefined();
     expect(screen.getByLabelText(/Lý do huỷ/)).toBeDefined();
-    expect(screen.getByRole("button", { name: "Xác nhận huỷ" })).toBeDisabled();
-    expect(screen.getByRole("link", { name: "Quay lại" })).toHaveAttribute("href", "/admin/orders/ORD-123");
+    const submitBtn = screen.getByRole("button", { name: "Xác nhận huỷ" });
+    const backBtn = screen.getByRole("link", { name: "Quay lại" });
+    expect(submitBtn).toBeDisabled();
+    expect(backBtn).toHaveAttribute("href", "/admin/orders/ORD-123");
+    // Verify side-by-side layout on phone
+    const buttonContainer = submitBtn.parentElement;
+    expect(buttonContainer?.className).toContain("grid-cols-2");
+    expect(buttonContainer?.className).toContain("gap-3");
   });
 
   it("has real table on desktop and stacked cards on phone", () => {

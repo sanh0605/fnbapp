@@ -170,7 +170,6 @@ export default function StockOnHandClient({
       </div>
 
       <FilterCard
-        onApply={() => {}}
         onClear={handleClear}
         showClear={Boolean(search)}
         activeCount={search.trim() ? 1 : 0}

@@ -1,6 +1,6 @@
 # Tạo phiếu nhập và Tạo phiếu xuất trên máy tính: bố cục mới (đợt 2a)
 
-> **For agentic workers:** this is UI work, run by Gemini via agy (Argon: a whole-page redo) after wave 1 (`2026-10-17-giao-dien-dot-1.md`) is merged. Branch from main after that merge. Opus runs the tests.
+> **For agentic workers:** this is UI work, run by Gemini Flash via agy (Argon is not used, owner 2026-10-18) after wave 1 (`2026-10-17-giao-dien-dot-1.md`) is merged. Branch from main after that merge. Opus runs the tests.
 
 **Goal:** on a computer, both forms read like a paper invoice.
 - The order details sit at the top.

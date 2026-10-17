@@ -474,6 +474,11 @@ describe("DataList", () => {
       const select = screen.getByRole("combobox", { name: "Sắp xếp" }) as HTMLSelectElement;
       expect(select).toBeInTheDocument();
       expect(select.className).toContain("min-h-[48px]");
+      expect(select.className).toContain("appearance-none");
+      expect(select.className).toContain("rounded-button");
+      const chevron = select.parentElement?.querySelector("svg");
+      expect(chevron).toBeInTheDocument();
+      expect(chevron?.querySelector("path")).toHaveAttribute("d", "M19 9l-7 7-7-7");
 
       const options = Array.from(select.querySelectorAll("option"));
       const optionTexts = options.map((o) => o.textContent?.trim());
@@ -732,6 +737,12 @@ describe("DataList wears the table template", () => {
     const vinamilks = screen.getAllByText("Vinamilk");
     const phoneFirstRow = vinamilks[vinamilks.length - 1];
     expect(phoneTotal.compareDocumentPosition(phoneFirstRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("totals label cell on desktop has whitespace-nowrap", () => {
+    renderList({ totals: { label: "Tổng (không tính huỷ)", values: { name: "3 nhà cung cấp" } } });
+    const labelCell = screen.getByText("Tổng (không tính huỷ)").closest("td");
+    expect(labelCell?.className).toContain("whitespace-nowrap");
   });
 
   it("multi-value totals strip joins items with · on the phone", () => {

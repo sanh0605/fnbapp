@@ -36,9 +36,44 @@ export function FormActionBar({
     form.addEventListener("input", handleDirty);
     form.addEventListener("change", handleDirty);
 
+    const scrollParent = barRef.current?.closest(".overflow-y-auto") as HTMLElement | null;
+    const targetToObserve = (scrollParent?.firstElementChild as HTMLElement | null) ?? form;
+
+    const updatePosition = () => {
+      const el = barRef.current;
+      if (!el) return;
+      el.style.marginTop = "";
+      const base = parseFloat(getComputedStyle(el).marginTop) || 0;
+      const parentBottom = scrollParent
+        ? scrollParent.getBoundingClientRect().bottom
+        : window.innerHeight;
+      const target = parentBottom - (parseFloat(getComputedStyle(el).bottom) || 0);
+      const currentBottom = el.getBoundingClientRect().bottom + (scrollParent?.scrollTop ?? 0);
+      const paddingBottom = targetToObserve
+        ? parseFloat(getComputedStyle(targetToObserve).paddingBottom) || 0
+        : 0;
+      if (currentBottom > 0 && parentBottom > 0) {
+        const diff = target - currentBottom - paddingBottom;
+        if (diff > 0) {
+          el.style.marginTop = `${base + diff}px`;
+        }
+      }
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && targetToObserve) {
+      observer = new ResizeObserver(updatePosition);
+      observer.observe(targetToObserve);
+    }
+
     return () => {
       form.removeEventListener("input", handleDirty);
       form.removeEventListener("change", handleDirty);
+      window.removeEventListener("resize", updatePosition);
+      observer?.disconnect();
     };
   }, []);
 

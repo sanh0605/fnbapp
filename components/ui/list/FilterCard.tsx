@@ -4,7 +4,7 @@ import React, { useState } from "react";
 
 export interface FilterCardProps {
   children: React.ReactNode;
-  onApply: () => void;
+  onApply?: () => void;
   onClear: () => void;
   showClear: boolean;
   activeCount?: number;
@@ -24,7 +24,7 @@ export function FilterCard({
   const canFold = (search !== undefined || activeCount !== undefined) && hasChildren;
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && onApply) {
       const target = e.target as HTMLElement;
       if (
         (target instanceof HTMLInputElement || target instanceof HTMLSelectElement) &&
@@ -38,6 +38,39 @@ export function FilterCard({
 
   const toggleLabel =
     activeCount && activeCount > 0 ? `Bộ lọc (${activeCount})` : "Bộ lọc";
+
+  const inlineButtons = search !== undefined && !hasChildren;
+
+  const hasButtons = Boolean(onApply || showClear);
+
+  const buttons = hasButtons ? (
+    <div
+      className={
+        inlineButtons
+          ? "flex gap-2 shrink-0 md:w-auto min-h-[48px] md:min-h-[40px]"
+          : "flex gap-2 w-full md:w-auto min-h-[48px] md:min-h-[40px]"
+      }
+    >
+      {onApply && (
+        <button
+          type="button"
+          onClick={onApply}
+          className="flex-1 md:flex-none bg-surface-secondary text-text-primary px-4 rounded-lg font-medium hover:bg-surface-secondary/80 transition border border-border flex items-center justify-center min-w-[80px] min-h-[48px] md:min-h-[40px]"
+        >
+          Lọc
+        </button>
+      )}
+      {showClear && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="flex-1 md:flex-none text-danger px-4 rounded-lg font-medium hover:bg-danger/10 transition flex items-center justify-center min-w-[80px] min-h-[48px] md:min-h-[40px]"
+        >
+          Xoá lọc
+        </button>
+      )}
+    </div>
+  ) : null;
 
   return (
     <div
@@ -64,28 +97,12 @@ export function FilterCard({
                 {toggleLabel}
               </button>
             )}
+            {inlineButtons && buttons}
           </div>
         )}
         <div className={canFold && !open ? "hidden md:contents" : "contents"}>
           {children}
-          <div className="flex gap-2 w-full md:w-auto min-h-[48px] md:min-h-[40px]">
-            <button
-              type="button"
-              onClick={onApply}
-              className="flex-1 md:flex-none bg-surface-secondary text-text-primary px-4 rounded-lg font-medium hover:bg-surface-secondary/80 transition border border-border flex items-center justify-center min-w-[80px] min-h-[48px] md:min-h-[40px]"
-            >
-              Lọc
-            </button>
-            {showClear && (
-              <button
-                type="button"
-                onClick={onClear}
-                className="flex-1 md:flex-none text-danger px-4 rounded-lg font-medium hover:bg-danger/10 transition flex items-center justify-center min-w-[80px] min-h-[48px] md:min-h-[40px]"
-              >
-                Xoá lọc
-              </button>
-            )}
-          </div>
+          {!inlineButtons && buttons}
         </div>
       </div>
     </div>

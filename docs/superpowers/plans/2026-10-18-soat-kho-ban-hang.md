@@ -27,7 +27,7 @@ Nguồn: ảnh chụp lại 2026-10-18 (`.worktrees/shots/audit3/`, 61 trang × 
 
 1. **Trạng thái:** không thêm trạng thái nào; chỉ đổi cách hiện. "Bán độc lập" ở trang xem tuỳ chọn đang trông như công tắc bấm được dù chỉ để xem: đổi thành chữ "Có" / "Không" (d77).
 2. **Nút:**
-   - "Sửa đơn" ở trang đơn hàng mở trang tên "Đổi cách trả": nút đổi tên thành "Đổi cách trả".
+   - "Sửa đơn" ở trang đơn hàng mở trang tên "Đổi cách trả": **giữ tên nút "Sửa đơn"** (chủ quán 2026-10-15, `BR-SALE-014`: *"Không thay đổi tên nút"*; người soát G2 bắt được 2026-10-18, bản đầu kế hoạch này ghi nhầm là đổi tên).
    - Trang xem dùng "Chỉnh sửa" (đo 2026-10-18: đa số trang xem đã dùng); "Sửa" ở loại món, nhóm tuỳ chọn, khung khấu hao đổi theo (d11, d81, p59, p66).
    - "Ngừng dùng" và "Xoá" ở mọi trang xem dùng cùng kiểu nút nguy hiểm của `Button` (d31, d73, p26, p59, p66).
    - Phiếu nhập: "Huỷ phiếu" màu đỏ ra cuối hàng nút, sau "Nhân bản" (d42, p33).
@@ -169,7 +169,7 @@ Chỉ `app/admin/orders/**`, `app/admin/products/**`, trừ `*actions*.ts`.
 - **S1 Đơn hàng:**
   - Danh sách: ngày giờ không xuống dòng; nhãn tổng một dòng.
   - Trang xem:
-    - Nút "Đổi cách trả".
+    - Nút giữ tên "Sửa đơn" (`BR-SALE-014`).
     - Cột "Tuỳ chọn", "Giảm" ẩn khi mọi dòng trống (d60).
   - Đổi cách trả:
     - Tiền có "đ"; "20,000" dưới ô chọn có nhãn; "(bắt buộc)" thành dấu sao như form khác (d61, d62).
