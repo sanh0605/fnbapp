@@ -36,7 +36,7 @@ export function BackLink({ href, label, className }: BackLinkProps) {
     <Link
       href={href}
       onClick={handleBack}
-      className={className || "text-sm font-medium text-primary hover:text-primary-hover no-underline self-start inline-block"}
+      className={className || "text-sm font-medium text-primary hover:text-primary-hover no-underline inline-flex items-center gap-1 min-h-[48px] md:min-h-[40px] self-start"}
     >
       &larr; {label}
     </Link>

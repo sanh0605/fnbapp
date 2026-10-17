@@ -136,7 +136,7 @@ export function CashTransferForm({
               required
               defaultValue={defaultFrom}
             >
-              <option value="" disabled>
+              <option value="" disabled data-placeholder>
                 Chọn nơi chuyển
               </option>
               <option value="CASH">Tiền mặt (két)</option>
@@ -155,7 +155,7 @@ export function CashTransferForm({
               required
               defaultValue={defaultTo}
             >
-              <option value="" disabled>
+              <option value="" disabled data-placeholder>
                 Chọn nơi nhận
               </option>
               <option value="CASH">Tiền mặt (két)</option>

@@ -3,9 +3,9 @@ import { activeOrOnOrder } from "@/lib/purchasing/active-or-on-order";
 import { getPurchaseOrderCopySeed } from "../actions";
 import PurchaseOrderForm from "../components/PurchaseOrderForm";
 import Link from "next/link";
-import { BackLink } from "@/components/ui/BackLink";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { Alert } from "@/components/ui/Alert";
-import { PageHeader } from "@/components/ui/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +31,10 @@ export default async function NewPurchaseOrderPage(
   const bankAccounts = (allBankAccounts as any[]).filter(a => a.status === "ACTIVE");
 
   return (
-    <div className="space-y-6 w-full">
-      <BackLink href="/admin/inventory/purchase-orders" label="Phiếu nhập" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref="/admin/inventory/purchase-orders"
+        backLabel="Phiếu nhập"
         title="Tạo phiếu nhập"
         subtitle="Nhập hàng hoá từ nhà cung cấp vào kho."
       />
@@ -65,6 +66,6 @@ export default async function NewPurchaseOrderPage(
         bankAccounts={bankAccounts}
         copySeed={copySeed ?? undefined}
       />
-    </div>
+    </DetailFrame>
   );
 }

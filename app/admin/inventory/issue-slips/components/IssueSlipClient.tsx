@@ -335,7 +335,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                             onChange={e => updateLine(index, { unitKey: e.target.value })}
                             disabled={!item}
                           >
-                            <option value="">-- Chọn --</option>
+                            <option value="" data-placeholder>-- Chọn --</option>
                             {options.map(o => (
                               <option key={o.key} value={o.key}>{o.label}</option>
                             ))}
@@ -508,7 +508,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         onChange={e => updateLine(index, { unitKey: e.target.value })}
                         disabled={!item}
                       >
-                        <option value="">-- Chọn --</option>
+                        <option value="" data-placeholder>-- Chọn --</option>
                         {options.map(o => (
                           <option key={o.key} value={o.key}>{o.label}</option>
                         ))}

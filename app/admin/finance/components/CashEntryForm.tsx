@@ -167,7 +167,7 @@ export function CashEntryForm({
               value={categoryId}
               onChange={(e) => handleCategoryChange(e.target.value)}
             >
-              <option value="" disabled>Chọn nhóm</option>
+              <option value="" disabled data-placeholder>Chọn nhóm</option>
               {categoryOptions.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -225,7 +225,7 @@ export function CashEntryForm({
                 required
                 defaultValue={entry?.bank_account_id ?? ""}
               >
-                <option value="" disabled>Chọn tài khoản</option>
+                <option value="" disabled data-placeholder>Chọn tài khoản</option>
                 {accountOptions.map((a) => (
                   <option key={a.id} value={a.id}>{a.name}</option>
                 ))}

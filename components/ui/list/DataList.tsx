@@ -426,42 +426,53 @@ export function DataList<T>({
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {totals && (
-                <tr className="bg-primary-soft">
-                  {removal && <td className="px-4 py-3" />}
-                  {columns.map((col) => {
-                    const hasVal =
-                      totals.values[col.key] !== undefined &&
-                      totals.values[col.key] !== null;
-                    const isFirstEmpty =
-                      !hasVal &&
-                      columns.find(
-                        (c) =>
-                          totals.values[c.key] === undefined ||
-                          totals.values[c.key] === null
-                      )?.key === col.key;
-                    const content = hasVal
-                      ? totals.values[col.key]
-                      : isFirstEmpty
-                      ? totals.label
-                      : null;
+              {totals && (() => {
+                const firstValIdx = columns.findIndex(
+                  (col) =>
+                    totals.values[col.key] !== undefined &&
+                    totals.values[col.key] !== null
+                );
+                const leadingIdx = firstValIdx === -1 ? columns.length : firstValIdx;
+                const leadingRun = columns.slice(0, leadingIdx);
+                const remainingColumns = columns.slice(leadingIdx);
+                const nonSecondaryCount = leadingRun.filter((c) => !c.secondary).length;
+                const secondaryCols = leadingRun.filter((c) => c.secondary);
 
-                    return (
+                return (
+                  <tr className="bg-primary-soft">
+                    {removal && <td className="px-4 py-3" />}
+                    {nonSecondaryCount > 0 && (
                       <td
-                        key={col.key}
-                        className={`px-6 py-3 text-sm font-normal text-text-primary ${
-                          isFirstEmpty ? "whitespace-nowrap" : ""
-                        } ${
-                          col.align === "right" ? "text-right tabular-nums whitespace-nowrap" : ""
-                        } ${col.secondary ? "hidden xl:table-cell" : ""}`}
+                        colSpan={nonSecondaryCount}
+                        className="px-6 py-3 text-sm font-normal text-text-primary"
                       >
-                        {content}
+                        {totals.label}
                       </td>
-                    );
-                  })}
-                  {removal && <td className="px-4 py-3" />}
-                </tr>
-              )}
+                    )}
+                    {secondaryCols.map((col) => (
+                      <td key={col.key} className="hidden xl:table-cell" />
+                    ))}
+                    {remainingColumns.map((col) => {
+                      const hasVal =
+                        totals.values[col.key] !== undefined &&
+                        totals.values[col.key] !== null;
+                      const content = hasVal ? totals.values[col.key] : null;
+
+                      return (
+                        <td
+                          key={col.key}
+                          className={`px-6 py-3 text-sm font-normal text-text-primary ${
+                            col.align === "right" ? "text-right tabular-nums whitespace-nowrap" : ""
+                          } ${col.secondary ? "hidden xl:table-cell" : ""}`}
+                        >
+                          {content}
+                        </td>
+                      );
+                    })}
+                    {removal && <td className="px-4 py-3" />}
+                  </tr>
+                );
+              })()}
               {rows.map((row) => {
                 const id = getId(row);
                 const name = getName(row);

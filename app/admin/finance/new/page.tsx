@@ -3,8 +3,8 @@ import { getBankAccounts } from "../bank-accounts/actions";
 import { getMonthlyItems } from "@/app/admin/finance/monthly-items/actions";
 import { CashEntryForm } from "../components/CashEntryForm";
 import { safeReturnTo } from "@/lib/shared/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { toSaigonIsoString } from "@/lib/shared/datetime";
 
 export const dynamic = "force-dynamic";
@@ -28,9 +28,10 @@ export default async function NewCashEntryPage(
   ]);
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label={returnTo === "/admin" ? "Tổng quan" : "Sổ thu chi"} />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel={returnTo === "/admin" ? "Tổng quan" : "Sổ thu chi"}
         title="Tạo khoản thu chi"
         subtitle="Ghi các khoản chi và thu ngoài bán hàng, mua hàng."
       />
@@ -43,6 +44,6 @@ export default async function NewCashEntryPage(
         today={today}
         returnTo={returnTo}
       />
-    </div>
+    </DetailFrame>
   );
 }

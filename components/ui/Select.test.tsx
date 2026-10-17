@@ -33,4 +33,25 @@ describe("Select", () => {
     const path = svg?.querySelector("path");
     expect(path).toHaveAttribute("d", "M19 9l-7 7-7-7");
   });
+
+  it("applies placeholder colour styling when data-placeholder option is checked", () => {
+    const { rerender } = render(
+      <Select aria-label="Lựa chọn">
+        <option value="" data-placeholder>-- Chọn --</option>
+        <option value="1">Một</option>
+      </Select>
+    );
+    const select = screen.getByRole("combobox");
+    expect(select.className).toContain("has-[option[data-placeholder]:checked]:text-text-muted");
+    expect(select.className).toContain("[&>option]:text-text-primary");
+    expect(select.matches(":has(option[data-placeholder]:checked)")).toBe(true);
+
+    rerender(
+      <Select aria-label="Lựa chọn">
+        <option value="">Tất cả</option>
+        <option value="1">Một</option>
+      </Select>
+    );
+    expect(select.matches(":has(option[data-placeholder]:checked)")).toBe(false);
+  });
 });

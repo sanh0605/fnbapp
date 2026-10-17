@@ -1,7 +1,7 @@
 import { findAll } from "@/lib/db/tables";
 import { getProductTypes } from "@/app/admin/products/types/actions";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { Alert } from "@/components/ui/Alert";
 import type { DBProduct } from "@/types/db";
 import { getDashboardSettings } from "./actions";
@@ -27,23 +27,25 @@ export default async function DashboardSettingsPage() {
 
   if (!settings) {
     return (
-      <div className="space-y-6">
-        <BackLink href="/admin" label="Tổng quan" />
-        <PageHeader
+      <DetailFrame>
+        <DetailHeader
+          backHref="/admin"
+          backLabel="Tổng quan"
           title="Cài đặt Tổng quan"
           subtitle="Chỉnh các mốc báo động và các cột của bảng 7 ngày."
         />
         <Alert variant="danger">
           Chưa có dòng cài đặt. Báo lại cho người làm phần mềm.
         </Alert>
-      </div>
+      </DetailFrame>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <BackLink href="/admin" label="Tổng quan" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref="/admin"
+        backLabel="Tổng quan"
         title="Cài đặt Tổng quan"
         subtitle="Chỉnh các mốc báo động và các cột của bảng 7 ngày."
       />
@@ -53,6 +55,6 @@ export default async function DashboardSettingsPage() {
         types={types}
         isOwner={isOwner}
       />
-    </div>
+    </DetailFrame>
   );
 }

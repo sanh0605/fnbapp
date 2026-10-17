@@ -778,14 +778,50 @@ describe("DataList wears the table template", () => {
     expect(phoneTotal.compareDocumentPosition(phoneFirstRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("totals label cell on desktop has whitespace-nowrap", () => {
+  it("totals label cell on desktop drops whitespace-nowrap to let other columns fit", () => {
     renderList({ totals: { label: "Tổng (không tính huỷ)", values: { name: "3 nhà cung cấp" } } });
     const labelCell = screen.getByText("Tổng (không tính huỷ)").closest("td");
-    expect(labelCell?.className).toContain("whitespace-nowrap");
+    expect(labelCell?.className).not.toContain("whitespace-nowrap");
+  });
+
+  it("with columns [code, date(secondary), supplier, total(right)] and totals { label: 'Tổng', values: { total: '10đ' } }, the label cell has colSpan 2, there is one cell with class hidden xl:table-cell before the total cell, and the total cell shows 10đ", () => {
+    type Row = { code: string; date: string; supplier: string; total: string };
+    const testCols: DataColumn<Row>[] = [
+      { key: "code", header: "Mã", render: (r) => r.code },
+      { key: "date", header: "Ngày", secondary: true, render: (r) => r.date },
+      { key: "supplier", header: "Nhà cung cấp", render: (r) => r.supplier },
+      { key: "total", header: "Tổng", align: "right", render: (r) => r.total },
+    ];
+    render(
+      <DataList<Row>
+        rows={[{ code: "PO-1", date: "2026-10-18", supplier: "NCC", total: "10đ" }]}
+        getId={(r) => r.code}
+        getName={(r) => r.supplier}
+        getHref={(r) => `/po/${r.code}`}
+        columns={testCols}
+        phoneRow={(r) => ({ title: r.supplier })}
+        empty={<div>Trống</div>}
+        totals={{
+          label: "Tổng",
+          values: { total: "10đ" },
+        }}
+      />
+    );
+
+    const labelCell = screen.getByText("Tổng", { selector: "td" }) as HTMLTableCellElement;
+    expect(labelCell.colSpan).toBe(2);
+
+    const row = labelCell.closest("tr")!;
+    const cells = Array.from(row.querySelectorAll("td"));
+    expect(cells).toHaveLength(3);
+    expect(cells[0]).toBe(labelCell);
+    expect(cells[1].className).toContain("hidden xl:table-cell");
+    expect(cells[1].textContent).toBe("");
+    expect(cells[2].textContent).toBe("10đ");
   });
 
   it("multi-value totals strip joins items with · on the phone", () => {
-    renderList({
+    const { container } = renderList({
       totals: {
         label: "Tổng",
         values: { id: "3", name: "3 nhà cung cấp" },
@@ -793,6 +829,8 @@ describe("DataList wears the table template", () => {
     });
     const phoneTotal = screen.getByText("Tổng: Mã 3 · Tên 3 nhà cung cấp");
     expect(phoneTotal.closest(".md\\:hidden")).not.toBeNull();
+    const totalsRow = container.querySelector("tr.bg-primary-soft")!;
+    expect(totalsRow.querySelectorAll("td")).toHaveLength(2);
   });
 
   it("the bulk delete button is a red outline, since a yes/no question follows it", () => {

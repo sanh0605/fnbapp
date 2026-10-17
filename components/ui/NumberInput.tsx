@@ -276,7 +276,8 @@ export function NumberInput({
             isError
               ? "border-danger focus:border-danger"
               : "border-border focus:border-primary"
-          } ${unit ? "pr-10" : ""}`}
+          }`}
+          style={unit ? { paddingRight: `calc(${unit.length}ch + 1.25rem)` } : undefined}
           {...ariaProps}
           aria-invalid={isError ? "true" : (ariaProps["aria-invalid"] as "true" | "false" | undefined)}
           aria-describedby={activeMessage ? messageId : ariaProps["aria-describedby"]}

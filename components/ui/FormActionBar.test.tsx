@@ -256,6 +256,54 @@ describe("BR-UI-015 FormActionBar", () => {
     }
   });
 
+  it("measures overshoot and takes it back when pushed", () => {
+    let rectBottom = 400;
+    const origGetComputedStyle = window.getComputedStyle;
+    vi.spyOn(window, "getComputedStyle").mockImplementation((elt) => {
+      const real = origGetComputedStyle(elt);
+      return new Proxy(real, {
+        get(target, prop) {
+          if (prop === "marginTop") return "16px";
+          if (prop === "bottom") return "58px";
+          if (prop === "paddingBottom") return "24px";
+          return (target as any)[prop];
+        },
+      });
+    });
+
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains("overflow-y-auto")) {
+        return { bottom: 800 } as DOMRect;
+      }
+      return { bottom: rectBottom } as DOMRect;
+    });
+
+    try {
+      const { container } = render(
+        <div className="overflow-y-auto">
+          <form>
+            <input />
+            <FormActionBar mode="create" onCancel={() => {}} />
+          </form>
+        </div>
+      );
+
+      const scrollParent = container.querySelector(".overflow-y-auto") as HTMLElement;
+      // Mock overshoot: scrollHeight = 850, clientHeight = 800 -> over = 50
+      Object.defineProperty(scrollParent, "scrollHeight", { value: 850, configurable: true });
+      Object.defineProperty(scrollParent, "clientHeight", { value: 800, configurable: true });
+
+      fireEvent(window, new Event("resize"));
+
+      const bar = container.querySelector(".sticky") as HTMLElement;
+      // target = 800 - 58 = 742; currentBottom = 400; paddingBottom = 24; diff = 318;
+      // base (16) + diff (318) - over (50) = 284px
+      expect(bar.style.marginTop).toBe("284px");
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   it("long form (bar already at or below target) sets no marginTop", () => {
     const origGetComputedStyle = window.getComputedStyle;
     vi.spyOn(window, "getComputedStyle").mockImplementation((elt) => {

@@ -267,7 +267,7 @@ export function DisposeAssetForm({
               required
               defaultValue=""
             >
-              <option value="" disabled>Chọn tài khoản</option>
+              <option value="" disabled data-placeholder>Chọn tài khoản</option>
               {bankAccounts.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name}

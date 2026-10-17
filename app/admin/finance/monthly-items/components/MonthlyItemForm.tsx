@@ -83,7 +83,7 @@ export function MonthlyItemForm({ item, categories, returnTo = "/admin/finance/m
               required
               defaultValue={item?.cash_category_id ?? ""}
             >
-              <option value="" disabled>Chọn nhóm</option>
+              <option value="" disabled data-placeholder>Chọn nhóm</option>
               {expenseCategories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}

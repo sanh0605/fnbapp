@@ -1,8 +1,8 @@
 import { getPromotionsData } from "@/app/admin/promotions/actions";
 import { PromotionForm } from "@/app/admin/promotions/components/PromotionForm";
 import { safeReturnTo } from "@/lib/shared/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +18,10 @@ export default async function NewPromotionPage(
   const activeVariants = variants.filter((v) => v.status !== "DELETED");
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Khuyến mãi" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Khuyến mãi"
         title="Tạo khuyến mãi"
         subtitle="Tạo mới mã giảm giá, chiết khấu hoá đơn hoặc khuyến mãi theo sản phẩm."
       />
@@ -31,6 +32,6 @@ export default async function NewPromotionPage(
         variants={activeVariants}
         returnTo={returnTo}
       />
-    </div>
+    </DetailFrame>
   );
 }

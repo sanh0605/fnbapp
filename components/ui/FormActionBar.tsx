@@ -56,6 +56,9 @@ export function FormActionBar({
         const diff = target - currentBottom - paddingBottom;
         if (diff > 0) {
           el.style.marginTop = `${base + diff}px`;
+          const scroller = scrollParent ?? document.scrollingElement;
+          const over = scroller ? scroller.scrollHeight - scroller.clientHeight : 0;
+          if (over > 0) el.style.marginTop = `${Math.max(base, base + diff - over)}px`;
         }
       }
     };

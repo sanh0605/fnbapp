@@ -1,8 +1,8 @@
 import { getBankAccounts } from "@/app/admin/finance/bank-accounts/actions";
 import { CashTransferForm } from "../components/CashTransferForm";
 import { safeReturnTo } from "@/lib/shared/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { saigonToday } from "@/lib/shared/datetime";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +18,10 @@ export default async function NewCashTransferPage(
   const accounts = await getBankAccounts();
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Sổ thu chi" />
-      <PageHeader
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Sổ thu chi"
         title="Tạo khoản chuyển tiền"
         subtitle="Chuyển tiền giữa két và tài khoản ngân hàng."
       />
@@ -29,6 +30,6 @@ export default async function NewCashTransferPage(
         today={today}
         returnTo={returnTo}
       />
-    </div>
+    </DetailFrame>
   );
 }

@@ -102,6 +102,11 @@ describe("BR-UI-005 NumberInput: what the box shows besides the number", () => {
     expect(screen.getByText("ml")).toBeInTheDocument();
   });
 
+  it("reserves space with inline style sized to the unit", () => {
+    render(<NumberInput id="qty" decimals={0} unit="miếng" />);
+    expect(box().style.paddingRight).toContain("5ch");
+  });
+
   it("a hint shows under the box, and an error from the page takes its place", () => {
     const { rerender } = render(<NumberInput id="qty" decimals={3} hint="Tồn hiện tại: 3,200 ml" />);
     expect(screen.getByText("Tồn hiện tại: 3,200 ml")).toBeInTheDocument();
