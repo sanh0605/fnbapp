@@ -127,6 +127,18 @@ describe("StocktakeDetailView (Screen 3)", () => {
     expect(all).toHaveAttribute("aria-pressed", "false");
   });
 
+  it("filter chips: a blank line shows the Chưa đếm chip", () => {
+    const blankLine = { ...confirmedSession.lines[0], id: "LINE-2", countedQty: null, diffValue: null, state: "BLANK" as const };
+    render(
+      <StocktakeDetailView
+        session={{ ...confirmedSession, lines: [...confirmedSession.lines, blankLine] }}
+        isLatestConfirmed={true}
+        isOwner={true}
+      />
+    );
+    expect(screen.getByRole("button", { name: "Chưa đếm (1)" })).toBeInTheDocument();
+  });
+
   it("renders stocktake line items on phone as a divide-y list of PhoneRow", () => {
     const { container } = render(
       <StocktakeDetailView
