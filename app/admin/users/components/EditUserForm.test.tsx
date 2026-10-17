@@ -67,6 +67,33 @@ describe("EditUserForm", () => {
     expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
   });
 
+  it("prefills the staff name with the saved name when present", () => {
+    render(<EditUserForm user={userFixture({ name: "Nguyễn Văn An" })} returnTo="/admin/users" />);
+    const nameInput = screen.getByLabelText(/^Tên nhân viên/);
+    expect(nameInput).toHaveValue("Nguyễn Văn An");
+    expect(nameInput).toHaveAttribute("maxLength", "60");
+    expect(nameInput).toHaveAttribute("placeholder", "Ví dụ: Nguyễn Văn An");
+  });
+
+  it("prefills the staff name with the login when the saved name is empty or missing", () => {
+    render(<EditUserForm user={userFixture({ name: "", username: "nhanvien01" })} returnTo="/admin/users" />);
+    expect(screen.getByLabelText(/^Tên nhân viên/)).toHaveValue("nhanvien01");
+
+    cleanup();
+    render(<EditUserForm user={userFixture({ name: undefined, username: "nhanvien02" })} returnTo="/admin/users" />);
+    expect(screen.getByLabelText(/^Tên nhân viên/)).toHaveValue("nhanvien02");
+  });
+
+  it("submits the updated name in formData", async () => {
+    mocks.updateUser.mockResolvedValue({});
+    render(<EditUserForm user={userFixture({ name: "Nguyễn Văn An" })} returnTo="/admin/users" />);
+    fireEvent.change(screen.getByLabelText(/^Tên nhân viên/), { target: { value: "Nguyễn Văn Bình" } });
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
+    await waitFor(() => expect(mocks.updateUser).toHaveBeenCalledTimes(1));
+    const formData = mocks.updateUser.mock.calls[0][0] as FormData;
+    expect(formData.get("name")).toBe("Nguyễn Văn Bình");
+  });
+
   it("renders role options with Vietnamese-only labels (no English)", () => {
     render(<EditUserForm user={userFixture()} returnTo="/admin/users" />);
     expect(screen.getByRole("option", { name: "Nhân viên" })).toBeInTheDocument();

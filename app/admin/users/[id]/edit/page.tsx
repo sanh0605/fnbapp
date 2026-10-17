@@ -51,13 +51,16 @@ export default async function EditUserPage(
     ? rawReturnTo
     : `/admin/users/${encodeURIComponent(user.id)}?returnTo=${encodeURIComponent(listReturnTo)}`;
 
+  const hasDistinctName = Boolean(user.name && user.name.trim() !== "" && user.name.trim() !== user.username);
+  const displayName = user.name?.trim() || user.username;
+
   return (
     <DetailFrame>
       <DetailHeader
         backHref={detailHref}
-        backLabel={user.username}
+        backLabel={displayName}
         title="Chỉnh sửa"
-        subtitle={user.username}
+        subtitle={hasDistinctName ? `${displayName} · ${user.username}` : user.username}
       />
       <EditUserForm user={user} returnTo={detailHref} canGrantAdmin={canGrantAdmin} />
     </DetailFrame>

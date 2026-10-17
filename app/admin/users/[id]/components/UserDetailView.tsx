@@ -27,6 +27,8 @@ export function UserDetailView({
   const currentDetailUrl = `/admin/users/${encodeURIComponent(user.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/users/${encodeURIComponent(user.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
   const canEdit = canGrantAdmin || user.role !== "ADMIN";
+  const hasDistinctName = Boolean(user.name && user.name.trim() !== "" && user.name.trim() !== user.username);
+  const displayName = user.name?.trim() || user.username;
 
   const fields: Field[] = [
     { label: "Mã NV", value: user.id },
@@ -45,8 +47,8 @@ export function UserDetailView({
       {canDelete && user.username !== "admin" && (
         <RemoveRecordButton
           verb="Xoá"
-          name={user.username}
-          confirmMessage={`Bạn có chắc chắn muốn xoá nhân sự "${user.username}"? Không thể hoàn tác.`}
+          name={displayName}
+          confirmMessage={`Bạn có chắc chắn muốn xoá nhân sự "${displayName}"? Không thể hoàn tác.`}
           remove={async () => {
             const fd = new FormData();
             fd.set("id", user.id);
@@ -67,8 +69,8 @@ export function UserDetailView({
       <DetailHeader
         backHref={returnTo}
         backLabel="Nhân viên & quyền"
-        title={user.username}
-        subtitle={user.id}
+        title={displayName}
+        subtitle={hasDistinctName ? `${user.username} · ${user.id}` : user.id}
         actions={headerActions}
       />
       <FieldList fields={fields} />

@@ -106,12 +106,20 @@ export default function UsersClient({
         ),
       },
       {
-        key: "username",
-        header: "Tên đăng nhập",
-        sortValue: (u) => u.username,
-        render: (u) => (
-          <div className="text-text-primary">{u.username}</div>
-        ),
+        key: "name",
+        header: "Tên nhân viên",
+        sortValue: (u) => u.name?.trim() || u.username,
+        render: (u) => {
+          const hasDistinctName = Boolean(u.name && u.name.trim() !== "" && u.name.trim() !== u.username);
+          return (
+            <div>
+              <div className="text-text-primary">{u.name?.trim() || u.username}</div>
+              {hasDistinctName && (
+                <div className="text-xs text-text-muted">{u.username}</div>
+              )}
+            </div>
+          );
+        },
       },
       {
         key: "role",
@@ -133,7 +141,10 @@ export default function UsersClient({
     [],
   );
 
-  const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
+  const validSortKeys = useMemo(
+    () => [...columns.map((c) => c.key), "username"],
+    [columns],
+  );
   // Default sort is code (id), descending (newest code first)
   const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
   const sortParam = rawSort ? sortKey : undefined;
@@ -146,16 +157,18 @@ export default function UsersClient({
       if (!matchRole) return false;
 
       if (q) {
+        const matchName = (u.name || "").toLocaleLowerCase("vi").includes(q);
         const matchUsername = (u.username || "").toLocaleLowerCase("vi").includes(q);
         const matchId = (u.id || "").toLocaleLowerCase("vi").includes(q);
-        return matchUsername || matchId;
+        return matchName || matchUsername || matchId;
       }
       return true;
     });
   }, [users, search, role]);
 
   const sortedUsers = useMemo(() => {
-    const col = columns.find((c) => c.key === sortKey);
+    const effectiveKey = sortKey === "username" ? "name" : sortKey;
+    const col = columns.find((c) => c.key === effectiveKey);
     return col?.sortValue
       ? sortRows(filteredUsers, col.sortValue, sortDir)
       : filteredUsers;
@@ -259,18 +272,25 @@ export default function UsersClient({
       <DataList
         rows={slice.rows}
         getId={(u) => u.id}
-        getName={(u) => u.username}
+        getName={(u) => u.name?.trim() || u.username}
         getHref={(u) =>
           `/admin/users/${encodeURIComponent(u.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        phoneRow={(u) => ({
-          title: u.username,
-          meta: [u.id, u.created_at ? `Tạo ${formatDate(u.created_at)}` : null]
-            .filter(Boolean)
-            .join(" · "),
-          badge: <RoleBadge role={u.role} />,
-        })}
+        phoneRow={(u) => {
+          const hasDistinctName = Boolean(u.name && u.name.trim() !== "" && u.name.trim() !== u.username);
+          return {
+            title: u.name?.trim() || u.username,
+            meta: [
+              hasDistinctName ? u.username : null,
+              u.id,
+              u.created_at ? `Tạo ${formatDate(u.created_at)}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            badge: <RoleBadge role={u.role} />,
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,
