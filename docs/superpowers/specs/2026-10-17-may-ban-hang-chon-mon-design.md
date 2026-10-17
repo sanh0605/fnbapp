@@ -42,7 +42,7 @@ Thêm câu riêng cho việc này:
 
 1. Chạm tên món. Không có gì vào giỏ.
 2. Khung chọn mở ra:
-   - nhóm **1 Cỡ ly** (size rẻ nhất sáng sẵn);
+   - nhóm **1 Cỡ ly** (size rẻ nhất sáng sẵn); món thuộc loại không phải đồ uống thì nhóm này tên **Cỡ** (2026-10-18, sửa sau đợt soát 4);
    - rồi từng nhóm lựa chọn gắn với món, theo thứ tự của nhóm (lựa chọn mặc định sáng sẵn).
 3. Chọn số lượng (bắt đầu 1), bấm **Thêm vào đơn · <tiền>**. Tiền là tổng của dòng sau khuyến mãi, như ô THÊM hôm nay.
 4. Khung đóng lại; giỏ hiện dòng mới hoặc dòng gộp.

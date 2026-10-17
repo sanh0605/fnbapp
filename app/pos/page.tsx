@@ -44,7 +44,7 @@ export default async function POSPage(
 
   const brandId = outlet.brand_id;
 
-  const [categories, products, variants, modifiers, optionGroups, optionGroupLinks, promotions, bestSellers] = await Promise.all([
+  const [categories, products, variants, modifiers, optionGroups, optionGroupLinks, promotions, bestSellers, productTypes] = await Promise.all([
     findAll("Product_Categories"),
     findAll("Products"),
     findAll("Product_Variants"),
@@ -56,14 +56,23 @@ export default async function POSPage(
       startDate: lastWeek.toISOString(),
       endDate: now.toISOString(),
       brandId
-    })
+    }),
+    // Cosmetic (size heading only): a failed read must not stop the till.
+    findAll("Product_Types").catch(() => null)
   ]);
+
+  const drinkTypeIds = productTypes && new Set(productTypes.filter((t: any) => t.is_drink).map((t: any) => t.id));
 
   // Per docs/02-rules/GLOSSARY.md: ACTIVE = available for new transactions,
   // INACTIVE = hidden from new transactions, DELETED = soft-deleted.
   // POS must show ACTIVE only so the admin toggle (Product.status ACTIVE/INACTIVE)
   // actually hides toppings from the catalog.
-  const activeCategories = categories.filter(c => c.status === "ACTIVE");
+  const activeCategories = categories
+    .filter(c => c.status === "ACTIVE")
+    .map(c => ({
+      ...c,
+      is_drink: drinkTypeIds?.has(c.type_id)
+    }));
   const activeVariants = variants.filter(v => v.status === "ACTIVE");
   // section
   // 1.4 (Bug B), independent of the cache fix in ../admin/products/actions.ts:

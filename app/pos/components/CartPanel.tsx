@@ -190,7 +190,7 @@ export function CartPanel({
         <div className="h-14 bg-surface-card flex items-center justify-between px-4 shrink-0 border-b border-border">
           <h2 className="font-bold text-text-primary text-base md:text-lg flex items-center gap-2">
             <ShoppingCart className="w-5 h-5 text-primary" />
-            Hoá Đơn <span className="text-xs text-text-secondary">({totalItems})</span>
+            Hoá đơn <span className="text-xs text-text-secondary">({totalItems})</span>
           </h2>
           <div className="flex items-center gap-1">
             {cart.length > 0 && (
@@ -201,7 +201,7 @@ export function CartPanel({
                   disabled={!!isCheckingOut}
                   className="text-xs font-bold text-primary hover:bg-primary-soft px-3 py-2 rounded-button transition-colors min-h-[44px] flex items-center disabled:opacity-50"
                 >
-                  Lưu Nháp
+                  Lưu nháp
                 </button>
                 <button
                   type="button"

@@ -114,7 +114,7 @@ export function ProductGrid({
 
       <nav
         aria-label="Danh mục món"
-        className="bg-surface-card px-4 pb-3 shrink-0 lg:absolute lg:inset-y-0 lg:left-0 lg:w-[132px] lg:p-2 lg:border-r lg:border-border lg:overflow-y-auto"
+        className="bg-surface-card px-4 pb-3 shrink-0 lg:absolute lg:inset-y-0 lg:left-0 lg:w-[132px] lg:p-2 lg:border-r lg:border-border lg:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <div className="flex gap-2 overflow-x-auto pb-2 snap-x lg:flex-col lg:gap-1.5 lg:pb-0 lg:overflow-x-visible [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <button

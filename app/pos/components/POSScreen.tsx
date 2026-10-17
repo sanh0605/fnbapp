@@ -965,7 +965,7 @@ export default function POSScreen({
             </Link>
             <h1 className="font-extrabold text-base sm:text-xl text-text-primary tracking-tight flex items-center gap-1 sm:gap-2 shrink-0">
               <span className="text-primary">Bán hàng</span>
-              <span className="hidden sm:inline"> Đơn Mới</span>
+              <span className="hidden sm:inline"> Đơn mới</span>
             </h1>
             {isOnline ? (
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-primary-soft text-primary border border-border shrink-0">
@@ -1049,6 +1049,11 @@ export default function POSScreen({
               appliedPromoCode={appliedPromoCode}
               initialLine={editingLine}
               isEditing={editingLineId !== null}
+              sizeLabel={
+                categories.find((c: any) => c.id === selectedProduct.category_id)?.is_drink === false
+                  ? "Cỡ"
+                  : "Cỡ ly"
+              }
               onSubmit={handleItemConfigSubmit}
               onClose={() => {
                 setSelectedProduct(null);

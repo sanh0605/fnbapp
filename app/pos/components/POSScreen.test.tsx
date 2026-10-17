@@ -256,7 +256,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       clickProduct("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
 
-      const draftBtn = screen.getByRole("button", { name: "Lưu Nháp" });
+      const draftBtn = screen.getByRole("button", { name: "Lưu nháp" });
       draftBtn.focus();
       expect(document.activeElement).toBe(draftBtn);
 
@@ -764,8 +764,8 @@ describe("POSScreen (Step 3 & 5)", () => {
         expect(screen.getByRole("button", { name: "Gửi lại" })).toBeInTheDocument();
       });
 
-      // Click "Lưu Nháp"
-      const saveDraftBtn = screen.getByRole("button", { name: "Lưu Nháp" });
+      // Click "Lưu nháp"
+      const saveDraftBtn = screen.getByRole("button", { name: "Lưu nháp" });
       fireEvent.click(saveDraftBtn);
 
       await waitFor(() => {
@@ -863,7 +863,7 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(document.activeElement).toBe(productBtn);
 
       // Before pressing '+', the phone cart sheet is closed
-      const cartContainer = () => screen.getByRole("heading", { name: /Hoá Đơn/i }).closest("div.fixed")!;
+      const cartContainer = () => screen.getByRole("heading", { name: /Hoá đơn/i }).closest("div.fixed")!;
       expect(cartContainer().className).toContain("translate-y-full");
 
       // Press '+' -> cart opens (phone)
@@ -971,7 +971,7 @@ describe("POSScreen (Step 3 & 5)", () => {
 
       clickProductButton("Bạc xỉu");
       fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
-      fireEvent.click(screen.getByRole("button", { name: "Lưu Nháp" }));
+      fireEvent.click(screen.getByRole("button", { name: "Lưu nháp" }));
 
       const region = screen.getByRole("region", { name: "Thông báo" });
       await waitFor(() => {
@@ -998,6 +998,33 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(within(region).getByText("Món này chưa cấu hình size & giá.")).toBeInTheDocument();
       expect(alert).not.toHaveBeenCalled();
       expect(screen.queryByRole("button", { name: /^Thêm vào đơn/ })).toBeNull();
+    });
+
+    it("renders 'Đơn mới' with correct capitalization in the header", () => {
+      render(<POSScreen {...defaultProps} />);
+      expect(screen.getByText("Đơn mới")).toBeInTheDocument();
+    });
+
+    it("passes sizeLabel 'Cỡ' to ItemPicker when product category has is_drink === false", () => {
+      const foodCategory = { id: "CAT-FOOD", name: "Đồ ăn", is_drink: false };
+      const foodProduct = { id: "P-FOOD", name: "Trứng luộc", category_id: "CAT-FOOD", status: "ACTIVE" };
+      const foodVariant = { id: "V-FOOD", product_id: "P-FOOD", size_name: "1 quả", price: 10000 };
+
+      render(
+        <POSScreen
+          {...defaultProps}
+          categories={[...sampleCategories, foodCategory]}
+          products={[...sampleProducts, foodProduct]}
+          variants={[...sampleVariants, foodVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P-FOOD"]}
+        />
+      );
+
+      clickProduct("Trứng luộc");
+
+      expect(screen.getByText("Cỡ")).toBeInTheDocument();
+      expect(screen.getByRole("radiogroup", { name: "Cỡ" })).toBeInTheDocument();
+      expect(screen.queryByText("Cỡ ly")).toBeNull();
     });
   });
 });

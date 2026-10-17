@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { Minus } from "lucide-react";
 import { formatNumber } from "@/lib/shared/format";
 import {
   canAddPortion,
@@ -95,16 +96,17 @@ export function OptionGroupPicker({
             </div>
 
             {isOne ? (
-              <div className="flex flex-col">
+              <div className="flex flex-col" role="radiogroup" aria-label={g.group.name}>
                 {g.options.map((opt) => {
                   const isLit = litId === opt.id;
                   const priceNum = Number(opt.price);
                   return (
                     <button
                       type="button"
+                      role="radio"
                       key={opt.id}
                       onClick={() => onChange(pickOne(picks, g, opt))}
-                      aria-pressed={isLit}
+                      aria-checked={isLit}
                       data-lit={isLit ? "true" : undefined}
                       className={`w-full flex items-center gap-2 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] text-left transition-colors ${
                         isLit
@@ -184,9 +186,14 @@ export function OptionGroupPicker({
                             type="button"
                             onClick={() => removeManyPortion(opt.id)}
                             aria-label={`Bớt một phần ${opt.name}`}
-                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold text-lg transition-colors text-primary hover:bg-surface-card"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button transition-colors text-primary hover:bg-surface-card"
                           >
-                            −
+                            <b
+                              aria-hidden="true"
+                              className="w-[26px] h-[26px] md:w-[22px] md:h-[22px] rounded-[7px] md:rounded-[6px] border-2 border-border bg-surface-card flex items-center justify-center"
+                            >
+                              <Minus className="h-4 w-4" />
+                            </b>
                           </button>
                         )}
                         <button
@@ -247,9 +254,14 @@ export function OptionGroupPicker({
                       type="button"
                       onClick={() => removeOrphanPick(idx)}
                       aria-label={`Bỏ ${p.name}`}
-                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button bg-surface-card text-primary border border-primary/20 hover:bg-primary-soft font-bold text-lg transition-colors"
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button transition-colors text-primary hover:bg-surface-secondary"
                     >
-                      −
+                      <b
+                        aria-hidden="true"
+                        className="w-[26px] h-[26px] md:w-[22px] md:h-[22px] rounded-[7px] md:rounded-[6px] border-2 border-border bg-surface-card flex items-center justify-center"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </b>
                     </button>
                   </div>
                 </div>

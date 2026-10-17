@@ -356,5 +356,27 @@ describe("ItemPicker", () => {
       expect.objectContaining({ discountAmount: 13 })
     );
   });
+
+  it("renders custom sizeLabel when provided (e.g. 'Cỡ' for food)", () => {
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={null}
+        isEditing={false}
+        sizeLabel="Cỡ"
+        onSubmit={vi.fn()}
+        onClose={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText("Cỡ")).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "Cỡ" })).toBeInTheDocument();
+    expect(screen.queryByText("Cỡ ly")).toBeNull();
+  });
 });
 
