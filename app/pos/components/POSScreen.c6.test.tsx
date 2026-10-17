@@ -99,7 +99,18 @@ async function setInputValue(input: HTMLInputElement, value: string) {
 }
 
 function promoInput(): HTMLInputElement {
-  const input = document.querySelector('input[aria-label="Mã giảm giá"]');
+  let input = document.querySelector('input[aria-label="Mã giảm giá"]');
+  if (!input) {
+    const toggle = Array.from(document.querySelectorAll("button")).find(
+      b => b.textContent?.includes("Khuyến mãi, giảm giá"),
+    );
+    if (toggle) {
+      act(() => {
+        toggle.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      });
+    }
+    input = document.querySelector('input[aria-label="Mã giảm giá"]');
+  }
   if (!input) throw new Error("promo code input not found");
   return input as HTMLInputElement;
 }
