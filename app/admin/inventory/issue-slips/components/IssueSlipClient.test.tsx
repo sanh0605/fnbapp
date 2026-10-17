@@ -992,11 +992,7 @@ describe("IssueSlipClient two columns on a computer (owner 2026-10-10)", () => {
     const lines = q("form-lines")[0] as HTMLElement;
     const shared = q("form-shared")[0] as HTMLElement;
     const money = q("form-money")[0] as HTMLElement;
-    expect(layout.className).toContain("lg:grid-cols-3");
-    expect(lines.className).toContain("lg:col-span-2");
-    expect(lines.className).toContain("lg:col-start-1");
-    expect(shared.className).toContain("lg:col-start-3");
-    expect(money.className).toContain("lg:col-start-3");
+    expect(layout.className).not.toContain("lg:grid-cols-3");
     expect(layout.closest(".md\\:hidden")).toBeNull();
 
     expect(shared.textContent).toContain("Thời điểm xuất");

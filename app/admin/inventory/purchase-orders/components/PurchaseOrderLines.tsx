@@ -56,7 +56,18 @@ export function PurchaseOrderLines({
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 xl:space-y-0">
+          <div
+            aria-hidden="true"
+            className="hidden xl:grid xl:grid-cols-[minmax(0,1fr)_9rem_6rem_8rem_6rem_2.5rem] gap-3 pb-2 border-b border-border text-xs font-semibold text-text-secondary"
+          >
+            <div>Mặt hàng</div>
+            <div>Đơn vị nhập</div>
+            <div>Số lượng</div>
+            <div>Thành tiền (đ)</div>
+            <div>Đơn giá</div>
+            <div />
+          </div>
           {lines.map((line, index) => {
             const itemRowId = `${formId}-item-${index}`;
             const item = items.find((i: any) => i.id === line.purchased_item_id);
@@ -84,7 +95,7 @@ export function PurchaseOrderLines({
               <div
                 key={index}
                 data-testid="po-line-card"
-                className={`p-4 border rounded-xl relative bg-surface-secondary/50 ${
+                className={`p-4 border rounded-xl relative bg-surface-secondary/50 xl:rounded-none xl:border-x-0 xl:border-t-0 xl:p-0 xl:py-2 xl:bg-transparent ${
                   hasError ? "border-danger" : "border-border"
                 }`}
               >
@@ -103,24 +114,11 @@ export function PurchaseOrderLines({
 
                 {/* Form inputs: always shown on desktop (md:block); on phone only shown when isOpen */}
                 <div className={isOpen ? "block" : "hidden md:block"}>
-                  <Button
-                    type="button"
-                    variant="delete"
-                    onClick={(e) => {
-                      e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
-                      removeLine(index);
-                    }}
-                    aria-label="Xoá dòng"
-                    className="hidden md:inline-flex absolute top-4 right-4 min-h-[40px] min-w-[40px] p-0"
-                  >
-                    ✕
-                  </Button>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div className="md:col-span-3">
+                  <div className="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-[minmax(0,1fr)_9rem_6rem_8rem_6rem_2.5rem] gap-3">
+                    <div className="md:col-span-4 xl:col-span-1">
                       <label
                         htmlFor={`${itemRowId}-purchased_item_id`}
-                        className="block text-xs font-medium text-text-muted mb-1"
+                        className="block text-xs font-medium text-text-muted mb-1 xl:sr-only"
                       >
                         Mặt hàng
                       </label>
@@ -133,10 +131,10 @@ export function PurchaseOrderLines({
                       />
                     </div>
 
-                    <div className="md:col-span-3">
+                    <div>
                       <label
                         htmlFor={`${itemRowId}-conversion_id`}
-                        className="block text-xs font-medium text-text-muted mb-1"
+                        className="block text-xs font-medium text-text-muted mb-1 xl:sr-only"
                       >
                         Đơn vị nhập
                       </label>
@@ -168,10 +166,10 @@ export function PurchaseOrderLines({
                       </div>
                     </div>
 
-                    <div className="md:col-span-2">
+                    <div>
                       <label
                         htmlFor={`${itemRowId}-quantity`}
-                        className="block text-xs font-medium text-text-muted mb-1"
+                        className="block text-xs font-medium text-text-muted mb-1 xl:sr-only"
                       >
                         Số lượng
                       </label>
@@ -192,10 +190,10 @@ export function PurchaseOrderLines({
                       />
                     </div>
 
-                    <div className="md:col-span-2">
+                    <div>
                       <label
                         htmlFor={`${itemRowId}-subtotal`}
-                        className="block text-xs font-medium text-text-muted mb-1"
+                        className="block text-xs font-medium text-text-muted mb-1 xl:sr-only"
                       >
                         Thành tiền (đ)
                       </label>
@@ -215,14 +213,27 @@ export function PurchaseOrderLines({
                       />
                     </div>
 
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-text-muted mb-1">
+                    <div>
+                      <label className="block text-xs font-medium text-text-muted mb-1 xl:sr-only">
                         Đơn giá
                       </label>
-                      <div className="py-2 text-sm text-text-secondary">
-                        {formatNumber(unitPrice)}
+                      <div className="py-2 text-sm text-text-secondary xl:flex xl:items-center">
+                        {formatNumber(Math.round(unitPrice))}đ
                       </div>
                     </div>
+
+                    <Button
+                      type="button"
+                      variant="delete"
+                      onClick={(e) => {
+                        e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                        removeLine(index);
+                      }}
+                      aria-label="Xoá dòng"
+                      className="hidden md:inline-flex md:row-start-1 md:col-start-5 md:self-end xl:col-start-6 xl:self-center min-h-[40px] min-w-[40px] p-0"
+                    >
+                      ✕
+                    </Button>
                   </div>
 
                   {/* Phone action buttons: only shown when open on mobile */}

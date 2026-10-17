@@ -576,7 +576,8 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
       expect(subtotalInput.className).toBe(quantityInput.className);
       expect(subtotalInput.className).not.toContain("bg-success");
 
-      const unitPriceLabel = screen.getByText("Đơn giá");
+      const lineCard = screen.getByTestId("po-line-card");
+      const unitPriceLabel = within(lineCard).getByText("Đơn giá");
       const unitPriceContainer = unitPriceLabel.nextElementSibling;
       expect(unitPriceContainer).toBeTruthy();
       expect(unitPriceContainer?.className).not.toContain("bg-surface-secondary");
@@ -624,19 +625,49 @@ describe("PurchaseOrderForm two columns (owner 2026-10-10)", () => {
     );
   }
 
-  it("on a computer: lines on the left two thirds, shared boxes then money on the right third", () => {
+  it("on a computer: stacked layout with 4-column shared block and shared, lines, money order", () => {
     renderForm();
     const layout = screen.getByTestId("form-layout");
-    expect(layout.className).toMatch(/\bgrid\b/);
-    expect(layout.className).toContain("lg:grid-cols-3");
-    const lines = screen.getByTestId("form-lines");
+    expect(layout.className).not.toContain("lg:grid-cols-3");
     const shared = screen.getByTestId("form-shared");
+    const lines = screen.getByTestId("form-lines");
     const money = screen.getByTestId("form-money");
-    expect(lines.className).toContain("lg:col-span-2");
-    expect(lines.className).toContain("lg:col-start-1");
-    expect(shared.className).toContain("lg:col-start-3");
-    expect(money.className).toContain("lg:col-start-3");
-    for (const block of [lines, shared, money]) expect(layout.contains(block)).toBe(true);
+    expect(shared.className).toContain("xl:grid-cols-4");
+    for (const block of [shared, lines, money]) expect(layout.contains(block)).toBe(true);
+    expectBefore(shared, lines);
+    expectBefore(lines, money);
+  });
+
+  it("renders one aria-hidden header row containing 'Mặt hàng' and 'Đơn giá'", () => {
+    renderForm();
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
+    const lines = screen.getByTestId("form-lines");
+    const headerRows = lines.querySelectorAll('div[aria-hidden="true"]');
+    expect(headerRows).toHaveLength(1);
+    expect(headerRows[0].textContent).toContain("Mặt hàng");
+    expect(headerRows[0].textContent).toContain("Đơn giá");
+  });
+
+  it("quantity 3 and subtotal 100000 show '33,333đ'", () => {
+    renderForm();
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
+    fireEvent.change(screen.getByLabelText("Số lượng"), { target: { value: "3" } });
+    fireEvent.change(screen.getByLabelText("Thành tiền (đ)"), { target: { value: "100000" } });
+    const lineCard = screen.getByTestId("po-line-card");
+    const unitPriceLabel = within(lineCard).getByText("Đơn giá");
+    expect(unitPriceLabel.nextElementSibling?.textContent?.trim()).toBe("33,333đ");
+  });
+
+  it("quantity 5 and subtotal 75000 show '15,000đ' on the line and '75,000đ' in the totals card", () => {
+    renderForm();
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
+    fireEvent.change(screen.getByLabelText("Số lượng"), { target: { value: "5" } });
+    fireEvent.change(screen.getByLabelText("Thành tiền (đ)"), { target: { value: "75000" } });
+    const lineCard = screen.getByTestId("po-line-card");
+    const unitPriceLabel = within(lineCard).getByText("Đơn giá");
+    expect(unitPriceLabel.nextElementSibling?.textContent?.trim()).toBe("15,000đ");
+    const money = screen.getByTestId("form-money");
+    expect(within(money).getAllByText("75,000đ")).toHaveLength(2);
   });
 
   it("each box sits in its block", () => {
