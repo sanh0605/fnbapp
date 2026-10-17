@@ -427,7 +427,7 @@ export async function startStocktakeSession(): Promise<ActionResponse> {
 export async function saveStocktakeLine(
   lineId: string,
   value: Record<string, number> | number | null,
-): Promise<ActionResponse & { countedQty?: number | null }> {
+): Promise<ActionResponse & { countedQty?: number | null; theoreticalAtCount?: number | null }> {
   const auth = await requireAdmin();
   if (!auth.ok) return fail(auth.error);
 
@@ -452,7 +452,8 @@ export async function saveStocktakeLine(
       packageCounts = value;
     }
     const row = await saveStocktakeLineAtomic({ lineId, countedQty, packageCounts });
-    return ok({ countedQty: row.counted_qty === null ? null : Number(row.counted_qty) });
+    const num = (v: unknown) => (v === null ? null : Number(v));
+    return ok({ countedQty: num(row.counted_qty), theoreticalAtCount: num(row.theoretical_at_count) });
   } catch (error: unknown) {
     return describeActionError(error);
   }

@@ -458,7 +458,15 @@ describe("saveStocktakeLine package counts (BR-INV-023)", () => {
       { id: "QD-070", purchased_item_id: "SPM-106", conversion_rate: 100, status: "ACTIVE", purchase_only: true },
       { id: "QD-038", purchased_item_id: "SPM-033", conversion_rate: 100, status: "ACTIVE", purchase_only: false },
     ]);
-    mocks.saveStocktakeLineAtomic.mockImplementation(async (i: any) => ({ counted_qty: i.countedQty }));
+    mocks.saveStocktakeLineAtomic.mockImplementation(async (i: any) => ({
+      counted_qty: i.countedQty,
+      theoretical_at_count: i.countedQty === null ? null : "200.5",
+    }));
+  });
+
+  it("BR-INV-023: a save returns the book figure from the rpc row as a number", async () => {
+    const result = await stocktakeActions.saveStocktakeLine("SKL-00106", 5);
+    expect(result).toEqual({ success: true, countedQty: 5, theoreticalAtCount: 200.5 });
   });
 
   it("BR-INV-023: package counts are converted on the server and stored with the total", async () => {
@@ -490,7 +498,7 @@ describe("saveStocktakeLine package counts (BR-INV-023)", () => {
   it("BR-INV-023: null clears the line back to not counted", async () => {
     const result = await stocktakeActions.saveStocktakeLine("SKL-00106", null);
     expect(mocks.saveStocktakeLineAtomic).toHaveBeenCalledWith({ lineId: "SKL-00106", countedQty: null, packageCounts: null });
-    expect(result).toMatchObject({ success: true, countedQty: null });
+    expect(result).toMatchObject({ success: true, countedQty: null, theoreticalAtCount: null });
   });
 
   it("BR-INV-023: an empty object clears like null", async () => {
