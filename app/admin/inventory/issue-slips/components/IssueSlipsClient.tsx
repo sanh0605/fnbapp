@@ -169,6 +169,11 @@ export default function IssueSlipsClient({
     []
   );
 
+  const personValue =
+    draft.person === searchParams.get("person")
+      ? pageData.personLabel ?? draft.person
+      : draft.person;
+
   return (
     <div className="space-y-6 pb-20">
       <ListPageHeader
@@ -228,10 +233,13 @@ export default function IssueSlipsClient({
           <Field label="Người ghi" htmlFor="person-select">
             <Select
               id="person-select"
-              value={draft.person}
+              value={personValue}
               onChange={(e) => setField("person", e.target.value)}
             >
               <option value="ALL">Tất cả</option>
+              {personValue !== "ALL" && !people.includes(personValue) && (
+                <option value={personValue}>{personValue}</option>
+              )}
               {people.map((p) => (
                 <option key={p} value={p}>
                   {p}

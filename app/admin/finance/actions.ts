@@ -3,6 +3,7 @@
 import { findAll, findAllWhere, findById, insert, update, remove, generateNewId } from "@/lib/db/tables";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, requireOwner } from "@/lib/auth/auth";
+import { loadStaffNameResolver } from "@/lib/auth/staff-names";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { creationAudit, updateAudit } from "@/lib/finance/audit-columns";
@@ -89,13 +90,14 @@ export async function getFinancePageData(start: string, end: string): Promise<{
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
 
-  const [allEntries, transfers, dayRows, categories, accounts, monthlyItems] = await Promise.all([
+  const [allEntries, transfers, dayRows, categories, accounts, monthlyItems, staffName] = await Promise.all([
     getCashEntriesThrough(end),
     getCashTransfers(end),
     readCashBookDaily(end),
     getCashCategories(),
     getBankAccounts(),
     findAll("Monthly_Expense_Items") as Promise<DBMonthlyExpenseItem[]>,
+    loadStaffNameResolver(),
   ]);
 
   const summary = summariseCashBook({ dayRows, entries: allEntries, transfers, categories, start, end });
@@ -109,6 +111,7 @@ export async function getFinancePageData(start: string, end: string): Promise<{
     categories,
     accounts,
     monthlyItems,
+    staffName,
   });
   return { rows, summary, categories, accounts };
 }

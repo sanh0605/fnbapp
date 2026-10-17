@@ -20,6 +20,8 @@ const { mockTransfer } = vi.hoisted(() => ({
     to_account_id: "BA-001",
     note: "Chuyển tiền vào ACB",
     status: "ACTIVE",
+    created_by_id: "USR-002",
+    created_by_name: "tuyen2612",
   },
 }));
 
@@ -29,6 +31,15 @@ vi.mock("../actions", () => ({
     return Promise.resolve(null);
   }),
 }));
+
+vi.mock("@/lib/auth/staff-names", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/lib/auth/staff-names")>();
+  return {
+    ...real,
+    loadStaffNameResolver: async () =>
+      real.buildStaffNameResolver([{ id: "USR-002", username: "tuyen2612", name: "Tài Chí Tuyền" }]),
+  };
+});
 
 vi.mock("@/lib/auth/auth", () => ({
   resolveActor: vi.fn().mockResolvedValue({
@@ -63,5 +74,13 @@ describe("CashTransferDetailPage", () => {
     expect(Object.values(props).every((v) => typeof v !== "function")).toBe(
       true,
     );
+  });
+
+  it("hands the view the staff name, not the stored login", async () => {
+    const element = await CashTransferDetailPage({
+      params: Promise.resolve({ id: "CT-001" }),
+      searchParams: Promise.resolve({}),
+    });
+    expect(element.props.transfer.created_by_name).toBe("Tài Chí Tuyền");
   });
 });

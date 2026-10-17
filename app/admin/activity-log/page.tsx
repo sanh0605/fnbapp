@@ -48,6 +48,7 @@ export default async function ActivityLogPage(
       <ActivityLogClient
         initialEvents={result.events}
         actors={result.actors}
+        actorLabel={result.actorLabel}
         totalCount={result.totalCount}
         itemsPerPage={result.itemsPerPage}
         range={range}

@@ -49,6 +49,11 @@ describe("readFilterValuesFromParams", () => {
     expect(result).toEqual(defaults);
   });
 
+  it("falls back to the default when a key is present but empty", () => {
+    const result = readFilterValuesFromParams(new URLSearchParams("status="), defaults);
+    expect(result).toEqual(defaults);
+  });
+
   it("ignores unrelated params not in defaults", () => {
     const result = readFilterValuesFromParams(new URLSearchParams("page=2&status=RECOMPUTED"), defaults);
     expect(result).toEqual({ status: "RECOMPUTED", q: "" });

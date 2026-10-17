@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { DateRangeButton } from "@/components/ui/DateRangeButton";
 import { writeRangeParams, type RangeValue } from "@/lib/shared/date-range-params";
+import { staffPickerLabels } from "@/lib/auth/staff-names";
 
 interface Brand {
   id: string;
@@ -18,7 +19,7 @@ interface Brand {
 interface User {
   id: string;
   name?: string;
-  username?: string;
+  username: string;
   status?: string;
 }
 
@@ -132,6 +133,7 @@ function SalesFilterInner({
 
   const activeBrands = useMemo(() => brands.filter(b => b.status === "ACTIVE"), [brands]);
   const activeUsers = useMemo(() => users.filter(u => u.status === "ACTIVE"), [users]);
+  const staffLabels = useMemo(() => staffPickerLabels(activeUsers), [activeUsers]);
   const activeCategories = useMemo(() => categories.filter(c => c.status === "ACTIVE"), [categories]);
 
   return (
@@ -168,7 +170,7 @@ function SalesFilterInner({
               onChange={(e) => setStaffName(e.target.value)}
             >
               <option value="">Tất cả</option>
-              {activeUsers.map(u => <option key={u.id} value={u.name || u.username}>{u.name || u.username}</option>)}
+              {activeUsers.map(u => <option key={u.id} value={u.username}>{staffLabels.get(u.username)}</option>)}
             </Select>
           </Field>
         </div>

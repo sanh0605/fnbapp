@@ -15,6 +15,7 @@ import { Select } from "@/components/ui/Select";
 import { Field } from "@/components/ui/Field";
 import { deleteUserAction } from "@/app/admin/users/actions";
 import { RoleBadge } from "./RoleBadge";
+import { staffLabel } from "@/lib/auth/staff-names";
 import type { DBUser } from "@/types/db";
 
 export interface UsersClientProps {
@@ -106,12 +107,20 @@ export default function UsersClient({
         ),
       },
       {
-        key: "username",
-        header: "Tên đăng nhập",
-        sortValue: (u) => u.username,
-        render: (u) => (
-          <div className="text-text-primary">{u.username}</div>
-        ),
+        key: "name",
+        header: "Tên nhân viên",
+        sortValue: (u) => staffLabel(u).name,
+        render: (u) => {
+          const { name, showLogin } = staffLabel(u);
+          return (
+            <div>
+              <div className="text-text-primary">{name}</div>
+              {showLogin && (
+                <div className="text-xs text-text-muted">{u.username}</div>
+              )}
+            </div>
+          );
+        },
       },
       {
         key: "role",
@@ -133,9 +142,13 @@ export default function UsersClient({
     [],
   );
 
-  const validSortKeys = useMemo(() => columns.map((c) => c.key), [columns]);
+  const validSortKeys = useMemo(
+    () => [...columns.map((c) => c.key), "username"],
+    [columns],
+  );
   // Default sort is code (id), descending (newest code first)
-  const { key: sortKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const { key: parsedKey, dir: sortDir } = parseSort(rawSort, rawDir, validSortKeys, "id");
+  const sortKey = parsedKey === "username" ? "name" : parsedKey;
   const sortParam = rawSort ? sortKey : undefined;
   const dirParam = rawSort ? sortDir : undefined;
 
@@ -146,9 +159,10 @@ export default function UsersClient({
       if (!matchRole) return false;
 
       if (q) {
+        const matchName = (u.name || "").toLocaleLowerCase("vi").includes(q);
         const matchUsername = (u.username || "").toLocaleLowerCase("vi").includes(q);
         const matchId = (u.id || "").toLocaleLowerCase("vi").includes(q);
-        return matchUsername || matchId;
+        return matchName || matchUsername || matchId;
       }
       return true;
     });
@@ -259,18 +273,25 @@ export default function UsersClient({
       <DataList
         rows={slice.rows}
         getId={(u) => u.id}
-        getName={(u) => u.username}
+        getName={(u) => staffLabel(u).name}
         getHref={(u) =>
           `/admin/users/${encodeURIComponent(u.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        phoneRow={(u) => ({
-          title: u.username,
-          meta: [u.id, u.created_at ? `Tạo ${formatDate(u.created_at)}` : null]
-            .filter(Boolean)
-            .join(" · "),
-          badge: <RoleBadge role={u.role} />,
-        })}
+        phoneRow={(u) => {
+          const { name, showLogin } = staffLabel(u);
+          return {
+            title: name,
+            meta: [
+              showLogin ? u.username : null,
+              u.id,
+              u.created_at ? `Tạo ${formatDate(u.created_at)}` : null,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            badge: <RoleBadge role={u.role} />,
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

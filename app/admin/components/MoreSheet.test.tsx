@@ -23,6 +23,19 @@ function Wrapper() {
   return isOpen ? <MoreSheet onClose={() => setIsOpen(false)} /> : null;
 }
 
+describe("MoreSheet account name", () => {
+  it("shows the staff name given by the server on the first paint, not the session login", () => {
+    render(<MoreSheet onClose={() => {}} staffName="Tài Chí Tuyền" />);
+    expect(screen.getByText("Tài Chí Tuyền")).toBeInTheDocument();
+    expect(screen.queryByText("Admin User")).toBeNull();
+  });
+
+  it("falls back to the session name when no staff name is given", () => {
+    render(<MoreSheet onClose={() => {}} />);
+    expect(screen.getByText("Admin User")).toBeInTheDocument();
+  });
+});
+
 describe("MoreSheet", () => {
   beforeEach(() => {
     mockPathname = "/admin";

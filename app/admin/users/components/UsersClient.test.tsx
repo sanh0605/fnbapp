@@ -172,4 +172,35 @@ describe("UsersClient", () => {
     const allLinks = screen.getAllByRole("link");
     expect(allLinks.some((l) => l.getAttribute("href")?.includes("/edit"))).toBe(false);
   });
+
+  it("renders staff name as main text and username under it in table and phone row", () => {
+    const usersWithName: DBUser[] = [
+      {
+        id: "USR-002",
+        username: "tuyen2612",
+        name: "Tài Chí Tuyền",
+        role: "MANAGER",
+        status: "ACTIVE",
+        created_at: "2026-06-01T08:00:00.000Z",
+      },
+    ];
+    render(<UsersClient users={usersWithName} canDelete={true} />);
+    expect(screen.getAllByText("Tài Chí Tuyền").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/tuyen2612/).length).toBeGreaterThan(0);
+  });
+
+  it("shows sort arrow on 'Tên nhân viên' header for sort=name and sort=username", () => {
+    mockSearchParams = new URLSearchParams("sort=name&dir=asc");
+    const { unmount } = render(<UsersClient users={mockUsers} canDelete={true} />);
+    const thName = screen.getByRole("columnheader", { name: /Tên nhân viên/ });
+    expect(thName).toHaveAttribute("aria-sort", "ascending");
+    expect(thName).toHaveTextContent("▲");
+    unmount();
+
+    mockSearchParams = new URLSearchParams("sort=username&dir=desc");
+    render(<UsersClient users={mockUsers} canDelete={true} />);
+    const thUsername = screen.getByRole("columnheader", { name: /Tên nhân viên/ });
+    expect(thUsername).toHaveAttribute("aria-sort", "descending");
+    expect(thUsername).toHaveTextContent("▼");
+  });
 });

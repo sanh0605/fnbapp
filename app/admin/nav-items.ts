@@ -5,7 +5,7 @@ import {
 // The admin menu, owner decision 2026-09-28 (spec
 // docs/superpowers/specs/2026-09-29-menu-va-khuon-trang-design.md section 2).
 // Read by the desktop sidebar, the phone bar and "Thêm" sheet in
-// app/admin/layout.tsx, and by app/admin/nav-guard.test.ts -- keep every
+// app/admin/AdminFrame.tsx, and by app/admin/nav-guard.test.ts -- keep every
 // href a plain double-quoted "/admin..." literal, the guard reads this file
 // as text.
 export interface NavLink { name: string; href: string }

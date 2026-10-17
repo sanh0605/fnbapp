@@ -23,7 +23,7 @@ function findNavInfo(targetHref: string) {
   return null;
 }
 
-export function PhoneNavBar({ onOpenPos }: { onOpenPos: () => void }) {
+export function PhoneNavBar({ onOpenPos, staffName }: { onOpenPos: () => void; staffName?: string | null }) {
   const pathname = usePathname();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const closeMore = useCallback(() => setIsMoreOpen(false), []);
@@ -81,7 +81,7 @@ export function PhoneNavBar({ onOpenPos }: { onOpenPos: () => void }) {
         </button>
       </nav>
 
-      {isMoreOpen && <MoreSheet onClose={closeMore} />}
+      {isMoreOpen && <MoreSheet onClose={closeMore} staffName={staffName} />}
     </>
   );
 }

@@ -27,6 +27,8 @@ export default function EditUserForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const initialName = user.name && user.name.trim() !== "" ? user.name : user.username;
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -53,6 +55,17 @@ export default function EditUserForm({
         )}
 
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên nhân viên" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              maxLength={60}
+              placeholder="Ví dụ: Nguyễn Văn An"
+              defaultValue={initialName}
+            />
+          </Field>
+
           <Field
             label="Tên đăng nhập"
             htmlFor={`${formId}-username`}

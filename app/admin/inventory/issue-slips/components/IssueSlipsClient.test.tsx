@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, within } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import IssueSlipsClient from "./IssueSlipsClient";
 import type { IssueSlipListPage } from "@/lib/stock/issue-slip-list";
 
@@ -54,6 +54,7 @@ const defaultPageData: IssueSlipListPage = {
   lastIndex: 0,
   rangeError: false,
   people: ["admin", "tuyen2612"],
+  personLabel: null,
   totals: { count: 0, value: 0 },
 };
 
@@ -88,6 +89,48 @@ describe("IssueSlipsClient", () => {
     expect(options).toHaveLength(3);
     expect(options.map(o => o.textContent)).toEqual(["Tất cả", "Phiếu xuất", "Đã huỷ"]);
     expect(options.map(o => o.getAttribute("value"))).toEqual(["ALL", "SLIP", "CANCELLED"]);
+  });
+
+  it("an old ?person=<login> link preselects that person's label, and a new pick still wins", () => {
+    searchParams.set("person", "tuyen2612");
+    try {
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={{ ...defaultPageData, people: ["admin", "Tài Chí Tuyền"], personLabel: "Tài Chí Tuyền" }} />);
+      const select = screen.getByLabelText("Người ghi") as HTMLSelectElement;
+      expect(select.value).toBe("Tài Chí Tuyền");
+      fireEvent.change(select, { target: { value: "admin" } });
+      expect(select.value).toBe("admin");
+    } finally {
+      searchParams.delete("person");
+    }
+  });
+
+  it("with ?person=Ghost in the URL, personLabel: null, and people not containing Ghost, the select's value is Ghost and an option named Ghost exists", () => {
+    searchParams.set("person", "Ghost");
+    try {
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={{ ...defaultPageData, people: ["admin", "tuyen2612"], personLabel: null }} />);
+      const select = screen.getByLabelText("Người ghi") as HTMLSelectElement;
+      expect(select.value).toBe("Ghost");
+      expect(screen.getByRole("option", { name: "Ghost" })).toBeInTheDocument();
+    } finally {
+      searchParams.delete("person");
+    }
+  });
+
+  it("with an empty ?person= in the URL the select shows Tất cả, not a blank choice, and Xoá lọc stays hidden", () => {
+    searchParams.set("person", "");
+    try {
+      // One row, so the empty state's own "Xoá lọc" button does not render and only the filter card's could.
+      const oneRow: IssueSlipListPage = {
+        ...defaultPageData,
+        rows: [{ id: "ISL-01", href: "/admin/inventory/issue-slips/ISL-01", kind: "SLIP", dateText: "29/09", createdByName: "admin", value: 100 }],
+        total: 1, firstIndex: 1, lastIndex: 1,
+      };
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={oneRow} />);
+      expect((screen.getByLabelText("Người ghi") as HTMLSelectElement).value).toBe("ALL");
+      expect(screen.queryByRole("button", { name: "Xoá lọc" })).toBeNull();
+    } finally {
+      searchParams.delete("person");
+    }
   });
 
   // BR-UI-003 / BR-UI-005 and Review Focus 4 (wave K3).

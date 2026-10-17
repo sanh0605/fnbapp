@@ -59,6 +59,7 @@ describe("ActivityLogClient", () => {
       <ActivityLogClient range={TEST_RANGE} today={TEST_TODAY}
         initialEvents={[]}
         actors={["admin"]}
+        actorLabel={null}
         totalCount={0}
         itemsPerPage={20}
       />
@@ -76,6 +77,44 @@ describe("ActivityLogClient", () => {
     expect(screen.queryByText(/VOIDED/)).toBeNull();
     expect(screen.queryByText(/REOPENED/)).toBeNull();
     expect(screen.queryByText(/MIGRATED/)).toBeNull();
+  });
+
+  it("with the initial actor 'Hệ thống' not in actors, the select's value is 'Hệ thống' and an option named 'Hệ thống' exists", () => {
+    mockSearchParams.set("actor", "Hệ thống");
+    render(
+      <ActivityLogClient
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialEvents={[]}
+        actors={["admin"]}
+        actorLabel={null}
+        totalCount={0}
+        itemsPerPage={20}
+      />
+    );
+
+    const select = screen.getByLabelText("Tài khoản") as HTMLSelectElement;
+    expect(select.value).toBe("Hệ thống");
+    expect(screen.getByRole("option", { name: "Hệ thống" })).toBeInTheDocument();
+  });
+
+  it("an old ?actor=<login> link shows the person's label, with no extra choice named after the login", () => {
+    mockSearchParams.set("actor", "admin");
+    render(
+      <ActivityLogClient
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialEvents={[]}
+        actors={["Admin"]}
+        actorLabel="Admin"
+        totalCount={0}
+        itemsPerPage={20}
+      />
+    );
+
+    const select = screen.getByLabelText("Tài khoản") as HTMLSelectElement;
+    expect(select.value).toBe("Admin");
+    expect(screen.queryByRole("option", { name: "admin" })).toBeNull();
   });
 });
 

@@ -9,6 +9,7 @@ import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { formatDate } from "@/lib/shared/datetime";
 import { deleteUserAction } from "@/app/admin/users/actions";
 import { RoleBadge } from "@/app/admin/users/components/RoleBadge";
+import { staffLabel } from "@/lib/auth/staff-names";
 import type { DBUser } from "@/types/db";
 
 export interface UserDetailViewProps {
@@ -27,6 +28,7 @@ export function UserDetailView({
   const currentDetailUrl = `/admin/users/${encodeURIComponent(user.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/users/${encodeURIComponent(user.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
   const canEdit = canGrantAdmin || user.role !== "ADMIN";
+  const { name, showLogin } = staffLabel(user);
 
   const fields: Field[] = [
     { label: "Mã NV", value: user.id },
@@ -45,8 +47,8 @@ export function UserDetailView({
       {canDelete && user.username !== "admin" && (
         <RemoveRecordButton
           verb="Xoá"
-          name={user.username}
-          confirmMessage={`Bạn có chắc chắn muốn xoá nhân sự "${user.username}"? Không thể hoàn tác.`}
+          name={name}
+          confirmMessage={`Bạn có chắc chắn muốn xoá nhân sự "${name}"? Không thể hoàn tác.`}
           remove={async () => {
             const fd = new FormData();
             fd.set("id", user.id);
@@ -67,8 +69,8 @@ export function UserDetailView({
       <DetailHeader
         backHref={returnTo}
         backLabel="Nhân viên & quyền"
-        title={user.username}
-        subtitle={user.id}
+        title={name}
+        subtitle={showLogin ? `${user.username} · ${user.id}` : user.id}
         actions={headerActions}
       />
       <FieldList fields={fields} />

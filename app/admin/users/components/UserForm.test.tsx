@@ -60,12 +60,14 @@ describe("UserForm boxes (wave K6)", () => {
     render(<UserForm returnTo="/admin/users" />);
     const password = screen.getByLabelText(/^Mật khẩu/) as HTMLInputElement;
     expect(password.type).toBe("password");
+    fireEvent.change(screen.getByLabelText(/^Tên nhân viên/), { target: { value: "Nguyễn Văn An" } });
     fireEvent.change(screen.getByLabelText(/^Tên đăng nhập/), { target: { value: "nhanvien02" } });
     fireEvent.change(password, { target: { value: "matkhau1" } });
     fireEvent.change(screen.getByLabelText(/^Quyền hạn/), { target: { value: "MANAGER" } });
     fireEvent.submit(document.querySelector("form")!);
     await waitFor(() => expect(mocks.addUser).toHaveBeenCalledTimes(1));
     const formData = mocks.addUser.mock.calls[0][0] as FormData;
+    expect(formData.get("name")).toBe("Nguyễn Văn An");
     expect(formData.get("username")).toBe("nhanvien02");
     expect(formData.get("password")).toBe("matkhau1");
     expect(formData.get("role")).toBe("MANAGER");
@@ -73,9 +75,13 @@ describe("UserForm boxes (wave K6)", () => {
 });
 
 describe("UserForm", () => {
-  it("renders on the page and immediately shows the username input and Tạo/Bỏ buttons, with Vietnamese-only role options", () => {
+  it("renders on the page and immediately shows the name and username inputs and Tạo/Bỏ buttons, with Vietnamese-only role options", () => {
     render(<UserForm returnTo="/admin/users" />);
     expect(screen.queryByRole("dialog")).toBeNull();
+    const nameInput = screen.getByLabelText(/^Tên nhân viên( \*)?$/);
+    expect(nameInput).toBeInTheDocument();
+    expect(nameInput).toHaveAttribute("maxLength", "60");
+    expect(nameInput).toHaveAttribute("placeholder", "Ví dụ: Nguyễn Văn An");
     expect(screen.getByLabelText(/^Tên đăng nhập( \*)?$/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Tạo" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
@@ -85,6 +91,18 @@ describe("UserForm", () => {
     expect(screen.queryByText(/STAFF/)).toBeNull();
     expect(screen.queryByText(/MANAGER/)).toBeNull();
     expect(screen.queryByText(/ADMIN/)).toBeNull();
+  });
+
+  it("the create form sends name", async () => {
+    mocks.addUser.mockResolvedValue({});
+    render(<UserForm returnTo="/admin/users" />);
+    fireEvent.change(screen.getByLabelText(/^Tên nhân viên( \*)?$/), { target: { value: "Trần Thị Bích" } });
+    fireEvent.change(screen.getByLabelText(/^Tên đăng nhập( \*)?$/), { target: { value: "bich01" } });
+    fireEvent.change(screen.getByLabelText(/^Mật khẩu( \*)?$/), { target: { value: "secret123" } });
+    fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
+    await waitFor(() => expect(mocks.addUser).toHaveBeenCalledTimes(1));
+    const formData = mocks.addUser.mock.calls[0][0] as FormData;
+    expect(formData.get("name")).toBe("Trần Thị Bích");
   });
 
   it("with canGrantAdmin false, the ADMIN option is absent and only STAFF and MANAGER are present", () => {
@@ -102,6 +120,7 @@ describe("UserForm", () => {
   it("after a successful add, goes to returnTo and refreshes", async () => {
     mocks.addUser.mockResolvedValue({});
     render(<UserForm returnTo="/admin/users?role=STAFF" />);
+    fireEvent.change(screen.getByLabelText(/^Tên nhân viên( \*)?$/), { target: { value: "Nguyễn Văn An" } });
     fireEvent.change(screen.getByLabelText(/^Tên đăng nhập( \*)?$/), { target: { value: "nhanvien01" } });
     fireEvent.change(screen.getByLabelText(/^Mật khẩu( \*)?$/), { target: { value: "123456" } });
     fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
@@ -109,14 +128,16 @@ describe("UserForm", () => {
     expect(refresh).toHaveBeenCalled();
   });
 
-  it("on error stays on page, shows error alert, retains username", async () => {
+  it("on error stays on page, shows error alert, retains username and name", async () => {
     mocks.addUser.mockResolvedValue({ error: "Ten dang nhap da ton tai" });
     render(<UserForm returnTo="/admin/users" />);
+    fireEvent.change(screen.getByLabelText(/^Tên nhân viên( \*)?$/), { target: { value: "Nguyễn Văn An" } });
     fireEvent.change(screen.getByLabelText(/^Tên đăng nhập( \*)?$/), { target: { value: "nhanvien01" } });
     fireEvent.change(screen.getByLabelText(/^Mật khẩu( \*)?$/), { target: { value: "123456" } });
     fireEvent.click(screen.getByRole("button", { name: "Tạo" }));
     await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Ten dang nhap da ton tai"));
     expect(push).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/^Tên nhân viên( \*)?$/)).toHaveValue("Nguyễn Văn An");
     expect(screen.getByLabelText(/^Tên đăng nhập( \*)?$/)).toHaveValue("nhanvien01");
   });
 

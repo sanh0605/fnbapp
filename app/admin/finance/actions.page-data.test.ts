@@ -105,9 +105,18 @@ describe("getFinancePageData", () => {
       { ...entry("CE-002", "2026-09-03", "CFC-001", 100), monthly_item_id: null },
     ]);
     const data = await getFinancePageData("2026-09-01", "2026-09-30");
-    expect(mocks.findAll).toHaveBeenCalledTimes(1);
-    expect(mocks.findAll).toHaveBeenCalledWith("Monthly_Expense_Items");
+    expect(mocks.findAll.mock.calls.filter(([sheet]) => sheet === "Monthly_Expense_Items")).toHaveLength(1);
     expect(data.rows.map((r) => r.monthlyItemName)).toEqual([null, "Tiền điện"]);
+  });
+
+  it("shows the staff name on hand rows, keeping the stored login for search", async () => {
+    mocks.findAll.mockImplementation(async (sheet: string) =>
+      sheet === "Users" ? [{ id: "u9", username: "tuyen2612", name: "Tài Chí Tuyền" }] : []);
+    mocks.findAllWhere.mockResolvedValue([
+      { ...entry("CE-001", "2026-09-02", "CFC-001", 100), created_by_id: "u9", created_by_name: "tuyen2612" },
+    ]);
+    const data = await getFinancePageData("2026-09-01", "2026-09-30");
+    expect(data.rows[0]).toMatchObject({ creator: "Tài Chí Tuyền", creatorLogin: "tuyen2612" });
   });
 
   it("refuses when not signed in as admin", async () => {

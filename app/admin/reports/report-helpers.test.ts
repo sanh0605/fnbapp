@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("@/lib/db/tables", () => ({ findAllWhere: vi.fn() }));
 
 import { findAllWhere } from "@/lib/db/tables";
-import { findCompletedOrders, sumNetByOrder, buildCanonicalModifierLookup } from "./report-helpers";
+import { findCompletedOrders, selectSalesOrders, sumNetByOrder, buildCanonicalModifierLookup } from "./report-helpers";
 
 describe("sumNetByOrder (B7)", () => {
   it("matches the old per-order filter+reduce on a randomised set, bit for bit", () => {
@@ -44,5 +44,29 @@ describe("findCompletedOrders", () => {
     ]);
     const orders = await findCompletedOrders(null);
     expect(orders.map(o => o.id)).toEqual(["O1", "O3"]);
+  });
+});
+
+// The Doanh số staff filter carries the login (SalesFilter option value), never the display name.
+describe("Doanh số staff filter by login", () => {
+  const order = (id: string, login: string) => ({
+    id, status: "COMPLETED", created_at: "2026-09-10T03:00:00.000Z", brand_id: "B1", created_by_name: login,
+  });
+  const orders = [order("O1", "tuyen2612"), order("O2", "lan"), order("O3", "tuyen2612")];
+
+  it("selectSalesOrders returns exactly that person's orders and not another person's", () => {
+    const result = selectSalesOrders(orders, { startDate: "2026-09-01", endDate: "2026-09-30", staffName: "tuyen2612" });
+    expect(result.map(o => o.id)).toEqual(["O1", "O3"]);
+  });
+
+  it("selectSalesOrders matches the login only, so the display name finds nothing", () => {
+    expect(selectSalesOrders(orders, { staffName: "Tài Chí Tuyền" })).toEqual([]);
+  });
+
+  it("findCompletedOrders asks the database for that login only", async () => {
+    (findAllWhere as any).mockClear();
+    (findAllWhere as any).mockResolvedValue([]);
+    await findCompletedOrders(null, { staffName: "tuyen2612" });
+    expect((findAllWhere as any).mock.calls[0][1].eq).toMatchObject({ created_by_name: "tuyen2612" });
   });
 });

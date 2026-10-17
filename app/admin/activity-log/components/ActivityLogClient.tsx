@@ -27,6 +27,7 @@ function formatEmptyRangePart(range: RangeValue): string {
 export interface ActivityLogClientProps {
   initialEvents: OrderEvent[];
   actors: string[];
+  actorLabel: string | null;
   totalCount: number;
   itemsPerPage: number;
   range: RangeValue;
@@ -37,6 +38,7 @@ export interface ActivityLogClientProps {
 export default function ActivityLogClient({
   initialEvents,
   actors,
+  actorLabel,
   totalCount,
   itemsPerPage,
   range,
@@ -51,7 +53,8 @@ export default function ActivityLogClient({
 
   const [search, setSearch] = useState(() => searchParams.get("q") || "");
   const [eventType, setEventType] = useState(() => searchParams.get("type") || "ALL");
-  const [actorFilter, setActorFilter] = useState(() => searchParams.get("actor") || "ALL");
+  const actorFromUrl = actorLabel ?? (searchParams.get("actor") || "ALL");
+  const [actorFilter, setActorFilter] = useState(actorFromUrl);
   const [currentPage, setCurrentPage] = useState(() => {
     const page = Number(searchParams.get("page"));
     return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
@@ -60,10 +63,10 @@ export default function ActivityLogClient({
   useEffect(() => {
     setSearch(searchParams.get("q") || "");
     setEventType(searchParams.get("type") || "ALL");
-    setActorFilter(searchParams.get("actor") || "ALL");
+    setActorFilter(actorFromUrl);
     const page = Number(searchParams.get("page"));
     setCurrentPage(Number.isFinite(page) && page > 0 ? Math.floor(page) : 1);
-  }, [searchParams]);
+  }, [searchParams, actorFromUrl]);
 
   const updateUrl = (updates: {
     page?: number;
@@ -292,6 +295,9 @@ export default function ActivityLogClient({
               }}
             >
               <option value="ALL">Tất cả tài khoản</option>
+              {actorFilter !== "ALL" && !actors.includes(actorFilter) && (
+                <option value={actorFilter}>{actorFilter}</option>
+              )}
               {actors.map((actor) => (
                 <option key={actor} value={actor}>
                   {actor}

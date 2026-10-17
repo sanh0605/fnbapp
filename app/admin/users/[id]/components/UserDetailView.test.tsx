@@ -146,4 +146,21 @@ describe("UserDetailView", () => {
 
     expect(screen.getByRole("link", { name: "Chỉnh sửa" })).toBeInTheDocument();
   });
+
+  it("renders staff name as main heading and login under it when name is set", () => {
+    const userWithName: DBUser = {
+      ...userTuyen,
+      name: "Tài Chí Tuyền",
+    };
+    render(
+      <UserDetailView
+        user={userWithName}
+        returnTo="/admin/users"
+        canDelete={true}
+      />
+    );
+    expect(screen.getByRole("heading", { level: 1, name: "Tài Chí Tuyền" })).toBeInTheDocument();
+    expect(screen.getAllByText(/tuyen2612/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Xoá" })).toBeInTheDocument();
+  });
 });

@@ -47,6 +47,15 @@ export function UserForm({ returnTo: rawReturnTo, canGrantAdmin = true }: UserFo
           </div>
         )}
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <Field label="Tên nhân viên" htmlFor={`${formId}-name`} required>
+            <TextInput
+              id={`${formId}-name`}
+              name="name"
+              required
+              maxLength={60}
+              placeholder="Ví dụ: Nguyễn Văn An"
+            />
+          </Field>
           <Field label="Tên đăng nhập" htmlFor={`${formId}-username`} required>
             <TextInput
               id={`${formId}-username`}

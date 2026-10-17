@@ -7,6 +7,7 @@ import type {
   DBCashTransfer,
   DBMonthlyExpenseItem,
 } from "@/types/db";
+import { buildStaffNameResolver } from "@/lib/auth/staff-names";
 import { buildCashBookRows, cashBookRowTotals, type CashBookRow } from "./cash-book-rows";
 
 const ACCOUNTS: DBBankAccount[] = [
@@ -52,7 +53,8 @@ const TRANSFER: DBCashTransfer = {
 
 function build(over: Partial<Parameters<typeof buildCashBookRows>[0]> = {}) {
   return buildCashBookRows({
-    dayRows: DAY_ROWS, entries: [ENTRY], transfers: [TRANSFER], categories: CATEGORIES, accounts: ACCOUNTS, monthlyItems: [], ...over,
+    dayRows: DAY_ROWS, entries: [ENTRY], transfers: [TRANSFER], categories: CATEGORIES, accounts: ACCOUNTS, monthlyItems: [],
+    staffName: buildStaffNameResolver([]), ...over,
   });
 }
 
@@ -113,9 +115,19 @@ describe("buildCashBookRows", () => {
     expect(row).toEqual({
       key: "CE-040", kind: "HAND", id: "CE-040", date: "2026-09-02",
       groupLabel: "Vốn góp", sideLabel: "Thu", amount: 2443400, methodLabel: "Tiền mặt",
-      accountLabel: "—", note: "Vốn góp thêm", creator: "Chủ quán", status: "ACTIVE", monthlyItemName: null,
+      accountLabel: "—", note: "Vốn góp thêm", creator: "Chủ quán", creatorLogin: "Chủ quán", status: "ACTIVE", monthlyItemName: null,
       href: "/admin/finance/CE-040",
     });
+  });
+
+  it("shows the staff name on hand and transfer rows and keeps the stored login for search", () => {
+    const staffName = buildStaffNameResolver([{ id: "u1", username: "tuyen2612", name: "Tài Chí Tuyền" }]);
+    const rows = build({
+      dayRows: [], staffName,
+      entries: [{ ...ENTRY, created_by_name: "tuyen2612" }],
+      transfers: [{ ...TRANSFER, created_by_name: "tuyen2612" }],
+    });
+    expect(rows.map((r) => [r.creator, r.creatorLogin])).toEqual([["Tài Chí Tuyền", "tuyen2612"], ["Tài Chí Tuyền", "tuyen2612"]]);
   });
 
   it("builds a hand expense and a hand row paid by transfer with the account name", () => {
@@ -134,7 +146,7 @@ describe("buildCashBookRows", () => {
     expect(row).toEqual({
       key: "CT-001", kind: "TRANSFER", id: "CT-001", date: "2026-09-10",
       groupLabel: "Chuyển tiền", sideLabel: "Chuyển", amount: 5000000, methodLabel: "Két → ACB - Phin Di",
-      accountLabel: "—", note: "Gửi két vào ngân hàng", creator: "Chủ quán", status: "ACTIVE", monthlyItemName: null,
+      accountLabel: "—", note: "Gửi két vào ngân hàng", creator: "Chủ quán", creatorLogin: "Chủ quán", status: "ACTIVE", monthlyItemName: null,
       href: "/admin/finance/transfers/CT-001",
     });
   });

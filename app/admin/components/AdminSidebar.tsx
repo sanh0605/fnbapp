@@ -8,8 +8,9 @@ import { NAV_GROUPS } from "../nav-items";
 import { readSidebarCollapsed, writeSidebarCollapsed, activeGroupName, activeChildHref } from "./sidebar-state";
 import { ChevronLeft, ChevronRight, Store, ChevronDown } from "lucide-react";
 
-export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
+export function AdminSidebar({ onOpenPos, staffName }: { onOpenPos: () => void; staffName?: string | null }) {
   const { data: session } = useSession();
+  const accountName = staffName || session?.user?.name;
   const pathname = usePathname();
 
   const [collapsed, setCollapsed] = useState(false);
@@ -162,12 +163,12 @@ export function AdminSidebar({ onOpenPos }: { onOpenPos: () => void }) {
 
       <div className="border-t border-border pt-3 flex items-center gap-2.5 flex-shrink-0">
         <div className="w-9 h-9 flex-shrink-0 rounded-full bg-primary-soft text-primary flex items-center justify-center font-bold">
-          {session?.user?.name?.charAt(0).toUpperCase() || "A"}
+          {accountName?.charAt(0).toUpperCase() || "A"}
         </div>
         {!collapsed && (
           <>
             <div className="flex-grow text-[13px] leading-[1.3]">
-              <div className="font-semibold text-text-primary truncate">{session?.user?.name || "Admin User"}</div>
+              <div className="font-semibold text-text-primary truncate">{accountName || "Admin User"}</div>
               <div className="text-text-muted truncate capitalize">{(session?.user as any)?.role || "Admin"}</div>
             </div>
             <button

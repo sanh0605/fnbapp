@@ -39,7 +39,7 @@ export function readFilterValuesFromParams<T extends Record<string, string>>(
   const result = { ...defaults };
   for (const key of Object.keys(defaults) as Array<keyof T>) {
     const fromUrl = searchParams.get(key as string);
-    result[key] = (fromUrl as T[keyof T]) ?? defaults[key];
+    result[key] = (fromUrl as T[keyof T]) || defaults[key];
   }
   return result;
 }

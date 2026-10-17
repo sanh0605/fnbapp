@@ -7,6 +7,7 @@ import {
   findById,
 } from "@/lib/db/tables";
 import { requireAdmin } from "@/lib/auth/auth";
+import { loadStaffNameResolver } from "@/lib/auth/staff-names";
 import type { OrderEvent } from "@/lib/sales/order-types";
 import type { OrderListItem } from "./actions";
 import { effectivePaymentRows } from "@/lib/sales/payment-method";
@@ -58,7 +59,7 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
   const chainOrders = Array.from(chainById.values());
   chainOrders.sort((a, b) => Number(a.version) - Number(b.version));
 
-  const [orderLines, paymentRows, promotionRows, products, variants, events] = await Promise.all([
+  const [orderLines, paymentRows, promotionRows, products, variants, events, staffName] = await Promise.all([
     findAllWhereInBatches("Order_Lines_V2", "order_id", [orderId]),
     findAllWhereInBatches("Order_Payments", "order_id", [orderId]),
     findAllWhereInBatches("Order_Promotions", "order_id", [orderId]),
@@ -69,6 +70,7 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
       "order_id",
       chainOrders.map(order => order.id),
     ),
+    loadStaffNameResolver(),
   ]);
 
   // Build current order detail (reuse logic from getOrdersV2)
@@ -125,7 +127,7 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
       net_total: Number(current.net_total) || 0,
       method: current.payment_method === "BANK_TRANSFER" ? "Chuyen khoan" : "Tien mat",
       payments: effectivePaymentRows(current, paymentRows as any[]),
-      created_by_name: current.created_by_name || "",
+      created_by_name: staffName(current.created_by_name, current.created_by_id) || "",
       created_at: current.created_at,
       lines: mappedLines,
     },
@@ -134,12 +136,12 @@ export async function getOrderDetailV2(orderId: string): Promise<OrderDetailV2Re
       version: Number(o.version) || 1,
       status: o.status,
       created_at: o.created_at,
-      created_by_name: o.created_by_name || "",
+      created_by_name: staffName(o.created_by_name, o.created_by_id) || "",
       gross_total: Number(o.gross_total) || 0,
       net_total: Number(o.net_total) || 0,
       superseded_by: o.superseded_by || "",
     })),
-    events: events as OrderEvent[],
+    events: (events as OrderEvent[]).map(e => ({ ...e, actor_name: staffName(e.actor_name, e.actor_id) ?? "" })),
     promotions,
   };
 }
