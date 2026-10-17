@@ -81,9 +81,12 @@ export function listIssueSlipsPage(input: {
   const endMs = to && range ? range.endUtc.getTime() : Infinity;
   const kind = filters.kind === "SLIP" || filters.kind === "CANCELLED" ? filters.kind : null;
 
+  // An old link carries the login; the rows now carry the staff name.
+  const person = filters.person && filters.person !== "ALL" ? staffName(filters.person) : null;
+
   const matched = candidates.filter(c => {
     if (kind ? c.row.kind !== kind : c.row.kind === "CANCELLED") return false;
-    if (filters.person && filters.person !== "ALL" && c.row.createdByName !== filters.person) return false;
+    if (person && c.row.createdByName !== person) return false;
     if (c.timeMs < startMs || c.timeMs > endMs) return false;
     return !term || c.haystack.includes(term);
   });

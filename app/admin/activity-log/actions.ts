@@ -88,6 +88,11 @@ export async function getActivityLogEvents(
       `reason.ilike.%${q}%`,
       `actor_name.ilike.%${q}%`,
     ];
+    // The log stores logins; typing a staff name finds its events through those logins.
+    const lower = q.toLowerCase();
+    const quoted = (login: string) => `"${login.replace(/["\\]/g, "\\$&")}"`;
+    const logins = users.filter(u => u.name?.toLowerCase().includes(lower)).map(u => quoted(u.username));
+    if (logins.length > 0) clauses.push(`actor_name.in.(${logins.join(",")})`);
     if (matchingOrderIds.length > 0) {
       clauses.push(`order_id.in.(${matchingOrderIds.join(",")})`);
     }

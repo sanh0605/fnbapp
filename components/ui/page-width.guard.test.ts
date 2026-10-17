@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 // narrower than that, so pages fill it; on a 1,920 px screen they no longer
 // spread to 1,584 px while others stop at 672.
 
-const layout = readFileSync(join(process.cwd(), "app", "admin", "layout.tsx"), "utf8");
+const layout = readFileSync(join(process.cwd(), "app", "admin", "AdminFrame.tsx"), "utf8");
 
 describe("BR-UI-012 one page frame", () => {
   it("the admin frame is at most 1,280 px and centred", () => {
@@ -38,7 +38,7 @@ describe("BR-UI-012 no page keeps a narrower box", () => {
   const files = [
     ...tsxFiles(join(root, "app", "admin")),
     join(root, "components", "ui", "detail", "DetailFrame.tsx"),
-  ].filter(f => posix(f) !== "app/admin/layout.tsx");
+  ].filter(f => posix(f) !== "app/admin/AdminFrame.tsx");
 
   it("scans the admin pages", () => {
     expect(files.length).toBeGreaterThan(100);

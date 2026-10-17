@@ -18,12 +18,23 @@ vi.mock("next-auth/react", () => ({
   signOut: vi.fn(),
 }));
 
-vi.mock("./actions", () => ({ getMyStaffName: async () => "Tài Chí Tuyền" }));
-
 function Wrapper() {
   const [isOpen, setIsOpen] = useState(true);
   return isOpen ? <MoreSheet onClose={() => setIsOpen(false)} /> : null;
 }
+
+describe("MoreSheet account name", () => {
+  it("shows the staff name given by the server on the first paint, not the session login", () => {
+    render(<MoreSheet onClose={() => {}} staffName="Tài Chí Tuyền" />);
+    expect(screen.getByText("Tài Chí Tuyền")).toBeInTheDocument();
+    expect(screen.queryByText("Admin User")).toBeNull();
+  });
+
+  it("falls back to the session name when no staff name is given", () => {
+    render(<MoreSheet onClose={() => {}} />);
+    expect(screen.getByText("Admin User")).toBeInTheDocument();
+  });
+});
 
 describe("MoreSheet", () => {
   beforeEach(() => {
@@ -36,12 +47,6 @@ describe("MoreSheet", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-  });
-
-  it("shows the staff name in the account block, not the session login", async () => {
-    render(<Wrapper />);
-    expect(await screen.findByText("Tài Chí Tuyền")).toBeInTheDocument();
-    expect(screen.queryByText("Admin User")).toBeNull();
   });
 
   it("closes on Escape", async () => {

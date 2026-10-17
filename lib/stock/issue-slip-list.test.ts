@@ -68,7 +68,10 @@ describe("listIssueSlipsPage", () => {
 
   it("filters by the staff name shown in the person list", () => {
     expect(page({ person: "Tài Chí Tuyền" }).rows.map(r => r.id)).toEqual(["ISL-00077", "ISL-00076"]);
-    expect(page({ person: "tuyen2612" }).rows).toEqual([]);
+  });
+
+  it("an old link with the login still finds that person's slips", () => {
+    expect(page({ person: "tuyen2612" }).rows.map(r => r.id)).toEqual(["ISL-00077", "ISL-00076"]);
   });
 
   it("keeps the stored text for a person missing from users", () => {

@@ -4,29 +4,26 @@ const mocks = vi.hoisted(() => ({ resolveActor: vi.fn(), findAll: vi.fn() }));
 
 vi.mock("@/lib/auth/auth", () => ({ resolveActor: mocks.resolveActor }));
 vi.mock("@/lib/db/tables", () => ({ findAll: mocks.findAll }));
+vi.mock("./AdminFrame", () => ({ AdminFrame: () => null }));
 
-import { getMyStaffName } from "./actions";
+import AdminLayout from "./layout";
 
-describe("getMyStaffName", () => {
+describe("AdminLayout", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.findAll.mockResolvedValue([{ id: "USR-002", username: "tuyen2612", name: "Tài Chí Tuyền" }]);
   });
 
-  it("returns the signed-in person's staff name, not the stored login", async () => {
+  it("loads the signed-in person's staff name on the server and hands it to the frame", async () => {
     mocks.resolveActor.mockResolvedValue({ ok: true, actor: { id: "USR-002", name: "tuyen2612", role: "MANAGER" } });
-    await expect(getMyStaffName()).resolves.toBe("Tài Chí Tuyền");
+    const element = await AdminLayout({ children: null });
+    expect(element.props.staffName).toBe("Tài Chí Tuyền");
   });
 
-  it("returns the login when the user has no name", async () => {
-    mocks.findAll.mockResolvedValue([{ id: "USR-002", username: "tuyen2612", name: null }]);
-    mocks.resolveActor.mockResolvedValue({ ok: true, actor: { id: "USR-002", name: "tuyen2612", role: "MANAGER" } });
-    await expect(getMyStaffName()).resolves.toBe("tuyen2612");
-  });
-
-  it("returns null when nobody is signed in", async () => {
+  it("passes null when nobody is signed in, without reading users", async () => {
     mocks.resolveActor.mockResolvedValue({ ok: false, error: "Yêu cầu đăng nhập" });
-    await expect(getMyStaffName()).resolves.toBeNull();
+    const element = await AdminLayout({ children: null });
+    expect(element.props.staffName).toBeNull();
     expect(mocks.findAll).not.toHaveBeenCalled();
   });
 });

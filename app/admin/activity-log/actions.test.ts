@@ -113,4 +113,24 @@ describe("getActivityLogEvents", () => {
     expect(result.actors).toEqual(["Admin", "Cashier"]);
     expect(actors.select).toHaveBeenCalledWith("id, username, name");
   });
+
+  it("text search also finds events by the staff name, through the logins stored on the log", async () => {
+    const events = query({ data: [], count: 0, error: null });
+    const users = query({
+      data: [
+        { id: "u1", username: "tuyen2612", name: "Tài Chí Tuyền" },
+        { id: "u2", username: "lan", name: "Lan" },
+      ],
+      error: null,
+    });
+    mocks.getSupabaseClient.mockReturnValue({
+      from: (table: string) => (table === "order_events" ? events : table === "users" ? users : query({ data: [], error: null })),
+    });
+
+    await getActivityLogEvents({ q: "tài chí" });
+
+    expect(events.or).toHaveBeenCalledWith(
+      'id.ilike.%tài chí%,reason.ilike.%tài chí%,actor_name.ilike.%tài chí%,actor_name.in.("tuyen2612")',
+    );
+  });
 });
