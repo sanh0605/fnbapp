@@ -649,7 +649,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                               <div onBlur={(e) => handleLineBlur(line.id, e)}>
                                 {isPackage ? (
                                   <div className="space-y-1">
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex flex-wrap gap-2">
                                       {line.packageLines.map((pkg) => {
                                         const val = packageInputs[line.id]?.[pkg.conversionId];
                                         return (
@@ -707,7 +707,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                             <TableCell>{renderLineDifference(line)}</TableCell>
 
                             <TableCell align="right">
-                              <div className="text-xs text-right">
+                              <div className="text-xs text-right max-w-[12rem] ml-auto">
                                 {renderLineStatus(line.id, line.countedQty)}
                               </div>
                             </TableCell>
