@@ -241,13 +241,11 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
         setLineErrors((prev) => ({ ...prev, [lineId]: errMsg }));
       } finally {
         savingPromisesRef.current.delete(lineId);
+        isSavingRef.current.set(lineId, false);
+        setSavingLineIds((prev) => ({ ...prev, [lineId]: false }));
         if (needsSaveAgainRef.current.get(lineId)) {
           needsSaveAgainRef.current.set(lineId, false);
-          isSavingRef.current.set(lineId, false);
           performSave(lineId);
-        } else {
-          isSavingRef.current.set(lineId, false);
-          setSavingLineIds((prev) => ({ ...prev, [lineId]: false }));
         }
       }
     })();

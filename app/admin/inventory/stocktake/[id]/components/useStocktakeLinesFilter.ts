@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { stripDiacritics } from "@/lib/shared/duplicate-name-guard";
 import type { StocktakeLineView } from "../../actions";
 
@@ -10,8 +10,24 @@ export function useStocktakeLinesFilter(
   lines: StocktakeLineView[],
   initialTab: StocktakeTab = "ALL"
 ) {
-  const [activeTab, setActiveTab] = useState<StocktakeTab>(initialTab);
+  const linesRef = useRef(lines);
+  linesRef.current = lines;
+
+  const [activeTab, setActiveTabState] = useState<StocktakeTab>(initialTab);
+  const [snapshotIds, setSnapshotIds] = useState<Set<string> | null>(() => {
+    if (initialTab === "ALL") return null;
+    return new Set(lines.filter((l) => l.state === initialTab).map((l) => l.id));
+  });
   const [searchQuery, setSearchQuery] = useState("");
+
+  const setActiveTab = useCallback((tab: StocktakeTab) => {
+    setActiveTabState(tab);
+    if (tab === "ALL") {
+      setSnapshotIds(null);
+    } else {
+      setSnapshotIds(new Set(linesRef.current.filter((l) => l.state === tab).map((l) => l.id)));
+    }
+  }, []);
 
   const allCount = lines.length;
   const blankCount = lines.filter((l) => l.state === "BLANK").length;
@@ -21,12 +37,8 @@ export function useStocktakeLinesFilter(
 
   const filteredLines = useMemo(() => {
     let result = lines;
-    if (activeTab === "BLANK") {
-      result = result.filter((l) => l.state === "BLANK");
-    } else if (activeTab === "OFF") {
-      result = result.filter((l) => l.state === "OFF");
-    } else if (activeTab === "MATCH") {
-      result = result.filter((l) => l.state === "MATCH");
+    if (activeTab !== "ALL" && snapshotIds) {
+      result = result.filter((l) => snapshotIds.has(l.id));
     }
 
     const q = searchQuery.trim();
@@ -39,7 +51,7 @@ export function useStocktakeLinesFilter(
       });
     }
     return result;
-  }, [lines, activeTab, searchQuery]);
+  }, [lines, activeTab, snapshotIds, searchQuery]);
 
   const groups = useMemo(() => {
     const map = new Map<string, { total: number; counted: number }>();

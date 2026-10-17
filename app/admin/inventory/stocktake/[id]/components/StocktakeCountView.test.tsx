@@ -1024,4 +1024,123 @@ describe("StocktakeCountView (Screen 2)", () => {
     expect(screen.getByText("Trạng thái")).toBeInTheDocument();
     expect(screen.queryByText("Thao tác")).not.toBeInTheDocument();
   });
+
+  it("a line saved while on 'Chưa đếm' stays visible with '✓ Đã lưu' and clicking 'Chưa đếm' again hides it (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValue({ countedQty: 5000 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    expect(screen.getByRole("button", { name: /Chưa đếm \(1\)/ })).toBeInTheDocument();
+    expect(screen.getAllByText("Bột cà phê").length).toBeGreaterThan(0);
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+    });
+    expect(screen.getAllByText("Bột cà phê").length).toBeGreaterThan(0);
+
+    const chuaDemBtn = screen.getByRole("button", { name: /Chưa đếm \(0\)/ });
+    expect(chuaDemBtn).toBeInTheDocument();
+
+    fireEvent.click(chuaDemBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText("Bột cà phê")).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("Không có mặt hàng nào phù hợp bộ lọc")).toBeInTheDocument();
+  });
+
+  it("blurring again with the same value while first save is pending does not call save again and ends as '✓ Đã lưu' (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+
+    let resolveSave!: (val: any) => void;
+    const savePromise = new Promise((resolve) => {
+      resolveSave = resolve;
+    });
+    vi.mocked(saveStocktakeLine).mockReturnValue(savePromise as any);
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // The first save is still pending
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByText("Đang lưu…").length).toBeGreaterThan(0);
+
+    // The line is blurred again with the same value
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // Still only 1 call
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+
+    // The first save resolves
+    resolveSave({ countedQty: 5000 });
+
+    // Expected: no second call, and the status ends as "✓ Đã lưu"
+    await waitFor(() => {
+      expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+    });
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText("Đang lưu…")).not.toBeInTheDocument();
+  });
 });
