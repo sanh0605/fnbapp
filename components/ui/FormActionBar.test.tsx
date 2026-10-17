@@ -161,5 +161,3 @@ describe("BR-UI-015 FormActionBar", () => {
     expect(container.querySelector(".text-text-muted")).toBeNull();
   });
 });
-
-
