@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, within, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { StocktakeList } from "./StocktakeList";
 import type { StocktakeListRow } from "../actions";
 
@@ -147,41 +147,5 @@ describe("StocktakeList (Screen 1)", () => {
     expect(within(phone).getByText("Tạm tính · STK-003 · Admin · Đã đếm 2/3")).toBeInTheDocument();
     expect(within(phone).getByText("STK-002 · Admin · Đã đếm 50/50")).toBeInTheDocument();
     expect(within(phone).getByText("STK-001 · Admin · Đã đếm 50/50")).toBeInTheDocument();
-  });
-
-  it("searching by login finds the row", () => {
-    const sessions = [
-      {
-        id: "STK-001",
-        status: "CONFIRMED" as const,
-        at: "2026-08-09T15:02:24.000Z",
-        personName: "Tài Chí Tuyền",
-        login: "tuyen2612",
-        countedLines: 50,
-        totalLines: 50,
-        shortValue: 0,
-        foundValue: 0,
-        isLatestConfirmed: true,
-      },
-      {
-        id: "STK-002",
-        status: "CONFIRMED" as const,
-        at: "2026-08-10T15:02:24.000Z",
-        personName: "Nguyễn Văn A",
-        login: "anv",
-        countedLines: 10,
-        totalLines: 10,
-        shortValue: 0,
-        foundValue: 0,
-        isLatestConfirmed: false,
-      },
-    ];
-
-    render(<StocktakeList sessions={sessions} />);
-    const input = screen.getByRole("textbox", { name: "Tìm kiếm" });
-    fireEvent.change(input, { target: { value: "tuyen2612" } });
-
-    expect(screen.getByText("STK-001")).toBeInTheDocument();
-    expect(screen.queryByText("STK-002")).toBeNull();
   });
 });

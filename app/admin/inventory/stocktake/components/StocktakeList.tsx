@@ -11,15 +11,10 @@ import { Alert } from "@/components/ui/Alert";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
-import { TextInput } from "@/components/ui/TextInput";
 import {
   startStocktakeSession,
   type StocktakeListRow,
 } from "../actions";
-
-export type StocktakeListRowItem = StocktakeListRow & {
-  login?: string;
-};
 
 export function formatStocktakeDiffValue(row: StocktakeListRow): string {
   if (row.status === "REVERSED" || (row.shortValue === null && row.foundValue === null)) {
@@ -52,25 +47,13 @@ export function renderStocktakeStatusBadge(status: StocktakeListRow["status"]) {
   return null;
 }
 
-export function StocktakeList({ sessions }: { sessions: StocktakeListRowItem[] }) {
+export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
   const router = useRouter();
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
 
   const openSession = sessions.find((s) => s.status === "OPEN");
   const hasOpen = Boolean(openSession);
-
-  const filteredSessions = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return sessions;
-    return sessions.filter((row) => {
-      const matchName = (row.personName || "").toLowerCase().includes(q);
-      const matchLogin = (row.login || (row as any).createdByName || (row as any).created_by_name || "").toLowerCase().includes(q);
-      const matchId = (row.id || "").toLowerCase().includes(q);
-      return matchName || matchLogin || matchId;
-    });
-  }, [sessions, search]);
 
   async function handleStart() {
     setIsStarting(true);
@@ -171,17 +154,8 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRowItem[] }
 
       {error && <Alert variant="danger">{error}</Alert>}
 
-      <div className="max-w-xs">
-        <TextInput
-          aria-label="Tìm kiếm"
-          placeholder="Tìm theo mã hoặc người thực hiện"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
       <DataList
-        rows={filteredSessions}
+        rows={sessions}
         getId={(row) => row.id}
         getName={(row) => row.id}
         getHref={(row) => `/admin/inventory/stocktake/${row.id}`}
