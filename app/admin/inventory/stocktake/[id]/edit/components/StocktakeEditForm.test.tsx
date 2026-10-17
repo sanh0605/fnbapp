@@ -113,7 +113,7 @@ describe("Ticket 6c: StocktakeEditForm FormActionBar and phone layout", () => {
     expect(push).toHaveBeenCalledWith("/admin/inventory/stocktake/STK-001");
   });
 
-  it("on phone layout: each line has name + unit on the left and a 48px number box 7rem wide on the right", () => {
+  it("on phone layout: each line has name + unit on the left and a 48px number box 9rem wide on the right", () => {
     const { container } = render(<StocktakeEditForm detail={DETAIL} />);
     const lineEl = lineOf(container, "SKL-00004");
     expect(lineEl).toBeInTheDocument();
@@ -125,8 +125,8 @@ describe("Ticket 6c: StocktakeEditForm FormActionBar and phone layout", () => {
     expect(input).toBeInTheDocument();
     expect(input.className).toContain("min-h-[48px]");
 
-    const inputContainer = input.closest(".w-28, .w-\\[7rem\\]") || input;
-    expect(inputContainer.className).toMatch(/\b(w-28|w-\[7rem\])\b/);
+    const inputContainer = input.closest(".w-36, .w-\\[9rem\\]") || input;
+    expect(inputContainer.className).toMatch(/\b(w-36|w-\[9rem\])\b/);
   });
 });
 

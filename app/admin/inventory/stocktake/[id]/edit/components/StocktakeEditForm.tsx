@@ -91,7 +91,7 @@ export function StocktakeEditForm({ detail }: { detail: Detail }) {
                 </div>
               </div>
 
-              <div className="w-28 md:w-full shrink-0">
+              <div className="w-36 md:w-full shrink-0">
                 <NumberInput
                   id={`line-${line.id}`}
                   decimals={3}

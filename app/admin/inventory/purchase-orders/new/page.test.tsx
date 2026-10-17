@@ -22,6 +22,7 @@ vi.mock("../components/PurchaseOrderForm", () => ({
 vi.mock("@/components/ui/BackLink", () => ({ BackLink: () => null }));
 
 import NewPurchaseOrderPage from "./page";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 
 function collectText(node: ReactNode, out: string[] = []): string[] {
   if (node === null || node === undefined || typeof node === "boolean") return out;
@@ -131,9 +132,9 @@ describe("NewPurchaseOrderPage copyFrom (BR-INV-016)", () => {
   });
 
   it("the page fills the admin frame like the slip's detail page, for the two-column form (owner 2026-10-10, BR-UI-012)", async () => {
-    const tree = (await NewPurchaseOrderPage({})) as ReactElement<{ className?: string }>;
-    expect(tree.props.className).toContain("w-full");
-    expect(tree.props.className).not.toContain("max-w-");
+    const tree = (await NewPurchaseOrderPage({})) as ReactElement;
+    // DetailFrame is the shared full-width frame (w-full, no max-w-)
+    expect(tree.type).toBe(DetailFrame);
   });
 
   it("without copyFrom parameter it renders normal form with no notices", async () => {

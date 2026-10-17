@@ -210,7 +210,7 @@ export default function ProductForm({
                     if (categoryError) setCategoryError(null);
                   }}
                 >
-                  <option value="">-- Chọn nhóm --</option>
+                  <option value="" data-placeholder>-- Chọn nhóm --</option>
                   {categories.map((c: any) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}

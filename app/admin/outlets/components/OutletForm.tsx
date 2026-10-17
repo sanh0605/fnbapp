@@ -120,7 +120,7 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
               value={brandId}
               onChange={(e) => setBrandId(e.target.value)}
             >
-              <option value="" disabled>-- Chọn thương hiệu --</option>
+              <option value="" disabled data-placeholder>-- Chọn thương hiệu --</option>
               {brands.map(b => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}

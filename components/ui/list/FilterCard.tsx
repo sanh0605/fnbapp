@@ -47,15 +47,15 @@ export function FilterCard({
     <div
       className={
         inlineButtons
-          ? "flex gap-2 shrink-0 md:w-auto min-h-[48px] md:min-h-[40px]"
-          : "flex gap-2 w-full md:w-auto min-h-[48px] md:min-h-[40px]"
+          ? "flex gap-2 shrink-0 md:w-auto min-h-[48px] md:min-h-[40px] md:self-end"
+          : `${canFold && !open ? "hidden md:flex" : "flex"} gap-2 w-full md:w-auto min-h-[48px] md:min-h-[40px] md:shrink-0 md:self-end`
       }
     >
       {onApply && (
         <button
           type="button"
           onClick={onApply}
-          className="flex-1 md:flex-none bg-surface-secondary text-text-primary px-4 rounded-lg font-medium hover:bg-surface-secondary/80 transition border border-border flex items-center justify-center min-w-[80px] min-h-[48px] md:min-h-[40px]"
+          className="flex-1 md:flex-none bg-surface-secondary text-text-primary px-4 rounded-lg font-medium hover:bg-surface-secondary/80 transition border border-border flex items-center justify-center min-w-[80px] min-h-[48px] md:min-h-[40px] text-base md:text-sm"
         >
           Lọc
         </button>
@@ -64,7 +64,7 @@ export function FilterCard({
         <button
           type="button"
           onClick={onClear}
-          className="flex-1 md:flex-none text-danger px-4 rounded-lg font-medium hover:bg-danger/10 transition flex items-center justify-center min-w-[80px] min-h-[48px] md:min-h-[40px]"
+          className="flex-1 md:flex-none text-danger px-4 rounded-lg font-medium hover:bg-danger/10 transition flex items-center justify-center min-w-[80px] min-h-[48px] md:min-h-[40px] text-base md:text-sm"
         >
           Xoá lọc
         </button>
@@ -78,32 +78,34 @@ export function FilterCard({
       onKeyDown={handleKeyDown}
     >
       <div className="flex flex-wrap items-end gap-3">
-        {(search !== undefined || canFold) && (
-          <div
-            className={
-              search !== undefined
-                ? "flex items-end gap-2 w-full md:contents"
-                : "flex items-end gap-2 w-full md:hidden"
-            }
-          >
-            {search !== undefined && <div className="flex-1 min-w-0 md:contents">{search}</div>}
-            {canFold && (
-              <button
-                type="button"
-                aria-expanded={open}
-                onClick={() => setOpen((prev) => !prev)}
-                className="md:hidden shrink-0 bg-surface-secondary text-text-primary px-4 rounded-lg font-medium hover:bg-surface-secondary/80 transition border border-border flex items-center justify-center min-h-[48px] md:min-h-[40px]"
-              >
-                {toggleLabel}
-              </button>
-            )}
-            {inlineButtons && buttons}
+        <div className="contents md:flex md:flex-wrap md:items-end md:gap-3 md:flex-1 md:min-w-0">
+          {(search !== undefined || canFold) && (
+            <div
+              className={
+                search !== undefined
+                  ? "flex items-end gap-2 w-full md:contents"
+                  : "flex items-end gap-2 w-full md:hidden"
+              }
+            >
+              {search !== undefined && <div className="flex-1 min-w-0 md:contents">{search}</div>}
+              {canFold && (
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() => setOpen((prev) => !prev)}
+                  className="md:hidden shrink-0 bg-surface-secondary text-text-primary px-4 rounded-lg font-medium hover:bg-surface-secondary/80 transition border border-border flex items-center justify-center min-h-[48px] md:min-h-[40px] text-base md:text-sm"
+                >
+                  {toggleLabel}
+                </button>
+              )}
+              {inlineButtons && buttons}
+            </div>
+          )}
+          <div className={canFold && !open ? "hidden md:contents" : "contents"}>
+            {children}
           </div>
-        )}
-        <div className={canFold && !open ? "hidden md:contents" : "contents"}>
-          {children}
-          {!inlineButtons && buttons}
         </div>
+        {!inlineButtons && buttons}
       </div>
     </div>
   );

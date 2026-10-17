@@ -86,7 +86,7 @@ export function ProductCategoryForm({ initialData, types = [], returnTo: rawRetu
               required
               defaultValue={initialData?.type_id ?? ""}
             >
-              <option value="" disabled>Chọn loại món</option>
+              <option value="" disabled data-placeholder>Chọn loại món</option>
               {types.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}

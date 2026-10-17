@@ -1,7 +1,7 @@
 import { CategoryForm } from "../components/CategoryForm";
 import { safeReturnTo } from "@/lib/shared/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -9,10 +9,14 @@ export default async function NewCashCategoryPage(props: { searchParams?: Promis
   const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(searchParams?.returnTo, "/admin/finance/categories");
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Nhóm thu chi" />
-      <PageHeader title="Tạo nhóm thu chi" subtitle="Đặt tên các nhóm chi và thu." />
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Nhóm thu chi"
+        title="Tạo nhóm thu chi"
+        subtitle="Đặt tên các nhóm chi và thu."
+      />
       <CategoryForm returnTo={returnTo} />
-    </div>
+    </DetailFrame>
   );
 }

@@ -209,7 +209,7 @@ export function PurchaseOrderTotals({
                   setPaymentError(null);
                 }}
               >
-                <option value="">-- Chọn tài khoản --</option>
+                <option value="" data-placeholder>-- Chọn tài khoản --</option>
                 {bankAccounts.map((a: any) => (
                   <option key={a.id} value={a.id}>
                     {a.name}

@@ -2,8 +2,8 @@ import { getOutlets } from "@/app/admin/outlets/actions";
 import { getBrands } from "@/app/admin/brands/actions";
 import { OutletForm } from "@/app/admin/outlets/components/OutletForm";
 import { safeReturnTo } from "@/lib/shared/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
 export const dynamic = "force-dynamic";
@@ -21,10 +21,14 @@ export default async function NewOutletPage(
   ]);
 
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Điểm bán" />
-      <PageHeader title="Tạo điểm bán" subtitle="Thêm điểm bán mới vào hệ thống." />
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Điểm bán"
+        title="Tạo điểm bán"
+        subtitle="Thêm điểm bán mới vào hệ thống."
+      />
       <OutletForm brands={brands} outlets={outlets} returnTo={returnTo} />
-    </div>
+    </DetailFrame>
   );
 }

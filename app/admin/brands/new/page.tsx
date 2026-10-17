@@ -1,7 +1,7 @@
 import { BrandForm } from "@/app/admin/brands/components/BrandForm";
 import { safeReturnTo } from "@/lib/shared/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +13,14 @@ export default async function NewBrandPage(
   const searchParams = await props.searchParams;
   const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/brands");
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Thương hiệu" />
-      <PageHeader title="Tạo thương hiệu" subtitle="Quản lý thương hiệu F&B trên hệ thống." />
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Thương hiệu"
+        title="Tạo thương hiệu"
+        subtitle="Quản lý thương hiệu F&B trên hệ thống."
+      />
       <BrandForm returnTo={returnTo} />
-    </div>
+    </DetailFrame>
   );
 }

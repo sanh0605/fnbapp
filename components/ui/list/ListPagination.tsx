@@ -17,7 +17,7 @@ export function ListPagination({
   const paginationPages = pageWindow(page, pageCount);
 
   return (
-    <div className="bg-surface-secondary border-t border-border px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div className="bg-surface-card border-t border-border px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div className="text-sm text-text-muted">
         <span className="font-medium text-text-primary">{firstIndex}</span>–
         <span className="font-medium text-text-primary">{lastIndex}</span> trên{" "}
@@ -29,7 +29,7 @@ export function ListPagination({
           {page > 1 ? (
             <Link
               href={pageHref(page - 1)}
-              className="px-3 py-1 text-sm font-medium text-text-primary hover:bg-surface-card rounded border border-transparent hover:border-border min-h-[48px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
+              className="px-3 py-1 text-sm font-medium text-text-primary hover:bg-surface-secondary rounded border border-border min-h-[48px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
             >
               Trước
             </Link>
@@ -39,15 +39,19 @@ export function ListPagination({
             </span>
           )}
 
+          <span className="md:hidden text-sm text-text-primary px-2 min-h-[48px] flex items-center">
+            {page} / {pageCount}
+          </span>
+
           {paginationPages.map((p) => (
             <Link
               key={p}
               href={pageHref(p)}
               aria-current={p === page ? "page" : undefined}
-              className={`min-h-[48px] md:min-h-[40px] min-w-[44px] items-center justify-center px-3 py-1 text-sm font-medium rounded border ${
+              className={`hidden md:flex min-h-[48px] md:min-h-[40px] min-w-[44px] items-center justify-center px-3 py-1 text-sm font-medium rounded border ${
                 p === page
-                  ? "flex bg-primary text-on-primary border-primary"
-                  : "hidden md:flex text-text-primary hover:bg-surface-card border-transparent hover:border-border"
+                  ? "bg-primary text-on-primary border-primary"
+                  : "text-text-primary hover:bg-surface-secondary border-transparent hover:border-border"
               }`}
             >
               {p}
@@ -57,7 +61,7 @@ export function ListPagination({
           {page < pageCount ? (
             <Link
               href={pageHref(page + 1)}
-              className="px-3 py-1 text-sm font-medium text-text-primary hover:bg-surface-card rounded border border-transparent hover:border-border min-h-[48px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
+              className="px-3 py-1 text-sm font-medium text-text-primary hover:bg-surface-secondary rounded border border-border min-h-[48px] md:min-h-[40px] min-w-[44px] flex items-center justify-center"
             >
               Sau
             </Link>

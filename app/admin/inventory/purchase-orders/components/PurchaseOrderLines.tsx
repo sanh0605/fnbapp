@@ -163,7 +163,7 @@ export function PurchaseOrderLines({
                           onChange={(e) => updateLine(index, "conversion_id", e.target.value)}
                           disabled={!line.purchased_item_id}
                         >
-                          <option value="">-- Chọn --</option>
+                          <option value="" data-placeholder>-- Chọn --</option>
                           {availableUnits.map((u: any) => {
                             const pUnit = String(u.purchased_unit).trim();
                             const bUnit = String(u.base_unit).trim();

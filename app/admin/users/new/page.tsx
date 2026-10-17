@@ -1,7 +1,7 @@
 import { UserForm } from "@/app/admin/users/components/UserForm";
 import { safeReturnTo } from "@/lib/shared/return-to";
-import { BackLink } from "@/components/ui/BackLink";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailFrame } from "@/components/ui/detail/DetailFrame";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { resolveActor } from "@/lib/auth/auth";
 
 export const dynamic = "force-dynamic";
@@ -18,10 +18,14 @@ export default async function NewUserPage(
   );
   const returnTo = safeReturnTo(typeof searchParams?.returnTo === "string" ? searchParams.returnTo : undefined, "/admin/users");
   return (
-    <div className="space-y-6">
-      <BackLink href={returnTo} label="Nhân sự" />
-      <PageHeader title="Tạo nhân viên" subtitle="Tạo tài khoản đăng nhập và phân quyền hệ thống." />
+    <DetailFrame>
+      <DetailHeader
+        backHref={returnTo}
+        backLabel="Nhân sự"
+        title="Tạo nhân viên"
+        subtitle="Tạo tài khoản đăng nhập và phân quyền hệ thống."
+      />
       <UserForm returnTo={returnTo} canGrantAdmin={canGrantAdmin} />
-    </div>
+    </DetailFrame>
   );
 }

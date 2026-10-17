@@ -346,7 +346,7 @@ export function PurchasedItemForm({
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
                 required
               >
-                <option value="">Chọn phân loại...</option>
+                <option value="" data-placeholder>Chọn phân loại...</option>
                 {itemCategories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
