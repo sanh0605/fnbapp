@@ -160,4 +160,106 @@ describe("BR-UI-015 FormActionBar", () => {
     expect(screen.queryByText("Có thay đổi chưa lưu")).toBeNull();
     expect(container.querySelector(".text-text-muted")).toBeNull();
   });
+
+  it("short form sets marginTop = base + gap to sticky target", () => {
+    const origGetComputedStyle = window.getComputedStyle;
+    vi.spyOn(window, "getComputedStyle").mockImplementation((elt) => {
+      const real = origGetComputedStyle(elt);
+      return new Proxy(real, {
+        get(target, prop) {
+          if (prop === "marginTop") return "16px";
+          if (prop === "bottom") return "58px";
+          return (target as any)[prop];
+        },
+      });
+    });
+
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains("overflow-y-auto")) {
+        return { bottom: 800 } as DOMRect;
+      }
+      return { bottom: 400 } as DOMRect;
+    });
+
+    try {
+      const { container } = render(
+        <div className="overflow-y-auto">
+          <form>
+            <input />
+            <FormActionBar mode="create" onCancel={() => {}} />
+          </form>
+        </div>
+      );
+
+      const bar = container.querySelector(".sticky") as HTMLElement;
+      // target = 800 - 58 = 742; currentBottom = 400; diff = 742 - 400 = 342;
+      // marginTop = base (16) + diff (342) = 358px
+      expect(bar.style.marginTop).toBe("358px");
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("long form (bar already at or below target) sets no marginTop", () => {
+    const origGetComputedStyle = window.getComputedStyle;
+    vi.spyOn(window, "getComputedStyle").mockImplementation((elt) => {
+      const real = origGetComputedStyle(elt);
+      return new Proxy(real, {
+        get(target, prop) {
+          if (prop === "marginTop") return "16px";
+          if (prop === "bottom") return "58px";
+          return (target as any)[prop];
+        },
+      });
+    });
+
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains("overflow-y-auto")) {
+        return { bottom: 800 } as DOMRect;
+      }
+      return { bottom: 800 } as DOMRect;
+    });
+
+    try {
+      const { container } = render(
+        <div className="overflow-y-auto">
+          <form>
+            <input />
+            <FormActionBar mode="create" onCancel={() => {}} />
+          </form>
+        </div>
+      );
+
+      const bar = container.querySelector(".sticky") as HTMLElement;
+      expect(bar.style.marginTop).toBe("");
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("observes scrollParent.firstElementChild if scrollParent exists, otherwise form", () => {
+    let observed: Element | null = null;
+    const origRO = window.ResizeObserver;
+    window.ResizeObserver = class {
+      observe(target: Element) {
+        observed = target;
+      }
+      unobserve() {}
+      disconnect() {}
+    } as any;
+
+    try {
+      render(
+        <div className="overflow-y-auto">
+          <div data-testid="banner">Banner</div>
+          <form>
+            <FormActionBar mode="create" onCancel={() => {}} />
+          </form>
+        </div>
+      );
+      expect(screen.getByTestId("banner")).toBe(observed);
+    } finally {
+      window.ResizeObserver = origRO;
+    }
+  });
 });

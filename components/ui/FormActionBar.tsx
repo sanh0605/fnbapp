@@ -40,17 +40,17 @@ export function FormActionBar({
       const el = barRef.current;
       if (!el) return;
       el.style.marginTop = "";
+      const base = parseFloat(getComputedStyle(el).marginTop) || 0;
       const scrollParent = el.closest(".overflow-y-auto");
       const parentBottom = scrollParent
         ? scrollParent.getBoundingClientRect().bottom
         : window.innerHeight;
-      const isMobile = window.innerWidth < 768;
-      const targetBottom = isMobile ? parentBottom - 58 : parentBottom;
+      const target = parentBottom - (parseFloat(getComputedStyle(el).bottom) || 0);
       const currentBottom = el.getBoundingClientRect().bottom;
       if (currentBottom > 0 && parentBottom > 0) {
-        const diff = targetBottom - currentBottom;
+        const diff = target - currentBottom;
         if (diff > 0) {
-          el.style.marginTop = `${diff}px`;
+          el.style.marginTop = `${base + diff}px`;
         }
       }
     };
@@ -58,10 +58,13 @@ export function FormActionBar({
     updatePosition();
     window.addEventListener("resize", updatePosition);
 
+    const scrollParent = barRef.current?.closest(".overflow-y-auto");
+    const targetToObserve = (scrollParent?.firstElementChild as HTMLElement | null) ?? form;
+
     let observer: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== "undefined") {
+    if (typeof ResizeObserver !== "undefined" && targetToObserve) {
       observer = new ResizeObserver(updatePosition);
-      observer.observe(form);
+      observer.observe(targetToObserve);
     }
 
     return () => {

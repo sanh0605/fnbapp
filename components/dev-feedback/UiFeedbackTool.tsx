@@ -39,10 +39,12 @@ function getOrCreateContainer(): HTMLElement {
 
 const panelStyle: React.CSSProperties = {
   position: "fixed",
-  bottom: 72,
-  right: 16,
+  top: "50%",
+  transform: "translateY(-50%)",
+  right: 40,
   width: 320,
-  maxHeight: "70vh",
+  maxWidth: "calc(100vw - 48px)",
+  maxHeight: "calc(100vh - 32px)",
   overflowY: "auto",
   background: "#1f2430",
   color: "#f3f4f6",
@@ -59,18 +61,24 @@ const buttonStyle: React.CSSProperties = {
   position: "fixed",
   top: "50%",
   transform: "translateY(-50%)",
-  right: 16,
+  right: 0,
   zIndex: 2147483000,
   background: "#4f46e5",
   color: "#ffffff",
   border: "none",
-  borderRadius: 999,
-  padding: "10px 18px",
+  borderRadius: "8px 0 0 8px",
+  width: 28,
+  minHeight: 48,
+  padding: "12px 0",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  writingMode: "vertical-rl",
   fontFamily: "system-ui, -apple-system, sans-serif",
-  fontSize: 14,
+  fontSize: 13,
   fontWeight: 600,
   cursor: "pointer",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+  boxShadow: "-2px 2px 8px rgba(0,0,0,0.3)",
 };
 
 const actionButtonStyle: React.CSSProperties = {
@@ -116,17 +124,12 @@ export function UiFeedbackTool() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState("");
-  const [isMobile, setIsMobile] = useState(false);
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const triggerButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     setContainer(getOrCreateContainer());
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const composing = pendingFingerprint !== null || composingGeneral;
@@ -357,7 +360,7 @@ export function UiFeedbackTool() {
         )}
 
         {isOpen && !composing && (
-          <div ref={panelRef} style={{ ...panelStyle, bottom: isMobile ? "calc(206px + env(safe-area-inset-bottom))" : 144 }}>
+          <div ref={panelRef} style={panelStyle}>
             <div style={{ fontWeight: 600, marginBottom: 10 }}>Góp ý giao diện</div>
             <button type="button" style={actionButtonStyle} onClick={startPicking}>
               Chọn phần tử để góp ý
@@ -485,7 +488,7 @@ export function UiFeedbackTool() {
         )}
 
         {composing && (
-          <div ref={panelRef} style={{ ...panelStyle, bottom: isMobile ? "calc(206px + env(safe-area-inset-bottom))" : 144 }}>
+          <div ref={panelRef} style={panelStyle}>
             <div style={{ fontWeight: 600, marginBottom: 10 }}>
               {pendingFingerprint ? "Ghi chú cho phần tử đã chọn" : "Góp ý chung"}
             </div>
