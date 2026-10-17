@@ -138,9 +138,10 @@ product (`MOD-009` today) updates only itself.
    The category list and detail offer create, edit, and remove; a category still
    used by a dish that is not deleted is refused with its dish count, not
    silently removed. The modifier list and detail offer create, edit, and
-   remove; the "Bán độc lập" switch sits on the modifier edit form, only inside
-   the *Thêm Topping* group, since only a topping can be sold standalone; the
-   detail page shows it as "Có", "Không", or "—" outside that group.
+   remove; the "Bán độc lập" switch sits on the modifier edit form, only in a
+   group that allows standalone sale (today *Thêm Topping*), since only a topping
+   can be sold standalone; the detail page shows it as "Có", "Không", or "—"
+   in any other group.
 3. **What each list contains, and what is excluded.** The product list shows the
    catalogue including hidden products (filterable), one row per product with its
    variants. The category list shows product categories only — it does not show
