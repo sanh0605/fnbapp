@@ -8,6 +8,7 @@
 // lib/shared/report-time.ts exists to guard against for timestamp columns. There
 // is no time-of-day here to misinterpret, so there is nothing to convert.
 
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 
 export type Band = {
@@ -301,26 +302,16 @@ export function validateDisposalDate(
   if (disposedDate < acquiredDate) {
     return {
       ok: false,
-      error: `Ngày thanh lý phải từ ngày mua (${formatVnDate(acquiredDate)}) đến hôm nay (${formatVnDate(todaySaigon)}) -- ${formatVnDate(disposedDate)} là trước ngày mua`,
+      error: `Ngày thanh lý phải từ ngày mua (${formatDateTimeFull(acquiredDate)}) đến hôm nay (${formatDateTimeFull(todaySaigon)}) -- ${formatDateTimeFull(disposedDate)} là trước ngày mua`,
     };
   }
   if (disposedDate > todaySaigon) {
     return {
       ok: false,
-      error: `Ngày thanh lý phải từ ngày mua (${formatVnDate(acquiredDate)}) đến hôm nay (${formatVnDate(todaySaigon)}) -- ${formatVnDate(disposedDate)} là ngày trong tương lai`,
+      error: `Ngày thanh lý phải từ ngày mua (${formatDateTimeFull(acquiredDate)}) đến hôm nay (${formatDateTimeFull(todaySaigon)}) -- ${formatDateTimeFull(disposedDate)} là ngày trong tương lai`,
     };
   }
   return { ok: true };
-}
-
-// "YYYY-MM-DD" -> "DD/MM/YYYY", matching lib/shared/datetime.ts's formatDate
-// convention without importing a Saigon-timezone-aware Date parser here --
-// these are already plain calendar dates (see this file's own top comment),
-// so a string split is exact and does not risk formatDate's UTC-midnight
-// round-trip for a value that is already the right calendar day.
-function formatVnDate(isoDate: string): string {
-  const [y, m, d] = isoDate.split("-");
-  return `${d}/${m}/${y}`;
 }
 
 export function totalScheduledCharge(schedule: MonthlyCharge[]): number {

@@ -82,7 +82,7 @@ describe("cancelPurchaseOrder", () => {
     mocks.cancelAtomic.mockResolvedValue({ cancelled: false, blocked: [TRUNG_GA, { code: "DISPOSED", assetId: "TS-080", name: "Vòi rót rượu" }] });
     const res = await cancelPurchaseOrder({ id: "PO-064", reason: "Nhập trùng" });
     expect(res.error).toBe([
-      "Huỷ phiếu này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32) chỉ còn 21 trái, phiếu có 60 trái. Hàng của phiếu đã được dùng, nên phiếu này là thật.",
+      "Huỷ phiếu này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32:00) chỉ còn 21 trái, phiếu có 60 trái. Hàng của phiếu đã được dùng, nên phiếu này là thật.",
       "Tài sản TS-080 Vòi rót rượu của phiếu đã thanh lý, nên không huỷ được phiếu.",
     ].join("\n"));
     expect(res.success).toBeUndefined();
@@ -221,7 +221,7 @@ describe("getPurchaseOrderCancelView", () => {
   it("ready with the refusal sentences when blocked", async () => {
     mocks.fetchCheck.mockResolvedValue({ blocked: [TRUNG_GA], assets: [] });
     const view = await getPurchaseOrderCancelView("PO-147");
-    expect(view).toMatchObject({ state: "ready", blockedMessages: [expect.stringContaining("Trứng gà lúc thấp nhất (03/10/2026 22:32) chỉ còn 21 trái")] });
+    expect(view).toMatchObject({ state: "ready", blockedMessages: [expect.stringContaining("Trứng gà lúc thấp nhất (03/10/2026 22:32:00) chỉ còn 21 trái")] });
   });
 
   it("an already-cancelled order shows its own sentence", async () => {

@@ -67,7 +67,7 @@ describe("OutletDetailView", () => {
     expect(screen.getAllByText("Phin Đi").length).toBeGreaterThan(0);
     expect(screen.getAllByText("123 Đường ABC").length).toBeGreaterThan(0);
     expect(screen.getAllByText("07:00 - 22:00").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("27/03/2026").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("27/03/2026 00:00:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang hoạt động").length).toBeGreaterThan(0);
   });
 

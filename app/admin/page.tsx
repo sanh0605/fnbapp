@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getDashboardData } from "@/lib/dashboard/dashboard-data";
 import { DashboardView } from "@/app/admin/components/DashboardView";
@@ -26,7 +26,7 @@ export default async function AdminDashboard(_props: {
               Cài đặt Tổng quan
             </Link>
             <div className="text-sm font-medium text-text-muted bg-surface-card px-4 py-2.5 rounded-lg border border-border shadow-sm hidden 2xl:block whitespace-nowrap">
-              Cập nhật lúc: {formatTime(now, true)}
+              Cập nhật lúc: {formatDateTimeFull(now)}
             </div>
           </div>
         }

@@ -9,8 +9,20 @@ describe("computeStocktakeAlerts", () => {
       ...base,
       sessions: [{ id: "STK-001", status: "CONFIRMED", created_at: "2026-08-09T01:00:00Z", confirmed_at: "2026-08-09T02:00:00Z", reversed_at: null }],
     });
-    expect(r.stale).toEqual({ lastConfirmedDay: "2026-08-09", daysSince: 66 });
+    expect(r.stale).toEqual({ lastConfirmedDay: "2026-08-09", lastConfirmedAt: "2026-08-09T02:00:00Z", daysSince: 66 });
     expect(r.openTooLong).toEqual([]);
+  });
+
+  it("the instant is the latest confirmed_at, not the first one met", () => {
+    const r = computeStocktakeAlerts({
+      ...base,
+      sessions: [
+        { id: "STK-002", status: "CONFIRMED", created_at: "2026-08-09T01:00:00Z", confirmed_at: "2026-08-09T02:00:00Z", reversed_at: null },
+        { id: "STK-001", status: "CONFIRMED", created_at: "2026-08-09T01:00:00Z", confirmed_at: "2026-08-09T09:00:00Z", reversed_at: null },
+        { id: "STK-003", status: "CONFIRMED", created_at: "2026-07-01T01:00:00Z", confirmed_at: "2026-07-01T02:00:00Z", reversed_at: null },
+      ],
+    });
+    expect(r.stale).toEqual({ lastConfirmedDay: "2026-08-09", lastConfirmedAt: "2026-08-09T09:00:00Z", daysSince: 66 });
   });
 
   it("no alert when the latest confirmed session is within the limit", () => {
@@ -29,12 +41,12 @@ describe("computeStocktakeAlerts", () => {
         { id: "STK-002", status: "CONFIRMED", created_at: "2026-10-13T01:00:00Z", confirmed_at: "2026-10-13T02:00:00Z", reversed_at: "2026-10-13T05:00:00Z" },
       ],
     });
-    expect(r.stale).toEqual({ lastConfirmedDay: "2026-08-09", daysSince: 66 });
+    expect(r.stale).toEqual({ lastConfirmedDay: "2026-08-09", lastConfirmedAt: "2026-08-09T02:00:00Z", daysSince: 66 });
   });
 
-  it("no session at all: alert with null day and null count", () => {
+  it("no session at all: alert with null day, null instant and null count", () => {
     const r = computeStocktakeAlerts({ ...base, sessions: [] });
-    expect(r.stale).toEqual({ lastConfirmedDay: null, daysSince: null });
+    expect(r.stale).toEqual({ lastConfirmedDay: null, lastConfirmedAt: null, daysSince: null });
   });
 
   it("an OPEN session 3 days old with limit 2 is reported", () => {
@@ -46,7 +58,7 @@ describe("computeStocktakeAlerts", () => {
         { id: "STK-001", status: "CONFIRMED", created_at: "2026-10-13T01:00:00Z", confirmed_at: "2026-10-13T02:00:00Z", reversed_at: null },
       ],
     });
-    expect(r.openTooLong).toEqual([{ id: "STK-003", openedDay: "2026-10-11", daysOpen: 3 }]);
+    expect(r.openTooLong).toEqual([{ id: "STK-003", openedDay: "2026-10-11", openedAt: "2026-10-11T03:00:00Z", daysOpen: 3 }]);
     expect(r.stale).toBeNull();
   });
 
@@ -55,7 +67,7 @@ describe("computeStocktakeAlerts", () => {
       ...base,
       sessions: [{ id: "STK-005", status: "OPEN", created_at: "2026-10-10T18:00:00Z", confirmed_at: null, reversed_at: null }],
     });
-    expect(r.openTooLong).toEqual([{ id: "STK-005", openedDay: "2026-10-11", daysOpen: 3 }]);
+    expect(r.openTooLong).toEqual([{ id: "STK-005", openedDay: "2026-10-11", openedAt: "2026-10-10T18:00:00Z", daysOpen: 3 }]);
   });
 });
 

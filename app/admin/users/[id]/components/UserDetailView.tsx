@@ -6,7 +6,7 @@ import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { deleteUserAction } from "@/app/admin/users/actions";
 import { RoleBadge } from "@/app/admin/users/components/RoleBadge";
 import { staffLabel } from "@/lib/auth/staff-label";
@@ -34,7 +34,7 @@ export function UserDetailView({
     { label: "Mã NV", value: user.id },
     { label: "Tên đăng nhập", value: user.username },
     { label: "Quyền hạn", value: <RoleBadge role={user.role} /> },
-    { label: "Ngày tạo", value: user.created_at ? formatDate(user.created_at) : "—" },
+    { label: "Ngày tạo", value: formatDateTimeFull(user.created_at) || "—" },
   ];
 
   const headerActions = (

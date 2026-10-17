@@ -9,7 +9,7 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { confirm } from "@/lib/shared/dialog";
 import { retireOutlet, reactivateOutlet } from "@/app/admin/outlets/actions";
 import type { DBOutlet } from "@/types/db";
@@ -115,11 +115,11 @@ export function OutletDetailView({
     { label: "Giờ hoạt động", value: hoursText },
     {
       label: "Bắt đầu",
-      value: outlet.start_date ? formatDate(outlet.start_date) : "—",
+      value: formatDateTimeFull(outlet.start_date) || "—",
     },
     {
       label: "Kết thúc",
-      value: outlet.end_date ? formatDate(outlet.end_date) : "—",
+      value: formatDateTimeFull(outlet.end_date) || "—",
     },
     { label: "Trạng thái", value: statusBadge },
   ];

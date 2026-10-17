@@ -10,7 +10,7 @@ import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { FilterCard } from "@/components/ui/list/FilterCard";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { formatNumber, formatDecimal } from "@/lib/shared/format";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { stripDiacritics } from "@/lib/shared/duplicate-name-guard";
 import type { StockOnHandRow } from "@/lib/stock/stock-on-hand";
 
@@ -142,7 +142,7 @@ export default function StockOnHandClient({
         header: "Kiểm\u00A0lần\u00A0cuối",
         render: (row) => (
           <span className="text-text-secondary whitespace-nowrap">
-            {row.lastCountedAt ? formatDate(row.lastCountedAt) : "Chưa kiểm lần nào"}
+            {formatDateTimeFull(row.lastCountedAt) || "Chưa kiểm lần nào"}
           </span>
         ),
       },
@@ -229,7 +229,7 @@ export default function StockOnHandClient({
               row.value !== null ? `${formatNumber(Math.round(row.value))}đ` : null,
               daysText,
               row.categoryName || null,
-              row.lastCountedAt ? `Kiểm lần cuối ${formatDate(row.lastCountedAt)}` : "Chưa kiểm lần nào",
+              row.lastCountedAt ? `Kiểm lần cuối ${formatDateTimeFull(row.lastCountedAt)}` : "Chưa kiểm lần nào",
             ]
               .filter(Boolean)
               .join(" · "),

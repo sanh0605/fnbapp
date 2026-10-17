@@ -16,7 +16,7 @@ describe("describeCancelBlocker", () => {
   it("NEGATIVE names the item, the lowest moment in Saigon time, and both quantities", () => {
     expect(describeCancelBlocker({ code: "NEGATIVE", itemId: "x", itemName: "Trứng gà", lowBalance: 21,
       lowAt: "2026-10-03T15:32:00Z", orderQty: 60, baseUnit: "trái" }))
-      .toBe("Huỷ phiếu này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32) chỉ còn 21 trái, phiếu có 60 trái. Hàng của phiếu đã được dùng, nên phiếu này là thật.");
+      .toBe("Huỷ phiếu này làm tồn kho âm: Trứng gà lúc thấp nhất (03/10/2026 22:32:00) chỉ còn 21 trái, phiếu có 60 trái. Hàng của phiếu đã được dùng, nên phiếu này là thật.");
     expect(describeCancelBlocker({ code: "NEGATIVE", itemId: "y", itemName: "Sữa tươi Mlekovita", lowBalance: 42000,
       lowAt: "2026-10-05T08:42:00Z", orderQty: 60000, baseUnit: "ml" }))
       .toContain("chỉ còn 42,000 ml, phiếu có 60,000 ml");
@@ -28,10 +28,10 @@ describe("describeCancelBlocker", () => {
       .toContain("chỉ còn 0.5 kg, phiếu có 2 kg");
   });
 
-  it("STOCKTAKE gives the order day and the count day (Saigon, not UTC)", () => {
+  it("STOCKTAKE gives the order and the count moment with seconds (Saigon, not UTC; BR-DATA-006)", () => {
     expect(describeCancelBlocker({ code: "STOCKTAKE", stocktakeId: "STK-001",
       confirmedAt: "2026-08-09T15:02:00Z", orderAt: "2026-08-02T17:00:00Z" }))
-      .toBe("Phiếu ngày 03/08/2026 nằm trước lần kiểm kê STK-001 (09/08/2026), nên không huỷ được: lần kiểm kê đã đếm lại hàng trên kệ.");
+      .toBe("Phiếu ngày 03/08/2026 00:00:00 nằm trước lần kiểm kê STK-001 (09/08/2026 22:02:00), nên không huỷ được: lần kiểm kê đã đếm lại hàng trên kệ.");
   });
 
   it("DISPOSED names the asset", () => {

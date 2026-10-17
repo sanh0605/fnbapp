@@ -63,7 +63,7 @@ describe("UserDetailView", () => {
     expect(screen.getAllByText("USR-002").length).toBeGreaterThan(0);
     expect(screen.getAllByText("tuyen2612").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Quản lý").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("01/06/2026").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("01/06/2026 15:00:00").length).toBeGreaterThan(0);
 
     const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
     expect(editLink).toBeInTheDocument();

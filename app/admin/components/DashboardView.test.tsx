@@ -40,8 +40,8 @@ const BUSY: DashboardData = {
   ...QUIET,
   negativeStock: [{ id: "NL-001", name: "Sữa đặc", qty: -2 }],
   stocktake: {
-    stale: { lastConfirmedDay: "2026-08-09", daysSince: 66 },
-    openTooLong: [{ id: "STK-002", openedDay: "2026-10-11", daysOpen: 3 }],
+    stale: { lastConfirmedDay: "2026-08-09", lastConfirmedAt: "2026-08-09T02:00:00Z", daysSince: 66 },
+    openTooLong: [{ id: "STK-002", openedDay: "2026-10-11", openedAt: "2026-10-11T03:00:00Z", daysOpen: 3 }],
   },
   reminders: [{ itemId: "KCT-001", itemName: "Tiền điện", month: "2026-10", cashCategoryId: "CFC-002" }],
 };
@@ -60,21 +60,21 @@ describe("DashboardView alerts (owner 2026-10-14: alerts first)", () => {
     expect(within(alert).getByText(/-2/)).toBeInTheDocument();
   });
 
-  it("says how long since the last stock count, as a Vietnamese day", () => {
+  it("says how long since the last stock count, with the moment down to the second (BR-DATA-006)", () => {
     render(<DashboardView data={BUSY} />);
     const alert = screen.getByText(/66 ngày chưa kiểm kê/).closest("a")!;
     expect(alert.getAttribute("href")).toBe("/admin/inventory/stocktake");
-    expect(within(alert).getByText(/09\/08\/2026/)).toBeInTheDocument();
+    expect(within(alert).getByText(/lần cuối 09\/08\/2026 09:00:00\)/)).toBeInTheDocument();
   });
 
   it("says when there has never been a stock count", () => {
-    render(<DashboardView data={{ ...QUIET, stocktake: { stale: { lastConfirmedDay: null, daysSince: null }, openTooLong: [] } }} />);
+    render(<DashboardView data={{ ...QUIET, stocktake: { stale: { lastConfirmedDay: null, lastConfirmedAt: null, daysSince: null }, openTooLong: [] } }} />);
     expect(screen.getByText(/Chưa kiểm kê lần nào/)).toBeInTheDocument();
   });
 
-  it("names an open stock count left more than the set days", () => {
+  it("names an open stock count left more than the set days, with the opening moment down to the second", () => {
     render(<DashboardView data={BUSY} />);
-    expect(screen.getByText(/Phiếu kiểm kê mở từ 11\/10\/2026, đã 3 ngày chưa xác nhận/)).toBeInTheDocument();
+    expect(screen.getByText(/Phiếu kiểm kê mở từ 11\/10\/2026 10:00:00, đã 3 ngày chưa xác nhận/)).toBeInTheDocument();
   });
 
   it("reminds of a missing monthly expense by name and month, with Nhập opening the cash form prefilled", () => {

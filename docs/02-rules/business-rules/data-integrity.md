@@ -69,7 +69,11 @@ If a post-apply invariant fails, stop further writes and compare against the app
 
 ### BR-DATA-006 — Dates show as dd/mm/yyyy; date filters pick a day, never a time
 
-**Status:** `APPROVED` — owner decision 2026-09-29, written as a comment on the step 2–3 mockup (`docs/superpowers/specs/2026-09-28-cai-to-he-thong.md`, section 5.14). Not built yet; applied screen by screen in steps 3–7 of that overhaul.
+**Status:** `APPROVED` — owner decision 2026-09-29, written as a comment on the step 2–3 mockup (`docs/superpowers/specs/2026-09-28-cai-to-he-thong.md`, section 5.14). **Built** 2026-10-18 (branch `fix/g4-dates`): dates on list, detail and form screens, and in the messages the app writes, go through `formatDateTimeFull` in `lib/shared/datetime.ts`. `components/ui/date-format.guard.test.ts` reads `app/`, `components/` and `lib/` and fails on any call or import of the old helpers `formatDate`, `formatDateTime` and `formatTime` and of the day-only `formatVnDay` and `formatVnDayWithWeekday`. It lists each place allowed, with its reason: the till header (today's date), the date picker's own box and the cash-book filter range (filters), and the two whole-day rows below. It does not see dates built by hand. **Not yet:**
+- The rows of Doanh thu theo ngày (sales report) and of Bán hàng 7 ngày (Tổng quan) each stand for a whole day and still show the day alone; so do two short period labels, "đến 18/10" on the P&L's current month (`lib/reports/profit-and-loss-table.ts`) and "so với 17/10" on the compare line (`lib/reports/compare-periods.ts`). The owner has not said whether a row or label that stands for a whole day also shows 00:00:00; to ask.
+- The P&L drill-down and its notes show only the day of each source (`lib/reports/profit-and-loss-table.ts`), because the P&L figures keep only the day of each event.
+- Refusal messages written by the database (`to_char` in `supabase/migrations`) still show the day alone or stop at the minute; changing them needs a migration.
+- The till names a draft with a short time-and-day label in the browser's Vietnamese format, e.g. "14:31 18-10 - <first dish>" (`app/pos/components/POSScreen.tsx`), with no year and no seconds; the name is saved with the draft. To show the owner an example before changing it.
 
 *"Tất cả thời gian chỉ lọc theo ngày mà không cần chính xác giờ giấc. Ngoài ra, định dạng của tất cả ngày giờ đều phải theo dạng dd/mm/yyyy."*
 

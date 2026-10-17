@@ -28,7 +28,7 @@ function render(at: string): string {
 describe("EventCard (Task 5)", () => {
   it("shows the Saigon day for a 06:30 event, not the UTC day before (A12)", () => {
     // 2026-09-14T23:30:00Z = 15/09/2026 06:30 Saigon
-    expect(render("2026-09-14T23:30:00Z")).toContain("15/09/2026");
+    expect(render("2026-09-14T23:30:00Z")).toContain("15/09/2026 06:30:00");
   });
 
   it("stays a list using PhoneRow with no font-bold/font-semibold and no text below 12px", () => {

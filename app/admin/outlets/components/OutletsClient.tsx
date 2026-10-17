@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { Field } from "@/components/ui/Field";
-import { formatDate } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { retireOutlet } from "@/app/admin/outlets/actions";
 import type { DBOutlet, DBBrand } from "@/types/db";
 
@@ -158,8 +158,8 @@ export default function OutletsClient({
         header: "Bắt đầu",
         sortValue: (o) => o.start_date || "",
         render: (o) => (
-          <span className="text-text-secondary text-sm">
-            {o.start_date ? formatDate(o.start_date) : "—"}
+          <span className="text-text-secondary text-sm whitespace-nowrap">
+            {formatDateTimeFull(o.start_date) || "—"}
           </span>
         ),
       },
@@ -316,7 +316,7 @@ export default function OutletsClient({
             brandMap[o.brand_id] || o.brand_id,
             o.code,
             formatHours(o.open_time, o.close_time),
-            o.start_date ? `Bắt đầu: ${formatDate(o.start_date)}` : null,
+            o.start_date ? `Bắt đầu: ${formatDateTimeFull(o.start_date)}` : null,
           ]
             .filter(Boolean)
             .join(" · "),

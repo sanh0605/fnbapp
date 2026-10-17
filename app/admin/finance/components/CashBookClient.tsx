@@ -14,7 +14,7 @@ import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Alert } from "@/components/ui/Alert";
 import { DateRangeButton } from "@/components/ui/DateRangeButton";
-import { formatDate, formatVnDay } from "@/lib/shared/datetime";
+import { formatDateTimeFull, formatVnDay } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { cancelCashEntry } from "@/app/admin/finance/actions";
 import { cancelCashTransfer } from "@/app/admin/finance/transfers/actions";
@@ -225,7 +225,9 @@ export default function CashBookClient({
         header: "Ngày",
         sortValue: (r) => `${r.date}|${r.key}`,
         render: (r) => (
-          <span className="text-text-secondary">{formatDate(r.date)}</span>
+          <span className="text-text-secondary whitespace-nowrap">
+            {formatDateTimeFull(r.date)}
+          </span>
         ),
       },
       {
@@ -445,9 +447,9 @@ export default function CashBookClient({
       : undefined;
 
   const openingDateLabel =
-    formatVnDay(resolvedRange.start) || formatDate(resolvedRange.start);
+    formatVnDay(resolvedRange.start);
   const closingDateLabel =
-    formatVnDay(resolvedRange.end) || formatDate(resolvedRange.end);
+    formatVnDay(resolvedRange.end);
 
   const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
   const appliedKind = parseKind(searchParams?.get("kind") ?? initialKind);
@@ -611,7 +613,7 @@ export default function CashBookClient({
         phoneRow={(row) => {
           const isCancelled = row.status === "CANCELLED";
           const metaText = [
-            formatDate(row.date),
+            formatDateTimeFull(row.date),
             row.note && row.note !== "—" ? row.note : null,
             row.accountLabel && row.accountLabel !== "—" ? row.accountLabel : null,
           ]

@@ -9,7 +9,7 @@ import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field } from "@/components/ui/detail/FieldList";
 import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
-import { formatDate, formatDateTime } from "@/lib/shared/datetime";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { confirm } from "@/lib/shared/dialog";
 import { cancelCashTransfer, deleteCashTransfer } from "@/app/admin/finance/transfers/actions";
@@ -86,7 +86,7 @@ export function CashTransferDetailView({
 
   const fields: Field[] = [
     { label: "Mã", value: transfer.id },
-    { label: "Ngày", value: formatDate(transfer.transfer_date) },
+    { label: "Ngày", value: formatDateTimeFull(transfer.transfer_date) },
     { label: "Số tiền", value: amountStr },
     { label: "Từ", value: fromText },
     { label: "Đến", value: toText },
@@ -104,7 +104,7 @@ export function CashTransferDetailView({
     },
     {
       label: "Ghi sổ lúc",
-      value: transfer.created_at ? formatDateTime(transfer.created_at) : "—",
+      value: formatDateTimeFull(transfer.created_at),
     },
   ];
 
