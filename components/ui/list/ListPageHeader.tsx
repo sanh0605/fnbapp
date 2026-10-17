@@ -8,11 +8,13 @@ export interface ListPageHeaderProps {
 
 export function ListPageHeader({ group, title, action }: ListPageHeaderProps) {
   return (
-    <div className="flex flex-row items-center justify-between gap-4">
-      <div>
-        <div className="text-sm font-bold text-text-muted uppercase tracking-wider mb-1">
-          {group}
-        </div>
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="shrink-0 max-w-full">
+        {group && (
+          <div className="text-sm font-bold text-text-muted uppercase tracking-wider mb-1">
+            {group}
+          </div>
+        )}
         <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
       </div>
       {action && <div>{action}</div>}

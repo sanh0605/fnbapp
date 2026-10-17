@@ -160,4 +160,162 @@ describe("BR-UI-015 FormActionBar", () => {
     expect(screen.queryByText("Có thay đổi chưa lưu")).toBeNull();
     expect(container.querySelector(".text-text-muted")).toBeNull();
   });
+
+  it("short form sets marginTop = base + gap to sticky target and preserves result when scrollTop > 0", () => {
+    let rectBottom = 400;
+    const origGetComputedStyle = window.getComputedStyle;
+    vi.spyOn(window, "getComputedStyle").mockImplementation((elt) => {
+      const real = origGetComputedStyle(elt);
+      return new Proxy(real, {
+        get(target, prop) {
+          if (prop === "marginTop") return "16px";
+          if (prop === "bottom") return "58px";
+          return (target as any)[prop];
+        },
+      });
+    });
+
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains("overflow-y-auto")) {
+        return { bottom: 800 } as DOMRect;
+      }
+      return { bottom: rectBottom } as DOMRect;
+    });
+
+    try {
+      const { container } = render(
+        <div className="overflow-y-auto">
+          <form>
+            <input />
+            <FormActionBar mode="create" onCancel={() => {}} />
+          </form>
+        </div>
+      );
+
+      const bar = container.querySelector(".sticky") as HTMLElement;
+      // target = 800 - 58 = 742; currentBottom = 400; diff = 742 - 400 = 342;
+      // marginTop = base (16) + diff (342) = 358px
+      expect(bar.style.marginTop).toBe("358px");
+
+      // Same result when scrollTop > 0: element moves up by 50px, rect bottom is 350, scrollTop is 50
+      const scrollParent = container.querySelector(".overflow-y-auto") as HTMLElement;
+      scrollParent.scrollTop = 50;
+      rectBottom = 350;
+      fireEvent(window, new Event("resize"));
+      expect(bar.style.marginTop).toBe("358px");
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("subtracts observed element's computed paddingBottom from extra margin (same result when scrollTop > 0)", () => {
+    let rectBottom = 400;
+    const origGetComputedStyle = window.getComputedStyle;
+    vi.spyOn(window, "getComputedStyle").mockImplementation((elt) => {
+      const real = origGetComputedStyle(elt);
+      return new Proxy(real, {
+        get(target, prop) {
+          if (prop === "marginTop") return "16px";
+          if (prop === "bottom") return "58px";
+          if (prop === "paddingBottom") return "24px";
+          return (target as any)[prop];
+        },
+      });
+    });
+
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains("overflow-y-auto")) {
+        return { bottom: 800 } as DOMRect;
+      }
+      return { bottom: rectBottom } as DOMRect;
+    });
+
+    try {
+      const { container } = render(
+        <div className="overflow-y-auto">
+          <form>
+            <input />
+            <FormActionBar mode="create" onCancel={() => {}} />
+          </form>
+        </div>
+      );
+
+      const bar = container.querySelector(".sticky") as HTMLElement;
+      // target = 800 - 58 = 742; currentBottom = 400; paddingBottom = 24; diff = 742 - 400 - 24 = 318;
+      // marginTop = base (16) + diff (318) = 334px
+      expect(bar.style.marginTop).toBe("334px");
+
+      // Same result when scrollTop > 0
+      const scrollParent = container.querySelector(".overflow-y-auto") as HTMLElement;
+      scrollParent.scrollTop = 50;
+      rectBottom = 350;
+      fireEvent(window, new Event("resize"));
+      expect(bar.style.marginTop).toBe("334px");
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("long form (bar already at or below target) sets no marginTop", () => {
+    const origGetComputedStyle = window.getComputedStyle;
+    vi.spyOn(window, "getComputedStyle").mockImplementation((elt) => {
+      const real = origGetComputedStyle(elt);
+      return new Proxy(real, {
+        get(target, prop) {
+          if (prop === "marginTop") return "16px";
+          if (prop === "bottom") return "58px";
+          return (target as any)[prop];
+        },
+      });
+    });
+
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains("overflow-y-auto")) {
+        return { bottom: 800 } as DOMRect;
+      }
+      return { bottom: 800 } as DOMRect;
+    });
+
+    try {
+      const { container } = render(
+        <div className="overflow-y-auto">
+          <form>
+            <input />
+            <FormActionBar mode="create" onCancel={() => {}} />
+          </form>
+        </div>
+      );
+
+      const bar = container.querySelector(".sticky") as HTMLElement;
+      expect(bar.style.marginTop).toBe("");
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("observes scrollParent.firstElementChild if scrollParent exists, otherwise form", () => {
+    let observed: Element | null = null;
+    const origRO = window.ResizeObserver;
+    window.ResizeObserver = class {
+      observe(target: Element) {
+        observed = target;
+      }
+      unobserve() {}
+      disconnect() {}
+    } as any;
+
+    try {
+      render(
+        <div className="overflow-y-auto">
+          <div data-testid="banner">Banner</div>
+          <form>
+            <FormActionBar mode="create" onCancel={() => {}} />
+          </form>
+        </div>
+      );
+      expect(screen.getByTestId("banner")).toBe(observed);
+    } finally {
+      window.ResizeObserver = origRO;
+    }
+  });
 });

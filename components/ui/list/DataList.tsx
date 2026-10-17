@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { confirm } from "@/lib/shared/dialog";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { PhoneRow, type PhoneRowData } from "./PhoneRow";
 import type { SortDir } from "./sort";
 
@@ -342,12 +343,11 @@ export function DataList<T>({
               <label htmlFor="sort-select" className="sr-only">
                 Sắp xếp
               </label>
-              <select
+              <Select
                 id="sort-select"
                 aria-label="Sắp xếp"
                 value={sort.href(sort.key, sort.dir)}
                 onChange={(e) => router.replace(e.target.value)}
-                className="w-full bg-surface-card border border-border text-text-primary text-sm rounded-lg px-3 py-2 min-h-[48px] md:min-h-[40px] focus:ring-2 focus:ring-primary outline-none"
               >
                 {sortableColumns.map((col) => (
                   <React.Fragment key={col.key}>
@@ -359,7 +359,7 @@ export function DataList<T>({
                     </option>
                   </React.Fragment>
                 ))}
-              </select>
+              </Select>
             </div>
           ) : <div />}
           {removal && hasRemovableRows && (
@@ -469,7 +469,9 @@ export function DataList<T>({
                       <td
                         key={col.key}
                         className={`px-6 py-3 text-sm font-normal text-text-primary ${
-                          col.align === "right" ? "text-right tabular-nums" : ""
+                          isFirstEmpty ? "whitespace-nowrap" : ""
+                        } ${
+                          col.align === "right" ? "text-right tabular-nums whitespace-nowrap" : ""
                         } ${col.secondary ? "hidden xl:table-cell" : ""}`}
                       >
                         {content}
