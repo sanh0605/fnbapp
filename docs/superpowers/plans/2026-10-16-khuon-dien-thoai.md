@@ -70,7 +70,7 @@ Chưa xem:
 - Không chữ đậm trong dòng danh sách (`BR-UI-003`; `font-bold`/`font-semibold` bị `list-rows.guard` đếm).
 - Không hộp nổi (`BR-DATA-007`): khung lọc và dòng hàng mở ngay tại chỗ.
 - Chữ hiển thị tiếng Việt; code và chú thích tiếng Anh. Viết theo ponytail: không viết thừa code, không thêm tuỳ chọn ngoài kế hoạch.
-- Gemini không chạy lệnh và không commit; Opus chạy kiểm tra và commit. Gemini dùng `agy -p "<phiếu>" --model gemini-4-argon-high --mode accept-edits --print-timeout 0` (đo lại `agy models` trước mỗi lần giao). Từ Task 2 phần sửa trở đi: Gemini 4 Argon hết lượt đến khoảng 2026-10-23, chủ quán chọn `gemini-3.8-flash-high` (2026-10-16, *"Gemini 3.8 Flash"*).
+- Gemini không chạy lệnh và không commit; Opus chạy kiểm tra và commit. Gemini dùng `agy -p "<phiếu>" --model gemini-3.8-flash-high --mode accept-edits --print-timeout 0` (đo lại `agy models` trước mỗi lần giao). Không dùng Gemini 4 Argon (chủ quán chốt 2026-10-18).
 - Worktree ở `.worktrees/phone`, nhánh `feat/khuon-dien-thoai`. Build chạy ở thư mục chính sau khi gộp, vì Turbopack 16.4 từ chối junction `node_modules` trong worktree (đo 2026-10-16), và chỉ chạy khi máy chủ 8386 đang tắt.
 - `components/ui/OptionGroupPicker.tsx` chỉ máy bán hàng dùng (`app/pos/components/ItemConfigModal.tsx`), nên phép kiểm cỡ để nó ngoài (`TILL_ONLY`).
 - Phiếu Gemini chạy song song trong cùng worktree chỉ khi không chung file nào. Ba danh sách nợ (`OWED_CARDS`, `OWED_44`, `OWED_TINY`) **chỉ Opus sửa**, sau khi phiếu xong; phiếu không đụng tới. Kiểm tra chạy khi cả đợt song song đã xong, rồi commit từng phiếu, chỉ stage file của phiếu đó.

@@ -103,7 +103,7 @@ Worked example on real screens (8386, 2026-10-17):
 
 ## Later waves (not in this plan)
 
-- **Wave 2a, Tạo phiếu nhập and Tạo phiếu xuất on a computer** (owner: *"tạo đơn nhập rất khó khăn"*): whole-page redo, Argon, after a short design with a real example (a real supplier and three real lines). Audit facts to carry: the item table squeezed into 600 px with headers on three lines, native "-- Chọn hàng --" and "--" unit selects, a big empty "Hàng nhập" area, the footer covering "Tổng tiền hàng", the date hint cut off.
+- **Wave 2a, Tạo phiếu nhập and Tạo phiếu xuất on a computer** (owner: *"tạo đơn nhập rất khó khăn"*): whole-page redo, Gemini Flash (Argon not used, owner 2026-10-18), after a short design with a real example (a real supplier and three real lines). Audit facts to carry: the item table squeezed into 600 px with headers on three lines, native "-- Chọn hàng --" and "--" unit selects, a big empty "Hàng nhập" area, the footer covering "Tổng tiền hàng", the date hint cut off.
 - **Wave 2b, staff names instead of logins** ("tuyen2612", "admin"): `users.name` exists (checked `information_schema` 2026-10-17); backend-coder joins it where lists show `created_by`.
 - **Wave 3, the POS** from the chosen mockup (https://claude.ai/artifact/DEbZg7kdYiKDwc2rvWKaNW; recommendation A), one shared notice style for the POS and admin.
 
