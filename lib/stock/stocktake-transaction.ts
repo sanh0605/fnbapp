@@ -68,8 +68,7 @@ export async function openStocktakeSessionAtomic(input: {
   const { data, error } = await getSupabaseClient().rpc("open_stocktake_session_atomic", {
     p_created_by_id: input.createdById,
     p_created_by_name: input.createdByName,
-    // item_type has no column default until 0136 runs; the old function inserts what we send.
-    p_items: input.items.map(i => ({ item_reference: i.itemReference, item_type: "PURCHASED_ITEM" })),
+    p_items: input.items.map(i => ({ item_reference: i.itemReference })),
     p_notes: "",
   });
   if (error) {

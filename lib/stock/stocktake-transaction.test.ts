@@ -345,15 +345,14 @@ describe("openStocktakeSessionAtomic", () => {
     mocks.getSupabaseClient.mockReturnValue({ rpc: mocks.rpc });
   });
 
-  // item_type has no column default until 0136 runs, so the old function still needs it in the JSON.
-  it("sends item_type PURCHASED_ITEM per line and an empty p_notes", async () => {
+  it("sends only item_reference per line (no item_type) and an empty p_notes", async () => {
     mocks.rpc.mockResolvedValue({ data: { id: "STK-001", status: "OPEN" }, error: null });
     await stocktakeTransaction.openStocktakeSessionAtomic({
       createdById: "u1", createdByName: "Admin", items: [{ itemReference: "SPM-001" }],
     });
     expect(mocks.rpc).toHaveBeenCalledWith("open_stocktake_session_atomic", {
       p_created_by_id: "u1", p_created_by_name: "Admin",
-      p_items: [{ item_reference: "SPM-001", item_type: "PURCHASED_ITEM" }], p_notes: "",
+      p_items: [{ item_reference: "SPM-001" }], p_notes: "",
     });
   });
 });
