@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import React from "react";
-import { ItemConfigModal } from "./ItemConfigModal";
+import { ItemPicker } from "./ItemPicker";
 import type { OptionGroup, OptionRow, ProductOptionGroup } from "@/lib/sales/option-groups";
 
 afterEach(() => {
@@ -56,10 +56,10 @@ const toppingProductGroup: ProductOptionGroup = {
   defaultId: null,
 };
 
-describe("ItemConfigModal with OptionGroupPicker", () => {
+describe("ItemPicker", () => {
   it("renders product name, sizes and option groups", () => {
     render(
-      <ItemConfigModal
+      <ItemPicker
         product={product}
         variants={variants}
         groups={[sugarProductGroup, toppingProductGroup]}
@@ -74,6 +74,7 @@ describe("ItemConfigModal with OptionGroupPicker", () => {
     );
 
     expect(screen.getByText("Trà sữa truyền thống")).toBeInTheDocument();
+    expect(screen.getByText("Cỡ ly")).toBeInTheDocument();
     expect(screen.getByText("M")).toBeInTheDocument();
     expect(screen.getByText("L")).toBeInTheDocument();
     expect(screen.getByText("Mức đường")).toBeInTheDocument();
@@ -83,7 +84,7 @@ describe("ItemConfigModal with OptionGroupPicker", () => {
   it("submits configured variant, quantity and modifiers", () => {
     const onSubmit = vi.fn();
     render(
-      <ItemConfigModal
+      <ItemPicker
         product={product}
         variants={variants}
         groups={[sugarProductGroup, toppingProductGroup]}
@@ -97,12 +98,12 @@ describe("ItemConfigModal with OptionGroupPicker", () => {
       />
     );
 
-    // Add topping
+    // Add topping (aria-label "Thêm một phần Trân châu trắng" preserved)
     const addTc = screen.getByRole("button", { name: "Thêm một phần Trân châu trắng" });
     fireEvent.click(addTc);
 
-    // Click THÊM button
-    const submitBtn = screen.getByRole("button", { name: /^THÊM -/ });
+    // Click submit button (accessible name starting with "Thêm vào đơn")
+    const submitBtn = screen.getByRole("button", { name: /^Thêm vào đơn/ });
     fireEvent.click(submitBtn);
 
     expect(onSubmit).toHaveBeenCalledTimes(1);
@@ -117,7 +118,7 @@ describe("ItemConfigModal with OptionGroupPicker", () => {
 
   it("renders with no option groups when groups is empty", () => {
     render(
-      <ItemConfigModal
+      <ItemPicker
         product={product}
         variants={variants}
         groups={[]}
@@ -131,13 +132,14 @@ describe("ItemConfigModal with OptionGroupPicker", () => {
       />
     );
 
+    expect(screen.getByText("Cỡ ly")).toBeInTheDocument();
     expect(screen.queryByText("Mức đường")).toBeNull();
     expect(screen.queryByText("Thêm Topping")).toBeNull();
   });
 
   it("uses primary colour tokens instead of warning for selected size and main button", () => {
     render(
-      <ItemConfigModal
+      <ItemPicker
         product={product}
         variants={variants}
         groups={[sugarProductGroup, toppingProductGroup]}
@@ -154,10 +156,110 @@ describe("ItemConfigModal with OptionGroupPicker", () => {
     const selectedSizeBtn = screen.getByText("M").closest("button")!;
     expect(selectedSizeBtn.className).toContain("border-primary");
     expect(selectedSizeBtn.className).not.toContain("border-warning");
-    expect(screen.getByText("M").className).toContain("text-primary");
 
-    const submitBtn = screen.getByRole("button", { name: /^THÊM -/ });
+    const submitBtn = screen.getByRole("button", { name: /^Thêm vào đơn/ });
     expect(submitBtn.className).toContain("bg-primary");
     expect(submitBtn.className).not.toContain("bg-warning");
+  });
+
+  // Task 4a Test 6
+  it("inside the picker, the discount box is not type='number'", () => {
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={null}
+        isEditing={false}
+        onSubmit={vi.fn()}
+        onClose={vi.fn()}
+      />
+    );
+
+    // If discount is inside a collapsed disclosure, expand it
+    const disclosureBtn = screen.queryByRole("button", { name: /Giảm giá món/i });
+    if (disclosureBtn && disclosureBtn.getAttribute("aria-expanded") !== "true") {
+      fireEvent.click(disclosureBtn);
+    }
+
+    const discountInput = screen.getByLabelText("Giảm giá sản phẩm");
+    expect(discountInput).not.toHaveAttribute("type", "number");
+  });
+
+  // Task 4a Test 9
+  it("the picker's + is disabled at 99", () => {
+    const lineAt99 = {
+      product_id: product.id,
+      product_name: product.name,
+      variant_id: variants[0].id,
+      size_name: variants[0].size_name,
+      unit_price: variants[0].price,
+      qty: 99,
+      discount_amount: 0,
+      discount_type: "VND",
+      modifiers: [],
+    };
+
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={lineAt99 as any}
+        isEditing={true}
+        onSubmit={vi.fn()}
+        onClose={vi.fn()}
+      />
+    );
+
+    const plusBtn = screen.getByRole("button", { name: "Thêm số lượng" });
+    expect(plusBtn).toBeDisabled();
+  });
+
+  it("editing a line with quantity above 99 preserves quantity and caps at that quantity", () => {
+    const lineAt105 = {
+      product_id: product.id,
+      product_name: product.name,
+      variant_id: variants[0].id,
+      size_name: variants[0].size_name,
+      unit_price: variants[0].price,
+      qty: 105,
+      discount_amount: 0,
+      discount_type: "VND",
+      modifiers: [],
+    };
+    const onSubmit = vi.fn();
+
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={lineAt105 as any}
+        isEditing={true}
+        onSubmit={onSubmit}
+        onClose={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText("105")).toBeInTheDocument();
+
+    const plusBtn = screen.getByRole("button", { name: "Thêm số lượng" });
+    expect(plusBtn).toBeDisabled();
+
+    const submitBtn = screen.getByRole("button", { name: /^Cập nhật/ });
+    fireEvent.click(submitBtn);
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ qty: 105 })
+    );
   });
 });

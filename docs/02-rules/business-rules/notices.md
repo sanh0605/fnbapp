@@ -4,7 +4,7 @@ How a screen tells the user that something worked, failed, or needs a look. The 
 
 ### BR-UI-020 — One notice style
 
-**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation, with the till redo (mockup A, plan `docs/superpowers/plans/2026-10-17-may-ban-hang-lam-lai.md`). On his end-of-batch review list. Built on the branch `feat/pos-redo`, not yet pushed.
+**Status:** `APPROVED` — chosen on the owner's behalf under his 2026-10-15 delegation, with the till redo (mockup A). On his end-of-batch review list. Pushed 2026-10-17.
 
 - Every notice that pops up and goes away uses the shared `components/ui/Toast.tsx`: an icon, a bold title, an optional detail line, and a ✕ to close.
 - Four kinds, each with its own colour and icon: success (brown), error (red), warning (dark yellow `#9A6700`), info (slate blue `#3B5B7A`).

@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import React from "react";
+import { screen } from "@testing-library/react";
 import POSScreen from "./POSScreen";
 
 const mocks = vi.hoisted(() => ({
@@ -78,7 +79,7 @@ async function openProductByName(name: string) {
 
 function addToCartButton(): HTMLButtonElement {
   const btn = Array.from(document.querySelectorAll("button")).find(
-    b => b.textContent?.startsWith("THÊM") || b.textContent?.startsWith("CẬP NHẬT"),
+    b => b.textContent?.trim().startsWith("Thêm vào đơn") || b.textContent?.trim().startsWith("Cập nhật"),
   );
   if (!btn) throw new Error("add/update button not found");
   return btn as HTMLButtonElement;
@@ -126,7 +127,8 @@ describe("POSScreen checkout success toast", () => {
     });
 
     await addOneItemToCart();
-    await clickButtonWithText("TIỀN MẶT");
+    await fireClick(screen.getByRole("button", { name: "Thanh toán" }));
+    await clickButtonWithText("Tiền mặt");
     await flush();
 
     const messages = toastMessages();

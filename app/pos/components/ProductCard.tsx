@@ -2,14 +2,34 @@
 
 import { formatNumber } from "@/lib/shared/format";
 
+export function renderPriceRange(sizes: { variant?: any; price?: number }[]) {
+  const listPrices = sizes
+    .map((s) => Number(s.variant?.price ?? s.price))
+    .filter((n) => !isNaN(n))
+    .sort((a, b) => a - b);
+  if (listPrices.length === 0) return null;
+  const minPrice = listPrices[0];
+  const maxPrice = listPrices[listPrices.length - 1];
+  return (
+    <>
+      {formatNumber(minPrice)}
+      {maxPrice !== minPrice && (
+        <small className="text-[15px] font-medium text-text-secondary">
+          {" "}– {formatNumber(maxPrice)}
+        </small>
+      )}
+    </>
+  );
+}
+
 interface ProductCardProps {
   product: any;
   sizes: { variant: any; price: number }[];
   hasPromo: boolean;
   hasOptions: boolean;
+  isSelected?: boolean;
   disabled: boolean;
   onOpen: () => void;
-  onQuickAdd: (variant: any) => void;
 }
 
 export function ProductCard({
@@ -17,53 +37,46 @@ export function ProductCard({
   sizes,
   hasPromo,
   hasOptions,
+  isSelected = false,
   disabled,
   onOpen,
-  onQuickAdd,
 }: ProductCardProps) {
+
   return (
-    <div className="bg-surface-card border border-border rounded-card p-3 flex flex-col justify-between gap-2">
-      <button
-        type="button"
-        onClick={onOpen}
-        disabled={disabled}
-        className="text-left w-full min-h-[44px] disabled:opacity-50"
-      >
-        <div className="text-[15px] font-semibold text-text-primary leading-snug line-clamp-2">
+    <button
+      type="button"
+      aria-label={product.name}
+      onClick={onOpen}
+      disabled={disabled}
+      className={`w-full h-[90px] min-h-[44px] rounded-card px-3.5 py-3 flex flex-col justify-between text-left transition-colors disabled:opacity-50 ${
+        isSelected
+          ? "border-2 border-primary bg-primary-soft"
+          : "border border-border bg-surface-card hover:border-primary/40"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-1.5 min-w-0">
+        <div className="text-[18px] font-bold text-text-primary leading-tight line-clamp-2">
           {product.name}
         </div>
-        {hasOptions && (
-          <div className="text-xs text-text-secondary mt-0.5">Có tuỳ chọn</div>
-        )}
         {hasPromo && (
-          <span className="inline-block mt-1 bg-primary-soft text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
+          <span className="shrink-0 bg-primary-soft text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
             Khuyến mãi
           </span>
         )}
-      </button>
-
-      <div className="flex flex-wrap gap-1.5">
-        {sizes.map((size) => (
-          <button
-            key={size.variant.id}
-            type="button"
-            disabled={disabled}
-            aria-label={`Thêm ${product.name} ${size.variant.size_name}`}
-            onClick={(e) => {
-              onQuickAdd(size.variant);
-              e.currentTarget.blur();
-            }}
-            className="flex-1 basis-[4.5rem] min-h-[44px] bg-primary-soft rounded-button px-2 py-1 flex flex-col items-center justify-center disabled:opacity-50"
-          >
-            <div className="text-xs text-text-secondary leading-tight">
-              {size.variant.size_name}
-            </div>
-            <div className="text-sm font-bold text-primary leading-tight">
-              {formatNumber(size.price)}
-            </div>
-          </button>
-        ))}
       </div>
-    </div>
+
+      <div className="flex items-baseline justify-between gap-2">
+        {sizes.length > 0 ? (
+          <span className="text-[17px] font-extrabold text-primary leading-none">
+            {renderPriceRange(sizes)}
+          </span>
+        ) : (
+          <span />
+        )}
+        {hasOptions && (
+          <span className="text-xs text-text-secondary shrink-0">Có tuỳ chọn</span>
+        )}
+      </div>
+    </button>
   );
 }

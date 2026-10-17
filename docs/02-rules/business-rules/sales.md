@@ -185,5 +185,5 @@ Every edit rebuilt the order from today's catalog. The new version credited the 
 - TIỀN MẶT sends a cash order straight away. The Enter key asks once, "Xác nhận thanh toán TIỀN MẶT cho đơn hàng?", then sends — both as before R2. Enter does nothing while a dish or draft window is open.
 - No amount the customer handed over is asked, and no change is shown.
 - TIỀN MẶT stays on the left and CHUYỂN KHOẢN on the right (2026-10-17, till redo). Both send at once, so a cashier who taps by position would record cash as a transfer if the two swapped.
-- **Changed 2026-10-17 (owner, `BR-SALE-020` in `docs/02-rules/business-rules/till.md`):** the two cart buttons become one Thanh toán button followed by a method step. The no-change-count part above stays.
+- **Changed 2026-10-17 (owner, `BR-SALE-020` in `docs/02-rules/business-rules/till.md`):** the two cart buttons become one Thanh toán button followed by a method step. The no-change-count part above stays. The Enter confirm above is gone: Enter opens the method step, and a second Enter on the focused Tiền mặt sends; a held Enter sends nothing (decided on the owner's behalf, on his review list in `docs/superpowers/specs/2026-10-17-may-ban-hang-chon-mon-design.md` §9).
 - Nothing was ever stored by the step, so no data changes.

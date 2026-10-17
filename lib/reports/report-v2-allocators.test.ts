@@ -66,4 +66,18 @@ describe("breakdownRevenueByProduct", () => {
     expect(suaDau?.revenue).toBe(25000);
     expect(suaDau?.qty).toBe(1);
   });
+  it("leaves 0đ options out: only the dish and the paid topping get rows", () => {
+    const { order, lines } = makeSuaDauStandaloneOrder();
+    const line = {
+      ...lines[0], unit_price: 21000, qty: 1, gross_line_total: 24000, promo_discount: 0, manual_item_discount: 0, order_discount_allocation: 0,
+      modifiers_snapshot_json: JSON.stringify([
+        { id: "opt-cot", name: "20ml cốt cà phê", price: 3000, qty: 1 },
+        { id: "opt-it-da", name: "Ít đá", price: 0, qty: 1 },
+      ]),
+    };
+    const result = breakdownRevenueByProduct([order], [line]);
+
+    expect(result.map((r) => r.product_id)).toEqual([line.product_id, "MOD:opt-cot"]);
+    expect(result.map((r) => r.revenue)).toEqual([21000, 3000]);
+  });
 });

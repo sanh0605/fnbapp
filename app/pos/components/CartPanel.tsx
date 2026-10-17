@@ -47,6 +47,8 @@ interface CartPanelProps {
   promotions: any[];
   appliedPromoCode: string | null;
   onResendFailedOrder: () => void;
+  isPayStepOpen: boolean;
+  setIsPayStepOpen: (open: boolean) => void;
 }
 
 export function CartPanel({
@@ -87,7 +89,16 @@ export function CartPanel({
   promotions,
   appliedPromoCode,
   onResendFailedOrder,
+  isPayStepOpen,
+  setIsPayStepOpen,
 }: CartPanelProps) {
+  const cashButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isPayStepOpen) {
+      cashButtonRef.current?.focus();
+    }
+  }, [isPayStepOpen]);
 
   const [isPromoOpen, setIsPromoOpen] = useState(
     () => Boolean(appliedPromoCode) || userCustomDiscount !== null
@@ -147,33 +158,18 @@ export function CartPanel({
 
       {/* Collapsed Bar at Bottom (Mobile only, shown when NOT expanded and cart has items) */}
       {!isCartOpen && cart.length > 0 && (
-        <div
-          onClick={() => setIsCartOpen(true)}
-          className="fixed bottom-0 left-0 right-0 bg-surface-card border-t border-border shadow-panel px-4 py-3 flex items-center justify-between z-30 md:hidden cursor-pointer min-h-[68px] pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+        <button
+          type="button"
+          aria-label={`${totalItems} · ${formatNumber(totalAmount)}đ · Thanh toán ›`}
+          onClick={() => {
+            setIsPayStepOpen(false);
+            setIsCartOpen(true);
+          }}
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-3 right-3 h-16 min-h-[64px] rounded-button bg-primary text-on-primary flex items-center justify-between px-4 z-30 md:hidden shadow-panel active:scale-[0.99] transition-transform font-bold text-base"
         >
-          <div className="flex items-center gap-3">
-            <div className="relative bg-primary-soft p-2.5 rounded-button text-primary">
-              <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[10px] min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full font-bold">
-                {totalItems}
-              </span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] text-text-secondary uppercase font-bold tracking-wider leading-none">Giỏ hàng</span>
-              <span className="text-base font-black text-text-primary mt-0.5">{formatNumber(totalAmount)}</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsCartOpen(true);
-            }}
-            className="bg-primary text-on-primary px-5 py-2.5 rounded-button font-bold text-sm shadow-sm active:scale-95 transition-transform min-h-[44px]"
-          >
-            Thanh toán ({totalItems})
-          </button>
-        </div>
+          <span>{totalItems} · {formatNumber(totalAmount)}đ</span>
+          <span className="font-extrabold">Thanh toán ›</span>
+        </button>
       )}
 
       {/* Main CartPanel Container */}
@@ -321,7 +317,7 @@ export function CartPanel({
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="font-bold">
-                    Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : lastCheckoutError.method === "SPLIT" ? "Nhiều hình thức" : "Tiền mặt"})
+                    Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : lastCheckoutError.method === "SPLIT" ? "Chia tiền mặt + chuyển khoản" : "Tiền mặt"})
                   </p>
                   <p className="text-[11px] text-danger mt-0.5 break-words">{lastCheckoutError.error}</p>
                 </div>
@@ -547,75 +543,64 @@ export function CartPanel({
                       {formatNumber(calculateCartBaseTotal())}
                     </div>
                   )}
-                  <div className="text-2xl font-black text-primary">{formatNumber(totalAmount)}</div>
+                  <div className="text-[26px] font-black text-primary leading-tight">{formatNumber(totalAmount)}</div>
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              {isPayStepOpen ? (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">
+                    Khách trả bằng gì?
+                  </h3>
+                  <button
+                    ref={cashButtonRef}
+                    type="button"
+                    onClick={() => handleConfirmCheckout("Tien mat")}
+                    disabled={!isOnline || !!isCheckingOut}
+                    className="w-full bg-primary text-on-primary font-bold text-base py-3.5 rounded-button shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center min-h-[52px]"
+                  >
+                    Tiền mặt
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleConfirmCheckout("Chuyen khoan")}
+                    disabled={!isOnline || !!isCheckingOut}
+                    className="w-full bg-surface-card border-2 border-primary text-primary font-bold text-base py-3.5 rounded-button hover:bg-primary-soft active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center min-h-[52px]"
+                  >
+                    Chuyển khoản
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSplitPayments([]);
+                      setSplitAmountInput("");
+                      setSplitReferenceInput("");
+                      setSplitMethodInput("CASH");
+                      setIsSplitPaymentOpen(true);
+                    }}
+                    disabled={!isOnline || !!isCheckingOut}
+                    className="w-full text-primary hover:bg-primary-soft font-semibold text-sm py-2.5 rounded-button transition-colors disabled:opacity-50 flex justify-center items-center min-h-[44px]"
+                  >
+                    Chia tiền mặt + chuyển khoản
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsPayStepOpen(false)}
+                    className="w-full text-text-secondary hover:text-text-primary hover:bg-page font-medium text-sm py-2 rounded-button transition-colors flex justify-center items-center min-h-[44px]"
+                  >
+                    ‹ Quay lại đơn
+                  </button>
+                </div>
+              ) : (
                 <button
                   type="button"
-                  onClick={() => handleConfirmCheckout("Tien mat")}
+                  onClick={() => setIsPayStepOpen(true)}
                   disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
-                  className="flex-1 bg-primary text-on-primary font-bold text-sm py-3.5 rounded-button shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[56px]"
+                  className="w-full bg-primary text-on-primary font-bold text-lg rounded-button shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center min-h-[64px] h-16"
                 >
-                  {!isOnline ? (
-                    <span>NGOẠI TUYẾN</span>
-                  ) : isCheckingOut ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 text-on-primary" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      <span>Đang gửi…</span>
-                    </>
-                  ) : (
-                    <span>TIỀN MẶT</span>
-                  )}
+                  Thanh toán
                 </button>
-                <button
-                  type="button"
-                  onClick={() => handleConfirmCheckout("Chuyen khoan")}
-                  disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
-                  className="flex-1 bg-surface-card border-2 border-primary text-primary font-bold text-sm py-3.5 rounded-button hover:bg-primary-soft active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[56px]"
-                >
-                  {!isOnline ? (
-                    <span>NGOẠI TUYẾN</span>
-                  ) : isCheckingOut ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      <span>Đang gửi…</span>
-                    </>
-                  ) : (
-                    <span>CHUYỂN KHOẢN</span>
-                  )}
-                </button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSplitPayments([]);
-                  setSplitAmountInput("");
-                  setSplitReferenceInput("");
-                  setSplitMethodInput("CASH");
-                  setIsSplitPaymentOpen(true);
-                }}
-                disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
-                className="mt-2 w-full text-primary hover:bg-primary-soft font-semibold text-sm py-2.5 rounded-button transition-colors disabled:opacity-50 flex justify-center items-center gap-2 min-h-[44px]"
-              >
-                <span>Nhiều hình thức</span>
-              </button>
+              )}
             </>
           ) : processingOrder ? (
             <div>

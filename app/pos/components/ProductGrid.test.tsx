@@ -8,6 +8,7 @@ afterEach(() => {
   cleanup();
 });
 
+// one-tap size buttons removed by BR-SALE-019
 describe("ProductGrid empty states and Task 3a behaviour", () => {
   const defaultProps = {
     categories: [{ id: "CAT-1", name: "Cà phê" }],
@@ -20,7 +21,6 @@ describe("ProductGrid empty states and Task 3a behaviour", () => {
     promoVariantsMap: new Map<string, number>(),
     productsWithOptions: new Set<string>(),
     onProductClick: vi.fn(),
-    onQuickAdd: vi.fn(),
     disabled: false,
   };
 
@@ -83,41 +83,93 @@ describe("ProductGrid empty states and Task 3a behaviour", () => {
     expect(screen.getByRole("button", { name: "Trà" })).toBeInTheDocument();
   });
 
-  it("sorts sizes cheapest first with promo price applied and forwards hasPromo, hasOptions, onProductClick, and onQuickAdd", () => {
-    const onProductClick = vi.fn();
-    const onQuickAdd = vi.fn();
+  it("passes hasPromo, hasOptions, and onProductClick to the card", () => {
     const product = { id: "P1", name: "Cà phê đen", category_id: "CAT-1" };
-    const variants = [
-      { id: "V-L", product_id: "P1", size_name: "L", price: 35000 },
-      { id: "V-M", product_id: "P1", size_name: "M", price: 25000 },
-    ];
-    // Promo makes L cheaper than M (20,000 vs 25,000)
-    const promoVariantsMap = new Map<string, number>([["V-L", 20000]]);
-    const productsWithOptions = new Set<string>(["P1"]);
+    const variant = { id: "V1", product_id: "P1", size_name: "M", price: 25000 };
+    const promoMap = new Map<string, number>([["V1", 20000]]);
+    const optionsSet = new Set<string>(["P1"]);
+    const onProductClick = vi.fn();
 
     render(
       <ProductGrid
         {...defaultProps}
         filteredProducts={[product]}
-        variants={variants}
-        promoVariantsMap={promoVariantsMap}
-        productsWithOptions={productsWithOptions}
+        variants={[variant]}
+        promoVariantsMap={promoMap}
+        productsWithOptions={optionsSet}
         onProductClick={onProductClick}
-        onQuickAdd={onQuickAdd}
       />
     );
 
+    // hasPromo reaches both the phone row and the card -> "Khuyến mãi" twice
+    expect(screen.getAllByText("Khuyến mãi")).toHaveLength(2);
+
+    // hasOptions reaches card -> shows "Có tuỳ chọn"
     expect(screen.getByText("Có tuỳ chọn")).toBeInTheDocument();
-    expect(screen.getByText("Khuyến mãi")).toBeInTheDocument();
 
-    const sizeButtons = screen.getAllByRole("button", { name: /^Thêm Cà phê đen / });
-    expect(sizeButtons).toHaveLength(2);
-    expect(sizeButtons[0]).toHaveAccessibleName("Thêm Cà phê đen L");
-    expect(sizeButtons[0]).toHaveTextContent("20,000");
-    expect(sizeButtons[1]).toHaveAccessibleName("Thêm Cà phê đen M");
-    expect(sizeButtons[1]).toHaveTextContent("25,000");
+    // onProductClick reaches card / row -> clicking calls onProductClick(product)
+    const buttons = screen.getAllByRole("button", { name: "Cà phê đen" });
+    expect(buttons.length).toBe(2);
+    // jsdom applies no CSS, so both lists are clickable: the phone row, then the card
+    fireEvent.click(buttons[0]);
+    fireEvent.click(buttons[1]);
+    expect(onProductClick).toHaveBeenCalledTimes(2);
+    expect(onProductClick).toHaveBeenNthCalledWith(2, product);
+  });
 
-    fireEvent.click(sizeButtons[0]);
-    expect(onQuickAdd).toHaveBeenCalledWith(product, variants[0]);
+  it("swipes between tabs on phone (max-width: 767px), but ignores swipe on desktop", () => {
+    const setActiveCategory = vi.fn();
+    const originalMatchMedia = window.matchMedia;
+
+    const matchMediaMock = vi.fn().mockImplementation((query: string) => ({
+      matches: query.includes("max-width: 767px"),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+    window.matchMedia = matchMediaMock;
+
+    try {
+      const { container } = render(
+        <ProductGrid
+          {...defaultProps}
+          categories={[{ id: "CAT-1", name: "Cà phê" }]}
+          activeCategory="BEST_SELLERS"
+          setActiveCategory={setActiveCategory}
+        />
+      );
+
+      const swipeArea = container.querySelector("div[class*='overflow-y-auto min-h-[200px]']")!;
+      if (!swipeArea) throw new Error("swipe area not found");
+
+      // Swipe left (next tab) on phone
+      fireEvent.touchStart(swipeArea, { touches: [{ clientX: 200, clientY: 100 }] });
+      fireEvent.touchEnd(swipeArea, { changedTouches: [{ clientX: 100, clientY: 100 }] });
+      expect(setActiveCategory).toHaveBeenCalledWith("ALL");
+
+      setActiveCategory.mockClear();
+
+      // On desktop (matches: false)
+      matchMediaMock.mockImplementation(() => ({
+        matches: false,
+        media: "",
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+
+      fireEvent.touchStart(swipeArea, { touches: [{ clientX: 200, clientY: 100 }] });
+      fireEvent.touchEnd(swipeArea, { changedTouches: [{ clientX: 100, clientY: 100 }] });
+      expect(setActiveCategory).not.toHaveBeenCalled();
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
   });
 });

@@ -68,32 +68,15 @@ export function clampDiscount(
   return Math.min(Math.max(0, subtotal), nonNegative);
 }
 
-/**
- * One-tap add of a size: merges into the first plain line of the same size
- * (no options, no item discount), otherwise appends a new line. Pure.
- */
-export function addQuickLine(
-  cart: any[],
-  product: { id: string; name: string },
-  variant: { id: string; size_name: string; price: number | string },
-): any[] {
-  const i = cart.findIndex(
-    (l) => l.variant_id === variant.id && (l.modifiers ?? []).length === 0 && !l.discount_amount,
-  );
-  if (i >= 0) return cart.map((l, j) => (j === i ? { ...l, qty: l.qty + 1 } : l));
-  return [
-    ...cart,
-    {
-      id: crypto.randomUUID(),
-      product_id: product.id,
-      product_name: product.name,
-      variant_id: variant.id,
-      size_name: variant.size_name,
-      unit_price: Number(variant.price),
-      modifiers: [],
-      qty: 1,
-      discount_amount: 0,
-      discount_type: "VND",
-    },
-  ];
+const optionKey = (l: any) => l.modifiers.map((m: any) => m.id).sort().join("|");
+// An item discount is an amount for the whole line (price-cart.ts), so discounted lines never merge.
+const sameLine = (a: any, b: any) =>
+  a.variant_id === b.variant_id && Number(a.unit_price) === Number(b.unit_price) &&
+  !Number(a.discount_amount) && !Number(b.discount_amount) && optionKey(a) === optionKey(b);
+
+// BR-SALE-019: an identical line gains the quantity; otherwise the line is appended.
+export function addOrMergeLine(cart: any[], line: any): any[] {
+  const i = cart.findIndex((l) => sameLine(l, line));
+  if (i >= 0) return cart.map((l, j) => (j === i ? { ...l, qty: l.qty + line.qty } : l));
+  return [...cart, { ...line, id: crypto.randomUUID() }];
 }

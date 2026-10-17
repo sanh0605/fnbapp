@@ -56,17 +56,20 @@ export function CartItemRow({
 
   const currentProduct = products.find((p: any) => p.id === item.product_id);
   const modifiers = item.modifiers || [];
-  const optionsText =
-    modifiers.length > 0
-      ? Object.entries(
-          modifiers.reduce((acc: any, m: any) => {
-            acc[m.name] = (acc[m.name] || 0) + 1;
-            return acc;
-          }, {})
-        )
-          .map(([name, count]: [string, any]) => `${count > 1 ? count + "x " : ""}${name}`)
-          .join(", ")
-      : "";
+  const modifierCounts = new Map<string, { name: string; count: number }>();
+  for (const m of modifiers) {
+    const key = m.id || m.name;
+    const existing = modifierCounts.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      modifierCounts.set(key, { name: m.name, count: 1 });
+    }
+  }
+  const modifierParts = Array.from(modifierCounts.values()).map(
+    ({ name, count }) => (count > 1 ? `${name} ×${count}` : name)
+  );
+  const subLineText = [item.size_name, ...modifierParts].filter(Boolean).join(" · ");
 
   return (
     <div className="relative overflow-hidden rounded-card border border-border bg-surface-card transition-all duration-200 animate-cart-item-in">
@@ -98,19 +101,15 @@ export function CartItemRow({
           onClick={() => currentProduct && openProductModal(currentProduct, idx)}
         >
           <div className="flex-1 min-w-0">
-            <h4 className="text-[15px] font-semibold text-text-primary leading-snug hover:text-primary transition-colors break-words">
+            <h4 className="text-[17px] font-semibold text-text-primary leading-snug hover:text-primary transition-colors break-words">
               {item.product_name}
             </h4>
 
-            <div className="mt-0.5 flex items-center gap-1.5 flex-wrap text-xs text-text-secondary">
-              <span>Size {item.size_name}</span>
-              {optionsText && (
-                <>
-                  <span aria-hidden="true">·</span>
-                  <span className="break-words">{optionsText}</span>
-                </>
-              )}
-            </div>
+            {subLineText && (
+              <div className="mt-0.5 text-[15px] text-text-secondary break-words">
+                {subLineText}
+              </div>
+            )}
 
             {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
               <div className="mt-1.5 flex flex-wrap gap-1">
@@ -130,7 +129,7 @@ export function CartItemRow({
                 {formatNumber(baseTotal)}
               </div>
             )}
-            <div className="font-bold text-text-primary text-[15px] leading-snug tabular-nums">
+            <div className="font-bold text-text-primary text-[17px] leading-snug tabular-nums">
               {formatNumber(Math.max(0, finalTotal - itemPromoDiscount))}
             </div>
           </div>

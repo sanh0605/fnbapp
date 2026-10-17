@@ -63,7 +63,7 @@ Hai dòng **giống hệt** khi trùng cả bốn thứ:
 3. cùng bộ lựa chọn, không kể thứ tự chọn (so theo danh sách mã đã sắp xếp, tính cả số phần);
 4. cả hai dòng đều không có giảm giá món.
 
-**A line with an item discount never merges.** A VND item discount is an amount for the whole line, not per cup (`lib/sales/price-cart.ts:105`). Two cups on two lines with 2.000đ off each come to 4.000đ off. Merged into one line of 2 cups they would come to 2.000đ off. Keeping them apart keeps the money right. This is self-decided (section 9, point 7).
+**A line with an item discount never merges.** A VND item discount is an amount for the whole line, not per cup (`lib/sales/price-cart.ts:105`). Two cups on two lines with 2.000đ off each come to 4.000đ off. Merged into one line of 2 cups they would come to 2.000đ off. Keeping them apart keeps the money right. This is self-decided (section 9, point 6).
 
 - **Thêm mới:** if an identical line exists, its quantity increases. Otherwise a new line goes to the end of the cart.
 - **Sửa một dòng** (chạm dòng trong giỏ → khung mở với lựa chọn của dòng đó, nút đổi thành **Cập nhật**): the line is replaced where it stands and is not merged, even if it now equals another line. Why: the line the cashier is editing would vanish from under their finger. This is self-decided (section 9, point 2).
@@ -112,7 +112,7 @@ Ví dụ số thật (giá ngày 2026-10-17):
 
 **Cả hai:**
 - **Giảm giá món** không còn mở sẵn. Nó là một dòng gập "Giảm giá món" ở chân khung, bấm mới mở ra.
-- Ô nhập ở đó là ô số không có mũi tên tăng giảm (`inputMode="numeric"`), gợi ý "0".
+- Ô nhập ở đó là ô số không có mũi tên tăng giảm (`inputMode="numeric"`), gợi ý "Ví dụ: 2" (luật `BR-UI-009`: ô trống chỉ hiện ví dụ).
 - Size xếp từ rẻ đến đắt.
 
 ## 6. Thanh toán (bản B2, `BR-SALE-020`)
@@ -164,14 +164,16 @@ These are written by a script that does a dry run by default and writes only wit
 
 1. Món không có gì để chọn (Trứng luộc, Khoai lang) cũng mở khung để chọn số lượng: hai chạm thay vì một (mục 3).
 2. Sửa một dòng không tự gộp với dòng khác (mục 4).
-3. Enter mở bước chọn cách trả; Enter lần nữa là tiền mặt; bỏ hộp hỏi tiền mặt (mục 6).
-4. Giảm giá món gập lại (mục 5).
+3. Enter mở bước chọn cách trả; Enter lần nữa là tiền mặt; bỏ hộp hỏi tiền mặt (mục 6). Giữ phím Enter không gửi đơn: chỉ lần nhấn đầu được tính.
+4. Giảm giá món gập lại; ô nhập gợi ý "Ví dụ: 2" theo luật `BR-UI-009` (mục 5).
 5. Báo cáo topping bỏ qua lựa chọn 0đ (mục 8).
-7. Dòng có giảm giá món không bao giờ gộp (mục 4).
-8. Đang sửa một dòng mà dòng đó bị xoá khỏi giỏ: khung chọn tự đóng, giỏ không đổi.
-9. Đang ở bước chọn cách trả mà giỏ thay đổi (thêm món, nạp nháp): quay về màn đơn.
-10. Số lượng một lần thêm: từ 1 đến 99.
-11. Cần chủ quán chốt khi duyệt dữ liệu: Yogurt và nhóm Giải trí (cacao, matcha, sữa dâu) có cần Độ ngọt và Đá không; món "Test11" có gắn không.
+6. Dòng có giảm giá món không bao giờ gộp (mục 4).
+7. Đang sửa một dòng mà dòng đó bị xoá khỏi giỏ: khung chọn tự đóng, giỏ không đổi.
+8. Đang ở bước chọn cách trả mà giỏ thay đổi (thêm món, nạp nháp): quay về màn đơn.
+9. Số lượng một lần thêm: từ 1 đến 99; sửa một dòng đã gộp quá 99 thì giữ nguyên số đó.
+10. Topping: chạm một dòng topping đã chọn là thêm một phần nữa (hiện "×2"), nút "−" bớt một phần. Cả 9 topping hiện không giới hạn số phần (đo 2026-10-17).
+11. Nút chia tiền ghi "Chia tiền mặt + chuyển khoản"; dòng báo lỗi dùng cùng chữ đó thay cho "Nhiều hình thức".
+12. Cần chủ quán chốt khi duyệt dữ liệu: Yogurt và nhóm Giải trí (cacao, matcha, sữa dâu) có cần Độ ngọt và Đá không; món "Test11" có gắn không.
 
 ## 10. Phân việc
 
@@ -188,4 +190,4 @@ These are written by a script that does a dry run by default and writes only wit
 - **Test phải đổi:** test của nút size một chạm (`ProductCard`, `ProductGrid`, `POSScreen`), test hai nút trả tiền (`CartPanel`, `POSScreen.checkoutToast`, `POSScreen.offline`), test phím Enter (`POSScreen.test.tsx`), test `addQuickLine`.
 - **Tài liệu:**
   - `docs/superpowers/specs/2026-10-14-nhom-tuy-chon-design.md:49` ("one tap") ghi lại theo `BR-SALE-019`;
-  - kế hoạch cũ `docs/superpowers/plans/2026-10-17-may-ban-hang-lam-lai.md` xoá khi kế hoạch mới xong (đã gộp, `notices.md` đang trích nó).
+  - kế hoạch cũ của lần làm lại máy bán hàng (bản A) đã xoá khi kế hoạch này xong; `notices.md` nay trích luật `BR-UI-020`.
