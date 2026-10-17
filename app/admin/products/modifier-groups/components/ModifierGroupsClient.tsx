@@ -12,6 +12,7 @@ import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
+import { formatNumber } from "@/lib/shared/format";
 import type { DBModifierGroup } from "@/types/db";
 
 export interface ModifierGroupRow {
@@ -77,7 +78,7 @@ export default function ModifierGroupsClient({
         header: "Thứ tự hiện",
         sortValue: (r) => r.group.sort_order,
         render: (r) => (
-          <span className="font-mono text-xs text-text-secondary">
+          <span className="font-mono text-xs text-text-secondary whitespace-nowrap min-w-[80px] inline-block">
             {r.group.sort_order}
           </span>
         ),
@@ -87,7 +88,7 @@ export default function ModifierGroupsClient({
         header: "Tên nhóm",
         sortValue: (r) => r.group.name,
         render: (r) => (
-          <div className="text-text-primary font-normal">{r.group.name}</div>
+          <div className="text-text-primary font-normal whitespace-nowrap">{r.group.name}</div>
         ),
       },
       {
@@ -95,7 +96,7 @@ export default function ModifierGroupsClient({
         header: "Kiểu chọn",
         sortValue: (r) => (r.group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều"),
         render: (r) => (
-          <span className="text-text-secondary font-normal">
+          <span className="text-text-secondary font-normal whitespace-nowrap">
             {r.group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều"}
           </span>
         ),
@@ -105,7 +106,7 @@ export default function ModifierGroupsClient({
         header: "Tối đa",
         sortValue: (r) => r.group.max_total ?? 0,
         render: (r) => (
-          <span className="text-text-secondary font-normal">
+          <span className="text-text-secondary font-normal whitespace-nowrap">
             {r.group.selection_mode === "ONE"
               ? "—"
               : r.group.max_total
@@ -119,7 +120,7 @@ export default function ModifierGroupsClient({
         header: "Bán riêng",
         sortValue: (r) => (r.group.allow_standalone ? "Có" : "Không"),
         render: (r) => (
-          <span className="text-text-secondary font-normal">
+          <span className="text-text-secondary font-normal whitespace-nowrap">
             {r.group.selection_mode === "ONE"
               ? "—"
               : r.group.allow_standalone
@@ -146,8 +147,8 @@ export default function ModifierGroupsClient({
         align: "right",
         sortValue: (r) => r.productCount,
         render: (r) => (
-          <span className="text-text-secondary font-normal tabular-nums">
-            {r.productCount} món
+          <span className="text-text-secondary font-normal tabular-nums whitespace-nowrap">
+            {formatNumber(r.productCount)} món
           </span>
         ),
       },
@@ -157,7 +158,7 @@ export default function ModifierGroupsClient({
         sortValue: (r) => (r.group.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng"),
         render: (r) => (
           <span
-            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-normal ${
+            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-normal whitespace-nowrap ${
               r.group.status === "ACTIVE"
                 ? "bg-primary-soft text-primary"
                 : "bg-surface-secondary text-text-muted"
@@ -244,17 +245,20 @@ export default function ModifierGroupsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
+        search={
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm nhóm tuỳ chọn" htmlFor="modifier-groups-search">
+              <TextInput
+                id="modifier-groups-search"
+                placeholder="Ví dụ: Mức đường"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
+        }
       >
-        <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm nhóm tuỳ chọn" htmlFor="modifier-groups-search">
-            <TextInput
-              id="modifier-groups-search"
-              placeholder="Ví dụ: Mức đường"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
-        </div>
+        {null}
       </FilterCard>
 
       <DataList
@@ -267,7 +271,7 @@ export default function ModifierGroupsClient({
         columns={columns}
         phoneRow={(r) => ({
           title: r.group.name,
-          value: `${r.productCount} món`,
+          value: `${formatNumber(r.productCount)} món`,
           meta: [
             r.group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều",
             r.group.max_total ? `tối đa ${r.group.max_total} phần` : null,

@@ -19,6 +19,7 @@ export default async function NewProductTypePage(
         backHref={returnTo}
         backLabel="Loại món"
         title="Tạo loại món"
+        subtitle="Thêm loại món mới để phân loại các nhóm món."
       />
       <ProductTypeForm returnTo={returnTo} />
     </DetailFrame>

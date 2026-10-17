@@ -39,8 +39,6 @@ export function ProductTypeDetailView({
       : "Chưa có nhóm nào";
 
   const fields: Field[] = [
-    { label: "Mã", value: type.id },
-    { label: "Tên loại", value: type.name },
     { label: "Tính là ly", value: type.is_drink ? "Có" : "Không" },
     { label: "Nhóm món đang dùng", value: groupsText },
   ];
@@ -71,7 +69,7 @@ export function ProductTypeDetailView({
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
         <Button href={editHref} variant="secondary">
-          Sửa
+          Chỉnh sửa
         </Button>
         {canDelete && !isConfirmingDelete && (
           <Button

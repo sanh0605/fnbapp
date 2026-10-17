@@ -61,7 +61,7 @@ export function ProductCategoryForm({ initialData, types = [], returnTo: rawRetu
           </Alert>
         )}
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          <Field label="Tên nhóm món" htmlFor={`${formId}-name`}>
+          <Field label="Tên nhóm món" htmlFor={`${formId}-name`} required>
             <TextInput
               id={`${formId}-name`}
               name="name"

@@ -37,6 +37,8 @@ brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-
 
 **Behaviour change — 2026-10-15 (Biểu tượng nhóm món, `BR-SALE-017`, migration `0130`, runs before the push):** the Nhóm món form has a "Biểu tượng" box. The emoji shows at the till (on the dish cards until 2026-10-17; since the till redo, on the dish-group tab); blank means no icon (no default cup). Trimmed; more than 8 characters is refused with "Biểu tượng tối đa 8 ký tự". The till no longer guesses an icon from the group name. The return-to links on the dish pages go through the shared `safeReturnTo`.
 
+**Behaviour change — 2026-10-18 (audit fixes, plan `docs/superpowers/plans/2026-10-18-soat-kho-ban-hang.md` S3):** on screen only. The option detail page no longer carries the "Bán độc lập" switch, which looked like a read-only value; it shows "Có" (linked dish on sale), "Không", or "—" (group without standalone). The switch stays on the option edit form.
+
 **Reviewed, no behaviour change — 2026-10-14:** `app/admin/products/modifiers/actions.ts` one message spelled "Thiếu mã tuỳ chọn" instead of "tùy" (`BR-UI-001`); no logic changed.
 
 **Behaviour change — 2026-10-03 (list/detail template, wave 4):** on screen only; no server action, table or figure changes. A dish row opens `/admin/products/[id]`: its fields, its sizes and prices, and its price history as recorded, one row per change with the size named (the old timeline worked out "Đến" and "Đang áp dụng" across sizes, so a dish with three sizes showed one of them as current). "Chỉnh sửa", "Ngừng bán" or "Bán lại", and the ADMIN-only "Xoá vĩnh viễn" live on that page. The list keeps a "Ngừng bán" bin and multi-select, shown only while the filter is "Đang bán". `/admin/products/[id]/history` now redirects to the detail page. Nhóm món and Topping & tuỳ chọn rows open their own `[id]` pages, with "Chỉnh sửa" and "Xoá" there and a "Xoá" bin on the list. The "Bán độc lập" switch moved from the option list to the option detail page; the list shows "Có" or "Không".
@@ -136,8 +138,10 @@ product (`MOD-009` today) updates only itself.
    The category list and detail offer create, edit, and remove; a category still
    used by a dish that is not deleted is refused with its dish count, not
    silently removed. The modifier list and detail offer create, edit, and
-   remove; the "Bán độc lập" switch sits on the modifier detail page, only inside
-   the *Thêm Topping* group, since only a topping can be sold standalone.
+   remove; the "Bán độc lập" switch sits on the modifier edit form, only in a
+   group that allows standalone sale (today *Thêm Topping*), since only a topping
+   can be sold standalone; the detail page shows it as "Có", "Không", or "—"
+   in any other group.
 3. **What each list contains, and what is excluded.** The product list shows the
    catalogue including hidden products (filterable), one row per product with its
    variants. The category list shows product categories only — it does not show

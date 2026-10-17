@@ -242,7 +242,7 @@ export function ModifierGroupForm({
             <div className="flex items-center pt-2 md:pt-7 col-span-1 md:col-span-2">
               <label
                 htmlFor={`${formId}-allow_standalone`}
-                className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[48px] md:min-h-[40px]"
+                className="flex items-start gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[48px] md:min-h-[40px] pt-2"
               >
                 <input
                   type="checkbox"
@@ -250,7 +250,7 @@ export function ModifierGroupForm({
                   name="allow_standalone"
                   checked={allowStandalone}
                   onChange={(e) => setAllowStandalone(e.target.checked)}
-                  className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer mt-0.5 shrink-0"
                 />
                 <span>Cho bán riêng (tuỳ chọn trong nhóm có thể được tạo thành món bán độc lập)</span>
               </label>
@@ -293,7 +293,7 @@ export function ModifierGroupForm({
                         e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
                         handleToggleCategory(group.productIds);
                       }}
-                      className="text-xs min-h-[36px] h-9 px-3"
+                      className="text-xs min-h-[48px] md:min-h-[36px] px-3"
                     >
                       {allGroupSelected ? "Bỏ chọn nhóm" : "Chọn cả nhóm"}
                     </Button>

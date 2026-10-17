@@ -172,7 +172,7 @@ export default function ProductForm({
       <form id={isEdit ? `editProd-${initialData.id}` : "addProd"} onSubmit={handleSubmit} className="space-y-6">
         <div data-testid="form-layout" className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:items-start">
           {/* THÔNG TIN CHUNG */}
-          <div className="bg-page p-5 rounded-xl border border-border">
+          <div className="bg-transparent md:bg-page p-0 md:p-5 rounded-none md:rounded-xl border-0 md:border border-border">
             <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
               <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
               Thông tin cơ bản
@@ -220,10 +220,10 @@ export default function ProductForm({
           </div>
 
           {/* VARIANTS */}
-          <div className="bg-page p-5 rounded-xl border border-border">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
+          <div className="bg-transparent md:bg-page p-0 md:p-5 rounded-none md:rounded-xl border-0 md:border border-border">
+            <div className="flex justify-between items-center mb-4 gap-2">
+              <h3 className="text-lg font-bold text-text-primary flex items-center gap-2 whitespace-nowrap">
+                <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm shrink-0">2</span>
                 Các size
               </h3>
               {!priceReadOnly && (
@@ -234,7 +234,7 @@ export default function ProductForm({
                   e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
                   addVariant();
                 }}
-                className="min-h-[48px] md:min-h-[40px]"
+                className="min-h-[48px] md:min-h-[40px] whitespace-nowrap shrink-0"
               >
                 <Plus className="w-4 h-4 mr-1"/> Thêm size
               </Button>
@@ -245,7 +245,7 @@ export default function ProductForm({
               {variants.map((variant, vIdx) => {
                 const variantRowId = `${formId}-variant-${vIdx}`;
                 return (
-                  <div key={vIdx} className="bg-surface-card p-4 border border-border rounded-xl flex flex-col sm:flex-row gap-4 sm:items-end">
+                  <div key={vIdx} className="bg-surface-card p-4 border border-border rounded-xl flex flex-col sm:flex-row gap-4 sm:items-start">
                     <div className="flex-1">
                       <Field label="Tên size" htmlFor={`${variantRowId}-size-name`} required>
                         <TextInput
@@ -282,7 +282,7 @@ export default function ProductForm({
                       <Button
                         variant="delete"
                         type="button"
-                        className="self-end sm:self-auto"
+                        className="self-end sm:self-auto sm:mt-6"
                         onClick={(e) => {
                           e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
                           removeVariant(vIdx);
@@ -300,7 +300,7 @@ export default function ProductForm({
 
         {/* NHÓM TUỲ CHỌN */}
         {optionGroups && optionGroups.length > 0 && (
-          <div className="bg-page p-5 rounded-xl border border-border">
+          <div className="bg-transparent md:bg-page p-0 md:p-5 rounded-none md:rounded-xl border-0 md:border border-border">
             <h3 className="text-lg font-bold text-text-primary mb-2 flex items-center gap-2">
               <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">3</span>
               Nhóm tuỳ chọn

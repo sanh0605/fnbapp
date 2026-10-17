@@ -52,7 +52,7 @@ const sampleType: DBProductType = {
 };
 
 describe("ProductTypeDetailView", () => {
-  it("renders name, Tính là ly, groups using it, and 'Sửa' link", () => {
+  it("renders name, Tính là ly, groups using it, and 'Chỉnh sửa' link", () => {
     render(
       <ProductTypeDetailView
         type={sampleType}
@@ -62,13 +62,13 @@ describe("ProductTypeDetailView", () => {
       />
     );
 
-    // The name is both the page title and the first detail row.
+    // The name is the page title (not duplicated in FieldList).
     expect(screen.getByRole("heading", { level: 1, name: "Thức uống" })).toBeInTheDocument();
-    expect(screen.getAllByText("Thức uống")).toHaveLength(2);
+    expect(screen.getAllByText("Thức uống")).toHaveLength(1);
     expect(screen.getByText("Có")).toBeInTheDocument();
     expect(screen.getByText("Cà phê, Trà")).toBeInTheDocument();
 
-    const editLink = screen.getByRole("link", { name: "Sửa" });
+    const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
     expect(editLink).toBeInTheDocument();
     expect(editLink.getAttribute("href")).toContain("/admin/products/types/PT-001/edit?returnTo=");
 

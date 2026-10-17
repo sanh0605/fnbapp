@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import React from "react";
 import { ModifierDetailView, type LinkedProduct } from "./ModifierDetailView";
 import type { DBModifier } from "@/types/db";
@@ -32,16 +32,6 @@ const deleteModifierActionMock = vi.fn();
 vi.mock("@/app/admin/products/modifiers/actions", () => ({
   deleteModifierAction: (...args: any[]) => deleteModifierActionMock(...args),
   setModifierStatus: (...args: any[]) => setModifierStatusMock(...args),
-}));
-
-const standaloneSwitchMock = vi.fn((props: any) => (
-  <div data-testid="mock-standalone-switch" data-modifier-id={props.modifierId}>
-    StandaloneToppingSwitchMock
-  </div>
-));
-
-vi.mock("@/app/admin/products/modifiers/components/StandaloneToppingSwitch", () => ({
-  StandaloneToppingSwitch: (props: any) => standaloneSwitchMock(props),
 }));
 
 afterEach(() => {
@@ -112,8 +102,10 @@ describe("ModifierDetailView", () => {
     // Xoá button
     expect(screen.getByRole("button", { name: "Xoá" })).toBeInTheDocument();
 
-    // StandaloneToppingSwitch mock rendered
-    expect(screen.getByTestId("mock-standalone-switch")).toBeInTheDocument();
+    // Bán độc lập plain text "Có" and price has "đ"
+    expect(screen.getByText("Bán độc lập")).toBeInTheDocument();
+    expect(screen.getByText("Có")).toBeInTheDocument();
+    expect(screen.getByText("5,000đ")).toBeInTheDocument();
   });
 
   it("shows '—' for unlinked modifier", () => {
@@ -148,8 +140,7 @@ describe("ModifierDetailView", () => {
     expect(screen.getByRole("button", { name: "Xoá" })).toBeInTheDocument();
   });
 
-  it("uses groupName and allowStandalone props directly and does not pass groupName to StandaloneToppingSwitch", () => {
-    standaloneSwitchMock.mockClear();
+  it("uses groupName and displays 'Không' for Bán độc lập when no active product is linked", () => {
     render(
       <ModifierDetailView
         modifier={{
@@ -172,16 +163,12 @@ describe("ModifierDetailView", () => {
 
     // Displays groupName directly in "Nhóm" row
     expect(screen.getByText("Topping đặc biệt")).toBeInTheDocument();
-
-    // StandaloneToppingSwitch receives allowStandalone directly and does not receive groupName prop
-    expect(standaloneSwitchMock).toHaveBeenCalled();
-    const passedProps = standaloneSwitchMock.mock.calls[0][0];
-    expect(passedProps.allowStandalone).toBe(true);
-    expect(passedProps.groupName).toBeUndefined();
+    expect(screen.getByText("6,000đ")).toBeInTheDocument();
+    const row = screen.getByText("Bán độc lập").closest<HTMLElement>("div.grid")!;
+    expect(within(row).getByText("Không")).toBeInTheDocument();
   });
 
   it("shows 'Có sẵn' and 'Tối đa mỗi món', and shows '—' for 'Bán độc lập' when group is Chọn một", () => {
-    standaloneSwitchMock.mockClear();
     render(
       <ModifierDetailView
         modifier={{
@@ -196,7 +183,7 @@ describe("ModifierDetailView", () => {
         } as DBModifier}
         product={null}
         groupName="Mức đường"
-        allowStandalone={false}
+        allowStandalone={true}
         groupSelectionMode="ONE"
         canDelete={false}
         returnTo="/admin/products/modifiers"
@@ -211,9 +198,9 @@ describe("ModifierDetailView", () => {
     expect(screen.getByText("Tối đa mỗi món")).toBeInTheDocument();
     expect(screen.getByText("Không giới hạn")).toBeInTheDocument();
 
-    // Bán độc lập is "—" (not StandaloneToppingSwitch)
-    expect(standaloneSwitchMock).not.toHaveBeenCalled();
-    expect(screen.getByText("Bán độc lập")).toBeInTheDocument();
+    // Bán độc lập is "—"
+    const row = screen.getByText("Bán độc lập").closest<HTMLElement>("div.grid")!;
+    expect(within(row).getByText("—")).toBeInTheDocument();
   });
 
   it("shows numeric 'Tối đa mỗi món' when max_qty is set", () => {
@@ -239,9 +226,27 @@ describe("ModifierDetailView", () => {
     );
 
     expect(screen.getByText("Có sẵn")).toBeInTheDocument();
-    expect(screen.getByText("Không")).toBeInTheDocument();
+    const coSanRow = screen.getByText("Có sẵn").closest<HTMLElement>("div.grid")!;
+    expect(within(coSanRow).getByText("Không")).toBeInTheDocument();
     expect(screen.getByText("Tối đa mỗi món")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
+  });
+
+  it("shows '—' for 'Bán độc lập' when allowStandalone is false", () => {
+    render(
+      <ModifierDetailView
+        modifier={linkedModifier}
+        product={linkedProduct}
+        groupName="Thêm Topping"
+        allowStandalone={false}
+        groupSelectionMode="MANY"
+        canDelete={false}
+        returnTo="/admin/products/modifiers"
+      />,
+    );
+
+    const row = screen.getByText("Bán độc lập").closest<HTMLElement>("div.grid")!;
+    expect(within(row).getByText("—")).toBeInTheDocument();
   });
 
   it("shows 'Ngừng dùng' for ACTIVE modifier and calls setModifierStatus with INACTIVE after confirm", async () => {

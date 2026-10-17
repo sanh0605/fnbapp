@@ -22,6 +22,7 @@ export default async function NewModifierPage(
         backHref={returnTo}
         backLabel="Topping & tuỳ chọn"
         title="Tạo tuỳ chọn"
+        subtitle="Thêm tuỳ chọn mới vào nhóm tuỳ chọn của món."
       />
       <ModifierForm groups={groups} returnTo={returnTo} />
     </DetailFrame>

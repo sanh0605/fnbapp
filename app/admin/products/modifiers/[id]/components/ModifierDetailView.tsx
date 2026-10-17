@@ -13,7 +13,6 @@ import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { formatNumber } from "@/lib/shared/format";
 import { confirm } from "@/lib/shared/dialog";
 import { deleteModifierAction, setModifierStatus } from "@/app/admin/products/modifiers/actions";
-import { StandaloneToppingSwitch } from "@/app/admin/products/modifiers/components/StandaloneToppingSwitch";
 import type { DBModifier } from "@/types/db";
 
 export interface LinkedProduct {
@@ -118,10 +117,8 @@ export function ModifierDetailView({
   );
 
   const fields: Field[] = [
-    { label: "Mã", value: modifier.id },
     { label: "Nhóm", value: displayGroupName },
-    { label: "Tên tuỳ chọn", value: modifier.name },
-    { label: "Giá thêm", value: formatNumber(modifier.price) },
+    { label: "Giá thêm", value: `${formatNumber(modifier.price)}đ` },
     {
       label: "Trạng thái",
       value: modifier.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng",
@@ -138,18 +135,12 @@ export function ModifierDetailView({
     },
     {
       label: "Bán độc lập",
-      value: isOne ? (
-        "—"
-      ) : (
-        <StandaloneToppingSwitch
-          modifierId={modifier.id}
-          modifierName={modifier.name}
-          price={modifier.price}
-          productId={modifier.product_id ?? null}
-          productStatus={product?.status}
-          allowStandalone={allowStandalone}
-        />
-      ),
+      value:
+        isOne || !allowStandalone
+          ? "—"
+          : product && product.status === "ACTIVE"
+          ? "Có"
+          : "Không",
     },
     {
       label: "Món liên kết",
