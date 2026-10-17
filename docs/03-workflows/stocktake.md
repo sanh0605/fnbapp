@@ -8,7 +8,7 @@ brCodes: BR-INV-007, BR-COGS-007, BR-INV-010, BR-INV-011, BR-INV-012, BR-INV-022
 ```
 
 **Behaviour change — 2026-10-17 (`BR-INV-023`, migration `0137`):**
-- The counting screen has no per-line button. Leaving a box saves that line; the line shows "Đang lưu…", "✓ Đã lưu" or a red reason.
+- The counting screen has no per-line button. Moving out of a line's boxes saves that line (moving between boxes of one line does not); the line shows "Đang lưu…", "✓ Đã lưu" or a red reason.
 - Clearing every box of a saved line puts it back to "Chưa đếm".
 - Each package size's number is kept in `stocktake_lines.package_counts` and refills its box after a reload. The converted total shows under the boxes while typing.
 - `save_stocktake_line_atomic` takes a third argument `p_package_counts`; a null count clears the line.
@@ -55,7 +55,7 @@ function called from `lib/stock/stocktake-transaction.ts`.
 2. **Buttons per screen, and when to hide them.** The list at
    `/admin/inventory/stocktake` has "Tạo phiên kiểm kê", disabled with the open
    session's code and a link while one is open. An open session's page
-   `/admin/inventory/stocktake/[id]` holds the count boxes (no button per line: leaving a box saves it, `BR-INV-023`), "Xem trước" then an
+   `/admin/inventory/stocktake/[id]` holds the count boxes (no button per line: leaving a line's boxes saves it, `BR-INV-023`), "Xem trước" then an
    inline yes/no "Xác nhận", and "Huỷ phiên" (inline yes/no). A confirmed session's own page at
    `/admin/inventory/stocktake/[id]` lists its lines and shows "Sửa số đếm" and "Hoàn tác"
    (to the page `/[id]/cancel`) only to the owner, only on the newest confirmed session; otherwise the owner sees one grey line saying

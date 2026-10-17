@@ -71,7 +71,7 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 - **Grouping** (Q8, *"Theo loại hàng"*): the items to count are grouped under their existing category. Measured that day: Nguyên liệu 50 items and Vật tư tiêu hao 19. He chose this over a new list of places in the shop, which would need a new page and 69 items assigned by hand.
 - **Where count differences show** (Q9, *"Chỉ ở trang Kiểm kê"*): once Kiểm kê has its own list, the Phiếu xuất list shows only slips staff wrote. `STK-001`'s 49 difference rows show on the Kiểm kê page. Stock and Giá vốn do not change. Before building, check that the "Hàng đã xuất" report does not lose those rows.
 
-### BR-INV-023 — A count saves itself when the cursor leaves the box; clearing a line puts it back to not counted; package sizes add up
+### BR-INV-023 — A count saves itself when the cursor leaves the line; clearing a line puts it back to not counted; package sizes add up
 
 **Status:** `APPROVED` — owner 2026-10-17, looking at `STK-002`: *"có cần nút xác nhận ở mỗi dòng không ? … có cần phải hiển thị hết tất cả đơn vị không ? Nếu có 2 loại đóng gói khác nhau thực tế thì sẽ nhập như thế nào để cộng dồn cho đúng số lượng tồn ?"*. The recommendation below was offered and he answered *"Ok, làm luôn"*. Plan: `docs/superpowers/plans/2026-10-17-kiem-ke-tu-luu.md`.
 
