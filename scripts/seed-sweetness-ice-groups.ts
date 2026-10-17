@@ -11,14 +11,15 @@
  * Run: npx vite-node scripts/seed-sweetness-ice-groups.ts [--apply]
  */
 import { execSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { buildSeedSql } from "./seed-sweetness-ice-groups-core";
 
 // Dish names to leave out of the new links; filled from the owner's answer before any apply.
 const EXCLUDE: string[] = [];
 const apply = process.argv.includes("--apply");
-const file = resolve(process.cwd(), "../seed-sweetness-ice.sql");
+const dir = resolve(import.meta.dirname, "../.worktrees"); // repo root, not cwd; .worktrees is gitignored
+const file = resolve(dir, "seed-sweetness-ice.sql");
 const run = (args: string) => execSync(`npx supabase db query --linked ${args}`, { encoding: "utf8" });
 
 console.log(apply ? "MODE: --apply (WILL WRITE)" : "MODE: dry run (no writes)");
@@ -27,8 +28,9 @@ console.log(apply ? "MODE: --apply (WILL WRITE)" : "MODE: dry run (no writes)");
 console.log("\nTriggers:");
 console.log(run(`"select tgrelid::regclass as tbl, tgname, pg_get_triggerdef(oid) as def from pg_trigger where tgrelid in ('public.modifier_groups'::regclass, 'public.modifiers'::regclass, 'public.modifier_group_products'::regclass) and not tgisinternal"`));
 
+mkdirSync(dir, { recursive: true });
 writeFileSync(file, buildSeedSql(apply, EXCLUDE));
-console.log(run(`-f ${file}`));
+console.log(run(`-f "${file}"`));
 
 if (apply) {
   console.log("Re-read after commit:");

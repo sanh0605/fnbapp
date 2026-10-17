@@ -16,7 +16,8 @@ end $$;
 create temp table seed_before on commit drop as
 select (select count(*) from public.modifier_groups) as groups,
        (select count(*) from public.modifiers) as modifiers,
-       (select count(*) from public.modifier_group_products where group_id = 'MG-001') as links;
+       (select count(*) from public.modifier_group_products where group_id = 'MG-001') as mg001_links,
+       (select count(*) from public.modifier_group_products) as links;
 
 insert into public.modifier_groups (id, name, selection_mode, max_total, allow_standalone, sort_order, status)
 select 'MG-' || lpad((m.n + v.ord)::text, 3, '0'), v.name, 'ONE', null, false, v.sort_order, 'ACTIVE'
@@ -39,12 +40,28 @@ join public.modifier_group_products l on l.group_id = 'MG-001'
 join public.products p on p.id = l.product_id
 where g.name in ('Độ ngọt', 'Đá')${exclude};
 
+-- Guard: each new group must carry exactly the MG-001 dishes minus the excluded ones.
+do $$ begin
+  if exists (
+    select 1 from public.modifier_groups g
+    where g.name in ('Độ ngọt', 'Đá')
+      and (select count(*) from public.modifier_group_products where group_id = g.id) <> (
+        select count(*) from public.modifier_group_products l
+        join public.products p on p.id = l.product_id
+        where l.group_id = 'MG-001'${exclude})
+  ) then
+    raise exception 'new group dish count differs from MG-001 minus exclusions';
+  end if;
+end $$;
+
 select jsonb_pretty(jsonb_build_object(
   'before', (select to_jsonb(b) from seed_before b),
   'after', jsonb_build_object(
     'groups', (select count(*) from public.modifier_groups),
     'modifiers', (select count(*) from public.modifiers),
-    'links', (select count(*) from public.modifier_group_products where group_id = 'MG-001')),
+    'mg001_links', (select count(*) from public.modifier_group_products where group_id = 'MG-001'),
+    'links', (select count(*) from public.modifier_group_products)),
+  'new_group_links', (select jsonb_object_agg(g.name, (select count(*) from public.modifier_group_products where group_id = g.id)) from public.modifier_groups g where g.name in ('Độ ngọt', 'Đá')),
   'new_groups', (select jsonb_agg(jsonb_build_array(id, name) order by id) from public.modifier_groups where name in ('Độ ngọt', 'Đá')),
   'new_options', (select jsonb_agg(jsonb_build_array(m.id, g.name, m.name) order by m.id) from public.modifiers m join public.modifier_groups g on g.id = m.group_id where g.name in ('Độ ngọt', 'Đá')),
   'linked_products', (select jsonb_object_agg(name, names) from (

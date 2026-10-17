@@ -26,4 +26,16 @@ describe("buildSeedSql", () => {
     expect(buildSeedSql(false, ["Bánh d'or", "Trà"])).toContain("not in ('Bánh d''or', 'Trà')");
     expect(buildSeedSql(false, [])).not.toContain("not in (");
   });
+  it("counts links of every group before and after", () => {
+    const sql = buildSeedSql(false, []);
+    expect(sql).toContain("(select count(*) from public.modifier_group_products) as links");
+    expect(sql).toContain("'links', (select count(*) from public.modifier_group_products)");
+    expect(sql).toContain("'new_group_links'");
+  });
+  it("aborts the transaction when a new group's dish count differs from MG-001 minus exclusions", () => {
+    const sql = buildSeedSql(false, ["Trà"]);
+    expect(sql).toContain("raise exception");
+    expect(sql.indexOf("raise exception")).toBeLessThan(sql.indexOf("rollback;"));
+    expect(sql.slice(sql.indexOf("raise exception") - 900, sql.indexOf("raise exception"))).toContain("not in ('Trà')");
+  });
 });
