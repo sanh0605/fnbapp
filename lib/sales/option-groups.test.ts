@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canAddPortion, litOptionId, optionGroupsForProduct, pickOne, type OptionGroup, type OptionRow } from "./option-groups";
+import { canAddPortion, litOptionId, optionGroupsForProduct, orderPicks, pickOne, type OptionGroup, type OptionRow } from "./option-groups";
 
 const g = (o: Partial<OptionGroup>): OptionGroup => ({ id: "MG-1", name: "X", selection_mode: "MANY", max_total: null, allow_standalone: false, sort_order: 50, status: "ACTIVE", ...o });
 const opt = (o: Partial<OptionRow>): OptionRow => ({ id: "M", name: "M", price: 0, status: "ACTIVE", group_id: "MG-1", is_default: false, max_qty: null, product_id: null, ...o });
@@ -72,5 +72,24 @@ describe("Chọn nhiều caps", () => {
   it("has no cap when both are blank", () => {
     const [free] = optionGroupsForProduct("CAFE", [{ ...topping, max_total: null }], links, options);
     expect(canAddPortion(Array(9).fill(km), free, options[3])).toBe(true);
+  });
+});
+
+describe("orderPicks", () => {
+  const sweetG = { group: g({ id: "MG-A", name: "Độ ngọt" }), defaultId: null, options: [opt({ id: "A0", name: "Bình thường" }), opt({ id: "A1", name: "Ít ngọt" }), opt({ id: "A2", name: "Không đường" })] };
+  const sauceG = { group: g({ id: "MG-B", name: "Sốt" }), defaultId: null, options: [opt({ id: "B1", name: "Caramel" }), opt({ id: "B2", name: "Kem muối" })] };
+  const groups = [sweetG, sauceG];
+  const p = (id: string) => ({ id, name: id, price: 0 });
+
+  it("sorts by group, then by option within the group", () => {
+    expect(orderPicks([p("B2"), p("A1"), p("B1")], groups).map((x) => x.id)).toEqual(["A1", "B1", "B2"]);
+  });
+  it("puts unknown picks last, keeping their order", () => {
+    expect(orderPicks([p("X2"), p("B1"), p("X1"), p("A1")], groups).map((x) => x.id)).toEqual(["A1", "B1", "X2", "X1"]);
+  });
+  it("does not mutate the input", () => {
+    const input = [p("B2"), p("A1")];
+    orderPicks(input, groups);
+    expect(input.map((x) => x.id)).toEqual(["B2", "A1"]);
   });
 });

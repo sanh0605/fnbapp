@@ -4,6 +4,7 @@ import {
   calculateItemTotal,
   calculateItemGross,
   addQuickLine,
+  addOrMergeLine,
 } from "./cart-pricing";
 
 describe("clampDiscount (R3)", () => {
@@ -144,5 +145,53 @@ describe("addQuickLine", () => {
     addQuickLine(input, product, v1);
     expect(input).toHaveLength(1);
     expect(plain.qty).toBe(1);
+  });
+});
+
+describe("addOrMergeLine", () => {
+  const sweet = { id: "opt-it-ngot", name: "Ít ngọt", price: 0 };
+  const ice = { id: "opt-it-da", name: "Ít đá", price: 0 };
+  const cream = { id: "opt-kem-muoi", name: "Kem muối", price: 4000 };
+  const base = { product_id: "p-cfd", product_name: "Cà phê đá", variant_id: "v-360", size_name: "360ml",
+    unit_price: 15000, qty: 2, discount_amount: 0, discount_type: "VND", modifiers: [sweet, ice, cream] };
+
+  it("appends a line with a fresh id to an empty cart", () => {
+    const cart = addOrMergeLine([], base);
+    expect(cart).toHaveLength(1);
+    expect(typeof cart[0].id).toBe("string");
+    expect(cart[0].qty).toBe(2);
+  });
+  it("merges the same choices tapped in another order", () => {
+    const cart = addOrMergeLine(addOrMergeLine([], base), { ...base, qty: 1, modifiers: [cream, ice, sweet] });
+    expect(cart).toHaveLength(1);
+    expect(cart[0].qty).toBe(3);
+  });
+  it("keeps a separate line when one option differs", () => {
+    const none = { id: "opt-khong-duong", name: "Không đường", price: 0 };
+    expect(addOrMergeLine(addOrMergeLine([], base), { ...base, qty: 1, modifiers: [none, ice, cream] })).toHaveLength(2);
+  });
+  it("counts portions: one Kem muối is not two", () => {
+    expect(addOrMergeLine(addOrMergeLine([], base), { ...base, modifiers: [sweet, ice, cream, cream] })).toHaveLength(2);
+  });
+  it("keeps a separate line for another size", () => {
+    expect(addOrMergeLine(addOrMergeLine([], base), { ...base, variant_id: "v-500", unit_price: 18000 })).toHaveLength(2);
+  });
+  it("keeps a separate line when the unit price differs (old draft)", () => {
+    expect(addOrMergeLine(addOrMergeLine([], base), { ...base, unit_price: 14000 })).toHaveLength(2);
+  });
+  it("never merges lines that carry an item discount, so each keeps its own 2.000đ off", () => {
+    const off = { ...base, qty: 1, discount_amount: 2000 };
+    const cart = addOrMergeLine(addOrMergeLine([], off), off);
+    expect(cart).toHaveLength(2);
+    expect(cart.map((l: any) => l.qty)).toEqual([1, 1]);
+  });
+  it("does not merge a plain line into a discounted one", () => {
+    expect(addOrMergeLine(addOrMergeLine([], { ...base, discount_amount: 2000 }), base)).toHaveLength(2);
+  });
+  it("does not mutate the input", () => {
+    const input = addOrMergeLine([], base);
+    const snapshot = JSON.stringify(input);
+    addOrMergeLine(input, base);
+    expect(JSON.stringify(input)).toBe(snapshot);
   });
 });

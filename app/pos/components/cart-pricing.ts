@@ -97,3 +97,16 @@ export function addQuickLine(
     },
   ];
 }
+
+const optionKey = (l: any) => l.modifiers.map((m: any) => m.id).sort().join("|");
+// An item discount is an amount for the whole line (price-cart.ts), so discounted lines never merge.
+const sameLine = (a: any, b: any) =>
+  a.variant_id === b.variant_id && Number(a.unit_price) === Number(b.unit_price) &&
+  !Number(a.discount_amount) && !Number(b.discount_amount) && optionKey(a) === optionKey(b);
+
+// BR-SALE-019: an identical line gains the quantity; otherwise the line is appended.
+export function addOrMergeLine(cart: any[], line: any): any[] {
+  const i = cart.findIndex((l) => sameLine(l, line));
+  if (i >= 0) return cart.map((l, j) => (j === i ? { ...l, qty: l.qty + line.qty } : l));
+  return [...cart, { ...line, id: crypto.randomUUID() }];
+}

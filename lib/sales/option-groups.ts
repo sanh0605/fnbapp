@@ -35,3 +35,14 @@ export function canAddPortion(picks: Pick[], g: ProductOptionGroup, option: Opti
   const own = picks.filter((p) => p.id === option.id).length;
   return own < (option.max_qty ?? Infinity) && inGroup(picks, g).length < (g.group.max_total ?? Infinity);
 }
+
+export function orderPicks(picks: Pick[], groups: ProductOptionGroup[]): Pick[] {
+  const pos = new Map<string, [number, number]>();
+  groups.forEach((g, gi) => g.options.forEach((o, oi) => pos.set(o.id, [gi, oi])));
+  const end: [number, number] = [Infinity, 0];
+  return [...picks].sort((a, b) => {
+    const [ga, oa] = pos.get(a.id) ?? end;
+    const [gb, ob] = pos.get(b.id) ?? end;
+    return ga - gb || oa - ob;
+  });
+}
