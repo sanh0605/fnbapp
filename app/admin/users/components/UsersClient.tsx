@@ -250,7 +250,7 @@ export default function UsersClient({
               <option value="ALL">Tất cả quyền</option>
               <option value="ADMIN">Quản trị viên</option>
               <option value="MANAGER">Quản lý</option>
-              <option value="STAFF">STAFF</option>
+              <option value="STAFF">Nhân viên</option>
             </Select>
           </Field>
         </div>
