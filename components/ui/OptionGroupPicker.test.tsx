@@ -91,11 +91,12 @@ describe("OptionGroupPicker (Task 5 Step 1)", () => {
     const lessBtn = screen.getByRole("button", { name: /Ít đường/i });
 
     expect(normalBtn).toHaveAttribute("aria-pressed", "true");
-    expect(normalBtn.className).toContain("border-warning");
-    expect(normalBtn.className).toContain("bg-warning/10");
+    expect(normalBtn.className).toContain("border-primary");
+    expect(normalBtn.className).toContain("bg-primary-soft");
+    expect(normalBtn.querySelector("span")?.className).toContain("text-primary");
 
     expect(lessBtn).toHaveAttribute("aria-pressed", "false");
-    expect(lessBtn.className).not.toContain("border-warning");
+    expect(lessBtn.className).not.toContain("border-primary");
   });
 
   it("tapping Sữa yến mạch calls onChange with [K2]", () => {

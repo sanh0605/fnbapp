@@ -20,7 +20,9 @@ import { ProductGrid } from "./ProductGrid";
 import { CartPanel } from "./CartPanel";
 import { ItemConfigModal, type ItemConfigSubmission } from "./ItemConfigModal";
 import { DraftsModal } from "./DraftsModal";
-import { alert, confirm } from "@/lib/shared/dialog";
+import { confirm } from "@/lib/shared/dialog";
+import { ToastStack, type ToastItem, type ToastKind } from "@/components/ui/Toast";
+import { ArrowLeft, FileText, LogOut, WifiOff } from "lucide-react";
 import {
   resolvePosCheckoutAttempt,
   type PosCheckoutAttempt,
@@ -107,20 +109,27 @@ export default function POSScreen({
   const [isOnline, setIsOnline] = useState(true);
   const [processingOrder, setProcessingOrder] = useState<any | null>(null);
   const [lastCheckoutError, setLastCheckoutError] = useState<any | null>(null);
-  const [toasts, setToasts] = useState<any[]>([]);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const addToast = (
-    type: "success" | "error" | "warning" | "info",
-    message: string,
-    action?: { label: string; onClick: () => void }
+    kind: ToastKind,
+    title: string,
+    detail?: string,
   ) => {
     const id = crypto.randomUUID();
-    setToasts(prev => [...prev, { id, type, message, action }]);
-    if (type !== "error") {
-      setTimeout(() => {
-        setToasts(prev => prev.filter(t => t.id !== id));
-      }, 5000);
-    }
+    setToasts(prev => {
+      const next = [...prev];
+      if (kind !== "error") {
+        let nonErrorCount = next.filter(t => t.kind !== "error").length;
+        while (nonErrorCount >= 3) {
+          const oldestIdx = next.findIndex(t => t.kind !== "error");
+          if (oldestIdx === -1) break;
+          next.splice(oldestIdx, 1);
+          nonErrorCount--;
+        }
+      }
+      return [...next, detail !== undefined ? { id, kind, title, detail } : { id, kind, title }];
+    });
   };
 
   const removeToast = (id: string) => {
@@ -136,7 +145,7 @@ export default function POSScreen({
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      addToast("success", "Đã kết nối trực tuyến trở lại.");
+      addToast("info", "Đã có mạng trở lại");
     };
     const handleOffline = () => {
       setIsOnline(false);
@@ -219,13 +228,13 @@ export default function POSScreen({
         return true;
       } else {
         if (!silent) {
-          await alert({ title: "Lỗi", message: "Lỗi lưu đơn nháp: " + (res as any)?.error, variant: "danger" });
+          addToast("error", "Lỗi", "Lỗi lưu đơn nháp: " + (res as any)?.error);
         }
         return false;
       }
     } catch (err: any) {
       if (!silent) {
-        await alert({ title: "Lỗi", message: "Lỗi lưu đơn nháp: " + (err?.message || String(err)), variant: "danger" });
+        addToast("error", "Lỗi", "Lỗi lưu đơn nháp: " + (err?.message || String(err)));
       }
       return false;
     }
@@ -240,7 +249,7 @@ export default function POSScreen({
       if (await confirm({ title: "Xác nhận", message: "Bạn đang có món trong giỏ. Lưu giỏ hiện tại thành nháp mới trước khi mở nháp này?", variant: "warning" })) {
         const saved = await saveDraft(cart, false, true);
         if (!saved) {
-          addToast("error", "Không lưu được giỏ hiện tại, chưa mở đơn nháp");
+          addToast("error", "Lỗi", "Không lưu được giỏ hiện tại, chưa mở đơn nháp");
           return;
         }
       }
@@ -254,14 +263,14 @@ export default function POSScreen({
 
   const deleteDraft = (draftId: string) => {
     if (isCheckingOut) return;
-    deletePOSDraft(draftId, outletId || "").then(async res => {
+    deletePOSDraft(draftId, outletId || "").then(res => {
       if (res.success) {
         refreshDrafts();
         if (activeDraftId === draftId) {
           setActiveDraftId(null);
         }
       } else {
-        await alert({ title: "Lỗi", message: "Lỗi xóa đơn nháp: " + res.error, variant: "danger" });
+        addToast("error", "Lỗi", "Lỗi xóa đơn nháp: " + res.error);
       }
     });
   };
@@ -393,10 +402,13 @@ export default function POSScreen({
     setLastCheckoutError(null);
   };
 
-  const openProductModal = async (product: any, editIndex: number | null = null) => {
+  const openProductModal = (product: any, editIndex: number | null = null) => {
     if (isCheckingOut) return;
     const prodVariants = variants.filter((v: any) => v.product_id === product.id);
-    if (prodVariants.length === 0) return await alert({ message: "Món này chưa cấu hình size & giá." });
+    if (prodVariants.length === 0) {
+      addToast("warning", "Món này chưa cấu hình size & giá.");
+      return;
+    }
 
     setSelectedProduct(product);
     setEditingCartIndex(editIndex);
@@ -674,7 +686,7 @@ export default function POSScreen({
       processingOrder: order,
       retry: isRetry,
     });
-    addToast("error", errorMsg);
+    addToast("error", "Chưa gửi được đơn", errorMsg);
   };
 
   const handleConfirmCheckoutRef = useRef<(method: string, payments?: any[]) => void>(() => {});
@@ -830,7 +842,7 @@ export default function POSScreen({
       if (res.success) {
         setIsCheckingOut(null);
         setProcessingOrder(null);
-        addToast("success", "Thanh toán thành công!");
+        addToast("success", "Thanh toán thành công");
         resetAfterSale(draftIdBackup);
       } else if (res.retry) {
         restoreCart();
@@ -862,7 +874,7 @@ export default function POSScreen({
 
       if (res.success) {
         setLastCheckoutError(null);
-        addToast("success", "Thanh toán thành công!");
+        addToast("success", "Thanh toán thành công");
         resetAfterSale(order.draftId);
       } else if (res.retry) {
         reportFailure(order);
@@ -933,90 +945,37 @@ export default function POSScreen({
   return (
     <div className="fixed inset-0 flex bg-page text-text-primary font-sans overflow-hidden">
 
-      {/* Toast Notification Container */}
-      <div 
-        role="region" 
-        aria-live="polite" 
-        aria-label="Thông báo"
-        className="fixed top-4 right-4 z-[70] flex flex-col gap-3 max-w-sm w-full pointer-events-none"
-      >
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`pointer-events-auto p-4 rounded-xl shadow-xl border flex items-start gap-3 transition-colors transform duration-300 animate-slide-in-right ${
-              toast.type === "success"
-                ? "bg-success/10 border-success/20 text-success"
-                : toast.type === "error"
-                ? "bg-danger/10 border-danger/20 text-danger"
-                : toast.type === "warning"
-                ? "bg-warning/10 border-warning/20 text-warning"
-                : "bg-primary-soft border-primary/20 text-primary"
-            }`}
-          >
-            <span className="text-xl shrink-0">
-              {toast.type === "success" && "🟢"}
-              {toast.type === "error" && "🔴"}
-              {toast.type === "warning" && "⚠️"}
-              {toast.type === "info" && "ℹ️"}
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold">{toast.message}</p>
-              {toast.action && (
-                <button
-                  onClick={() => {
-                    toast.action.onClick();
-                    removeToast(toast.id);
-                  }}
-                  className={`mt-2 font-extrabold text-xs px-4 py-2 bg-surface-card rounded-lg border shadow-sm transition active:scale-95 flex items-center justify-center min-h-[44px] min-w-[80px] ${
-                    toast.type === "error"
-                      ? "text-danger border-danger/20 hover:bg-danger/5"
-                      : "text-primary border-primary/20 hover:bg-primary-soft"
-                  }`}
-                >
-                  {toast.action.label}
-                </button>
-              )}
-            </div>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="text-text-muted hover:text-text-secondary shrink-0 p-2 rounded-full hover:bg-black/5"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-      </div>
+      <ToastStack toasts={toasts} onDismiss={removeToast} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header className="h-14 bg-surface-card/80 border-b border-border/50 backdrop-blur-md flex items-center justify-between px-3 sm:px-4 shrink-0 shadow-sm relative z-10">
-          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0 min-w-0">
+        <header className="h-14 bg-surface-card border-b border-border flex items-center justify-between px-3 sm:px-4 shrink-0 relative z-10">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
             <Link
               href="/admin"
-              className="text-text-muted hover:text-primary transition-colors shrink-0 p-1 rounded-lg"
+              className="text-text-secondary hover:text-primary hover:bg-primary-soft transition-colors shrink-0 min-h-[44px] min-w-[44px] rounded-button flex items-center justify-center"
               aria-label="Về trang quản trị"
             >
-              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
+              <ArrowLeft className="w-5 h-5" />
             </Link>
             <h1 className="font-extrabold text-base sm:text-xl text-text-primary tracking-tight flex items-center gap-1 sm:gap-2 shrink-0">
               <span className="text-primary">Bán hàng</span>
               <span className="hidden sm:inline"> Đơn Mới</span>
             </h1>
             {isOnline ? (
-              <span className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-xs font-bold bg-success/10 text-success border border-success/20 shadow-sm shrink-0">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-                <span className="hidden sm:inline">Trực tuyến</span>
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-primary-soft text-primary border border-border shrink-0">
+                <span className="w-2 h-2 rounded-full bg-primary"></span>
+                <span className="hidden xl:inline">Trực tuyến</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-danger/20 shadow-sm shrink-0">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-danger/20 shrink-0">
                 <span className="w-2 h-2 rounded-full bg-danger animate-ping"></span>
-                <span className="hidden sm:inline">Ngoại tuyến</span>
+                <span className="hidden xl:inline">Ngoại tuyến</span>
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            <button 
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <button
+              type="button"
               onClick={() => {
                 if (isCheckingOut) return;
                 refreshDrafts();
@@ -1024,32 +983,32 @@ export default function POSScreen({
               }}
               disabled={!!isCheckingOut}
               aria-label="Đơn nháp"
-              className="text-xs sm:text-sm font-bold text-primary bg-primary-soft px-2 sm:px-3 py-1.5 rounded-full hover:bg-primary-soft transition flex items-center gap-1 sm:gap-1.5 shrink-0 min-h-[36px] disabled:opacity-50"
+              className="text-xs sm:text-sm font-bold text-primary bg-primary-soft px-3 rounded-button hover:bg-primary-soft transition flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] min-w-[44px] disabled:opacity-50"
             >
-              <span>📝</span>
-              <span className="hidden sm:inline">Nháp</span>
+              <FileText className="w-4 h-4 shrink-0" />
+              <span className="hidden xl:inline">Nháp</span>
               <span className="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
             </button>
-            <div className="hidden sm:block text-sm font-medium text-text-secondary bg-surface-secondary px-3 py-1.5 rounded-full shrink-0">
+            <div className="hidden xl:flex items-center text-sm font-medium text-text-secondary border border-border px-3 min-h-[44px] rounded-button shrink-0">
               {formatDate(new Date())}
             </div>
             <button
+              type="button"
               onClick={handleLogout}
               aria-label="Đăng xuất"
-              className="text-xs sm:text-sm font-semibold text-text-secondary hover:text-danger bg-surface-secondary hover:bg-danger/10 px-2 sm:px-3 py-1.5 rounded-full transition flex items-center gap-1 shrink-0 min-h-[36px]"
+              className="text-xs sm:text-sm font-semibold text-text-secondary hover:text-danger border border-border hover:bg-danger/10 px-3 rounded-button transition flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] min-w-[44px]"
               title="Đăng xuất"
             >
-              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="hidden sm:inline">Đăng xuất</span>
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span className="hidden xl:inline">Đăng xuất</span>
             </button>
           </div>
         </header>
 
         {!isOnline && (
-          <div className="bg-warning text-white font-extrabold text-center py-2.5 px-4 text-sm flex items-center justify-center gap-2 animate-fade-in shadow-md shrink-0 relative z-20">
-            <span>⚠️ Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại</span>
+          <div className="bg-caution text-white font-extrabold text-center py-2.5 px-4 text-sm flex items-center justify-center gap-2 animate-fade-in shadow-md shrink-0 relative z-20">
+            <WifiOff className="w-4 h-4 shrink-0" />
+            <span>Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại</span>
           </div>
         )}
 
@@ -1108,20 +1067,6 @@ export default function POSScreen({
         appliedPromoCode={appliedPromoCode}
         onResendFailedOrder={() => handleResendOrder()}
       />
-
-      {/* Mobile Floating Cart Button (hidden in favor of collapsed bar) */}
-      {!isCartOpen && cart.length > 0 && (
-        <button
-          onClick={() => setIsCartOpen(true)}
-          className="hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 bg-primary text-on-primary px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-4 font-bold active:scale-95 transition-transform z-30"
-        >
-          <div className="relative">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-            <span className="absolute -top-2 -right-2 bg-warning text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-primary">{totalItems}</span>
-          </div>
-          <span>{formatNumber(totalAmount)}</span>
-        </button>
-      )}
 
       {/* Product Selection Modal (Popup Chọn Món) */}
       {selectedProduct && (

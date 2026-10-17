@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { Trash2, Minus, Plus } from "lucide-react";
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
 import { formatNumber } from "@/lib/shared/format";
 import { calculateItemTotal, calculateItemGross } from "./cart-pricing";
@@ -54,61 +55,65 @@ export function CartItemRow({
   const manualItemDiscount = baseTotal - finalTotal;
 
   const currentProduct = products.find((p: any) => p.id === item.product_id);
+  const modifiers = item.modifiers || [];
+  const optionsText =
+    modifiers.length > 0
+      ? Object.entries(
+          modifiers.reduce((acc: any, m: any) => {
+            acc[m.name] = (acc[m.name] || 0) + 1;
+            return acc;
+          }, {})
+        )
+          .map(([name, count]: [string, any]) => `${count > 1 ? count + "x " : ""}${name}`)
+          .join(", ")
+      : "";
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-border shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] bg-surface-card transition-all duration-200 animate-cart-item-in">
+    <div className="relative overflow-hidden rounded-card border border-border bg-surface-card transition-all duration-200 animate-cart-item-in">
       {/* Background Red Delete Button */}
       <div className="absolute top-0 right-0 bottom-0 w-20 bg-danger flex items-center justify-center z-0">
         <button
+          type="button"
           onClick={() => {
             removeFromCart(idx);
             setIsSwiped(false);
           }}
-          className="w-full h-full text-white font-extrabold text-sm flex flex-col items-center justify-center gap-1 active:bg-danger"
+          className="w-full h-full min-h-[44px] text-white font-bold text-xs flex flex-col items-center justify-center gap-1 active:bg-danger"
         >
-          <span className="text-lg">🗑️</span>
+          <Trash2 className="w-5 h-5" />
           <span>Xoá</span>
         </button>
       </div>
 
       {/* Main Sliding Content */}
       <div
-        className="bg-surface-card p-3 transition-transform duration-300 relative z-10 flex flex-col gap-2 hover:bg-surface-secondary/30 active:bg-surface-secondary/50 transition-colors"
+        className="bg-surface-card p-3 transition-transform duration-300 relative z-10 flex flex-col gap-2"
         style={{ transform: isSwiped ? "translateX(-80px)" : "translateX(0)" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Line 1: Thumbnail, Name & Details, and Price */}
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Photo Thumbnail */}
-          <div className="w-12 h-12 rounded-lg bg-surface-secondary flex items-center justify-center shrink-0 text-xl">
-            ☕
-          </div>
-          
-          {/* Name & Details */}
-          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => currentProduct && openProductModal(currentProduct, idx)}>
-            <div className="flex items-baseline gap-1.5 flex-wrap">
-              <h4 className="font-bold text-text-primary text-sm leading-tight hover:text-primary transition-colors line-clamp-1">
-                {item.product_name}
-              </h4>
-              <span className="text-[10px] font-semibold text-primary">Size {item.size_name}</span>
-            </div>
-            
-            {/* Display modifiers list */}
-            {item.modifiers.length > 0 && (
-              <p className="text-[10px] text-text-secondary line-clamp-1 mt-0.5">
-                + {Object.entries(
-                  item.modifiers.reduce((acc: any, m: any) => {
-                    acc[m.name] = (acc[m.name] || 0) + 1;
-                    return acc;
-                  }, {})
-                ).map(([name, count]: [string, any]) => `${count > 1 ? count + "x " : ""}${name}`).join(", ")}
-              </p>
-            )}
+        {/* Top section: clickable dish name + grey second row, and line total on the right */}
+        <div
+          className="flex items-start justify-between gap-3 min-h-[44px] cursor-pointer"
+          onClick={() => currentProduct && openProductModal(currentProduct, idx)}
+        >
+          <div className="flex-1 min-w-0">
+            <h4 className="text-[15px] font-semibold text-text-primary leading-snug hover:text-primary transition-colors line-clamp-1">
+              {item.product_name}
+            </h4>
 
-            {/* Discount Badges */}
+            <div className="mt-0.5 flex items-center gap-1.5 flex-wrap text-xs text-text-secondary">
+              <span>Size {item.size_name}</span>
+              {optionsText && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="line-clamp-1">{optionsText}</span>
+                </>
+              )}
+            </div>
+
             {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
-              <div className="mt-1 flex flex-wrap gap-1">
+              <div className="mt-1.5 flex flex-wrap gap-1">
                 {itemPromoDiscount > 0 && (
                   <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={itemPromoDiscount} />
                 )}
@@ -119,64 +124,56 @@ export function CartItemRow({
             )}
           </div>
 
-          {/* Price */}
           <div className="text-right shrink-0">
             {(itemPromoDiscount > 0 || manualItemDiscount > 0) && (
-              <div className="text-[10px] text-text-muted line-through mb-0.5">
+              <div className="text-xs text-text-secondary line-through mb-0.5 tabular-nums">
                 {formatNumber(baseTotal)}
               </div>
             )}
-            <div className="font-bold text-text-primary text-sm leading-tight tabular-nums">
+            <div className="font-bold text-text-primary text-[15px] leading-snug tabular-nums">
               {formatNumber(Math.max(0, finalTotal - itemPromoDiscount))}
             </div>
           </div>
         </div>
 
-        {/* Line 2: Actions & Quantity Controls */}
-        <div className="flex items-center justify-between border-t border-border/50 pt-2 mt-1">
-          {/* Desktop Remove Button */}
+        {/* Bottom section: remove button & 44px stepper */}
+        <div className="flex items-center justify-between border-t border-border pt-2">
           <button
             type="button"
             onClick={() => removeFromCart(idx)}
-            className="hidden md:flex w-8 h-8 rounded-lg text-text-muted active:text-danger md:hover:text-danger active:bg-danger/10 md:hover:bg-danger/10 transition-colors items-center justify-center"
+            className="hidden md:flex w-11 h-11 min-h-[44px] min-w-[44px] rounded-button text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors items-center justify-center"
             aria-label="Xoá"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
+            <Trash2 className="w-4 h-4" />
           </button>
 
-          {/* Mobile Remove Button */}
           <button
             type="button"
-            onClick={() => {
-              if (isSwiped) {
-                setIsSwiped(false);
-              } else {
-                setIsSwiped(true);
-              }
-            }}
-            className="md:hidden text-xs text-danger font-semibold px-4 py-2 bg-danger/10 active:bg-danger/20 rounded-xl min-h-[44px] transition-colors"
+            onClick={() => setIsSwiped(!isSwiped)}
+            className="md:hidden text-xs text-danger font-semibold px-4 py-2 bg-danger/10 active:bg-danger/20 rounded-button min-h-[44px] transition-colors"
           >
             Xoá
           </button>
 
-          {/* Quantity Controls */}
-          <div className="flex items-center gap-2 bg-surface-secondary rounded-xl p-1">
+          <div className="flex items-center border border-border rounded-button overflow-hidden bg-surface-card">
             <button
               type="button"
               onClick={() => changeQty(idx, -1)}
-              className="w-11 h-11 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-all active:scale-95 transform select-none"
+              aria-label="Giảm số lượng"
+              className="w-11 h-11 min-h-[44px] min-w-[44px] bg-primary-soft text-primary hover:bg-primary/20 flex items-center justify-center transition-colors select-none"
             >
-              -
+              <Minus className="w-4 h-4 text-primary" />
             </button>
-            <span className="text-sm font-semibold tabular-nums min-w-[2ch] text-center text-text-primary transition-transform duration-100 active:scale-90 transform select-none">{item.qty}</span>
+            <span className="w-11 h-11 min-h-[44px] min-w-[44px] flex items-center justify-center text-sm font-semibold tabular-nums text-center text-text-primary select-none">
+              {item.qty}
+            </span>
             <button
               type="button"
               onClick={() => changeQty(idx, 1)}
-              className="w-11 h-11 md:w-8 md:h-8 rounded-lg bg-surface-card active:bg-border md:hover:bg-border flex items-center justify-center text-text-primary font-bold shadow-sm transition-all active:scale-95 transform select-none"
+              aria-label="Tăng số lượng"
+              className="w-11 h-11 min-h-[44px] min-w-[44px] bg-primary-soft text-primary hover:bg-primary/20 flex items-center justify-center transition-colors select-none"
             >
-              +
+              <Plus className="w-4 h-4 text-primary" />
             </button>
           </div>
         </div>
@@ -184,4 +181,5 @@ export function CartItemRow({
     </div>
   );
 }
+
 

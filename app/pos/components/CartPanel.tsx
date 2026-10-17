@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ShoppingCart, X, Tag, ChevronDown, AlertCircle } from "lucide-react";
 
 import { DiscountBadge, DISCOUNT_KIND } from "./DiscountBadge";
 import { CartItemRow } from "./CartItemRow";
 import { formatNumber } from "@/lib/shared/format";
-import { alert, confirm } from "@/lib/shared/dialog";
+import { confirm } from "@/lib/shared/dialog";
 import { calculateItemTotal, calculateItemGross, clampDiscount } from "./cart-pricing";
 
 interface CartPanelProps {
@@ -88,11 +89,20 @@ export function CartPanel({
   onResendFailedOrder,
 }: CartPanelProps) {
 
+  const [isPromoOpen, setIsPromoOpen] = useState(
+    () => Boolean(appliedPromoCode) || userCustomDiscount !== null
+  );
   const [isSplitPaymentOpen, setIsSplitPaymentOpen] = useState(false);
   const [splitPayments, setSplitPayments] = useState<{ method: "CASH" | "BANK_TRANSFER", amount: number, reference: string }[]>([]);
   const [splitMethodInput, setSplitMethodInput] = useState<"CASH" | "BANK_TRANSFER">("CASH");
   const [splitAmountInput, setSplitAmountInput] = useState("");
   const [splitReferenceInput, setSplitReferenceInput] = useState("");
+
+  useEffect(() => {
+    if (appliedPromoCode || userCustomDiscount !== null) {
+      setIsPromoOpen(true);
+    }
+  }, [appliedPromoCode, userCustomDiscount]);
 
   const calculateSubtotal = () => cart.reduce((sum, item) => sum + calculateItemTotal(item), 0);
   const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
@@ -128,16 +138,14 @@ export function CartPanel({
 
       {/* Collapsed Bar at Bottom (Mobile only, shown when NOT expanded and cart has items) */}
       {!isCartOpen && cart.length > 0 && (
-        <div 
+        <div
           onClick={() => setIsCartOpen(true)}
-          className="fixed bottom-0 left-0 right-0 bg-surface-card border-t border-border shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-4 py-3 flex items-center justify-between z-30 md:hidden cursor-pointer active:bg-surface-secondary/50 min-h-[68px] pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+          className="fixed bottom-0 left-0 right-0 bg-surface-card border-t border-border shadow-panel px-4 py-3 flex items-center justify-between z-30 md:hidden cursor-pointer min-h-[68px] pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
         >
           <div className="flex items-center gap-3">
-            <div className="relative bg-primary-soft p-2 rounded-xl text-primary">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <span className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[9px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-bold">
+            <div className="relative bg-primary-soft p-2.5 rounded-button text-primary">
+              <ShoppingCart className="w-5 h-5" />
+              <span className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[10px] min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full font-bold">
                 {totalItems}
               </span>
             </div>
@@ -146,12 +154,13 @@ export function CartPanel({
               <span className="text-base font-black text-text-primary mt-0.5">{formatNumber(totalAmount)}</span>
             </div>
           </div>
-          <button 
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               setIsCartOpen(true);
             }}
-            className="bg-primary text-on-primary px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-transform min-h-[44px]"
+            className="bg-primary text-on-primary px-5 py-2.5 rounded-button font-bold text-sm shadow-sm active:scale-95 transition-transform min-h-[44px]"
           >
             Thanh toán ({totalItems})
           </button>
@@ -160,40 +169,35 @@ export function CartPanel({
 
       {/* Main CartPanel Container */}
       <div
-        className={`fixed left-0 right-0 bg-surface-card shadow-[0_-8px_30px_rgba(0,0,0,0.12)] md:shadow-none flex flex-col z-40 transition-transform duration-300 ease-out 
+        className={`fixed left-0 right-0 bg-surface-card shadow-panel md:shadow-none flex flex-col z-40 transition-transform duration-300 ease-out 
           bottom-0 rounded-t-3xl max-h-[85vh] 
           md:relative md:translate-y-0 md:rounded-none md:max-h-none md:h-full md:w-80 lg:w-96 md:border-l md:border-border md:translate-x-0
           ${isCartOpen ? "translate-y-0" : "translate-y-full md:translate-y-0 md:flex"}`}
       >
         {/* Drag Handle (Mobile only) */}
-        <div 
-          className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-2 shrink-0 md:hidden cursor-pointer animate-fade-in-quick" 
-          onClick={() => setIsCartOpen(false)} 
+        <div
+          className="w-12 h-1 bg-border rounded-full mx-auto mt-3 mb-2 shrink-0 md:hidden cursor-pointer animate-fade-in-quick"
+          onClick={() => setIsCartOpen(false)}
         />
 
-        <div className="h-14 bg-surface-card flex items-center justify-between px-4 shrink-0 border-b border-border/50">
+        <div className="h-14 bg-surface-card flex items-center justify-between px-4 shrink-0 border-b border-border">
           <h2 className="font-bold text-text-primary text-base md:text-lg flex items-center gap-2">
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
+            <ShoppingCart className="w-5 h-5 text-primary" />
             Hoá Đơn <span className="text-xs text-text-secondary">({totalItems})</span>
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {cart.length > 0 && (
               <>
                 <button
+                  type="button"
                   onClick={() => saveDraft(cart, true)}
                   disabled={!!isCheckingOut}
-                  className="text-xs font-bold text-primary bg-primary-soft hover:bg-primary/20 px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center disabled:opacity-50"
+                  className="text-xs font-bold text-primary hover:bg-primary-soft px-3 py-2 rounded-button transition-colors min-h-[44px] flex items-center disabled:opacity-50"
                 >
                   Lưu Nháp
                 </button>
                 <button
+                  type="button"
                   onClick={async () => {
                     if (isCheckingOut) return;
                     if (await confirm({ title: "Xác nhận xóa", message: "Xoá hết món trong giỏ hàng?", variant: "danger" })) {
@@ -202,501 +206,543 @@ export function CartPanel({
                     }
                   }}
                   disabled={!!isCheckingOut}
-                  className="text-xs font-bold text-danger bg-danger/10 hover:bg-danger/20 px-3 py-2 rounded-lg transition-colors min-h-[44px] flex items-center disabled:opacity-50"
+                  className="text-xs font-bold text-danger hover:bg-danger/10 px-3 py-2 rounded-button transition-colors min-h-[44px] flex items-center disabled:opacity-50"
                 >
                   Xoá hết
                 </button>
               </>
             )}
-            <button 
-              onClick={() => setIsCartOpen(false)} 
-              className="md:hidden p-2 text-text-muted hover:bg-surface-secondary rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
+            <button
+              type="button"
+              onClick={() => setIsCartOpen(false)}
+              aria-label="Đóng"
+              className="md:hidden p-2 text-text-secondary hover:bg-primary-soft rounded-button min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors"
             >
-              ✕
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-      <div className="flex-1 overflow-y-auto min-h-[120px] bg-page p-3">
-        {cart.length === 0 ? (
-          processingOrder ? (
-            <div className="h-full flex flex-col justify-between">
-              <div className="bg-surface-card border border-border/60 rounded-2xl p-4 shadow-sm space-y-4 animate-pulse">
-                <div className="flex items-center gap-3 pb-3 border-b border-border">
-                  <div className="w-8 h-8 rounded-full bg-primary-soft flex items-center justify-center">
-                    <svg className="animate-spin h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
+        <div className="flex-1 overflow-y-auto min-h-[120px] bg-page p-3">
+          {cart.length === 0 ? (
+            processingOrder ? (
+              <div className="h-full flex flex-col justify-between">
+                <div className="bg-surface-card border border-border rounded-card p-4 shadow-sm space-y-4 animate-pulse">
+                  <div className="flex items-center gap-3 pb-3 border-b border-border">
+                    <div className="w-8 h-8 rounded-full bg-primary-soft flex items-center justify-center">
+                      <svg className="animate-spin h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-extrabold text-sm text-text-primary uppercase tracking-wide">Đang xử lý đơn hàng...</h3>
+                      <p className="text-[11px] text-text-secondary font-medium">Vui lòng chờ trong giây lát</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-sm text-text-primary uppercase tracking-wide">Đang xử lý đơn hàng...</h3>
-                    <p className="text-[11px] text-text-secondary font-medium">Vui lòng chờ trong giây lát</p>
-                  </div>
-                </div>
 
-                <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
-                  {processingOrder.items.map((item: any, idx: number) => {
-                    return (
-                      <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-border pb-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-text-primary truncate">{item.product_name}</p>
-                          <p className="text-[10px] text-text-muted">
-                            Size {item.size_name}
-                            {item.modifiers.length > 0 && ` • +${item.modifiers.map((m: any) => m.name).join(", ")}`}
-                          </p>
-                          <p className="text-[10px] text-text-secondary font-medium mt-0.5">Số lượng: {item.qty}</p>
+                  <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
+                    {processingOrder.items.map((item: any, idx: number) => {
+                      return (
+                        <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-border pb-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-text-primary truncate">{item.product_name}</p>
+                            <p className="text-[10px] text-text-secondary">
+                              Size {item.size_name}
+                              {item.modifiers.length > 0 && ` • +${item.modifiers.map((m: any) => m.name).join(", ")}`}
+                            </p>
+                            <p className="text-[10px] text-text-secondary font-medium mt-0.5">Số lượng: {item.qty}</p>
+                          </div>
+                          <span className="font-semibold text-text-primary shrink-0 ml-2">
+                            {formatNumber((item.unit_price + item.modifiers.reduce((s: number, m: any) => s + Number(m.price), 0)) * item.qty)}
+                          </span>
                         </div>
-                        <span className="font-semibold text-text-primary shrink-0 ml-2">
-                          {formatNumber((item.unit_price + item.modifiers.reduce((s: number, m: any) => s + Number(m.price), 0)) * item.qty)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
 
-                <div className="pt-3 border-t border-dashed border-border space-y-1.5">
-                  <div className="flex justify-between text-xs text-text-secondary">
-                    <span>Tạm tính:</span>
-                    <span>{formatNumber(processingOrder.subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-text-secondary">
-                    <span>Hình thức:</span>
-                    <span className="font-bold text-primary">{processingOrder.methodLabel}</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-extrabold text-text-primary pt-1">
-                    <span>Tổng tiền:</span>
-                    <span className="text-warning">{formatNumber(processingOrder.totalAmount)}</span>
+                  <div className="pt-3 border-t border-dashed border-border space-y-1.5">
+                    <div className="flex justify-between text-xs text-text-secondary">
+                      <span>Tạm tính:</span>
+                      <span>{formatNumber(processingOrder.subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-text-secondary">
+                      <span>Hình thức:</span>
+                      <span className="font-bold text-primary">{processingOrder.methodLabel}</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-extrabold text-text-primary pt-1">
+                      <span>Tổng tiền:</span>
+                      <span className="text-primary">{formatNumber(processingOrder.totalAmount)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-text-secondary">
+                <ShoppingCart className="w-12 h-12 mb-3 text-text-secondary opacity-40" />
+                <p>Chưa có món nào</p>
+              </div>
+            )
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-text-muted">
-              <svg className="w-16 h-16 mb-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            <div className="space-y-3">
+              {cart.map((item, idx) => (
+                <CartItemRow
+                  key={item.id}
+                  item={item}
+                  idx={idx}
+                  products={products}
+                  itemPromoDiscount={itemPromoDiscounts[idx] || 0}
+                  openProductModal={openProductModal}
+                  removeFromCart={removeFromCart}
+                  changeQty={changeQty}
                 />
-              </svg>
-              <p>Chưa có món nào</p>
+              ))}
             </div>
-          )
-        ) : (
-          <div className="space-y-3">
-            {cart.map((item, idx) => (
-              <CartItemRow
-                key={item.id}
-                item={item}
-                idx={idx}
-                products={products}
-                itemPromoDiscount={itemPromoDiscounts[idx] || 0}
-                openProductModal={openProductModal}
-                removeFromCart={removeFromCart}
-                changeQty={changeQty}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      <div className="bg-surface-card border-t border-border p-4 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        {lastCheckoutError && (
-          <div className="bg-danger/10 border border-danger/30 text-danger p-3 rounded-xl text-xs font-semibold flex items-center justify-between mb-3 animate-fade-in">
-            <div className="flex-1 min-w-0">
-              <p className="font-bold">⚠️ Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : lastCheckoutError.method === "SPLIT" ? "Nhiều hình thức" : "Tiền mặt"})</p>
-              <p className="text-[11px] text-danger mt-0.5 truncate">{lastCheckoutError.error}</p>
-            </div>
-            {lastCheckoutError.retry && (
-              <button
-                type="button"
-                onClick={onResendFailedOrder}
-                disabled={!!isCheckingOut || !isOnline}
-                className="bg-danger text-white font-extrabold px-3 py-1.5 rounded-lg hover:bg-danger active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition min-h-[44px] min-w-[80px] shrink-0 ml-2 shadow-sm flex items-center justify-center text-xs"
-              >
-                Gửi lại
-              </button>
-            )}
-          </div>
-        )}
-
-        {cart.length > 0 ? (
-          <>
-            <div className="mb-4 pb-4 border-b border-border">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-text-muted">Khuyến Mãi</span>
-                {appliedPromotions.length > 0 && (
-                  <span className="text-xs font-bold text-success bg-success/10 px-2 py-0.5 rounded-md">
-                    Đã áp dụng
-                  </span>
-                )}
+        <div className="bg-surface-card border-t border-border p-4 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          {lastCheckoutError && (
+            <div className="bg-danger/10 border border-danger/30 text-danger p-3 rounded-card text-xs font-semibold flex items-center justify-between mb-3 animate-fade-in">
+              <div className="flex items-start gap-2 flex-1 min-w-0">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold">
+                    Lỗi thanh toán ({lastCheckoutError.method === "Chuyen khoan" ? "Chuyển khoản" : lastCheckoutError.method === "SPLIT" ? "Nhiều hình thức" : "Tiền mặt"})
+                  </p>
+                  <p className="text-[11px] text-danger mt-0.5 truncate">{lastCheckoutError.error}</p>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <input
-                  aria-label="Mã giảm giá"
-                  type="text"
-                  placeholder="Ví dụ: GIAM10"
-                  value={promoCodeInput}
-                  disabled={!!isCheckingOut}
-                  onChange={(e) => {
-                    setPromoCodeInput(e.target.value);
-                  }}
-                  className="flex-1 px-3 py-2 border border-border rounded-xl text-sm focus:outline-none focus:border-primary uppercase font-medium h-11 disabled:opacity-50"
-                />
+              {lastCheckoutError.retry && (
                 <button
                   type="button"
-                  onClick={handleApplyPromoCode}
-                  disabled={!!isCheckingOut}
-                  className="px-4 bg-primary-soft text-primary font-bold text-xs rounded-xl hover:bg-primary-soft transition active:scale-95 shrink-0 h-11 disabled:opacity-50"
+                  onClick={onResendFailedOrder}
+                  disabled={!!isCheckingOut || !isOnline}
+                  className="bg-danger text-white font-extrabold px-3 py-1.5 rounded-button hover:bg-danger active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition min-h-[44px] min-w-[80px] shrink-0 ml-2 shadow-sm flex items-center justify-center text-xs"
                 >
-                  Áp dụng
+                  Gửi lại
+                </button>
+              )}
+            </div>
+          )}
+
+          {cart.length > 0 ? (
+            <>
+              <div className="mb-4 pb-4 border-b border-border">
+                <button
+                  type="button"
+                  onClick={() => setIsPromoOpen((prev) => !prev)}
+                  aria-expanded={isPromoOpen}
+                  className="w-full min-h-[44px] px-3 py-2 rounded-button border border-dashed border-border text-text-secondary hover:text-primary hover:border-primary text-xs font-semibold flex items-center justify-between transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-primary shrink-0" />
+                    <span>Khuyến mãi, giảm giá</span>
+                    {(appliedPromotions.length > 0 || appliedPromoCode || userCustomDiscount !== null) && (
+                      <span className="text-[11px] font-bold text-primary bg-primary-soft px-2 py-0.5 rounded-full">
+                        Đã áp dụng
+                      </span>
+                    )}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 shrink-0 transition-transform ${isPromoOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {isPromoOpen && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">Khuyến Mãi</span>
+                      {appliedPromotions.length > 0 && (
+                        <span className="text-xs font-bold text-primary bg-primary-soft px-2 py-0.5 rounded-button">
+                          Đã áp dụng
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        aria-label="Mã giảm giá"
+                        type="text"
+                        placeholder="Ví dụ: GIAM10"
+                        value={promoCodeInput}
+                        disabled={!!isCheckingOut}
+                        onChange={(e) => {
+                          setPromoCodeInput(e.target.value);
+                        }}
+                        className="flex-1 px-3 py-2 border border-border rounded-button text-sm focus:outline-none focus:border-primary uppercase font-medium min-h-[44px] h-11 disabled:opacity-50"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyPromoCode}
+                        disabled={!!isCheckingOut}
+                        className="px-4 bg-primary-soft text-primary font-bold text-xs rounded-button hover:bg-primary-soft transition active:scale-95 shrink-0 min-h-[44px] h-11 disabled:opacity-50"
+                      >
+                        Áp dụng
+                      </button>
+                    </div>
+
+                    {manualPromoError && <p className="text-danger text-xs mt-1.5 font-semibold">{manualPromoError}</p>}
+
+                    {appliedPromoCode && (
+                      <div className="mt-2.5 flex items-center justify-between bg-page border border-border rounded-button p-2 px-3 animate-fade-in">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Tag className="w-4 h-4 text-primary shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-text-primary truncate">Mã: {appliedPromoCode}</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemovePromoCode}
+                          disabled={!!isCheckingOut}
+                          aria-label="Xoá mã giảm giá"
+                          className="w-11 h-11 min-h-[44px] min-w-[44px] flex items-center justify-center text-text-secondary hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-button transition-all disabled:opacity-50"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+
+                    {promotionSets.length >= 2 && (
+                      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Bộ khuyến mãi">
+                        {promotionSets.map((set, idx) => {
+                          const isSelected = idx === chosenSetIndex;
+                          const names = set.promotionIds
+                            .map((id) => (promotions || []).find((p: any) => p.id === id)?.name || id)
+                            .join(" + ");
+                          return (
+                            <button
+                              key={set.promotionIds.join("-")}
+                              type="button"
+                              onClick={() => onSelectSet(idx)}
+                              disabled={!!isCheckingOut}
+                              aria-pressed={isSelected}
+                              className={`px-3 py-2 min-h-[44px] rounded-button text-xs font-bold transition-all border disabled:opacity-50 ${
+                                isSelected
+                                  ? "bg-primary text-on-primary border-primary shadow-sm"
+                                  : "bg-surface-card text-text-secondary border-border hover:bg-primary-soft"
+                              }`}
+                            >
+                              {names}: −{formatNumber(set.amount)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Chiết khấu đơn hàng */}
+                    <div className="mt-3 pt-3 border-t border-dashed border-border">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">Chiết khấu đơn hàng</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex rounded-button overflow-hidden border border-border shrink-0 min-h-[44px] h-11 bg-surface-card">
+                          <button
+                            type="button"
+                            disabled={!!isCheckingOut}
+                            onClick={() => {
+                              setUserCustomDiscountType("VND");
+                              if (userCustomDiscount !== null) {
+                                setUserCustomDiscount(clampDiscount(userCustomDiscount, "VND", calculateSubtotal()));
+                              }
+                            }}
+                            className={`px-4 py-2.5 min-h-[44px] text-xs font-bold transition-colors disabled:opacity-50 ${
+                              userCustomDiscountType === "VND"
+                                ? "bg-primary text-on-primary"
+                                : "bg-surface-card text-text-secondary hover:bg-primary-soft"
+                            }`}
+                          >
+                            VNĐ
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!!isCheckingOut}
+                            onClick={() => {
+                              setUserCustomDiscountType("PERCENT");
+                              if (userCustomDiscount !== null) {
+                                setUserCustomDiscount(clampDiscount(userCustomDiscount, "PERCENT", calculateSubtotal()));
+                              }
+                            }}
+                            className={`px-4 py-2.5 min-h-[44px] text-xs font-bold transition-colors disabled:opacity-50 ${
+                              userCustomDiscountType === "PERCENT"
+                                ? "bg-primary text-on-primary"
+                                : "bg-surface-card text-text-secondary hover:bg-primary-soft"
+                            }`}
+                          >
+                            %
+                          </button>
+                        </div>
+                        <input
+                          aria-label="Giảm giá tùy chỉnh"
+                          type="number"
+                          inputMode="numeric"
+                          min="0"
+                          placeholder="Ví dụ: 10,000"
+                          disabled={!!isCheckingOut}
+                          value={userCustomDiscount === 0 || userCustomDiscount === null ? "" : userCustomDiscount}
+                          onChange={(e) => {
+                            const val = e.target.value === "" ? null : Number(e.target.value);
+                            const clamped = clampDiscount(val, userCustomDiscountType, calculateSubtotal());
+                            setUserCustomDiscount(clamped);
+                          }}
+                          className="flex-1 w-full px-3 py-2 border border-border rounded-button focus:outline-none focus:border-primary text-right font-medium text-sm min-h-[44px] h-11 disabled:opacity-50"
+                        />
+                        {userCustomDiscount !== null && (
+                          <button
+                            type="button"
+                            disabled={!!isCheckingOut}
+                            onClick={() => {
+                              setUserCustomDiscount(null);
+                            }}
+                            aria-label="Xoá giảm giá"
+                            className="w-11 h-11 min-h-[44px] min-w-[44px] flex items-center justify-center text-text-secondary hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-button transition-all disabled:opacity-50"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {userCustomDiscount !== null && (
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-text-secondary text-sm">Giảm giá Hoá đơn</span>
+                  <DiscountBadge
+                    kind={DISCOUNT_KIND.ORDER}
+                    label="Thu ngân"
+                    amount={orderManualAmount}
+                  />
+                </div>
+              )}
+
+              {appliedPromotions.length > 0 &&
+                appliedPromotions.map((p) => {
+                  if (p.amount <= 0) return null;
+                  return (
+                    <div key={p.id} className="flex justify-between items-center mb-3">
+                      <div className="flex flex-col">
+                        <span className="text-text-secondary text-sm font-medium">{p.name}</span>
+                        <span className="text-[10px] text-text-secondary">Khuyến mãi hệ thống</span>
+                      </div>
+                      <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={p.amount} />
+                    </div>
+                  );
+                })}
+
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-text-secondary font-medium">Tổng tiền ({totalItems} món)</span>
+                <div className="text-right">
+                  {calculateCartBaseTotal() > totalAmount && (
+                    <div className="text-sm text-text-secondary line-through mb-0.5 font-medium">
+                      {formatNumber(calculateCartBaseTotal())}
+                    </div>
+                  )}
+                  <div className="text-2xl font-black text-primary">{formatNumber(totalAmount)}</div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleConfirmCheckout("Chuyen khoan")}
+                  disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
+                  className="flex-1 bg-surface-card border-2 border-primary text-primary font-bold text-sm py-3.5 rounded-button hover:bg-primary-soft active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[56px]"
+                >
+                  {!isOnline ? (
+                    <span>NGOẠI TUYẾN</span>
+                  ) : isCheckingOut ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Đang gửi…</span>
+                    </>
+                  ) : (
+                    <span>CHUYỂN KHOẢN</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleConfirmCheckout("Tien mat")}
+                  disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
+                  className="flex-1 bg-primary text-on-primary font-bold text-sm py-3.5 rounded-button shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[56px]"
+                >
+                  {!isOnline ? (
+                    <span>NGOẠI TUYẾN</span>
+                  ) : isCheckingOut ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-on-primary" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>Đang gửi…</span>
+                    </>
+                  ) : (
+                    <span>TIỀN MẶT</span>
+                  )}
                 </button>
               </div>
 
-              {manualPromoError && <p className="text-danger text-xs mt-1.5 font-semibold">⚠️ {manualPromoError}</p>}
-
-              {appliedPromoCode && (
-                <div className="mt-2.5 flex items-center justify-between bg-page border border-border rounded-xl p-2 px-3 animate-fade-in">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-base shrink-0">🎟️</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-text-primary truncate">Mã: {appliedPromoCode}</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleRemovePromoCode}
-                    disabled={!!isCheckingOut}
-                    aria-label="Xoá mã giảm giá"
-                    className="w-8 h-8 flex items-center justify-center text-text-muted hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-full transition-all disabled:opacity-50"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-
-              {promotionSets.length >= 2 && (
-                <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Bộ khuyến mãi">
-                  {promotionSets.map((set, idx) => {
-                    const isSelected = idx === chosenSetIndex;
-                    const names = set.promotionIds
-                      .map((id) => (promotions || []).find((p: any) => p.id === id)?.name || id)
-                      .join(" + ");
-                    return (
-                      <button
-                        key={set.promotionIds.join("-")}
-                        type="button"
-                        onClick={() => onSelectSet(idx)}
-                        disabled={!!isCheckingOut}
-                        aria-pressed={isSelected}
-                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border disabled:opacity-50 ${
-                          isSelected
-                            ? "bg-primary text-on-primary border-primary shadow-sm"
-                            : "bg-surface-card text-text-secondary border-border hover:bg-surface-secondary"
-                        }`}
-                      >
-                        {names}: −{formatNumber(set.amount)}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Chiết khấu đơn hàng */}
-              <div className="mt-3 pt-3 border-t border-dashed border-border">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-text-muted">Chiết khấu đơn hàng</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex rounded-xl overflow-hidden border border-border shrink-0 h-11 bg-surface-card">
-                    <button
-                      type="button"
-                      disabled={!!isCheckingOut}
-                      onClick={() => {
-                        setUserCustomDiscountType("VND");
-                        if (userCustomDiscount !== null) {
-                          setUserCustomDiscount(clampDiscount(userCustomDiscount, "VND", calculateSubtotal()));
-                        }
-                      }}
-                      className={`px-4 py-2.5 text-xs font-bold transition-colors disabled:opacity-50 ${
-                        userCustomDiscountType === "VND"
-                          ? "bg-primary text-on-primary"
-                          : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
-                      }`}
-                    >
-                      VNĐ
-                    </button>
-                    <button
-                      type="button"
-                      disabled={!!isCheckingOut}
-                      onClick={() => {
-                        setUserCustomDiscountType("PERCENT");
-                        if (userCustomDiscount !== null) {
-                          setUserCustomDiscount(clampDiscount(userCustomDiscount, "PERCENT", calculateSubtotal()));
-                        }
-                      }}
-                      className={`px-4 py-2.5 text-xs font-bold transition-colors disabled:opacity-50 ${
-                        userCustomDiscountType === "PERCENT"
-                          ? "bg-primary text-on-primary"
-                          : "bg-surface-card text-text-secondary hover:bg-surface-secondary"
-                      }`}
-                    >
-                      %
-                    </button>
-                  </div>
-                  <input
-                    aria-label="Giảm giá tùy chỉnh"
-                    type="number"
-                    inputMode="numeric"
-                    min="0"
-                    placeholder="Ví dụ: 10,000"
-                    disabled={!!isCheckingOut}
-                    value={userCustomDiscount === 0 || userCustomDiscount === null ? "" : userCustomDiscount}
-                    onChange={(e) => {
-                      const val = e.target.value === "" ? null : Number(e.target.value);
-                      const clamped = clampDiscount(val, userCustomDiscountType, calculateSubtotal());
-                      setUserCustomDiscount(clamped);
-                    }}
-                    className="flex-1 w-full px-3 py-2 border border-border rounded-xl focus:outline-none focus:border-primary text-right font-medium text-sm h-11 disabled:opacity-50"
+              <button
+                type="button"
+                onClick={() => {
+                  setSplitPayments([]);
+                  setSplitAmountInput("");
+                  setSplitReferenceInput("");
+                  setSplitMethodInput("CASH");
+                  setIsSplitPaymentOpen(true);
+                }}
+                disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
+                className="mt-2 w-full text-primary hover:bg-primary-soft font-semibold text-sm py-2.5 rounded-button transition-colors disabled:opacity-50 flex justify-center items-center gap-2 min-h-[44px]"
+              >
+                <span>Nhiều hình thức</span>
+              </button>
+            </>
+          ) : processingOrder ? (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-text-secondary font-medium">Tổng thanh toán ({processingOrder.totalItems} món)</span>
+                <span className="text-2xl font-black text-primary">{formatNumber(processingOrder.totalAmount)}</span>
+              </div>
+              <div className="w-full bg-surface-card text-text-secondary font-bold text-sm py-3.5 rounded-button flex justify-center items-center gap-2 border border-border min-h-[56px]">
+                <svg className="animate-spin h-4 w-4 text-text-secondary" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
-                  {userCustomDiscount !== null && (
-                    <button
-                      type="button"
-                      disabled={!!isCheckingOut}
-                      onClick={() => {
-                        setUserCustomDiscount(null);
-                      }}
-                      className="w-11 h-11 flex items-center justify-center text-text-muted hover:text-danger text-sm font-bold hover:bg-danger/10 rounded-full transition-all disabled:opacity-50"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
+                </svg>
+                <span>Đang gửi…</span>
               </div>
             </div>
-
-            {userCustomDiscount !== null && (
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-text-secondary text-sm">Giảm giá Hoá đơn</span>
-                <DiscountBadge
-                  kind={DISCOUNT_KIND.ORDER}
-                  label="Thu ngân"
-                  amount={orderManualAmount}
-                />
-              </div>
-            )}
-
-            {appliedPromotions.length > 0 &&
-              appliedPromotions.map((p) => {
-                if (p.amount <= 0) return null;
-                return (
-                  <div key={p.id} className="flex justify-between items-center mb-3">
-                    <div className="flex flex-col">
-                      <span className="text-text-secondary text-sm font-medium">{p.name}</span>
-                      <span className="text-[10px] text-text-muted">Khuyến mãi hệ thống</span>
-                    </div>
-                    <DiscountBadge kind={DISCOUNT_KIND.PROMO} label="Hệ thống" amount={p.amount} />
-                  </div>
-                );
-              })}
-
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-text-secondary font-medium">Tổng tiền ({totalItems} món)</span>
-              <div className="text-right">
-                {calculateCartBaseTotal() > totalAmount && (
-                  <div className="text-sm text-text-muted line-through mb-0.5 font-medium">
-                    {formatNumber(calculateCartBaseTotal())}
-                  </div>
-                )}
-                <div className="text-2xl font-black text-warning">{formatNumber(totalAmount)}</div>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleConfirmCheckout("Tien mat")}
-                disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
-                className="flex-1 bg-success text-white font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-success/90 active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
-              >
-                {!isOnline ? (
-                  <span>NGOẠI TUYẾN</span>
-                ) : isCheckingOut ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    <span>Đang gửi…</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-lg">💵</span>
-                    <span>TIỀN MẶT</span>
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => handleConfirmCheckout("Chuyen khoan")}
-                disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
-                className="flex-1 bg-primary text-on-primary font-bold text-sm py-3.5 rounded-2xl shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 min-h-[52px]"
-              >
-                {!isOnline ? (
-                  <span>NGOẠI TUYẾN</span>
-                ) : isCheckingOut ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    <span>Đang gửi…</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-lg">💳</span>
-                    <span>CHUYỂN KHOẢN</span>
-                  </>
-                )}
-              </button>
-            </div>
-            
-            <button 
-              onClick={() => {
-                setSplitPayments([]);
-                setSplitAmountInput("");
-                setSplitReferenceInput("");
-                setSplitMethodInput("CASH");
-                setIsSplitPaymentOpen(true);
-              }}
-              disabled={cart.length === 0 || !!isCheckingOut || !isOnline}
-              className="mt-2 w-full bg-surface-secondary text-text-primary font-bold text-sm py-3 rounded-2xl shadow-sm hover:bg-border active:scale-[0.98] transition-all opacity disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2 border border-border min-h-[52px]"
-            >
-              <span>💳 💵 Nhiều hình thức</span>
-            </button>
-          </>
-        ) : processingOrder ? (
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-text-secondary font-medium">Tổng thanh toán ({processingOrder.totalItems} món)</span>
-              <span className="text-2xl font-black text-warning">{formatNumber(processingOrder.totalAmount)}</span>
-            </div>
-            <div className="w-full bg-surface-secondary text-text-secondary font-bold text-sm py-3.5 rounded-2xl flex justify-center items-center gap-2 border border-border min-h-[52px]">
-              <svg className="animate-spin h-4 w-4 text-text-secondary" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <span>Đang gửi…</span>
-            </div>
-          </div>
-        ) : null}
-      </div>
-    </div>
-
-    {isSplitPaymentOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-        <div className="bg-surface-card rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
-          <div className="p-5 border-b border-border flex justify-between items-center bg-page">
-            <h2 className="text-xl font-bold text-text-primary">Thanh toán nhiều hình thức</h2>
-            <button onClick={() => setIsSplitPaymentOpen(false)} className="text-text-muted hover:text-text-primary" aria-label="Đóng">Đóng</button>
-          </div>
-          <div className="p-5 overflow-y-auto max-h-[60vh]">
-            <div className="mb-4">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-text-secondary">Tổng cần thanh toán:</span>
-                <span className="font-bold">{formatNumber(totalAmount)}</span>
-              </div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-text-secondary">Đã nhập:</span>
-                <span className="font-bold text-success">{formatNumber(totalSplitEntered)}</span>
-              </div>
-              <div className="flex justify-between text-sm mb-1 font-bold">
-                <span className="text-text-primary">Còn thiếu:</span>
-                <span className="text-danger">{formatNumber(splitRemaining)}</span>
-              </div>
-            </div>
-            
-            <div className="space-y-2 mb-6">
-              {splitPayments.map((p, idx) => (
-                <div key={idx} className="flex justify-between items-center p-3 border border-border rounded-lg bg-page">
-                  <div>
-                    <div className="font-bold text-sm">{p.method === "CASH" ? "Tiền mặt" : "Chuyển khoản"}</div>
-                    {p.reference && <div className="text-xs text-text-secondary">Mã: {p.reference}</div>}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold">{formatNumber(p.amount)}</span>
-                    <button onClick={() => removeSplitPayment(idx)} className="text-danger font-bold px-2 py-1 hover:bg-danger/10 rounded">&times;</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <form onSubmit={addSplitPayment} className="space-y-3 bg-surface-secondary p-4 rounded-xl border border-border">
-              <div className="font-bold text-sm">Thêm phần thanh toán</div>
-              <div className="grid grid-cols-2 gap-2">
-                <select 
-                  value={splitMethodInput}
-                  onChange={(e) => setSplitMethodInput(e.target.value as any)}
-                  className="border border-border rounded-lg px-3 py-2 text-sm bg-page"
-                >
-                  <option value="CASH">Tiền mặt</option>
-                  <option value="BANK_TRANSFER">Chuyển khoản</option>
-                </select>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="Ví dụ: 100,000"
-                  value={splitAmountInput}
-                  onChange={(e) => setSplitAmountInput(e.target.value)}
-                  className="border border-border rounded-lg px-3 py-2 text-sm bg-page"
-                  required
-                  min="1"
-                />
-              </div>
-              {splitMethodInput === "BANK_TRANSFER" && (
-                <input
-                  type="text"
-                  aria-label="Mã giao dịch (không bắt buộc)"
-                  placeholder="Ví dụ: FT26281123456"
-                  value={splitReferenceInput}
-                  onChange={(e) => setSplitReferenceInput(e.target.value)}
-                  className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-page"
-                />
-              )}
-              <button type="submit" className="w-full bg-primary text-on-primary py-2 rounded-lg font-bold text-sm hover:bg-primary-hover">Thêm phần thanh toán</button>
-            </form>
-          </div>
-          <div className="p-5 border-t border-border bg-page">
-            <button
-              onClick={() => {
-                setIsSplitPaymentOpen(false);
-                handleConfirmCheckout("SPLIT", splitPayments);
-              }}
-              disabled={totalSplitEntered !== totalAmount || cart.length === 0 || !!isCheckingOut || !isOnline}
-              className="w-full bg-success text-white font-bold py-3.5 rounded-xl disabled:opacity-50 hover:bg-success/90 transition-colors"
-            >
-              Xác nhận Thanh toán
-            </button>
-          </div>
+          ) : null}
         </div>
       </div>
-    )}
-  </>
+
+      {isSplitPaymentOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-surface-card rounded-card shadow-panel w-full max-w-md overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-border flex justify-between items-center bg-page">
+              <h2 className="text-lg font-bold text-text-primary">Thanh toán nhiều hình thức</h2>
+              <button
+                type="button"
+                onClick={() => setIsSplitPaymentOpen(false)}
+                className="text-text-secondary hover:text-text-primary min-h-[44px] px-3 rounded-button flex items-center justify-center"
+                aria-label="Đóng"
+              >
+                Đóng
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto max-h-[60vh]">
+              <div className="mb-4">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-text-secondary">Tổng cần thanh toán:</span>
+                  <span className="font-bold">{formatNumber(totalAmount)}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-text-secondary">Đã nhập:</span>
+                  <span className="font-bold text-primary">{formatNumber(totalSplitEntered)}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-1 font-bold">
+                  <span className="text-text-primary">Còn thiếu:</span>
+                  <span className="text-danger">{formatNumber(splitRemaining)}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-6">
+                {splitPayments.map((p, idx) => (
+                  <div key={idx} className="flex justify-between items-center p-3 border border-border rounded-button bg-page">
+                    <div>
+                      <div className="font-bold text-sm">{p.method === "CASH" ? "Tiền mặt" : "Chuyển khoản"}</div>
+                      {p.reference && <div className="text-xs text-text-secondary">Mã: {p.reference}</div>}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold">{formatNumber(p.amount)}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSplitPayment(idx)}
+                        className="text-danger font-bold min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-danger/10 rounded-button"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <form onSubmit={addSplitPayment} className="space-y-3 bg-page p-4 rounded-card border border-border">
+                <div className="font-bold text-sm">Thêm phần thanh toán</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    value={splitMethodInput}
+                    onChange={(e) => setSplitMethodInput(e.target.value as any)}
+                    className="border border-border rounded-button px-3 py-2 text-sm bg-surface-card min-h-[44px]"
+                  >
+                    <option value="CASH">Tiền mặt</option>
+                    <option value="BANK_TRANSFER">Chuyển khoản</option>
+                  </select>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="Ví dụ: 100,000"
+                    value={splitAmountInput}
+                    onChange={(e) => setSplitAmountInput(e.target.value)}
+                    className="border border-border rounded-button px-3 py-2 text-sm bg-surface-card min-h-[44px]"
+                    required
+                    min="1"
+                  />
+                </div>
+                {splitMethodInput === "BANK_TRANSFER" && (
+                  <input
+                    type="text"
+                    aria-label="Mã giao dịch (không bắt buộc)"
+                    placeholder="Ví dụ: FT26281123456"
+                    value={splitReferenceInput}
+                    onChange={(e) => setSplitReferenceInput(e.target.value)}
+                    className="w-full border border-border rounded-button px-3 py-2 text-sm bg-surface-card min-h-[44px]"
+                  />
+                )}
+                <button
+                  type="submit"
+                  className="w-full bg-primary text-on-primary py-2.5 min-h-[44px] rounded-button font-bold text-sm hover:bg-primary-hover"
+                >
+                  Thêm phần thanh toán
+                </button>
+              </form>
+            </div>
+            <div className="p-5 border-t border-border bg-page">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSplitPaymentOpen(false);
+                  handleConfirmCheckout("SPLIT", splitPayments);
+                }}
+                disabled={totalSplitEntered !== totalAmount || cart.length === 0 || !!isCheckingOut || !isOnline}
+                className="w-full bg-primary text-on-primary font-bold py-3.5 min-h-[44px] rounded-button disabled:opacity-50 hover:bg-primary-hover transition-colors"
+              >
+                Xác nhận Thanh toán
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
+

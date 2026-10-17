@@ -58,7 +58,7 @@ describe("POSScreen offline and retry behaviour (BR-SALE-015)", () => {
 
     // Banner indicates disconnection and no selling
     expect(
-      screen.getByText("⚠️ Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại")
+      screen.getByText("Mất kết nối — chưa bán được, kiểm tra mạng rồi bấm lại")
     ).toBeInTheDocument();
 
     // Add item to cart
