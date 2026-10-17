@@ -228,4 +228,22 @@ describe("ModifierForm -- option groups come from a table the owner edits (audit
     expect(defaultCheckboxLabel?.className).toContain("md:min-h-[40px]");
     expect(defaultCheckboxLabel?.className).not.toContain("min-h-[44px]");
   });
+
+  it("places 'Tên tuỳ chọn' before 'Giá thêm' and uses accurate button names in hint (audit d78, p64)", () => {
+    render(
+      <ModifierForm
+        initialData={{ id: "MOD-001", name: "Trân châu trắng", group_id: "MG-001", price: 5000 } as any}
+        groups={sampleGroups}
+        returnTo="/admin/products/modifiers"
+      />
+    );
+    const nameInput = screen.getByLabelText(/^Tên tuỳ chọn/);
+    const priceInput = screen.getByLabelText("Giá thêm");
+    expect(nameInput.compareDocumentPosition(priceInput) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    expect(
+      screen.getByText("Bật/tắt áp dụng ngay, không cần bấm Lưu thay đổi. Bấm Bỏ thay đổi không huỷ được thao tác này.")
+    ).toBeInTheDocument();
+  });
 });
+

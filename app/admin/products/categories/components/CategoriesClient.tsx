@@ -12,6 +12,7 @@ import { ListPagination } from "@/components/ui/list/ListPagination";
 import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
+import { formatNumber } from "@/lib/shared/format";
 import { deleteCategory } from "@/app/admin/products/categories/actions";
 import type { DBProductCategory, DBProductType } from "@/types/db";
 
@@ -115,8 +116,8 @@ export default function CategoriesClient({
         align: "right",
         sortValue: (cat) => counts[cat.id] ?? 0,
         render: (cat) => (
-          <span className="text-text-secondary text-sm">
-            {`${counts[cat.id] ?? 0} món`}
+          <span className="text-text-secondary text-sm tabular-nums">
+            {`${formatNumber(counts[cat.id] ?? 0)} món`}
           </span>
         ),
       },
@@ -166,6 +167,8 @@ export default function CategoriesClient({
   };
 
   const currentListUrl = listUrl(search, slice.page, sortParam, dirParam);
+  const appliedSearch = searchParams?.get("q") ?? initialSearch ?? "";
+  const activeCount = appliedSearch.trim() ? 1 : 0;
 
   const removal = {
     verb: "Xoá",
@@ -200,17 +203,21 @@ export default function CategoriesClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
+        activeCount={activeCount}
+        search={
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm nhóm" htmlFor="categories-search">
+              <TextInput
+                id="categories-search"
+                placeholder="Ví dụ: Cà phê"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
+        }
       >
-        <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm nhóm" htmlFor="categories-search">
-            <TextInput
-              id="categories-search"
-              placeholder="Ví dụ: Cà phê"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
-        </div>
+        {null}
       </FilterCard>
 
       <DataList
@@ -228,7 +235,7 @@ export default function CategoriesClient({
               {cat.name}
             </>
           ),
-          value: `${counts[cat.id] ?? 0} món`,
+          value: `${formatNumber(counts[cat.id] ?? 0)} món`,
           meta: [cat.id, typesById.get(cat.type_id)].filter(Boolean).join(" · "),
         })}
         sort={{

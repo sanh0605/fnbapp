@@ -56,7 +56,7 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
     <form onSubmit={handleSubmit} className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       {/* Left column: Summary (time, dishes with size and quantity, Khách trả) */}
       <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border bg-surface-secondary/50 flex justify-between items-center text-sm">
+        <div className="p-4 border-b border-border bg-surface-secondary/50 flex flex-wrap justify-between items-center gap-2 text-sm">
           <span className="font-semibold text-text-primary">Thông tin đơn hàng</span>
           <span className="text-text-secondary tabular-nums">{formatDateTimeFull(order.created_at)}</span>
         </div>
@@ -86,7 +86,7 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
                     <TableCell>{line.size_name}</TableCell>
                     <TableCell>{modifiersText}</TableCell>
                     <TableCell align="right">{line.qty}</TableCell>
-                    <TableCell align="right">{formatNumber(line.net_line_total)}</TableCell>
+                    <TableCell align="right">{formatNumber(line.net_line_total)}đ</TableCell>
                   </TableRow>
                 );
               })}
@@ -119,7 +119,7 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
                 </p>
               </div>
               <div className="text-right font-medium text-text-primary whitespace-nowrap tabular-nums">
-                {formatNumber(line.net_line_total)}
+                {formatNumber(line.net_line_total)}đ
               </div>
             </div>
           ))}
@@ -128,7 +128,7 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
         {/* Total: Khách trả */}
         <div className="p-4 border-t border-border flex justify-between items-center text-base font-semibold bg-surface-secondary/20">
           <span className="text-text-primary">Khách trả</span>
-          <span className="text-primary tabular-nums">{formatNumber(order.net_total)}</span>
+          <span className="text-primary tabular-nums">{formatNumber(order.net_total)}đ</span>
         </div>
       </div>
 
@@ -151,20 +151,20 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
             />
         </Field>
 
-        <div className="space-y-2 pt-2">
+        <div className="grid grid-cols-2 gap-3 pt-2">
           <Button
             type="submit"
             variant="danger"
             loading={isSubmitting}
             disabled={!reason.trim() || isSubmitting}
-            className="w-full"
+            className="w-full min-h-[48px] md:min-h-[40px]"
           >
             Xác nhận huỷ
           </Button>
           <Button
             href={detailHref}
             variant="secondary"
-            className="w-full"
+            className="w-full min-h-[48px] md:min-h-[40px]"
           >
             Quay lại
           </Button>

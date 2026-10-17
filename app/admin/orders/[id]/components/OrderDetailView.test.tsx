@@ -90,7 +90,7 @@ function makeDetail(
 }
 
 describe("OrderDetailView", () => {
-  it("shows Sửa đơn and Huỷ đơn links in DetailHeader for COMPLETED order", () => {
+  it("shows Đổi cách trả and Huỷ đơn links in DetailHeader for COMPLETED order", () => {
     const detail = makeDetail("COMPLETED");
     const brands = [{ id: "BRD-1", name: "Phin Đi" }];
     const returnTo = "/admin/orders?payment=Tien+mat";
@@ -100,7 +100,7 @@ describe("OrderDetailView", () => {
     expect(screen.getByText("ORD000001")).toBeDefined();
     expect(screen.getByText("Phin Đi")).toBeDefined();
 
-    const editLink = screen.getByRole("link", { name: "Sửa đơn" });
+    const editLink = screen.getByRole("link", { name: "Đổi cách trả" });
     expect(editLink).toBeDefined();
     expect(editLink.getAttribute("href")).toBe(
       `/admin/orders/ORD-1/edit?returnTo=${encodeURIComponent(returnTo)}`
@@ -113,11 +113,11 @@ describe("OrderDetailView", () => {
     );
   });
 
-  it("does not show Sửa đơn or Huỷ đơn for VOIDED order", () => {
+  it("does not show Đổi cách trả or Huỷ đơn for VOIDED order", () => {
     const detail = makeDetail("VOIDED");
     render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
 
-    expect(screen.queryByRole("link", { name: "Sửa đơn" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Đổi cách trả" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Huỷ đơn" })).toBeNull();
     expect(screen.getByText("Đã huỷ")).toBeDefined();
   });
@@ -241,8 +241,8 @@ describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
     expect(lines.className).toContain("lg:col-span-2");
     const side = screen.getByTestId("detail-side");
     expect(side.textContent).toContain("Khách trả");
-    // Sửa đơn and Huỷ đơn are in DetailHeader right corner
-    expect(screen.getByRole("link", { name: "Sửa đơn" })).toBeDefined();
+    // Đổi cách trả and Huỷ đơn are in DetailHeader right corner
+    expect(screen.getByRole("link", { name: "Đổi cách trả" })).toBeDefined();
     expect(screen.getByRole("link", { name: "Huỷ đơn" })).toBeDefined();
   });
 
@@ -273,6 +273,46 @@ describe("OrderDetailView on a computer (BR-UI-012, owner 2026-10-14)", () => {
     expect(within(firstRow).getByText("1 × Size M")).toBeInTheDocument();
     // No bold classes inside list rows (BR-UI-003)
     expect(firstRow.querySelector(".font-bold")).toBeNull();
+  });
+
+  it("hides Tuỳ chọn and Giảm columns when empty for all rows, shows them when present (audit d60)", () => {
+    // 1. All empty: no Tuỳ chọn and no Giảm header
+    const { unmount } = render(<OrderDetailView detail={makeDetail()} brands={[]} returnTo="/admin/orders" />);
+    const headersEmpty = screen.getAllByRole("columnheader").map(h => h.textContent);
+    expect(headersEmpty).not.toContain("Tuỳ chọn");
+    expect(headersEmpty).not.toContain("Giảm");
+    unmount();
+
+    // 2. With modifiers and discount: shows Tuỳ chọn and Giảm
+    const detailWithModAndDiscount = makeDetail("COMPLETED", {
+      lines: [
+        {
+          id: "line-2",
+          order_id: "ORD-1",
+          line_no: 1,
+          product_id: "PROD-1",
+          product_snapshot_json: "{}",
+          variant_id: "VAR-1",
+          variant_snapshot_json: "{}",
+          qty: 1,
+          unit_price: 50000,
+          modifiers_snapshot_json: "[]",
+          gross_line_total: 55000,
+          promo_discount: 5000,
+          manual_item_discount: 0,
+          order_discount_allocation: 0,
+          net_line_total: 50000,
+          promo_discount_reason: "",
+          product_name: "Trà sữa",
+          size_name: "L",
+          modifiers: [{ name: "Trân châu đen", qty: 1 }],
+        },
+      ],
+    });
+    render(<OrderDetailView detail={detailWithModAndDiscount} brands={[]} returnTo="/admin/orders" />);
+    const headersWithData = screen.getAllByRole("columnheader").map(h => h.textContent);
+    expect(headersWithData).toContain("Tuỳ chọn");
+    expect(headersWithData).toContain("Giảm");
   });
 });
 

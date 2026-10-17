@@ -67,7 +67,7 @@ export function ProductDetailView({
     { label: "Trạng thái", value: statusLabel },
     {
       label: "Đã bán",
-      value: product.neverSold ? "Chưa bán lần nào" : "Đã có đơn",
+      value: product.neverSold ? "Chưa bán lần nào" : "Có",
     },
   ];
 
@@ -221,7 +221,7 @@ export function ProductDetailView({
                   {variants.map((v: any, idx: number) => (
                     <TableRow key={v.id || idx}>
                       <TableCell>{v.size_name}</TableCell>
-                      <TableCell align="right">{formatNumber(v.price)}</TableCell>
+                      <TableCell align="right">{formatNumber(v.price)}đ</TableCell>
                       <TableCell>
                         <Badge variant={v.status === "ACTIVE" ? "success" : "warning"}>
                           {v.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
@@ -301,14 +301,14 @@ export function ProductDetailView({
                       entry.old_price === undefined ||
                       entry.old_price === ""
                         ? "—"
-                        : formatNumber(entry.old_price);
+                        : `${formatNumber(entry.old_price)}đ`;
                     const dateText =
                       formatDateTimeFull(entry.effective_at || entry.created_at) || "—";
 
                     return (
                       <TableRow key={entry.id || idx}>
                         <TableCell>
-                          <span className="text-text-secondary font-mono text-xs">
+                          <span className="text-text-secondary text-sm tabular-nums whitespace-nowrap">
                             {dateText}
                           </span>
                         </TableCell>
@@ -317,7 +317,7 @@ export function ProductDetailView({
                           <span className="text-text-muted">{oldPriceText}</span>
                         </TableCell>
                         <TableCell align="right">
-                          {formatNumber(entry.new_price)}
+                          {formatNumber(entry.new_price)}đ
                         </TableCell>
                       </TableRow>
                     );
@@ -338,7 +338,7 @@ export function ProductDetailView({
                   entry.old_price === undefined ||
                   entry.old_price === ""
                     ? "—"
-                    : formatNumber(entry.old_price);
+                    : `${formatNumber(entry.old_price)}đ`;
                 const dateText =
                   formatDateTimeFull(entry.effective_at || entry.created_at) || "—";
 
@@ -346,7 +346,7 @@ export function ProductDetailView({
                   <div key={entry.id || idx} className="px-4 py-2.5">
                     <PhoneRow
                       title={sizeName}
-                      value={`${oldPriceText} → ${formatNumber(entry.new_price)}`}
+                      value={`${oldPriceText} → ${formatNumber(entry.new_price)}đ`}
                       meta={dateText}
                     />
                   </div>

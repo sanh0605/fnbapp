@@ -134,8 +134,12 @@ describe("OrderEditForm (Đổi cách trả)", () => {
     expect(within(linesSection).getAllByText("Cà phê sữa").length).toBeGreaterThan(0);
     expect(within(linesSection).getAllByText(/Size M|M/).length).toBeGreaterThan(0);
     expect(within(linesSection).getAllByText(/Trân châu đen/).length).toBeGreaterThan(0);
-    expect(within(linesSection).getAllByText("50,000").length).toBeGreaterThan(0);
+    expect(within(linesSection).getAllByText("50,000đ").length).toBeGreaterThan(0);
     expect(within(linesSection).getByText("Khách trả")).toBeInTheDocument();
+
+    // Verify Số tiền label under single-method select
+    const moneySection = screen.getByTestId("form-money");
+    expect(within(moneySection).getByText("Số tiền")).toBeInTheDocument();
 
     // Read-only: no editing controls for lines, no add product, no discount editor
     expect(screen.queryByText("+ Thêm sản phẩm")).toBeNull();

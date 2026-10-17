@@ -90,7 +90,7 @@ export function ProductTypeForm({ initialData, returnTo = "/admin/products/types
                 name="is_drink"
                 value="true"
                 defaultChecked={initialData?.is_drink ?? false}
-                className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                className="w-6 h-6 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
               />
               <span>Là thức uống (tính là ly)</span>
             </label>

@@ -145,7 +145,7 @@ export default function ProductsClient({
         header: "Mã",
         sortValue: (product) => product.id,
         render: (product) => (
-          <span className="font-mono text-xs text-primary">
+          <span className="font-mono text-xs text-primary whitespace-nowrap">
             {product.id}
           </span>
         ),
@@ -311,7 +311,7 @@ export default function ProductsClient({
   return (
     <div className="space-y-6">
       <ListPageHeader
-        group="Món"
+        group="Bán hàng"
         title="Món"
         action={
           <Button

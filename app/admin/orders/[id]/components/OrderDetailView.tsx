@@ -88,7 +88,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
                 href={`/admin/orders/${encodeURIComponent(currentOrder.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`}
                 variant="secondary"
               >
-                Sửa đơn
+                Đổi cách trả
               </Button>
               <VoidOrderButton
                 orderId={currentOrder.id}
@@ -104,50 +104,67 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
         <div data-testid="detail-lines" className="lg:col-span-2 bg-surface-card rounded-card shadow-sm border border-border p-5">
           {/* Computer: shared Table */}
           <div className="hidden md:block">
-            <Table>
-              <TableHead>
-                <TableHeaderCell>Món</TableHeaderCell>
-                <TableHeaderCell>Size</TableHeaderCell>
-                <TableHeaderCell>Tuỳ chọn</TableHeaderCell>
-                <TableHeaderCell>SL</TableHeaderCell>
-                <TableHeaderCell>Giảm</TableHeaderCell>
-                <TableHeaderCell>Thành tiền</TableHeaderCell>
-              </TableHead>
-              <TableBody>
-                {currentOrder.lines.map((line, idx) => {
-                  const discount =
-                    (line.promo_discount || 0) +
+            {(() => {
+              const hasModifiers = currentOrder.lines.some(
+                (line) => line.modifiers && line.modifiers.length > 0
+              );
+              const hasDiscount = currentOrder.lines.some(
+                (line) =>
+                  (line.promo_discount || 0) +
                     (line.manual_item_discount || 0) +
-                    (line.order_discount_allocation || 0);
-                  const modifiersText =
-                    line.modifiers && line.modifiers.length > 0
-                      ? line.modifiers
-                          .map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`)
-                          .join(", ")
-                      : "";
+                    (line.order_discount_allocation || 0) >
+                  0
+              );
 
-                  return (
-                    <TableRow key={idx}>
-                      <TableCell>{line.product_name}</TableCell>
-                      <TableCell>{line.size_name}</TableCell>
-                      <TableCell>{modifiersText}</TableCell>
-                      <TableCell align="right">{line.qty}</TableCell>
-                      <TableCell align="right" tone={discount > 0 ? "negative" : undefined}>
-                        {discount > 0 ? `-${formatNumber(discount)}đ` : ""}
-                      </TableCell>
-                      <TableCell align="right">
-                        {line.gross_line_total > line.net_line_total && (
-                          <div className="text-xs text-text-muted line-through">
-                            {formatNumber(line.gross_line_total)}đ
-                          </div>
-                        )}
-                        <div>{formatNumber(line.net_line_total)}đ</div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+              return (
+                <Table>
+                  <TableHead>
+                    <TableHeaderCell>Món</TableHeaderCell>
+                    <TableHeaderCell>Size</TableHeaderCell>
+                    {hasModifiers && <TableHeaderCell>Tuỳ chọn</TableHeaderCell>}
+                    <TableHeaderCell>SL</TableHeaderCell>
+                    {hasDiscount && <TableHeaderCell>Giảm</TableHeaderCell>}
+                    <TableHeaderCell>Thành tiền</TableHeaderCell>
+                  </TableHead>
+                  <TableBody>
+                    {currentOrder.lines.map((line, idx) => {
+                      const discount =
+                        (line.promo_discount || 0) +
+                        (line.manual_item_discount || 0) +
+                        (line.order_discount_allocation || 0);
+                      const modifiersText =
+                        line.modifiers && line.modifiers.length > 0
+                          ? line.modifiers
+                              .map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`)
+                              .join(", ")
+                          : "";
+
+                      return (
+                        <TableRow key={idx}>
+                          <TableCell>{line.product_name}</TableCell>
+                          <TableCell>{line.size_name}</TableCell>
+                          {hasModifiers && <TableCell>{modifiersText}</TableCell>}
+                          <TableCell align="right">{line.qty}</TableCell>
+                          {hasDiscount && (
+                            <TableCell align="right" tone={discount > 0 ? "negative" : undefined}>
+                              {discount > 0 ? `-${formatNumber(discount)}đ` : ""}
+                            </TableCell>
+                          )}
+                          <TableCell align="right">
+                            {line.gross_line_total > line.net_line_total && (
+                              <div className="text-xs text-text-muted line-through">
+                                {formatNumber(line.gross_line_total)}đ
+                              </div>
+                            )}
+                            <div>{formatNumber(line.net_line_total)}đ</div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              );
+            })()}
           </div>
 
           {/* Phone: line rows */}

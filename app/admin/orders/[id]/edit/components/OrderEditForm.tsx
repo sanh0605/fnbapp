@@ -8,6 +8,7 @@ import type { OrderListItem } from "@/app/admin/orders/actions";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Alert } from "@/components/ui/Alert";
@@ -193,10 +194,10 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                       <TableCell align="right">
                         {line.gross_line_total > line.net_line_total && (
                           <div className="text-xs text-text-muted line-through">
-                            {formatNumber(line.gross_line_total)}
+                            {formatNumber(line.gross_line_total)}đ
                           </div>
                         )}
-                        <div>{formatNumber(line.net_line_total)}</div>
+                        <div>{formatNumber(line.net_line_total)}đ</div>
                       </TableCell>
                     </TableRow>
                   );
@@ -233,10 +234,10 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                     <div className="text-right">
                       {line.gross_line_total > line.net_line_total && (
                         <div className="text-xs text-text-muted line-through">
-                          {formatNumber(line.gross_line_total)}
+                          {formatNumber(line.gross_line_total)}đ
                         </div>
                       )}
-                      <div className="font-bold text-text-primary">{formatNumber(line.net_line_total)}</div>
+                      <div className="font-bold text-text-primary">{formatNumber(line.net_line_total)}đ</div>
                     </div>
                   </div>
                 </div>
@@ -247,7 +248,7 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
           {/* Order total */}
           <div className="pt-3 border-t border-border flex justify-between items-center">
             <span className="font-bold text-text-primary">Khách trả</span>
-            <span className="text-xl font-black text-primary">{formatNumber(totalAmount)}</span>
+            <span className="text-xl font-black text-primary">{formatNumber(totalAmount)}đ</span>
           </div>
         </div>
 
@@ -269,7 +270,7 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                       e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
                       handleAddPaymentPart();
                     }}
-                    className="text-xs min-h-[48px] md:min-h-[36px] py-1 px-3"
+                    className="min-h-[48px] md:min-h-[36px] py-1 px-3"
                   >
                     Thêm cách trả
                   </Button>
@@ -342,8 +343,9 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
                         </Button>
                       </div>
                     ) : (
-                      <div className="w-full text-sm font-semibold text-text-primary text-right tabular-nums py-2 px-1 shrink-0">
-                        {formatNumber(totalAmount)}
+                      <div className="flex justify-between items-center w-full text-sm font-semibold text-text-primary tabular-nums py-2 px-1 shrink-0">
+                        <span className="text-text-secondary font-normal">Số tiền</span>
+                        <span>{formatNumber(totalAmount)}đ</span>
                       </div>
                     )}
                   </div>
@@ -353,11 +355,11 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
               {payments.length === 2 && (
                 <div className="space-y-1 pt-1">
                   <div className="text-xs text-text-secondary">
-                    Tổng các phần: {formatNumber(totalParts)} • Tiền đơn: {formatNumber(totalAmount)}
+                    Tổng các phần: {formatNumber(totalParts)}đ • Tiền đơn: {formatNumber(totalAmount)}đ
                   </div>
                   {totalParts !== totalAmount && (
                     <div role="alert" className="text-xs font-semibold text-danger">
-                      Còn lệch {formatNumber(Math.abs(totalParts - totalAmount))}
+                      Còn lệch {formatNumber(Math.abs(totalParts - totalAmount))}đ
                     </div>
                   )}
                   {totalParts === totalAmount && payments.some((p) => p.amount <= 0) && (
@@ -371,19 +373,18 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
           </div>
 
           <div className="px-4 py-3 bg-page border-t border-border">
-            <label htmlFor="edit-order-reason" className="block text-xs font-bold text-text-secondary mb-1.5">
-              Lý do chỉnh sửa (bắt buộc)
-            </label>
-            <textarea
-              id="edit-order-reason"
-              aria-label="Lý do chỉnh sửa"
-              placeholder="Ví dụ: Khách đổi sang chuyển khoản"
-              value={editReason}
-              onChange={(e) => setEditReason(e.target.value)}
-              rows={2}
-              required
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-surface-card text-text-primary outline-none focus:ring-2 focus:ring-focus-ring"
-            />
+            <Field label="Lý do chỉnh sửa" htmlFor="edit-order-reason" required>
+              <textarea
+                id="edit-order-reason"
+                aria-label="Lý do chỉnh sửa"
+                placeholder="Ví dụ: Khách đổi sang chuyển khoản"
+                value={editReason}
+                onChange={(e) => setEditReason(e.target.value)}
+                rows={2}
+                required
+                className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-surface-card text-text-primary outline-none focus:ring-2 focus:ring-focus-ring"
+              />
+            </Field>
           </div>
 
           {inlineError && (

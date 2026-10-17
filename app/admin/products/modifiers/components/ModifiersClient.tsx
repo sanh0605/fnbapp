@@ -213,6 +213,8 @@ export default function ModifiersClient({
     },
   };
 
+  const activeCount = search.trim() ? 1 : 0;
+
   return (
     <div className="space-y-6">
       <ListPageHeader
@@ -232,17 +234,21 @@ export default function ModifiersClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
+        activeCount={activeCount}
+        search={
+          <div className="shrink-0 w-full md:w-64">
+            <Field label="Tìm tuỳ chọn" htmlFor="modifiers-search">
+              <TextInput
+                id="modifiers-search"
+                placeholder="Ví dụ: Trân châu trắng"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
+        }
       >
-        <div className="shrink-0 w-full md:w-64">
-          <Field label="Tìm tuỳ chọn" htmlFor="modifiers-search">
-            <TextInput
-              id="modifiers-search"
-              placeholder="Ví dụ: Trân châu trắng"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </Field>
-        </div>
+        {null}
       </FilterCard>
 
       <DataList
