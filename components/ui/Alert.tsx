@@ -19,7 +19,7 @@ export function Alert({ variant = 'info', title, children, className = '' }: Ale
   const current = styles[variant];
 
   return (
-    <div role="alert" className={`flex gap-3 p-4 border rounded-card ${current.wrapper} ${className}`}>
+    <div role={variant === "danger" ? "alert" : "status"} className={`flex gap-3 p-4 border rounded-card ${current.wrapper} ${className}`}>
       <div className="shrink-0 mt-0.5">{current.icon}</div>
       <div>
         {title && <h4 className="font-semibold mb-1">{title}</h4>}

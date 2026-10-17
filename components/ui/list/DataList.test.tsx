@@ -156,6 +156,7 @@ describe("DataList", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       "Không xoá được Vinamilk: đã có 12 phiếu nhập."
     );
+    expect(screen.getByRole("alert")).toHaveClass("text-danger");
   });
 
   it("calls confirm when clicking trash icon for Circle K, but cancels if confirm returns false", async () => {

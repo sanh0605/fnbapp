@@ -264,7 +264,7 @@ export function DataList<T>({
     : null;
 
   const statusBox = statusResult && (
-    <div role="status" className="space-y-2">
+    <div className="space-y-2">
       {successMessage && <Alert variant="success">{successMessage}</Alert>}
       {statusResult.errors.length > 0 && (
         <Alert variant="danger">

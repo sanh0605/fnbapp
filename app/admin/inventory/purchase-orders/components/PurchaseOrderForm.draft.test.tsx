@@ -274,7 +274,7 @@ describe("PurchaseOrderForm draft restoration and navigation", () => {
       />
     );
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Không khôi phục được phiếu đang nhập dở");
+    expect(screen.getByRole("status")).toHaveTextContent("Không khôi phục được phiếu đang nhập dở");
     expect(replace).toHaveBeenCalledWith("/admin/inventory/purchase-orders/new");
   });
 });

@@ -37,7 +37,7 @@ describe("ClearCacheButton", () => {
     });
 
     await waitFor(() => {
-      const alert = screen.getByRole("alert");
+      const alert = screen.getByRole("status");
       expect(alert).toHaveTextContent("Đã làm mới bộ nhớ đệm.");
     });
   });
