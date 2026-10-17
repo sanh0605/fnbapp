@@ -43,6 +43,10 @@
   --color-warning-rgb: 179 38 30;
   --color-danger: #B3261E;
   --color-danger-rgb: 179 38 30;
+  --color-caution: #9A6700;
+  --color-caution-rgb: 154 103 0;
+  --color-info: #3B5B7A;
+  --color-info-rgb: 59 91 122;
   --color-processing: #8A5A1F;
   --color-processing-rgb: 138 90 31;
   --color-focus-ring: #8A5A1F;

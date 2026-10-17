@@ -43,6 +43,14 @@ const config: Config = {
           DEFAULT: "rgb(var(--color-danger-rgb) / <alpha-value>)",
           active: "rgb(var(--color-danger-rgb) / <alpha-value>)",
         },
+        caution: {
+          DEFAULT: "rgb(var(--color-caution-rgb) / <alpha-value>)",
+          active: "rgb(var(--color-caution-rgb) / <alpha-value>)",
+        },
+        info: {
+          DEFAULT: "rgb(var(--color-info-rgb) / <alpha-value>)",
+          active: "rgb(var(--color-info-rgb) / <alpha-value>)",
+        },
         processing: "rgb(var(--color-processing-rgb) / <alpha-value>)",
         "focus-ring": "rgb(var(--color-focus-ring-rgb) / <alpha-value>)",
       },
