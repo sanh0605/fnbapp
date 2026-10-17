@@ -27,7 +27,7 @@ export function ProductCard({
         type="button"
         onClick={onOpen}
         disabled={disabled}
-        className="text-left w-full disabled:opacity-50"
+        className="text-left w-full min-h-[44px] disabled:opacity-50"
       >
         <div className="text-[15px] font-semibold text-text-primary leading-snug line-clamp-2">
           {product.name}
