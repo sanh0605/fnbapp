@@ -73,7 +73,7 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
 ### BR-INV-023 — A count saves itself when the cursor leaves the line; clearing a line puts it back to not counted; package sizes add up
 
-**Status:** `APPROVED` — owner 2026-10-17, looking at `STK-002`: *"có cần nút xác nhận ở mỗi dòng không ? … có cần phải hiển thị hết tất cả đơn vị không ? Nếu có 2 loại đóng gói khác nhau thực tế thì sẽ nhập như thế nào để cộng dồn cho đúng số lượng tồn ?"*. The recommendation below was offered and he answered *"Ok, làm luôn"*. Plan: `docs/superpowers/plans/2026-10-17-kiem-ke-tu-luu.md`.
+**Status:** `APPROVED` — owner 2026-10-17, looking at `STK-002`: *"có cần nút xác nhận ở mỗi dòng không ? … có cần phải hiển thị hết tất cả đơn vị không ? Nếu có 2 loại đóng gói khác nhau thực tế thì sẽ nhập như thế nào để cộng dồn cho đúng số lượng tồn ?"*. The recommendation below was offered and he answered *"Ok, làm luôn"*. Built and pushed 2026-10-17 (`242fb394`, `1800e4a3`); migration 0137 ran on the server and is recorded (`0b5f20eb`).
 
 - **No button per line.** Leaving a line's boxes saves that line to the server straight away, so a count survives a dropped connection or a closed phone. Confirming the whole session still goes through "Xem trước" then "Xác nhận".
 - **Clearing every box of a saved line puts it back to "Chưa đếm"**, not 0 (`BR-INV-011`: blank is not zero). Someone who finds nothing on the shelf types 0.

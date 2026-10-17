@@ -6,7 +6,7 @@ tốt lên hơn không? Rồi anh muốn tái cấu trúc lại code theo ponyta
 đầy đủ nhưng không có cột thừa."* Và: *"kết hợp các việc mà fnbapp-f5 đã làm để phân tích sâu và chi
 tiết hơn."*
 
-Bản này gộp bốn nguồn: bản soát toàn bộ `docs/superpowers/plans/2026-10-14-soat-toan-bo.md`, hai bản
+Bản này gộp bốn nguồn: bản soát toàn bộ ngày 2026-10-14 (đã đẩy cùng `feebd7ee`; file kế hoạch đã xoá, git giữ), hai bản
 đề xuất theo mảng của phiên fnbapp-f5 (`docs/superpowers/specs/2026-10-15-ban-hang-de-xuat.md`,
 `docs/superpowers/specs/2026-10-15-kho-de-xuat.md`), hàng 6c và 6d của kế hoạch chung, và số đo
 mới ngày 2026-10-15 (chỉ đọc). Mọi con số đo lại trước khi dùng.
