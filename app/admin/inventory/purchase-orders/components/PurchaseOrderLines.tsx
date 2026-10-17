@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
@@ -33,6 +34,22 @@ export function PurchaseOrderLines({
   setOpenIndex,
   errorIndex,
 }: PurchaseOrderLinesProps) {
+  const focusTargetRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (focusTargetRef.current) {
+      const el = document.getElementById(focusTargetRef.current);
+      if (el) {
+        el.focus();
+        focusTargetRef.current = null;
+      }
+    }
+  });
+
+  const handleAddLine = () => {
+    focusTargetRef.current = `${formId}-item-${lines.length}-purchased_item_id`;
+    addLine();
+  };
 
   return (
     <div className="mb-6">
@@ -48,7 +65,7 @@ export function PurchaseOrderLines({
             variant="secondary"
             onClick={(e) => {
               e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
-              addLine();
+              handleAddLine();
             }}
             className="min-h-[48px] md:min-h-[40px]"
           >
@@ -56,7 +73,7 @@ export function PurchaseOrderLines({
           </Button>
         </div>
       ) : (
-        <div className="space-y-4 xl:space-y-0">
+        <>
           <div
             aria-hidden="true"
             className="hidden xl:grid xl:grid-cols-[minmax(0,1fr)_9rem_6rem_8rem_6rem_2.5rem] gap-3 pb-2 border-b border-border text-xs font-semibold text-text-secondary"
@@ -68,6 +85,7 @@ export function PurchaseOrderLines({
             <div>Đơn giá</div>
             <div />
           </div>
+          <div className="space-y-4 xl:space-y-0">
           {lines.map((line, index) => {
             const itemRowId = `${formId}-item-${index}`;
             const item = items.find((i: any) => i.id === line.purchased_item_id);
@@ -95,7 +113,7 @@ export function PurchaseOrderLines({
               <div
                 key={index}
                 data-testid="po-line-card"
-                className={`p-4 border rounded-xl relative bg-surface-secondary/50 xl:rounded-none xl:border-x-0 xl:border-t-0 xl:p-0 xl:py-2 xl:bg-transparent ${
+                className={`p-4 border rounded-xl bg-surface-secondary/50 xl:rounded-none xl:border-x-0 xl:border-t-0 xl:p-0 xl:py-2 xl:bg-transparent ${
                   hasError ? "border-danger" : "border-border"
                 }`}
               >
@@ -114,7 +132,7 @@ export function PurchaseOrderLines({
 
                 {/* Form inputs: always shown on desktop (md:block); on phone only shown when isOpen */}
                 <div className={isOpen ? "block" : "hidden md:block"}>
-                  <div className="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-[minmax(0,1fr)_9rem_6rem_8rem_6rem_2.5rem] gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-[minmax(0,1fr)_9rem_6rem_8rem_6rem_2.5rem] gap-4 xl:gap-3">
                     <div className="md:col-span-4 xl:col-span-1">
                       <label
                         htmlFor={`${itemRowId}-purchased_item_id`}
@@ -270,13 +288,14 @@ export function PurchaseOrderLines({
             variant="secondary"
             onClick={(e) => {
               e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
-              addLine();
+              handleAddLine();
             }}
             className="mt-4 w-full min-h-[48px] md:min-h-[40px]"
           >
             + Thêm mặt hàng
           </Button>
         </div>
+      </>
       )}
     </div>
   );

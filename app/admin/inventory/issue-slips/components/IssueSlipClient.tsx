@@ -317,14 +317,12 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                   return (
                     <TableRow key={index}>
                       <TableCell>
-                        <div className="min-w-[12rem] xl:min-w-[20rem]">
-                          <SearchableSelect
-                            value={line.purchasedItemId}
-                            onChange={val => handleItemChange(index, val)}
-                            options={itemOptions}
-                            placeholder="-- Chọn hàng --"
-                          />
-                        </div>
+                        <SearchableSelect
+                          value={line.purchasedItemId}
+                          onChange={val => handleItemChange(index, val)}
+                          options={itemOptions}
+                          placeholder="-- Chọn hàng --"
+                        />
                       </TableCell>
                       <TableCell>
                         <span className="tabular-nums text-text-secondary whitespace-nowrap">{onHandDisplay}</span>

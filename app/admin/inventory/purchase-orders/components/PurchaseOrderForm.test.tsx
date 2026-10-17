@@ -603,15 +603,12 @@ describe("PurchaseOrderForm copySeed prefill and draft override (BR-INV-016)", (
 });
 
 
-// Owner 2026-10-10: a create/edit form looks like the slip's detail page —
-// on a computer the lines take the left two thirds and the slip-wide boxes
-// stack in the right third; on a phone the same blocks run top to bottom in
-// their source order (shared boxes, lines, then money and buttons).
+// Owner 2026-10-17 plan: sections stacked top to bottom on a computer (shared, lines, money).
 function expectBefore(a: Element, b: Element) {
   expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 }
 
-describe("PurchaseOrderForm two columns (owner 2026-10-10)", () => {
+describe("PurchaseOrderForm sections stacked top to bottom on a computer (owner 2026-10-17 plan)", () => {
   function renderForm() {
     return render(
       <PurchaseOrderForm
@@ -698,6 +695,18 @@ describe("PurchaseOrderForm two columns (owner 2026-10-10)", () => {
       expect(el.className).not.toContain("bg-surface-card");
       el = el.parentElement;
     }
+  });
+
+  it("clicking '+ Thêm mặt hàng' leaves document.activeElement equal to the new line's picker trigger", () => {
+    renderForm();
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng đầu tiên"));
+    fireEvent.click(screen.getByText("+ Thêm mặt hàng"));
+
+    const lineCards = screen.getAllByTestId("po-line-card");
+    expect(lineCards).toHaveLength(2);
+    const newLineTrigger = lineCards[1].querySelector('[role="combobox"]');
+    expect(newLineTrigger).toBeTruthy();
+    expect(document.activeElement).toBe(newLineTrigger);
   });
 });
 
