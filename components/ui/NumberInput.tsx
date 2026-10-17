@@ -188,7 +188,6 @@ export function NumberInput({
     });
 
     if (!result.accepted) {
-      setBoxError("");
       setCommaHint(false);
       e.target.value = result.display;
       e.target.setSelectionRange(result.caret, result.caret);

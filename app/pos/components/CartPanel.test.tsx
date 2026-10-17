@@ -180,6 +180,26 @@ describe("Discount (R3)", () => {
       expect(setUserCustomDiscount).toHaveBeenCalledWith(12.5);
     });
 
+    it("order box: 12.5 in % mode, press VNĐ -> box shows '13' and 13 is applied", () => {
+      const setUserCustomDiscount = vi.fn();
+      render(
+        <CartPanelWithState
+          {...defaultProps}
+          userCustomDiscountType="PERCENT"
+          setUserCustomDiscount={setUserCustomDiscount}
+        />
+      );
+      fireEvent.click(screen.getByRole("button", { name: /Khuyến mãi, giảm giá/i }));
+      const discountInput = screen.getByLabelText("Giảm giá tùy chỉnh");
+      fireEvent.change(discountInput, { target: { value: "12.5" } });
+      expect(discountInput).toHaveValue("12.5");
+      expect(setUserCustomDiscount).toHaveBeenCalledWith(12.5);
+
+      fireEvent.click(screen.getByRole("button", { name: "VNĐ" }));
+      expect(discountInput).toHaveValue("13");
+      expect(setUserCustomDiscount).toHaveBeenLastCalledWith(13);
+    });
+
     it("shows max message when typing above limit and applied discount equals limit", () => {
       const setUserCustomDiscount = vi.fn();
       render(

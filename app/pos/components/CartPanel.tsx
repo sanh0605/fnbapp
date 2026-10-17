@@ -254,7 +254,7 @@ export function CartPanel({
 
                   <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
                     {processingOrder.items.map((item: any, idx: number) => {
-                      const names = item.modifiers.map((m: any) => m.name).join(", ");
+                      const names = item.modifiers.map((m: any) => m.name).join(" · ");
                       return (
                         <div key={item.id || idx} className="flex justify-between items-start text-xs border-b border-border pb-2">
                           <div className="min-w-0 flex-1">
@@ -449,7 +449,7 @@ export function CartPanel({
                             onClick={() => {
                               setUserCustomDiscountType("VND");
                               if (userCustomDiscount !== null) {
-                                setUserCustomDiscount(clampDiscount(userCustomDiscount, "VND", calculateSubtotal()));
+                                setUserCustomDiscount(clampDiscount(Math.round(userCustomDiscount), "VND", calculateSubtotal()));
                               }
                             }}
                             className={`px-4 py-2.5 min-h-[44px] text-xs font-bold transition-colors disabled:opacity-50 ${

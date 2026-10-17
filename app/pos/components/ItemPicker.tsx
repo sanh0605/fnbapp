@@ -269,7 +269,10 @@ export function ItemPicker({
               <div className="flex rounded-button overflow-hidden border border-border shrink-0 min-h-[44px] h-11">
                 <button
                   type="button"
-                  onClick={() => setItemDiscountType("VND")}
+                  onClick={() => {
+                    setItemDiscountType("VND");
+                    setItemDiscount((prev) => clampDiscount(Math.round(prev), "VND", lineSubtotal) ?? 0);
+                  }}
                   className={`px-3 min-h-[44px] text-sm font-bold transition-colors ${
                     itemDiscountType === "VND"
                       ? "bg-primary-soft text-primary"
