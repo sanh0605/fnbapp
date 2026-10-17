@@ -70,3 +70,12 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
 - **Grouping** (Q8, *"Theo loại hàng"*): the items to count are grouped under their existing category. Measured that day: Nguyên liệu 50 items and Vật tư tiêu hao 19. He chose this over a new list of places in the shop, which would need a new page and 69 items assigned by hand.
 - **Where count differences show** (Q9, *"Chỉ ở trang Kiểm kê"*): once Kiểm kê has its own list, the Phiếu xuất list shows only slips staff wrote. `STK-001`'s 49 difference rows show on the Kiểm kê page. Stock and Giá vốn do not change. Before building, check that the "Hàng đã xuất" report does not lose those rows.
+
+### BR-INV-023 — A count saves itself when the cursor leaves the box; clearing a line puts it back to not counted; package sizes add up
+
+**Status:** `APPROVED` — owner 2026-10-17, looking at `STK-002`: *"có cần nút xác nhận ở mỗi dòng không ? … có cần phải hiển thị hết tất cả đơn vị không ? Nếu có 2 loại đóng gói khác nhau thực tế thì sẽ nhập như thế nào để cộng dồn cho đúng số lượng tồn ?"*. The recommendation below was offered and he answered *"Ok, làm luôn"*. Plan: `docs/superpowers/plans/2026-10-17-kiem-ke-tu-luu.md`.
+
+- **No button per line.** Leaving a line's boxes saves that line to the server straight away, so a count survives a dropped connection or a closed phone. Confirming the whole session still goes through "Xem trước" then "Xác nhận".
+- **Clearing every box of a saved line puts it back to "Chưa đếm"**, not 0 (`BR-INV-011`: blank is not zero). Someone who finds nothing on the shelf types 0.
+- **One box per package size stays.** Each `ACTIVE` package size that is not purchase-only gets a box, because a shelf can hold several sizes at once. Measured 2026-10-17 on `STK-002`: 53 of 69 items have one box and 16 have two or three. Sapo counts the same way, one box per unit, converted to the base unit.
+- **The boxes add up.** For example, Ly Nhựa PET 98 - 16OZ - 500ml with 3 Cây and 12 Cái counts as 3 × 50 + 12 = 162 Cái. The total shows under the boxes while typing. Each box keeps its own number after a reload (`stocktake_lines.package_counts`). Only sealed packages are counted (`BR-INV-007`), so a box takes whole numbers only. Once any box of a line has a number, an empty box on that line counts as 0 of that size. "Blank is not zero" (`BR-INV-011`) applies to the whole line, not to each box.
