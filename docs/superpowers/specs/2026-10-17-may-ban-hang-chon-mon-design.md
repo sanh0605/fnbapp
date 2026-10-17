@@ -51,21 +51,21 @@ Chạm món khác khi khung đang mở: khung đổi sang món đó, lựa chọ
 
 ## 3. Món không có gì để chọn
 
-A dish with one size and no linked option group goes into the cart on one tap of its name, merging into the identical line. Examples: Trứng luộc, Khoai lang.
+Every dish takes the same path, Trứng luộc and Khoai lang included (one size, no group). The window opens showing only the size group, already lit, plus the quantity. The cashier sets the quantity and taps Thêm.
 
-Why: opening a window just to tap Thêm adds a tap and asks nothing. `BR-SALE-019` speaks of choosing size, sweetness, ice and toppings; these dishes have none of those. This is self-decided (section 9, point 1).
+Why: step 3 of the owner's flow is choosing the quantity, and one path means no special case in the code. Cost: an egg takes two taps instead of one. This is self-decided (section 9, point 1).
 
 ## 4. Gộp dòng giống hệt
 
 Hai dòng **giống hệt** khi trùng cả bốn thứ:
 1. cùng size (`variant_id`);
-2. cùng bộ lựa chọn, không kể thứ tự chọn (so theo danh sách mã đã sắp xếp, tính cả số phần);
+2. cùng bộ lựa chọn, không kể thứ tự chọn (so theo danh sách mã đã sắp xếp, tính cả số phần; dòng nháp cũ thiếu danh sách lựa chọn thì coi là rỗng);
 3. cùng số giảm giá món;
-4. cùng kiểu giảm (VNĐ hay %).
+4. cùng kiểu giảm (VNĐ hay %). This only counts when the discount is above 0: two lines with no discount match whatever the type says.
 
 - **Thêm mới:** if an identical line exists, its quantity increases. Otherwise a new line goes to the end of the cart.
 - **Sửa một dòng** (chạm dòng trong giỏ → khung mở với lựa chọn của dòng đó, nút đổi thành **Cập nhật**): the line is replaced where it stands and is not merged, even if it now equals another line. Why: the line the cashier is editing would vanish from under their finger. This is self-decided (section 9, point 2).
-- Lựa chọn trên dòng giỏ được xếp theo thứ tự nhóm rồi thứ tự lựa chọn trong nhóm, không theo thứ tự bấm: "360ml · Ít ngọt · Ít đá · Kem muối".
+- Lựa chọn trên dòng giỏ được xếp theo thứ tự nhóm rồi thứ tự lựa chọn trong nhóm, không theo thứ tự bấm: "360ml · Ít ngọt · Ít đá · Kem muối". The sort happens once, when Thêm or Cập nhật is tapped: the window knows the groups, while a stored choice does not know which group it came from. The cart, the draft and the stored order line keep the sorted order.
 
 Ví dụ số thật (giá ngày 2026-10-17):
 - Cà phê đá 360ml 15.000đ, Kem muối 4.000đ.
@@ -75,13 +75,20 @@ Ví dụ số thật (giá ngày 2026-10-17):
 
 ## 5. Bố cục
 
-**Máy tính, từ 768 px trở lên (bản BF):**
-- Ba cột.
+**Máy tính và máy tính bảng, từ 768 px trở lên (bản BF):**
+- Từ 1024 px: ba cột.
   - Cột trái: nhóm món, rộng 132 px.
   - Cột giữa: lưới món 3 cột. Thẻ cao 90 px, tên 18 px, giá 17 px; món đang chọn có viền đậm.
   - Cột phải: giỏ, rộng 380 px.
+- Từ 768 đến 1023 px (máy tính bảng):
+  - Không có cột nhóm món. Nhóm món là hàng thẻ ngang trên lưới, như hôm nay.
+  - Giỏ rộng 320 px.
+  - Cột giữa còn khoảng 448 px.
 - Khung chọn nằm **trong cột giữa, dưới lưới món**, không phải cửa sổ nổi. Lưới món phía trên vẫn cuộn được.
-- Các nhóm nằm cạnh nhau. Cột tự xuống hàng khi hẹp: mỗi cột tối thiểu 170 px, nên màn 768 px còn 2 cột.
+- Các nhóm nằm cạnh nhau. Cột tự xuống hàng khi hẹp, mỗi cột tối thiểu 170 px:
+  - 1280 px: 4 cột;
+  - 1024 px: 2 cột;
+  - 768 px: 2 cột.
 - Mỗi nhóm là một khung riêng:
   - đầu khung có dải màu nền và vòng tròn số thứ tự (1, 2, 3, 4);
   - mỗi lựa chọn một hàng cao 46 px, chữ 16 px;
@@ -114,13 +121,18 @@ Ví dụ số thật (giá ngày 2026-10-17):
   - **Chuyển khoản**: gửi đơn ngay;
   - **Chia tiền mặt + chuyển khoản**: mở khung chia tiền đang có;
   - **‹ Quay lại đơn**.
-- **Enter** (bàn phím máy tính) làm đúng việc của nút Thanh toán: mở bước chọn cách trả. Không còn hộp hỏi "Xác nhận thanh toán TIỀN MẶT". This is self-decided (section 9, point 3).
+- **Enter** (bàn phím máy tính) làm đúng việc của nút Thanh toán: mở bước chọn cách trả. When the step opens, the cursor is on Tiền mặt, so a second Enter pays cash. A cash sale from the keyboard is Enter, Enter. The "Xác nhận thanh toán TIỀN MẶT" box is gone. This is self-decided (section 9, point 3).
+- On the phone, the bottom bar "Thanh toán ›" opens the cart sheet at the order view, so the cashier sees the lines. The Thanh toán button in the sheet then goes to the method step.
 - Offline, the cart empty, or an order sending: Thanh toán is disabled, as the pay buttons are today. The "Gửi lại" message still shows when a send fails.
 - When an order is sent or the cart is cleared, the cart goes back to the order view.
 
 ## 7. Độ ngọt và Đá: dữ liệu, chưa ghi
 
 These are written by a script that does a dry run by default and writes only with `--apply`, after the owner approves the printed list.
+- One SQL transaction writes all three tables (group, options, dish links), so either everything is written or nothing is. A dry run runs the same SQL and ends with `rollback`.
+- IDs follow the existing pattern: groups MG-002 and MG-003, options from MOD-011 up. MOD-007 is never reused.
+- Thêm Topping keeps its sort order of 50. Độ ngọt gets 10 and Đá gets 20, so no existing row changes.
+- The three tables carry only `updated_at` triggers (checked 2026-10-17).
 - Nhóm **Độ ngọt** (chọn một): Bình thường (mặc định), Ít ngọt, Không đường.
 - Nhóm **Đá** (chọn một): Bình thường (mặc định), Ít đá, Không đá, Đá riêng.
 - Giá 0đ. Thứ tự: Độ ngọt, Đá, rồi Thêm Topping.
@@ -148,9 +160,9 @@ These are written by a script that does a dry run by default and writes only wit
 
 ## 9. Điểm tự quyết, chủ quán duyệt cuối đợt
 
-1. Món không có gì để chọn (Trứng luộc, Khoai lang) vào giỏ ngay khi chạm (mục 3).
+1. Món không có gì để chọn (Trứng luộc, Khoai lang) cũng mở khung để chọn số lượng: hai chạm thay vì một (mục 3).
 2. Sửa một dòng không tự gộp với dòng khác (mục 4).
-3. Enter mở bước chọn cách trả, bỏ hộp hỏi tiền mặt (mục 6).
+3. Enter mở bước chọn cách trả; Enter lần nữa là tiền mặt; bỏ hộp hỏi tiền mặt (mục 6).
 4. Giảm giá món gập lại (mục 5).
 5. Báo cáo topping bỏ qua lựa chọn 0đ (mục 8).
 6. Cần chủ quán chốt khi duyệt dữ liệu: Yogurt và nhóm Giải trí (cacao, matcha, sữa dâu) có cần Độ ngọt và Đá không; món "Test11" có gắn không.
