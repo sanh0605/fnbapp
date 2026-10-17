@@ -33,6 +33,18 @@ interface StocktakeCountViewProps {
   session: StocktakeSessionView;
 }
 
+function getInitialSavedValues(lines: StocktakeLineView[]) {
+  const initial: Record<string, Record<string, number> | number | null> = {};
+  for (const line of lines) {
+    if (line.packageLines.length > 0) {
+      initial[line.id] = line.packageCounts ? { ...line.packageCounts } : null;
+    } else {
+      initial[line.id] = line.countedQty !== null ? line.countedQty : null;
+    }
+  }
+  return initial;
+}
+
 export function StocktakeCountView({ session }: StocktakeCountViewProps) {
   const router = useRouter();
 
@@ -81,21 +93,8 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
   const legacyInputsRef = useRef(legacyInputs);
   legacyInputsRef.current = legacyInputs;
 
-  const initialSavedValues = useMemo(() => {
-    const initial: Record<string, Record<string, number> | number | null> = {};
-    for (const line of session.lines) {
-      if (line.packageLines.length > 0) {
-        initial[line.id] = line.packageCounts ? { ...line.packageCounts } : null;
-      } else {
-        initial[line.id] = line.countedQty !== null ? line.countedQty : null;
-      }
-    }
-    return initial;
-  }, [session.lines]);
-
-  const lastSavedValuesRef = useRef(initialSavedValues);
+  const lastSavedValuesRef = useRef(getInitialSavedValues(session.lines));
   const lineErrorsRef = useRef<Record<string, string>>({});
-  const isSavingRef = useRef<Map<string, boolean>>(new Map());
   const needsSaveAgainRef = useRef<Map<string, boolean>>(new Map());
   const savingPromisesRef = useRef<Map<string, Promise<any>>>(new Map());
 
@@ -180,7 +179,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
   }
 
   async function performSave(lineId: string) {
-    if (isSavingRef.current.get(lineId)) {
+    if (savingPromisesRef.current.has(lineId)) {
       needsSaveAgainRef.current.set(lineId, true);
       return;
     }
@@ -193,14 +192,13 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
       return;
     }
 
-    isSavingRef.current.set(lineId, true);
     setSavingLineIds((prev) => ({ ...prev, [lineId]: true }));
 
     const promise = (async () => {
       try {
         const res = await saveStocktakeLine(lineId, valToSave);
         if (res?.error) {
-          const errMsg = res.error || "Lỗi lưu số đếm";
+          const errMsg = res.error;
           lineErrorsRef.current[lineId] = errMsg;
           setLineErrors((prev) => ({ ...prev, [lineId]: errMsg }));
         } else {
@@ -217,7 +215,12 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
             prev.map((l) => {
               if (l.id !== lineId) return l;
               const counted = newCountedQty;
-              const book = l.theoreticalAtCount;
+              const book =
+                newCountedQty === null
+                  ? null
+                  : res.theoreticalAtCount !== undefined
+                  ? res.theoreticalAtCount
+                  : l.theoreticalAtCount;
               const state = counted === null ? "BLANK" : counted === book ? "MATCH" : "OFF";
               const diffVal =
                 counted !== null && book !== null && l.unitCost !== null
@@ -226,6 +229,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
               return {
                 ...l,
                 countedQty: counted,
+                theoreticalAtCount: book,
                 packageCounts:
                   typeof valToSave === "object" && valToSave !== null ? valToSave : null,
                 state,
@@ -235,13 +239,12 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
             })
           );
         }
-      } catch (err: any) {
-        const errMsg = err?.message || "Lỗi lưu số đếm";
+      } catch {
+        const errMsg = "mất kết nối mạng";
         lineErrorsRef.current[lineId] = errMsg;
         setLineErrors((prev) => ({ ...prev, [lineId]: errMsg }));
       } finally {
         savingPromisesRef.current.delete(lineId);
-        isSavingRef.current.set(lineId, false);
         setSavingLineIds((prev) => ({ ...prev, [lineId]: false }));
         if (needsSaveAgainRef.current.get(lineId)) {
           needsSaveAgainRef.current.set(lineId, false);
@@ -296,10 +299,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
       return <div className="text-xs text-text-secondary pt-0.5">{text}</div>;
     }
 
-    if (
-      line.countedQty !== null &&
-      (!line.packageCounts || Object.keys(line.packageCounts).length === 0)
-    ) {
+    if (line.countedQty !== null && !line.packageCounts) {
       const formatted = formatNumber(line.countedQty);
       const text = line.unitName ? `Đã lưu: ${formatted} ${line.unitName}` : `Đã lưu: ${formatted}`;
       return <div className="text-xs text-text-secondary pt-0.5">{text}</div>;

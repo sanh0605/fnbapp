@@ -1143,4 +1143,191 @@ describe("StocktakeCountView (Screen 2)", () => {
     expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
     expect(screen.queryByText("Đang lưu…")).not.toBeInTheDocument();
   });
+
+  it("uses the book figure returned by server to show Khớp (0đ) and Khớp (1) tab count (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValue({ countedQty: 162, theoreticalAtCount: 162 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: null,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    expect(screen.getByRole("button", { name: /Khớp \(0\)/ })).toBeInTheDocument();
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+    fireEvent.change(input, { target: { value: "162" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Khớp (0đ)").length).toBeGreaterThan(0);
+    });
+    expect(screen.getByRole("button", { name: /Khớp \(1\)/ })).toBeInTheDocument();
+  });
+
+  it("new value during a save sends exactly one more call with the new value when the first save resolves (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+
+    let resolveFirstSave!: (val: any) => void;
+    const firstSavePromise = new Promise((resolve) => {
+      resolveFirstSave = resolve;
+    });
+    vi.mocked(saveStocktakeLine)
+      .mockReturnValueOnce(firstSavePromise as any)
+      .mockResolvedValueOnce({ countedQty: 6000, theoreticalAtCount: 6000 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+
+    // First change to 5000 and blur
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // The first save is in flight
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+    expect(saveStocktakeLine).toHaveBeenLastCalledWith("LINE-1", 5000);
+    expect(screen.getAllByText("Đang lưu…").length).toBeGreaterThan(0);
+
+    // While save is pending, change box to 6000 and blur out again
+    fireEvent.change(input, { target: { value: "6000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // Still only 1 call went out so far
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+
+    // Resolve the first save
+    resolveFirstSave({ countedQty: 5000, theoreticalAtCount: 6000 });
+
+    // Exactly one more call goes out with the new value (6000)
+    await waitFor(() => {
+      expect(saveStocktakeLine).toHaveBeenCalledTimes(2);
+    });
+    expect(saveStocktakeLine).toHaveBeenLastCalledWith("LINE-1", 6000);
+
+    await waitFor(() => {
+      expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+    });
+  });
+
+  it("retries after a network failure when blurred again with the same value and shows ✓ Đã lưu on success (BR-INV-023)", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+
+    // First call rejects with network failure, second call succeeds
+    vi.mocked(saveStocktakeLine)
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce({ countedQty: 5000, theoreticalAtCount: 6000 });
+
+    const session: StocktakeSessionView = {
+      id: "STK-002",
+      status: "OPEN",
+      createdByName: "Admin",
+      createdAt: "2026-10-14T15:00:00Z",
+      confirmedAt: null,
+      confirmedByName: null,
+      lines: [
+        {
+          id: "LINE-1",
+          itemReference: "SPM-004",
+          itemName: "Bột cà phê",
+          unitName: "g",
+          countedQty: null,
+          theoreticalAtCount: 6000,
+          countedAt: null,
+          packageLines: [],
+          groupName: "Nguyên liệu",
+          state: "BLANK",
+          unitCost: 148,
+          diffValue: null,
+          packageCounts: null,
+        },
+      ],
+    };
+
+    render(<StocktakeCountView session={session} />);
+
+    const input = screen.getAllByLabelText("Số đếm Bột cà phê")[0];
+
+    // Enter value and blur
+    fireEvent.change(input, { target: { value: "5000" } });
+    fireEvent.blur(input, { relatedTarget: null });
+
+    // First call rejects
+    expect(saveStocktakeLine).toHaveBeenCalledTimes(1);
+
+    // Status shows "mất kết nối mạng"
+    await waitFor(() => {
+      expect(
+        screen.getAllByText("Chưa lưu được: mất kết nối mạng. Bấm vào ô rồi bấm ra ngoài để thử lại.").length
+      ).toBeGreaterThan(0);
+    });
+
+    // Blurring out again with the same value calls again
+    fireEvent.blur(input, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(saveStocktakeLine).toHaveBeenCalledTimes(2);
+    });
+    expect(saveStocktakeLine).toHaveBeenLastCalledWith("LINE-1", 5000);
+
+    // On success, "✓ Đã lưu" shows
+    await waitFor(() => {
+      expect(screen.getAllByText("✓ Đã lưu").length).toBeGreaterThan(0);
+    });
+    expect(
+      screen.queryByText("Chưa lưu được: mất kết nối mạng. Bấm vào ô rồi bấm ra ngoài để thử lại.")
+    ).not.toBeInTheDocument();
+  });
 });
