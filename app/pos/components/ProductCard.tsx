@@ -67,7 +67,7 @@ export function ProductCard({
 
       <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 pt-1">
         {sizes.length > 0 ? (
-          <span className="text-[17px] font-extrabold text-primary leading-none">
+          <span className="text-[17px] font-extrabold text-primary leading-none shrink-0 max-w-full">
             {renderPriceRange(sizes)}
           </span>
         ) : (
