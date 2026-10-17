@@ -150,7 +150,7 @@ export function ItemPicker({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:flex-1 md:min-h-0 md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border">
+      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:flex-initial md:max-h-[70%] md:min-h-0 md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border">
         <div className="w-11 h-1.5 rounded-full bg-border mx-auto mt-2 shrink-0 md:hidden" />
 
         <div className="flex items-center justify-between px-4 py-1.5 md:px-3.5 md:pt-3 md:pb-2 shrink-0">
@@ -198,14 +198,14 @@ export function ItemPicker({
                       aria-checked={isSelected}
                       key={v.id}
                       onClick={() => setSelectedVariant(v)}
-                      className={`w-full flex items-center min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] text-left transition-colors ${
+                      className={`w-full flex items-center gap-2 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] text-left transition-colors ${
                         isSelected
                           ? "border-primary bg-primary-soft text-primary font-bold"
                           : "border-border bg-surface-card text-text-primary font-medium hover:bg-page"
                       }`}
                     >
                       <span
-                        className={`break-words ${
+                        className={`min-w-0 [overflow-wrap:anywhere] ${
                           isSelected ? "text-primary font-bold" : "text-text-primary font-medium"
                         }`}
                       >
@@ -247,7 +247,7 @@ export function ItemPicker({
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-border bg-surface-card px-4 pt-2.5 pb-5 md:px-3.5 md:py-2.5 flex flex-col gap-2.5">
+        <div className="shrink-0 border-t border-border bg-surface-card px-3.5 pt-2.5 pb-4 md:px-3.5 md:py-2.5 flex flex-col gap-2.5">
           <div>
             <button
               type="button"
@@ -305,18 +305,18 @@ export function ItemPicker({
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 md:gap-2.5">
             <div className="flex items-center border border-border rounded-card md:rounded-button h-[60px] md:h-[52px] md:mr-auto shrink-0 bg-surface-card">
               <button
                 type="button"
                 aria-label="Bớt"
                 disabled={selectedQty <= 1}
                 onClick={() => setSelectedQty((q) => Math.max(1, q - 1))}
-                className="w-[52px] h-[60px] md:h-[52px] min-h-[44px] flex items-center justify-center text-[26px] md:text-[24px] font-extrabold text-primary disabled:text-text-muted disabled:opacity-40 transition-colors"
+                className="w-11 md:w-[52px] h-[60px] md:h-[52px] min-h-[44px] flex items-center justify-center text-[26px] md:text-[24px] font-extrabold text-primary disabled:text-text-muted disabled:opacity-40 transition-colors"
               >
                 −
               </button>
-              <span className="w-[30px] md:w-8 text-center font-extrabold text-[22px] md:text-[20px] text-text-primary">
+              <span className="w-7 md:w-8 text-center font-extrabold text-[22px] md:text-[20px] text-text-primary">
                 {selectedQty}
               </span>
               <button
@@ -324,7 +324,7 @@ export function ItemPicker({
                 aria-label="Thêm số lượng"
                 disabled={selectedQty >= maxQty}
                 onClick={() => setSelectedQty((q) => Math.min(maxQty, q + 1))}
-                className="w-[52px] h-[60px] md:h-[52px] min-h-[44px] flex items-center justify-center text-[26px] md:text-[24px] font-extrabold text-primary disabled:text-text-muted disabled:opacity-40 transition-colors"
+                className="w-11 md:w-[52px] h-[60px] md:h-[52px] min-h-[44px] flex items-center justify-center text-[26px] md:text-[24px] font-extrabold text-primary disabled:text-text-muted disabled:opacity-40 transition-colors"
               >
                 +
               </button>
@@ -341,15 +341,15 @@ export function ItemPicker({
             <button
               type="button"
               onClick={addToCart}
-              className="flex-1 md:flex-none bg-primary text-on-primary h-[60px] md:h-[52px] min-h-[44px] px-5 rounded-card md:rounded-button hover:bg-primary-hover active:scale-[0.98] transition-all flex flex-col items-center justify-center"
+              className="flex-1 md:flex-none bg-primary text-on-primary h-[60px] md:h-[52px] min-h-[44px] px-3 md:px-5 rounded-card md:rounded-button hover:bg-primary-hover active:scale-[0.98] transition-all flex flex-col items-center justify-center"
             >
-              <div className="font-extrabold text-[18px] md:text-[17px] leading-tight">
+              <div className="font-extrabold text-[15px] md:text-[17px] leading-tight whitespace-nowrap">
                 <span>
                   {isEditing ? "Cập nhật" : "Thêm vào đơn"} · {formatNumber(currentItemFinalTotal)}
                 </span>
               </div>
               {(currentItemManualDiscountAmount > 0 || currentItemPromoDiscountAmount > 0) && (
-                <div className="text-xs text-on-primary/80 line-through font-medium mt-0.5">
+                <div className="text-xs text-on-primary/80 line-through font-medium mt-0.5 whitespace-nowrap">
                   Gốc: {formatNumber(currentItemBaseTotal)}
                 </div>
               )}

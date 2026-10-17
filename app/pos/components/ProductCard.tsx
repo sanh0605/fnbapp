@@ -15,7 +15,7 @@ export function renderPriceRange(sizes: { variant?: any; price?: number }[]) {
       <span className="whitespace-nowrap">{formatNumber(minPrice)}</span>
       {maxPrice !== minPrice && (
         <small className="text-[15px] font-medium text-text-secondary">
-          {" "}– <span className="whitespace-nowrap">{formatNumber(maxPrice)}</span>
+          {"\u00A0– "}<span className="whitespace-nowrap">{formatNumber(maxPrice)}</span>
         </small>
       )}
     </>
@@ -55,7 +55,7 @@ export function ProductCard({
       }`}
     >
       <div className="flex items-start justify-between gap-1.5 min-w-0">
-        <div className="text-[18px] font-bold text-text-primary leading-tight line-clamp-2">
+        <div className="text-[18px] font-bold text-text-primary leading-tight">
           {product.name}
         </div>
         {hasPromo && (
@@ -67,7 +67,7 @@ export function ProductCard({
 
       <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 pt-1">
         {sizes.length > 0 ? (
-          <span className="text-[17px] font-extrabold text-primary leading-none shrink-0 max-w-full">
+          <span className="text-[17px] font-extrabold text-primary leading-tight shrink-0 max-w-full">
             {renderPriceRange(sizes)}
           </span>
         ) : (
