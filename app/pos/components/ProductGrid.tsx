@@ -12,8 +12,11 @@ interface ProductGridProps {
   setSearchQuery: (q: string) => void;
   filteredProducts: any[];
   variants: any[];
-  promoProductsMap: Map<string, number>;
+  promoVariantsMap: Map<string, number>;
+  productsWithOptions: Set<string>;
   onProductClick: (product: any) => void;
+  onQuickAdd: (product: any, variant: any) => void;
+  disabled: boolean;
 }
  
 export function ProductGrid({
@@ -24,8 +27,11 @@ export function ProductGrid({
   setSearchQuery,
   filteredProducts,
   variants,
-  promoProductsMap,
+  promoVariantsMap,
+  productsWithOptions,
   onProductClick,
+  onQuickAdd,
+  disabled,
 }: ProductGridProps) {
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -93,7 +99,7 @@ export function ProductGrid({
       </div>
 
       <div className="bg-surface-card px-4 pb-3 shrink-0">
-        <div className="flex gap-2 overflow-x-auto md:flex-wrap pb-2 md:pb-0 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-2 overflow-x-auto pb-2 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setActiveCategory("BEST_SELLERS")}
             className={`snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-medium whitespace-nowrap min-h-[44px] flex items-center transition-all duration-150 active:scale-95 transform ${
@@ -102,7 +108,7 @@ export function ProductGrid({
                 : "bg-surface-secondary text-text-secondary hover:bg-border"
             }`}
           >
-            🔥 Bán chạy
+            Bán chạy
           </button>
           <button
             onClick={() => setActiveCategory("ALL")}
@@ -124,7 +130,7 @@ export function ProductGrid({
                   : "bg-surface-secondary text-text-secondary hover:bg-border"
               }`}
             >
-              {c.name}
+              {c.icon ? `${c.icon} ${c.name}` : c.name}
             </button>
           ))}
         </div>
@@ -149,21 +155,28 @@ export function ProductGrid({
             </div>
           )
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3">
             {filteredProducts.map((p: any) => {
-              const cat = categories.find((c) => c.id === p.category_id);
               const prodVariants = variants.filter((v: any) => v.product_id === p.id);
-              const basePrice = prodVariants.length > 0 ? Number(prodVariants[0].price) : 0;
-              const promoPrice = promoProductsMap.get(p.id);
+              const sizes = prodVariants
+                .map((variant: any) => ({
+                  variant,
+                  price: promoVariantsMap.get(variant.id) ?? Number(variant.price),
+                }))
+                .sort((a: any, b: any) => a.price - b.price);
+              const hasPromo = prodVariants.some((v: any) => promoVariantsMap.has(v.id));
+              const hasOptions = productsWithOptions.has(p.id);
  
               return (
                 <ProductCard
                   key={p.id}
                   product={p}
-                  category={cat}
-                  basePrice={basePrice}
-                  promoPrice={promoPrice}
-                  onClick={() => onProductClick(p)}
+                  sizes={sizes}
+                  hasPromo={hasPromo}
+                  hasOptions={hasOptions}
+                  disabled={disabled}
+                  onOpen={() => onProductClick(p)}
+                  onQuickAdd={(variant) => onQuickAdd(p, variant)}
                 />
               );
             })}

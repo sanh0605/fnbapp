@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { stripDiacritics } from "@/lib/shared/duplicate-name-guard";
-import { calculateItemTotal } from "./cart-pricing";
+import { calculateItemTotal, addQuickLine } from "./cart-pricing";
 import { ProductGrid } from "./ProductGrid";
 import { CartPanel } from "./CartPanel";
 import { ItemConfigModal, type ItemConfigSubmission } from "./ItemConfigModal";
@@ -326,8 +326,7 @@ export default function POSScreen({
     return result;
   }, [products, activeCategory, searchQuery, bestSellers]);
 
-  const { promoProductsMap, promoVariantsMap } = useMemo(() => {
-    const prodMap = new Map<string, number>();
+  const promoVariantsMap = useMemo(() => {
     const varMap = new Map<string, number>();
     const currentTime = new Date();
     const typed = appliedPromoCode?.trim().toLowerCase() ?? "";
@@ -366,18 +365,33 @@ export default function POSScreen({
           );
           const newPrice = res.total;
           
-          // Store the minimum new price for the product if multiple promos or variants apply
-          if (!prodMap.has(variant.product_id) || newPrice < prodMap.get(variant.product_id)!) {
-             prodMap.set(variant.product_id, newPrice);
-          }
           if (!varMap.has(vId) || newPrice < varMap.get(vId)!) {
              varMap.set(vId, newPrice);
           }
         }
       });
     });
-    return { promoProductsMap: prodMap, promoVariantsMap: varMap };
+    return varMap;
   }, [promotions, variants, brandId, appliedPromoCode, now]);
+
+  const productsWithOptions = useMemo(
+    () =>
+      new Set<string>(
+        products
+          .filter(
+            (p: any) =>
+              optionGroupsForProduct(p.id, optionGroups, optionGroupLinks, modifiers).length > 0,
+          )
+          .map((p: any) => p.id),
+      ),
+    [products, optionGroups, optionGroupLinks, modifiers],
+  );
+
+  const handleQuickAdd = (product: any, variant: any) => {
+    if (isCheckingOut) return;
+    setCart(c => addQuickLine(c, product, variant));
+    setLastCheckoutError(null);
+  };
 
   const openProductModal = async (product: any, editIndex: number | null = null) => {
     if (isCheckingOut) return;
@@ -1047,8 +1061,11 @@ export default function POSScreen({
           setSearchQuery={setSearchQuery}
           filteredProducts={filteredProducts}
           variants={variants}
-          promoProductsMap={promoProductsMap}
+          promoVariantsMap={promoVariantsMap}
+          productsWithOptions={productsWithOptions}
           onProductClick={(p) => openProductModal(p)}
+          onQuickAdd={handleQuickAdd}
+          disabled={!!isCheckingOut}
         />
       </div>
 

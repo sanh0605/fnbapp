@@ -134,4 +134,30 @@ describe("ItemConfigModal with OptionGroupPicker", () => {
     expect(screen.queryByText("Mức đường")).toBeNull();
     expect(screen.queryByText("Thêm Topping")).toBeNull();
   });
+
+  it("uses primary colour tokens instead of warning for selected size and main button", () => {
+    render(
+      <ItemConfigModal
+        product={product}
+        variants={variants}
+        groups={[sugarProductGroup, toppingProductGroup]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={null}
+        isEditing={false}
+        onSubmit={vi.fn()}
+        onClose={vi.fn()}
+      />
+    );
+
+    const selectedSizeBtn = screen.getByText("M").closest("button")!;
+    expect(selectedSizeBtn.className).toContain("border-primary");
+    expect(selectedSizeBtn.className).not.toContain("border-warning");
+    expect(screen.getByText("M").className).toContain("text-primary");
+
+    const submitBtn = screen.getByRole("button", { name: /^THÊM -/ });
+    expect(submitBtn.className).toContain("bg-primary");
+    expect(submitBtn.className).not.toContain("bg-warning");
+  });
 });
