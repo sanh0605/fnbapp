@@ -18,7 +18,6 @@ interface ProductGridProps {
   productsWithOptions: Set<string>;
   selectedProductId?: string | null;
   onProductClick: (product: any) => void;
-  onQuickAdd?: (product: any, variant: any) => void;
   disabled: boolean;
   children?: React.ReactNode;
 }
@@ -41,9 +40,7 @@ export function ProductGrid({
 }: ProductGridProps) {
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
-  const [isPhone, setIsPhone] = useState(
-    () => typeof window !== "undefined" && window.innerWidth < 768,
-  );
+  const [isPhone, setIsPhone] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -188,8 +185,14 @@ export function ProductGrid({
               <p className="text-xs text-text-muted mt-1">Thử tìm kiếm với từ khóa khác</p>
             </div>
           )
-        ) : isPhone ? (
-          <div className="flex flex-col -mx-4 -my-4 bg-surface-card">
+        ) : (
+          <div
+            className={
+              isPhone
+                ? "flex flex-col -mx-4 -my-4 bg-surface-card"
+                : "grid grid-cols-3 gap-2.5 content-start"
+            }
+          >
             {filteredProducts.map((p: any) => {
               const prodVariants = variants.filter((v: any) => v.product_id === p.id);
               const sizes = prodVariants
@@ -200,30 +203,18 @@ export function ProductGrid({
                 .sort((a: any, b: any) => a.price - b.price);
               const hasPromo = prodVariants.some((v: any) => promoVariantsMap.has(v.id));
 
-              return (
-                <ProductPhoneRow
-                  key={p.id}
-                  product={p}
-                  sizes={sizes}
-                  hasPromo={hasPromo}
-                  disabled={disabled}
-                  onOpen={() => onProductClick(p)}
-                />
-              );
-            })}
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-2.5 content-start">
-            {filteredProducts.map((p: any) => {
-              const prodVariants = variants.filter((v: any) => v.product_id === p.id);
-              const sizes = prodVariants
-                .map((variant: any) => ({
-                  variant,
-                  price: Number(variant.price),
-                }))
-                .sort((a: any, b: any) => a.price - b.price);
-              const hasPromo = prodVariants.some((v: any) => promoVariantsMap.has(v.id));
-              const hasOptions = productsWithOptions.has(p.id);
+              if (isPhone) {
+                return (
+                  <ProductPhoneRow
+                    key={p.id}
+                    product={p}
+                    sizes={sizes}
+                    hasPromo={hasPromo}
+                    disabled={disabled}
+                    onOpen={() => onProductClick(p)}
+                  />
+                );
+              }
 
               return (
                 <ProductCard
@@ -231,7 +222,7 @@ export function ProductGrid({
                   product={p}
                   sizes={sizes}
                   hasPromo={hasPromo}
-                  hasOptions={hasOptions}
+                  hasOptions={productsWithOptions.has(p.id)}
                   isSelected={selectedProductId === p.id}
                   disabled={disabled}
                   onOpen={() => onProductClick(p)}

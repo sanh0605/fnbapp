@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import React from "react";
+import { screen } from "@testing-library/react";
 import POSScreen from "./POSScreen";
 
 const mocks = vi.hoisted(() => ({
@@ -126,7 +127,7 @@ describe("POSScreen checkout success toast", () => {
     });
 
     await addOneItemToCart();
-    await clickButtonWithText("Thanh toán");
+    await fireClick(screen.getByRole("button", { name: "Thanh toán" }));
     await clickButtonWithText("Tiền mặt");
     await flush();
 

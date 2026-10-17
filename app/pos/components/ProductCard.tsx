@@ -2,6 +2,26 @@
 
 import { formatNumber } from "@/lib/shared/format";
 
+export function renderPriceRange(sizes: { variant?: any; price?: number }[]) {
+  const listPrices = sizes
+    .map((s) => Number(s.variant?.price ?? s.price))
+    .filter((n) => !isNaN(n))
+    .sort((a, b) => a - b);
+  if (listPrices.length === 0) return null;
+  const minPrice = listPrices[0];
+  const maxPrice = listPrices[listPrices.length - 1];
+  return (
+    <>
+      {formatNumber(minPrice)}
+      {maxPrice !== minPrice && (
+        <small className="text-[15px] font-medium text-text-secondary">
+          {" "}– {formatNumber(maxPrice)}
+        </small>
+      )}
+    </>
+  );
+}
+
 interface ProductCardProps {
   product: any;
   sizes: { variant: any; price: number }[];
@@ -10,7 +30,6 @@ interface ProductCardProps {
   isSelected?: boolean;
   disabled: boolean;
   onOpen: () => void;
-  onQuickAdd?: (variant: any) => void;
 }
 
 export function ProductCard({
@@ -22,12 +41,6 @@ export function ProductCard({
   disabled,
   onOpen,
 }: ProductCardProps) {
-  const listPrices = sizes
-    .map((s) => Number(s.variant?.price ?? s.price))
-    .filter((n) => !isNaN(n))
-    .sort((a, b) => a - b);
-  const minPrice = listPrices[0];
-  const maxPrice = listPrices[listPrices.length - 1];
 
   return (
     <button
@@ -53,14 +66,9 @@ export function ProductCard({
       </div>
 
       <div className="flex items-baseline justify-between gap-2">
-        {listPrices.length > 0 ? (
+        {sizes.length > 0 ? (
           <span className="text-[17px] font-extrabold text-primary leading-none">
-            {formatNumber(minPrice)}
-            {maxPrice !== minPrice && (
-              <small className="text-[15px] font-medium text-text-secondary">
-                {" "}– {formatNumber(maxPrice)}
-              </small>
-            )}
+            {renderPriceRange(sizes)}
           </span>
         ) : (
           <span />

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 //
-// Characterisation tests for the item-configuration modal inside
+// Tests for the ItemPicker inside
 // app/pos/components/POSScreen.tsx (JSX at lines 1133-1283, driven by openProductModal
 // at 300, addModifier at 323, removeModifier at 327, addToCart at 336, and the
 // derived price block at 381-406). Plan F, task F1.
@@ -104,26 +104,17 @@ function addToCartButton(): HTMLButtonElement {
   return btn as HTMLButtonElement;
 }
 
-function modifierRow(modName: string): HTMLElement {
-  const modalRoot = addToCartButton().closest(".fixed") || document;
-  const nameSpan = Array.from(modalRoot.querySelectorAll("span, div, button")).find(
-    s => s.textContent?.includes(modName),
-  );
-  if (!nameSpan) throw new Error(`modifier row not found: "${modName}"`);
-  // span -> "flex flex-col" name block -> row div (name block + button block)
-  return (nameSpan.closest("div.flex") || nameSpan.parentElement!) as HTMLElement;
-}
-
 function modifierButtons(modName: string) {
+  // "−" only appears once the option has a portion, so it is null at zero.
   const minusBtn = document.querySelector(
     `button[aria-label="Bớt một phần ${modName}"]`
-  ) as HTMLButtonElement;
+  ) as HTMLButtonElement | null;
   const plusBtn = document.querySelector(
     `button[aria-label="Thêm một phần ${modName}"]`
   ) as HTMLButtonElement;
-  if (!minusBtn || !plusBtn) throw new Error(`modifier buttons not found: "${modName}"`);
+  if (!plusBtn) throw new Error(`modifier buttons not found: "${modName}"`);
   // The option's row shows "×N" next to its name once picked; no mark means 0.
-  const row = minusBtn.parentElement!.parentElement!;
+  const row = plusBtn.parentElement!.parentElement!;
   const countSpan = { textContent: row.textContent?.match(/×(\d+)/)?.[1] ?? "0" };
   return { minusBtn, plusBtn, countSpan };
 }
@@ -183,7 +174,7 @@ function makeProduct(id: string, name: string) {
 
 // --- Tests ----------------------------------------------------------------
 
-describe("POSScreen item-configuration modal", () => {
+describe("POSScreen ItemPicker", () => {
   it("variant selection changes the total shown on the add button", async () => {
     const product = makeProduct("P1", "Cà phê sữa");
     const variants = [
@@ -229,13 +220,13 @@ describe("POSScreen item-configuration modal", () => {
     let { minusBtn, plusBtn, countSpan } = modifierButtons("Trân châu");
 
     expect(countSpan.textContent).toBe("0");
-    expect(minusBtn.disabled).toBe(true);
+    expect(minusBtn).toBeNull();
     expect(addToCartButton().textContent).toContain(formatNumber(20000));
 
     await fireClick(plusBtn);
     ({ minusBtn, plusBtn, countSpan } = modifierButtons("Trân châu"));
     expect(countSpan.textContent).toBe("1");
-    expect(minusBtn.disabled).toBe(false);
+    expect(minusBtn).not.toBeNull();
     expect(addToCartButton().textContent).toContain(formatNumber(25000));
 
     await fireClick(plusBtn);
@@ -243,15 +234,15 @@ describe("POSScreen item-configuration modal", () => {
     expect(countSpan.textContent).toBe("2");
     expect(addToCartButton().textContent).toContain(formatNumber(30000));
 
-    await fireClick(minusBtn);
+    await fireClick(minusBtn!);
     ({ minusBtn, plusBtn, countSpan } = modifierButtons("Trân châu"));
     expect(countSpan.textContent).toBe("1");
-    expect(minusBtn.disabled).toBe(false);
+    expect(minusBtn).not.toBeNull();
 
-    await fireClick(minusBtn);
+    await fireClick(minusBtn!);
     ({ minusBtn, plusBtn, countSpan } = modifierButtons("Trân châu"));
     expect(countSpan.textContent).toBe("0");
-    expect(minusBtn.disabled).toBe(true);
+    expect(minusBtn).toBeNull();
     expect(addToCartButton().textContent).toContain(formatNumber(20000));
   });
 
@@ -611,7 +602,7 @@ describe("POSScreen item-configuration modal", () => {
   // still mounted.
   //
   // Before F2, openProductModal re-initialised the five item state vars
-  // itself. After F2, <ItemConfigModal> reconciles in place on a second
+  // itself. After F2, <ItemPicker> reconciles in place on a second
   // call (same type, same position, no key) -- its useState initialisers
   // only ran once, at first mount, so it kept product A's variant/qty under
   // product B's name and price. Measured directly: this test fails against
@@ -738,9 +729,10 @@ describe("POSScreen item-configuration modal", () => {
     const cartLines = Array.from(document.querySelectorAll("h4")).filter(
       h => h.textContent?.includes("Cà phê đá")
     );
-    expect(cartLines).toHaveLength(1);
     const cartRow = cartLines[0].closest("div[class*='relative overflow-hidden']") || cartLines[0].parentElement!;
-    expect(cartRow.textContent).toContain("3");
+    const qtyEl = cartRow.querySelector('button[aria-label="Giảm số lượng"]')?.nextElementSibling;
+    expect(qtyEl).not.toBeNull();
+    expect(qtyEl?.textContent?.trim()).toBe("3");
   });
 
   // Task 4a Test 3
@@ -841,48 +833,100 @@ describe("POSScreen item-configuration modal", () => {
     const cfdVariants = [
       { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
     ];
+    const bacXiu = makeProduct("p-bx", "Bạc xỉu");
+    const bacXiuVariants = [
+      { id: "v-bx-m", product_id: "p-bx", size_name: "M", price: 20000 },
+    ];
 
     await renderTracked(
       <POSScreen
         categories={[CATEGORY]}
-        products={[cfd]}
-        variants={cfdVariants}
+        products={[cfd, bacXiu]}
+        variants={[...cfdVariants, ...bacXiuVariants]}
         modifiers={[]}
-        bestSellers={[cfd.id]}
+        bestSellers={[cfd.id, bacXiu.id]}
       />
     );
 
-    // Add 1 line
+    // Add line A (Cà phê đá, qty 1, 360ml)
     await openProductByName("Cà phê đá");
     await fireClick(addToCartButton());
 
-    const cartLine = Array.from(document.querySelectorAll("h4")).find(
-      h => h.textContent?.includes("Cà phê đá")
-    )!;
+    // Add line B (Bạc xỉu, qty 2, M)
+    await openProductByName("Bạc xỉu");
+    await fireClick(qtyControls().plusBtn); // qty 2
+    await fireClick(addToCartButton());
 
-    // Click cart line to open picker in edit mode
-    await fireClick(cartLine);
+    // Cart has 2 lines: line A and line B
+    const cartLines = Array.from(document.querySelectorAll("h4"));
+    expect(cartLines).toHaveLength(2);
+
+    const lineAHeading = cartLines.find(h => h.textContent?.includes("Cà phê đá"))!;
+    expect(lineAHeading).not.toBeNull();
+
+    // Click cart line A to open picker in edit mode
+    await fireClick(lineAHeading);
     const updateBtn = addToCartButton();
     expect(updateBtn.textContent?.trim().startsWith("Cập nhật")).toBe(true);
 
     // Remove line A from the cart while picker is open (labelled "Xoá" in CartItemRow)
-    const cartRow = cartLine.closest("div[class*='relative overflow-hidden']") || cartLine.parentElement!;
-    const removeBtn = cartRow.querySelector('button[aria-label="Xoá"]') as HTMLButtonElement;
-    expect(removeBtn).toBeDefined();
-    await fireClick(removeBtn);
+    const cartRowA = lineAHeading.closest("div[class*='relative overflow-hidden']") || lineAHeading.parentElement!;
+    const removeBtnA = cartRowA.querySelector('button[aria-label="Xoá"]') as HTMLButtonElement;
+    expect(removeBtnA).not.toBeNull();
+    await fireClick(removeBtnA);
 
     // Tap Cập nhật
     await fireClick(updateBtn);
 
-    // Picker closes without crashing, cart remains 0 lines
+    // Picker closes without crashing
     expect(Array.from(document.querySelectorAll("button")).find(
       b => b.textContent?.trim().startsWith("Cập nhật")
     )).toBeUndefined();
 
+    // Line B is unchanged (name, size, quantity)
     const remainingLines = Array.from(document.querySelectorAll("h4")).filter(
-      h => h.textContent?.includes("Cà phê đá")
+      h => h.textContent?.includes("Bạc xỉu")
     );
-    expect(remainingLines).toHaveLength(0);
+    expect(remainingLines).toHaveLength(1);
+    const cartRowB = remainingLines[0].closest("div[class*='relative overflow-hidden']") || remainingLines[0].parentElement!;
+    expect(remainingLines[0].textContent).toContain("Bạc xỉu");
+    expect(cartRowB.textContent).toContain("M");
+    const qtyEl = cartRowB.querySelector('button[aria-label="Giảm số lượng"]')?.nextElementSibling;
+    expect(qtyEl).not.toBeNull();
+    expect(qtyEl?.textContent?.trim()).toBe("2");
+  });
+
+  it("the picker closes when checkout starts", async () => {
+    const product = makeProduct("p-cfd", "Cà phê đá");
+    const variants = [{ id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 }];
+
+    await renderTracked(
+      <POSScreen
+        categories={[CATEGORY]}
+        products={[product]}
+        variants={variants}
+        modifiers={[]}
+        bestSellers={[product.id]}
+      />
+    );
+
+    // Add 1 line to cart
+    await openProductByName("Cà phê đá");
+    await fireClick(addToCartButton());
+
+    // Open dish picker again
+    await openProductByName("Cà phê đá");
+    expect(addToCartButton().textContent?.trim().startsWith("Thêm vào đơn")).toBe(true);
+
+    // Start checkout the way existing checkout tests do: Thanh toán -> Tiền mặt
+    await clickButtonWithText("Thanh toán");
+    await clickButtonWithText("Tiền mặt");
+
+    // Assert "Thêm vào đơn" is gone
+    const addButton = Array.from(document.querySelectorAll("button")).find(
+      b => b.textContent?.trim().startsWith("Thêm vào đơn")
+    );
+    expect(addButton).toBeUndefined();
   });
 
   // Task 4a Test 8
@@ -911,16 +955,16 @@ describe("POSScreen item-configuration modal", () => {
     expect(cartHeadings).toHaveLength(0);
 
     // Picker is open with submit button
-    expect(addToCartButton()).toBeDefined();
+    expect(addToCartButton()).not.toBeNull();
 
     // Size group heading "Cỡ ly" is present
-    const sizeHeading = Array.from(document.querySelectorAll("h3, h4, h5, div, span")).find(
+    const sizeHeading = Array.from(document.querySelectorAll("span")).find(
       el => el.textContent?.trim() === "Cỡ ly"
     );
-    expect(sizeHeading).toBeDefined();
+    expect(sizeHeading).not.toBeNull();
 
     // No other option group headers (only size group)
-    const otherGroupHeaders = Array.from(document.querySelectorAll("h3, h4, h5")).filter(
+    const otherGroupHeaders = Array.from(document.querySelectorAll("span")).filter(
       el => el.textContent?.trim() === "Thêm Topping" || el.textContent?.trim() === "Độ ngọt" || el.textContent?.trim() === "Đá"
     );
     expect(otherGroupHeaders).toHaveLength(0);

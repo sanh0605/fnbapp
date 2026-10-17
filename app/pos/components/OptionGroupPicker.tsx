@@ -179,19 +179,16 @@ export function OptionGroupPicker({
                             +{formatNumber(priceNum)}
                           </span>
                         )}
-                        <button
-                          type="button"
-                          onClick={() => removeManyPortion(opt.id)}
-                          disabled={count === 0}
-                          aria-label={`Bớt một phần ${opt.name}`}
-                          className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold text-lg transition-colors ${
-                            count > 0
-                              ? "text-primary hover:bg-surface-card"
-                              : "text-text-muted opacity-40 cursor-not-allowed"
-                          }`}
-                        >
-                          −
-                        </button>
+                        {count >= 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeManyPortion(opt.id)}
+                            aria-label={`Bớt một phần ${opt.name}`}
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold text-lg transition-colors text-primary hover:bg-surface-card"
+                          >
+                            −
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => addManyPortion(g, opt)}

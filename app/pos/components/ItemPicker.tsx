@@ -56,8 +56,9 @@ export function ItemPicker({
   const [selectedModifiers, setSelectedModifiers] = useState<any[]>(() =>
     initialLine ? [...initialLine.modifiers] : []
   );
+  const maxQty = Math.max(99, initialLine?.qty ?? 1);
   const [selectedQty, setSelectedQty] = useState<number>(() =>
-    initialLine ? Math.min(99, Math.max(1, Number(initialLine.qty) || 1)) : 1
+    initialLine ? Math.min(maxQty, Math.max(1, Number(initialLine.qty) || 1)) : 1
   );
   const [itemDiscount, setItemDiscount] = useState<number>(() =>
     initialLine ? initialLine.discount_amount || 0 : 0
@@ -149,7 +150,7 @@ export function ItemPicker({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:max-h-[60%] md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border md:shrink-0">
+      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:max-h-[60%] md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border min-h-0">
         <div className="w-11 h-1.5 rounded-full bg-border mx-auto mt-2 shrink-0 md:hidden" />
 
         <div className="flex items-center justify-between px-4 py-1.5 md:px-3.5 md:pt-3 md:pb-2 shrink-0">
@@ -166,7 +167,7 @@ export function ItemPicker({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 pb-3 md:px-3.5 md:pb-2.5">
+        <div className="flex-1 overflow-y-auto min-h-0 px-3 pb-3 md:px-3.5 md:pb-2.5">
           <div className="flex flex-col md:grid md:grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3 md:gap-2.5">
             {/* Group 1: Cỡ ly */}
             <div className="bg-surface-card border border-border rounded-card overflow-hidden flex flex-col">
@@ -321,8 +322,8 @@ export function ItemPicker({
               <button
                 type="button"
                 aria-label="Thêm số lượng"
-                disabled={selectedQty >= 99}
-                onClick={() => setSelectedQty((q) => Math.min(99, q + 1))}
+                disabled={selectedQty >= maxQty}
+                onClick={() => setSelectedQty((q) => Math.min(maxQty, q + 1))}
                 className="w-[52px] h-[60px] md:h-[52px] min-h-[44px] flex items-center justify-center text-[26px] md:text-[24px] font-extrabold text-primary disabled:text-text-muted disabled:opacity-40 transition-colors"
               >
                 +

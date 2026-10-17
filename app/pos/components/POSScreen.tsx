@@ -414,7 +414,7 @@ export default function POSScreen({
     }
   }, [cart, editingLineId]);
 
-  const openProductModal = (product: any, editIndex: number | string | null = null) => {
+  const openProductModal = (product: any, editIndex: number | null = null) => {
     if (isCheckingOut) return;
     const prodVariants = variants.filter((v: any) => v.product_id === product.id);
     if (prodVariants.length === 0) {
@@ -425,8 +425,6 @@ export default function POSScreen({
     setSelectedProduct(product);
     if (typeof editIndex === "number") {
       setEditingLineId(cart[editIndex]?.id ?? null);
-    } else if (typeof editIndex === "string") {
-      setEditingLineId(editIndex);
     } else {
       setEditingLineId(null);
     }
@@ -439,7 +437,6 @@ export default function POSScreen({
   const handleItemConfigSubmit = (config: ItemConfigSubmission) => {
     if (isCheckingOut || !selectedProduct) return;
     const line = {
-      id: editingLineId ?? crypto.randomUUID(),
       product_id: selectedProduct.id,
       product_name: selectedProduct.name,
       variant_id: config.variant.id,

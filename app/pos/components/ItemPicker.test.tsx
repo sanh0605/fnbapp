@@ -221,4 +221,45 @@ describe("ItemPicker", () => {
     const plusBtn = screen.getByRole("button", { name: "Thêm số lượng" });
     expect(plusBtn).toBeDisabled();
   });
+
+  it("editing a line with quantity above 99 preserves quantity and caps at that quantity", () => {
+    const lineAt105 = {
+      product_id: product.id,
+      product_name: product.name,
+      variant_id: variants[0].id,
+      size_name: variants[0].size_name,
+      unit_price: variants[0].price,
+      qty: 105,
+      discount_amount: 0,
+      discount_type: "VND",
+      modifiers: [],
+    };
+    const onSubmit = vi.fn();
+
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={lineAt105 as any}
+        isEditing={true}
+        onSubmit={onSubmit}
+        onClose={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText("105")).toBeInTheDocument();
+
+    const plusBtn = screen.getByRole("button", { name: "Thêm số lượng" });
+    expect(plusBtn).toBeDisabled();
+
+    const submitBtn = screen.getByRole("button", { name: /^Cập nhật/ });
+    fireEvent.click(submitBtn);
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ qty: 105 })
+    );
+  });
 });

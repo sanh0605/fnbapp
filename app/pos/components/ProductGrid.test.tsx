@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import React from "react";
 import { ProductGrid } from "./ProductGrid";
 
@@ -21,7 +21,6 @@ describe("ProductGrid empty states and Task 3a behaviour", () => {
     promoVariantsMap: new Map<string, number>(),
     productsWithOptions: new Set<string>(),
     onProductClick: vi.fn(),
-    onQuickAdd: vi.fn(),
     disabled: false,
   };
 
@@ -82,5 +81,34 @@ describe("ProductGrid empty states and Task 3a behaviour", () => {
     const coffeeTab = screen.getByRole("button", { name: "☕ Cà phê" });
     expect(coffeeTab).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Trà" })).toBeInTheDocument();
+  });
+
+  it("passes hasPromo, hasOptions, and onProductClick to the card", () => {
+    const product = { id: "P1", name: "Cà phê đen", category_id: "CAT-1" };
+    const variant = { id: "V1", product_id: "P1", size_name: "M", price: 25000 };
+    const promoMap = new Map<string, number>([["V1", 20000]]);
+    const optionsSet = new Set<string>(["P1"]);
+    const onProductClick = vi.fn();
+
+    render(
+      <ProductGrid
+        {...defaultProps}
+        filteredProducts={[product]}
+        variants={[variant]}
+        promoVariantsMap={promoMap}
+        productsWithOptions={optionsSet}
+        onProductClick={onProductClick}
+      />
+    );
+
+    // hasPromo reaches card -> shows "Khuyến mãi"
+    expect(screen.getByText("Khuyến mãi")).toBeInTheDocument();
+
+    // hasOptions reaches card -> shows "Có tuỳ chọn"
+    expect(screen.getByText("Có tuỳ chọn")).toBeInTheDocument();
+
+    // onProductClick reaches card -> clicking card calls onProductClick(product)
+    fireEvent.click(screen.getByRole("button", { name: "Cà phê đen" }));
+    expect(onProductClick).toHaveBeenCalledWith(product);
   });
 });

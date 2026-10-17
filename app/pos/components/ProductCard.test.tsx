@@ -36,7 +36,6 @@ describe("ProductCard (Task 3a)", () => {
         hasOptions={false}
         disabled={false}
         onOpen={vi.fn()}
-        onQuickAdd={vi.fn()}
       />
     );
 
@@ -53,7 +52,6 @@ describe("ProductCard (Task 3a)", () => {
         hasOptions={true}
         disabled={false}
         onOpen={vi.fn()}
-        onQuickAdd={vi.fn()}
       />
     );
 
@@ -75,7 +73,6 @@ describe("ProductCard (Task 3a)", () => {
         hasOptions={false}
         disabled={false}
         onOpen={onOpen}
-        onQuickAdd={vi.fn()}
       />
     );
 
@@ -92,10 +89,64 @@ describe("ProductCard (Task 3a)", () => {
         hasOptions={false}
         disabled={true}
         onOpen={vi.fn()}
-        onQuickAdd={vi.fn()}
       />
     );
 
     expect(screen.getByRole("button", { name: "Cà phê đen" })).toBeDisabled();
+  });
+
+  it("renders without emoji, without 'đ', and omits 'Có tuỳ chọn' and 'Khuyến mãi' when false", () => {
+    render(
+      <ProductCard
+        product={sampleProduct}
+        sizes={[{ variant: { id: "V1", price: 25000 }, price: 25000 }]}
+        hasPromo={false}
+        hasOptions={false}
+        disabled={false}
+        onOpen={vi.fn()}
+      />
+    );
+
+    const card = screen.getByRole("button", { name: "Cà phê đen" });
+    expect(screen.queryByText("Có tuỳ chọn")).toBeNull();
+    expect(screen.queryByText("Khuyến mãi")).toBeNull();
+    expect(card.textContent).not.toMatch(/\d\s*đ/); // prices carry no "đ"; the name may
+    expect(card.textContent).not.toMatch(/[\u{1F300}-\u{1F9FF}]/u);
+  });
+
+  it("renders list-price range '15,000 – 18,000', or one price when one size", () => {
+    const { rerender } = render(
+      <ProductCard
+        product={{ id: "P-CFD", name: "Cà phê đá" }}
+        sizes={[
+          { variant: { id: "V-360", price: 15000 }, price: 15000 },
+          { variant: { id: "V-500", price: 18000 }, price: 18000 },
+        ]}
+        hasPromo={false}
+        hasOptions={false}
+        disabled={false}
+        onOpen={vi.fn()}
+      />
+    );
+
+    const card = screen.getByRole("button", { name: "Cà phê đá" });
+    expect(card.textContent).toContain("15,000 – 18,000");
+
+    rerender(
+      <ProductCard
+        product={{ id: "P-CFD", name: "Cà phê đá" }}
+        sizes={[
+          { variant: { id: "V-360", price: 15000 }, price: 15000 },
+        ]}
+        hasPromo={false}
+        hasOptions={false}
+        disabled={false}
+        onOpen={vi.fn()}
+      />
+    );
+
+    const cardSingle = screen.getByRole("button", { name: "Cà phê đá" });
+    expect(cardSingle.textContent).toContain("15,000");
+    expect(cardSingle.textContent).not.toContain("–");
   });
 });
