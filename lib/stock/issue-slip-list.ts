@@ -31,6 +31,7 @@ export interface IssueSlipListPage {
 
 interface Candidate {
   row: IssueSlipListRow; exactValue: number; timeMs: number; createdMs: number; haystack: string;
+  login: string; pickerLabel: string;
 }
 
 function ms(value: string | null | undefined): number {
@@ -41,9 +42,9 @@ function ms(value: string | null | undefined): number {
 export function listIssueSlipsPage(input: {
   slips: IssueSlipRecord[]; issues: IssueRowRecord[];
   items: { id: string; name: string }[]; lineValues: Map<string, number>; filters: IssueSlipListFilters;
-  staffName: StaffNameResolver;
+  staffName: StaffNameResolver; pickerLabels: Map<string, string>;
 }): IssueSlipListPage {
-  const { slips, issues, lineValues, filters, staffName } = input;
+  const { slips, issues, lineValues, filters, staffName, pickerLabels } = input;
   const itemName = new Map(input.items.map(i => [i.id, i.name]));
   const reversed = reversedIssueIds(issues);
   const sumValues = (lines: IssueRowRecord[]) =>
@@ -57,19 +58,21 @@ export function listIssueSlipsPage(input: {
     const cancelled = slipCancellation(slip.id, issues, reversed) !== null;
     const exactValue = cancelled ? 0 : sumValues(activeSlipLines(slip.id, issues, reversed));
     const value = displayMoney(exactValue);
+    const createdByName = staffName(slip.created_by_name, slip.created_by_id) ?? NO_NAME;
     candidates.push({
       row: {
         id: slip.id, href: `/admin/inventory/issue-slips/${slip.id}`,
         kind: cancelled ? "CANCELLED" : "SLIP",
-        dateText: formatDateTimeFull(slip.issued_at), createdByName: staffName(slip.created_by_name, slip.created_by_id) ?? NO_NAME, value,
+        dateText: formatDateTimeFull(slip.issued_at), createdByName, value,
       },
       exactValue,
       timeMs: ms(slip.issued_at), createdMs: ms(slip.created_at),
       haystack: `${slip.id} ${namesOf(slipLines(slip.id, issues))}`.toLowerCase(),
+      login: slip.created_by_name ?? "", pickerLabel: pickerLabels.get(slip.created_by_name ?? "") ?? createdByName,
     });
   }
 
-  const people = [...new Set(candidates.map(c => c.row.createdByName).filter(n => n !== NO_NAME))]
+  const people = [...new Set(candidates.map(c => c.pickerLabel).filter(n => n !== NO_NAME))]
     .sort((a, b) => a.localeCompare(b, "vi"));
 
   const term = (filters.q ?? "").trim().slice(0, MAX_QUERY_LENGTH).toLowerCase();
@@ -81,12 +84,12 @@ export function listIssueSlipsPage(input: {
   const endMs = to && range ? range.endUtc.getTime() : Infinity;
   const kind = filters.kind === "SLIP" || filters.kind === "CANCELLED" ? filters.kind : null;
 
-  // An old link carries the login; the rows now carry the staff name.
-  const person = filters.person && filters.person !== "ALL" ? staffName(filters.person) : null;
+  // The picker value is a label; an old link carries the login.
+  const person = filters.person && filters.person !== "ALL" ? filters.person : null;
 
   const matched = candidates.filter(c => {
     if (kind ? c.row.kind !== kind : c.row.kind === "CANCELLED") return false;
-    if (person && c.row.createdByName !== person) return false;
+    if (person && c.pickerLabel !== person && c.login !== person) return false;
     if (c.timeMs < startMs || c.timeMs > endMs) return false;
     return !term || c.haystack.includes(term);
   });

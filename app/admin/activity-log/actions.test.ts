@@ -81,15 +81,15 @@ describe("getActivityLogEvents", () => {
       page: 2,
       q: "PHD(001),",
       type: "VOIDED",
-      actor: "Admin",
+      actor: "Admin (admin2)",
       from: "2026-07-01T00:00:00.000Z",
       to: "2026-07-31T23:59:59.999Z",
     });
 
     expect(orderSearch.ilike).toHaveBeenCalledWith("order_no", "%PHD001%");
     expect(events.eq).toHaveBeenCalledWith("event_type", "VOIDED");
-    // The picker shows names, the log stores logins: filter by every login of that name.
-    expect(events.in).toHaveBeenCalledWith("actor_name", ["Admin", "admin", "admin2"]);
+    // The picker shows labels, the log stores logins: the label of two same-named people picks only one login.
+    expect(events.in).toHaveBeenCalledWith("actor_name", ["Admin (admin2)", "admin2"]);
     expect(events.gte).toHaveBeenCalledWith("event_at", "2026-07-01T00:00:00.000Z");
     expect(events.lte).toHaveBeenCalledWith("event_at", "2026-07-31T23:59:59.999Z");
     expect(events.or).toHaveBeenCalledWith(
@@ -110,7 +110,7 @@ describe("getActivityLogEvents", () => {
     })]);
     expect(result.totalCount).toBe(41);
     expect(result.itemsPerPage).toBe(20);
-    expect(result.actors).toEqual(["Admin", "Cashier"]);
+    expect(result.actors).toEqual(["Admin (admin)", "Admin (admin2)", "Cashier", "ghost"]);
     expect(actors.select).toHaveBeenCalledWith("id, username, name");
   });
 

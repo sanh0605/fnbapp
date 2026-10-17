@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildStaffNameResolver } from "@/lib/auth/staff-names";
+import { buildStaffNameResolver, staffPickerLabels } from "@/lib/auth/staff-names";
 import { listIssueSlipsPage } from "./issue-slip-list";
 import type { IssueRowRecord, IssueSlipRecord } from "./issue-slip-status";
 
@@ -30,11 +30,13 @@ const lineValues = new Map<string, number>([
   ["ISS-00192", 73606.1633], ["ISS-00196", 36404.6], ["ISS-00197", 42493.2898],
   ["ISS-00119", 48600], ["ISS-00122", -48600], ["ISS-00001", 13550], ["ISS-00002", -2000],
 ]);
-const staffName = buildStaffNameResolver([
+const users = [
   { id: "USR-001", username: "admin", name: "ADMIN" },
   { id: "USR-002", username: "tuyen2612", name: "Tài Chí Tuyền" },
-]);
-const page = (filters = {}) => listIssueSlipsPage({ slips, issues, items, lineValues, filters, staffName });
+];
+const staffName = buildStaffNameResolver(users);
+const pickerLabels = staffPickerLabels(users);
+const page = (filters = {}) => listIssueSlipsPage({ slips, issues, items, lineValues, filters, staffName, pickerLabels });
 
 describe("listIssueSlipsPage", () => {
   it("Tất cả hides cancelled slips and lists no stocktake row (BR-INV-022), newest first", () => {
@@ -74,8 +76,23 @@ describe("listIssueSlipsPage", () => {
     expect(page({ person: "tuyen2612" }).rows.map(r => r.id)).toEqual(["ISL-00077", "ISL-00076"]);
   });
 
+  it("two people with the same name stay two choices, and picking one shows only that person's slips", () => {
+    const twins = [
+      { id: "USR-001", username: "admin", name: "Admin" },
+      { id: "USR-004", username: "admin2", name: "Admin" },
+    ];
+    const run = (filters = {}) => listIssueSlipsPage({
+      slips: [slips[2], { ...slips[0], created_by_id: "USR-004", created_by_name: "admin2" }],
+      issues, items, lineValues, filters,
+      staffName: buildStaffNameResolver(twins), pickerLabels: staffPickerLabels(twins),
+    });
+    expect(run().people).toEqual(["Admin (admin)", "Admin (admin2)"]);
+    expect(run({ person: "Admin (admin2)" }).rows.map(r => r.id)).toEqual(["ISL-00076"]);
+    expect(run({ person: "admin2" }).rows.map(r => r.id)).toEqual(["ISL-00076"]);
+  });
+
   it("keeps the stored text for a person missing from users", () => {
-    const p = listIssueSlipsPage({ slips, issues, items, lineValues, filters: {}, staffName: buildStaffNameResolver([]) });
+    const p = listIssueSlipsPage({ slips, issues, items, lineValues, filters: {}, staffName: buildStaffNameResolver([]), pickerLabels: new Map() });
     expect(p.rows.map(r => r.createdByName)).toEqual(["tuyen2612", "tuyen2612"]);
   });
 
@@ -88,7 +105,7 @@ describe("listIssueSlipsPage", () => {
   it("pages 20 rows and clamps an out-of-range page", () => {
     const many = Array.from({ length: 45 }, (_, i) => ({ ...slips[0], id: `ISL-9${String(i).padStart(4, "0")}` }));
     const manyLines = many.map((s, i) => line(`ISS-9${i}`, s.id, "SPM-038", 1, s.issued_at));
-    const p = listIssueSlipsPage({ slips: many, issues: manyLines, items, lineValues: new Map(), filters: { page: "9" }, staffName });
+    const p = listIssueSlipsPage({ slips: many, issues: manyLines, items, lineValues: new Map(), filters: { page: "9" }, staffName, pickerLabels });
     expect(p).toMatchObject({ page: 3, pageCount: 3, firstIndex: 41, lastIndex: 45, total: 45 });
   });
 });
@@ -110,7 +127,7 @@ describe("listIssueSlipsPage totals (BR-UI-004)", () => {
   const values = new Map<string, number>([["ISS-400", 99999], ["ISS-401", -99999]]);
   many.forEach((_, i) => values.set(`ISS-${300 + i}`, 100.4));
   const run = (filters = {}) => listIssueSlipsPage({
-    slips: [...many, cancelledSlip], issues: manyIssues, items, lineValues: values, filters, staffName,
+    slips: [...many, cancelledSlip], issues: manyIssues, items, lineValues: values, filters, staffName, pickerLabels,
   });
 
   it("totals every live slip the filter matches, rounded once from the exact sum", () => {

@@ -13,7 +13,7 @@ import {
 } from "@/lib/stock/issue-slip-status";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/auth";
-import { loadStaffNameResolver } from "@/lib/auth/staff-names";
+import { buildStaffNameResolver, loadStaffNameResolver, staffPickerLabels, type StaffNameUser } from "@/lib/auth/staff-names";
 import { ok, fail, type ActionResponse } from "@/lib/db/shared-actions";
 import { describeActionError } from "@/lib/shared/action-error";
 import { CANCEL_REASON_MAX } from "@/lib/purchasing/purchase-order-cancel";
@@ -94,7 +94,8 @@ export async function getIssueSlipsPage(filters: IssueSlipListFilters): Promise<
   const auth = await requireAdmin();
   if (!auth.ok) throw new Error(auth.error);
   const ctx = await loadIssueSlipContext();
-  return listIssueSlipsPage({ ...ctx, filters, staffName: await loadStaffNameResolver() });
+  const users = await findAll("Users") as StaffNameUser[];
+  return listIssueSlipsPage({ ...ctx, filters, staffName: buildStaffNameResolver(users), pickerLabels: staffPickerLabels(users) });
 }
 
 export async function getIssueSlipDetail(slipId: string): Promise<IssueSlipDetail | null> {

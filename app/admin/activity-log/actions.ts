@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/auth/auth";
-import { buildStaffNameResolver } from "@/lib/auth/staff-names";
+import { buildStaffNameResolver, staffPickerLabels } from "@/lib/auth/staff-names";
 import { findAllWhereInBatches } from "@/lib/db/tables";
 import { getSupabaseClient } from "@/lib/db/supabase";
 
@@ -70,14 +70,15 @@ export async function getActivityLogEvents(
   if (actorResult.error) throw new Error(`Activity-log actors: ${actorResult.error.message}`);
   const users = (actorResult.data || []) as { id: string; username: string; name: string | null }[];
   const staffName = buildStaffNameResolver(users);
+  const pickerLabels = staffPickerLabels(users);
 
   let eventsQuery: any = supabase
     .from("order_events")
     .select("*", { count: "exact" });
   if (filters.type) eventsQuery = eventsQuery.eq("event_type", filters.type);
-  // The picker shows names but the log stores logins: match every login with that name.
+  // The picker shows labels but the log stores logins: map the label back to its login(s).
   if (filters.actor) {
-    const logins = users.filter(u => u.name?.trim() === filters.actor).map(u => u.username);
+    const logins = users.filter(u => pickerLabels.get(u.username) === filters.actor).map(u => u.username);
     eventsQuery = eventsQuery.in("actor_name", [filters.actor, ...logins]);
   }
   if (filters.from) eventsQuery = eventsQuery.gte("event_at", filters.from);
@@ -131,10 +132,6 @@ export async function getActivityLogEvents(
     })),
     totalCount: Number(eventResult.count) || 0,
     itemsPerPage: ACTIVITY_LOG_ITEMS_PER_PAGE,
-    actors: Array.from(new Set(
-      users
-        .map(row => String(row.name || "").trim())
-        .filter(Boolean),
-    )).sort((left, right) => left.localeCompare(right)),
+    actors: [...pickerLabels.values()].sort((left, right) => left.localeCompare(right)),
   };
 }
