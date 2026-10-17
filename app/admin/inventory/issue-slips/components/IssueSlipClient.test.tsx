@@ -691,11 +691,11 @@ describe("IssueSlipClient -- per-line validation names which line is wrong, befo
   });
 });
 
-describe("IssueSlipClient -- Số lượng field sizing (D10)", () => {
-  it("the Số lượng field carries the compact w-24 width class (class presence, not measured width)", async () => {
+describe("IssueSlipClient -- Số lượng field sizing (D10, K1)", () => {
+  it("the Số lượng field carries the compact w-36 width class (class presence, not measured width)", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const qtyInput = findQtyInput(getLineBlocks(container)[0]);
-    expect(qtyInput.closest(".w-24")).toBeTruthy();
+    expect(qtyInput.closest(".w-36")).toBeTruthy();
   });
 });
 

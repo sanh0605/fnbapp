@@ -49,7 +49,7 @@ describe("ConversionForm rate box", () => {
 
   it("shows the stored rate with commas and takes decimals", () => {
     render(<ConversionForm items={ITEMS} conversions={[]} units={UNITS} initialData={EDIT} />);
-    const rate = screen.getByLabelText("Tỷ lệ quy đổi") as HTMLInputElement;
+    const rate = screen.getByLabelText("Hệ số quy đổi") as HTMLInputElement;
     expect(rate.type).toBe("text");
     expect(rate.getAttribute("inputMode")).toBe("decimal");
     expect(rate.value).toBe("1,000");
@@ -66,7 +66,7 @@ describe("ConversionForm rate box", () => {
 
   it('a rate of 0 says "Nhập số lớn hơn 0." under the box when leaving it', () => {
     render(<ConversionForm items={ITEMS} conversions={[]} units={UNITS} initialData={EDIT} />);
-    const rate = screen.getByLabelText("Tỷ lệ quy đổi") as HTMLInputElement;
+    const rate = screen.getByLabelText("Hệ số quy đổi") as HTMLInputElement;
     fireEvent.change(rate, { target: { value: "0" } });
     fireEvent.blur(rate);
     expect(screen.getByText("Nhập số lớn hơn 0.")).toBeInTheDocument();

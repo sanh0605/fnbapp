@@ -15,6 +15,7 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { deletePurchasedItemAction } from "../actions";
+import { formatNumber } from "@/lib/shared/format";
 import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
 import type { ItemStockDisplay } from "@/lib/stock/item-stock-display";
 
@@ -107,7 +108,7 @@ export default function ItemsClient({
         header: "Mã",
         sortValue: (item) => item.id,
         render: (item) => (
-          <span className="font-mono text-xs text-primary transition-colors">
+          <span className="font-mono text-xs text-primary transition-colors whitespace-nowrap">
             {item.id}
           </span>
         ),
@@ -132,7 +133,7 @@ export default function ItemsClient({
         header: "Phân loại",
         sortValue: (item) => categoryMap[item.item_category_id] || "",
         render: (item) => (
-          <span className="text-text-secondary">
+          <span className="text-text-secondary whitespace-nowrap">
             {categoryMap[item.item_category_id] || "—"}
           </span>
         ),
@@ -146,15 +147,15 @@ export default function ItemsClient({
         },
         render: (item) => {
           const entry = stockById[item.id];
-          if (!entry) return <span className="text-text-muted">—</span>;
+          if (!entry) return <span className="text-text-muted whitespace-nowrap">—</span>;
           if (entry.kind === "figure") {
             return (
-              <span className="text-text-primary tabular-nums">
+              <span className="text-text-primary tabular-nums whitespace-nowrap">
                 {entry.text}
               </span>
             );
           }
-          return <span className="text-text-muted">{entry.text}</span>;
+          return <span className="text-text-muted whitespace-nowrap">{entry.text}</span>;
         },
       },
       {
@@ -162,23 +163,35 @@ export default function ItemsClient({
         header: "Quy đổi",
         secondary: true,
         sortValue: (item) => {
-          const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
+          const itemConversions = conversions.filter((c) => {
+            if (c.purchased_item_id !== item.id) return false;
+            const pUnit = getUnitName(c.purchased_unit, units);
+            const bUnit = getUnitName(c.base_unit, units);
+            if (pUnit === bUnit && Number(c.conversion_rate) === 1) return false;
+            return true;
+          });
           if (itemConversions.length === 0) return null;
           return itemConversions
             .map(
               (conv) =>
-                `1 ${getUnitName(conv.purchased_unit, units)} = ${conv.conversion_rate} ${getUnitName(conv.base_unit, units)}`,
+                `1 ${getUnitName(conv.purchased_unit, units)} = ${formatNumber(conv.conversion_rate)} ${getUnitName(conv.base_unit, units)}`,
             )
             .join(", ");
         },
         render: (item) => {
-          const itemConversions = conversions.filter((c) => c.purchased_item_id === item.id);
+          const itemConversions = conversions.filter((c) => {
+            if (c.purchased_item_id !== item.id) return false;
+            const pUnit = getUnitName(c.purchased_unit, units);
+            const bUnit = getUnitName(c.base_unit, units);
+            if (pUnit === bUnit && Number(c.conversion_rate) === 1) return false;
+            return true;
+          });
           if (itemConversions.length === 0) return <span className="text-text-muted">—</span>;
           return (
             <div className="flex flex-col gap-0.5 text-xs text-text-secondary">
               {itemConversions.map((conv) => (
-                <div key={conv.id}>
-                  1 {getUnitName(conv.purchased_unit, units)} = {conv.conversion_rate}{" "}
+                <div key={conv.id} className="whitespace-nowrap">
+                  1 {getUnitName(conv.purchased_unit, units)} = {formatNumber(conv.conversion_rate)}{" "}
                   {getUnitName(conv.base_unit, units)}
                 </div>
               ))}
@@ -338,14 +351,19 @@ export default function ItemsClient({
           `/admin/inventory/items/${encodeURIComponent(item.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        phoneRow={(item) => ({
-          title: item.name,
-          value: `Tồn: ${stockById[item.id]?.text ?? "—"}`,
-          meta: [item.id, categoryMap[item.item_category_id]].filter(Boolean).join(" · "),
-          badge: item.status === "INACTIVE" ? (
-            <Badge variant="neutral">Ngừng dùng</Badge>
-          ) : undefined,
-        })}
+        phoneRow={(item) => {
+          const stockEntry = stockById[item.id];
+          const stockText = stockEntry?.text ?? "—";
+          const displayStock = stockText === "Không theo dõi tồn" ? "Không theo dõi" : `Tồn: ${stockText}`;
+          return {
+            title: item.name,
+            value: displayStock,
+            meta: [item.id, categoryMap[item.item_category_id]].filter(Boolean).join(" · "),
+            badge: item.status === "INACTIVE" ? (
+              <Badge variant="neutral">Ngừng dùng</Badge>
+            ) : undefined,
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

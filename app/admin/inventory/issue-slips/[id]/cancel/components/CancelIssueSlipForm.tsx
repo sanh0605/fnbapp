@@ -125,17 +125,17 @@ export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormP
 
   if (cannotCancel) {
     return (
-      <div className="w-full flex flex-col gap-6 lg:grid lg:grid-cols-3">
+      <div className="w-full flex flex-col gap-6 lg:grid lg:grid-cols-5">
         {/* Left Column on Desktop / 1st on Phone */}
-        <div className="lg:col-span-2 space-y-6">{linesSummary}</div>
+        <div className="lg:col-span-3 space-y-6">{linesSummary}</div>
 
         {/* Right Column on Desktop / 2nd on Phone */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="lg:col-span-2 space-y-4">
           <div className="bg-surface-card rounded-xl shadow-sm border border-border p-5 space-y-3">
             <h2 className="font-semibold text-text-primary text-base">Phiếu này không huỷ được</h2>
             <p className="text-sm text-text-secondary leading-relaxed">{blockedReason}</p>
             <div className="pt-2">
-              <Button href={detailHref} variant="secondary" className="w-full">
+              <Button href={detailHref} variant="secondary" className="w-full min-h-[48px] md:min-h-[40px]">
                 Quay lại
               </Button>
             </div>
@@ -146,12 +146,12 @@ export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6 lg:grid lg:grid-cols-3">
+    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6 lg:grid lg:grid-cols-5">
       {/* Left Column on Desktop / 1st on Phone */}
-      <div className="lg:col-span-2 space-y-6">{linesSummary}</div>
+      <div className="lg:col-span-3 space-y-6">{linesSummary}</div>
 
       {/* Right Column on Desktop / 2nd on Phone */}
-      <div className="lg:col-span-1 space-y-6">
+      <div className="lg:col-span-2 space-y-6">
         <div className="bg-surface-card rounded-xl shadow-sm border border-border p-5 space-y-4">
           <p className="text-text-secondary text-sm">
             Toàn bộ các dòng còn hiệu lực được trả về kho hôm nay.
@@ -177,18 +177,18 @@ export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormP
 
           {serverError && <Alert variant="danger">{serverError}</Alert>}
 
-          <div className="space-y-2 pt-2">
+          <div className="flex items-center gap-3 pt-2">
+            <Button href={detailHref} variant="secondary" className="flex-1 min-h-[48px] md:min-h-[40px]">
+              Quay lại
+            </Button>
             <Button
               type="submit"
               variant="danger"
               loading={isSubmitting}
               disabled={!reason.trim() || isSubmitting}
-              className="w-full"
+              className="flex-1 min-h-[48px] md:min-h-[40px]"
             >
               Xác nhận huỷ
-            </Button>
-            <Button href={detailHref} variant="secondary" className="w-full">
-              Quay lại
             </Button>
           </div>
         </div>

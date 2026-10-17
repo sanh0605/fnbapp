@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { TextInput } from "@/components/ui/TextInput";
 import { NumberInput } from "@/components/ui/NumberInput";
+import { Field } from "@/components/ui/Field";
 import {
   Table,
   TableHead,
@@ -573,7 +574,7 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
             key={tab.id}
             variant={activeTab === tab.id ? "primary" : "secondary"}
             onClick={() => setActiveTab(tab.id as any)}
-            className="text-xs md:text-sm"
+            className={`text-xs md:text-sm ${activeTab === tab.id ? "!bg-primary-soft !text-primary border-primary/20" : ""}`}
           >
             {tab.label} ({tab.count})
           </Button>
@@ -582,12 +583,14 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
 
       {/* Search box */}
       <div className="max-w-md">
-        <TextInput
-          id="stocktake-search"
-          placeholder="Ví dụ: Bột cà phê"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <Field label="Tìm kiếm" htmlFor="stocktake-search">
+          <TextInput
+            id="stocktake-search"
+            placeholder="Ví dụ: Bột cà phê"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </Field>
       </div>
 
       {/* Lines grouped under Phân loại hàng */}
@@ -617,10 +620,10 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                   <Table>
                     <TableHead>
                       <TableHeaderCell>Mặt hàng</TableHeaderCell>
-                      <TableHeaderCell>Sổ lúc đếm</TableHeaderCell>
-                      <TableHeaderCell>Số đếm</TableHeaderCell>
-                      <TableHeaderCell>Chênh lệch</TableHeaderCell>
-                      <TableHeaderCell>Trạng thái</TableHeaderCell>
+                      <TableHeaderCell><span className="whitespace-nowrap">Sổ lúc đếm</span></TableHeaderCell>
+                      <TableHeaderCell><span className="whitespace-nowrap">Số đếm</span></TableHeaderCell>
+                      <TableHeaderCell><span className="whitespace-nowrap">Chênh lệch</span></TableHeaderCell>
+                      <TableHeaderCell><span className="whitespace-nowrap">Trạng thái</span></TableHeaderCell>
                     </TableHead>
                     <TableBody>
                       {groupLines.map((line) => {
@@ -732,9 +735,9 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                           isCounted ? "border-success/60" : "border-border"
                         }`}
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <span className="font-medium text-text-primary block">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <span className="font-medium text-text-primary block break-words">
                               {line.itemName}
                             </span>
                             <span className="text-xs text-text-secondary">
@@ -744,11 +747,27 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                                 : "—"}
                             </span>
                           </div>
+                          {!isPackage && (
+                            <div className="w-36 shrink-0" onBlur={(e) => handleLineBlur(line.id, e)}>
+                              <NumberInput
+                                id={`m-legacy-qty-${line.id}`}
+                                decimals={3}
+                                min={0}
+                                example="1,250.5"
+                                aria-label={`Số đếm ${line.itemName}`}
+                                disabled={isPreviewing}
+                                value={legacyInputs[line.id] ?? null}
+                                onValueChange={(v) => {
+                                  setLegacyInputs((prev) => ({ ...prev, [line.id]: v }));
+                                }}
+                              />
+                            </div>
+                          )}
                         </div>
 
-                        {/* Mobile Inputs */}
-                        <div onBlur={(e) => handleLineBlur(line.id, e)}>
-                          {isPackage ? (
+                        {/* Mobile Inputs for Package */}
+                        {isPackage && (
+                          <div onBlur={(e) => handleLineBlur(line.id, e)}>
                             <div className="space-y-1">
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {line.packageLines.map((pkg) => {
@@ -782,27 +801,12 @@ export function StocktakeCountView({ session }: StocktakeCountViewProps) {
                               </div>
                               {renderPackageLineTotal(line)}
                             </div>
-                          ) : (
-                            <div className="w-full">
-                              <NumberInput
-                                id={`m-legacy-qty-${line.id}`}
-                                decimals={3}
-                                min={0}
-                                example="1,250.5"
-                                aria-label={`Số đếm ${line.itemName}`}
-                                disabled={isPreviewing}
-                                value={legacyInputs[line.id] ?? null}
-                                onValueChange={(v) => {
-                                  setLegacyInputs((prev) => ({ ...prev, [line.id]: v }));
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
 
-                        <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                          <div className="text-xs">{renderLineDifference(line)}</div>
-                          <div className="text-xs text-right">
+                        <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
+                          <div>{renderLineDifference(line)}</div>
+                          <div className="text-right">
                             {renderLineStatus(line.id, line.countedQty)}
                           </div>
                         </div>

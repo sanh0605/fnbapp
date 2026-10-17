@@ -40,13 +40,6 @@ export interface IssueSlipsClientProps {
 }
 
 function renderKindBadge(kind: IssueSlipKind) {
-  if (kind === "SLIP") {
-    return (
-      <Badge variant="neutral">
-        Phiếu xuất
-      </Badge>
-    );
-  }
   if (kind === "CANCELLED") {
     return (
       <Badge variant="neutral">

@@ -759,7 +759,7 @@ describe("PurchaseOrderForm source picker (BR-DATA-007, K4)", () => {
       />
     );
 
-    const sourceCombobox = screen.getByRole("combobox", { name: "Ví dụ: Shopee, Lazada..." });
+    const sourceCombobox = screen.getByRole("combobox", { name: "Ví dụ: Shopee" });
     fireEvent.click(sourceCombobox);
 
     const searchInput = screen.getByRole("textbox", { name: "Tìm trong danh sách" });
@@ -794,7 +794,7 @@ describe("PurchaseOrderForm source picker (BR-DATA-007, K4)", () => {
       />
     );
 
-    const sourceCombobox = screen.getByRole("combobox", { name: "Ví dụ: Shopee, Lazada..." });
+    const sourceCombobox = screen.getByRole("combobox", { name: "Ví dụ: Shopee" });
     fireEvent.click(sourceCombobox);
 
     const searchInput = screen.getByRole("textbox", { name: "Tìm trong danh sách" });
@@ -1070,7 +1070,7 @@ describe("Ticket 6c: PurchaseOrderForm FormActionBar save bar", () => {
       />
     );
 
-    const input = screen.getByPlaceholderText("Ví dụ: INV-20231201");
+    const input = screen.getByPlaceholderText("Ví dụ: HD0012345");
     fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
     const form = input.closest("form")!;
     fireEvent.submit(form);
@@ -1093,7 +1093,7 @@ describe("Ticket 6c: PurchaseOrderForm FormActionBar save bar", () => {
 
     expect(screen.queryByText("Có thay đổi chưa lưu")).toBeNull();
 
-    const input = screen.getByPlaceholderText("Ví dụ: INV-20231201");
+    const input = screen.getByPlaceholderText("Ví dụ: HD0012345");
     fireEvent.input(input, { target: { value: "INV-NEW" } });
 
     expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();

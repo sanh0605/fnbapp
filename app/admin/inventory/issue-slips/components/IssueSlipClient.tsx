@@ -343,7 +343,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         </div>
                       </TableCell>
                       <TableCell align="right">
-                        <div className="min-w-[8rem]">
+                        <div className="min-w-[9rem]">
                           <NumberInput
                             id={`issue-qty-${index}`}
                             decimals={3}
@@ -514,7 +514,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         ))}
                       </Select>
                     </div>
-                    <div className="w-24 shrink-0">
+                    <div className="w-36 shrink-0">
                       <label className="block text-xs font-medium text-text-muted mb-1">Số lượng</label>
                       <NumberInput
                         id={`issue-qty-m-${index}`}
@@ -596,13 +596,15 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
         </Button>
       </div>
 
-      <FormActionBar
-        mode="create"
-        submitLabel={`Ghi phiếu xuất (${lines.length} dòng)`}
-        onSubmit={handleSubmit}
-        loading={submitting}
-        onCancel={() => router.push("/admin/inventory/issue-slips")}
-      />
+      <div className="[&_button:last-child]:!flex-[2] [&_button:first-child]:!flex-initial [&_button:first-child]:!px-6 [&_button:last-child]:whitespace-nowrap">
+        <FormActionBar
+          mode="create"
+          submitLabel={`Ghi phiếu xuất (${lines.length} dòng)`}
+          onSubmit={handleSubmit}
+          loading={submitting}
+          onCancel={() => router.push("/admin/inventory/issue-slips")}
+        />
+      </div>
     </form>
   );
 }

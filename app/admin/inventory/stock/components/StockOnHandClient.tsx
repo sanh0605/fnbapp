@@ -107,9 +107,9 @@ export default function StockOnHandClient({
       },
       {
         key: "category",
-        header: "Phân loại hàng",
+        header: "Phân\u00A0loại\u00A0hàng",
         render: (row) => (
-          <span className="text-text-secondary">{row.categoryName || "—"}</span>
+          <span className="text-text-secondary whitespace-nowrap">{row.categoryName || "—"}</span>
         ),
       },
       {
@@ -139,9 +139,9 @@ export default function StockOnHandClient({
       },
       {
         key: "lastCountedAt",
-        header: "Kiểm lần cuối",
+        header: "Kiểm\u00A0lần\u00A0cuối",
         render: (row) => (
-          <span className="text-text-secondary">
+          <span className="text-text-secondary whitespace-nowrap">
             {row.lastCountedAt ? formatDate(row.lastCountedAt) : "Chưa kiểm lần nào"}
           </span>
         ),
@@ -173,6 +173,7 @@ export default function StockOnHandClient({
         onApply={() => {}}
         onClear={handleClear}
         showClear={Boolean(search)}
+        activeCount={search.trim() ? 1 : 0}
         search={
           <div className="shrink-0 w-full md:w-80">
             <Field label="Tìm kiếm" htmlFor="stock-search">

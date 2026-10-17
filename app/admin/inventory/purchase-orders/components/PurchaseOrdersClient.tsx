@@ -170,7 +170,7 @@ export default function PurchaseOrdersClient({
       {
         key: "sourceName",
         header: "Nguồn mua",
-        render: (po) => <span className="text-text-primary">{po.sourceName}</span>,
+        render: (po) => <span className="text-text-primary whitespace-nowrap">{po.sourceName}</span>,
       },
       {
         key: "status",
@@ -199,7 +199,7 @@ export default function PurchaseOrdersClient({
   return (
     <div className="space-y-6 pb-20">
       <ListPageHeader
-        group=""
+        group="Kho"
         title="Phiếu nhập"
         action={
           <Button
@@ -298,9 +298,9 @@ export default function PurchaseOrdersClient({
           }
           columns={columns}
           phoneRow={(po) => ({
-            title: po.supplierName,
+            title: (!po.supplierName || po.supplierName === "Không rõ") ? (po.sourceName || "Không rõ") : po.supplierName,
             value: `${formatNumber(po.totalAmount)}đ`,
-            meta: [formatShortDate(po.dateText), po.id, po.paymentLabel].join(" · "),
+            meta: [po.id, po.dateText, po.paymentLabel].filter(Boolean).join(" · "),
             badge: renderStatusBadge(po.status),
           })}
           totals={{

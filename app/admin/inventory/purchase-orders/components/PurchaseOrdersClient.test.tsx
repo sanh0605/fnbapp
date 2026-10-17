@@ -250,7 +250,7 @@ describe("PurchaseOrdersClient", () => {
     }
   });
 
-  it("phoneRow meta uses short date (day/month and hour:minute) while desktop column keeps full dateText", () => {
+  it("phoneRow meta uses full dateText with code first while desktop column keeps full dateText", () => {
     const dataWithRow: typeof pageData = {
       ...pageData,
       total: 1,
@@ -278,11 +278,10 @@ describe("PurchaseOrdersClient", () => {
     expect(table).toBeTruthy();
     expect(within(table!).getByText("15/10/2026 18:34:59")).toBeInTheDocument();
 
-    // Phone row meta uses short date
+    // Phone row meta uses code first and full dateText
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
     expect(phone).toBeTruthy();
-    expect(within(phone!).getByText("15/10 18:34 · PO-206 · Tiền mặt")).toBeInTheDocument();
-    expect(phone!.textContent).not.toContain("15/10/2026 18:34:59");
+    expect(within(phone!).getByText("PO-206 · 15/10/2026 18:34:59 · Tiền mặt")).toBeInTheDocument();
   });
 });
 

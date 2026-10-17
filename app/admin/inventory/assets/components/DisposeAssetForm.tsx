@@ -291,7 +291,7 @@ export function DisposeAssetForm({
           />
         </Field>
 
-        <div className="p-3 bg-warning/10 rounded-lg border border-warning/20">
+        <div className="p-3 bg-warning/10 rounded-lg border border-warning/20 mb-6">
           <div className="text-xs text-warning-active mb-1">
             Sẽ ghi nhận chi phí tháng này
           </div>

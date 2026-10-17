@@ -109,7 +109,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-text-primary break-words">{line.itemName}</p>
                       <p className="text-xs text-text-muted">
-                        {formatDecimal(Number(line.quantity), { maxDigits: 3 })} · {line.unitName} · {formatNumber(line.unitPrice)}đ
+                        {formatDecimal(Number(line.quantity), { maxDigits: 3 })} {line.unitName} × {formatNumber(line.unitPrice)}đ
                       </p>
                     </div>
                     <div className="text-right font-medium text-text-primary whitespace-nowrap">
@@ -202,7 +202,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
             </div>
             <div className="flex justify-between text-text-secondary">
               <span>Voucher/Giảm giá:</span>
-              <span className="font-medium text-danger">
+              <span className={`font-medium ${Number(order.discountTotal) > 0 ? "text-danger" : "text-text-primary"}`}>
                 {Number(order.discountTotal) === 0 ? "0đ" : `-${formatNumber(order.discountTotal)}đ`}
               </span>
             </div>

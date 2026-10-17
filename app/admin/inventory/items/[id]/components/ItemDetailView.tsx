@@ -18,6 +18,7 @@ import { deletePurchasedItemAction, setPurchasedItemStatus } from "../../actions
 import type { DBPurchasedItem, DBItemCategory, DBUOMConversion, DBUnit } from "@/types/db";
 import type { ItemPurchaseHistoryRow } from "@/lib/purchasing/item-purchase-history";
 import type { ItemStockDisplay } from "@/lib/stock/item-stock-display";
+import { formatNumber } from "@/lib/shared/format";
 
 export interface ItemDetailViewProps {
   item: DBPurchasedItem;
@@ -99,8 +100,6 @@ export function ItemDetailView({
   }
 
   const fields: Field[] = [
-    { label: "Mã", value: item.id },
-    { label: "Tên", value: item.name },
     { label: "Phân loại", value: category?.name || "—" },
     { label: "Tính tồn kho", value: isNonInventory ? "Không" : "Có" },
     { label: "Tồn kho hiện tại", value: stockValue },
@@ -206,7 +205,7 @@ export function ItemDetailView({
                         {getUnitName(conv.purchased_unit, units)}
                       </TableCell>
                       <TableCell align="right">
-                        {conv.conversion_rate}
+                        {formatNumber(conv.conversion_rate)}
                       </TableCell>
                       <TableCell>
                         {getUnitName(conv.base_unit, units)}
@@ -229,7 +228,7 @@ export function ItemDetailView({
               {conversions.map((conv) => (
                 <div key={conv.id} className="px-4 py-2.5">
                   <PhoneRow
-                    title={`1 ${getUnitName(conv.purchased_unit, units)} = ${conv.conversion_rate} ${getUnitName(conv.base_unit, units)}`}
+                    title={`1 ${getUnitName(conv.purchased_unit, units)} = ${formatNumber(conv.conversion_rate)} ${getUnitName(conv.base_unit, units)}`}
                     badge={
                       <Badge
                         variant={conv.status === "INACTIVE" ? "neutral" : "processing"}

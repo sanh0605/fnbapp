@@ -21,7 +21,7 @@ export function PurchasePaymentBlock({
   const currentAccount = bankAccounts.find((a) => a.id === bankAccountId);
 
   return (
-    <div className="pt-3 border-t border-border space-y-3">
+    <div className="space-y-3">
       <div className="flex justify-between text-sm text-text-secondary">
         <span>Hình thức thanh toán:</span>
         <span className="font-medium text-text-primary">

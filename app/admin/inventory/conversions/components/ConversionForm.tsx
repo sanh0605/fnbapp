@@ -148,9 +148,10 @@ export function ConversionForm({
               value={selectedUnitName}
               onChange={setSelectedUnitName}
               placeholder="Ví dụ: Thùng 24 lon"
+              className="[&>span.text-text-secondary]:!text-text-muted"
             />
           </Field>
-          <Field label="Tỷ lệ quy đổi" htmlFor={`${formId}-conversionRate`}>
+          <Field label="Hệ số quy đổi" htmlFor={`${formId}-conversionRate`}>
             <NumberInput
               id={`${formId}-conversionRate`}
               decimals={6}

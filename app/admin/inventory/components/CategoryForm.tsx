@@ -68,9 +68,9 @@ export function CategoryForm({ initialData, returnTo: rawReturnTo }: CategoryFor
             name="system_type"
             defaultValue={initialData?.system_type}
           >
-            <option value="RAW">Thuộc nhóm Nguyên liệu (Có tính quy đổi, có trong công thức)</option>
-            <option value="CONSUMABLE">Thuộc nhóm Vật tư (Kiểm kê định kỳ)</option>
-            <option value="EQUIPMENT">Thuộc nhóm Dụng cụ</option>
+            <option value="RAW">Nguyên liệu</option>
+            <option value="CONSUMABLE">Vật tư</option>
+            <option value="EQUIPMENT">Dụng cụ</option>
           </Select>
         </Field>
         <FormActionBar

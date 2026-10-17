@@ -102,9 +102,9 @@ describe("AssetsClient", () => {
     expect(headerTexts).toEqual([
       "Mã hàng",
       "Tên",
-      "Còn / Đã mua",
-      "Đã thanh lý",
-      "Giá trị còn lại",
+      "Còn\u00A0/\u00A0Đã\u00A0mua",
+      "Đã\u00A0thanh\u00A0lý",
+      "Giá\u00A0trị\u00A0còn\u00A0lại",
       "Mua gần nhất",
     ]);
   });

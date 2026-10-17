@@ -14,6 +14,7 @@ import { DataList, type DataColumn } from "@/components/ui/list/DataList";
 import { paginate } from "@/components/ui/list/paginate";
 import { sortRows, parseSort } from "@/components/ui/list/sort";
 import { deleteConversionAction } from "../actions";
+import { formatNumber } from "@/lib/shared/format";
 import type { DBUOMConversion, DBPurchasedItem, DBUnit } from "@/types/db";
 
 interface ConversionsClientProps {
@@ -129,10 +130,10 @@ export default function ConversionsClient({
       },
       {
         key: "conversion_rate",
-        header: "Tỷ lệ",
+        header: "Hệ số",
         sortValue: (conv) => Number(conv.conversion_rate) || 0,
         render: (conv) => (
-          <span className="font-mono text-text-muted">x{conv.conversion_rate}</span>
+          <span className="tabular-nums text-text-primary">{formatNumber(conv.conversion_rate)}</span>
         ),
       },
       {
@@ -248,6 +249,7 @@ export default function ConversionsClient({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         showClear={Boolean(search)}
+        activeCount={search.trim() ? 1 : 0}
         search={
           <div className="shrink-0 w-full md:w-64">
             <Field label="Tìm hàng hoá" htmlFor="conversions-search">
@@ -284,7 +286,7 @@ export default function ConversionsClient({
             : !conv.base_unit && conv.to_unit_id
             ? unitMap[conv.to_unit_id] || conv.to_unit_id
             : "";
-          const formula = `1 ${pUnit} = ${conv.conversion_rate} ${bUnit}`;
+          const formula = `1 ${pUnit} = ${formatNumber(conv.conversion_rate)} ${bUnit}`;
           return {
             title: itemName,
             meta: [formula, conv.id, conv.purchase_only ? "Chỉ cách mua" : null]

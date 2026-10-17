@@ -1330,4 +1330,53 @@ describe("StocktakeCountView (Screen 2)", () => {
       screen.queryByText("Chưa lưu được: mất kết nối mạng. Bấm vào ô rồi bấm ra ngoài để thử lại.")
     ).not.toBeInTheDocument();
   });
+
+  it("BR-INV-023: auto-saves on blur, input has min-h-[48px], and integer package count uses inputMode numeric", async () => {
+    const { saveStocktakeLine } = await import("../../actions");
+    vi.mocked(saveStocktakeLine).mockClear();
+    vi.mocked(saveStocktakeLine).mockResolvedValueOnce({
+      countedQty: 42,
+      theoreticalAtCount: 6000,
+    } as any);
+
+    render(<StocktakeCountView session={mockSession} />);
+
+    // Mobile legacy input has touch target >= 48px
+    const mobileInput = screen.getAllByLabelText("Số đếm Bột cà phê truyền thống Phin Đậm")[0];
+    expect(mobileInput.className).toContain("min-h-[48px]");
+
+    fireEvent.change(mobileInput, { target: { value: "42" } });
+    fireEvent.blur(mobileInput, { relatedTarget: null });
+
+    await waitFor(() => {
+      expect(saveStocktakeLine).toHaveBeenCalledWith("LINE-1", 42);
+    });
+
+    // Check package lines session has inputMode numeric
+    const packageSession: StocktakeSessionView = {
+      ...mockSession,
+      lines: [
+        {
+          ...mockSession.lines[0],
+          id: "LINE-PKG",
+          packageLines: [
+            {
+              conversionId: "CONV-1",
+              purchasedItemId: "SPM-004",
+              purchasedItemName: "Bột cà phê truyền thống Phin Đậm",
+              sizeLabel: "Thùng 24 lon",
+              conversionRate: 24,
+              baseUnitName: "lon",
+              purchasedUnitName: "Thùng",
+            },
+          ],
+        },
+      ],
+    };
+    cleanup();
+    render(<StocktakeCountView session={packageSession} />);
+    const pkgInput = screen.getAllByLabelText("Thùng 24 lon")[0];
+    expect(pkgInput.getAttribute("inputMode")).toBe("numeric");
+    expect(pkgInput.className).toContain("min-h-[48px]");
+  });
 });

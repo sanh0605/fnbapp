@@ -48,7 +48,12 @@ export default async function CancelIssueSlipPage(
         backHref={detailHref}
         backLabel="Phiếu xuất"
         title={`Huỷ phiếu ${detail.id}`}
-        subtitle={`Ngày xuất: ${detail.dateText} · Người ghi: ${detail.createdByName}`}
+        subtitle={
+          <span>
+            Ngày xuất: {detail.dateText} ·{" "}
+            <span className="whitespace-nowrap">Người ghi: {detail.createdByName}</span>
+          </span>
+        }
       />
       <CancelIssueSlipForm detail={detail} detailHref={detailHref} />
     </div>

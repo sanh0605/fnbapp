@@ -386,7 +386,7 @@ export default function PurchaseOrderForm({
                 value={sourceId}
                 onChange={(val) => setSourceId(val)}
                 options={sources.map((s: any) => ({ id: s.id, label: s.name }))}
-                placeholder="Ví dụ: Shopee, Lazada..."
+                placeholder="Ví dụ: Shopee"
                 onCreateNew={async (searchTerm) => {
                   try {
                     const res = await addPurchaseSource(searchTerm);
@@ -422,7 +422,7 @@ export default function PurchaseOrderForm({
                 type="text"
                 value={supplierInvoiceCode}
                 onChange={(e) => setSupplierInvoiceCode(e.target.value)}
-                placeholder="Ví dụ: INV-20231201"
+                placeholder="Ví dụ: HD0012345"
               />
             </Field>
           </div>

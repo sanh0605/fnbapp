@@ -39,8 +39,6 @@ export function CategoryDetailView({
   const editHref = `/admin/inventory/categories/${encodeURIComponent(category.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`;
 
   const fields: Field[] = [
-    { label: "Mã", value: category.id },
-    { label: "Tên", value: category.name },
     { label: "Đặc tính", value: getSystemTypeLabel(category.system_type) },
     {
       label: "Số hàng hoá",

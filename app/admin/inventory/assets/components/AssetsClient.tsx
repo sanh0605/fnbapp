@@ -104,32 +104,32 @@ export default function AssetsClient({
       },
       {
         key: "quantity",
-        header: "Còn / Đã mua",
+        header: "Còn\u00A0/\u00A0Đã\u00A0mua",
         sortValue: (asset) => asset.remainingQuantity,
         render: (asset) => (
-          <span className="text-text-primary">
+          <span className="text-text-primary whitespace-nowrap">
             {asset.remainingQuantity} / {asset.quantity} cái
           </span>
         ),
       },
       {
         key: "disposedQuantity",
-        header: "Đã thanh lý",
+        header: "Đã\u00A0thanh\u00A0lý",
         secondary: true,
         sortValue: (asset) => asset.disposedQuantity,
         render: (asset) => (
-          <span className="text-text-secondary">
+          <span className="text-text-secondary whitespace-nowrap">
             {asset.disposedQuantity > 0 ? `${asset.disposedQuantity} cái` : "—"}
           </span>
         ),
       },
       {
         key: "remainingValue",
-        header: "Giá trị còn lại",
+        header: "Giá\u00A0trị\u00A0còn\u00A0lại",
         align: "right",
         sortValue: (asset) => asset.remainingValue,
         render: (asset) => (
-          <span className="text-text-primary">
+          <span className="text-text-primary whitespace-nowrap">
             {formatNumber(Math.round(asset.remainingValue))}đ
           </span>
         ),
@@ -257,7 +257,7 @@ export default function AssetsClient({
           ) : undefined,
         })}
         totals={{
-          label: "Tổng (không tính đã thanh lý hết)",
+          label: "Tổng (không\u00A0tính\u00A0đã\u00A0thanh\u00A0lý\u00A0hết)",
           values: { remainingValue: `${formatNumber(assetTotals.remainingValue)}đ` },
         }}
         sort={{
