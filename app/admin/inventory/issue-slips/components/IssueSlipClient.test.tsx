@@ -974,16 +974,13 @@ describe("IssueSlipClient -- Row 3 Giá trị xuất", () => {
 
 
 
-// Owner 2026-10-10: a create/edit form looks like the slip's detail page —
-// on a computer the lines take the left two thirds and the slip-wide boxes
-// stack in the right third; on a phone the same blocks run top to bottom in
-// their source order (shared boxes, lines, then money and buttons).
+// Plan 2026-10-17 (wave 2a): sections stacked top to bottom on a computer (shared, lines, money).
 function expectBefore(a: Element, b: Element) {
   expect(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 }
 
-describe("IssueSlipClient two columns on a computer (owner 2026-10-10)", () => {
-  it("lines on the left two thirds, the issue time then the total and buttons on the right third", async () => {
+describe("IssueSlipClient sections stacked top to bottom on a computer (plan 2026-10-17, wave 2a)", () => {
+  it("shared boxes, then the line table, then the money block, with no three-column grid", async () => {
     const container = await renderTracked(<IssueSlipClient items={[itemWithRealUnit]} />);
     const q = (id: string) => container.querySelectorAll(`[data-testid="${id}"]`);
     // One of each: the phone view keeps its own layout, without these marks.
@@ -992,11 +989,7 @@ describe("IssueSlipClient two columns on a computer (owner 2026-10-10)", () => {
     const lines = q("form-lines")[0] as HTMLElement;
     const shared = q("form-shared")[0] as HTMLElement;
     const money = q("form-money")[0] as HTMLElement;
-    expect(layout.className).toContain("lg:grid-cols-3");
-    expect(lines.className).toContain("lg:col-span-2");
-    expect(lines.className).toContain("lg:col-start-1");
-    expect(shared.className).toContain("lg:col-start-3");
-    expect(money.className).toContain("lg:col-start-3");
+    expect(layout.className).not.toContain("lg:grid-cols-3");
     expect(layout.closest(".md\\:hidden")).toBeNull();
 
     expect(shared.textContent).toContain("Thời điểm xuất");

@@ -262,21 +262,20 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
       <div className="hidden md:block">
         <div
           data-testid="form-layout"
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start lg:grid-rows-[auto_1fr]"
+          className="grid grid-cols-1 gap-6"
         >
           {/* form-shared: slip-wide boxes */}
           <div
             data-testid="form-shared"
-            className="bg-surface-card rounded-card border border-border p-4 shadow-sm space-y-3 lg:col-start-3 lg:row-start-1"
+            className="bg-surface-card rounded-card border border-border p-4 shadow-sm md:flex md:items-end md:justify-between md:gap-6"
           >
-            <div>
+            <div className="md:w-80">
               <label className="block text-sm font-medium text-text-primary mb-1.5">
                 Thời điểm xuất (áp dụng cho cả phiếu)
               </label>
               <SaigonDateTimeInput
                 value={issuedAtLocal}
                 onChange={setIssuedAtLocal}
-                className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card"
               />
               {affectedMonths.length > 0 && (
                 <p className="mt-1.5 text-xs text-warning">
@@ -284,7 +283,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                 </p>
               )}
             </div>
-            <div className="text-sm font-medium text-text-secondary pt-1 border-t border-border">
+            <div className="text-sm font-medium text-text-secondary md:py-2">
               Đã điền đủ: {filledLineCount}/{lines.length} dòng
             </div>
           </div>
@@ -292,16 +291,16 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
           {/* form-lines: lines table */}
           <div
             data-testid="form-lines"
-            className="lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:row-span-2 space-y-6"
+            className="min-w-0 space-y-6"
           >
             <Table>
               <TableHead>
-                <TableHeaderCell>Mặt hàng</TableHeaderCell>
-                <TableHeaderCell>Tồn hiện tại</TableHeaderCell>
-                <TableHeaderCell>Đơn vị</TableHeaderCell>
-                <TableHeaderCell>Số lượng</TableHeaderCell>
-                <TableHeaderCell>Quy ra</TableHeaderCell>
-                <TableHeaderCell>Giá trị xuất</TableHeaderCell>
+                <TableHeaderCell><span className="whitespace-nowrap">Mặt hàng</span></TableHeaderCell>
+                <TableHeaderCell><span className="whitespace-nowrap">Tồn hiện tại</span></TableHeaderCell>
+                <TableHeaderCell><span className="whitespace-nowrap">Đơn vị</span></TableHeaderCell>
+                <TableHeaderCell><span className="whitespace-nowrap">Số lượng</span></TableHeaderCell>
+                <TableHeaderCell><span className="whitespace-nowrap">Quy ra</span></TableHeaderCell>
+                <TableHeaderCell><span className="whitespace-nowrap">Giá trị xuất</span></TableHeaderCell>
                 <TableHeaderCell>
                   <span className="sr-only" aria-label="Xoá dòng">Xoá dòng</span>
                 </TableHeaderCell>
@@ -326,36 +325,40 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         />
                       </TableCell>
                       <TableCell>
-                        <span className="tabular-nums text-text-secondary">{onHandDisplay}</span>
+                        <span className="tabular-nums text-text-secondary whitespace-nowrap">{onHandDisplay}</span>
                       </TableCell>
                       <TableCell>
-                        <Select
-                          aria-label="Đơn vị"
-                          value={line.unitKey}
-                          onChange={e => updateLine(index, { unitKey: e.target.value })}
-                          disabled={!item}
-                        >
-                          <option value="">-- Chọn --</option>
-                          {options.map(o => (
-                            <option key={o.key} value={o.key}>{o.label}</option>
-                          ))}
-                        </Select>
+                        <div className="min-w-[9rem]">
+                          <Select
+                            aria-label="Đơn vị"
+                            value={line.unitKey}
+                            onChange={e => updateLine(index, { unitKey: e.target.value })}
+                            disabled={!item}
+                          >
+                            <option value="">-- Chọn --</option>
+                            {options.map(o => (
+                              <option key={o.key} value={o.key}>{o.label}</option>
+                            ))}
+                          </Select>
+                        </div>
                       </TableCell>
                       <TableCell align="right">
-                        <NumberInput
-                          id={`issue-qty-${index}`}
-                          decimals={3}
-                          min={0}
-                          aria-label="Số lượng"
-                          value={line.packageQty === "" ? null : Number(line.packageQty)}
-                          onValueChange={v => updateLine(index, { packageQty: v === null ? "" : String(v) })}
-                        />
+                        <div className="min-w-[8rem]">
+                          <NumberInput
+                            id={`issue-qty-${index}`}
+                            decimals={3}
+                            min={0}
+                            aria-label="Số lượng"
+                            value={line.packageQty === "" ? null : Number(line.packageQty)}
+                            onValueChange={v => updateLine(index, { packageQty: v === null ? "" : String(v) })}
+                          />
+                        </div>
                       </TableCell>
                       <TableCell align="right">
-                        {convertedDisplay}
+                        <span className="whitespace-nowrap">{convertedDisplay}</span>
                       </TableCell>
                       <TableCell align="right">
-                        {lineValueDisplay}
+                        <span className="whitespace-nowrap">{lineValueDisplay}</span>
                       </TableCell>
                       <TableCell>
                         {lines.length > 1 && (
@@ -398,7 +401,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
           {/* form-money: totals and action buttons */}
           <div
             data-testid="form-money"
-            className="bg-surface-card rounded-card border border-border p-4 shadow-sm space-y-4 lg:col-start-3 lg:row-start-2"
+            className="bg-surface-card rounded-card border border-border p-4 shadow-sm space-y-4 md:ml-auto md:w-full md:max-w-sm"
           >
             <div className="flex justify-between items-start">
               <span className="text-sm font-semibold text-text-secondary">Tổng giá trị xuất</span>
@@ -428,7 +431,6 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
             <SaigonDateTimeInput
               value={issuedAtLocal}
               onChange={setIssuedAtLocal}
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-focus-ring bg-surface-card min-h-[48px] md:min-h-[40px]"
             />
             {affectedMonths.length > 0 && (
               <p className="mt-1.5 text-xs text-warning">

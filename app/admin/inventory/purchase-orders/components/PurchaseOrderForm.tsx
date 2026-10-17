@@ -321,13 +321,13 @@ export default function PurchaseOrderForm({
       )}
       <div
         data-testid="form-layout"
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start lg:grid-rows-[auto_1fr] mb-6"
+        className="grid grid-cols-1 gap-6 mb-6"
       >
         <div
           data-testid="form-shared"
-          className="bg-surface-card rounded-xl shadow-sm border border-border p-6 lg:col-start-3 lg:row-start-1 space-y-4"
+          className="bg-surface-card rounded-xl shadow-sm border border-border p-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
         >
-          <h3 className="text-sm text-text-secondary mb-3">Thông tin phiếu</h3>
+          <h3 className="text-sm text-text-secondary md:col-span-full">Thông tin phiếu</h3>
           <div>
             <Field label="Nhà cung cấp" htmlFor={`${formId}-supplierId`} required>
               <SearchableSelect
@@ -375,7 +375,7 @@ export default function PurchaseOrderForm({
                 name="transaction_date"
                 selected={transactionDate}
                 onChange={(date) => setTransactionDate(date)}
-                placeholderText="Chọn ngày nhập hàng (ngày/tháng/năm)"
+                placeholderText="ngày/tháng/năm"
               />
             </Field>
           </div>
@@ -430,7 +430,7 @@ export default function PurchaseOrderForm({
 
         <div
           data-testid="form-lines"
-          className="bg-surface-card rounded-xl shadow-sm border border-border p-6 lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:row-span-2"
+          className="bg-surface-card rounded-xl shadow-sm border border-border p-6"
         >
           <PurchaseOrderLines
             lines={lines}
@@ -447,10 +447,7 @@ export default function PurchaseOrderForm({
           />
         </div>
 
-        <div
-          data-testid="form-money"
-          className="lg:col-start-3 lg:row-start-2"
-        >
+        <div data-testid="form-money">
           <PurchaseOrderTotals
             formId={formId}
             subtotalAmount={subtotalAmount}

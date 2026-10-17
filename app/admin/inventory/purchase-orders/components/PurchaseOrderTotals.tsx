@@ -62,102 +62,104 @@ export function PurchaseOrderTotals({
   const isExpanded = hasValue || userOpen;
 
   return (
-    <>
-      <h3 className="text-sm text-text-secondary mb-3">Thanh toán</h3>
-      <div className="w-full mb-6 space-y-3 bg-surface-card rounded-xl shadow-sm border border-border p-5">
-        <div className="flex justify-between items-center text-sm text-text-secondary">
-          <span className="font-medium">Tổng tiền hàng:</span>
-          <span className="font-semibold text-text-primary">{formatNumber(subtotalAmount)}</span>
-        </div>
-
-        <div className="space-y-2 pt-2 border-t border-border/60">
-          <div className="flex justify-between items-center text-sm gap-2">
-            <span className="text-text-secondary">Phí vận chuyển (+):</span>
-            <div className="w-28 md:w-32">
-              <NumberInput
-                id={`${formId}-shipping`}
-                aria-label="Phí vận chuyển"
-                decimals={0}
-                zeroIsEmpty
-                value={shippingFee || null}
-                onValueChange={(v) => setShippingFee(v ?? 0)}
-              />
-            </div>
-          </div>
-          <div className="flex justify-between items-center text-sm gap-2">
-            <span className="text-text-secondary">Voucher (-):</span>
-            <div className="w-28 md:w-32">
-              <NumberInput
-                id={`${formId}-voucher`}
-                aria-label="Voucher"
-                decimals={0}
-                zeroIsEmpty
-                value={voucherAmount || null}
-                onValueChange={(v) => setVoucherAmount(v ?? 0)}
-              />
-            </div>
+    <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
+      <div>
+        <h3 className="text-sm text-text-secondary mb-3">Thanh toán</h3>
+        <div className="w-full mb-6 lg:mb-0 space-y-3 bg-surface-card rounded-xl shadow-sm border border-border p-5">
+          <div className="flex justify-between items-center text-sm text-text-secondary">
+            <span className="font-medium">Tổng tiền hàng:</span>
+            <span className="font-semibold text-text-primary">{formatNumber(subtotalAmount)}đ</span>
           </div>
 
-          <button
-            type="button"
-            disabled={hasValue}
-            onClick={() => {
-              if (hasValue) return;
-              setUserOpen((prev) => !prev);
-            }}
-            className="text-sm text-primary hover:underline py-1 flex items-center justify-between w-full min-h-[48px] md:min-h-[40px] disabled:no-underline disabled:cursor-default"
-          >
-            <span>Thuế, chiết khấu, ghi chú</span>
-            <span className="text-xs text-text-muted">{isExpanded ? "▲" : "▼"}</span>
-          </button>
-
-          <div className={isExpanded ? "space-y-2" : "hidden"}>
+          <div className="space-y-2 pt-2 border-t border-border/60">
             <div className="flex justify-between items-center text-sm gap-2">
-              <span className="text-text-secondary">Thuế (+):</span>
+              <span className="text-text-secondary">Phí vận chuyển (+):</span>
               <div className="w-28 md:w-32">
                 <NumberInput
-                  id={`${formId}-tax`}
-                  aria-label="Thuế"
+                  id={`${formId}-shipping`}
+                  aria-label="Phí vận chuyển"
                   decimals={0}
                   zeroIsEmpty
-                  value={taxAmount || null}
-                  onValueChange={(v) => setTaxAmount(v ?? 0)}
+                  value={shippingFee || null}
+                  onValueChange={(v) => setShippingFee(v ?? 0)}
                 />
               </div>
             </div>
             <div className="flex justify-between items-center text-sm gap-2">
-              <span className="text-text-secondary">Chiết khấu (-):</span>
+              <span className="text-text-secondary">Voucher (-):</span>
               <div className="w-28 md:w-32">
                 <NumberInput
-                  id={`${formId}-discount`}
-                  aria-label="Chiết khấu"
+                  id={`${formId}-voucher`}
+                  aria-label="Voucher"
                   decimals={0}
                   zeroIsEmpty
-                  value={discountAmount || null}
-                  onValueChange={(v) => setDiscountAmount(v ?? 0)}
+                  value={voucherAmount || null}
+                  onValueChange={(v) => setVoucherAmount(v ?? 0)}
                 />
               </div>
             </div>
-            <div className="pt-1">
-              <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
-                <TextInput
-                  id={`${formId}-notes`}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Ví dụ: giao buổi sáng"
-                />
-              </Field>
+
+            <button
+              type="button"
+              disabled={hasValue}
+              onClick={() => {
+                if (hasValue) return;
+                setUserOpen((prev) => !prev);
+              }}
+              className="text-sm text-primary hover:underline py-1 flex items-center justify-between w-full min-h-[48px] md:min-h-[40px] disabled:no-underline disabled:cursor-default"
+            >
+              <span>Thuế, chiết khấu, ghi chú</span>
+              <span className="text-xs text-text-muted">{isExpanded ? "▲" : "▼"}</span>
+            </button>
+
+            <div className={isExpanded ? "space-y-2" : "hidden"}>
+              <div className="flex justify-between items-center text-sm gap-2">
+                <span className="text-text-secondary">Thuế (+):</span>
+                <div className="w-28 md:w-32">
+                  <NumberInput
+                    id={`${formId}-tax`}
+                    aria-label="Thuế"
+                    decimals={0}
+                    zeroIsEmpty
+                    value={taxAmount || null}
+                    onValueChange={(v) => setTaxAmount(v ?? 0)}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-sm gap-2">
+                <span className="text-text-secondary">Chiết khấu (-):</span>
+                <div className="w-28 md:w-32">
+                  <NumberInput
+                    id={`${formId}-discount`}
+                    aria-label="Chiết khấu"
+                    decimals={0}
+                    zeroIsEmpty
+                    value={discountAmount || null}
+                    onValueChange={(v) => setDiscountAmount(v ?? 0)}
+                  />
+                </div>
+              </div>
+              <div className="pt-1">
+                <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
+                  <TextInput
+                    id={`${formId}-notes`}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Ví dụ: giao buổi sáng"
+                  />
+                </Field>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex justify-between items-center pt-4 border-t border-border">
-          <span className="text-base font-bold text-text-primary">Cần thanh toán:</span>
-          <span className="text-2xl font-bold text-success">{formatNumber(totalAmount)}</span>
+          <div className="flex justify-between items-center pt-4 border-t border-border">
+            <span className="text-base font-bold text-text-primary">Cần thanh toán:</span>
+            <span className="text-2xl font-bold text-success">{formatNumber(totalAmount)}đ</span>
+          </div>
         </div>
       </div>
 
-      <div className="w-full mb-6">
+      <div className="w-full mb-6 lg:mb-0 lg:order-first">
         <span className="block text-sm font-semibold text-text-secondary mb-2">
           Hình thức thanh toán
         </span>
@@ -227,7 +229,7 @@ export function PurchaseOrderTotals({
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
