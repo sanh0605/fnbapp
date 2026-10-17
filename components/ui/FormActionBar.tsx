@@ -58,7 +58,7 @@ export function FormActionBar({
           Có thay đổi chưa lưu
         </div>
       ) : null}
-      <div className="flex items-center gap-2 md:gap-3 md:justify-end md:ml-auto w-full md:w-auto [&>*]:flex-auto [&>*]:w-auto [&>*]:min-w-0 [&>*]:text-center md:[&>*]:flex-initial [&>*]:px-2 md:[&>*]:px-4">
+      <div className="flex items-center gap-2 md:gap-3 md:justify-end md:ml-auto w-full md:w-auto [&>*]:flex-1 [&>*]:min-w-0 [&>*]:text-center md:[&>*]:flex-initial [&>*]:px-2 md:[&>*]:px-4">
         <Button
           type="button"
           variant="secondary"
