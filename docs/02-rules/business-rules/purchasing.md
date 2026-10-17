@@ -39,7 +39,7 @@ Asked the same day, after `BR-INV-015`: *"anh có thể duplicate từ phiếu �
 
 ### BR-INV-018 — An order dated on or before the last confirmed stocktake cannot have its stock or cost changed by an edit
 
-**Status:** `APPROVED` — owner 2026-10-14, audit item A3b, chose *"Chặn sửa như Huỷ"*. Built 2026-10-14 on the branch feat/no-popups, not yet pushed; migration 0112 ran on the server 2026-10-14 with the owner's approval (*"Chạy cả 3"*).
+**Status:** `APPROVED` — owner 2026-10-14, audit item A3b, chose *"Chặn sửa như Huỷ"*. Built 2026-10-14 on the branch feat/no-popups, pushed 2026-10-15 in `feebd7ee`; migration 0112 ran on the server 2026-10-14 with the owner's approval (*"Chạy cả 3"*).
 
 **The example he was shown.** The Trứng gà order of 05/08 says 30 eggs, and the stocktake of 09/08 is confirmed. Editing the order down to 20 today would leave the book 10 eggs off the shelf and August's cost of goods wrong, because the count was worked out from 30.
 

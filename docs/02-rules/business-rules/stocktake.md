@@ -27,7 +27,7 @@ A stocktake session cancelled before it is confirmed is deleted outright: the se
 
 ### BR-INV-012 — The owner can edit a confirmed stocktake; the change lands on the count's own date
 
-**Status:** `APPROVED` — owner decision 2026-09-28, last point settled 2026-10-14. Built 2026-10-14 on the branch `feat/no-popups`, not yet pushed (migration `0110`, function `edit_confirmed_stocktake_atomic`; pages `/admin/inventory/stocktake/[id]` and `/admin/inventory/stocktake/[id]/edit`). Design: `docs/superpowers/specs/2026-10-14-sua-phieu-kiem-ke-design.md`. `0110` ran on the server 2026-10-14 with the owner's approval (*"a"*).
+**Status:** `APPROVED` — owner decision 2026-09-28, last point settled 2026-10-14. Built 2026-10-14 on the branch `feat/no-popups`, pushed 2026-10-15 in `feebd7ee` (migration `0110`, function `edit_confirmed_stocktake_atomic`; pages `/admin/inventory/stocktake/[id]` and `/admin/inventory/stocktake/[id]/edit`). Design: `docs/superpowers/specs/2026-10-14-sua-phieu-kiem-ke-design.md`. `0110` ran on the server 2026-10-14 with the owner's approval (*"a"*).
 
 Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
@@ -48,7 +48,7 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
 ### BR-INV-017 — Confirming a stocktake recomputes the book as of the count, so a slip entered late is not counted twice
 
-**Status:** `APPROVED` — owner 2026-10-14, audit item A2, chose *"Tự tính lại lúc xác nhận"* over "refuse and recount". Built 2026-10-14 on the branch feat/no-popups, not yet pushed; migration 0115 ran on the server 2026-10-14, owner approved "Chạy cả 4".
+**Status:** `APPROVED` — owner 2026-10-14, audit item A2, chose *"Tự tính lại lúc xác nhận"* over "refuse and recount". Built 2026-10-14 on the branch feat/no-popups, pushed 2026-10-15 in `feebd7ee`; migration 0115 ran on the server 2026-10-14, owner approved "Chạy cả 4".
 
 **The example he was shown.** At 15:00 Sữa tươi is counted at 8 cartons against a book of 10, so the stocktake reads short 2. Before it is confirmed, a manager enters an issue slip for 2 cartons used at 14:00. The book now reads 8 and matches the count, but the stocktake still says short 2. Confirming it would take the 2 cartons off twice: the book would read 6 while the shelf holds 8, and the cost of goods would be counted twice.
 
@@ -66,7 +66,7 @@ Owner's answers to the three questions put to him on 2026-09-28 (*"1b 2a 3a"*):
 
 ### BR-INV-022 — The count list is grouped by Phân loại hàng, and stocktake rows live on the Kiểm kê page, not in Phiếu xuất
 
-**Status:** `APPROVED` — owner 2026-10-15, Kho area audit questions Q8 and Q9. Built 2026-10-15 on the branch `feat/khuon-chung-ban-hang-kho`, not yet pushed (`docs/superpowers/specs/2026-10-15-kiem-ke-design.md`): a list of sessions, a counting screen grouped by category with tabs, undo as the page `/admin/inventory/stocktake/[id]/cancel`. Checked before building: the Hàng đã xuất report reads stock issue rows itself and keeps them.
+**Status:** `APPROVED` — owner 2026-10-15, Kho area audit questions Q8 and Q9. Built 2026-10-15 on the branch `feat/khuon-chung-ban-hang-kho`, pushed 2026-10-15 in `4b837522` (`docs/superpowers/specs/2026-10-15-kiem-ke-design.md`): a list of sessions, a counting screen grouped by category with tabs, undo as the page `/admin/inventory/stocktake/[id]/cancel`. Checked before building: the Hàng đã xuất report reads stock issue rows itself and keeps them.
 
 - **Grouping** (Q8, *"Theo loại hàng"*): the items to count are grouped under their existing category. Measured that day: Nguyên liệu 50 items and Vật tư tiêu hao 19. He chose this over a new list of places in the shop, which would need a new page and 69 items assigned by hand.
 - **Where count differences show** (Q9, *"Chỉ ở trang Kiểm kê"*): once Kiểm kê has its own list, the Phiếu xuất list shows only slips staff wrote. `STK-001`'s 49 difference rows show on the Kiểm kê page. Stock and Giá vốn do not change. Before building, check that the "Hàng đã xuất" report does not lose those rows.

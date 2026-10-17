@@ -179,7 +179,7 @@ told this, and chose the single row.
 
 ### BR-CASH-009 — Monthly expense items remind until the month has an entry
 
-**Status:** `APPROVED` — owner 2026-09-28 (overhaul spec 5.7–5.11), detailed in `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md`. Built on the branch `feat/no-popups` 2026-10-14, not yet pushed (table `monthly_expense_items`, migration `0109`; code `lib/dashboard/monthly-reminders.ts`).
+**Status:** `APPROVED` — owner 2026-09-28 (overhaul spec 5.7–5.11), detailed in `docs/superpowers/specs/2026-10-14-tong-quan-moi-design.md`. Built on the branch `feat/no-popups` 2026-10-14, pushed 2026-10-15 in `feebd7ee` (table `monthly_expense_items`, migration `0109`; code `lib/dashboard/monthly-reminders.ts`).
 
 The owner keeps his own list of "Khoản chi hằng tháng", such as Tiền điện or Tiền nhà. Each item belongs to one active expense group.
 
