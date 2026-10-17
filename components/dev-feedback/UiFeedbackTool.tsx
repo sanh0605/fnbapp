@@ -115,12 +115,17 @@ export function UiFeedbackTool() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const triggerButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     setContainer(getOrCreateContainer());
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const composing = pendingFingerprint !== null || composingGeneral;
@@ -345,13 +350,13 @@ export function UiFeedbackTool() {
 
       <div style={{ pointerEvents: "auto" }}>
         {!picking && (
-          <button ref={triggerButtonRef} type="button" onClick={toggleOpen} style={buttonStyle}>
+          <button ref={triggerButtonRef} type="button" onClick={toggleOpen} style={{ ...buttonStyle, bottom: isMobile ? 76 : 16 }}>
             {isOpen ? "Đóng" : "Góp ý"}
           </button>
         )}
 
         {isOpen && !composing && (
-          <div ref={panelRef} style={panelStyle}>
+          <div ref={panelRef} style={{ ...panelStyle, bottom: isMobile ? 132 : 72 }}>
             <div style={{ fontWeight: 600, marginBottom: 10 }}>Góp ý giao diện</div>
             <button type="button" style={actionButtonStyle} onClick={startPicking}>
               Chọn phần tử để góp ý
@@ -479,7 +484,7 @@ export function UiFeedbackTool() {
         )}
 
         {composing && (
-          <div ref={panelRef} style={panelStyle}>
+          <div ref={panelRef} style={{ ...panelStyle, bottom: isMobile ? 132 : 72 }}>
             <div style={{ fontWeight: 600, marginBottom: 10 }}>
               {pendingFingerprint ? "Ghi chú cho phần tử đã chọn" : "Góp ý chung"}
             </div>

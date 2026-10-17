@@ -136,5 +136,28 @@ describe("BR-UI-015 FormActionBar", () => {
     const buttons = screen.getAllByRole("button");
     expect(buttons.map((b) => b.textContent?.trim())).toEqual(["Bỏ", "Lưu nháp", "Tạo"]);
   });
-});
 
+  it("renders the button row without flex-col when extra child buttons are present (one row on phone)", () => {
+    render(
+      <form>
+        <FormActionBar mode="create" onCancel={() => {}}>
+          <button type="button">Lưu nháp</button>
+        </FormActionBar>
+      </form>
+    );
+    const cancelBtn = screen.getByRole("button", { name: "Bỏ" });
+    const buttonRow = cancelBtn.parentElement;
+    expect(buttonRow?.className).not.toContain("flex-col");
+  });
+
+  it("renders no 'Có thay đổi chưa lưu' element when no change is typed", () => {
+    const { container } = render(
+      <form>
+        <input />
+        <FormActionBar mode="create" onCancel={() => {}} />
+      </form>
+    );
+    expect(screen.queryByText("Có thay đổi chưa lưu")).toBeNull();
+    expect(container.querySelector(".text-text-muted")).toBeNull();
+  });
+});

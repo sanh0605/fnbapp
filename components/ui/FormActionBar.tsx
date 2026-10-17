@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "./Button";
 
 export interface FormActionBarProps {
@@ -48,23 +48,17 @@ export function FormActionBar({
 
   const secondaryLabel = mode === "edit" ? "Bỏ thay đổi" : "Bỏ";
 
-  const hasChildren = Children.toArray(children).length > 0;
-
   return (
     <div
       ref={barRef}
       className="sticky bottom-[calc(58px+env(safe-area-inset-bottom))] md:bottom-0 z-30 bg-surface-card border-t border-border py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3"
     >
-      <div className="text-sm text-text-muted">
-        {isDirty ? "Có thay đổi chưa lưu" : null}
-      </div>
-      <div
-        className={`${
-          hasChildren
-            ? "flex flex-col md:flex-row md:items-center md:justify-end md:ml-auto"
-            : "grid grid-cols-2 md:flex md:items-center md:justify-end md:ml-auto"
-        } gap-3`}
-      >
+      {isDirty ? (
+        <div className="text-sm text-text-muted">
+          Có thay đổi chưa lưu
+        </div>
+      ) : null}
+      <div className="flex items-center gap-2 md:gap-3 md:justify-end md:ml-auto w-full md:w-auto [&>*]:flex-1 [&>*]:min-w-0 [&>*]:text-center md:[&>*]:flex-initial [&>*]:px-2 md:[&>*]:px-4">
         <Button
           type="button"
           variant="secondary"
