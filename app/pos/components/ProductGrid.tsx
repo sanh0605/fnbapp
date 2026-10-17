@@ -154,7 +154,9 @@ export function ProductGrid({
       </nav>
 
       <div
-        className="flex-1 overflow-y-auto min-h-[200px] p-4 pb-28 md:pb-4"
+        className={`flex-1 overflow-y-auto min-h-[200px] p-4 pb-28 md:pb-4 ${
+          children ? "md:min-h-0 md:max-h-[30%]" : ""
+        }`}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >

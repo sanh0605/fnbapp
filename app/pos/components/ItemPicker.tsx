@@ -150,7 +150,7 @@ export function ItemPicker({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:max-h-[60%] md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border">
+      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:flex-1 md:min-h-0 md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border">
         <div className="w-11 h-1.5 rounded-full bg-border mx-auto mt-2 shrink-0 md:hidden" />
 
         <div className="flex items-center justify-between px-4 py-1.5 md:px-3.5 md:pt-3 md:pb-2 shrink-0">
@@ -168,7 +168,7 @@ export function ItemPicker({
         </div>
 
         <div className="flex-1 overflow-y-auto min-h-0 px-3 pb-3 md:px-3.5 md:pb-2.5">
-          <div className="flex flex-col md:grid md:grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3 md:gap-2.5">
+          <div className="flex flex-col md:grid md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 md:gap-2.5">
             {/* Group 1: Cỡ ly */}
             <div className="bg-surface-card border border-border rounded-card overflow-hidden flex flex-col">
               <div className="flex items-center gap-2.5 min-h-[46px] md:min-h-[42px] px-3.5 md:px-2.5 bg-surface-secondary border-b border-border shrink-0">
@@ -205,21 +205,21 @@ export function ItemPicker({
                       }`}
                     >
                       <span
-                        className={
+                        className={`truncate ${
                           isSelected ? "text-primary font-bold" : "text-text-primary font-medium"
-                        }
+                        }`}
                       >
                         {v.size_name}
                       </span>
                       {hasPromo ? (
-                        <span className="ml-auto mr-3 md:mr-2 flex items-center gap-1.5 text-[16px] md:text-[15px]">
+                        <span className="ml-auto mr-3 md:mr-2 flex items-center gap-1.5 text-[16px] md:text-[15px] shrink-0 whitespace-nowrap">
                           <span className="text-xs text-text-muted line-through font-normal">
                             {formatNumber(v.price)}
                           </span>
                           <span className="font-bold text-primary">{formatNumber(promoPrice)}</span>
                         </span>
                       ) : (
-                        <span className="ml-auto mr-3 md:mr-2 text-[16px] md:text-[15px] text-text-secondary font-normal">
+                        <span className="ml-auto mr-3 md:mr-2 text-[16px] md:text-[15px] text-text-secondary font-normal shrink-0 whitespace-nowrap">
                           {formatNumber(v.price)}
                         </span>
                       )}

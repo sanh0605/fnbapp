@@ -113,14 +113,14 @@ export function OptionGroupPicker({
                       }`}
                     >
                       <span
-                        className={
+                        className={`truncate ${
                           isLit ? "text-primary font-bold" : "text-text-primary font-medium"
-                        }
+                        }`}
                       >
                         {opt.name}
                       </span>
                       {priceNum > 0 && (
-                        <span className="ml-auto mr-3 md:mr-2 text-[16px] md:text-[15px] text-text-secondary font-normal">
+                        <span className="ml-auto mr-3 md:mr-2 text-[16px] md:text-[15px] text-text-secondary font-normal shrink-0 whitespace-nowrap">
                           +{formatNumber(priceNum)}
                         </span>
                       )}
@@ -151,7 +151,7 @@ export function OptionGroupPicker({
                       onClick={() => {
                         if (canAdd) addManyPortion(g, opt);
                       }}
-                      className={`flex items-center justify-between min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] transition-colors cursor-pointer ${
+                      className={`flex items-center justify-between gap-1.5 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] transition-colors cursor-pointer ${
                         count > 0
                           ? "border-primary bg-primary-soft text-primary font-bold"
                           : "bg-surface-card text-text-primary font-medium hover:bg-page"
@@ -159,14 +159,14 @@ export function OptionGroupPicker({
                     >
                       <div className="flex items-center gap-1.5 min-w-0 flex-1">
                         <span
-                          className={
+                          className={`truncate ${
                             count > 0 ? "text-primary font-bold" : "text-text-primary font-medium"
-                          }
+                          }`}
                         >
                           {opt.name}
                         </span>
                         {count >= 1 && (opt.max_qty ?? Infinity) > 1 && (
-                          <b className="text-xs font-extrabold text-primary">×{count}</b>
+                          <b className="text-xs font-extrabold text-primary shrink-0">×{count}</b>
                         )}
                       </div>
 
@@ -175,7 +175,7 @@ export function OptionGroupPicker({
                         onClick={(e) => e.stopPropagation()}
                       >
                         {priceNum > 0 && (
-                          <span className="text-[16px] md:text-[15px] text-text-secondary font-normal mr-1">
+                          <span className="text-[16px] md:text-[15px] text-text-secondary font-normal mr-1 whitespace-nowrap shrink-0">
                             +{formatNumber(priceNum)}
                           </span>
                         )}
@@ -184,7 +184,7 @@ export function OptionGroupPicker({
                             type="button"
                             onClick={() => removeManyPortion(opt.id)}
                             aria-label={`Bớt một phần ${opt.name}`}
-                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold text-lg transition-colors text-primary hover:bg-surface-card"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold text-lg transition-colors text-primary hover:bg-surface-card shrink-0"
                           >
                             −
                           </button>
@@ -194,7 +194,7 @@ export function OptionGroupPicker({
                           onClick={() => addManyPortion(g, opt)}
                           disabled={!canAdd}
                           aria-label={`Thêm một phần ${opt.name}`}
-                          className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold transition-colors ${
+                          className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-button font-bold transition-colors shrink-0 ${
                             canAdd
                               ? "text-primary"
                               : "text-text-muted opacity-40 cursor-not-allowed"
@@ -232,17 +232,17 @@ export function OptionGroupPicker({
               return (
                 <div
                   key={`${p.id}-${idx}`}
-                  className="flex justify-between items-center min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 bg-surface-card text-[18px] md:text-[16px]"
+                  className="flex justify-between items-center gap-2 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 bg-surface-card text-[18px] md:text-[16px]"
                 >
-                  <div className="flex flex-col">
-                    <span className="text-text-primary font-medium">{p.name}</span>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="text-text-primary font-medium truncate">{p.name}</span>
                     {priceNum > 0 && (
-                      <span className="text-xs text-text-secondary mt-0.5">
+                      <span className="text-xs text-text-secondary mt-0.5 whitespace-nowrap">
                         +{formatNumber(priceNum)}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => removeOrphanPick(idx)}
