@@ -95,5 +95,24 @@ describe("ActivityLogClient", () => {
     expect(select.value).toBe("Hệ thống");
     expect(screen.getByRole("option", { name: "Hệ thống" })).toBeInTheDocument();
   });
+
+  it("an old ?actor=<login> link shows the person's label, with no extra choice named after the login", () => {
+    mockSearchParams.set("actor", "admin");
+    render(
+      <ActivityLogClient
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialEvents={[]}
+        actors={["Admin"]}
+        actorLabel="Admin"
+        totalCount={0}
+        itemsPerPage={20}
+      />
+    );
+
+    const select = screen.getByLabelText("Tài khoản") as HTMLSelectElement;
+    expect(select.value).toBe("Admin");
+    expect(screen.queryByRole("option", { name: "admin" })).toBeNull();
+  });
 });
 

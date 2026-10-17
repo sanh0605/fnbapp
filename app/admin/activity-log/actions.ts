@@ -35,6 +35,7 @@ export type ActivityLogResult = {
   totalCount: number;
   itemsPerPage: number;
   actors: string[];
+  actorLabel: string | null;
 };
 
 function sanitizeSearch(value: string | undefined): string {
@@ -78,12 +79,16 @@ export async function getActivityLogEvents(
   if (filters.type) eventsQuery = eventsQuery.eq("event_type", filters.type);
   // The picker shows labels but the log stores logins: map the value back to its login(s).
   // An old link may carry a login or a plain name, tried in that order after the label.
+  let actorLabel: string | null = null;
   if (filters.actor) {
     const keys: ((u: typeof users[number]) => string | undefined)[] = [
       u => pickerLabels.get(u.username), u => u.username, u => staffLabel(u).name,
     ];
     const hits = keys.map(key => users.filter(u => key(u) === filters.actor).map(u => u.username));
-    eventsQuery = eventsQuery.in("actor_name", hits.find(h => h.length) ?? [filters.actor]);
+    const logins = hits.find(h => h.length) ?? [filters.actor];
+    eventsQuery = eventsQuery.in("actor_name", logins);
+    // The box shows that one person's label; a plain name shared by several staff has no single label.
+    if (logins.length === 1) actorLabel = pickerLabels.get(logins[0]) ?? null;
   }
   if (filters.from) eventsQuery = eventsQuery.gte("event_at", filters.from);
   if (filters.to) eventsQuery = eventsQuery.lte("event_at", filters.to);
@@ -137,5 +142,6 @@ export async function getActivityLogEvents(
     totalCount: Number(eventResult.count) || 0,
     itemsPerPage: ACTIVITY_LOG_ITEMS_PER_PAGE,
     actors: [...pickerLabels.values()].sort((left, right) => left.localeCompare(right)),
+    actorLabel,
   };
 }

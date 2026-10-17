@@ -135,14 +135,22 @@ describe("getActivityLogEvents", () => {
   });
 
   describe("the person filter maps a picker value back to the stored logins", () => {
-    const actorLogins = async (users: { id: string; username: string; name: string | null }[], actor: string) => {
+    const mockUsers = (users: { id: string; username: string; name: string | null }[]) => {
       const events = query({ data: [], count: 0, error: null });
       const usersQuery = query({ data: users, error: null });
       mocks.getSupabaseClient.mockReturnValue({
         from: (table: string) => (table === "order_events" ? events : table === "users" ? usersQuery : query({ data: [], error: null })),
       });
+      return events;
+    };
+    const actorLogins = async (users: { id: string; username: string; name: string | null }[], actor: string) => {
+      const events = mockUsers(users);
       await getActivityLogEvents({ actor });
       return events.in.mock.calls[0][1];
+    };
+    const actorLabel = async (users: { id: string; username: string; name: string | null }[], actor?: string) => {
+      mockUsers(users);
+      return (await getActivityLogEvents({ actor })).actorLabel;
     };
 
     it("a label equal to another person's login picks only the person who owns that label", async () => {
@@ -159,6 +167,18 @@ describe("getActivityLogEvents", () => {
     it("an actor that matches no user (a system actor) filters by exactly that stored text", async () => {
       const users = [{ id: "u1", username: "admin", name: "Admin" }];
       expect(await actorLogins(users, "Hệ thống")).toEqual(["Hệ thống"]);
+    });
+
+    it("actorLabel is the picker label of the one person an old login link points at", async () => {
+      const users = [{ id: "u1", username: "admin", name: "Admin" }, { id: "u2", username: "cashier", name: "Cashier" }];
+      expect(await actorLabel(users, "admin")).toBe("Admin");
+    });
+
+    it("actorLabel is null for no actor, an unknown actor, and a plain name shared by two staff", async () => {
+      const twins = [{ id: "u1", username: "admin", name: "Admin" }, { id: "u2", username: "admin2", name: "Admin" }];
+      expect(await actorLabel(twins)).toBeNull();
+      expect(await actorLabel(twins, "Hệ thống")).toBeNull();
+      expect(await actorLabel(twins, "Admin")).toBeNull();
     });
   });
 });

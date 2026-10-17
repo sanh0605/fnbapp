@@ -116,6 +116,16 @@ describe("IssueSlipsClient", () => {
     }
   });
 
+  it("with an empty ?person= in the URL the select shows Tất cả, not a blank choice", () => {
+    searchParams.set("person", "");
+    try {
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={defaultPageData} />);
+      expect((screen.getByLabelText("Người ghi") as HTMLSelectElement).value).toBe("ALL");
+    } finally {
+      searchParams.delete("person");
+    }
+  });
+
   // BR-UI-003 / BR-UI-005 and Review Focus 4 (wave K3).
   describe("shared list (wave K3)", () => {
     const rows: IssueSlipListPage = {
