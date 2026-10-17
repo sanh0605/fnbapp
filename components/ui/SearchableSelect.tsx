@@ -193,7 +193,7 @@ export function SearchableSelect({ options, value, onChange, placeholder = "-- C
         tabIndex={isOpen ? -1 : 0}
         onKeyDown={handleTriggerKey}
         aria-label={placeholder}
-        className={`w-full min-w-0 min-h-[48px] md:min-h-[40px] border border-border rounded-lg px-3 py-2 bg-surface-card cursor-pointer flex justify-between items-center gap-2 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none ${className || ''}`}
+        className={`w-full min-w-0 min-h-[48px] md:min-h-[40px] rounded-button bg-surface-card border border-border px-3 py-2 text-base md:text-sm cursor-pointer flex justify-between items-center gap-2 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none ${className || ''}`}
         onClick={() => {
           setIsOpen(!isOpen);
           if (!isOpen) setSearchTerm("");

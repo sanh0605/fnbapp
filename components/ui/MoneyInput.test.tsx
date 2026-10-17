@@ -24,6 +24,15 @@ describe("BR-CASH-005 MoneyInput", () => {
     expect(getHidden("amount")).not.toBeNull();
   });
 
+  it("renders visible box with shared height classes min-h-[48px] and md:min-h-[40px]", () => {
+    render(<MoneyInput id="amount" name="amount" />);
+    const visible = getVisible();
+    expect(visible.className).toContain("min-h-[48px]");
+    expect(visible.className).toContain("md:min-h-[40px]");
+    expect(visible.className).toContain("text-base");
+    expect(visible.className).toContain("md:text-sm");
+  });
+
   it("groups thousands as the owner types 1,5,0,0,0,0 and submits plain digits", () => {
     render(<MoneyInput id="amount" name="amount" />);
     const visible = getVisible();

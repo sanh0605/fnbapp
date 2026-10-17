@@ -63,4 +63,13 @@ describe("DayInput", () => {
       vi.useRealTimers();
     }
   });
+
+  it("renders visible input with shared height classes min-h-[48px] and md:min-h-[40px]", () => {
+    render(<DayInput label="Từ ngày" value="2026-09-01" onChange={() => {}} />);
+    const input = screen.getByLabelText("Từ ngày");
+    expect(input.className).toContain("min-h-[48px]");
+    expect(input.className).toContain("md:min-h-[40px]");
+    expect(input.className).toContain("text-base");
+    expect(input.className).toContain("md:text-sm");
+  });
 });

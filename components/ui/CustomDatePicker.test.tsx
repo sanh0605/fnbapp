@@ -57,4 +57,22 @@ describe("CustomDatePicker", () => {
     expect(onChange).toHaveBeenCalled();
     expect(onFormChange).toHaveBeenCalledTimes(1);
   });
+
+  it("renders visible input with shared height classes min-h-[48px] and md:min-h-[40px]", () => {
+    const { container } = render(<CustomDatePicker selected={new Date()} onChange={vi.fn()} />);
+    const input = container.querySelector("input")!;
+    expect(input.className).toContain("min-h-[48px]");
+    expect(input.className).toContain("md:min-h-[40px]");
+    expect(input.className).toContain("text-base");
+    expect(input.className).toContain("md:text-sm");
+  });
+
+  it("renders clear button with house colours and touch target size", () => {
+    const { container } = render(<CustomDatePicker selected={new Date()} onChange={vi.fn()} isClearable />);
+    const closeBtn = container.querySelector(".react-datepicker__close-icon");
+    expect(closeBtn).toBeInTheDocument();
+    expect(closeBtn?.className).toContain("min-h-[48px]");
+    expect(closeBtn?.className).toContain("md:min-h-[40px]");
+    expect(closeBtn?.className).toContain("after:!text-text-secondary");
+  });
 });
