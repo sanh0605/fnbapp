@@ -317,7 +317,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                   return (
                     <TableRow key={index}>
                       <TableCell>
-                        <div className="min-w-[320px]">
+                        <div className="min-w-[14rem]">
                           <SearchableSelect
                             value={line.purchasedItemId}
                             onChange={val => handleItemChange(index, val)}
@@ -330,7 +330,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         <span className="tabular-nums text-text-secondary whitespace-nowrap">{onHandDisplay}</span>
                       </TableCell>
                       <TableCell>
-                        <div className="min-w-[9rem]">
+                        <div className="min-w-[7rem]">
                           <Select
                             aria-label="Đơn vị"
                             value={line.unitKey}
@@ -345,7 +345,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         </div>
                       </TableCell>
                       <TableCell align="right">
-                        <div className="min-w-[9rem]">
+                        <div className="min-w-[8rem]">
                           <NumberInput
                             id={`issue-qty-${index}`}
                             decimals={3}
@@ -503,7 +503,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                   </div>
                   <div className="flex gap-3 mt-3">
                     <div className="flex-1 min-w-0">
-                      <label className="block text-xs font-medium text-text-muted mb-1">Quy cách</label>
+                      <label className="block text-xs font-medium text-text-muted mb-1">Đơn vị</label>
                       <Select
                         aria-label="Đơn vị"
                         value={line.unitKey}
@@ -516,7 +516,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         ))}
                       </Select>
                     </div>
-                    <div className="w-36 shrink-0">
+                    <div className="w-32 shrink-0">
                       <label className="block text-xs font-medium text-text-muted mb-1">Số lượng</label>
                       <NumberInput
                         id={`issue-qty-m-${index}`}
@@ -529,11 +529,11 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                     </div>
                   </div>
                   <div className="mt-2 text-sm text-text-secondary flex justify-between items-center">
-                    <span>Quy ra:</span>
+                    <span>Quy ra</span>
                     <span className="font-medium text-text-primary tabular-nums">{convertedDisplay}</span>
                   </div>
                   <div className="mt-1.5 text-sm text-text-secondary flex justify-between items-center">
-                    <span>Giá trị xuất:</span>
+                    <span>Giá trị xuất</span>
                     <span className="font-medium text-text-primary tabular-nums">{lineValueDisplay}</span>
                   </div>
 

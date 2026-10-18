@@ -186,7 +186,7 @@ export default function ItemsClient({
           );
           if (itemConversions.length === 0) return <span className="text-text-muted">—</span>;
           return (
-            <div className="flex flex-col gap-0.5 text-xs text-text-secondary">
+            <div className="flex flex-col gap-0.5 text-text-secondary">
               {itemConversions.map((conv) => (
                 <div key={conv.id} className="whitespace-nowrap">
                   1 {getUnitName(conv.purchased_unit, units)} = {formatNumber(conv.conversion_rate)}{" "}
@@ -351,7 +351,12 @@ export default function ItemsClient({
         phoneRow={(item) => {
           const stockEntry = stockById[item.id];
           const stockText = stockEntry?.text ?? "—";
-          const displayStock = stockText === "Không theo dõi tồn" ? "Không theo dõi" : `Tồn: ${stockText}`;
+          const displayStock =
+            stockEntry?.kind === "equipment"
+              ? "Tài sản"
+              : stockText === "Không theo dõi tồn"
+                ? "Không theo dõi"
+                : `Tồn: ${stockText}`;
           return {
             title: item.name,
             value: displayStock,

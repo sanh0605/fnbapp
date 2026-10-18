@@ -131,6 +131,7 @@ export default function ConversionsClient({
       {
         key: "conversion_rate",
         header: "Hệ số",
+        align: "right",
         sortValue: (conv) => Number(conv.conversion_rate) || 0,
         render: (conv) => (
           <span className="tabular-nums text-text-primary">{formatNumber(conv.conversion_rate)}</span>

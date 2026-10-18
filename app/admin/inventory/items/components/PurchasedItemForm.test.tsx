@@ -29,6 +29,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 import React from "react";
+import { screen } from "@testing-library/react";
 import { PurchasedItemForm } from "./PurchasedItemForm";
 
 const mocks = vi.hoisted(() => ({
@@ -347,9 +348,10 @@ describe("PurchasedItemForm -- consumable base unit renders correctly, not as an
     // Wave K3: the rate box is the shared NumberInput (type text), found by its label.
     const rateLabel = Array.from(document.querySelectorAll("label")).find(l => l.textContent?.trim() === "Hệ số")!;
     const rateInput = document.getElementById(rateLabel.htmlFor) as HTMLInputElement;
-    const row = rateInput.closest(".flex.gap-2.items-end") as HTMLElement;
-    const baseUnitLabel = row.querySelector(".text-sm.text-text-secondary.font-medium") as HTMLElement;
+    // G6b: the base unit is drawn inside the rate box, right after the input.
+    const baseUnitLabel = rateInput.nextElementSibling as HTMLElement;
 
+    expect(baseUnitLabel.tagName).toBe("SPAN");
     expect(baseUnitLabel.textContent?.trim()).toBe("g");
   });
 
@@ -680,6 +682,70 @@ describe("PurchasedItemForm -- stopped units (B4)", () => {
     expect(capturedFormData!.get("base_unit")).toBe("U-INACTIVE");
   });
 });
+
+describe("PurchasedItemForm -- category hint", () => {
+  it("the hint 'Chọn phân loại để hiện các ô còn lại.' shows while no category is chosen and is gone once one is chosen", async () => {
+    const container = await openForm();
+
+    expect(container.textContent).toContain("Chọn phân loại để hiện các ô còn lại.");
+
+    const categorySelect = container.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-001");
+
+    expect(container.textContent).not.toContain("Chọn phân loại để hiện các ô còn lại.");
+  });
+});
+
+describe("PurchasedItemForm -- conversion row numbering (below sm)", () => {
+  it("with two rows, 'Đơn vị mua 1' and 'Đơn vị mua 2' are shown; with one row, 'Đơn vị mua 1' is not", async () => {
+    await openForm();
+
+    const categorySelect = document.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-002");
+
+    const baseUnitWrapper = document.querySelector('[role="combobox"]')!.closest(".relative") as HTMLElement;
+    await chooseInCombobox(baseUnitWrapper, "g");
+
+    // With one row, nothing changes: no number line
+    expect(document.body.textContent).not.toContain("Đơn vị mua 1");
+
+    // Add a second row
+    const addBtn = findButtonWithText(document.body, "+ Thêm đơn vị mua")!;
+    await fireClick(addBtn);
+
+    // With two rows: "Đơn vị mua 1" and "Đơn vị mua 2" are shown
+    expect(document.body.textContent).toContain("Đơn vị mua 1");
+    expect(document.body.textContent).toContain("Đơn vị mua 2");
+  });
+
+  it("clicking the first remove button of a row removes that row", async () => {
+    await openForm();
+
+    const categorySelect = document.querySelector("select") as HTMLSelectElement;
+    await setSelectValue(categorySelect, "NHH-002");
+
+    const baseUnitWrapper = document.querySelector('[role="combobox"]')!.closest(".relative") as HTMLElement;
+    await chooseInCombobox(baseUnitWrapper, "g");
+
+    const addBtn = findButtonWithText(document.body, "+ Thêm đơn vị mua")!;
+    await fireClick(addBtn);
+
+    expect(document.body.textContent).toContain("Đơn vị mua 1");
+    expect(document.body.textContent).toContain("Đơn vị mua 2");
+
+    // With two rows, jsdom sees two remove buttons per row (phone line + inline desktop)
+    const removeButtons = screen.getAllByRole("button", { name: "Xoá đơn vị mua" });
+    expect(removeButtons.length).toBe(4);
+
+    // Click the first remove button of the first row
+    await fireClick(removeButtons[0]);
+
+    // Back to one row: "Đơn vị mua 1" is not shown
+    expect(document.body.textContent).not.toContain("Đơn vị mua 1");
+    expect(document.body.textContent).not.toContain("Đơn vị mua 2");
+  });
+});
+
 
 
 

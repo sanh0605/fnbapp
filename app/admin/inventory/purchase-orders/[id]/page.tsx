@@ -145,7 +145,7 @@ export default async function PurchaseOrderDetail(
       }
     >
       {po.status === "COMPLETED"
-        ? "Đã hoàn thành"
+        ? "Hoàn thành"
         : isCancelled
         ? "Đã huỷ"
         : "Nháp"}

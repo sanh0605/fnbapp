@@ -334,14 +334,83 @@ describe("ItemDetailView", () => {
         conversions={[]}
         units={units}
         purchaseHistory={[]}
+        stock={{ kind: "untracked", text: "Không theo dõi tồn" }}
         returnTo="/admin/inventory/items"
         canDelete={false}
       />,
     );
 
     expect(screen.getByText("Không")).toBeInTheDocument();
+    expect(screen.queryByText("Tồn kho hiện tại")).toBeNull();
     expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
     expect(screen.getByText("Quy đổi (0)")).toBeInTheDocument();
+  });
+
+  it("an item whose stock is untracked shows no 'Tồn kho hiện tại'", () => {
+    render(
+      <ItemDetailView
+        item={mlekovitaItem}
+        category={category}
+        conversions={[]}
+        units={units}
+        purchaseHistory={[]}
+        stock={{ kind: "untracked", text: "Không theo dõi tồn" }}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.queryByText("Tồn kho hiện tại")).toBeNull();
+  });
+
+  it("an equipment item whose is_non_inventory is true still shows 'Tồn kho hiện tại' with its link", () => {
+    const equipmentItem: DBPurchasedItem = {
+      id: "SPM-078",
+      name: "Muỗng nhựa định lượng 10g",
+      item_category_id: "CAT-1",
+      status: "ACTIVE",
+      is_non_inventory: true,
+      created_at: "2026-01-01T00:00:00Z",
+    };
+
+    render(
+      <ItemDetailView
+        item={equipmentItem}
+        category={category}
+        conversions={[]}
+        units={units}
+        purchaseHistory={[]}
+        stock={{ kind: "equipment", text: "Xem ở Tài sản" }}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.getByText("Tồn kho hiện tại")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: "Xem ở Tài sản" });
+    expect(link).toHaveAttribute("href", "/admin/inventory/assets?q=SPM-078");
+  });
+
+  it("accepts string 'TRUE' for is_non_inventory", () => {
+    const itemWithTextFlag: DBPurchasedItem = {
+      ...mlekovitaItem,
+      id: "SPM-004",
+      is_non_inventory: "TRUE" as any,
+    };
+
+    render(
+      <ItemDetailView
+        item={itemWithTextFlag}
+        category={category}
+        conversions={[]}
+        units={units}
+        purchaseHistory={[]}
+        returnTo="/admin/inventory/items"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.getByText("Không")).toBeInTheDocument();
   });
 
   it("shows 'Tồn kho hiện tại' and '42.000 ml' for a tracked item with stock", () => {

@@ -996,7 +996,7 @@ describe("Ticket 6c: PurchaseOrderForm FormActionBar save bar", () => {
     expect(screen.getByRole("button", { name: "Bỏ" })).toBeInTheDocument();
   });
 
-  it("edit page renders FormActionBar with 'Cập nhật & Hoàn thành' and 'Bỏ thay đổi'", () => {
+  it("edit page renders FormActionBar with 'Cập nhật & hoàn thành' and 'Bỏ thay đổi'", () => {
     render(
       <PurchaseOrderForm
         suppliers={sampleSuppliers}
@@ -1024,7 +1024,7 @@ describe("Ticket 6c: PurchaseOrderForm FormActionBar save bar", () => {
       />
     );
 
-    expect(screen.getByRole("button", { name: "Cập nhật & Hoàn thành" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cập nhật & hoàn thành" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
 
@@ -1246,7 +1246,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
     expect(within(phoneActions).getByRole("button", { name: "Xoá dòng" })).toBeVisible();
   });
 
-  it("openIndex rule (a): pressing 'Cập nhật & Hoàn thành' on Phiếu nhập when line 2 has no quantity opens line 2 (its inputs become visible / it is the expanded line) with border-danger", async () => {
+  it("openIndex rule (a): pressing 'Cập nhật & hoàn thành' on Phiếu nhập when line 2 has no quantity opens line 2 (its inputs become visible / it is the expanded line) with border-danger", async () => {
     const line1 = {
       purchased_item_id: "ITEM-1",
       unit: "kg",
@@ -1291,7 +1291,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
 
     expect(screen.queryByRole("button", { name: "Xong" })).toBeNull();
 
-    const createBtn = screen.getByRole("button", { name: "Cập nhật & Hoàn thành" });
+    const createBtn = screen.getByRole("button", { name: "Cập nhật & hoàn thành" });
     fireEvent.click(createBtn);
 
     await waitFor(() => {
@@ -1303,7 +1303,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
     expect(dangerBox).not.toBeNull();
   });
 
-  it("openIndex rule (b): pressing 'Cập nhật & Hoàn thành' while a line is open still submits that line's full quantity", async () => {
+  it("openIndex rule (b): pressing 'Cập nhật & hoàn thành' while a line is open still submits that line's full quantity", async () => {
     mockSavePurchaseOrder.mockResolvedValueOnce({ success: true, po_id: "PO-SUBMITTED" });
 
     const { container } = render(
@@ -1340,7 +1340,7 @@ describe("Ticket 6c: PurchaseOrderLines phone rows, openIndex, and validation", 
     const phoneActions = container.querySelector(".flex.md\\:hidden") as HTMLElement;
     expect(within(phoneActions).getByRole("button", { name: "Xong" })).toBeInTheDocument();
 
-    const createBtn = screen.getByRole("button", { name: "Cập nhật & Hoàn thành" });
+    const createBtn = screen.getByRole("button", { name: "Cập nhật & hoàn thành" });
     fireEvent.click(createBtn);
 
     await waitFor(() => {

@@ -137,7 +137,7 @@ async function selectItemInBlock(block: HTMLElement, label: string) {
 
 async function selectPackage(block: HTMLElement, sizeLabel: string) {
   const select = block.querySelector("select") as HTMLSelectElement | null;
-  if (!select) throw new Error("Quy cách select not found in block");
+  if (!select) throw new Error("Đơn vị select not found in block");
   const option = Array.from(select.options).find(o => o.textContent?.trim() === sizeLabel);
   if (!option) throw new Error(`package option not found: "${sizeLabel}"`);
   const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value")!.set!;
@@ -692,10 +692,10 @@ describe("IssueSlipClient -- per-line validation names which line is wrong, befo
 });
 
 describe("IssueSlipClient -- Số lượng field sizing (D10, K1)", () => {
-  it("the Số lượng field carries the compact w-36 width class (class presence, not measured width)", async () => {
+  it("the Số lượng field carries the compact w-32 width class (class presence, not measured width)", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
     const qtyInput = findQtyInput(getLineBlocks(container)[0]);
-    expect(qtyInput.closest(".w-36")).toBeTruthy();
+    expect(qtyInput.closest(".w-32")).toBeTruthy();
   });
 });
 
@@ -858,8 +858,7 @@ describe("IssueSlipClient -- Row 3 Giá trị xuất", () => {
 
     // Phone card contains 36.000đ
     const phoneCards = getLineBlocks(phone);
-    expect(phoneCards[0].textContent).toContain("Giá trị xuất:");
-    expect(phoneCards[0].textContent).toContain("36,000đ");
+    expect(phoneCards[0].textContent).toContain("Giá trị xuất36,000đ");
   });
 
   it("total row shows the rounded exact sum of two lines (where sum of rounded cells would differ by 1)", async () => {

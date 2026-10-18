@@ -211,8 +211,9 @@ export function EditBandsForm({
           <Alert variant="danger">{error}</Alert>
         )}
 
-        {/* Desktop view: Table */}
-        <div className="hidden md:block">
+        <div>
+          {/* Desktop view: Table */}
+          <div className="hidden md:block">
           <Table aria-label="Khung khấu hao">
             <TableHead>
               <TableHeaderCell>Từ giá (đ)</TableHeaderCell>
@@ -289,7 +290,7 @@ export function EditBandsForm({
             return (
               <div
                 key={row.clientId}
-                className="py-4 border-b border-border space-y-3 relative last:border-b-0"
+                className="py-4 first:pt-0 border-b border-border space-y-3 relative last:border-b-0"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-text-secondary uppercase">
@@ -362,6 +363,7 @@ export function EditBandsForm({
             );
           })}
         </div>
+      </div>
 
         {/* Add row button */}
         <div>

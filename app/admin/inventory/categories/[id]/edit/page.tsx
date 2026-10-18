@@ -34,7 +34,7 @@ export default async function EditCategoryPage(
         backHref={detailHref}
         backLabel={category.name}
         title="Chỉnh sửa"
-        subtitle={category.id}
+        subtitle={category.name}
       />
       <CategoryForm initialData={category} returnTo={detailHref} />
     </DetailFrame>

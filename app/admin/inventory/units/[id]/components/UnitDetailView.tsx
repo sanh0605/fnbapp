@@ -59,7 +59,6 @@ export function UnitDetailView({
         backHref={returnTo}
         backLabel="Đơn vị tính"
         title={unit.name}
-        subtitle={unit.id}
         actions={headerActions}
       />
 

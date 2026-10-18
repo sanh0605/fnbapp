@@ -78,5 +78,6 @@ describe("CategoryForm on-page behaviour", () => {
     fireEvent.change(screen.getByLabelText(/^Đặc tính/), { target: { value: "EQUIPMENT" } });
     expect(screen.queryByText("Kiểm kê định kỳ")).toBeNull();
     expect(screen.queryByText("Có tính quy đổi, có trong công thức")).toBeNull();
+    expect(screen.getByText("Theo dõi ở mục Tài sản")).toBeInTheDocument();
   });
 });

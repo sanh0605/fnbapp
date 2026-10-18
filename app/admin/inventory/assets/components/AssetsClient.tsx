@@ -140,7 +140,7 @@ export default function AssetsClient({
         secondary: true,
         sortValue: (asset) => asset.latestAcquiredDate,
         render: (asset) => (
-          <span className="text-text-secondary">
+          <span className="text-text-secondary whitespace-nowrap">
             {formatDateTimeFull(asset.latestAcquiredDate)}
           </span>
         ),

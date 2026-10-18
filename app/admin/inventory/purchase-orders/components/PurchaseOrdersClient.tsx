@@ -197,7 +197,7 @@ export default function PurchaseOrdersClient({
   return (
     <div className="space-y-6 pb-20">
       <ListPageHeader
-        group="Kho"
+        group="Nhập hàng"
         title="Phiếu nhập"
         action={
           <Button
@@ -299,9 +299,8 @@ export default function PurchaseOrdersClient({
             title: po.supplierName,
             value: `${formatNumber(po.totalAmount)}đ`,
             meta: [
-              po.sourceName && po.sourceName !== "—" ? po.sourceName : null,
-              po.id,
               po.dateText,
+              po.id,
               po.paymentLabel,
             ]
               .filter(Boolean)

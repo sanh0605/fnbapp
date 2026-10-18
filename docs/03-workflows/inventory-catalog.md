@@ -7,6 +7,8 @@ tables: Purchased_Items, Item_Categories, Units, UOM_Conversions
 brCodes: BR-CATALOG-001, BR-CATALOG-002, BR-CATALOG-004, BR-INV-019
 ```
 
+**Display change — 2026-10-18 (fourth sweep, `BR-CATALOG-004`):** on the phone list a Dụng cụ row reads "Tài sản" instead of "Tồn: …", and an item's page leaves out the "Tồn kho hiện tại" row when it would read "Không theo dõi tồn" (Dụng cụ keep the row and its "Xem ở Tài sản" link; the computer list still reads "Không theo dõi tồn", the phone list "Không theo dõi"). Read only.
+
 **Behaviour change — 2026-10-15 (Kho step 5, `BR-INV-019`):** new read-only page `/admin/inventory/stock` (Tồn kho), first in the Kho menu: per tracked item the quantity, value (the costing engine's closing value), "đủ dùng khoảng X ngày" and the last count date, total at the top (`getStockOnHand` in `app/admin/inventory/stock/actions.ts`, `lib/stock/stock-on-hand.ts`). Writes nothing.
 
 **Behaviour change — 2026-10-15 (Kho step 4, `BR-CATALOG-007`):** an item's page has "Ngừng dùng" / "Dùng lại" (`setPurchasedItemStatus` in `app/admin/inventory/items/actions.ts`, ADMIN and MANAGER, writes `status` only and refreshes the item cache). A stopped item is no longer offered on a new purchase order; everything else that lists items is unchanged. See `purchasing.md` for the purchase order side.

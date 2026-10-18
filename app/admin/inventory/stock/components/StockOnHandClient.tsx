@@ -229,7 +229,9 @@ export default function StockOnHandClient({
               row.value !== null ? `${formatNumber(Math.round(row.value))}đ` : null,
               daysText,
               row.categoryName || null,
-              row.lastCountedAt ? `Kiểm ${formatDateTimeFull(row.lastCountedAt)}` : "Chưa kiểm",
+              row.lastCountedAt
+                ? `Kiểm ${formatDateTimeFull(row.lastCountedAt)}`.replace(/ /g, "\u00A0")
+                : "Chưa kiểm",
             ]
               .filter(Boolean)
               .join(" · "),
