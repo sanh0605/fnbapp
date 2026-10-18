@@ -63,13 +63,13 @@ export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormP
   }
 
   const linesSummary = (
-    <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
-      <div className="p-4 border-b border-border bg-surface-secondary/50">
-        <h2 className="font-semibold text-text-primary">Hàng trong phiếu</h2>
-      </div>
+    <div className="space-y-4">
+      <h2 className="text-base font-semibold text-text-primary">Hàng trong phiếu</h2>
 
       {detail.lines.length === 0 ? (
-        <div className="p-6 text-center text-text-muted">Phiếu không có dòng nào.</div>
+        <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden p-6 text-center text-text-muted">
+          Phiếu không có dòng nào.
+        </div>
       ) : (
         <>
           {/* Desktop Table (hidden below lg) */}
@@ -98,7 +98,7 @@ export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormP
           </div>
 
           {/* Phone Lines (lg:hidden) */}
-          <div className="divide-y divide-border lg:hidden" data-testid="phone-lines-list">
+          <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden divide-y divide-border lg:hidden" data-testid="phone-lines-list">
             {detail.lines.map((line) => (
               <div
                 key={line.issueId}

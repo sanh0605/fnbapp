@@ -391,4 +391,12 @@ describe("OrderEditForm two columns (owner 2026-10-10)", () => {
     expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Bỏ thay đổi" })).toBeInTheDocument();
   });
+
+  it("header Tuỳ chọn exists and Topping does not; phone row meta reads like 1 × Size M", () => {
+    renderForm();
+    expect(screen.getByText("Tuỳ chọn")).toBeInTheDocument();
+    expect(screen.queryByText("Topping")).toBeNull();
+    const phoneList = screen.getByTestId("summary-lines-phone");
+    expect(within(phoneList).getByText(/1 × Size M/)).toBeInTheDocument();
+  });
 });

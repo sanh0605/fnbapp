@@ -117,7 +117,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
 
       <div data-testid="detail-layout" className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start">
         {/* Left: dishes */}
-        <div data-testid="detail-lines" className="lg:col-span-2 bg-surface-card rounded-card shadow-sm border border-border p-0 md:p-5 overflow-hidden">
+        <div data-testid="detail-lines" className="lg:col-span-2">
           {/* Computer: shared Table */}
           <div className="hidden md:block">
             <Table>
@@ -169,7 +169,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
           </div>
 
           {/* Phone: line rows */}
-          <div data-testid="detail-lines-phone" className="md:hidden divide-y divide-border">
+          <div data-testid="detail-lines-phone" className="bg-surface-card rounded-card shadow-sm border border-border md:hidden divide-y divide-border">
             {currentOrder.lines.map((line, idx) => {
               const gross = line.gross_line_total;
               const net = line.net_line_total;
@@ -216,10 +216,13 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
           <div className="bg-surface-card rounded-card shadow-sm border border-border p-5 space-y-4">
             <div className="flex flex-wrap gap-3 items-center">
               {renderPaymentMethod(currentOrder)}
-              <Badge variant="neutral">{currentOrder.created_by_name}</Badge>
               {currentOrder.status === "VOIDED" && (
                 <Badge variant="danger">Đã huỷ</Badge>
               )}
+            </div>
+
+            <div className="text-sm text-text-secondary">
+              Nhân viên: <span className="text-text-primary">{currentOrder.created_by_name}</span>
             </div>
 
             {currentOrder.status === "VOIDED" && voidReason && (

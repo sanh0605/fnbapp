@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/auth/auth";
 import crypto from "node:crypto";
 import { EVENT_TYPE, ORDER_STATUS } from "@/lib/sales/order-types";
 import { voidOrderAtomic } from "@/lib/sales/void-order-transaction";
+import { CANCEL_REASON_MAX } from "@/lib/purchasing/purchase-order-cancel";
 
 export interface VoidOrderV2Result {
   success: boolean;
@@ -18,8 +19,12 @@ export interface VoidOrderV2Result {
 
 export async function voidOrderV2(orderId: string, reason: string): Promise<VoidOrderV2Result> {
   try {
-    if (!reason || reason.trim().length === 0) {
+    const trimmed = (reason ?? "").trim();
+    if (trimmed.length === 0) {
       return { success: false, error: "Lý do huỷ đơn là bắt buộc" };
+    }
+    if (trimmed.length > CANCEL_REASON_MAX) {
+      return { success: false, error: `Lý do huỷ tối đa ${CANCEL_REASON_MAX} ký tự` };
     }
 
     // Claude code — CODE-22: require ADMIN before any state mutation.
@@ -45,7 +50,7 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       to_version: Number(order.version) || 1,
       previous_order_id: "",
       delta_json: JSON.stringify({ voided: true, net_total_before: Number(order.net_total) || 0 }),
-      reason,
+      reason: trimmed,
     };
 
     // Phase A:
@@ -61,7 +66,7 @@ export async function voidOrderV2(orderId: string, reason: string): Promise<Void
       event,
       voidedAt: eventTime,
       voidedById: actor.id,
-      reason,
+      reason: trimmed,
     });
 
     if (process.env.CLI_MODE !== "true") {

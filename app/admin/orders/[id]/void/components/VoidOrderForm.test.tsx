@@ -188,14 +188,29 @@ describe("VoidOrderForm", () => {
     });
   });
 
-  it("phone lines use min-h-[48px] md:min-h-[40px] (BR-UI-014)", () => {
+  it("phone lines use px-4 py-2.5", () => {
     const order = makeOrder();
     render(<VoidOrderForm order={order} detailHref="/admin/orders/ORD-123" />);
 
     const phoneList = screen.getByTestId("phone-lines-list");
     const firstRow = phoneList.firstElementChild as HTMLElement;
-    expect(firstRow.className).toContain("min-h-[48px]");
-    expect(firstRow.className).toContain("md:min-h-[40px]");
-    expect(firstRow.className).not.toContain("min-h-[44px]");
+    expect(firstRow.className).toContain("px-4");
+    expect(firstRow.className).toContain("py-2.5");
+  });
+
+  it("textarea has maxLength 500, typing 3 characters shows 3/500, phone row title has no 1x", () => {
+    const order = makeOrder();
+    render(<VoidOrderForm order={order} detailHref="/admin/orders/ORD-123" />);
+
+    const textarea = screen.getByLabelText(/Lý do huỷ/);
+    expect(textarea).toHaveAttribute("maxLength", "500");
+
+    fireEvent.change(textarea, { target: { value: "abc" } });
+    expect(screen.getByText("3/500")).toBeInTheDocument();
+
+    const phoneList = screen.getByTestId("phone-lines-list");
+    expect(within(phoneList).queryByText(/1x/)).toBeNull();
+    expect(within(phoneList).getByText("Cà phê đen")).toBeInTheDocument();
+    expect(within(phoneList).queryByText(/2x/)).toBeNull();
   });
 });
