@@ -71,9 +71,13 @@ describe("POSScreen (Step 3 & 5)", () => {
 
   const sampleVariants = [
     { id: "V1", product_id: "P1", size_name: "M", price: 29000 },
+    { id: "V1-L", product_id: "P1", size_name: "L", price: 39000 },
     { id: "V2", product_id: "P2", size_name: "M", price: 35000 },
+    { id: "V2-L", product_id: "P2", size_name: "L", price: 45000 },
     { id: "V3", product_id: "P3", size_name: "M", price: 30000 },
+    { id: "V3-L", product_id: "P3", size_name: "L", price: 40000 },
     { id: "V4", product_id: "P4", size_name: "M", price: 25000 },
+    { id: "V4-L", product_id: "P4", size_name: "L", price: 35000 },
   ];
 
   const defaultProps = {
@@ -875,6 +879,9 @@ describe("POSScreen (Step 3 & 5)", () => {
 
   // one-tap size buttons removed by BR-SALE-019
   describe("Task 3a: Quick add and product card", () => {
+    const egg = { id: "P5", name: "Trứng luộc", category_id: "CAT-1", status: "ACTIVE" };
+    const eggVariant = { id: "V5", product_id: "P5", size_name: "1 trái", price: 5000 };
+
     it("tapping the dish name opens the dish window", () => {
       render(<POSScreen {...defaultProps} />);
 
@@ -884,6 +891,120 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(screen.getByRole("button", { name: /^Thêm vào đơn/ })).toBeInTheDocument();
       // No cart line yet: the picker's own heading is the only h3/h4.
       expect(screen.queryByRole("heading", { level: 4, name: "Cà phê đen" })).toBeNull();
+    });
+
+    it("one tap on Trứng luộc puts one line in the cart and opens no window", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      expect(screen.queryByRole("button", { name: /^Thêm vào đơn/ })).toBeNull();
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      expect(lineHeading).toBeInTheDocument();
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("1")).toBeInTheDocument();
+      expect(within(cartRow).getByText("5,000")).toBeInTheDocument();
+    });
+
+    it("a second tap gives the same single line with quantity 2", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+      fireEvent.click(dishBtn);
+
+      expect(screen.getAllByRole("heading", { level: 4, name: "Trứng luộc" })).toHaveLength(1);
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("2")).toBeInTheDocument();
+      expect(within(cartRow).getByText("10,000")).toBeInTheDocument();
+    });
+
+    it("tapping that cart line opens the window", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      fireEvent.click(lineHeading);
+
+      expect(screen.getByRole("button", { name: /^Cập nhật/ })).toBeInTheDocument();
+    });
+
+    it("a one-size dish with an option group linked still opens the window", () => {
+      const defaultOptionGroup = {
+        id: "MG-1",
+        name: "Topping",
+        selection_mode: "MANY" as const,
+        max_total: null,
+        allow_standalone: true,
+        sort_order: 1,
+        status: "ACTIVE",
+      };
+      const eggModifier = { id: "M1", group_id: "MG-1", name: "Hành phi", price: 2000, status: "ACTIVE" };
+
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          optionGroups={[defaultOptionGroup]}
+          optionGroupLinks={[{ group_id: "MG-1", product_id: egg.id }]}
+          modifiers={[eggModifier]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      expect(screen.getByRole("button", { name: /^Thêm vào đơn/ })).toBeInTheDocument();
+      expect(screen.queryByRole("heading", { level: 4, name: "Trứng luộc" })).toBeNull();
+    });
+
+    it("a two-size dish still opens the window", () => {
+      const twoSizeVariants = [
+        { id: "V5-1", product_id: "P5", size_name: "1 trái", price: 5000 },
+        { id: "V5-2", product_id: "P5", size_name: "2 trái", price: 10000 },
+      ];
+
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, ...twoSizeVariants]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      expect(screen.getByRole("button", { name: /^Thêm vào đơn/ })).toBeInTheDocument();
+      expect(screen.queryByRole("heading", { level: 4, name: "Trứng luộc" })).toBeNull();
     });
   });
 
@@ -1009,13 +1130,14 @@ describe("POSScreen (Step 3 & 5)", () => {
       const foodCategory = { id: "CAT-FOOD", name: "Đồ ăn", is_drink: false };
       const foodProduct = { id: "P-FOOD", name: "Trứng luộc", category_id: "CAT-FOOD", status: "ACTIVE" };
       const foodVariant = { id: "V-FOOD", product_id: "P-FOOD", size_name: "1 quả", price: 10000 };
+      const foodVariant2 = { id: "V-FOOD-2", product_id: "P-FOOD", size_name: "2 quả", price: 20000 };
 
       render(
         <POSScreen
           {...defaultProps}
           categories={[...sampleCategories, foodCategory]}
           products={[...sampleProducts, foodProduct]}
-          variants={[...sampleVariants, foodVariant]}
+          variants={[...sampleVariants, foodVariant, foodVariant2]}
           bestSellers={[...defaultProps.bestSellers, "P-FOOD"]}
         />
       );

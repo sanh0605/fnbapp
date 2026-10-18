@@ -19,7 +19,10 @@ vi.mock("@/lib/shared/dialog", () => ({
 
 const CATEGORY = { id: "CAT1", name: "Cà phê" };
 const PRODUCT = { id: "P1", name: "Cà phê đen", category_id: CATEGORY.id };
-const VARIANTS = [{ id: "V1", product_id: "P1", size_name: "M", price: 20000 }];
+const VARIANTS = [
+  { id: "V1", product_id: "P1", size_name: "M", price: 20000 },
+  { id: "V1-L", product_id: "P1", size_name: "L", price: 30000 },
+];
 
 beforeEach(async () => {
   vi.clearAllMocks();

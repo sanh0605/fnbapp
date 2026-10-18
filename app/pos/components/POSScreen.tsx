@@ -422,6 +422,25 @@ export default function POSScreen({
       return;
     }
 
+    // A one-size dish with no option group goes straight to the cart on one tap (BR-SALE-019 exception, owner 2026-10-18).
+    if (typeof editIndex !== "number" && prodVariants.length === 1 && !productsWithOptions.has(product.id)) {
+      const variant = prodVariants[0];
+      const line = {
+        product_id: product.id,
+        product_name: product.name,
+        variant_id: variant.id,
+        size_name: variant.size_name,
+        unit_price: Number(variant.price),
+        modifiers: [],
+        qty: 1,
+        discount_amount: 0,
+        discount_type: "VND",
+      };
+      setCart((c) => addOrMergeLine(c, line));
+      setLastCheckoutError(null);
+      return;
+    }
+
     setSelectedProduct(product);
     if (typeof editIndex === "number") {
       setEditingLineId(cart[editIndex]?.id ?? null);
