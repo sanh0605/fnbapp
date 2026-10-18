@@ -138,7 +138,7 @@ describe("ModifierGroupDetailView", () => {
     expect(screen.getByText("MG-001")).toBeInTheDocument();
     expect(screen.getByText("Chọn nhiều")).toBeInTheDocument();
     expect(screen.getByText("3 phần")).toBeInTheDocument();
-    expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Trạng thái", { selector: "div" })).toBeNull();
     expect(screen.queryByText("Số tuỳ chọn")).toBeNull();
     expect(screen.queryByText("Số món áp dụng")).toBeNull();
 
@@ -333,5 +333,22 @@ describe("ModifierGroupDetailView", () => {
     expect(pill.className).not.toContain("font-bold");
     expect(pill.className).not.toContain("font-medium");
     expect(pillsContainer?.querySelector(".font-bold, .font-medium")).toBeNull();
+  });
+
+  it("with a stopped record, 'Ngừng dùng' appears exactly once and 'Trạng thái' is not in the field list", () => {
+    render(
+      <ModifierGroupDetailView
+        group={{ ...sampleGroup, status: "INACTIVE" }}
+        options={[]}
+        productIds={[]}
+        allProducts={sampleProducts}
+        allCategories={sampleCategories}
+        canDelete={false}
+        returnTo="/admin/products/modifier-groups"
+      />
+    );
+
+    expect(screen.getAllByText("Ngừng dùng")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái", { selector: "div" })).toBeNull();
   });
 });

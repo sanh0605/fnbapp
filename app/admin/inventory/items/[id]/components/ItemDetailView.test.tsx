@@ -128,13 +128,12 @@ describe("ItemDetailView", () => {
     // canDelete=false thì không có nút "Xoá"
     expect(screen.queryByRole("button", { name: /Xoá/ })).toBeNull();
 
-    // Fields: Mã, Tên, Phân loại, Theo dõi tồn kho, Trạng thái
+    // Fields: Mã, Tên, Phân loại, Theo dõi tồn kho
     expect(screen.getAllByText("SPM-002").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Sữa tươi Mlekovita").length).toBeGreaterThan(0);
     expect(screen.getByText("Nguyên liệu")).toBeInTheDocument();
     expect(screen.getByText("Theo dõi tồn kho")).toBeInTheDocument();
     expect(screen.getByText("Có")).toBeInTheDocument(); // is_non_inventory: false -> "Có"
-    expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
 
     // Link "Xem trong Bảng quy đổi →" to /admin/inventory/conversions?q=Sữa tươi Mlekovita
     const convLink = screen.getByRole("link", { name: /Xem trong Bảng quy đổi/ });
@@ -343,7 +342,8 @@ describe("ItemDetailView", () => {
 
     expect(screen.getByText("Không")).toBeInTheDocument();
     expect(screen.queryByText("Tồn kho hiện tại")).toBeNull();
-    expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Ngừng dùng")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái", { selector: "div" })).toBeNull();
     expect(screen.getByText("Quy đổi (0)")).toBeInTheDocument();
   });
 

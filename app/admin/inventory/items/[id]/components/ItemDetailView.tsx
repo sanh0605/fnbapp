@@ -105,10 +105,6 @@ export function ItemDetailView({
     { label: "Phân loại", value: category?.name || "—" },
     { label: "Theo dõi tồn kho", value: isNonInventory ? "Không" : "Có" },
     ...(stock?.kind === "untracked" ? [] : [{ label: "Tồn kho hiện tại", value: stockValue }]),
-    {
-      label: "Trạng thái",
-      value: item.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng",
-    },
   ];
 
   const editHref = `/admin/inventory/items/${encodeURIComponent(item.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`;

@@ -156,7 +156,26 @@ describe("ConversionDetailView", () => {
     expect(screen.getByText("1,000")).toBeInTheDocument();
     expect(screen.getByText("ml")).toBeInTheDocument();
     expect(screen.getByText("Không")).toBeInTheDocument(); // purchase_only is false
-    expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
     expect(screen.getByText("3 dòng")).toBeInTheDocument();
+  });
+
+  it("with an INACTIVE conversion, 'Ngừng dùng' appears exactly once and 'Trạng thái' is not in the field list", () => {
+    const inactiveConversion: DBUOMConversion = {
+      ...activeConversion,
+      status: "INACTIVE",
+    };
+    render(
+      <ConversionDetailView
+        conversion={inactiveConversion}
+        item={item}
+        purchaseOrderLinesCount={0}
+        returnTo="/admin/inventory/conversions"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.getAllByText("Ngừng dùng")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
   });
 });

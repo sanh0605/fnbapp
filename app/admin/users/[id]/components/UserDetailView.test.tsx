@@ -64,6 +64,8 @@ describe("UserDetailView", () => {
     expect(screen.getAllByText("tuyen2612").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Quản lý").length).toBeGreaterThan(0);
     expect(screen.getAllByText("01/06/2026 15:00:00").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Mã NV")).toBeNull();
+    expect(screen.queryByText("Tên đăng nhập")).toBeNull();
 
     const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
     expect(editLink).toBeInTheDocument();
@@ -160,7 +162,7 @@ describe("UserDetailView", () => {
       />
     );
     expect(screen.getByRole("heading", { level: 1, name: "Tài Chí Tuyền" })).toBeInTheDocument();
-    expect(screen.getAllByText(/tuyen2612/).length).toBeGreaterThan(0);
+    expect(screen.getByText("tuyen2612 · USR-002")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Xoá" })).toBeInTheDocument();
   });
 });

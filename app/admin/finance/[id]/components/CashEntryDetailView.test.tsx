@@ -71,7 +71,7 @@ describe("CashEntryDetailView", () => {
     expect(screen.getAllByText("Tiền mặt").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Góp vốn tháng 9").length).toBeGreaterThan(0);
     expect(screen.getAllByText("admin").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
     expect(screen.queryByText("Mã")).toBeNull();
   });
 
@@ -104,6 +104,21 @@ describe("CashEntryDetailView", () => {
     expect(screen.queryByRole("link", { name: "Chỉnh sửa" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Huỷ" })).toBeNull();
     expect(screen.getAllByText("Đã huỷ").length).toBeGreaterThan(0);
+  });
+
+  it("with a cancelled record, 'Đã huỷ' appears exactly once and 'Trạng thái' is not in the field list", () => {
+    render(
+      <CashEntryDetailView
+        entry={{ ...sampleEntry, status: "CANCELLED" }}
+        categories={sampleCategories}
+        accounts={sampleAccounts}
+        returnTo="/admin/finance"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.getAllByText("Đã huỷ")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
   });
 
   it("shows Xoá hẳn only when canDelete is true", () => {

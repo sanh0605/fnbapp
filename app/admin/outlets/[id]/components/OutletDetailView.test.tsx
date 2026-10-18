@@ -68,7 +68,7 @@ describe("OutletDetailView", () => {
     expect(screen.getAllByText("123 Đường ABC").length).toBeGreaterThan(0);
     expect(screen.getAllByText("07:00 - 22:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("27/03/2026 00:00:00").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Đang hoạt động").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
     expect(screen.queryByText("Mã")).toBeNull();
     expect(screen.queryByText("Tên")).toBeNull();
   });
@@ -128,6 +128,19 @@ describe("OutletDetailView", () => {
       screen.queryByRole("button", { name: "Ngừng hoạt động" }),
     ).toBeNull();
     expect(screen.getAllByText("Ngừng hoạt động").length).toBeGreaterThan(0);
+  });
+
+  it("with a stopped record, 'Ngừng hoạt động' appears exactly once and 'Trạng thái' is not in the field list", () => {
+    render(
+      <OutletDetailView
+        outlet={{ ...sampleOutlet, status: "INACTIVE" }}
+        brandName="Phin Đi"
+        returnTo="/admin/outlets"
+      />,
+    );
+
+    expect(screen.getAllByText("Ngừng hoạt động")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
   });
 
   it("calls reactivateOutlet with outlet id and refreshes page on confirmed reactivation", async () => {

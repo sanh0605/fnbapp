@@ -99,13 +99,6 @@ export function OutletDetailView({
     </Link>
   );
 
-  const statusBadge =
-    outlet.status === "ACTIVE" ? (
-      <Badge variant="success">Đang hoạt động</Badge>
-    ) : (
-      <Badge variant="warning">Ngừng hoạt động</Badge>
-    );
-
   const fields: Field[] = [
     { label: "Mã đơn", value: outlet.code },
     { label: "Thương hiệu", value: brandLink },
@@ -118,7 +111,6 @@ export function OutletDetailView({
     ...(outlet.end_date
       ? [{ label: "Kết thúc", value: formatDateTimeFull(outlet.end_date) }]
       : []),
-    { label: "Trạng thái", value: statusBadge },
   ];
 
   const headerActions = (

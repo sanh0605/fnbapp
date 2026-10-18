@@ -49,11 +49,6 @@ export function ProductDetailView({
   const [actionError, setActionError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
-  const statusLabel =
-    product.status === "ACTIVE"
-      ? "Đang bán"
-      : "Ngừng bán";
-
   const optionGroupsText =
     optionGroupNames && optionGroupNames.length > 0
       ? optionGroupNames.join(", ")
@@ -62,7 +57,6 @@ export function ProductDetailView({
   const fields: Field[] = [
     { label: "Nhóm", value: categoryName || "—" },
     { label: "Nhóm tuỳ chọn", value: optionGroupsText },
-    { label: "Trạng thái", value: statusLabel },
     {
       label: "Đã bán",
       value: product.neverSold ? "Chưa bán lần nào" : "Có",

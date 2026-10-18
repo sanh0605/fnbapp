@@ -89,7 +89,7 @@ describe("CashTransferDetailView", () => {
     expect(screen.getAllByText("Tiền mặt (két)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("ACB - Phin Di").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chuyển tiền két vào ACB").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
     expect(screen.getAllByText("admin").length).toBeGreaterThan(0);
     expect(screen.getByText("Ghi sổ lúc")).toBeInTheDocument();
     expect(screen.queryByText("Mã")).toBeNull();
@@ -122,6 +122,20 @@ describe("CashTransferDetailView", () => {
     expect(screen.queryByRole("link", { name: "Chỉnh sửa" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Huỷ" })).toBeNull();
     expect(screen.getAllByText("Đã huỷ").length).toBeGreaterThan(0);
+  });
+
+  it("with a cancelled record, 'Đã huỷ' appears exactly once and 'Trạng thái' is not in the field list", () => {
+    render(
+      <CashTransferDetailView
+        transfer={{ ...sampleTransfer, status: "CANCELLED" }}
+        accounts={sampleAccounts}
+        returnTo="/admin/finance"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.getAllByText("Đã huỷ")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
   });
 
   it("MANAGER sees no Xoá (canDelete=false)", () => {

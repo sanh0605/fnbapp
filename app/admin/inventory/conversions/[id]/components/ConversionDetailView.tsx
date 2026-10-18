@@ -67,10 +67,6 @@ export function ConversionDetailView({
       value: conversion.purchase_only ? "Có" : "Không",
     },
     {
-      label: "Trạng thái",
-      value: conversion.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng",
-    },
-    {
       label: "Dùng trong phiếu nhập",
       value: `${purchaseOrderLinesCount} dòng`,
     },

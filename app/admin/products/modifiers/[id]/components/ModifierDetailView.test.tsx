@@ -261,7 +261,7 @@ describe("ModifierDetailView", () => {
 
     const pauseBtn = screen.getByRole("button", { name: "Ngừng dùng" });
     expect(pauseBtn).toBeInTheDocument();
-    expect(screen.getByText("Đang dùng")).toBeInTheDocument();
+    expect(screen.queryByText("Trạng thái")).toBeNull();
 
     fireEvent.click(pauseBtn);
 
@@ -345,7 +345,8 @@ describe("ModifierDetailView", () => {
     const resumeBtn = screen.getByRole("button", { name: "Dùng lại" });
     expect(resumeBtn).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ngừng dùng" })).toBeNull();
-    expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Ngừng dùng")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
 
     fireEvent.click(resumeBtn);
     expect(confirmMock).not.toHaveBeenCalled();
@@ -373,3 +374,4 @@ describe("ModifierDetailView", () => {
     expect(screen.queryByRole("button", { name: "Xoá" })).toBeNull();
   });
 });
+

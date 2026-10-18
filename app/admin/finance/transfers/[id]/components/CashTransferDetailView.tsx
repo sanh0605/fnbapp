@@ -77,13 +77,6 @@ export function CashTransferDetailView({
     }
   };
 
-  const statusBadge =
-    transfer.status === "ACTIVE" ? (
-      <Badge variant="success">Đang dùng</Badge>
-    ) : (
-      <Badge variant="neutral">Đã huỷ</Badge>
-    );
-
   const fields: Field[] = [
     { label: "Ngày", value: formatDateTimeFull(transfer.transfer_date) },
     { label: "Số tiền", value: amountStr },
@@ -93,7 +86,6 @@ export function CashTransferDetailView({
       label: "Ghi chú",
       value: transfer.note && transfer.note.length > 0 ? transfer.note : "—",
     },
-    { label: "Trạng thái", value: statusBadge },
     {
       label: "Người tạo",
       value:

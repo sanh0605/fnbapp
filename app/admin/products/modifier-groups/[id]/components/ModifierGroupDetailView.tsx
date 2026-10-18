@@ -103,10 +103,6 @@ export function ModifierGroupDetailView({
           : "Không",
     },
     { label: "Thứ tự hiện", value: String(group.sort_order) },
-    {
-      label: "Trạng thái",
-      value: group.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng",
-    },
   ];
 
   async function handleDelete() {
@@ -217,6 +213,7 @@ export function ModifierGroupDetailView({
         backLabel="Nhóm tuỳ chọn"
         title={group.name}
         subtitle={group.id}
+        badge={group.status !== "ACTIVE" ? <Badge variant="neutral">Ngừng dùng</Badge> : undefined}
         actions={headerActions}
       />
 

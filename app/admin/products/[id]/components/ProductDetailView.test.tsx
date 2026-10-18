@@ -152,7 +152,8 @@ describe("ProductDetailView", () => {
 
     expect(screen.getByRole("button", { name: "Bán lại" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ngừng bán" })).toBeNull();
-    expect(screen.getAllByText("Ngừng bán").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Ngừng bán")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái", { selector: "div" })).toBeNull();
   });
 
   it("displays price history timestamp with seconds (BR-DATA-006)", () => {

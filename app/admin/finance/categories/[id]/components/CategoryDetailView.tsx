@@ -68,17 +68,9 @@ export function CategoryDetailView({
     }
   };
 
-  const statusBadge =
-    category.status === "ACTIVE" ? (
-      <Badge variant="success">Đang dùng</Badge>
-    ) : (
-      <Badge variant="warning">Ngừng dùng</Badge>
-    );
-
   const fields: Field[] = [
     { label: "Bên", value: KIND_LABEL[category.kind] },
     { label: "Tính vào lãi lỗ", value: pnlTreatmentLabel(category) },
-    { label: "Trạng thái", value: statusBadge },
   ];
 
   const headerActions = (

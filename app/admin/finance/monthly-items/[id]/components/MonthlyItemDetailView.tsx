@@ -68,16 +68,8 @@ export function MonthlyItemDetailView({
     }
   };
 
-  const statusBadge =
-    item.status === "ACTIVE" ? (
-      <Badge variant="success">Đang dùng</Badge>
-    ) : (
-      <Badge variant="warning">Ngừng dùng</Badge>
-    );
-
   const fields: Field[] = [
     { label: "Nhóm chi", value: categoryName },
-    { label: "Trạng thái", value: statusBadge },
     { label: "Số dòng đã nhập", value: `${formatNumber(entryCount)} dòng` },
   ];
 

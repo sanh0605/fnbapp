@@ -111,14 +111,6 @@ export function SupplierDetailView({
     { label: "Địa chỉ", value: supplier.address },
     { label: "Mã số thuế", value: supplier.tax_id },
     { label: "Ghi chú / liên kết", value: renderLinks(supplier.links) },
-    {
-      label: "Trạng thái",
-      value: (
-        <Badge variant={isInactive ? "neutral" : "success"}>
-          {isInactive ? "Ngừng hợp tác" : "Đang hợp tác"}
-        </Badge>
-      ),
-    },
   ];
 
   const editHref = `/admin/suppliers/${encodeURIComponent(supplier.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`;
