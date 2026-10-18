@@ -607,4 +607,23 @@ describe("CashBookClient", () => {
     fireEvent.click(clearBtn);
     expect(replace).toHaveBeenCalledWith("/admin/finance?range=THIS_MONTH", { scroll: false });
   });
+
+  it("a cancelled manual entry's row shows 'Đã huỷ' in the computer table and an active one shows no 'Đang dùng'", () => {
+    mockSearchParams = new URLSearchParams("status=ALL");
+    const { container } = render(
+      <CashBookClient
+        {...defaultProps}
+        rows={[ce040Hand, ce020Cancelled]}
+        initialStatus="ALL"
+      />,
+    );
+
+    const table = container.querySelector("table");
+    expect(table).not.toBeNull();
+    const tableScope = within(table!);
+
+    expect(tableScope.getByText("Đã huỷ")).toBeInTheDocument();
+    expect(tableScope.queryByText("Đang dùng")).toBeNull();
+    expect(tableScope.queryByText("Trạng thái")).toBeNull();
+  });
 });

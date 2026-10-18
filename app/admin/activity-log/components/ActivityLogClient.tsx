@@ -12,6 +12,7 @@ import { useEffect, useState, useMemo, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
+import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
   formatRangeButtonText,
@@ -67,36 +68,30 @@ function parseDelta(deltaJson?: string): {
 
 function eventBadge(type: string) {
   let label = type;
-  let classes = "bg-page text-text-primary border-border";
+  let variant: "success" | "processing" | "danger" | "warning" | "neutral" = "neutral";
   switch (type) {
     case "CREATED":
       label = "Tạo mới";
-      classes = "bg-success/10 text-success-active border-success/30";
+      variant = "success";
       break;
     case "EDITED":
       label = "Chỉnh sửa";
-      classes = "bg-primary-soft text-primary-active border-primary/20";
+      variant = "processing";
       break;
     case "VOIDED":
       label = "Huỷ đơn";
-      classes = "bg-danger/10 text-danger-active border-danger/30";
+      variant = "danger";
       break;
     case "REOPENED":
       label = "Mở lại";
-      classes = "bg-warning/10 text-warning-active border-warning/30";
+      variant = "warning";
       break;
     case "MIGRATED":
       label = "Di trú";
-      classes = "bg-surface-secondary text-text-secondary border-border";
+      variant = "neutral";
       break;
   }
-  return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${classes}`}
-    >
-      {label}
-    </span>
-  );
+  return <Badge variant={variant}>{label}</Badge>;
 }
 
 export interface ActivityLogClientProps {
@@ -388,7 +383,7 @@ export default function ActivityLogClient({
             return {
               title: `Đơn hàng ${evt.order_no}`,
               value: netTotal !== undefined ? `${formatNumber(netTotal)}đ` : undefined,
-              badge: eventBadge(evt.event_type),
+              badge: evt.event_type !== "CREATED" ? eventBadge(evt.event_type) : undefined,
               meta,
             };
           }}

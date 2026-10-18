@@ -167,8 +167,10 @@ viết lại từng chỗ là việc lớn mà không đổi gì thấy được
 - **Thu gọn (76px):** còn nút mở rộng, biểu tượng "Mở máy bán hàng", và biểu tượng
   từng nhóm. Rê chuột vào thì hiện tên. Nhóm của trang đang xem được tô nền nhạt.
   Bấm biểu tượng một nhóm thì menu mở rộng ra và mở sẵn nhóm đó, giống bản mẫu.
-- Máy nhớ thu gọn hay mở rộng trên từng máy. Xoá dữ liệu trình duyệt thì về mặc định
-  mở rộng.
+- Máy nhớ thu gọn hay mở rộng trên từng máy, chỉ khi bấm nút thu gọn / mở rộng (bấm
+  biểu tượng nhóm để mở menu thì không tính là chọn). Chưa chọn lần nào, hoặc xoá dữ liệu
+  trình duyệt, thì về mặc định: mở rộng; màn dưới 1.024px (iPad dọc) thu gọn để bảng đủ chỗ
+  (2026-10-18, G12).
 
 ### 3.4 Menu trên điện thoại (màn dưới 768px)
 

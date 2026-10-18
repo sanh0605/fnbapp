@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import React from "react";
 import ActivityLogClient from "./ActivityLogClient";
+import type { ActivityLogEvent as OrderEvent } from "../actions";
 
 // BR-UI-007: the list now takes its range from the page.
 const TEST_TODAY = "2026-10-09";
@@ -115,6 +116,48 @@ describe("ActivityLogClient", () => {
     const select = screen.getByLabelText("Tài khoản") as HTMLSelectElement;
     expect(select.value).toBe("Admin");
     expect(screen.queryByRole("option", { name: "admin" })).toBeNull();
+  });
+
+  it("in phone list only, CREATED event row shows no 'Tạo mới' and EDITED event row shows 'Chỉnh sửa'", () => {
+    const events: OrderEvent[] = [
+      {
+        id: "evt-created",
+        order_id: "ord-1",
+        order_no: "261018001",
+        event_type: "CREATED",
+        event_at: "2026-10-18T08:00:00Z",
+        actor_id: "admin",
+        actor_name: "Admin",
+      },
+      {
+        id: "evt-edited",
+        order_id: "ord-2",
+        order_no: "261018002",
+        event_type: "EDITED",
+        event_at: "2026-10-18T09:00:00Z",
+        actor_id: "admin",
+        actor_name: "Admin",
+      },
+    ];
+
+    const { container } = render(
+      <ActivityLogClient
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialEvents={events}
+        actors={["Admin"]}
+        actorLabel={null}
+        totalCount={2}
+        itemsPerPage={20}
+      />,
+    );
+
+    const phoneContainer = container.querySelector(".md\\:hidden.flex.flex-col") as HTMLElement;
+    expect(phoneContainer).not.toBeNull();
+    const phoneScope = within(phoneContainer);
+
+    expect(phoneScope.queryByText("Tạo mới")).toBeNull();
+    expect(phoneScope.getByText("Chỉnh sửa")).toBeInTheDocument();
   });
 });
 
