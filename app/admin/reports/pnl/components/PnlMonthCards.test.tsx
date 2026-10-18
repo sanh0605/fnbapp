@@ -50,7 +50,7 @@ describe("PnlMonthCards", () => {
   it("the 08/2026 card title carries the note number", () => {
     render(<PnlMonthCards table={table()} />);
     const august = screen.getByTestId("pnl-month-2026-08");
-    expect(august.querySelector("summary sup")?.textContent).toBe("1");
+    expect(august.querySelector("summary")?.textContent).toContain("(1)");
   });
 
   it("inside August, Vận hành opens its four cash-book rows, each shown with a minus", () => {
@@ -106,5 +106,11 @@ describe("PnlMonthCards", () => {
     const { container } = render(<PnlMonthCards table={table()} />);
     expect(container.querySelectorAll(".text-\\[11px\\], .text-\\[10px\\], .text-\\[9px\\], .text-\\[10\\.5px\\], .text-\\[11\\.5px\\]")).toHaveLength(0);
   });
-});
 
+  it("omits the asterisk note when data has a partial month", () => {
+    const t = table();
+    expect(t.chart.some(p => p.partial)).toBe(true);
+    render(<PnlMonthCards table={t} />);
+    expect(screen.queryByText(/Tháng đang chạy/)).toBeNull();
+  });
+});

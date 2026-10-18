@@ -23,7 +23,7 @@ export default function CategoryPieChart({ data }: { data: { label: string, amou
 
   return (
     <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border flex flex-col min-h-[400px]">
-      <h3 className="font-bold text-text-primary mb-6">Tỉ trọng Doanh thu theo Nhóm</h3>
+      <h3 className="font-bold text-text-primary mb-6">Tỉ trọng doanh thu theo nhóm</h3>
       
       {total === 0 ? (
         <div className="flex-1 flex items-center justify-center text-text-muted">Không có dữ liệu</div>
@@ -39,7 +39,7 @@ export default function CategoryPieChart({ data }: { data: { label: string, amou
             </div>
           </div>
           
-          <div className="w-full space-y-3 max-h-40 overflow-y-auto pr-2">
+          <div className="w-full space-y-3">
             {sortedData.map((d, i) => {
               const percent = formatDecimal((d.amount / total) * 100, { minDigits: 1, maxDigits: 1 });
               return (

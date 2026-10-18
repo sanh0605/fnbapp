@@ -4,23 +4,13 @@ import { getHourlyHeatmapV2 } from "../engagement-actions";
 import SalesFilter from "@/app/admin/reports/components/SalesFilter";
 import SalesCharts from "@/app/admin/reports/components/SalesCharts";
 import CategoryPieChart from "@/app/admin/reports/components/CategoryPieChart";
-import { formatNumber } from "@/lib/shared/format";
-import { formatCompact } from "@/lib/reports/compact-money";
+import { formatNumber, formatDecimal } from "@/lib/shared/format";
 import { saigonToday } from "@/lib/shared/datetime";
 import { readRangeParams } from "@/lib/shared/date-range-params";
 import { comparePeriods, compareLabel, percentChange } from "@/lib/reports/compare-periods";
 import { CompareLine } from "@/app/admin/reports/components/CompareLine";
 
 import ProductTable from "@/app/admin/reports/components/ProductTable";
-import {
-  Table,
-  TableHead,
-  TableHeaderCell,
-  TableTotalRow,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/Table";
 import { OutletBreakdownSection } from "./OutletBreakdownSection";
 import { SalesByDaySection } from "./components/SalesByDaySection";
 import { PaymentBreakdownSection } from "./components/PaymentBreakdownSection";
@@ -99,9 +89,6 @@ export default async function SalesReportPage(
     outletBreakdown,
   } = data;
 
-  const totalToppingQty = bestToppings.reduce((s, t) => s + t.qty, 0);
-  const totalToppingRevenue = bestToppings.reduce((s, t) => s + t.revenue, 0);
-
   // Build heatmap lookup map once to avoid calling find inside 7x24 loops
   const heatmapMap = new Map<string, { revenue: number; orderCount: number }>();
   for (const c of heatmapData) {
@@ -120,7 +107,7 @@ export default async function SalesReportPage(
         range={range}
         today={today}
         title="Doanh số"
-        subtitle="Phân tích hiệu quả kinh doanh theo thời gian."
+        subtitle="Phân tích hiệu quả kinh doanh theo thời gian · đơn vị: đồng"
       />
 
       {/* 2. Headline figures (R1 order: three headline cards with compare line and small lines) */}
@@ -137,10 +124,10 @@ export default async function SalesReportPage(
             </div>
           ))}
           {!categoryId && (
-            <div className="text-xs text-text-muted mt-2">
-              Trước giảm giá: {formatNumber(grossRevenue)}
-              {" • "}
-              Giảm giá: {formatNumber(totalDiscount)}
+            <div className="text-xs text-text-muted mt-2 flex flex-wrap items-center gap-x-1">
+              <span className="whitespace-nowrap">Trước giảm giá: {formatNumber(grossRevenue)}</span>
+              <span>•</span>
+              <span className="whitespace-nowrap">Giảm giá: {formatNumber(totalDiscount)}</span>
             </div>
           )}
         </div>
@@ -251,7 +238,7 @@ export default async function SalesReportPage(
 
       {/* 4.3 Table by outlet */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6">
-        <h3 className="font-bold text-text-primary text-lg mb-1">Doanh thu theo Điểm bán</h3>
+        <h3 className="font-bold text-text-primary text-lg mb-1">Doanh thu theo điểm bán</h3>
         <p className="text-sm text-text-secondary mb-4">
           Theo khoảng thời gian đang xem ở trên. {totalOrders} đơn trong tổng.
         </p>
@@ -261,7 +248,7 @@ export default async function SalesReportPage(
       {/* 4.4 Table by hour (Hourly Heatmap Section) */}
       <div className="bg-surface-card rounded-card shadow-sm border border-border p-6">
         <div className="mb-4">
-          <h3 className="font-bold text-text-primary text-lg">Ma trận Doanh thu theo Giờ</h3>
+          <h3 className="font-bold text-text-primary text-lg">Ma trận doanh thu theo giờ</h3>
           <p className="text-sm text-text-secondary">Phân bổ doanh thu theo giờ trong ngày và thứ trong tuần.</p>
         </div>
         
@@ -270,53 +257,48 @@ export default async function SalesReportPage(
           {heatmapData.filter(c => c.revenue > 0).length === 0 ? (
             <div className="text-center py-8 text-text-muted text-sm">Không có dữ liệu doanh thu</div>
           ) : (
-            (() => {
-              const dayOrder = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-              return dayOrder
-                .map(day => {
-                  const dayCells = heatmapData
-                    .filter(c => c.dayOfWeek === day && c.revenue > 0)
-                    .sort((a, b) => a.hour - b.hour);
-                  if (dayCells.length === 0) return null;
-                  const dayLabel = day === "CN" ? "Chủ nhật" : `Thứ ${day.replace("T", "")}`;
-                  const dayTotalRevenue = dayCells.reduce((s, c) => s + c.revenue, 0);
-                  const dayTotalOrders = dayCells.reduce((s, c) => s + c.orderCount, 0);
-                  return (
-                    <details key={day} className="rounded-xl border border-border bg-page overflow-hidden group">
-                      <summary className="flex items-center justify-between p-3 cursor-pointer list-none min-h-[48px] md:min-h-[40px] [&::-webkit-details-marker]:hidden">
-                        <div className="flex items-center gap-3">
-                          <div className="w-11 h-11 shrink-0 rounded-lg bg-primary-soft text-primary flex items-center justify-center font-bold text-sm">
-                            {day === "CN" ? "CN" : day}
-                          </div>
+            <>
+              <p className="text-xs text-text-muted mb-2">Bấm để mở hoặc đóng chi tiết từng giờ.</p>
+              {(() => {
+                const dayOrder = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+                return dayOrder
+                  .map(day => {
+                    const dayCells = heatmapData
+                      .filter(c => c.dayOfWeek === day && c.revenue > 0)
+                      .sort((a, b) => a.hour - b.hour);
+                    if (dayCells.length === 0) return null;
+                    const dayLabel = day === "CN" ? "Chủ nhật" : `Thứ ${day.replace("T", "")}`;
+                    const dayTotalRevenue = dayCells.reduce((s, c) => s + c.revenue, 0);
+                    const dayTotalOrders = dayCells.reduce((s, c) => s + c.orderCount, 0);
+                    return (
+                      <details key={day} className="rounded-xl border border-border bg-page overflow-hidden group">
+                        <summary className="flex items-center justify-between p-3 cursor-pointer list-none min-h-[48px] md:min-h-[40px] [&::-webkit-details-marker]:hidden">
                           <div>
                             <div className="font-semibold text-text-primary">{dayLabel}</div>
                             <div className="text-xs text-text-secondary">{dayTotalOrders} đơn</div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-success">{formatNumber(dayTotalRevenue)}</div>
-                          <div className="text-xs text-text-muted flex items-center justify-end gap-1">
-                            bấm để mở/đóng
-                            <ChevronDown className="w-3 h-3 transition-transform group-open:rotate-180" />
+                          <div className="flex items-center gap-2">
+                            <div className="font-bold text-success">{formatNumber(dayTotalRevenue)}</div>
+                            <ChevronDown className="w-4 h-4 text-text-muted transition-transform group-open:rotate-180" />
                           </div>
-                        </div>
-                      </summary>
-                      <div className="px-3 pb-3 pt-1 space-y-1 border-t border-border/50 bg-surface-card">
-                        {dayCells.map(c => (
-                          <div key={`${day}-${c.hour}`} className="flex items-center justify-between py-2 min-h-[36px]">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 text-sm font-bold text-text-primary text-center">{c.hour}h</div>
-                              <div className="text-xs text-text-secondary">{c.orderCount} đơn</div>
+                        </summary>
+                        <div className="px-3 pb-3 pt-1 space-y-1 border-t border-border/50 bg-surface-card">
+                          {dayCells.map(c => (
+                            <div key={`${day}-${c.hour}`} className="flex items-center justify-between py-2 min-h-[36px]">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 text-sm font-bold text-text-primary text-center">{c.hour}h</div>
+                                <div className="text-xs text-text-secondary">{c.orderCount} đơn</div>
+                              </div>
+                              <div className="text-sm font-medium text-text-primary">{formatNumber(c.revenue)}</div>
                             </div>
-                            <div className="text-sm font-medium text-text-primary">{formatNumber(c.revenue)}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </details>
-                  );
-                })
-                .filter(Boolean);
-            })()
+                          ))}
+                        </div>
+                      </details>
+                    );
+                  })
+                  .filter(Boolean);
+              })()}
+            </>
           )}
         </div>
 
@@ -358,9 +340,9 @@ export default async function SalesReportPage(
                         }}
                       >
                         {cell.revenue > 0 && (
-                          <span className="text-xs font-black leading-none truncate max-w-full px-0.5">
-                            {cell.revenue >= 1000000 
-                              ? formatCompact(cell.revenue, "tr") 
+                          <span className="text-xs font-semibold leading-none whitespace-nowrap px-0.5">
+                            {cell.revenue >= 1_000_000 
+                              ? `${formatDecimal(cell.revenue / 1_000_000, { maxDigits: 1 })}tr` 
                               : cell.revenue >= 1000 
                                 ? `${Math.round(cell.revenue / 1000)}k` 
                                 : cell.revenue}
@@ -388,78 +370,17 @@ export default async function SalesReportPage(
         </div>
       </div>
 
-      {/* 4.5 Top Nước / Thức ăn / Topping */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <ProductTable title="Top món - Nước" items={bestDrinks} uniqueSizes={uniqueSizes} />
-        <ProductTable title="Top món - Thức ăn" items={bestFoods} uniqueSizes={uniqueSizes} />
+      {/* 4.5 Top món - Nước (full row width) */}
+      <ProductTable title="Top món - Nước" items={bestDrinks} uniqueSizes={uniqueSizes} />
 
-        {/* Toppings Table */}
-        <div className="xl:col-span-1 bg-surface-card rounded-card shadow-sm border border-border overflow-hidden flex flex-col">
-          <div className="p-5 border-b border-border bg-page flex justify-between items-center">
-            <h3 className="font-bold text-text-primary">Top topping bán chạy</h3>
-          </div>
-          <div className="hidden md:block">
-            <Table pinHead>
-              <TableHead>
-                <TableHeaderCell>Topping</TableHeaderCell>
-                <TableHeaderCell>Số lượng</TableHeaderCell>
-                <TableHeaderCell>Doanh thu</TableHeaderCell>
-              </TableHead>
-              {bestToppings.length > 0 && (
-                <TableTotalRow>
-                  <TableCell>Tổng cộng</TableCell>
-                  <TableCell align="right">{formatNumber(totalToppingQty)}</TableCell>
-                  <TableCell align="right">{formatNumber(Math.round(totalToppingRevenue))}</TableCell>
-                </TableTotalRow>
-              )}
-              <TableBody>
-                {bestToppings.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={3}>
-                      <div className="text-center py-8 text-text-muted">Không có topping nào</div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  bestToppings.map((item, i) => (
-                    <TableRow key={i}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell align="right">{item.qty}</TableCell>
-                      <TableCell align="right">{formatNumber(Math.round(item.revenue))}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-          {/* Mobile Card Layout (< 768px) */}
-          <div className="md:hidden flex flex-col gap-3 p-4 overflow-y-auto max-h-[528px] bg-page/50">
-            {bestToppings.length > 0 && (
-              <div className="pb-3 border-b border-border flex justify-between items-center font-bold text-text-primary">
-                <div className="flex items-center gap-2">
-                  <span>Tổng:</span>
-                  <span>{formatNumber(totalToppingQty)}</span>
-                </div>
-                <div className="text-text-primary">{formatNumber(Math.round(totalToppingRevenue))}</div>
-              </div>
-            )}
-            {bestToppings.length === 0 ? (
-              <div className="text-center py-8 text-text-muted">Không có topping nào</div>
-            ) : (
-              bestToppings.map((item, i) => (
-                <div key={i} className="bg-surface-card rounded-xl p-4 shadow-sm border border-border flex flex-col gap-2">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="font-bold text-text-primary">{item.name}</div>
-                    <div className="font-bold text-text-primary shrink-0">{formatNumber(Math.round(item.revenue))}</div>
-                  </div>
-                  <div className="text-sm text-text-secondary flex items-center gap-2">
-                    <span className="text-text-muted">Số lượng:</span>
-                    <span className="font-semibold text-text-primary">{item.qty}</span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+      {/* 4.6 Top món - Thức ăn & Top topping bán chạy */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ProductTable title="Top món - Thức ăn" items={bestFoods} uniqueSizes={uniqueSizes} />
+        <ProductTable
+          title="Top topping bán chạy"
+          items={bestToppings.map(t => ({ name: t.name, totalQty: t.qty, totalRevenue: t.revenue, sizes: {} }))}
+          itemHeader="Topping"
+        />
       </div>
     </div>
   );

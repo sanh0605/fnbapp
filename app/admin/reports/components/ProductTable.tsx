@@ -14,10 +14,16 @@ import {
 interface ProductTableProps {
   title: string;
   items: any[];
-  uniqueSizes: string[];
+  uniqueSizes?: string[];
+  itemHeader?: string;
 }
 
-export default function ProductTable({ title, items, uniqueSizes: _propUniqueSizes }: ProductTableProps) {
+export default function ProductTable({
+  title,
+  items,
+  uniqueSizes: _propUniqueSizes,
+  itemHeader = "Món",
+}: ProductTableProps) {
   const totalQtyAll = items.reduce((s, i) => s + i.totalQty, 0);
   const totalRevenueAll = items.reduce((s, i) => s + i.totalRevenue, 0);
   
@@ -47,25 +53,25 @@ export default function ProductTable({ title, items, uniqueSizes: _propUniqueSiz
   }
 
   return (
-    <div className="xl:col-span-1 bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col h-full">
+    <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden flex flex-col">
       <div className="p-5 border-b border-border bg-page/50 flex justify-between items-center">
         <h3 className="font-bold text-text-primary">{title}</h3>
         <span className="text-xs font-medium bg-primary-soft text-primary px-2 py-1 rounded">
           Tổng: {formatNumber(totalQtyAll)}
         </span>
       </div>
-      <Table pinHead>
+      <Table>
         <TableHead>
-          <TableHeaderCell stick="left">Món</TableHeaderCell>
+          <TableHeaderCell stick="left"><span className="whitespace-nowrap">{itemHeader}</span></TableHeaderCell>
           {tableUniqueSizes.map(size => (
-            <TableHeaderCell key={size}>Size {size}</TableHeaderCell>
+            <TableHeaderCell key={size}><span className="whitespace-nowrap">Size {size}</span></TableHeaderCell>
           ))}
-          <TableHeaderCell>Tổng SL</TableHeaderCell>
-          <TableHeaderCell>Tổng thu</TableHeaderCell>
+          <TableHeaderCell><span className="whitespace-nowrap">Tổng SL</span></TableHeaderCell>
+          <TableHeaderCell><span className="whitespace-nowrap">Doanh thu</span></TableHeaderCell>
         </TableHead>
         {items.length > 0 && (
           <TableTotalRow>
-            <TableCell stick="left">Tổng cộng</TableCell>
+            <TableCell stick="left"><span className="whitespace-nowrap">Tổng cộng</span></TableCell>
             {tableUniqueSizes.map(size => (
               <TableCell key={size} align="right">
                 {totalQtyBySize[size] > 0 ? formatNumber(totalQtyBySize[size]) : "-"}

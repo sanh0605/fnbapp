@@ -7,7 +7,7 @@ import { PaymentBreakdownSection } from "./PaymentBreakdownSection";
 afterEach(() => cleanup());
 
 describe("PaymentBreakdownSection (Ticket G-BC, spec root 1, R2)", () => {
-  it("formats the total row text as '39 lượt thanh toán của 38 đơn' for the 06/10 example, in a table with sticky TableRowHeader", () => {
+  it("shows the sentence 'N lượt thanh toán của M đơn' under the table and the count in the total row for the 06/10 example, in a table with sticky TableRowHeader", () => {
     // 06/10/2026 example: 38 completed orders (23 Tiền mặt, 15 Chuyển khoản),
     // order 261006002002 paid half cash / half transfer -> 23 cash payments, 16 transfer payments
     const payments = [
@@ -30,6 +30,17 @@ describe("PaymentBreakdownSection (Ticket G-BC, spec root 1, R2)", () => {
     const table = container.querySelector("table")!;
     expect(table).not.toBeNull();
     expect(table.closest(".hidden")).toBeNull();
+
+    // Total row's count cell shows just the number
+    const totalRow = table.querySelector("tr.bg-primary-soft")!;
+    expect(totalRow).not.toBeNull();
+    const totalCells = totalRow.querySelectorAll("td");
+    expect(totalCells[1].textContent?.trim()).toBe("39");
+
+    // The sentence appears under the table
+    const sentenceUnderTable = container.querySelector("table")!.parentElement!.nextElementSibling;
+    expect(sentenceUnderTable?.tagName).toBe("P");
+    expect(sentenceUnderTable?.textContent?.trim()).toBe("39 lượt thanh toán của 38 đơn");
 
     // Exactly 1 occurrence of each text because mobile cards are gone
     expect(screen.getAllByText("39 lượt thanh toán của 38 đơn")).toHaveLength(1);
