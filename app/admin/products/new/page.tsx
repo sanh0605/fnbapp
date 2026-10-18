@@ -21,6 +21,7 @@ export default async function NewProductPage(
         backHref={returnTo}
         backLabel="Món"
         title="Tạo món"
+        subtitle="Thêm món mới vào thực đơn."
       />
       <ProductForm
         categories={categories}

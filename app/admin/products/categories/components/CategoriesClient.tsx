@@ -185,7 +185,7 @@ export default function CategoriesClient({
   return (
     <div className="space-y-6">
       <ListPageHeader
-        group="Món"
+        group="Bán hàng"
         title="Nhóm món"
         action={
           <Button

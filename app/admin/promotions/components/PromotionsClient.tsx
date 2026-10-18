@@ -68,6 +68,18 @@ function formatPromotionDate(val: string | null | undefined): string {
   return formatDateTimeFull(val) || "—";
 }
 
+function renderPromotionDate(val: string | null | undefined) {
+  const text = formatPromotionDate(val);
+  const spaceIdx = text.indexOf(" ");
+  if (spaceIdx === -1) return text;
+  return (
+    <>
+      <span className="whitespace-nowrap">{text.slice(0, spaceIdx)}</span>{" "}
+      <span className="whitespace-nowrap">{text.slice(spaceIdx + 1)}</span>
+    </>
+  );
+}
+
 function formatDiscountText(promo: DBPromotion): string {
   if (promo.discount_type === "PERCENT") {
     return `Giảm ${promo.discount_value}%`;
@@ -196,9 +208,10 @@ export default function PromotionsClient({
       {
         key: "id",
         header: "Mã",
+        nowrap: true,
         sortValue: (p) => p.id,
         render: (p) => (
-          <span className="font-mono text-xs text-primary">
+          <span className="font-mono text-xs text-primary whitespace-nowrap">
             {p.id}
           </span>
         ),
@@ -234,20 +247,26 @@ export default function PromotionsClient({
       {
         key: "scope",
         header: "Áp dụng",
+        nowrap: true,
         sortValue: (p) => getScopeText(p, variantMap),
-        render: (p) => (
-          <span className="text-text-secondary">
-            {getScopeText(p, variantMap)}
-          </span>
-        ),
+        render: (p) => {
+          const [first, rest] = getScopeText(p, variantMap).split(", ");
+          return (
+            <span className="text-text-secondary">
+              <span className="whitespace-nowrap">{rest ? `${first},` : first}</span>
+              {rest && <>{" "}<span className="whitespace-nowrap">{rest}</span></>}
+            </span>
+          );
+        },
       },
       {
         key: "start",
         header: "Bắt đầu",
+        secondary: true,
         sortValue: (p) => p.start_date || "",
         render: (p) => (
           <span className="text-text-secondary text-sm">
-            {formatPromotionDate(p.start_date)}
+            {renderPromotionDate(p.start_date)}
           </span>
         ),
       },
@@ -257,13 +276,14 @@ export default function PromotionsClient({
         sortValue: (p) => p.end_date || "",
         render: (p) => (
           <span className="text-text-secondary text-sm">
-            {formatPromotionDate(p.end_date)}
+            {renderPromotionDate(p.end_date)}
           </span>
         ),
       },
       {
         key: "status",
         header: "Trạng thái",
+        nowrap: true,
         sortValue: (p) =>
           isExpired(p.end_date)
             ? "Đã hết hạn"
@@ -445,12 +465,11 @@ export default function PromotionsClient({
           const scopeText = getScopeText(promo, variantMap);
           const expired = isExpired(promo.end_date);
 
-          const datesText =
-            !promo.start_date && !promo.end_date
-              ? null
-              : `${formatPromotionDate(promo.start_date)} → ${formatPromotionDate(promo.end_date)}`;
+          const endText = promo.end_date
+            ? `đến ${formatPromotionDate(promo.end_date)}`
+            : "không hết hạn";
 
-          const meta = [datesText, brandName, scopeText].filter(Boolean).join(" · ");
+          const meta = [brandName, scopeText, endText].filter(Boolean).join(" · ");
 
           return {
             title: promo.name,

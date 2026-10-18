@@ -206,7 +206,7 @@ export default function ProductsClient({
           if (product.status === "ACTIVE") {
             return <Badge variant="success">Đang bán</Badge>;
           }
-          return <Badge variant="warning">Ngừng bán</Badge>;
+          return <Badge variant="neutral">Ngừng bán</Badge>;
         },
       },
     ],
@@ -397,10 +397,8 @@ export default function ProductsClient({
             title: product.name,
             meta,
             badge:
-              product.status === "ACTIVE" ? (
-                <Badge variant="success">Đang bán</Badge>
-              ) : (
-                <Badge variant="warning">Ngừng bán</Badge>
+              product.status === "ACTIVE" ? undefined : (
+                <Badge variant="neutral">Ngừng bán</Badge>
               ),
           };
         }}

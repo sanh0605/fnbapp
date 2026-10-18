@@ -77,7 +77,7 @@ export function StandaloneToppingSwitch({
       aria-checked={isActive}
       disabled={pending}
       onClick={handleToggle}
-      className="relative flex h-[44px] w-[60px] items-center justify-center disabled:opacity-50 focus:outline-none"
+      className="relative flex min-h-[48px] md:min-h-[40px] w-[60px] items-center justify-center disabled:opacity-50 focus:outline-none"
       aria-label={`Bật/tắt bán độc lập cho ${modifierName}`}
     >
       <div

@@ -173,12 +173,9 @@ export function ProductDetailView({
         backHref={returnTo}
         backLabel="Món"
         title={product.name}
-        subtitle={product.id}
         badge={
           product.status === "INACTIVE" ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-warning/10 text-warning border border-warning/20">
-              Ngừng bán
-            </span>
+            <Badge variant="neutral">Ngừng bán</Badge>
           ) : undefined
         }
         actions={headerActions}
@@ -223,7 +220,7 @@ export function ProductDetailView({
                       <TableCell>{v.size_name}</TableCell>
                       <TableCell align="right">{formatNumber(v.price)}đ</TableCell>
                       <TableCell>
-                        <Badge variant={v.status === "ACTIVE" ? "success" : "warning"}>
+                        <Badge variant={v.status === "ACTIVE" ? "success" : "neutral"}>
                           {v.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
                         </Badge>
                       </TableCell>
@@ -241,7 +238,7 @@ export function ProductDetailView({
                     title={v.size_name}
                     value={`${formatNumber(v.price)}đ`}
                     badge={
-                      <Badge variant={v.status === "ACTIVE" ? "success" : "warning"}>
+                      <Badge variant={v.status === "ACTIVE" ? "success" : "neutral"}>
                         {v.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
                       </Badge>
                     }
@@ -261,7 +258,7 @@ export function ProductDetailView({
                   ? `/admin/products/modifiers/${encodeURIComponent(linkedModifierId)}`
                   : "/admin/products/modifiers"
               }
-              className="text-primary hover:underline inline-flex items-center gap-1"
+              className="text-primary hover:underline inline-flex items-center gap-1 whitespace-nowrap"
             >
               Mở tuỳ chọn &rarr;
             </Link>

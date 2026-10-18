@@ -103,7 +103,6 @@ export function PromotionDetailView({
       label: "Kết thúc",
       value: formatPromotionDate(promo.end_date),
     },
-    { label: "Trạng thái", value: statusBadge },
   ];
 
   const headerActions = (
@@ -128,6 +127,9 @@ export function PromotionDetailView({
       )}
     </div>
   );
+
+  const discountColumnHeader =
+    promo.discount_type === "FLAT_PRICE" ? "Giá đồng giá" : "Mức giảm";
 
   return (
     <DetailFrame>
@@ -160,7 +162,7 @@ export function PromotionDetailView({
                   <TableHead>
                     <TableHeaderCell>Món</TableHeaderCell>
                     <TableHeaderCell>Size</TableHeaderCell>
-                    <TableHeaderCell>Giá áp dụng</TableHeaderCell>
+                    <TableHeaderCell>{discountColumnHeader}</TableHeaderCell>
                   </TableHead>
                   <TableBody>
                     {applicableItems.map((item, idx) => (
@@ -190,7 +192,7 @@ export function PromotionDetailView({
                     <PhoneRow
                       title={item.dishName}
                       value={item.appliedValue}
-                      meta={item.sizeName}
+                      meta={[item.sizeName, discountColumnHeader].filter(Boolean).join(" · ")}
                     />
                   </div>
                 ))}
