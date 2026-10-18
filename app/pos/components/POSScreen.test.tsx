@@ -71,9 +71,13 @@ describe("POSScreen (Step 3 & 5)", () => {
 
   const sampleVariants = [
     { id: "V1", product_id: "P1", size_name: "M", price: 29000 },
+    { id: "V1-L", product_id: "P1", size_name: "L", price: 39000 },
     { id: "V2", product_id: "P2", size_name: "M", price: 35000 },
+    { id: "V2-L", product_id: "P2", size_name: "L", price: 45000 },
     { id: "V3", product_id: "P3", size_name: "M", price: 30000 },
+    { id: "V3-L", product_id: "P3", size_name: "L", price: 40000 },
     { id: "V4", product_id: "P4", size_name: "M", price: 25000 },
+    { id: "V4-L", product_id: "P4", size_name: "L", price: 35000 },
   ];
 
   const defaultProps = {
@@ -432,6 +436,23 @@ describe("POSScreen (Step 3 & 5)", () => {
       // Adding a dish while the step is open closes it
       expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
       expect(screen.getByRole("button", { name: "Thanh toán" })).toBeInTheDocument();
+    });
+
+    it("Esc on the payment step closes it, keeps the cart and sends nothing", async () => {
+      render(<POSScreen {...defaultProps} />);
+
+      clickProduct("Bạc xỉu");
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+
+      fireEvent.keyDown(window, { key: "Escape" });
+
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
+      expect(screen.getByRole("heading", { name: "Bạc xỉu", level: 4 })).toBeInTheDocument();
+      expect(submitOrderV2).not.toHaveBeenCalled();
     });
   });
 
@@ -875,6 +896,9 @@ describe("POSScreen (Step 3 & 5)", () => {
 
   // one-tap size buttons removed by BR-SALE-019
   describe("Task 3a: Quick add and product card", () => {
+    const egg = { id: "P5", name: "Trứng luộc", category_id: "CAT-1", status: "ACTIVE" };
+    const eggVariant = { id: "V5", product_id: "P5", size_name: "1 trái", price: 5000 };
+
     it("tapping the dish name opens the dish window", () => {
       render(<POSScreen {...defaultProps} />);
 
@@ -886,7 +910,317 @@ describe("POSScreen (Step 3 & 5)", () => {
       expect(screen.queryByRole("heading", { level: 4, name: "Cà phê đen" })).toBeNull();
     });
 
-    it.todo("Máy bán hàng: món một cỡ, không có tuỳ chọn, bấm một lần là vào hoá đơn (BR-SALE-019, chủ quán 2026-10-18)");
+    it("one tap on Trứng luộc puts one line in the cart and opens no window", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      expect(screen.queryByRole("button", { name: /^Thêm vào đơn/ })).toBeNull();
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      expect(lineHeading).toBeInTheDocument();
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("1")).toBeInTheDocument();
+      expect(within(cartRow).getByText("5,000")).toBeInTheDocument();
+    });
+
+    it("a second tap gives the same single line with quantity 2", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+      fireEvent.click(dishBtn);
+
+      expect(screen.getAllByRole("heading", { level: 4, name: "Trứng luộc" })).toHaveLength(1);
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("2")).toBeInTheDocument();
+      expect(within(cartRow).getByText("10,000")).toBeInTheDocument();
+    });
+
+    it("tapping that cart line opens the window", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      fireEvent.click(lineHeading);
+
+      expect(screen.getByRole("button", { name: /^Cập nhật/ })).toBeInTheDocument();
+    });
+
+    it("a one-size dish with an option group linked still opens the window", () => {
+      const defaultOptionGroup = {
+        id: "MG-1",
+        name: "Topping",
+        selection_mode: "MANY" as const,
+        max_total: null,
+        allow_standalone: true,
+        sort_order: 1,
+        status: "ACTIVE",
+      };
+      const eggModifier = { id: "M1", group_id: "MG-1", name: "Hành phi", price: 2000, status: "ACTIVE" };
+
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          optionGroups={[defaultOptionGroup]}
+          optionGroupLinks={[{ group_id: "MG-1", product_id: egg.id }]}
+          modifiers={[eggModifier]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      expect(screen.getByRole("button", { name: /^Thêm vào đơn/ })).toBeInTheDocument();
+      expect(screen.queryByRole("heading", { level: 4, name: "Trứng luộc" })).toBeNull();
+    });
+
+    it("a two-size dish still opens the window", () => {
+      const twoSizeVariants = [
+        { id: "V5-1", product_id: "P5", size_name: "1 trái", price: 5000 },
+        { id: "V5-2", product_id: "P5", size_name: "2 trái", price: 10000 },
+      ];
+
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, ...twoSizeVariants]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      expect(screen.getByRole("button", { name: /^Thêm vào đơn/ })).toBeInTheDocument();
+      expect(screen.queryByRole("heading", { level: 4, name: "Trứng luộc" })).toBeNull();
+    });
+
+    it("with the egg's cart line open in the window, a tap on the egg card makes the window show quantity 2, and Cập nhật keeps 2", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      fireEvent.click(lineHeading);
+
+      expect(screen.getByRole("button", { name: /^Cập nhật/ })).toBeInTheDocument();
+
+      fireEvent.click(dishBtn);
+
+      const updateBtn = screen.getByRole("button", { name: /^Cập nhật/ });
+      expect(updateBtn.textContent).toContain("10,000");
+      fireEvent.click(updateBtn);
+
+      expect(screen.getAllByRole("heading", { level: 4, name: "Trứng luộc" })).toHaveLength(1);
+      const updatedHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      const cartRow = updatedHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("2")).toBeInTheDocument();
+      expect(within(cartRow).getByText("10,000")).toBeInTheDocument();
+    });
+
+    it("with a cart line open in the window, pressing + on that cart row makes the window show the new quantity, and Cập nhật keeps it", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      fireEvent.click(lineHeading);
+
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      const increaseBtn = within(cartRow).getByRole("button", { name: "Tăng số lượng" });
+      fireEvent.click(increaseBtn);
+
+      const updateBtn = screen.getByRole("button", { name: /^Cập nhật/ });
+      expect(updateBtn.textContent).toContain("10,000");
+      fireEvent.click(updateBtn);
+
+      expect(screen.getAllByRole("heading", { level: 4, name: "Trứng luộc" })).toHaveLength(1);
+      const updatedHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      const updatedCartRow = updatedHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(updatedCartRow).getByText("2")).toBeInTheDocument();
+      expect(within(updatedCartRow).getByText("10,000")).toBeInTheDocument();
+    });
+
+    it("after a one-tap add, Enter opens the payment step instead of tapping the dish again", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      dishBtn.focus();
+      fireEvent.click(dishBtn);
+
+      fireEvent.keyDown(window, { key: "Enter" });
+
+      expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+      expect(screen.getAllByRole("heading", { level: 4, name: "Trứng luộc" })).toHaveLength(1);
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("1")).toBeInTheDocument();
+    });
+
+    it("a one-tap add while the search box has focus leaves the search box focused", () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const searchInput = screen.getByPlaceholderText("Ví dụ: Trà đào");
+      searchInput.focus();
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      expect(document.activeElement).toBe(searchInput);
+      expect(screen.getAllByRole("heading", { level: 4, name: "Trứng luộc" })).toHaveLength(1);
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("1")).toBeInTheDocument();
+    });
+
+    it("a one-size dish whose linked option group has no option in use goes in on one tap", () => {
+      const defaultOptionGroup = {
+        id: "MG-1",
+        name: "Topping",
+        selection_mode: "MANY" as const,
+        max_total: null,
+        allow_standalone: true,
+        sort_order: 1,
+        status: "ACTIVE",
+      };
+      const eggModifier = { id: "M1", group_id: "MG-1", name: "Hành phi", price: 2000, status: "INACTIVE" };
+
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          optionGroups={[defaultOptionGroup]}
+          optionGroupLinks={[{ group_id: "MG-1", product_id: egg.id }]}
+          modifiers={[eggModifier]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      expect(screen.queryByRole("button", { name: /^Thêm vào đơn/ })).toBeNull();
+      expect(screen.getAllByRole("heading", { level: 4, name: "Trứng luộc" })).toHaveLength(1);
+      const lineHeading = screen.getByRole("heading", { level: 4, name: "Trứng luộc" });
+      const cartRow = lineHeading.closest<HTMLElement>("div[class*='relative overflow-hidden']")!;
+      expect(within(cartRow).getByText("1")).toBeInTheDocument();
+    });
+
+    it("after a failed send ('Gửi lại' strip shown), one tap on the egg removes the strip", async () => {
+      vi.mocked(submitOrderV2).mockResolvedValueOnce({
+        success: false,
+        retry: true,
+        error: "Network timeout",
+      } as any);
+
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      clickProduct("Bạc xỉu");
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      startCashCheckout();
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Gửi lại" })).toBeInTheDocument();
+      });
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      await waitFor(() => {
+        expect(screen.queryByRole("button", { name: "Gửi lại" })).toBeNull();
+      });
+    });
+
+    it("a one tap on the egg while the payment step is open closes the step", async () => {
+      render(
+        <POSScreen
+          {...defaultProps}
+          products={[...defaultProps.products, egg]}
+          variants={[...sampleVariants, eggVariant]}
+          bestSellers={[...defaultProps.bestSellers, "P5"]}
+        />
+      );
+
+      clickProduct("Bạc xỉu");
+      fireEvent.click(screen.getByRole("button", { name: /^Thêm vào đơn/ }));
+
+      // Open method step
+      fireEvent.click(screen.getByRole("button", { name: "Thanh toán" }));
+      expect(screen.getByRole("heading", { name: "Khách trả bằng gì?" })).toBeInTheDocument();
+
+      const dishBtn = screen.getAllByRole("button", { name: "Trứng luộc" })[0];
+      fireEvent.click(dishBtn);
+
+      expect(screen.queryByRole("heading", { name: "Khách trả bằng gì?" })).toBeNull();
+    });
   });
 
   describe("Task 3b: Header, cart column, and notices", () => {
@@ -1011,13 +1345,14 @@ describe("POSScreen (Step 3 & 5)", () => {
       const foodCategory = { id: "CAT-FOOD", name: "Đồ ăn", is_drink: false };
       const foodProduct = { id: "P-FOOD", name: "Trứng luộc", category_id: "CAT-FOOD", status: "ACTIVE" };
       const foodVariant = { id: "V-FOOD", product_id: "P-FOOD", size_name: "1 quả", price: 10000 };
+      const foodVariant2 = { id: "V-FOOD-2", product_id: "P-FOOD", size_name: "2 quả", price: 20000 };
 
       render(
         <POSScreen
           {...defaultProps}
           categories={[...sampleCategories, foodCategory]}
           products={[...sampleProducts, foodProduct]}
-          variants={[...sampleVariants, foodVariant]}
+          variants={[...sampleVariants, foodVariant, foodVariant2]}
           bestSellers={[...defaultProps.bestSellers, "P-FOOD"]}
         />
       );

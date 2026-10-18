@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, within } from "@testing-library/react";
 import React from "react";
 import { CartPanel } from "./CartPanel";
 
@@ -340,6 +340,28 @@ describe("Discount (R3)", () => {
       fireEvent.click(screen.getByRole("button", { name: "Thêm phần thanh toán" }));
       // 50,000 total − 10,000 entered: "Còn thiếu" reads 40,000
       expect(screen.getByText("40,000")).toBeInTheDocument();
+    });
+
+    it("Esc with the split box open closes only the box; the payment step stays", () => {
+      // Stands in for POSScreen's window listener, which closes the payment step on Esc.
+      const tillEsc = vi.fn();
+      window.addEventListener("keydown", tillEsc);
+      try {
+        render(
+          <CartPanel
+            {...defaultProps}
+            isPayStepOpen={true}
+          />
+        );
+        fireEvent.click(screen.getByRole("button", { name: "Chia tiền mặt + chuyển khoản" }));
+        const boxHeader = screen.getByRole("heading", { name: "Thanh toán nhiều hình thức" }).parentElement!;
+
+        fireEvent.keyDown(within(boxHeader).getByRole("button", { name: "Đóng" }), { key: "Escape" });
+      } finally {
+        window.removeEventListener("keydown", tillEsc);
+      }
+      expect(screen.queryByRole("heading", { name: "Thanh toán nhiều hình thức" })).toBeNull();
+      expect(tillEsc).not.toHaveBeenCalled();
     });
   });
 

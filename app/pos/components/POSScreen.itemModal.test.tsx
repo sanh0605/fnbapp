@@ -284,7 +284,10 @@ describe("POSScreen ItemPicker", () => {
 
   it("item discount applies as a flat VND amount", async () => {
     const product = makeProduct("P1", "Nước cam");
-    const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 30000 }];
+    const variants = [
+      { id: "V1", product_id: "P1", size_name: "M", price: 30000 },
+      { id: "V2", product_id: "P1", size_name: "L", price: 40000 },
+    ];
 
     await renderTracked(
       <POSScreen
@@ -305,7 +308,10 @@ describe("POSScreen ItemPicker", () => {
 
   it("item discount applies as a percent of the base total", async () => {
     const product = makeProduct("P1", "Nước chanh");
-    const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 40000 }];
+    const variants = [
+      { id: "V1", product_id: "P1", size_name: "M", price: 40000 },
+      { id: "V2", product_id: "P1", size_name: "L", price: 50000 },
+    ];
 
     await renderTracked(
       <POSScreen
@@ -460,7 +466,10 @@ describe("POSScreen ItemPicker", () => {
 
   it('"Gốc:" appears only when a manual or promo discount is greater than zero', async () => {
     const product = makeProduct("P1", "Sinh tố");
-    const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 22000 }];
+    const variants = [
+      { id: "V1", product_id: "P1", size_name: "M", price: 22000 },
+      { id: "V2", product_id: "P1", size_name: "L", price: 32000 },
+    ];
 
     await renderTracked(
       <POSScreen
@@ -481,7 +490,10 @@ describe("POSScreen ItemPicker", () => {
 
   it("the final total floors at 0 when a discount exceeds the base total", async () => {
     const product = makeProduct("P1", "Trà tắc");
-    const variants = [{ id: "V1", product_id: "P1", size_name: "M", price: 10000 }];
+    const variants = [
+      { id: "V1", product_id: "P1", size_name: "M", price: 10000 },
+      { id: "V2", product_id: "P1", size_name: "L", price: 20000 },
+    ];
 
     await renderTracked(
       <POSScreen
@@ -613,7 +625,9 @@ describe("POSScreen ItemPicker", () => {
     const productB = makeProduct("P2", "Trà đào");
     const variants = [
       { id: "VA", product_id: "P1", size_name: "M", price: 20000 },
+      { id: "VA-L", product_id: "P1", size_name: "L", price: 30000 },
       { id: "VB", product_id: "P2", size_name: "M", price: 15000 },
+      { id: "VB-L", product_id: "P2", size_name: "L", price: 25000 },
     ];
 
     await renderTracked(
@@ -790,6 +804,7 @@ describe("POSScreen ItemPicker", () => {
     const cfd = makeProduct("p-cfd", "Cà phê đá");
     const cfdVariants = [
       { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
+      { id: "v-500", product_id: "p-cfd", size_name: "500ml", price: 18000 },
     ];
 
     await renderTracked(
@@ -833,10 +848,12 @@ describe("POSScreen ItemPicker", () => {
     const cfd = makeProduct("p-cfd", "Cà phê đá");
     const cfdVariants = [
       { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
+      { id: "v-500", product_id: "p-cfd", size_name: "500ml", price: 18000 },
     ];
     const bacXiu = makeProduct("p-bx", "Bạc xỉu");
     const bacXiuVariants = [
       { id: "v-bx-m", product_id: "p-bx", size_name: "M", price: 20000 },
+      { id: "v-bx-l", product_id: "p-bx", size_name: "L", price: 30000 },
     ];
 
     await renderTracked(
@@ -899,7 +916,10 @@ describe("POSScreen ItemPicker", () => {
 
   it("the picker closes when checkout starts", async () => {
     const product = makeProduct("p-cfd", "Cà phê đá");
-    const variants = [{ id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 }];
+    const variants = [
+      { id: "v-360", product_id: "p-cfd", size_name: "360ml", price: 15000 },
+      { id: "v-500", product_id: "p-cfd", size_name: "500ml", price: 18000 },
+    ];
 
     await renderTracked(
       <POSScreen
@@ -930,8 +950,8 @@ describe("POSScreen ItemPicker", () => {
     expect(addButton).toBeUndefined();
   });
 
-  // Task 4a Test 8
-  it("Trứng luộc opens the picker with only the size group", async () => {
+  // Reversed by the owner 2026-10-18 (BR-SALE-019 exception): it used to open the picker on the first tap.
+  it("Trứng luộc goes into the cart on one tap; its cart line opens the picker with only the size group (BR-SALE-019, owner 2026-10-18)", async () => {
     const trung = makeProduct("p-trung", "Trứng luộc");
     const trungVariants = [
       { id: "v-trung", product_id: "p-trung", size_name: "1 quả", price: 5000 },
@@ -967,14 +987,24 @@ describe("POSScreen ItemPicker", () => {
 
     await openProductByName("Trứng luộc");
 
-    // Nothing added to the cart on open
+    // Adds one cart line (an h4 containing "Trứng luộc")
     const cartHeadings = Array.from(document.querySelectorAll("h4")).filter(
       h => h.textContent?.includes("Trứng luộc")
     );
-    expect(cartHeadings).toHaveLength(0);
+    expect(cartHeadings).toHaveLength(1);
 
-    // Picker is open with submit button
-    addToCartButton();
+    // Opens no picker (no button starting with "Thêm vào đơn")
+    const addBtn = Array.from(document.querySelectorAll("button")).find(
+      b => b.textContent?.trim().startsWith("Thêm vào đơn")
+    );
+    expect(addBtn).toBeUndefined();
+
+    // Tapping that cart line opens the picker
+    await fireClick(cartHeadings[0]);
+
+    // In edit mode the submit button reads "Cập nhật"
+    const updateBtn = addToCartButton();
+    expect(updateBtn.textContent?.trim().startsWith("Cập nhật")).toBe(true);
 
     // Size group heading "Cỡ ly" is present
     const sizeHeading = Array.from(document.querySelectorAll("span")).find(

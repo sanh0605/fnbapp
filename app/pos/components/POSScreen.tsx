@@ -422,6 +422,27 @@ export default function POSScreen({
       return;
     }
 
+    // A one-size dish with nothing to choose goes straight to the cart on one tap (BR-SALE-019 exception, owner 2026-10-18).
+    if (typeof editIndex !== "number" && prodVariants.length === 1 && !productsWithOptions.has(product.id)) {
+      // Chrome leaves focus on the tapped card; Enter must open the payment step, not tap it again.
+      if (document.activeElement instanceof HTMLButtonElement) document.activeElement.blur();
+      const variant = prodVariants[0];
+      const line = {
+        product_id: product.id,
+        product_name: product.name,
+        variant_id: variant.id,
+        size_name: variant.size_name,
+        unit_price: Number(variant.price),
+        modifiers: [],
+        qty: 1,
+        discount_amount: 0,
+        discount_type: "VND",
+      };
+      setCart((c) => addOrMergeLine(c, line));
+      setLastCheckoutError(null);
+      return;
+    }
+
     setSelectedProduct(product);
     if (typeof editIndex === "number") {
       setEditingLineId(cart[editIndex]?.id ?? null);
@@ -924,6 +945,7 @@ export default function POSScreen({
         setSelectedProduct(null);
         setEditingLineId(null);
         setIsCartOpen(false);
+        setIsPayStepOpen(false);
       } else if (e.key === "Enter") {
         if (e.repeat) {
           e.preventDefault();
