@@ -26,6 +26,7 @@ export default async function NewModifierGroupPage(
         backHref={returnTo}
         backLabel="Nhóm tuỳ chọn"
         title="Tạo nhóm tuỳ chọn"
+        subtitle="Thêm nhóm tuỳ chọn cho món."
       />
       <ModifierGroupForm
         categories={categories}

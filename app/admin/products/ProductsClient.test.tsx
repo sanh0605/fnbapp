@@ -227,7 +227,7 @@ describe("ProductsClient", () => {
     expect(within(phone).getByText("Cà phê đen")).toBeInTheDocument();
     expect(within(phone).getByText("360ml 20,000đ · 500ml 25,000đ · Cà phê")).toBeInTheDocument();
     expect(within(phone).getByText("Không có size nào đang bán · Cà phê")).toBeInTheDocument();
-    expect(within(phone).getAllByText("Đang bán").length).toBeGreaterThan(0);
+    expect(within(phone).queryByText("Đang bán")).toBeNull();
     expect(within(phone).queryByText("PROD-001")).toBeNull();
   });
 

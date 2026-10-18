@@ -170,9 +170,9 @@ export default function ProductForm({
   return (
     <div className="bg-surface-card rounded-2xl border border-border p-6 shadow-sm">
       <form id={isEdit ? `editProd-${initialData.id}` : "addProd"} onSubmit={handleSubmit} className="space-y-6">
-        <div data-testid="form-layout" className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:items-start">
+        <div data-testid="form-layout" className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           {/* THÔNG TIN CHUNG */}
-          <div className="bg-transparent md:bg-page p-0 md:p-5 rounded-none md:rounded-xl border-0 md:border border-border">
+          <div className="h-full bg-transparent md:bg-page p-0 md:p-5 rounded-none md:rounded-xl border-0 md:border border-border">
             <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
               <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
               Thông tin cơ bản
@@ -220,7 +220,7 @@ export default function ProductForm({
           </div>
 
           {/* VARIANTS */}
-          <div className="bg-transparent md:bg-page p-0 md:p-5 rounded-none md:rounded-xl border-0 md:border border-border">
+          <div className="h-full bg-transparent md:bg-page p-0 md:p-5 rounded-none md:rounded-xl border-0 md:border border-border">
             <div className="flex justify-between items-center mb-4 gap-2">
               <h3 className="text-lg font-bold text-text-primary flex items-center gap-2 whitespace-nowrap">
                 <span className="bg-primary-soft text-primary w-6 h-6 rounded-full flex items-center justify-center text-sm shrink-0">2</span>

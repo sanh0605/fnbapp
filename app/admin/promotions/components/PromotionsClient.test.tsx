@@ -184,13 +184,15 @@ describe("PromotionsClient", () => {
     expect(screen.getAllByText("Uchako").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đã hết hạn").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/15\/07\/2026 12:59:00/).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("2 món, 3 size").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("2 món,").some((el) => el.parentElement?.textContent === "2 món, 3 size"),
+    ).toBe(true);
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("202607 - GIẢM 10K")).toBeInTheDocument();
     expect(within(phone).getByText("Giảm 10,000đ")).toBeInTheDocument();
     expect(
-      within(phone).getByText("01/07/2026 00:00:00 → 15/07/2026 12:59:00 · Uchako · 2 món, 3 size")
+      within(phone).getByText("Uchako · 2 món, 3 size · đến 15/07/2026 12:59:00")
     ).toBeInTheDocument();
     expect(within(phone).getByText("Đã hết hạn")).toBeInTheDocument();
     expect(within(phone).queryByText("PRM-004")).toBeNull();
@@ -211,7 +213,10 @@ describe("PromotionsClient", () => {
         canDelete={false}
       />,
     );
-    expect(screen.getAllByText("01/06/2026 00:00:00").length).toBeGreaterThan(0);
+    // The table cell puts the date and the time in separate spans so they wrap only between them.
+    expect(
+      screen.getAllByText("01/06/2026").some(el => el.parentElement?.textContent === "01/06/2026 00:00:00"),
+    ).toBe(true);
   });
 
   it("renders in default order newest code first", () => {
@@ -229,6 +234,7 @@ describe("PromotionsClient", () => {
     const codes = screen.getAllByText(/^PRM-00[14]$/);
     expect(codes[0].textContent).toBe("PRM-004");
     expect(codes[1].textContent).toBe("PRM-001");
+    expect(screen.getByText("Toàn đơn")).toHaveClass("whitespace-nowrap");
   });
 
   it("create link reads 'Tạo' and points to /admin/promotions/new", () => {
@@ -248,7 +254,7 @@ describe("PromotionsClient", () => {
     expect(createLink.getAttribute("href")).toContain("/admin/promotions/new?returnTo=");
   });
 
-  it("omits date part from phone meta when both start_date and end_date are empty", () => {
+  it("shows 'không hết hạn' on phone meta when end_date is empty", () => {
     const promoWithoutDates: DBPromotion = {
       ...samplePromotions[0],
       start_date: "",
@@ -265,7 +271,7 @@ describe("PromotionsClient", () => {
       />,
     );
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
-    expect(within(phone).getByText("Toàn hệ thống · Toàn đơn")).toBeInTheDocument();
+    expect(within(phone).getByText("Toàn hệ thống · Toàn đơn · không hết hạn")).toBeInTheDocument();
     expect(within(phone).queryByText(/→/)).toBeNull();
   });
 });

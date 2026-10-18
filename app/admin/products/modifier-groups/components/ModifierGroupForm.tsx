@@ -280,10 +280,10 @@ export function ModifierGroupForm({
               return (
                 <div
                   key={group.category.id}
-                  className="bg-page rounded-xl border border-border p-4 space-y-3"
+                  className="space-y-2"
                 >
                   <div className="flex items-center justify-between pb-2 border-b border-border">
-                    <span className="font-semibold text-sm text-text-primary">
+                    <span className="font-bold text-sm text-text-primary">
                       {group.category.name} ({group.products.length})
                     </span>
                     <Button
@@ -293,24 +293,20 @@ export function ModifierGroupForm({
                         e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
                         handleToggleCategory(group.productIds);
                       }}
-                      className="text-xs min-h-[48px] md:min-h-[36px] px-3"
+                      className="text-xs min-h-[48px] md:min-h-[40px] px-3"
                     >
                       {allGroupSelected ? "Bỏ chọn nhóm" : "Chọn cả nhóm"}
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1">
                     {group.products.map((p) => {
                       const isChecked = selectedProductIds.includes(p.id);
                       return (
                         <label
                           key={p.id}
                           htmlFor={`${formId}-prod-${p.id}`}
-                          className={`flex items-center gap-2 cursor-pointer text-sm font-normal p-2.5 rounded-lg border transition-colors min-h-[48px] md:min-h-[40px] ${
-                            isChecked
-                              ? "bg-primary-soft/30 border-primary text-text-primary"
-                              : "bg-surface-card border-border text-text-secondary hover:border-border-hover"
-                          }`}
+                          className="flex items-center gap-2 cursor-pointer text-sm font-normal text-text-primary min-h-[48px] md:min-h-[40px] py-1"
                         >
                           <input
                             type="checkbox"
@@ -318,9 +314,9 @@ export function ModifierGroupForm({
                             value={p.id}
                             checked={isChecked}
                             onChange={() => handleToggleProduct(p.id)}
-                            className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                            className="w-4 h-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer shrink-0"
                           />
-                          <span className="truncate">{p.name}</span>
+                          <span>{p.name}</span>
                         </label>
                       );
                     })}

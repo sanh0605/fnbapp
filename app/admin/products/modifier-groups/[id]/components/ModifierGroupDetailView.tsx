@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
@@ -64,6 +65,19 @@ export function ModifierGroupDetailView({
     const productSet = new Set(productIds);
     return allProducts.filter((p) => productSet.has(p.id));
   }, [allProducts, productIds]);
+
+  const productsByCategory = useMemo(() => {
+    const map = new Map<string, { id: string; categoryName: string; products: DBProduct[] }>();
+    for (const p of appliedProducts) {
+      const catId = p.category_id;
+      const catName = categoriesById.get(p.category_id) || "Chưa phân loại";
+      if (!map.has(catId)) {
+        map.set(catId, { id: catId, categoryName: catName, products: [] });
+      }
+      map.get(catId)!.products.push(p);
+    }
+    return Array.from(map.values());
+  }, [appliedProducts, categoriesById]);
 
   const fields: Field[] = [
     {
@@ -254,15 +268,9 @@ export function ModifierGroupDetailView({
                         </TableCell>
                       )}
                       <TableCell>
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-normal ${
-                            opt.status === "ACTIVE"
-                              ? "bg-primary-soft text-primary"
-                              : "bg-surface-secondary text-text-muted"
-                          }`}
-                        >
+                        <Badge variant={opt.status === "ACTIVE" ? "success" : "neutral"}>
                           {opt.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng"}
-                        </span>
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -283,15 +291,9 @@ export function ModifierGroupDetailView({
                         : `Tối đa: ${opt.max_qty ? opt.max_qty : "Không giới hạn"}`
                     }
                     badge={
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-normal ${
-                          opt.status === "ACTIVE"
-                            ? "bg-primary-soft text-primary"
-                            : "bg-surface-secondary text-text-muted"
-                        }`}
-                      >
+                      <Badge variant={opt.status === "ACTIVE" ? "success" : "neutral"}>
                         {opt.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng"}
-                      </span>
+                      </Badge>
                     }
                   />
                 </div>
@@ -312,40 +314,24 @@ export function ModifierGroupDetailView({
             Chưa có món nào áp dụng nhóm tuỳ chọn này.
           </div>
         ) : (
-          <div>
-            {/* Desktop Table */}
-            <div className="hidden md:block">
-              <Table>
-                <TableHead>
-                  <TableHeaderCell>Tên món</TableHeaderCell>
-                  <TableHeaderCell>Nhóm món</TableHeaderCell>
-                </TableHead>
-                <TableBody>
-                  {appliedProducts.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell>{p.name}</TableCell>
-                      <TableCell>
-                        <span className="text-text-secondary">
-                          {categoriesById.get(p.category_id) || "—"}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="md:hidden bg-surface-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
-              {appliedProducts.map((p) => (
-                <div key={p.id} className="px-4 py-2.5">
-                  <PhoneRow
-                    title={p.name}
-                    meta={categoriesById.get(p.category_id) || "—"}
-                  />
+          <div className="space-y-4">
+            {productsByCategory.map(({ id, categoryName, products }) => (
+              <div key={id} className="space-y-2">
+                <div className="text-sm font-semibold text-text-secondary">
+                  {categoryName} ({products.length})
                 </div>
-              ))}
-            </div>
+                <div className="flex flex-wrap gap-2">
+                  {products.map((p) => (
+                    <span
+                      key={p.id}
+                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-surface-secondary text-text-primary border border-border"
+                    >
+                      {p.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

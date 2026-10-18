@@ -7,6 +7,8 @@ tables: POS_Drafts, orders_v2, order_events, Promotions
 brCodes: BR-SALE-002, BR-SALE-003, BR-SALE-004, BR-SALE-005, BR-SALE-006
 ```
 
+**Display change, no change to selling — 2026-10-18 (G7, chosen under the owner's delegation):** a new promotion's "Kết thúc lúc" starts at 23:59 seven days ahead (it was the same clock time seven days ahead), so the last day counts in full; still optional and editable. A dish promotion's per-size box and its detail page say "Giá" / "Giá đồng giá" for an "Đồng giá" promotion and "Giảm" / "Mức giảm" otherwise. No order or till logic changed.
+
 **Reviewed, no behaviour change to selling — 2026-10-16:** `app/admin/promotions/actions.ts` now refuses a non-integer `min_order_value` with a Vietnamese message (the column becomes bigint in migration `0132`); no order or till logic changed.
 
 **Reviewed, no behaviour change — 2026-10-15 (Bán hàng đợt 3, A4b):** `app/pos/actions.ts` comment only: `cost_at_sale` is no longer mentioned, because migration `0121` drops the column.

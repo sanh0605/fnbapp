@@ -55,7 +55,7 @@ export default async function EditModifierGroupPage(
       <DetailHeader
         backHref={detailHref}
         backLabel={group.name}
-        title="Sửa nhóm tuỳ chọn"
+        title="Chỉnh sửa"
         subtitle={group.name}
       />
       <ModifierGroupForm

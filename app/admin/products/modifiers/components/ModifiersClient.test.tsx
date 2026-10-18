@@ -231,7 +231,43 @@ describe("ModifiersClient", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("Dâu sấy")).toBeInTheDocument();
     expect(within(phone).getByText("5,000đ")).toBeInTheDocument();
-    expect(within(phone).getByText("Thêm Topping · MOD-007 · Bán độc lập: Có")).toBeInTheDocument();
+    expect(within(phone).getByText("Thêm Topping · MOD-007 · Bán độc lập")).toBeInTheDocument();
     expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
+  });
+
+  it("renders phone line 2 without 'Bán độc lập' for a modifier not sold on its own", () => {
+    const nonStandalone: DBModifier[] = [
+      {
+        id: "MOD-001",
+        name: "Trân châu trắng",
+        price: "5000",
+        status: "ACTIVE",
+        product_id: null,
+        group_id: "MG-001",
+        is_default: false,
+        max_qty: null,
+      },
+    ];
+    const { container } = render(
+      <ModifiersClient
+        modifiers={nonStandalone}
+        toppings={sampleToppings}
+        groups={[
+          {
+            id: "MG-001",
+            name: "Trân châu trắng",
+            selection_mode: "MANY",
+            max_total: null,
+            allow_standalone: false,
+            sort_order: 10,
+            status: "ACTIVE",
+          },
+        ]}
+      />,
+    );
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("Trân châu trắng · MOD-001")).toBeInTheDocument();
+    expect(within(phone).queryByText(/Bán độc lập/)).toBeNull();
   });
 });
