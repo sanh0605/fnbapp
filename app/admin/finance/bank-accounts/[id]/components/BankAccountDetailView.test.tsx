@@ -96,7 +96,7 @@ describe("BankAccountDetailView", () => {
     expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
   });
 
-  it("shows Xoá hẳn button only when canDelete is true", () => {
+  it("shows Xoá button only when canDelete is true", () => {
     const { unmount } = render(
       <BankAccountDetailView
         account={sampleAccount}
@@ -104,7 +104,7 @@ describe("BankAccountDetailView", () => {
         canDelete={false}
       />,
     );
-    expect(screen.queryByRole("button", { name: "Xoá hẳn" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Xoá" })).toBeNull();
     unmount();
 
     render(
@@ -114,7 +114,7 @@ describe("BankAccountDetailView", () => {
         canDelete={true}
       />,
     );
-    expect(screen.getByRole("button", { name: "Xoá hẳn" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Xoá" })).toBeInTheDocument();
   });
 
   it("displays actionError in Alert when status change fails", async () => {

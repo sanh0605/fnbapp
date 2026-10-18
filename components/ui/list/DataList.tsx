@@ -394,7 +394,7 @@ export function DataList<T>({
                     <th
                       key={col.key}
                       aria-sort={ariaSort}
-                      className={`px-6 py-3 text-[13px] text-left font-semibold text-text-secondary ${
+                      className={`px-4 2xl:px-6 py-3 text-[13px] text-left font-semibold text-text-secondary ${
                         col.secondary ? "hidden xl:table-cell" : ""
                       }${col.nowrap ? " whitespace-nowrap" : ""}`}
                     >
@@ -444,7 +444,7 @@ export function DataList<T>({
                     {nonSecondaryCount > 0 && (
                       <td
                         colSpan={nonSecondaryCount}
-                        className="px-6 py-3 text-sm font-normal text-text-primary"
+                        className="px-4 2xl:px-6 py-3 text-sm font-normal text-text-primary"
                       >
                         {totals.label}
                       </td>
@@ -461,7 +461,7 @@ export function DataList<T>({
                       return (
                         <td
                           key={col.key}
-                          className={`px-6 py-3 text-sm font-normal text-text-primary ${
+                          className={`px-4 2xl:px-6 py-3 text-sm font-normal text-text-primary ${
                             col.align === "right" ? "text-right tabular-nums whitespace-nowrap" : ""
                           } ${col.secondary ? "hidden xl:table-cell" : ""}`}
                         >
@@ -504,7 +504,7 @@ export function DataList<T>({
                     {columns.map((col, idx) => (
                       <td
                         key={col.key}
-                        className={`px-6 py-3 text-sm font-normal text-text-primary ${
+                        className={`px-4 2xl:px-6 py-3 text-sm font-normal text-text-primary ${
                           col.align === "right" ? "text-right tabular-nums" : ""
                         } ${col.secondary ? "hidden xl:table-cell" : ""}`}
                       >

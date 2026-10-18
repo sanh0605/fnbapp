@@ -282,8 +282,8 @@ export default function MonthlyItemsClient({
         columns={columns}
         phoneRow={(r) => ({
           title: r.item.name,
-          value: `${formatNumber(r.entryCount)} dòng`,
-          meta: categoryMap.get(r.item.cash_category_id)?.name ?? r.item.cash_category_id,
+          value: `${formatNumber(r.entryCount)} dòng đã nhập`,
+          meta: `${categoryMap.get(r.item.cash_category_id)?.name ?? r.item.cash_category_id} · ${r.item.id}`,
           badge:
             r.item.status === "ACTIVE" ? (
               <Badge variant="success">Đang dùng</Badge>

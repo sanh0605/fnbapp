@@ -9,7 +9,13 @@ export interface ListPageHeaderProps {
 export function ListPageHeader({ group, title, action }: ListPageHeaderProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
-      <div className="shrink-0 max-w-full">
+      <div
+        className={
+          action
+            ? "shrink-0 max-w-[calc(100%-5rem)] md:max-w-full"
+            : "shrink-0 max-w-full"
+        }
+      >
         {group && (
           <div className="text-sm font-bold text-text-muted uppercase tracking-wider mb-1">
             {group}

@@ -98,36 +98,36 @@ function BalanceBlock({
     <div className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm space-y-3">
       <div className="flex items-baseline justify-between gap-2">
         <div className="text-sm font-semibold text-text-primary">{title}</div>
-        <div className="text-xs text-text-muted">cả sổ, mọi loại</div>
+        <div className="text-xs text-text-muted">Cả sổ, mọi loại</div>
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        <div>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
+        <div className="flex items-baseline justify-between gap-4 sm:flex-col sm:items-start sm:gap-0">
           <div className="text-xs text-text-muted">Tiền mặt (theo sổ)</div>
           <div
             data-testid={`${testIdPrefix}-cash`}
-            className={`font-semibold mt-1 text-sm sm:text-base ${
+            className={`font-semibold sm:mt-1 text-base tabular-nums ${
               balance.cash < 0 ? "text-danger" : "text-text-primary"
             }`}
           >
             {money(balance.cash)}
           </div>
         </div>
-        <div>
+        <div className="flex items-baseline justify-between gap-4 sm:flex-col sm:items-start sm:gap-0">
           <div className="text-xs text-text-muted">Ngân hàng</div>
           <div
             data-testid={`${testIdPrefix}-bank`}
-            className={`font-semibold mt-1 text-sm sm:text-base ${
+            className={`font-semibold sm:mt-1 text-base tabular-nums ${
               balance.bank < 0 ? "text-danger" : "text-text-primary"
             }`}
           >
             {money(balance.bank)}
           </div>
         </div>
-        <div>
+        <div className="flex items-baseline justify-between gap-4 sm:flex-col sm:items-start sm:gap-0">
           <div className="text-xs text-text-muted">Tổng</div>
           <div
             data-testid={`${testIdPrefix}-total`}
-            className={`font-bold mt-1 text-sm sm:text-base ${
+            className={`font-bold sm:mt-1 text-base tabular-nums ${
               balance.total < 0 ? "text-danger" : "text-text-primary"
             }`}
           >
@@ -135,11 +135,6 @@ function BalanceBlock({
           </div>
         </div>
       </div>
-      {balance.cash < 0 && (
-        <Alert variant="warning">
-          sổ chưa ghi tiền gửi ngân hàng
-        </Alert>
-      )}
     </div>
   );
 }
@@ -205,6 +200,14 @@ export default function CashBookClient({
       setPage(searchParams?.get("page") || undefined);
   }, [initialPage, searchParams]);
 
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      setIsDetailsOpen(true);
+    }
+  }, []);
+
   const columns: DataColumn<CashBookRow>[] = useMemo(
     () => [
       {
@@ -213,7 +216,7 @@ export default function CashBookClient({
         sortValue: (r) => r.id ?? "",
         render: (r) =>
           r.id ? (
-            <span className="font-mono text-xs text-primary transition-colors">
+            <span className="font-mono text-xs text-primary transition-colors whitespace-nowrap">
               {r.id}
             </span>
           ) : (
@@ -236,7 +239,7 @@ export default function CashBookClient({
         sortValue: (r) => r.groupLabel,
         render: (r) => (
           <div>
-            <span className="text-text-primary">
+            <span className="text-text-primary whitespace-nowrap">
               {r.groupLabel}
             </span>
             {r.monthlyItemName && (
@@ -261,9 +264,10 @@ export default function CashBookClient({
         key: "amount",
         header: "Số tiền",
         align: "right",
+        nowrap: true,
         sortValue: (r) => r.amount,
         render: (r) => (
-          <span className="tabular-nums text-text-primary">
+          <span className="tabular-nums text-text-primary whitespace-nowrap">
             {money(r.amount)}
           </span>
         ),
@@ -274,25 +278,22 @@ export default function CashBookClient({
         secondary: true,
         sortValue: (r) => r.methodLabel,
         render: (r) => (
-          <span className="text-text-secondary">
-            {r.methodLabel}
-          </span>
-        ),
-      },
-      {
-        key: "account",
-        header: "Tài khoản",
-        secondary: true,
-        sortValue: (r) => r.accountLabel,
-        render: (r) => (
-          <span className="text-text-secondary">
-            {r.accountLabel}
-          </span>
+          <div>
+            <div className="text-text-secondary whitespace-nowrap">
+              {r.methodLabel}
+            </div>
+            {r.accountLabel !== "—" && (
+              <div className="text-xs text-text-muted">
+                {r.accountLabel}
+              </div>
+            )}
+          </div>
         ),
       },
       {
         key: "note",
         header: "Ghi chú",
+        secondary: true,
         sortValue: (r) => r.note,
         render: (r) => (
           <span className="text-text-secondary">{display(r.note)}</span>
@@ -310,6 +311,7 @@ export default function CashBookClient({
       {
         key: "status",
         header: "Trạng thái",
+        nowrap: true,
         sortValue: (r) =>
           r.kind === "SALE" || r.kind === "PURCHASE"
             ? ""
@@ -531,6 +533,12 @@ export default function CashBookClient({
 
       {/* 2. Balance and Totals blocks */}
       <div className="space-y-3">
+        {(summary.opening.cash < 0 || summary.closing.cash < 0) && (
+          <Alert variant="warning">
+            Sổ chưa ghi tiền gửi ngân hàng
+          </Alert>
+        )}
+
         {/* Balance cards: Đầu kỳ and Cuối kỳ */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <BalanceBlock
@@ -546,12 +554,12 @@ export default function CashBookClient({
         </div>
 
         {/* Totals */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm">
             <div className="text-sm text-text-muted">Tổng chi</div>
             <div
               data-testid="total-expense"
-              className="text-xl font-bold text-danger mt-1"
+              className="text-lg md:text-xl tabular-nums font-bold text-danger mt-1"
             >
               {money(summary.totals.totalExpense)}
             </div>
@@ -561,7 +569,7 @@ export default function CashBookClient({
             className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm"
           >
             <div className="text-sm text-text-muted">Tổng thu</div>
-            <div className="text-xl font-bold text-success mt-1">
+            <div className="text-lg md:text-xl tabular-nums font-bold text-success mt-1">
               {money(summary.totals.totalIncome)}
             </div>
             <div className="text-xs text-text-muted mt-2 pt-2 border-t border-border">
@@ -578,12 +586,16 @@ export default function CashBookClient({
 
         {(summary.byGroup.length > 0 ||
           summary.unknownCategoryIds.length > 0) && (
-          <div
+          <details
             data-testid="by-category"
+            open={isDetailsOpen}
+            onToggle={(e) => setIsDetailsOpen(e.currentTarget.open)}
             className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm"
           >
-            <div className="text-sm text-text-muted mb-2">Theo nhóm</div>
-            <div className="space-y-1 text-sm">
+            <summary className="relative text-sm text-text-muted cursor-pointer py-3.5 -my-3.5 md:py-2.5 md:-my-2.5">
+              Theo nhóm
+            </summary>
+            <div className="mt-2 space-y-1 text-sm max-w-md">
               {summary.byGroup.map((g) => (
                 <div
                   key={g.key}
@@ -599,7 +611,7 @@ export default function CashBookClient({
                 </div>
               )}
             </div>
-          </div>
+          </details>
         )}
       </div>
 
@@ -655,7 +667,13 @@ export default function CashBookClient({
         totals={{
           label: "Tổng (không tính huỷ, chuyển tiền)",
           values: {
-            amount: `Thu ${money(rowTotals.income)} · Chi ${money(rowTotals.expense)}`,
+            amount: (
+              <>
+                <span className="whitespace-nowrap md:block">Thu {money(rowTotals.income)}</span>
+                <span className="md:hidden"> · </span>
+                <span className="whitespace-nowrap md:block">Chi {money(rowTotals.expense)}</span>
+              </>
+            ),
           },
         }}
         sort={{

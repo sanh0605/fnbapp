@@ -139,7 +139,7 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
           </Field>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm text-text-primary">
+            <label className="flex items-center gap-2 text-sm text-text-primary min-h-[48px] md:min-h-[40px] cursor-pointer">
               <input
                 type="checkbox"
                 name="affects_pnl"
@@ -155,7 +155,7 @@ export function CategoryForm({ category, hasEntries, returnTo: rawReturnTo }: Ca
 
             {canBeSalesRevenue && (
               <div>
-                <label className="flex items-center gap-2 text-sm text-text-primary">
+                <label className="flex items-center gap-2 text-sm text-text-primary min-h-[48px] md:min-h-[40px] cursor-pointer">
                   <input
                     type="checkbox"
                     name="is_sales_revenue"

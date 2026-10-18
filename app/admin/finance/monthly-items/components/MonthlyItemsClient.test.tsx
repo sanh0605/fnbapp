@@ -113,21 +113,20 @@ describe("MonthlyItemsClient", () => {
     expect(rowLinks.length).toBeGreaterThan(0);
   });
 
-  it("renders phone rows with title, '{n} dòng' value, category meta, and status badge", () => {
+  it("renders phone rows with title, '{n} dòng đã nhập' value, category · code meta, and status badge", () => {
     const { container } = render(
       <MonthlyItemsClient items={SAMPLE_ITEMS} categories={CATEGORIES} initialStatus="ALL" />,
     );
 
     const phoneList = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phoneList).getByText("Tiền điện")).toBeInTheDocument();
-    expect(within(phoneList).getByText("5 dòng")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Chi phí cố định")).toBeInTheDocument();
+    expect(within(phoneList).getByText("5 dòng đã nhập")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Chi phí cố định · KCT-001")).toBeInTheDocument();
     expect(within(phoneList).getByText("Đang dùng")).toBeInTheDocument();
     expect(within(phoneList).getByText("Tiền nước")).toBeInTheDocument();
-    expect(within(phoneList).getByText("0 dòng")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Vận hành")).toBeInTheDocument();
+    expect(within(phoneList).getByText("0 dòng đã nhập")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Vận hành · KCT-002")).toBeInTheDocument();
     expect(within(phoneList).getByText("Ngừng dùng")).toBeInTheDocument();
-    expect(within(phoneList).queryByText("KCT-001")).toBeNull();
   });
 
   it("defaults to ACTIVE status filter, hiding inactive items", () => {

@@ -135,14 +135,13 @@ describe("CategoriesClient", () => {
 
     const phoneList = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phoneList).getByText("Vận hành")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Chi · Có")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Chi · Tính lãi lỗ · CFC-001")).toBeInTheDocument();
     expect(within(phoneList).getByText("Vốn góp")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Thu · Không")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Thu · Ngoài lãi lỗ · CFC-005")).toBeInTheDocument();
     expect(within(phoneList).getByText("Doanh thu ghi tay")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Thu · Có — doanh thu bán hàng")).toBeInTheDocument();
+    expect(within(phoneList).getByText("Thu · Tính lãi lỗ · Doanh thu bán hàng · CFC-006")).toBeInTheDocument();
     expect(within(phoneList).getAllByText("Đang dùng")).toHaveLength(2);
     expect(within(phoneList).getByText("Ngừng dùng")).toBeInTheDocument();
-    expect(within(phoneList).queryByText("CFC-001")).toBeNull();
   });
 
   it("renders in default order newest code first (CFC-006 before CFC-001)", () => {

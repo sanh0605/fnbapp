@@ -291,7 +291,14 @@ export default function CategoriesClient({
         columns={columns}
         phoneRow={(c) => ({
           title: c.name,
-          meta: [KIND_LABEL[c.kind], pnlTreatmentLabel(c)].filter(Boolean).join(" · "),
+          meta: [
+            KIND_LABEL[c.kind],
+            c.affects_pnl ? "Tính lãi lỗ" : "Ngoài lãi lỗ",
+            c.is_sales_revenue ? "Doanh thu bán hàng" : null,
+            c.id,
+          ]
+            .filter(Boolean)
+            .join(" · "),
           badge:
             c.status === "ACTIVE" ? (
               <Badge variant="success">Đang dùng</Badge>

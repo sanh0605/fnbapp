@@ -95,7 +95,7 @@ Taken by recommendation (chọn theo khuyến nghị, chủ quán uỷ quyền 2
 | R2 | Paying one purchase order several ways (Kho Q5) | Not built until a real order needs it. 0 of 203 orders do | A new table and a four-step design for a case that has not happened |
 | R3 | Excel export of the ledger (KiotViet and Sapo export S6/S7 forms) | Not now. The list already shows totals; no form is required | Revenue under the threshold |
 | R4 | "Người nộp / nhận" field (KiotViet, Sapo have it) | Drop the column instead. 0 of 41 rows use it, 0 readers | The note carries it today ("Ngoại giao - CAKV") |
-| R5 | The two totals under a Loại filter | The cards keep the whole book and gain the caption "cả sổ, mọi loại"; the total row keeps following the filter | Đầu kỳ / Cuối kỳ must never follow a filter |
+| R5 | The two totals under a Loại filter | The cards keep the whole book and gain the caption "Cả sổ, mọi loại"; the total row keeps following the filter | Đầu kỳ / Cuối kỳ must never follow a filter |
 | R6 | One rule for a retired account or group on edit | The purchase-order rule everywhere: ACTIVE, or the row's own | It is the only one of the three that lets an old row be edited |
 | R7 | Hand-row date | Must be a real calendar date, not after today (Asia/Saigon), not before 2026-03-26 | `BR-CASH-007`; the transfer form already checks the date |
 
@@ -111,9 +111,9 @@ Taken by recommendation (chọn theo khuyến nghị, chủ quán uỷ quyền 2
 | `sideOf` in `cash-flow.ts` and the check script agree: CASH is cash, BANK_TRANSFER is bank, anything else is refused at write time, so neither needs a default | Sonnet | no | none |
 | Khoản chi hằng tháng list and page on the shared templates: code descending, Đang dùng default, Mã column, "Chỉnh sửa", inline confirm on Ngừng dùng, shared delete button, no emoji | Gemini | no | none |
 | The five forms (hand row, transfer, group, account, monthly item) take the shared footer `BR-UI-015` (`FormActionBar`: "Tạo" / "Bỏ", "Lưu thay đổi" / "Bỏ thay đổi") and leave the debt list in `components/ui/form-action-bar.guard.test.ts`; Sổ thu chi, which runs past one page, gets the search box `BR-UI-016` | Gemini | no | none |
-| Chuyển tiền page: "Xoá hẳn", "Ghi sổ lúc" | Gemini | no | none |
+| Chuyển tiền page: "Xoá hẳn", "Ghi sổ lúc". 2026-10-18: "Xoá hẳn" stays only where "Huỷ" sits beside it (hand row, transfer); Nhóm, Tài khoản and Khoản chi hằng tháng say "Xoá" beside "Ngừng dùng", like the rest of the app | Gemini | no | none |
 | Hand-row page and ledger show the monthly item ("Khoản chi hằng tháng: Tiền điện") | Gemini | no | none |
-| Tiền mặt card: "theo sổ"; when negative, the line "sổ chưa ghi tiền gửi ngân hàng" (`Alert`, not a hand-drawn box); R5 caption | Gemini | no | none |
+| Tiền mặt card: "theo sổ"; when negative, the line "sổ chưa ghi tiền gửi ngân hàng" (`Alert`, not a hand-drawn box); R5 caption. 2026-10-18: one "Sổ chưa ghi…" line above the cards, not one per card (`BR-CASH-007`) | Gemini | no | none |
 | 10 hand-drawn error boxes onto `Alert`; `CategoryForm` and `BankAccountForm` get the try/catch and double-tap guard the other three forms have | Gemini | no | none |
 | Dead code: `cash_entries.payer` readers (none) and the import script line; `cashBookRowTotals.net` and `.count`; unused props `canDelete`, `categories`, `accounts` on `CashBookClient`, `canDelete` on the two other clients; exports with no importer (`AuditCreateColumns`, `AuditUpdateColumns`, `CashBookRowKind`, `CashBookRowTotals`, `CashEntryFields`, `CashTransferFields`, `CashBookTotals`, `CASH_END` or use it) | Sonnet | no | none |
 | Duplication: the 5 finance `safeReturnTo` copies (2 files, 3 inline) are part of the 13 in `app/`; **done once for all three areas by fnbapp-f5** (one helper in `lib/shared`, see the master plan), not here. Thu chi's own: the four edit-page "isOwnDetail / listReturnTo / detailHref" blocks into one | Sonnet | no | none |
