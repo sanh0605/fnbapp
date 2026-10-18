@@ -461,7 +461,7 @@ export function PurchasedItemForm({
                 className="mt-0.5 w-5 h-5 shrink-0 rounded border-border text-primary focus:ring-focus-ring"
               />
               <span className="text-sm text-text-secondary leading-tight">
-                <span className="font-medium text-text-primary">Không quản lý tồn kho</span> (ví dụ: muỗng nhựa, túi rác) —
+                <span className="font-medium text-text-primary">Không theo dõi tồn kho</span> (ví dụ: muỗng nhựa, túi rác) —
                 mua đâu dùng đó, không đóng gói để đếm được, nên sẽ không xuất hiện trong danh sách kiểm kê.
               </span>
             </label>
@@ -595,7 +595,7 @@ function ConversionRowsSection({
               )}
               <div className="flex items-end gap-2">
                 <div className="w-28 sm:w-48 shrink-0">
-                  <Field label="Đơn vị mua" htmlFor={`${unitRowId}-name`}>
+                  <Field label="Tên đơn vị" htmlFor={`${unitRowId}-name`}>
                     <SearchableSelect
                       id={`${unitRowId}-name`}
                       options={unitOptions}

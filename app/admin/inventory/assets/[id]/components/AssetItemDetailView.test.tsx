@@ -303,9 +303,9 @@ describe("AssetItemDetailView", () => {
     // PhoneRow: line 1 has date 04/04/2026 00:00:00 and remaining value 145,860đ
     expect(within(firstRow).getByText("04/04/2026 00:00:00").className).toContain("text-base");
     expect(firstRow?.textContent).toContain("145,860đ");
-    // Line 2 has meta: TS-004, remaining/quantity, unit cost ("Giá một cái" value), term, PO
+    // Line 2 has meta: remaining/quantity, unit cost ("Giá một cái" value), term, lot code, PO
     expect(
-      within(firstRow).getAllByText("TS-004").some((el) => /^TS-004 · Còn 1\/2 cái/.test(el.parentElement?.textContent ?? "")),
+      within(firstRow).getAllByText("TS-004").some((el) => /Còn 1\/2 cái · 205,920đ · 24 tháng · TS-004 · PO-009/.test(el.parentElement?.textContent ?? "")),
     ).toBe(true);
     expect(firstRow?.textContent).toContain("205,920đ");
     expect(firstRow?.textContent).toContain("24 tháng");
@@ -347,7 +347,14 @@ describe("AssetItemDetailView", () => {
 
     const rows = monthSection?.querySelectorAll(":scope > div");
     expect(rows?.length).toBe(5);
-    const julyRow = rows?.[3]; // 2026-07
+
+    // Row 0 (first row): shows unit count
+    expect(rows?.[0]?.textContent).toContain("2 cái");
+
+    // Row 1: count equals row above, has no "cái"
+    expect(rows?.[1]?.textContent).not.toContain("cái");
+
+    const julyRow = rows?.[3]; // 2026-07: count changed (2 -> 1)
     expect(julyRow?.className).toContain("px-4");
     expect(julyRow?.className).toContain("py-2.5");
     expect(julyRow?.className).not.toContain("p-4");
@@ -355,9 +362,25 @@ describe("AssetItemDetailView", () => {
     // Line 1: month and charge
     expect(julyRow?.textContent).toContain("07/2026");
     expect(julyRow?.textContent).toContain("188,760đ");
-    // Line 2: disposal charge
+    // Line 2: count and disposal charge
+    expect(julyRow?.textContent).toContain("1 cái");
     expect(julyRow?.textContent).toContain("gồm 171,600đ thanh lý");
     // Old label "Số cái giữ:" replaced by clean meta
     expect(julyRow?.textContent).not.toContain("Số cái giữ:");
+
+    // Row 4: count equals row above, has no "cái"
+    expect(rows?.[4]?.textContent).not.toContain("cái");
+  });
+
+  it("renders no meta element on a depreciation month phone row when unit count is unchanged and no disposal", () => {
+    const { container } = render(<AssetItemDetailView detail={BINH_BOM_DETAIL} returnTo={returnTo} />);
+    const phoneSections = container.querySelectorAll(".md\\:hidden");
+    const monthSection = phoneSections[2];
+    const rows = monthSection?.querySelectorAll(":scope > div");
+    const secondRow = rows?.[1];
+
+    expect(secondRow?.textContent).toBe("05/202617,160đ");
+    expect(secondRow?.querySelector(".text-sm")).toBeNull();
   });
 });
+

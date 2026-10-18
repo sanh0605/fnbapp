@@ -52,7 +52,7 @@ tháng chi tiết hơn B02-DNSN. Cộng dồn các dòng của bảng ra đúng 
   11.554.363đ là 37 phiếu xuất. Hao hụt bằng 0 ở mọi tháng.
 - Nguyên liệu mua dùng ngay: đơn nhập đã hoàn tất, dòng hàng có
   `purchased_items.is_non_inventory = true`. Chủ quán tự đặt cờ này cho từng
-  món bằng ô "Không quản lý tồn kho" trên form nguyên liệu và vật tư tiêu hao.
+  món bằng ô "Không theo dõi tồn kho" trên form nguyên liệu và vật tư tiêu hao.
   Món thuộc nhóm Dụng cụ không có ô này. 15 món đang có cờ:
   - Nguyên liệu: Đá viên, Khoai lang, Trái tắc, Trái chanh, Tiêu trắng, Muối.
   - Vật tư tiêu hao: Túi đựng rác, Túi chữ T, Túi PE 1 ly seal, Túi xốp 1 ly,
@@ -74,7 +74,7 @@ tháng chi tiết hơn B02-DNSN. Cộng dồn các dòng của bảng ra đúng 
 - Khấu hao: 84 dụng cụ, 2 lần thanh lý. Cộng lịch khấu hao từng món
   (`lib/assets/asset-depreciation.ts`): tháng 7 là 982.050đ, tháng 8 là
   790.978đ.
-- Phiếu xuất ghi món không quản lý tồn: 2 dòng, cùng món Khăn lau đa năng,
+- Phiếu xuất ghi món không theo dõi tồn: 2 dòng, cùng món Khăn lau đa năng,
   +1 rồi −1, cộng lại bằng 0.
 - Tài khoản đang dùng: 1 ADMIN, 1 MANAGER.
 
@@ -119,7 +119,7 @@ Trong đợt này:
 
 - Trang Lãi lỗ, lối vào ở menu Báo cáo, đường dẫn `/admin/reports/pnl`.
 - Một cờ mới trên nhóm thu chi: "Tính là doanh thu bán hàng".
-- Bỏ phiếu xuất của món không quản lý tồn ra khỏi giá vốn (xem mục Giá vốn).
+- Bỏ phiếu xuất của món không theo dõi tồn ra khỏi giá vốn (xem mục Giá vốn).
 
 Cố ý để ngoài:
 
@@ -160,7 +160,7 @@ dồn từ đầu năm".
 | Doanh thu | Doanh thu máy bán hàng + Doanh thu ghi tay | luôn |
 | · trong đó ghi tay | dòng sổ thuộc nhóm có cờ "Tính là doanh thu bán hàng" | năm đó có |
 | Giá vốn | phiếu xuất kho + lần kiểm kho không tính hao hụt | luôn |
-| Nguyên liệu mua dùng ngay | đơn nhập, món không quản lý tồn | luôn |
+| Nguyên liệu mua dùng ngay | đơn nhập, món không theo dõi tồn | luôn |
 | Hao hụt | lần kiểm kho tính hao hụt | năm đó có |
 | **Lợi nhuận gộp** | Doanh thu − ba dòng trên | luôn |
 | Một dòng cho mỗi nhóm Chi | sổ thu chi, nhóm Chi, tính vào lãi lỗ | nhóm đang dùng, hoặc năm đó có số |
@@ -216,7 +216,7 @@ cũng là cách `BR-COGS-006` đã chọn: không lưu giá vốn đã tính.
 - **Giá vốn và Hao hụt.** Cùng bộ máy với `getPnLDataV2`
   (`computePeriodIssuedValueSplit`, tách theo `stocktake_sessions.is_shrinkage`).
   Với mọi tháng, Giá vốn + Hao hụt phải bằng `getPnLDataV2({tháng}).totalCOGS`.
-- **Món không quản lý tồn không bao giờ vào giá vốn.** Tiền của chúng đã tính
+- **Món không theo dõi tồn không bao giờ vào giá vốn.** Tiền của chúng đã tính
   lúc mua, trên dòng Nguyên liệu mua dùng ngay. Nếu phiếu xuất của các món này
   vẫn vào giá vốn thì tiền bị tính hai lần. Việc bỏ ra làm ở hàm lọc dùng chung
   (cạnh `filterOutEquipmentIssues`), nên `getPnLDataV2` và trang Giá trị hàng đã
@@ -322,7 +322,7 @@ Phải đạt cả bốn:
 - Bảng số thật ở trên khớp đến từng đồng, trừ những ô mà dữ liệu đã đổi. Ô nào
   đổi thì giải thích bằng dữ liệu.
 - `npx vite-node scripts/verify-cogs.ts` xanh sau khi bỏ phiếu xuất của món
-  không quản lý tồn.
+  không theo dõi tồn.
 - Chủ quán mở trên máy tính và điện thoại, bấm ô "Vận hành tháng 8" và thấy
   đủ 4 dòng sổ.
 

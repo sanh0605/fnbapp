@@ -45,7 +45,7 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
             {rows.map((row, idx) => (
               <TableRow key={`${row.poId}-${idx}`}>
                 <TableCell>
-                  <span className="whitespace-nowrap text-text-secondary">
+                  <span className="whitespace-nowrap">
                     {row.date ? formatDateTimeFull(row.date) : "---"}
                   </span>
                 </TableCell>
