@@ -45,14 +45,42 @@ describe("PurchaseHistoryView", () => {
 
     render(<PurchaseHistoryView rows={rows} itemName="Cà phê Robusta" />);
 
-    expect(screen.getByText(/Giá nhập gần nhất tăng/i)).toBeInTheDocument();
-    
+    expect(screen.getByText(/Giá nhập gần nhất tăng.*40,000đ → 50,000đ/i)).toBeInTheDocument();
+
     // Check links to purchase orders
     const links = screen.getAllByRole("link");
     const po2Links = links.filter((l) => l.getAttribute("href") === "/admin/inventory/purchase-orders/PO-002");
     const po1Links = links.filter((l) => l.getAttribute("href") === "/admin/inventory/purchase-orders/PO-001");
     expect(po2Links.length).toBeGreaterThan(0);
     expect(po1Links.length).toBeGreaterThan(0);
+  });
+
+  const row = (poId: string, date: string, quantity: number, unitLabel: string, unitCost: number): ItemPurchaseHistoryRow => ({
+    poId, date, supplierId: "SUP-1", supplierName: "Nhà cung cấp A", quantity, unitLabel, unitCost, lineTotal: quantity * unitCost,
+  });
+
+  it("shows no price alert when the latest purchase costs the same as the last one in its own unit (Đá viên: Bao vs Túi)", () => {
+    const rows = [
+      row("PO-194", "2026-09-30", 36, "Bao", 20000),
+      row("PO-175", "2026-08-31", 2, "Túi", 5000),
+      row("PO-150", "2026-07-31", 48, "Bao", 20000),
+    ];
+
+    render(<PurchaseHistoryView rows={rows} itemName="Đá viên" />);
+
+    expect(screen.queryByText(/Giá nhập gần nhất/)).toBeNull();
+  });
+
+  it("prints the two prices it compared, skipping a purchase in another unit", () => {
+    const rows = [
+      row("PO-196", "2026-10-10", 10, "Bao", 25000),
+      row("PO-195", "2026-10-01", 2, "Túi", 5000),
+      row("PO-194", "2026-09-30", 36, "Bao", 20000),
+    ];
+
+    render(<PurchaseHistoryView rows={rows} itemName="Đá viên" />);
+
+    expect(screen.getByText(/Giá nhập gần nhất tăng.*20,000đ → 25,000đ/)).toBeInTheDocument();
   });
 
   it("pins Saigon value with clock fixed at 2026-09-14T23:30:00Z: renders 15/09/2026 00:00:00", () => {

@@ -24,9 +24,9 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
 
   return (
     <div className="space-y-4">
-      {trend && trend !== "same" && (
-        <Alert variant={trend === "up" ? "warning" : "success"}>
-          Giá nhập gần nhất {trend === "up" ? "tăng" : "giảm"} so với lần trước: {formatNumber(rows[1].unitCost)}đ → {formatNumber(rows[0].unitCost)}đ
+      {trend && trend.direction !== "same" && (
+        <Alert variant={trend.direction === "up" ? "warning" : "success"}>
+          Giá nhập gần nhất {trend.direction === "up" ? "tăng" : "giảm"} so với lần trước: {formatNumber(trend.from)}đ → {formatNumber(trend.to)}đ
         </Alert>
       )}
 

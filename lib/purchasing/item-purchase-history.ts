@@ -43,7 +43,7 @@ export type ItemPurchaseHistoryRow = {
   lineTotal: number;
 };
 
-export type PriceTrend = "up" | "down" | "same" | null;
+export type PriceTrend = { direction: "up" | "down" | "same"; from: number; to: number } | null;
 
 export function computeItemPurchaseHistory(
   itemId: string,
@@ -78,10 +78,15 @@ export function computeItemPurchaseHistory(
   return rows;
 }
 
-/** Compares the latest purchase against the one before it. Needs >=2 rows. */
+/**
+ * Compares the latest purchase (rows are newest first) against the most recent earlier one
+ * in the same purchase unit; a Bao price and a Túi price are not comparable. Null if none.
+ */
 export function getPriceTrend(rows: ItemPurchaseHistoryRow[]): PriceTrend {
   if (rows.length < 2) return null;
-  const [latest, previous] = rows;
-  if (latest.unitCost === previous.unitCost) return "same";
-  return latest.unitCost > previous.unitCost ? "up" : "down";
+  const [latest, ...earlier] = rows;
+  const previous = earlier.find(r => r.unitLabel === latest.unitLabel);
+  if (!previous) return null;
+  const direction = latest.unitCost === previous.unitCost ? "same" : latest.unitCost > previous.unitCost ? "up" : "down";
+  return { direction, from: previous.unitCost, to: latest.unitCost };
 }
