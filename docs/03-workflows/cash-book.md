@@ -69,7 +69,8 @@ running balance.
 **Behaviour change — 2026-10-03 (list/detail template, wave 6):** the three
 lists are on the shared template; each row opens `/admin/finance/[id]`,
 `/admin/finance/categories/[id]` or `/admin/finance/bank-accounts/[id]`, and
-editing, "Dùng lại" and "Xoá hẳn" (ADMIN) start only from there. Each list
+editing, "Dùng lại" and the ADMIN delete start only from there ("Xoá hẳn"
+on a ledger row, "Xoá" on a group or account since 2026-10-18). Each list
 gains a status filter whose default hides the retired rows: the ledger's
 Đang dùng / Đã huỷ / Tất cả, the other two's Đang dùng / Ngừng dùng / Tất cả.
 The list bin is "Huỷ" on the ledger and "Ngừng dùng" on the other two, shown
@@ -159,7 +160,7 @@ the two settings screens where they still apply.
    (vốn góp) — never a POS sale, which the sales/orders flow already
    records as its own day row. `summariseCashBook` (`lib/finance/cash-flow.ts`)
    gives the Đầu kỳ and Cuối kỳ cards, cash and bank apart and together,
-   over the whole book ("cả sổ, mọi loại"); `cashBookRowTotals` gives the
+   over the whole book ("Cả sổ, mọi loại"); `cashBookRowTotals` gives the
    total row over the rows the filter keeps, leaving out cancelled rows and
    transfers. Money in and money out stay two numbers, never netted. The one dated
    exception to "never a sale" is the owner's two lost-revenue rows, dated

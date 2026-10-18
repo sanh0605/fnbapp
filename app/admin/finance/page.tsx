@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { getFinancePageData, getCashBookMonths } from "./actions";
 import CashBookClient from "./components/CashBookClient";
 import CashBookMonthsClient from "./components/CashBookMonthsClient";
@@ -36,6 +37,14 @@ function tabHref(
 
   const qs = p.toString();
   return qs ? `/admin/finance?${qs}` : "/admin/finance";
+}
+
+function tabClass(active: boolean): string {
+  return `min-h-[48px] md:min-h-[40px] px-4 rounded-button text-sm inline-flex items-center justify-center transition-colors flex-1 md:flex-none ${
+    active
+      ? "bg-primary-soft text-primary font-semibold"
+      : "text-text-secondary hover:text-text-primary"
+  }`;
 }
 
 export default async function FinancePage(props: {
@@ -111,20 +120,20 @@ export default async function FinancePage(props: {
       />
 
       <div className="flex gap-2">
-        <Button
+        <Link
           href={listTabHref}
-          variant={isMonthsView ? "secondary" : "primary"}
-          className="flex-1 md:flex-none"
+          aria-current={!isMonthsView ? "page" : undefined}
+          className={tabClass(!isMonthsView)}
         >
           Sổ thu chi
-        </Button>
-        <Button
+        </Link>
+        <Link
           href={monthsTabHref}
-          variant={isMonthsView ? "primary" : "secondary"}
-          className="flex-1 md:flex-none"
+          aria-current={isMonthsView ? "page" : undefined}
+          className={tabClass(isMonthsView)}
         >
           Theo tháng
-        </Button>
+        </Link>
       </div>
 
       {isMonthsView && monthsData && monthRange ? (

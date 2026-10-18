@@ -139,8 +139,8 @@ An income category that counts in profit and loss can carry a second flag, "Tín
 (`lib/finance/cash-flow.ts`). **Reaffirmed 2026-10-15** (owner: *"Giữ nguyên"*)
 after seeing cash −3.593.751đ, bank 31.485.578đ and the split still drifting (91
 transfer-paid sales, 0 transfers since 2026-10-04); a Kiểm quỹ page and an opening
-balance were offered and declined. Only change: the Tiền mặt card is captioned
-"theo sổ" and, while negative, "sổ chưa ghi tiền gửi ngân hàng" (`docs/superpowers/specs/2026-10-15-thu-chi-de-xuat.md`, Q1).
+balance were offered and declined. Only change: the Tiền mặt card is captioned "theo sổ" (`docs/superpowers/specs/2026-10-15-thu-chi-de-xuat.md`, Q1), and while cash is negative one line reads "Sổ chưa ghi tiền gửi ngân hàng":
+since 2026-10-18 it shows once, on Sổ thu chi above the balance cards when the opening or closing cash is negative, and on Theo tháng under the closing cash while it is negative.
 
 For the date range being viewed, the cash book shows an opening balance (the
 first day, before any of its movements) and a closing balance (after the last

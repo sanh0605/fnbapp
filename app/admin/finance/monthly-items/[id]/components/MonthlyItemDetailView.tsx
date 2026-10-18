@@ -92,7 +92,7 @@ export function MonthlyItemDetailView({
         {item.status === "ACTIVE" ? (
           <Button
             type="button"
-            variant="secondary"
+            variant="delete"
             onClick={handleToggleStatus}
             loading={statusLoading}
           >

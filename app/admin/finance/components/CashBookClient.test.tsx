@@ -572,16 +572,16 @@ describe("CashBookClient", () => {
     expect(ce032Idx).toBeGreaterThan(ce040Idx);
   });
 
-  it("shows 'Tiền mặt (theo sổ)' label and 'cả sổ, mọi loại' caption on balance cards", () => {
+  it("shows 'Tiền mặt (theo sổ)' label and 'Cả sổ, mọi loại' caption on balance cards", () => {
     render(<CashBookClient {...defaultProps} />);
     expect(screen.getAllByText("Tiền mặt (theo sổ)").length).toBe(2);
-    expect(screen.getAllByText("cả sổ, mọi loại").length).toBe(2);
+    expect(screen.getAllByText("Cả sổ, mọi loại").length).toBe(2);
   });
 
-  it("shows warning Alert 'sổ chưa ghi tiền gửi ngân hàng' when cash balance is negative", () => {
+  it("shows warning Alert 'Sổ chưa ghi tiền gửi ngân hàng' when cash balance is negative", () => {
     render(<CashBookClient {...defaultProps} />);
-    const alerts = screen.getAllByText("sổ chưa ghi tiền gửi ngân hàng");
-    expect(alerts.length).toBeGreaterThan(0);
+    const alerts = screen.getAllByText("Sổ chưa ghi tiền gửi ngân hàng");
+    expect(alerts.length).toBe(1);
   });
 
   it("search finds a row by the staff name shown or by the stored login", () => {

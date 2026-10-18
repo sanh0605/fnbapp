@@ -202,7 +202,7 @@ export default function CashBookMonthsClient({
                 </div>
                 {lastMonth.cash.closing < 0 && (
                   <div className="text-xs text-warning pt-1">
-                    sổ chưa ghi tiền gửi ngân hàng
+                    Sổ chưa ghi tiền gửi ngân hàng
                   </div>
                 )}
               </div>
