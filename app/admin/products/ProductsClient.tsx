@@ -187,9 +187,9 @@ export default function ProductsClient({
           return (
             <div className="flex flex-col gap-1 items-start">
               {text ? (
-                <span className="text-text-primary text-xs">{text}</span>
+                <span className="text-text-primary text-sm">{text}</span>
               ) : (
-                <span className="text-text-muted text-xs">—</span>
+                <span className="text-text-muted text-sm">—</span>
               )}
               {product.hasNoSellableVariant && (
                 <Badge variant="danger">Không có size nào đang bán</Badge>

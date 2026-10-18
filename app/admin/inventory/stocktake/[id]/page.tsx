@@ -41,6 +41,7 @@ export default async function StocktakeDetailPage(props: {
       isLatestConfirmed={isLatestConfirmed}
       isOwner={isOwner}
       hasOpenSession={hasOpenSession}
+      listRow={listRow}
     />
   );
 }

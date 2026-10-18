@@ -143,9 +143,9 @@ export function ProductCategoryDetailView({
                     title={dish.name}
                     meta={dish.id}
                     badge={
-                      <Badge variant={dish.status === "ACTIVE" ? "success" : "neutral"}>
-                        {dish.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
-                      </Badge>
+                      dish.status === "ACTIVE" ? undefined : (
+                        <Badge variant="neutral">Ngừng bán</Badge>
+                      )
                     }
                   />
                 </Link>

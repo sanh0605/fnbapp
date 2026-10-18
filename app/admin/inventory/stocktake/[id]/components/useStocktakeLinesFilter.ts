@@ -6,8 +6,10 @@ import type { StocktakeLineView } from "../../actions";
 
 export type StocktakeTab = "ALL" | "BLANK" | "OFF" | "MATCH";
 
-export function useStocktakeLinesFilter(
-  lines: StocktakeLineView[],
+type FilterLine = Pick<StocktakeLineView, "id" | "itemName" | "itemReference" | "state"> & { groupName?: string };
+
+export function useStocktakeLinesFilter<L extends FilterLine>(
+  lines: L[],
   initialTab: StocktakeTab = "ALL"
 ) {
   const linesRef = useRef(lines);
