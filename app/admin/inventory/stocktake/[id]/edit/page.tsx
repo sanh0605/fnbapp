@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getStocktakeDetail } from "@/app/admin/inventory/stocktake/actions";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { StocktakeEditForm } from "./components/StocktakeEditForm";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,11 @@ export default async function StocktakeEditPage(
 
   return (
     <div className="space-y-6">
-      <PageHeader title={`Sửa phiếu kiểm kê ${detail.id}`} />
+      <DetailHeader
+        backHref={`/admin/inventory/stocktake/${encodeURIComponent(detail.id)}`}
+        backLabel={detail.id}
+        title={`Sửa phiếu kiểm kê ${detail.id}`}
+      />
       <StocktakeEditForm detail={detail} />
     </div>
   );

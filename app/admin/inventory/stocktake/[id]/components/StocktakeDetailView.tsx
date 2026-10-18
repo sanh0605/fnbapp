@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
-import { FieldList, type Field } from "@/components/ui/detail/FieldList";
+import { FieldList, type Field as DetailField } from "@/components/ui/detail/FieldList";
+import { Field } from "@/components/ui/Field";
 import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
@@ -20,12 +21,13 @@ import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { useStocktakeLinesFilter } from "./useStocktakeLinesFilter";
 import type { StocktakeSessionView, StocktakeLineView } from "../../actions";
 
-export function getVarianceText(counted: number | null, book: number | null): string {
+export function getVarianceText(counted: number | null, book: number | null, unitName?: string): string {
   if (counted === null || book === null) return "";
   const diff = counted - book;
-  if (diff < 0) return `Thiếu ${formatNumber(Math.abs(diff))}`;
-  if (diff > 0) return `Dư ${formatNumber(diff)}`;
-  return "";
+  const unit = unitName ? ` ${unitName}` : "";
+  if (diff === 0) return "Khớp";
+  if (diff < 0) return `Thiếu ${formatNumber(Math.abs(diff))}${unit}`;
+  return `Thừa ${formatNumber(diff)}${unit}`;
 }
 
 export interface StocktakeDetailViewProps {
@@ -101,7 +103,7 @@ export function StocktakeDetailView({
     );
   }
 
-  const fields: Field[] = [
+  const fields: DetailField[] = [
     {
       label: "Trạng thái",
       value: session.status === "CONFIRMED" ? "Đã xác nhận" : "Đã hoàn tác",
@@ -117,11 +119,7 @@ export function StocktakeDetailView({
   ];
 
   function formatDiffQuantity(line: StocktakeLineView) {
-    if (line.countedQty === null || line.theoreticalAtCount === null) return "—";
-    const diff = line.countedQty - line.theoreticalAtCount;
-    if (diff === 0) return "Khớp";
-    if (diff < 0) return `Thiếu ${formatNumber(Math.abs(diff))} ${line.unitName}`;
-    return `Thừa ${formatNumber(diff)} ${line.unitName}`;
+    return getVarianceText(line.countedQty, line.theoreticalAtCount, line.unitName) || "—";
   }
 
   function formatDiffValue(line: StocktakeLineView) {
@@ -174,12 +172,14 @@ export function StocktakeDetailView({
 
       {/* Search box */}
       <div className="max-w-md">
-        <TextInput
-          id="stocktake-detail-search"
-          placeholder="Ví dụ: Bột cà phê"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <Field label="Tìm hàng" htmlFor="stocktake-detail-search">
+          <TextInput
+            id="stocktake-detail-search"
+            placeholder="Ví dụ: Bột cà phê"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </Field>
       </div>
 
       {/* Grouped lines */}
@@ -240,7 +240,7 @@ export function StocktakeDetailView({
                             </span>
                           </TableCell>
                           <TableCell align="right">
-                            <span className="tabular-nums">{formatDiffQuantity(line)}</span>
+                            <span className="tabular-nums whitespace-nowrap">{formatDiffQuantity(line)}</span>
                           </TableCell>
                           <TableCell align="right">
                             <span className="tabular-nums">{formatDiffValue(line)}</span>
@@ -272,7 +272,11 @@ export function StocktakeDetailView({
                         <PhoneRow
                           title={line.itemName}
                           value={formatDiffValue(line)}
-                          meta={`Sổ ${book} · Đếm ${counted} · ${diff}`}
+                          meta={
+                            <span>
+                              Sổ {book} · Đếm {counted} · <span className="whitespace-nowrap">{diff}</span>
+                            </span>
+                          }
                         />
                       </div>
                     );

@@ -993,7 +993,7 @@ describe("IssueSlipClient sections stacked top to bottom on a computer (plan 202
     expect(layout.closest(".md\\:hidden")).toBeNull();
 
     expect(shared.textContent).toContain("Thời điểm xuất");
-    expect(shared.textContent).toContain("Đã điền đủ");
+    expect(lines.textContent).toContain("Đã điền đủ");
     expect(lines.querySelector("table")).not.toBeNull();
     expect(money.textContent).toContain("Tổng giá trị xuất");
     expect(container.textContent).toContain("Ghi phiếu xuất");

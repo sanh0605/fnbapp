@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import {
   Table,
   TableHead,
@@ -78,7 +79,7 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
                     ? line.modifiers
                         .map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`)
                         .join(", ")
-                    : "";
+                    : "—";
 
                 return (
                   <TableRow key={idx}>
@@ -94,33 +95,35 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
           </Table>
         </div>
 
-        {/* Phone stacked cards (hidden on desktop) */}
-        <div className="p-4 space-y-3 lg:hidden" data-testid="phone-lines-list">
+        {/* Phone stacked lines (hidden on desktop) */}
+        <div className="divide-y divide-border lg:hidden" data-testid="phone-lines-list">
           {order.lines.map((line, idx) => (
             <div
               key={idx}
-              className="p-3 rounded-lg border border-border bg-surface-card flex items-center justify-between gap-3 min-h-[48px] md:min-h-[40px]"
+              className="px-4 py-3 min-h-[48px] md:min-h-[40px] flex flex-col justify-center"
             >
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-text-primary truncate">
-                  <span className="text-primary mr-1">{line.qty}x</span>
-                  {line.product_name}
-                </p>
-                <p className="text-xs text-text-muted mt-0.5">
-                  Size {line.size_name}
-                  {line.modifiers && line.modifiers.length > 0 && (
-                    <span className="text-text-secondary">
-                      {" · "}
-                      {line.modifiers
-                        .map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`)
-                        .join(", ")}
-                    </span>
-                  )}
-                </p>
-              </div>
-              <div className="text-right font-medium text-text-primary whitespace-nowrap tabular-nums">
-                {formatNumber(line.net_line_total)}đ
-              </div>
+              <PhoneRow
+                title={
+                  <span>
+                    <span className="text-primary mr-1">{line.qty}x</span>
+                    {line.product_name}
+                  </span>
+                }
+                meta={
+                  <span>
+                    Size {line.size_name}
+                    {line.modifiers && line.modifiers.length > 0 && (
+                      <span className="text-text-secondary">
+                        {" · "}
+                        {line.modifiers
+                          .map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`)
+                          .join(", ")}
+                      </span>
+                    )}
+                  </span>
+                }
+                value={`${formatNumber(line.net_line_total)}đ`}
+              />
             </div>
           ))}
         </div>
@@ -151,22 +154,22 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
             />
         </Field>
 
-        <div className="grid grid-cols-2 gap-3 pt-2">
+        <div className="flex items-center gap-3 pt-2">
+          <Button
+            href={detailHref}
+            variant="secondary"
+            className="flex-1 min-h-[48px] md:min-h-[40px]"
+          >
+            Quay lại
+          </Button>
           <Button
             type="submit"
             variant="danger"
             loading={isSubmitting}
             disabled={!reason.trim() || isSubmitting}
-            className="w-full"
+            className="flex-1 min-h-[48px] md:min-h-[40px]"
           >
             Xác nhận huỷ
-          </Button>
-          <Button
-            href={detailHref}
-            variant="secondary"
-            className="w-full"
-          >
-            Quay lại
           </Button>
         </div>
       </div>

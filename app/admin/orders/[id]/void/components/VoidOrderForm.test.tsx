@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
 import { VoidOrderForm } from "./VoidOrderForm";
 import { voidOrderV2 } from "@/app/admin/orders/order-void-actions";
 import type { OrderListItem } from "@/app/admin/orders/actions";
@@ -114,8 +114,9 @@ describe("VoidOrderForm", () => {
     expect(backBtn).toHaveAttribute("href", "/admin/orders/ORD-123");
     // Verify side-by-side layout on phone
     const buttonContainer = submitBtn.parentElement;
-    expect(buttonContainer?.className).toContain("grid-cols-2");
+    expect(buttonContainer?.className).toContain("flex");
     expect(buttonContainer?.className).toContain("gap-3");
+    expect(submitBtn.previousElementSibling).toBe(backBtn);
   });
 
   it("has real table on desktop and stacked cards on phone", () => {
@@ -125,6 +126,7 @@ describe("VoidOrderForm", () => {
     const desktopTable = screen.getByTestId("desktop-lines-table");
     expect(desktopTable.className).toContain("hidden");
     expect(desktopTable.className).toContain("lg:block");
+    expect(within(desktopTable).getByText("—")).toBeInTheDocument();
 
     const phoneList = screen.getByTestId("phone-lines-list");
     expect(phoneList.className).toContain("lg:hidden");

@@ -4,7 +4,7 @@ import { BackLink } from "@/components/ui/BackLink";
 export interface DetailHeaderProps {
   backHref: string;
   backLabel: string;
-  title: string;
+  title: React.ReactNode;
   subtitle?: React.ReactNode;
   badge?: React.ReactNode;
   actions?: React.ReactNode;

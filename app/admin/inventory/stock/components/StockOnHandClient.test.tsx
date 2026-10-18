@@ -299,16 +299,16 @@ describe("StockOnHandClient", () => {
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(
-      within(phone).getByText("74,414đ · Nguyên liệu · Kiểm lần cuối 09/08/2026 07:00:00"),
+      within(phone).getByText("74,414đ · Nguyên liệu · Kiểm 09/08/2026 07:00:00"),
     ).toBeInTheDocument();
     expect(
-      within(phone).getByText("0đ · Nguyên liệu · Chưa kiểm lần nào"),
+      within(phone).getByText("0đ · Nguyên liệu · Chưa kiểm"),
     ).toBeInTheDocument();
     expect(
-      within(phone).getByText("Nguyên liệu · Chưa kiểm lần nào"),
+      within(phone).getByText("Nguyên liệu · Chưa kiểm"),
     ).toBeInTheDocument();
     expect(
-      within(phone).getByText("15,000đ · Nguyên liệu · Chưa kiểm lần nào"),
+      within(phone).getByText("15,000đ · Nguyên liệu · Chưa kiểm"),
     ).toBeInTheDocument();
 
     const warning5 = within(phone).getByText("khoảng 5 ngày");

@@ -43,8 +43,9 @@ mở về trang Kiểm kê chung. Nên dựng thêm hai trang.
 
 **Trang phiếu kiểm kê** `/admin/inventory/stocktake/[id]` (mọi người xem được, như hôm nay):
 - Đầu trang: mã phiếu, trạng thái (Đã xác nhận / Đã huỷ), ngày kiểm, người xác nhận.
-- Máy tính: bảng Hàng · Đơn vị · Sổ lúc đếm · Đếm được · Chênh lệch. Chênh lệch ghi "Thiếu 2.000"
-  hoặc "Dư 500", bằng 0 thì để trống. Điện thoại: mỗi dòng một thẻ, cùng các ô đó.
+- Máy tính: bảng Hàng · Đơn vị · Sổ lúc đếm · Đếm được · Chênh lệch. Chênh lệch ghi "Thiếu 2,000 g"
+  hoặc "Thừa 500 g", bằng 0 thì ghi "Khớp" (sửa 2026-10-18 cho khớp trang đang chạy).
+  Điện thoại: dòng gọn hai tầng, cùng các ô đó.
 - Nút **Sửa** chỉ hiện khi đủ cả bốn điều: người xem là chủ quán; phiếu đã xác nhận; là phiếu
   xác nhận mới nhất; không có phiếu kiểm kê nào đang mở. Chủ quán xem một phiếu không sửa
   được thì thấy một dòng chữ xám nói vì sao, thay cho nút.

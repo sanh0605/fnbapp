@@ -97,12 +97,12 @@ export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormP
             </Table>
           </div>
 
-          {/* Phone Cards (lg:hidden) */}
-          <div className="p-4 space-y-3 lg:hidden" data-testid="phone-lines-list">
+          {/* Phone Lines (lg:hidden) */}
+          <div className="divide-y divide-border lg:hidden" data-testid="phone-lines-list">
             {detail.lines.map((line) => (
               <div
                 key={line.issueId}
-                className="p-3 rounded-lg border border-border bg-surface-card flex items-center justify-between gap-3"
+                className="p-4 flex items-center justify-between gap-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-text-primary break-words">{line.name}</p>
@@ -113,7 +113,7 @@ export function CancelIssueSlipForm({ detail, detailHref }: CancelIssueSlipFormP
                 </div>
               </div>
             ))}
-            <div className="p-3 rounded-lg bg-surface-secondary flex items-center justify-between font-medium text-sm">
+            <div className="p-4 bg-surface-secondary flex items-center justify-between font-medium text-sm">
               <span>Tổng giá trị</span>
               <span>{formatNumber(detail.totalValue)}đ</span>
             </div>

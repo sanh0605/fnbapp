@@ -158,6 +158,17 @@ describe("IssueSlipsClient", () => {
       }
     });
 
+    it("has no Loại column: the kind badge sits after the code", () => {
+      const withCancelled: IssueSlipListPage = {
+        ...rows,
+        rows: [...rows.rows, { id: "ISL-02", href: "/admin/inventory/issue-slips/ISL-02", kind: "CANCELLED", dateText: "27/09", createdByName: "admin", value: 0 }],
+      };
+      render(<IssueSlipsClient range={TEST_RANGE} today={TEST_TODAY} pageData={withCancelled} />);
+      expect(screen.queryByRole("columnheader", { name: "Loại" })).toBeNull();
+      const codeCell = within(screen.getByRole("table")).getByText("ISL-02").closest("td")!;
+      expect(within(codeCell).getByText("Đã huỷ")).toBeInTheDocument();
+    });
+
     it("a slip row opens with returnTo carrying the active filter", () => {
       searchParams.set("kind", "SLIP");
       searchParams.set("page", "2");
