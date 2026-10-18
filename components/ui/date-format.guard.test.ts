@@ -42,6 +42,11 @@ const ALLOWLIST: AllowedCall[] = [
     reason: "whole-day row; listed under Not yet in BR-DATA-006, waiting for the owner",
   },
   {
+    file: "app/admin/reports/components/SalesCharts.tsx",
+    pattern: "formatVnDay(d.label)",
+    reason: "chart axis under a whole-day bar, short dd/mm; listed under Not yet in BR-DATA-006",
+  },
+  {
     file: "app/admin/components/DashboardView.tsx",
     pattern: "formatVnDayWithWeekday(row.day)",
     reason: "the 7-day table's whole-day row, same reason as SalesByDaySection; the stocktake alert stays guarded",
