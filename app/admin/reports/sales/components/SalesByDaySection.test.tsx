@@ -33,6 +33,7 @@ describe("SalesByDaySection (Ticket G-BC, spec root 1, R1)", () => {
     const table = container.querySelector("table")!;
     expect(table).not.toBeNull();
     expect(table.closest(".hidden")).toBeNull();
+    expect(table.closest(".max-w-md")).not.toBeNull();
 
     // First cell of each body row is TableRowHeader with stick="left"
     const bodyRows = table.querySelectorAll("tbody.divide-y tr");
@@ -58,6 +59,7 @@ describe("SalesByDaySection (Ticket G-BC, spec root 1, R1)", () => {
     const table = container.querySelector("table")!;
     expect(table).not.toBeNull();
     expect(table.closest(".hidden")).toBeNull();
+    expect(table.closest(".max-w-md")).not.toBeNull();
     expect(table.textContent).toContain("Không có dữ liệu");
   });
 });
