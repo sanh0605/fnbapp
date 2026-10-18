@@ -33,14 +33,8 @@ export function ProductTypeDetailView({
   const currentDetailUrl = `/admin/products/types/${encodeURIComponent(type.id)}?returnTo=${encodeURIComponent(returnTo)}`;
   const editHref = `/admin/products/types/${encodeURIComponent(type.id)}/edit?returnTo=${encodeURIComponent(currentDetailUrl)}`;
 
-  const groupsText =
-    categoryNames.length > 0
-      ? categoryNames.join(", ")
-      : "Chưa có nhóm nào";
-
   const fields: Field[] = [
     { label: "Tính là ly", value: type.is_drink ? "Có" : "Không" },
-    { label: "Nhóm món đang dùng", value: groupsText },
   ];
 
   async function handleDelete() {

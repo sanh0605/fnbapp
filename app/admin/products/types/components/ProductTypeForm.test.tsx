@@ -100,11 +100,11 @@ describe("ProductTypeForm", () => {
     expect(push).toHaveBeenCalledWith("/admin/products/types");
   });
 
-  it("controls use min-h-[48px] md:min-h-[40px] (BR-UI-014) and drink checkbox is 24px (audit p67)", () => {
+  it("controls use min-h-[48px] md:min-h-[40px] (BR-UI-014) and drink checkbox is 16px (BR-UI-014)", () => {
     render(<ProductTypeForm returnTo="/admin/products/types" />);
     const checkbox = screen.getByLabelText("Là thức uống (tính là ly)");
-    expect(checkbox.className).toContain("w-6");
-    expect(checkbox.className).toContain("h-6");
+    expect(checkbox.className).toContain("w-4");
+    expect(checkbox.className).toContain("h-4");
 
     const checkboxLabel = checkbox.closest("label");
     expect(checkboxLabel?.className).toContain("min-h-[48px]");

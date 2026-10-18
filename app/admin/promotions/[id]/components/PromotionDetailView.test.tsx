@@ -116,7 +116,7 @@ describe("PromotionDetailView", () => {
 
     expect(container.querySelectorAll("tr tr")).toHaveLength(0);
     const headRow = container.querySelector("thead > tr")!;
-    expect([...headRow.children].map((c) => c.textContent)).toEqual(["Món", "Size", "Giá áp dụng"]);
+    expect([...headRow.children].map((c) => c.textContent)).toEqual(["Món", "Size", "Mức giảm"]);
   });
 
   it("shows Xoá button only when canDelete is true", () => {
@@ -197,13 +197,40 @@ describe("PromotionDetailView", () => {
     expect(firstRow.className).toContain("py-2.5");
     expect(firstRow.className).not.toContain("p-4");
 
-    // PhoneRow: line 1 has dishName (text-base) and appliedValue; line 2 has sizeName (text-sm)
+    // PhoneRow: line 1 has dishName (text-base) and appliedValue; line 2 has sizeName and discountColumnHeader (text-sm)
     const titleEl = within(firstRow).getByText("Trà đào");
     expect(titleEl.className).toContain("text-base");
     expect(within(firstRow).getByText("10,000đ")).toBeInTheDocument();
-    const metaEl = within(firstRow).getByText("Size M");
+    const metaEl = within(firstRow).getByText("Size M · Mức giảm");
     expect(metaEl.className).toContain("text-sm");
     expect(metaEl.className).not.toContain("text-xs");
+    expect(metaEl.textContent?.endsWith("Mức giảm")).toBe(true);
+  });
+
+  it("renders header row and phone row meta for FLAT_PRICE promotion", () => {
+    const flatPricePromo: DBPromotion = {
+      ...samplePromo,
+      id: "PRM-005",
+      discount_type: "FLAT_PRICE",
+      discount_value: "25000",
+    };
+    const { container } = render(
+      <PromotionDetailView
+        promo={flatPricePromo}
+        brandName="Uchako"
+        applicableItems={sampleItems}
+        canDelete={false}
+        returnTo="/admin/promotions"
+      />,
+    );
+
+    const headRow = container.querySelector("thead > tr")!;
+    expect([...headRow.children].map((c) => c.textContent)).toEqual(["Món", "Size", "Giá đồng giá"]);
+
+    const mobileList = document.querySelector(".md\\:hidden") as HTMLElement;
+    const firstRow = mobileList.firstElementChild as HTMLElement;
+    const metaEl = within(firstRow).getByText("Size M · Giá đồng giá");
+    expect(metaEl.textContent?.endsWith("Giá đồng giá")).toBe(true);
   });
 });
 

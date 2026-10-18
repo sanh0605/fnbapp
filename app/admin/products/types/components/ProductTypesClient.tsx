@@ -159,7 +159,7 @@ export default function ProductTypesClient({
   return (
     <div className="space-y-6">
       <ListPageHeader
-        group="Món"
+        group="Bán hàng"
         title="Loại món"
         action={
           <Button

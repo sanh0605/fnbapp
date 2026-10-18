@@ -216,7 +216,7 @@ export default function ModifiersClient({
   return (
     <div className="space-y-6">
       <ListPageHeader
-        group="Món"
+        group="Bán hàng"
         title="Topping & tuỳ chọn"
         action={
           <Button
@@ -262,8 +262,8 @@ export default function ModifiersClient({
           meta: [
             getGroupName(m),
             m.id,
-            `Bán độc lập: ${isStandaloneModifier(m) ? "Có" : "Không"}`,
-          ].join(" · "),
+            isStandaloneModifier(m) ? "Bán độc lập" : null,
+          ].filter(Boolean).join(" · "),
           badge:
             m.status === "INACTIVE" ? (
               <Badge variant="neutral">Ngừng dùng</Badge>

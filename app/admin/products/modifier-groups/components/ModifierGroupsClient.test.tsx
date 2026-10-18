@@ -120,9 +120,11 @@ describe("ModifierGroupsClient", () => {
     const { container } = render(<ModifierGroupsClient rows={sampleRows} />);
 
     expect(screen.getAllByText("Chọn nhiều").length).toBeGreaterThan(0);
+    expect(screen.getByText("Chọn nhiều")).not.toHaveClass("whitespace-nowrap");
     expect(screen.getAllByText("Chọn một").length).toBeGreaterThan(0);
 
     expect(screen.getAllByText("3 phần").length).toBeGreaterThan(0);
+    expect(screen.getByText("3 phần")).not.toHaveClass("whitespace-nowrap");
     expect(screen.getAllByText("Có").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
@@ -133,11 +135,13 @@ describe("ModifierGroupsClient", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("Thêm Topping")).toBeInTheDocument();
     expect(within(phone).getByText("20 món")).toBeInTheDocument();
-    expect(within(phone).getByText("Chọn nhiều · tối đa 3 phần · Trân châu trắng, Kem muối")).toBeInTheDocument();
+    expect(within(phone).getByText("Chọn nhiều · tối đa 3 phần · 2 tuỳ chọn: Trân châu trắng, Kem muối")).toBeInTheDocument();
     expect(
-      within(phone).getByText("Chọn một · Ít đường, Bình thường, Nhiều đường")
+      within(phone).getByText("Chọn một · 3 tuỳ chọn: Ít đường, Bình thường, Nhiều đường")
     ).toBeInTheDocument();
     expect(within(phone).queryByText(/Thứ tự hiện:/)).toBeNull();
+    expect(within(phone).queryByText("Đang dùng")).toBeNull();
+    expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
   });
 
   it("rows have links opening the detail page", () => {
@@ -172,7 +176,8 @@ describe("ModifierGroupsClient", () => {
     const { container } = render(<ModifierGroupsClient rows={sampleRows} />);
     const tableBody = container.querySelector("tbody");
     expect(tableBody).toBeInTheDocument();
-    const boldInsideTbody = tableBody?.querySelectorAll(".font-bold, .font-semibold");
+    // The house status badge is the exception BR-UI-003 allows.
+    const boldInsideTbody = tableBody?.querySelectorAll(".font-bold:not(.rounded-full), .font-semibold:not(.rounded-full)");
     expect(boldInsideTbody?.length ?? 0).toBe(0);
   });
 });

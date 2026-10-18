@@ -309,7 +309,7 @@ describe("ModifierGroupDetailView", () => {
     expect(optionRow.querySelector(".font-medium")).toBeNull();
   });
 
-  it("renders applied dishes on phone as a divide-y list of PhoneRow", () => {
+  it("renders applied dishes as wrapped pills grouped under their category", () => {
     render(
       <ModifierGroupDetailView
         group={sampleGroup}
@@ -322,18 +322,14 @@ describe("ModifierGroupDetailView", () => {
       />
     );
 
-    const mobileLists = document.querySelectorAll(".md\\:hidden");
-    const appliedList = mobileLists[1] as HTMLElement;
-    expect(appliedList).toBeInTheDocument();
-    expect(appliedList.className).toContain("divide-y");
+    expect(screen.getByText("Cà phê (1)")).toBeInTheDocument();
+    expect(screen.getByText("Cà phê đen")).toBeInTheDocument();
 
-    const productRow = appliedList.firstElementChild as HTMLElement;
-    expect(productRow.className).toContain("px-4");
-    expect(productRow.className).toContain("py-2.5");
-    expect(productRow.className).not.toContain("p-4");
-
-    expect(within(productRow).getByText("Cà phê đen")).toBeInTheDocument();
-    expect(within(productRow).getByText("Cà phê")).toBeInTheDocument();
-    expect(productRow.querySelector(".font-medium")).toBeNull();
+    const pill = screen.getByText("Cà phê đen");
+    const pillsContainer = pill.closest(".flex-wrap");
+    expect(pillsContainer).toBeInTheDocument();
+    expect(pill.className).not.toContain("font-bold");
+    expect(pill.className).not.toContain("font-medium");
+    expect(pillsContainer?.querySelector(".font-bold, .font-medium")).toBeNull();
   });
 });

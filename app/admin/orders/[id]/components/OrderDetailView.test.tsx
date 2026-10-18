@@ -432,5 +432,19 @@ describe("OrderDetailView promotions (Phiếu G7)", () => {
     const { container } = render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
     expect(container.querySelector(".text-\\[11px\\]")).toBeNull();
   });
+
+  it("shows the order time, then ' · ', then the brand name in the subtitle under the title", () => {
+    const detail = makeDetail("COMPLETED");
+    const brands = [{ id: "BRD-1", name: "Phin Đi" }];
+    const { container } = render(
+      <OrderDetailView detail={detail} brands={brands} returnTo="/admin/orders" />
+    );
+
+    const titleEl = screen.getByText("ORD000001");
+    const headerCol = titleEl.closest(".flex.flex-col.gap-1");
+    const subtitleEl = headerCol?.querySelector(".text-sm.text-text-secondary");
+    expect(subtitleEl).toBeInTheDocument();
+    expect(subtitleEl?.textContent).toBe("01/10/2026 17:00:00 · Phin Đi");
+  });
 });
 

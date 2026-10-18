@@ -10,7 +10,6 @@ import { RemoveRecordButton } from "@/components/ui/detail/RemoveRecordButton";
 import { Badge } from "@/components/ui/Badge";
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from "@/components/ui/Table";
 import { PhoneRow } from "@/components/ui/list/PhoneRow";
-import { formatNumber } from "@/lib/shared/format";
 import { deleteCategory } from "@/app/admin/products/categories/actions";
 import type { DBProductCategory } from "@/types/db";
 
@@ -43,7 +42,6 @@ export function ProductCategoryDetailView({
 
   const fields: Field[] = [
     { label: "Loại món", value: typeName || "—" },
-    { label: "Số món", value: `${formatNumber(count)} món` },
   ];
 
   const headerActions = (
@@ -123,7 +121,7 @@ export function ProductCategoryDetailView({
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={dish.status === "ACTIVE" ? "success" : "warning"}>
+                        <Badge variant={dish.status === "ACTIVE" ? "success" : "neutral"}>
                           {dish.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
                         </Badge>
                       </TableCell>
@@ -145,7 +143,7 @@ export function ProductCategoryDetailView({
                     title={dish.name}
                     meta={dish.id}
                     badge={
-                      <Badge variant={dish.status === "ACTIVE" ? "success" : "warning"}>
+                      <Badge variant={dish.status === "ACTIVE" ? "success" : "neutral"}>
                         {dish.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
                       </Badge>
                     }

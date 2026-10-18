@@ -89,7 +89,12 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
         subtitle={
           <>
             {formatDateTimeFull(currentOrder.created_at)}
-            {brand && <span className="ml-2 text-primary font-medium">{brand.name}</span>}
+            {brand && (
+              <>
+                {" · "}
+                <span className="text-primary font-medium">{brand.name}</span>
+              </>
+            )}
           </>
         }
         actions={
@@ -112,7 +117,7 @@ export function OrderDetailView({ detail, brands, returnTo }: OrderDetailViewPro
 
       <div data-testid="detail-layout" className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start">
         {/* Left: dishes */}
-        <div data-testid="detail-lines" className="lg:col-span-2 bg-surface-card rounded-card shadow-sm border border-border p-5">
+        <div data-testid="detail-lines" className="lg:col-span-2 bg-surface-card rounded-card shadow-sm border border-border p-0 md:p-5 overflow-hidden">
           {/* Computer: shared Table */}
           <div className="hidden md:block">
             <Table>

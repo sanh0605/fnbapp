@@ -66,7 +66,9 @@ describe("ProductTypeDetailView", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Thức uống" })).toBeInTheDocument();
     expect(screen.getAllByText("Thức uống")).toHaveLength(1);
     expect(screen.getByText("Có")).toBeInTheDocument();
-    expect(screen.getByText("Cà phê, Trà")).toBeInTheDocument();
+    expect(screen.getByText("Nhóm món (2)")).toBeInTheDocument();
+    expect(screen.getAllByText("Cà phê").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Trà").length).toBeGreaterThan(0);
 
     const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
     expect(editLink).toBeInTheDocument();
@@ -76,7 +78,7 @@ describe("ProductTypeDetailView", () => {
     expect(screen.queryByRole("button", { name: "Xoá" })).toBeNull();
   });
 
-  it("shows 'Chưa có nhóm nào' when no category uses this type", () => {
+  it("shows 'Chưa có nhóm nào dùng loại món này.' when no category uses this type", () => {
     render(
       <ProductTypeDetailView
         type={{ ...sampleType, id: "PT-003", name: "Topping", is_drink: false }}
@@ -86,7 +88,7 @@ describe("ProductTypeDetailView", () => {
       />
     );
 
-    expect(screen.getByText("Chưa có nhóm nào")).toBeInTheDocument();
+    expect(screen.getByText("Chưa có nhóm nào dùng loại món này.")).toBeInTheDocument();
   });
 
   it("owner role sees 'Xoá' button and clicking it prompts inline confirmation without modal/popup", () => {

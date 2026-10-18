@@ -362,6 +362,50 @@ describe("PromotionForm -- stackable and FLAT_PRICE (Phiếu G7)", () => {
     const discountValueInput = screen.getByLabelText("Giá trị giảm giá *");
     expect((discountValueInput as HTMLInputElement).value).toBe("");
   });
+
+  it("defaults end-time to 7 days later at 23:59 on a new form", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-18T03:00:00Z"));
+    try {
+      render(
+        <PromotionForm
+          brands={mockBrands}
+          categories={mockCategories}
+          products={mockProducts}
+          variants={mockVariants}
+          returnTo="/admin/promotions"
+        />
+      );
+
+      const endInput = screen.getByLabelText("Kết thúc lúc (không bắt buộc)") as HTMLInputElement;
+      expect(endInput.value).toBe("25/10/2026 23:59");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("renders per-dish label as 'Giá:' for FLAT_PRICE and 'Giảm:' for money-off or percent", () => {
+    renderPromo({
+      type: "PRODUCT_DISCOUNT",
+      discount_type: "FLAT_PRICE",
+      discount_value: "20000",
+      applicable_products_json: JSON.stringify({ "VAR-001": 20000 }),
+    });
+
+    const discountTypeSelect = screen.getByLabelText("Hình thức giảm giá");
+    expect(screen.getByText("Giá:")).toBeInTheDocument();
+    expect(screen.queryByText("Giảm:")).toBeNull();
+
+    // Money-off type (FLAT_VND)
+    fireEvent.change(discountTypeSelect, { target: { value: "FLAT_VND" } });
+    expect(screen.getByText("Giảm:")).toBeInTheDocument();
+    expect(screen.queryByText("Giá:")).toBeNull();
+
+    // Percent type (PERCENT)
+    fireEvent.change(discountTypeSelect, { target: { value: "PERCENT" } });
+    expect(screen.getByText("Giảm:")).toBeInTheDocument();
+    expect(screen.queryByText("Giá:")).toBeNull();
+  });
 });
 
 describe("PromotionForm sections and FormActionBar (BR-UI-014, BR-UI-015)", () => {
@@ -382,8 +426,8 @@ describe("PromotionForm sections and FormActionBar (BR-UI-014, BR-UI-015)", () =
 
     headings.forEach(h => {
       expect(h.className).toContain("text-sm");
-      expect(h.className).toContain("text-text-secondary");
-      expect(h.className).not.toContain("font-bold");
+      expect(h.className).toContain("font-semibold");
+      expect(h.className).toContain("text-text-primary");
     });
   });
 
@@ -434,7 +478,7 @@ describe("PromotionForm sections and FormActionBar (BR-UI-014, BR-UI-015)", () =
     expect(container.querySelector(".text-\\[11px\\]")).toBeNull();
   });
 
-  it("renders 'Áp dụng cho toàn đơn' under 'Món áp dụng' for whole-order discount", () => {
+  it("renders 'Áp dụng cho toàn đơn, không cần chọn món.' under 'Món áp dụng' for whole-order discount", () => {
     render(
       <PromotionForm
         brands={mockBrands}
@@ -444,7 +488,7 @@ describe("PromotionForm sections and FormActionBar (BR-UI-014, BR-UI-015)", () =
         returnTo="/admin/promotions"
       />
     );
-    expect(screen.getByText("Áp dụng cho toàn đơn")).toBeInTheDocument();
+    expect(screen.getByText("Áp dụng cho toàn đơn, không cần chọn món.")).toBeInTheDocument();
   });
 });
 
