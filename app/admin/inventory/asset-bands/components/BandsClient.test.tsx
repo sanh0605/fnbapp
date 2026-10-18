@@ -4,21 +4,23 @@ import { render, screen, cleanup, within } from "@testing-library/react";
 import BandsClient from "./BandsClient";
 import type { DBAssetDepreciationBand } from "@/types/db";
 
-const { replace, refresh, push, router } = vi.hoisted(() => {
+const { replace, refresh, push, router, currentSearchParams } = vi.hoisted(() => {
   const replaceFn = vi.fn();
   const refreshFn = vi.fn();
   const pushFn = vi.fn();
+  const currentSearchParams = { value: new URLSearchParams() };
   return {
     replace: replaceFn,
     refresh: refreshFn,
     push: pushFn,
     router: { replace: replaceFn, refresh: refreshFn, push: pushFn },
+    currentSearchParams,
   };
 });
 
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => currentSearchParams.value,
   usePathname: () => "/admin/inventory/asset-bands",
 }));
 
@@ -64,6 +66,7 @@ afterEach(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  currentSearchParams.value = new URLSearchParams();
 });
 
 describe("BandsClient", () => {
@@ -133,5 +136,16 @@ describe("BandsClient", () => {
     render(<BandsClient bands={[]} canDelete={false} />);
 
     expect(screen.getByText("Chưa có khung khấu hao nào.")).toBeInTheDocument();
+  });
+
+  it("an unknown sort falls back to code, newest first", () => {
+    currentSearchParams.value = new URLSearchParams("sort=bogus");
+    const { container } = render(<BandsClient bands={BANDS} canDelete={false} />);
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    const phoneLinks = within(phone).getAllByRole("link");
+    expect(phoneLinks[0].textContent).toBe("Từ 500,000đ trở lên36 thángKH-003");
+    expect(phoneLinks[1].textContent).toBe("Từ 200,000đ đến dưới 500,000đ24 thángKH-002");
+    expect(phoneLinks[2].textContent).toBe("Dưới 200,000đ12 thángKH-001");
   });
 });

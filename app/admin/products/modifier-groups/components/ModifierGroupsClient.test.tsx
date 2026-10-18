@@ -120,24 +120,31 @@ describe("ModifierGroupsClient", () => {
     const { container } = render(<ModifierGroupsClient rows={sampleRows} />);
 
     expect(screen.getAllByText("Chọn nhiều").length).toBeGreaterThan(0);
-    expect(screen.getByText("Chọn nhiều")).not.toHaveClass("whitespace-nowrap");
+    expect(screen.getByText("Chọn nhiều")).toHaveClass("whitespace-nowrap");
     expect(screen.getAllByText("Chọn một").length).toBeGreaterThan(0);
 
     expect(screen.getAllByText("3 phần").length).toBeGreaterThan(0);
-    expect(screen.getByText("3 phần")).not.toHaveClass("whitespace-nowrap");
+    expect(screen.getByText("3 phần")).toHaveClass("whitespace-nowrap");
     expect(screen.getAllByText("Có").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
 
     expect(screen.getAllByText("Trân châu trắng, Kem muối").length).toBeGreaterThan(0);
+    const optionsCell = screen.getAllByText("Trân châu trắng, Kem muối")[0];
+    expect(optionsCell).toHaveClass("line-clamp-2");
+    expect(optionsCell).toHaveAttribute("title", "Trân châu trắng, Kem muối");
+    const nameHeader = Array.from(container.querySelectorAll("th")).find((th) => th.textContent?.includes("Tên nhóm"))!;
+    expect(nameHeader).toHaveClass("whitespace-nowrap");
+    const tbody = container.querySelector("tbody")!;
+    expect(within(tbody).getByText("Thêm Topping")).toHaveClass("whitespace-nowrap");
     expect(screen.getAllByText("20 món").length).toBeGreaterThan(0);
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("Thêm Topping")).toBeInTheDocument();
     expect(within(phone).getByText("20 món")).toBeInTheDocument();
-    expect(within(phone).getByText("Chọn nhiều · tối đa 3 phần · 2 tuỳ chọn: Trân châu trắng, Kem muối")).toBeInTheDocument();
+    expect(within(phone).getByText("Chọn nhiều · tối đa 3 phần · 2 tuỳ chọn")).toBeInTheDocument();
     expect(
-      within(phone).getByText("Chọn một · 3 tuỳ chọn: Ít đường, Bình thường, Nhiều đường")
+      within(phone).getByText("Chọn một · 3 tuỳ chọn")
     ).toBeInTheDocument();
     expect(within(phone).queryByText(/Thứ tự hiện:/)).toBeNull();
     expect(within(phone).queryByText("Đang dùng")).toBeNull();

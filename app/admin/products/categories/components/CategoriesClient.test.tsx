@@ -201,5 +201,25 @@ describe("CategoriesClient", () => {
     expect(within(phone).getAllByText("CAT-001").some((el) => el.parentElement?.textContent === "CAT-001 · Đồ uống")).toBe(true);
     expect(within(phone).queryByText(/Loại món:/)).toBeNull();
   });
+
+  it("a category named like its type shows only its code on line 2", () => {
+    const categoriesSameName: DBProductCategory[] = [
+      { id: "CAT-007", name: "Topping", status: "ACTIVE", type_id: "PT-007", icon: null },
+    ];
+    const sampleTypes = [{ id: "PT-007", name: "Topping", status: "ACTIVE" }];
+    const { container } = render(
+      <CategoriesClient
+        categories={categoriesSameName}
+        counts={{ "CAT-007": 5 }}
+        types={sampleTypes as any}
+      />,
+    );
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(within(phone).getByText("Topping")).toBeInTheDocument();
+    expect(within(phone).getByText("5 món")).toBeInTheDocument();
+    expect(within(phone).getAllByText("CAT-007").some((el) => el.parentElement?.textContent === "CAT-007")).toBe(true);
+    expect(within(phone).queryByText("CAT-007 · Topping")).toBeNull();
+  });
 });
 

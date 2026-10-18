@@ -215,12 +215,21 @@ describe("OrderDetailView", () => {
     expect(screen.getByText("Chuyển dữ liệu cũ")).toBeDefined();
   });
 
-  it("renders version tag and staff name with Badge", () => {
+  it("renders version tag and staff name with Nhân viên: label (not inside badge)", () => {
     const detail = makeDetail("COMPLETED", { version: 2, created_by_name: "Thu ngân A" });
     render(<OrderDetailView detail={detail} brands={[]} returnTo="/admin/orders" />);
 
     expect(screen.getByText("v2")).toBeDefined();
-    expect(screen.getByText("Thu ngân A")).toBeDefined();
+    const staffName = screen.getByText("Thu ngân A");
+    expect(staffName).toBeDefined();
+    expect(staffName.closest(".rounded-full")).toBeNull();
+    expect(screen.getByText("Nhân viên:", { exact: false })).toBeDefined();
+  });
+
+  it("the element with data-testid='detail-lines' has no border class", () => {
+    render(<OrderDetailView detail={makeDetail()} brands={[]} returnTo="/admin/orders" />);
+    const lines = screen.getByTestId("detail-lines");
+    expect(lines.className).not.toContain("border");
   });
 });
 

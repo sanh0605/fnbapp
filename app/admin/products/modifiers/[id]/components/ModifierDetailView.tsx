@@ -123,16 +123,22 @@ export function ModifierDetailView({
       label: "Trạng thái",
       value: modifier.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng",
     },
-    { label: "Có sẵn", value: modifier.is_default ? "Có" : "Không" },
-    {
-      label: "Tối đa mỗi món",
-      value:
-        modifier.max_qty !== null &&
-        modifier.max_qty !== undefined &&
-        modifier.max_qty > 0
-          ? String(modifier.max_qty)
-          : "Không giới hạn",
-    },
+    ...(isOne
+      ? [{ label: "Có sẵn", value: modifier.is_default ? "Có" : "Không" }]
+      : []),
+    ...(!isOne
+      ? [
+          {
+            label: "Tối đa mỗi món",
+            value:
+              modifier.max_qty !== null &&
+              modifier.max_qty !== undefined &&
+              modifier.max_qty > 0
+                ? String(modifier.max_qty)
+                : "Không giới hạn",
+          },
+        ]
+      : []),
     {
       label: "Bán độc lập",
       value:

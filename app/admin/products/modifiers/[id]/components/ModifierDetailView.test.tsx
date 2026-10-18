@@ -168,7 +168,7 @@ describe("ModifierDetailView", () => {
     expect(within(row).getByText("Không")).toBeInTheDocument();
   });
 
-  it("shows 'Có sẵn' and 'Tối đa mỗi món', and shows '—' for 'Bán độc lập' when group is Chọn một", () => {
+  it("shows 'Có sẵn' but not 'Tối đa mỗi món', and shows '—' for 'Bán độc lập' when group is Chọn một", () => {
     render(
       <ModifierDetailView
         modifier={{
@@ -194,9 +194,7 @@ describe("ModifierDetailView", () => {
     expect(screen.getByText("Có sẵn")).toBeInTheDocument();
     expect(screen.getByText("Có")).toBeInTheDocument();
 
-    // Tối đa mỗi món is "Không giới hạn"
-    expect(screen.getByText("Tối đa mỗi món")).toBeInTheDocument();
-    expect(screen.getByText("Không giới hạn")).toBeInTheDocument();
+    expect(screen.queryByText("Tối đa mỗi món")).toBeNull();
 
     // Bán độc lập is "—"
     const row = screen.getByText("Bán độc lập").closest<HTMLElement>("div.grid")!;
@@ -225,9 +223,7 @@ describe("ModifierDetailView", () => {
       />
     );
 
-    expect(screen.getByText("Có sẵn")).toBeInTheDocument();
-    const coSanRow = screen.getByText("Có sẵn").closest<HTMLElement>("div.grid")!;
-    expect(within(coSanRow).getByText("Không")).toBeInTheDocument();
+    expect(screen.queryByText("Có sẵn")).toBeNull();
     expect(screen.getByText("Tối đa mỗi món")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
   });

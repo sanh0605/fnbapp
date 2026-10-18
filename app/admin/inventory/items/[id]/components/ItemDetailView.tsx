@@ -103,7 +103,7 @@ export function ItemDetailView({
 
   const fields: Field[] = [
     { label: "Phân loại", value: category?.name || "—" },
-    { label: "Tính tồn kho", value: isNonInventory ? "Không" : "Có" },
+    { label: "Theo dõi tồn kho", value: isNonInventory ? "Không" : "Có" },
     ...(stock?.kind === "untracked" ? [] : [{ label: "Tồn kho hiện tại", value: stockValue }]),
     {
       label: "Trạng thái",
@@ -232,11 +232,9 @@ export function ItemDetailView({
                   <PhoneRow
                     title={`1 ${getUnitName(conv.purchased_unit, units)} = ${formatNumber(conv.conversion_rate)} ${getUnitName(conv.base_unit, units)}`}
                     badge={
-                      <Badge
-                        variant={conv.status === "INACTIVE" ? "neutral" : "processing"}
-                      >
-                        {conv.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng"}
-                      </Badge>
+                      conv.status === "INACTIVE" ? (
+                        <Badge variant="neutral">Ngừng dùng</Badge>
+                      ) : undefined
                     }
                   />
                 </div>

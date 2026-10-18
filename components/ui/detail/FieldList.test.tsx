@@ -22,4 +22,17 @@ describe("FieldList", () => {
     expect(value.className).toContain("text-base");
     expect(value.className).toContain("md:text-sm");
   });
+
+  it("row element has md:items-baseline class", () => {
+    const { container } = render(
+      <FieldList
+        fields={[
+          { label: "Mã nhà cung cấp", value: "NCC-001" },
+        ]}
+      />
+    );
+
+    const row = container.querySelector(".grid");
+    expect(row?.className).toContain("md:items-baseline");
+  });
 });

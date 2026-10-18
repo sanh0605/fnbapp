@@ -139,7 +139,7 @@ export function AssetItemDetailView({
                   <TableHeaderCell>Mã tài sản</TableHeaderCell>
                   <TableHeaderCell>Ngày mua</TableHeaderCell>
                   <TableHeaderCell>Phiếu nhập</TableHeaderCell>
-                  <TableHeaderCell>Còn / Mua</TableHeaderCell>
+                  <TableHeaderCell>{"Còn\u00A0/\u00A0Đã\u00A0mua"}</TableHeaderCell>
                   <TableHeaderCell>Giá một cái</TableHeaderCell>
                   <TableHeaderCell>Thời hạn</TableHeaderCell>
                   <TableHeaderCell>Giá trị còn lại</TableHeaderCell>
@@ -183,10 +183,10 @@ export function AssetItemDetailView({
             <div className="md:hidden bg-surface-card rounded-card border border-border divide-y divide-border">
               {detail.lots.map((lot) => {
                 const metaParts = [
-                  lot.id,
                   `Còn ${lot.remainingQuantity}/${lot.quantity} cái`,
                   `${formatNumber(Math.round(lot.unitCost))}đ`,
                   `${lot.termMonths} tháng`,
+                  lot.id,
                   lot.purchaseOrderId,
                 ].filter(Boolean);
 
@@ -340,7 +340,9 @@ export function AssetItemDetailView({
             <div className="md:hidden bg-surface-card rounded-card border border-border divide-y divide-border">
               {detail.months.map((m, idx) => {
                 const metaParts = [
-                  `${m.unitsHeld} cái`,
+                  idx === 0 || m.unitsHeld !== detail.months[idx - 1].unitsHeld
+                    ? `${m.unitsHeld} cái`
+                    : "",
                   m.disposalCharge > 0 ? `gồm ${formatNumber(Math.round(m.disposalCharge))}đ thanh lý` : "",
                 ].filter(Boolean);
 
@@ -349,7 +351,7 @@ export function AssetItemDetailView({
                     <PhoneRow
                       title={formatMonth(m.month)}
                       value={`${formatNumber(Math.round(m.charge))}đ`}
-                      meta={metaParts.join(" · ")}
+                      meta={metaParts.join(" · ") || undefined}
                     />
                   </div>
                 );
