@@ -153,7 +153,7 @@ export function PnlChart({ table }: { table: PnlTable }) {
           fontWeight={700}
           className="fill-text-primary"
         >
-          {`luỹ kế ${formatCompact(points[lastIndex].cumulative, unit)}`}
+          {`Luỹ kế ${formatCompact(points[lastIndex].cumulative, unit)}`}
         </text>
       </svg>
     </section>

@@ -33,32 +33,32 @@ export default function SalesCharts({
 
   return (
     <div className="xl:col-span-2 bg-surface-card rounded-card p-6 shadow-sm border border-border flex flex-col min-h-[400px]">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="font-bold text-text-primary">Biểu đồ Doanh Thu</h3>
-        <div className="flex bg-page p-1 rounded-lg border border-border/50">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+        <h3 className="font-bold text-text-primary">Biểu đồ doanh thu</h3>
+        <div className="flex bg-page p-1 rounded-lg border border-border/50 overflow-x-auto max-w-full">
           <button 
             onClick={() => setViewMode("HOUR")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "HOUR" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "HOUR" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
           >
-            Theo Giờ
+            Theo giờ
           </button>
           <button 
             onClick={() => setViewMode("DOW")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "DOW" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "DOW" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
           >
-            Theo Thứ
+            Theo thứ
           </button>
           <button 
             onClick={() => setViewMode("DATE")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "DATE" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "DATE" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
           >
-            Theo Ngày
+            Theo ngày
           </button>
           <button 
             onClick={() => setViewMode("MONTH")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${viewMode === "MONTH" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "MONTH" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
           >
-            Theo Tháng
+            Theo tháng
           </button>
         </div>
       </div>
@@ -70,7 +70,11 @@ export default function SalesCharts({
           // Determine if label should be shown
           const showLabel = i % labelInterval === 0 || i === totalItems - 1;
           const isTooCloseToLast = (totalItems - 1 - i) < labelInterval && i !== totalItems - 1;
-          const shouldShowLabel = showLabel && !isTooCloseToLast;
+          const desktopShow = showLabel && !isTooCloseToLast;
+          const phoneShow =
+            viewMode === "HOUR"
+              ? (i % 3 === 0 && (totalItems - 1 - i >= 3 || i === 0)) || i === totalItems - 1
+              : desktopShow;
 
           return (
             <div key={i} className="flex flex-col items-center flex-1 group min-w-[8px] sm:min-w-[12px]">
@@ -84,7 +88,7 @@ export default function SalesCharts({
                 ></div>
               </div>
               <div className="text-xs text-text-muted mt-3 font-medium text-center h-4">
-                {shouldShowLabel ? d.label : ""}
+                <span className={`${phoneShow ? "" : "hidden"} ${desktopShow ? "md:inline" : "md:hidden"}`}>{d.label}</span>
               </div>
             </div>
           );

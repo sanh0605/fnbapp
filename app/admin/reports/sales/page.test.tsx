@@ -52,7 +52,7 @@ describe("sales report default range (A8)", () => {
     const json = JSON.stringify(tree);
     expect(json).toContain("Tổng doanh thu thuần");
     expect(json).not.toContain("(Net)");
-    expect(json).toContain("Ma trận Doanh thu theo Giờ");
+    expect(json).toContain("Ma trận doanh thu theo giờ");
     expect(json).not.toContain("(Heatmap)");
   });
 });

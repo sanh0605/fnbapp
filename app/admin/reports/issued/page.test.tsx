@@ -59,6 +59,16 @@ beforeEach(() => {
 });
 
 describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
+  // The headline figures have a phone block of their own (G9); any other
+  // phone-only block would be a second, card version of the table.
+  const phoneOnlyBesidesHeadline = () => {
+    const all = [...document.querySelectorAll<HTMLElement>(".md\\:hidden")];
+    const rest = all.filter(el => !el.textContent?.includes("Tổng giá trị đã xuất"));
+    // Exactly one block (the headline) may be left out, so a card list wrapped with it still fails.
+    expect(all.length - rest.length).toBe(1);
+    return rest;
+  };
+
   it("issued page shows Hàng dùng and Hao hụt per month and a total in a compact table", async () => {
     const page = await IssuedValueReportPage({
       searchParams: Promise.resolve({ tab: "months", range: "THIS_YEAR" }),
@@ -67,7 +77,7 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     render(page);
 
     // Old phone cards are gone, table is visible on phone
-    expect(document.querySelector(".md\\:hidden")).toBeNull();
+    expect(phoneOnlyBesidesHeadline()).toEqual([]);
     expect(document.querySelector(".hidden.md\\:block")).toBeNull();
 
     // Month label
@@ -100,7 +110,7 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     render(page);
 
     // No md:hidden card version or hidden md:block table
-    expect(document.querySelector(".md\\:hidden")).toBeNull();
+    expect(phoneOnlyBesidesHeadline()).toEqual([]);
     expect(document.querySelector(".hidden.md\\:block")).toBeNull();
 
     // Table exists
@@ -119,7 +129,7 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
 
     // Row has quantity and values
     const row = rowHeader.closest("tr")!;
-    expect(within(row).getByText("10.00 hộp")).toBeInTheDocument();
+    expect(within(row).getByText("10 hộp")).toBeInTheDocument();
     expect(within(row).getByText("500,000đ")).toBeInTheDocument();
     expect(within(row).getByText("200,000đ")).toBeInTheDocument();
 
@@ -128,7 +138,7 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     expect(vinamilkHeader.className).toContain("sticky");
     expect(vinamilkHeader.className).toContain("left-0");
     const vinamilkRow = vinamilkHeader.closest("tr")!;
-    expect(within(vinamilkRow).getByText("100.00 g")).toBeInTheDocument();
+    expect(within(vinamilkRow).getByText("100 g")).toBeInTheDocument();
   });
 
 
@@ -173,8 +183,9 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
 
     render(page);
 
-    const phoneContainer = document.querySelector(".md\\:hidden") as HTMLElement;
-    expect(phoneContainer).toBeInTheDocument();
+    const phoneBlocks = phoneOnlyBesidesHeadline();
+    expect(phoneBlocks).toHaveLength(1);
+    const [phoneContainer] = phoneBlocks;
 
     const totalStrip = within(phoneContainer).getByText(/Tổng cộng:\s*8,454,110đ/);
     expect(totalStrip).toBeInTheDocument();

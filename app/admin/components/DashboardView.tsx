@@ -116,7 +116,9 @@ export function DashboardView({ data }: { data: DashboardData }) {
           <TableBody>
             {sortedRows.map((row) => (
               <TableRow key={row.day}>
-                <TableRowHeader stick="left">{formatVnDayWithWeekday(row.day)}</TableRowHeader>
+                <TableRowHeader stick="left">
+                  <div className="max-w-[120px] md:max-w-none whitespace-normal">{formatVnDayWithWeekday(row.day)}</div>
+                </TableRowHeader>
                 <TableCell align="right">{formatNumber(row.revenue)}</TableCell>
                 <TableCell align="right">{formatNumber(row.avgPerCup)}</TableCell>
                 <TableCell align="right">{row.cups}</TableCell>
