@@ -168,7 +168,7 @@ Every edit rebuilt the order from today's catalog. The new version credited the 
 
 **Correction 2026-10-16 (owner):** the one account is a real person. All 720 orders from 2026-09-16 to 2026-10-15 were sold by Tài Chí Tuyền (`tuyen2612`, MANAGER), and owner 2026-10-16 says *"Chỉ Tuyền bán"*. The proposal wrongly read "one account" as "a shared account". Nothing is to be created now. The rule applies the day a second person sells: that person gets their own account and never uses someone else's.
 
-- Each person who sells has their own account. A cashier who is not a manager gets a Nhân viên (STAFF) account in Nhân sự. STAFF opens the till only; `/admin` stays closed to it (owner decision 2026-07-22).
+- Each person who sells has their own account. A cashier who is not a manager gets a Nhân viên (STAFF) account in Nhân viên & quyền. STAFF opens the till only; `/admin` stays closed to it (owner decision 2026-07-22).
 - The till has a Đăng xuất button. The order keeps the seller's name as today (`created_by_name`), so Doanh số filtered by Nhân viên shows who sold.
 - A STAFF login with no outlet sees the outlet picker, never a redirect loop.
 

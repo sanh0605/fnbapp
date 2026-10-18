@@ -21,7 +21,7 @@ export default async function NewUserPage(
     <DetailFrame>
       <DetailHeader
         backHref={returnTo}
-        backLabel="Nhân sự"
+        backLabel="Nhân viên & quyền"
         title="Tạo nhân viên"
         subtitle="Tạo tài khoản đăng nhập và phân quyền hệ thống."
       />

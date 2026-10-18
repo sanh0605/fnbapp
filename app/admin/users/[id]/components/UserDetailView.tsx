@@ -48,7 +48,7 @@ export function UserDetailView({
         <RemoveRecordButton
           verb="Xoá"
           name={name}
-          confirmMessage={`Bạn có chắc chắn muốn xoá nhân sự "${name}"? Không thể hoàn tác.`}
+          confirmMessage={`Bạn có chắc chắn muốn xoá nhân viên "${name}"? Không thể hoàn tác.`}
           remove={async () => {
             const fd = new FormData();
             fd.set("id", user.id);

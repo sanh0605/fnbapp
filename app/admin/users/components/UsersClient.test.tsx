@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import React from "react";
 import UsersClient from "./UsersClient";
+import { formatDateTimeFull } from "@/lib/shared/datetime";
 import type { DBUser } from "@/types/db";
 
 const { replace, refresh, router } = vi.hoisted(() => {
@@ -110,7 +111,9 @@ describe("UsersClient", () => {
     );
 
     expect(screen.getAllByText("thu").length).toBeGreaterThan(0);
-    expect(screen.getByText("USR-003 · Tạo 15/05/2026 15:00:00")).toBeInTheDocument();
+    const usr003 = mockUsers.find((u) => u.id === "USR-003")!;
+    expect(screen.getAllByText("USR-003")).toHaveLength(2);
+    expect(screen.queryByText(new RegExp(`Tạo ${formatDateTimeFull(usr003.created_at)}`))).toBeNull();
     expect(screen.queryByText("Ngày tạo:")).toBeNull();
     expect(screen.queryByText("admin")).toBeNull();
     expect(screen.queryByText("tuyen2612")).toBeNull();
@@ -140,7 +143,7 @@ describe("UsersClient", () => {
   it("'Lọc' pushes q", () => {
     render(<UsersClient users={mockUsers} canDelete={true} />);
 
-    const searchInput = screen.getByLabelText("Tìm nhân sự");
+    const searchInput = screen.getByLabelText("Tìm nhân viên");
     fireEvent.change(searchInput, { target: { value: "tuyen" } });
 
     const filterButton = screen.getByRole("button", { name: "Lọc" });

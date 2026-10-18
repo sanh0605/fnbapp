@@ -82,58 +82,66 @@ export function SupplierForm({
           <Alert variant="danger">{error}</Alert>
         )}
 
-        <Field label="Tên nhà cung cấp" htmlFor={`${formId}-name`} required>
-          <TextInput
-            id={`${formId}-name`}
-            type="text"
-            name="name"
-            required
-            maxLength={120}
-            defaultValue={initialData?.name ?? initialName}
-            example="Cửa hàng ABC"
-          />
-        </Field>
+        <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div className="md:col-span-2">
+            <Field label="Tên nhà cung cấp" htmlFor={`${formId}-name`} required>
+              <TextInput
+                id={`${formId}-name`}
+                type="text"
+                name="name"
+                required
+                maxLength={120}
+                defaultValue={initialData?.name ?? initialName}
+                example="Cửa hàng ABC"
+              />
+            </Field>
+          </div>
 
-        <Field label="Số điện thoại" htmlFor={`${formId}-phone`}>
-          <TextInput
-            id={`${formId}-phone`}
-            type="tel"
-            name="phone"
-            defaultValue={initialData?.phone}
-            example="0901234567"
-          />
-        </Field>
+          <Field label="Số điện thoại" htmlFor={`${formId}-phone`}>
+            <TextInput
+              id={`${formId}-phone`}
+              type="tel"
+              name="phone"
+              defaultValue={initialData?.phone}
+              example="0901234567"
+            />
+          </Field>
 
-        <Field label="Mã số thuế" htmlFor={`${formId}-tax-id`}>
-          <TextInput
-            id={`${formId}-tax-id`}
-            type="text"
-            name="tax_id"
-            defaultValue={initialData?.tax_id}
-            example="0123456789"
-          />
-        </Field>
+          <Field label="Mã số thuế" htmlFor={`${formId}-tax-id`}>
+            <TextInput
+              id={`${formId}-tax-id`}
+              type="text"
+              name="tax_id"
+              defaultValue={initialData?.tax_id}
+              example="0123456789"
+            />
+          </Field>
 
-        <Field label="Địa chỉ" htmlFor={`${formId}-address`}>
-          <TextInput
-            id={`${formId}-address`}
-            type="text"
-            name="address"
-            defaultValue={initialData?.address}
-            example="123 Đường ABC, Quận XYZ"
-          />
-        </Field>
+          <div className="md:col-span-2">
+            <Field label="Địa chỉ" htmlFor={`${formId}-address`}>
+              <TextInput
+                id={`${formId}-address`}
+                type="text"
+                name="address"
+                defaultValue={initialData?.address}
+                example="123 Đường ABC, Quận XYZ"
+              />
+            </Field>
+          </div>
 
-        <Field label="Ghi chú / liên kết" htmlFor={`${formId}-links`}>
-          <textarea
-            id={`${formId}-links`}
-            name="links"
-            rows={3}
-            defaultValue={initialData?.links}
-            className="w-full rounded-button bg-surface-card border border-border px-3 py-2 text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50"
-            placeholder="Ví dụ: https://facebook.com/nhacungcap"
-          />
-        </Field>
+          <div className="md:col-span-2">
+            <Field label="Ghi chú / liên kết" htmlFor={`${formId}-links`}>
+              <textarea
+                id={`${formId}-links`}
+                name="links"
+                rows={3}
+                defaultValue={initialData?.links}
+                className="w-full rounded-button bg-surface-card border border-border px-3 py-2 text-sm text-text-primary outline-none focus:border-primary focus:ring-2 focus:ring-focus-ring/30 disabled:opacity-50"
+                placeholder="Ví dụ: https://facebook.com/nhacungcap"
+              />
+            </Field>
+          </div>
+        </div>
 
         <FormActionBar
           mode={isEdit ? "edit" : "create"}

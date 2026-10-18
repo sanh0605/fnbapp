@@ -207,7 +207,7 @@ export default function UsersClient({
     ? {
         verb: "Xoá",
         confirmMessage: (count: number) =>
-          `Xoá ${count} nhân sự? Không thể hoàn tác.`,
+          `Xoá ${count} nhân viên? Không thể hoàn tác.`,
         canRemove: (u: DBUser) => u.username !== "admin",
         remove: async (id: string) => {
           const fd = new FormData();
@@ -243,7 +243,7 @@ export default function UsersClient({
         activeCount={activeCount}
         search={
           <div className="shrink-0 w-full md:w-64">
-            <Field label="Tìm nhân sự" htmlFor="users-search">
+            <Field label="Tìm nhân viên" htmlFor="users-search">
               <TextInput
                 id="users-search"
                 placeholder="Ví dụ: nhanvien01"
@@ -282,11 +282,7 @@ export default function UsersClient({
           const { name, showLogin } = staffLabel(u);
           return {
             title: name,
-            meta: [
-              showLogin ? u.username : null,
-              u.id,
-              u.created_at ? `Tạo ${formatDateTimeFull(u.created_at)}` : null,
-            ]
+            meta: [showLogin ? u.username : null, u.id]
               .filter(Boolean)
               .join(" · "),
             badge: <RoleBadge role={u.role} />,
@@ -301,7 +297,7 @@ export default function UsersClient({
         empty={
           <div className="bg-surface-card rounded-2xl border border-border p-8 text-center space-y-3">
             <div className="text-text-secondary text-sm">
-              Không tìm thấy nhân sự
+              Không tìm thấy nhân viên
             </div>
             {Boolean(search || role !== "ALL") && (
               <div>
@@ -322,7 +318,7 @@ export default function UsersClient({
         <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
           <ListPagination
             slice={slice}
-            unit="nhân sự"
+            unit="nhân viên"
             pageHref={(p) => listUrl(search, role, p, sortParam, dirParam)}
           />
         </div>

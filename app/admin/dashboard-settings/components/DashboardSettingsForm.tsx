@@ -2,11 +2,11 @@
 
 import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Alert } from "@/components/ui/Alert";
+import { FormActionBar } from "@/components/ui/FormActionBar";
 import type { DBDashboardSettings, DBProduct, DBProductType } from "@/types/db";
 import { saveDashboardSettings } from "../actions";
 
@@ -49,7 +49,13 @@ export function DashboardSettingsForm({
   const savedFoodIds = new Set(settings.food_product_ids ?? []);
   const foodProducts = products
     .filter((p) => p.status === "ACTIVE" || savedFoodIds.has(p.id))
-    .sort((a, b) => a.name.localeCompare(b.name, "vi"));
+    .sort((a, b) => {
+      const aSaved = savedFoodIds.has(a.id);
+      const bSaved = savedFoodIds.has(b.id);
+      if (aSaved && !bSaved) return -1;
+      if (!aSaved && bSaved) return 1;
+      return a.name.localeCompare(b.name, "vi");
+    });
 
   function clearFieldError(field: string) {
     setFieldErrors((prev) => {
@@ -103,10 +109,11 @@ export function DashboardSettingsForm({
           </Alert>
         )}
 
-        <div
-          data-testid="form-fields"
-          className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"
-        >
+        <fieldset disabled={!isOwner}>
+          <div
+            data-testid="form-fields"
+            className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"
+          >
           <Field
             label="Báo lâu chưa kiểm kê sau (ngày)"
             htmlFor={`${formId}-stale_stocktake_days`}
@@ -193,9 +200,11 @@ export function DashboardSettingsForm({
             <Field
               label="Món làm cột đồ ăn"
               htmlFor={`${formId}-food_product_ids`}
-              hint="Mỗi món chọn là một cột trong bảng 7 ngày."
               error={fieldErrors.food_product_ids}
             >
+              <p className="text-[13px] text-text-secondary mb-2">
+                Mỗi món chọn là một cột trong bảng 7 ngày.
+              </p>
               <div
                 id={`${formId}-food_product_ids`}
                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-1"
@@ -208,7 +217,7 @@ export function DashboardSettingsForm({
                     <label
                       key={p.id}
                       htmlFor={checkboxId}
-                      className="flex items-center gap-3 min-h-[48px] md:min-h-[40px] px-3 py-2 rounded-lg border border-border hover:bg-surface-secondary/40 cursor-pointer select-none"
+                      className="flex items-center gap-3 min-h-[48px] md:min-h-[40px] px-3 py-2 rounded-lg border border-border hover:bg-surface-secondary/40 cursor-pointer select-none has-[:checked]:border-primary has-[:checked]:bg-primary-soft"
                     >
                       <input
                         type="checkbox"
@@ -217,7 +226,6 @@ export function DashboardSettingsForm({
                         value={p.id}
                         aria-label={p.name}
                         checked={isChecked}
-                        disabled={!isOwner}
                         onChange={() => {
                           setSelectedFoodIds((prev) =>
                             prev.includes(p.id)
@@ -245,30 +253,18 @@ export function DashboardSettingsForm({
             </Field>
           </div>
         </div>
+      </fieldset>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-4 border-t border-border">
-          {!isOwner && (
-            <p className="text-sm text-text-muted mr-auto">Chỉ chủ quán sửa được mục này</p>
-          )}
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => router.push("/admin")}
-            className="w-full sm:w-auto"
-          >
-            Bỏ
-          </Button>
-          {isOwner && (
-            <Button
-              type="submit"
-              variant="primary"
-              loading={loading}
-              className="w-full sm:w-auto"
-            >
-              Lưu
-            </Button>
-          )}
-        </div>
+        {!isOwner && (
+          <p className="text-sm text-text-muted">Chỉ chủ quán sửa được mục này</p>
+        )}
+        <FormActionBar
+          mode="edit"
+          submitLabel="Lưu"
+          onCancel={() => router.push("/admin")}
+          loading={loading}
+          disabled={!isOwner}
+        />
       </form>
     </div>
   );

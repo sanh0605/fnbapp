@@ -32,7 +32,7 @@ export default async function EditSupplierPage(
         backHref={detailHref}
         backLabel={supplier.name}
         title="Chỉnh sửa"
-        subtitle={supplier.id}
+        subtitle={supplier.name}
       />
       <SupplierForm initialData={supplier} returnTo={detailHref} />
     </DetailFrame>
