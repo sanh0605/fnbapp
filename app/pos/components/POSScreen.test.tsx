@@ -885,6 +885,8 @@ describe("POSScreen (Step 3 & 5)", () => {
       // No cart line yet: the picker's own heading is the only h3/h4.
       expect(screen.queryByRole("heading", { level: 4, name: "Cà phê đen" })).toBeNull();
     });
+
+    it.todo("Máy bán hàng: món một cỡ, không có tuỳ chọn, bấm một lần là vào hoá đơn (BR-SALE-019, chủ quán 2026-10-18)");
   });
 
   describe("Task 3b: Header, cart column, and notices", () => {
