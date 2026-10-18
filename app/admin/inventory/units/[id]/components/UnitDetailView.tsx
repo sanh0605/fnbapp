@@ -23,7 +23,6 @@ export function UnitDetailView({
   const editHref = `/admin/inventory/units/${encodeURIComponent(unit.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`;
 
   const fields: Field[] = [
-    { label: "Mã", value: unit.id },
     { label: "Ghi chú", value: unit.description || "—" },
   ];
 
@@ -58,6 +57,7 @@ export function UnitDetailView({
         backHref={returnTo}
         backLabel="Đơn vị tính"
         title={unit.name}
+        subtitle={unit.id}
         actions={headerActions}
       />
 

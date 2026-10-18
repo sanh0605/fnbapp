@@ -63,9 +63,10 @@ describe("UnitDetailView", () => {
     // canDelete=false hides "Xoá"
     expect(screen.queryByRole("button", { name: /Xoá/ })).toBeNull();
 
-    // Fields: Mã, Ghi chú
+    // Subtitle has code, not as "Mã" field; Fields: Ghi chú
+    expect(screen.queryByText("Mã")).toBeNull();
     expect(screen.queryByText("Tên")).toBeNull();
-    expect(screen.getAllByText("UNT-001").length).toBeGreaterThan(0);
+    expect(screen.getByText("UNT-001")).toHaveClass("text-text-secondary");
     expect(screen.getAllByText("Hộp").length).toBeGreaterThan(0);
     expect(screen.getByText("Hộp giấy 1000ml")).toBeInTheDocument();
   });
