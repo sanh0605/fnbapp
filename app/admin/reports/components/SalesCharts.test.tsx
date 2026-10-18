@@ -44,11 +44,8 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     expect(spans).toHaveLength(17);
     expect(spans[15].classList.contains("hidden")).toBe(true);
     expect(spans[16].classList.contains("hidden")).toBe(false);
-    expect(spans[15].classList.contains("md:hidden")).toBe(true);
-    expect(spans[16].classList.contains("md:inline")).toBe(true);
-    // Bar 3 is labelled on a phone (every third) but not on a computer (every second).
-    expect(spans[3].classList.contains("hidden")).toBe(false);
-    expect(spans[3].classList.contains("md:hidden")).toBe(true);
+    expect(spans[3].classList.contains("hidden")).toBe(true);
+    expect(spans[4].classList.contains("hidden")).toBe(false);
 
     expect(spans[0].parentElement?.classList.contains("self-start")).toBe(true);
     expect(spans[16].parentElement?.classList.contains("self-end")).toBe(true);
@@ -56,7 +53,7 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     expect(spans[8].parentElement?.classList.contains("self-end")).toBe(false);
   });
 
-  it("in the hour view with 3 hourly entries, the labels of the first and the last entry do not carry the class token hidden, and the middle one does", () => {
+  it("in the hour view with 3 hourly entries, all three labels show and none is pushed to an edge", () => {
     const hourlyData = Array.from({ length: 3 }, (_, i) => ({
       label: `${String(i + 6).padStart(2, "0")}:00`,
       amount: (i + 1) * 10000,
@@ -74,7 +71,7 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     const spans = container.querySelectorAll(".h-4 span");
     expect(spans).toHaveLength(3);
     expect(spans[0].classList.contains("hidden")).toBe(false);
-    expect(spans[1].classList.contains("hidden")).toBe(true);
+    expect(spans[1].classList.contains("hidden")).toBe(false);
     expect(spans[2].classList.contains("hidden")).toBe(false);
 
     expect(spans[0].parentElement?.classList.contains("self-start")).toBe(false);
@@ -106,7 +103,7 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     expect(monthSpans[0].textContent).toBe("10/2026");
   });
 
-  it("in day view with 16 entries, spans without hidden class are exactly indices [0, 3, 6, 9, 12, 15]", () => {
+  it("in day view with 16 entries, spans without hidden class are exactly indices [0, 4, 8, 15]", () => {
     const dateData = Array.from({ length: 16 }, (_, i) => ({
       label: `2026-10-${String(i + 1).padStart(2, "0")}`,
       amount: (i + 1) * 10000,
@@ -127,10 +124,10 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     const visibleIndices = Array.from(spans).flatMap((span, idx) =>
       span.classList.contains("hidden") ? [] : [idx]
     );
-    expect(visibleIndices).toEqual([0, 3, 6, 9, 12, 15]);
+    expect(visibleIndices).toEqual([0, 4, 8, 15]);
   });
 
-  it("in month view with 7 entries, visible spans are [0, 2, 4, 6] and edge alignment has sm:self-auto", () => {
+  it("in month view with 7 entries, visible spans are [0, 2, 4, 6] and the first and last sit at the column edges", () => {
     const monthData = [
       "2026-04",
       "2026-05",
@@ -159,9 +156,7 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     expect(visibleIndices).toEqual([0, 2, 4, 6]);
 
     expect(spans[0].parentElement?.classList.contains("self-start")).toBe(true);
-    expect(spans[0].parentElement?.classList.contains("sm:self-auto")).toBe(true);
     expect(spans[6].parentElement?.classList.contains("self-end")).toBe(true);
-    expect(spans[6].parentElement?.classList.contains("sm:self-auto")).toBe(true);
     expect(spans[3].parentElement?.classList.contains("self-start")).toBe(false);
     expect(spans[3].parentElement?.classList.contains("self-end")).toBe(false);
   });
@@ -217,7 +212,7 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     expect(visibleIndices).toEqual([0, 3, 6, 9, 13]);
   });
 
-  it("in day view with 21 entries, spans without hidden class are exactly indices [0, 4, 8, 12, 16, 20]", () => {
+  it("in day view with 21 entries, spans without hidden class are exactly indices [0, 5, 10, 15, 20]", () => {
     const dateData = Array.from({ length: 21 }, (_, i) => ({
       label: `2026-10-${String(i + 1).padStart(2, "0")}`,
       amount: (i + 1) * 10000,
@@ -238,7 +233,7 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     const visibleIndices = Array.from(spans).flatMap((span, idx) =>
       span.classList.contains("hidden") ? [] : [idx]
     );
-    expect(visibleIndices).toEqual([0, 4, 8, 12, 16, 20]);
+    expect(visibleIndices).toEqual([0, 5, 10, 15, 20]);
   });
 
   it("in month view with 8 entries, visible spans are [0, 3, 7]", () => {
@@ -316,5 +311,188 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     );
     const tabContainer = screen.getByRole("button", { name: "Theo giờ" }).parentElement;
     expect(tabContainer?.classList.contains("hide-scrollbar")).toBe(true);
+  });
+
+  it("in day view with 7 entries, spans without hidden class are exactly indices [0, 2, 4, 6]", () => {
+    const dateData = Array.from({ length: 7 }, (_, i) => ({
+      label: `2026-10-${String(i + 1).padStart(2, "0")}`,
+      amount: (i + 1) * 10000,
+    }));
+
+    const { container } = render(
+      <SalesCharts
+        salesByHour={DUMMY_DATA}
+        salesByDate={dateData}
+        salesByDayOfWeek={DUMMY_DATA}
+        salesByMonth={DUMMY_DATA}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Theo ngày" }));
+    const spans = container.querySelectorAll(".h-4 span");
+    expect(spans).toHaveLength(7);
+    const visibleIndices = Array.from(spans).flatMap((span, idx) =>
+      span.classList.contains("hidden") ? [] : [idx]
+    );
+    expect(visibleIndices).toEqual([0, 2, 4, 6]);
+  });
+
+  it("on a 561 px wide chart (a 1280 screen) more labels show", () => {
+    const original = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = class {
+      cb: ResizeObserverCallback;
+      constructor(cb: ResizeObserverCallback) { this.cb = cb; }
+      observe() { this.cb([{ contentRect: { width: 561 } } as ResizeObserverEntry], this as unknown as ResizeObserver); }
+      unobserve() {}
+      disconnect() {}
+    } as unknown as typeof ResizeObserver;
+    try {
+      const dateData = Array.from({ length: 16 }, (_, i) => ({
+        label: `2026-10-${String(i + 1).padStart(2, "0")}`,
+        amount: (i + 1) * 10000,
+      }));
+      const monthData = [
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10",
+      ].map((label, i) => ({ label, amount: (i + 1) * 10000 }));
+
+      const { container } = render(
+        <SalesCharts
+          salesByHour={DUMMY_DATA}
+          salesByDate={dateData}
+          salesByDayOfWeek={DUMMY_DATA}
+          salesByMonth={monthData}
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Theo ngày" }));
+      let spans = container.querySelectorAll(".h-4 span");
+      expect(spans).toHaveLength(16);
+      const visibleDayIndices = Array.from(spans).flatMap((span, idx) =>
+        span.classList.contains("hidden") ? [] : [idx]
+      );
+      expect(visibleDayIndices).toEqual([0, 2, 4, 6, 8, 10, 12, 15]);
+
+      fireEvent.click(screen.getByRole("button", { name: "Theo tháng" }));
+      spans = container.querySelectorAll(".h-4 span");
+      expect(spans).toHaveLength(7);
+      spans.forEach((span) => {
+        expect(span.classList.contains("hidden")).toBe(false);
+      });
+      expect(spans[0].parentElement?.classList.contains("self-start")).toBe(false);
+      expect(spans[6].parentElement?.classList.contains("self-end")).toBe(false);
+
+      const boxes = container.querySelectorAll(".group-hover\\:opacity-100");
+      expect(boxes[0].classList.contains("self-start")).toBe(false);
+      expect(boxes[0].classList.contains("self-end")).toBe(false);
+      expect(boxes[6].classList.contains("self-start")).toBe(false);
+      expect(boxes[6].classList.contains("self-end")).toBe(false);
+    } finally {
+      globalThis.ResizeObserver = original;
+    }
+  });
+
+  it("in day view with 31 entries, every bar fits: columns can shrink, the box clips instead of scrolling, and visible labels are [0, 8, 16, 30]", () => {
+    const dateData = Array.from({ length: 31 }, (_, i) => ({
+      label: `2026-10-${String(i + 1).padStart(2, "0")}`,
+      amount: (i + 1) * 10000,
+    }));
+
+    const { container } = render(
+      <SalesCharts
+        salesByHour={DUMMY_DATA}
+        salesByDate={dateData}
+        salesByDayOfWeek={DUMMY_DATA}
+        salesByMonth={DUMMY_DATA}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Theo ngày" }));
+    const spans = container.querySelectorAll(".h-4 span");
+    expect(spans).toHaveLength(31);
+    const visibleIndices = Array.from(spans).flatMap((span, idx) =>
+      span.classList.contains("hidden") ? [] : [idx]
+    );
+    expect(visibleIndices).toEqual([0, 8, 16, 30]);
+
+    const columns = container.querySelectorAll(".group");
+    expect(columns).toHaveLength(31);
+    columns.forEach((col) => {
+      expect(col.classList.contains("min-w-0")).toBe(true);
+      expect(col.classList.contains("min-w-[8px]")).toBe(false);
+    });
+
+    const barsBox = container.querySelector(".pb-4.overflow-x-clip");
+    expect(barsBox).not.toBeNull();
+    expect(barsBox?.classList.contains("gap-1")).toBe(false);
+    expect(barsBox?.classList.contains("sm:gap-2")).toBe(false);
+    expect(barsBox?.classList.contains("overflow-x-auto")).toBe(false);
+  });
+
+  it("in day view with 92 entries (a quarter), every bar fits and visible labels are [0, 22, 44, 66, 91]", () => {
+    const dateData = Array.from({ length: 92 }, (_, i) => ({
+      label: new Date(Date.UTC(2026, 6, 1 + i)).toISOString().slice(0, 10),
+      amount: (i + 1) * 10000,
+    }));
+
+    const { container } = render(
+      <SalesCharts
+        salesByHour={DUMMY_DATA}
+        salesByDate={dateData}
+        salesByDayOfWeek={DUMMY_DATA}
+        salesByMonth={DUMMY_DATA}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Theo ngày" }));
+    const spans = container.querySelectorAll(".h-4 span");
+    expect(spans).toHaveLength(92);
+    const visibleIndices = Array.from(spans).flatMap((span, idx) =>
+      span.classList.contains("hidden") ? [] : [idx]
+    );
+    expect(visibleIndices).toEqual([0, 22, 44, 66, 91]);
+
+    const columns = container.querySelectorAll(".group");
+    expect(columns).toHaveLength(92);
+
+    const tracks = container.querySelectorAll(".bg-primary-soft");
+    expect(tracks).toHaveLength(92);
+    tracks.forEach((track) => {
+      expect(track.classList.contains("w-3/4")).toBe(true);
+      expect(track.classList.contains("w-full")).toBe(false);
+    });
+  });
+
+  it("in the hour view with 18 entries, value boxes near the chart edges move to the column edge", () => {
+    const hourlyData = Array.from({ length: 18 }, (_, i) => ({
+      label: `${String(i + 6).padStart(2, "0")}:00`,
+      amount: (i + 1) * 10000,
+    }));
+
+    const { container } = render(
+      <SalesCharts
+        salesByHour={hourlyData}
+        salesByDate={DUMMY_DATA}
+        salesByDayOfWeek={DUMMY_DATA}
+        salesByMonth={DUMMY_DATA}
+      />
+    );
+
+    const boxes = container.querySelectorAll(".group-hover\\:opacity-100");
+    expect(boxes).toHaveLength(18);
+    expect(boxes[0].classList.contains("self-start")).toBe(true);
+    expect(boxes[1].classList.contains("self-start")).toBe(true);
+    expect(boxes[16].classList.contains("self-end")).toBe(true);
+    expect(boxes[17].classList.contains("self-end")).toBe(true);
+
+    expect(boxes[2].classList.contains("self-start")).toBe(false);
+    expect(boxes[2].classList.contains("self-end")).toBe(false);
+    expect(boxes[15].classList.contains("self-start")).toBe(false);
+    expect(boxes[15].classList.contains("self-end")).toBe(false);
   });
 });
