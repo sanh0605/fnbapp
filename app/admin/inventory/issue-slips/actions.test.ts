@@ -339,7 +339,7 @@ describe("createIssueSlip", () => {
 
   it("turns the database's English future-time refusal into Vietnamese", async () => {
     mocks.createIssueSlipAtomic.mockRejectedValue(
-      new Error("p_issued_at (2099-01-01 00:00:00+00) cannot be in the future"),
+      new Error("p_issued_at (01/01/2099 07:00:00) cannot be in the future"),
     );
 
     const res = await issueSlipActions.createIssueSlip({

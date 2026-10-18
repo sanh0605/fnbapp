@@ -91,7 +91,7 @@ describe("CancelIssueSlipPage", () => {
     getServerSession.mockResolvedValueOnce({ user: { role: "ADMIN" } });
     getIssueSlipDetail.mockResolvedValueOnce({
       id: "ISL-00076",
-      dateText: "28/09/2026 18:20",
+      dateText: "28/09/2026 18:20:00",
       createdByName: "tuyen2612",
       lines: [],
       totalValue: 0,
@@ -104,7 +104,7 @@ describe("CancelIssueSlipPage", () => {
     const text = collectText(tree as ReactNode).join(" ").replace(/\s+/g, " ");
 
     expect(text).toContain("Huỷ phiếu ISL-00076");
-    expect(text).toContain("Ngày xuất: 28/09/2026 18:20 · Người ghi: tuyen2612");
+    expect(text).toContain("Ngày xuất: 28/09/2026 18:20:00 · Người ghi: tuyen2612");
     expect(text).toContain("Phiếu xuất");
     expect(text).toContain("MOCK_CANCEL_FORM");
   });
@@ -113,7 +113,7 @@ describe("CancelIssueSlipPage", () => {
     getServerSession.mockResolvedValueOnce({ user: { role: "ADMIN" } });
     getIssueSlipDetail.mockResolvedValueOnce({
       id: "ISL-00076",
-      dateText: "28/09/2026 18:20",
+      dateText: "28/09/2026 18:20:00",
       createdByName: "tuyen2612",
       lines: [],
       totalValue: 0,
