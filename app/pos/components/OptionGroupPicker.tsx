@@ -110,8 +110,8 @@ export function OptionGroupPicker({
                       data-lit={isLit ? "true" : undefined}
                       className={`w-full flex items-center gap-2 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] text-left transition-colors ${
                         isLit
-                          ? "border-primary bg-primary-soft text-primary font-bold"
-                          : "bg-surface-card text-text-primary font-medium hover:bg-page"
+                          ? "bg-primary-soft text-primary font-bold"
+                          : "bg-surface-card text-text-primary font-medium [@media(hover:hover)]:hover:bg-page"
                       }`}
                     >
                       <span
@@ -155,8 +155,8 @@ export function OptionGroupPicker({
                       }}
                       className={`flex items-center justify-between gap-1.5 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] transition-colors cursor-pointer ${
                         count > 0
-                          ? "border-primary bg-primary-soft text-primary font-bold"
-                          : "bg-surface-card text-text-primary font-medium hover:bg-page"
+                          ? "bg-primary-soft text-primary font-bold"
+                          : "bg-surface-card text-text-primary font-medium [@media(hover:hover)]:hover:bg-page"
                       }`}
                     >
                       <div className="flex items-center gap-1.5 min-w-0 flex-1">

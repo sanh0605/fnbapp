@@ -154,12 +154,57 @@ describe("ItemPicker", () => {
     );
 
     const selectedSizeBtn = screen.getByText("M").closest("button")!;
-    expect(selectedSizeBtn.className).toContain("border-primary");
+    const unselectedSizeBtn = screen.getByText("L").closest("button")!;
+    expect(selectedSizeBtn.className).toContain("bg-primary-soft");
+    expect(selectedSizeBtn.className).not.toContain("border-primary");
     expect(selectedSizeBtn.className).not.toContain("border-warning");
+    expect(unselectedSizeBtn.className).not.toContain("bg-primary-soft");
 
     const submitBtn = screen.getByRole("button", { name: /^Thêm vào đơn/ });
     expect(submitBtn.className).toContain("bg-primary");
     expect(submitBtn.className).not.toContain("bg-warning");
+  });
+
+  it("the add button has flex-1 and not md:flex-none", () => {
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={null}
+        isEditing={false}
+        onSubmit={vi.fn()}
+        onClose={vi.fn()}
+      />
+    );
+
+    const submitBtn = screen.getByRole("button", { name: /^Thêm vào đơn/ });
+    expect(submitBtn.className).toContain("flex-1");
+    expect(submitBtn.className).not.toContain("md:flex-none");
+  });
+
+  it("the add button grows from 52px on a tablet, so a wrapped total and the Gốc line stay inside", () => {
+    render(
+      <ItemPicker
+        product={product}
+        variants={variants}
+        groups={[]}
+        promoVariantsMap={new Map()}
+        promotions={[]}
+        brandId="BR-001"
+        initialLine={null}
+        isEditing={false}
+        onSubmit={vi.fn()}
+        onClose={vi.fn()}
+      />
+    );
+
+    const submitBtn = screen.getByRole("button", { name: /^Thêm vào đơn/ });
+    expect(submitBtn.className).toContain("md:min-h-[52px]");
+    expect(submitBtn.className).not.toContain("md:h-[52px]");
   });
 
   // Task 4a Test 6

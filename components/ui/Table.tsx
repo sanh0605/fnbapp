@@ -2,7 +2,7 @@
 
 // Client component: a row hands its look to its cells through React context,
 // which server components cannot create. Server pages still render it.
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 export type TableRowLook = "subtotal" | "strong" | "detail" | "total";
 export type TableStick = "left" | "right" | "right-2";
@@ -20,10 +20,12 @@ function getRowStickBg(look?: TableRowLook): string {
   return look === "subtotal" ? "bg-surface-secondary" : "bg-surface-card";
 }
 
-function getStickClasses(stick: TableStick | undefined, bg: string, zIndex = "z-10"): string {
+// Dividers are inset shadows: in a border-collapse table a sticky cell's own
+// border stays behind with the table when the columns scroll.
+function getStickClasses(stick: TableStick | undefined, bg: string, zIndex = "z-10", statement = false): string {
   if (!stick) return "";
-  if (stick === "left") return `sticky left-0 ${zIndex} ${bg}`;
-  if (stick === "right-2") return `sticky right-24 ${zIndex} border-l-2 border-border ${bg}`;
+  if (stick === "left") return `sticky left-0 ${zIndex} ${bg}${statement ? " shadow-[inset_-2px_0_0_var(--color-border)]" : ""}`;
+  if (stick === "right-2") return `sticky right-24 ${zIndex} shadow-[inset_2px_0_0_var(--color-border)] ${bg}`;
   if (stick === "right") return `sticky right-0 ${zIndex} w-24 min-w-[6rem] ${bg}`;
   return "";
 }
@@ -33,17 +35,71 @@ export function Table({
   "aria-label": ariaLabel,
   statement,
   pinHead,
+  openAtEnd,
 }: {
   children: React.ReactNode;
   "aria-label"?: string;
   statement?: boolean;
   pinHead?: boolean;
+  /** Statement only: open scrolled to the last columns (the newest months). */
+  openAtEnd?: boolean;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // A statement scrolls in whole columns: when the non-sticky columns do not
+  // all fit, each gets one width so a whole number of them fills the room the
+  // sticky columns leave, and the box stops on a column edge. A half-hidden
+  // "1,857,000" reads "57,000". Re-measured on resize and when the header
+  // cells change (another date range re-renders without remounting).
+  useEffect(() => {
+    const scroller = scrollRef.current;
+    const head = scroller?.querySelector("thead");
+    if (!statement || !scroller || !head) return;
+    let toEnd = openAtEnd;
+    let box = 0; // box width at the last fit: where "at the newest months" was
+    const fit = () => {
+      // Hidden: the browser may reset the scroll, so open at the newest months when shown again.
+      if (scroller.clientWidth === 0) { toEnd = openAtEnd; return; }
+      const left = scroller.scrollLeft;
+      const heads = Array.from(head.querySelectorAll<HTMLElement>("th"));
+      const stuck = heads.filter(th => th.classList.contains("sticky"));
+      const cols = heads.filter(th => !th.classList.contains("sticky"));
+      // The month the owner scrolled to, counted in the old width.
+      const step = parseFloat(cols[0]?.style.width ?? "") || 0;
+      const atEnd = step > 0 && left >= scroller.scrollWidth - Math.max(box + step / 2, scroller.clientWidth + 1);
+      box = scroller.clientWidth;
+      cols.forEach(th => { th.style.width = ""; th.style.minWidth = ""; th.style.scrollSnapAlign = ""; });
+      scroller.style.scrollSnapType = "";
+      if (cols.length > 0 && scroller.scrollWidth > scroller.clientWidth) {
+        const widthOf = (th: HTMLElement) => th.getBoundingClientRect().width;
+        const sum = (ths: HTMLElement[]) => ths.reduce((total, th) => total + widthOf(th), 0);
+        const room = scroller.clientWidth - sum(stuck);
+        const widest = Math.max(...cols.map(widthOf));
+        const w = Math.max(widest, room / Math.max(1, Math.floor(room / widest)));
+        const place = step ? Math.round(left / step) * w : left;
+        const width = `${w}px`;
+        cols.forEach(th => { th.style.width = width; th.style.minWidth = width; th.style.scrollSnapAlign = "start"; });
+        scroller.style.scrollPaddingLeft = `${sum(stuck.filter(th => th.classList.contains("left-0")))}px`;
+        scroller.style.scrollSnapType = "x mandatory";
+        // The newest months on first show, after another range, and when the owner was already at them; otherwise stay on the month the owner scrolled to.
+        scroller.scrollLeft = toEnd || atEnd ? scroller.scrollWidth : place;
+        toEnd = false;
+      } else toEnd = openAtEnd;
+    };
+    fit();
+    const mo = new MutationObserver(() => { toEnd = openAtEnd; fit(); });
+    mo.observe(head, { childList: true, subtree: true, characterData: true });
+    const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fit);
+    ro?.observe(scroller);
+    const table = scroller.querySelector("table");
+    if (table) ro?.observe(table);
+    return () => { mo.disconnect(); ro?.disconnect(); };
+  }, [statement, openAtEnd]);
+
   const frame = statement ? "overflow-x-auto" : "overflow-x-auto bg-surface-card border border-border rounded-card";
   const scroll = pinHead ? "max-h-[528px] overflow-y-auto" : "";
   return (
     <TableContext.Provider value={{ statement, pinHead }}>
-      <div className={[frame, scroll].filter(Boolean).join(" ")}>
+      <div ref={scrollRef} className={[frame, scroll].filter(Boolean).join(" ")}>
         <table className="w-full text-left text-sm border-collapse" aria-label={ariaLabel}>
           {children}
         </table>
@@ -78,7 +134,7 @@ export function TableHeaderCell({
   const { statement, pinHead } = React.useContext(TableContext);
   const headBg = statement ? "bg-surface-secondary" : "bg-page";
   const zIndex = pinHead && stick === "left" ? "z-20" : "z-10";
-  const stickClasses = getStickClasses(stick, headBg, zIndex);
+  const stickClasses = getStickClasses(stick, headBg, zIndex, statement);
   const baseClasses = [
     // BR-UI-011: every title is bold and on the left, an amount column's
     // too; its figures stay right in the body cells.
@@ -149,7 +205,7 @@ export function TableRowHeader({
   const { statement } = React.useContext(TableContext);
   const { look } = React.useContext(TableRowContext);
   const stickBg = getRowStickBg(look);
-  const stickClasses = getStickClasses(stick, stickBg);
+  const stickClasses = getStickClasses(stick, stickBg, "z-10", statement);
 
   const pad = statement
     ? "px-3 py-2 whitespace-nowrap"
@@ -198,7 +254,7 @@ export function TableCell({
   const { statement } = React.useContext(TableContext);
   const { look } = React.useContext(TableRowContext);
   const stickBg = getRowStickBg(look);
-  const stickClasses = getStickClasses(stick, stickBg);
+  const stickClasses = getStickClasses(stick, stickBg, "z-10", statement);
 
   // A plain list row sets its cells' size, weight and colour; a styled row
   // (look) or any statement row sets them on the <tr>, so its cells inherit

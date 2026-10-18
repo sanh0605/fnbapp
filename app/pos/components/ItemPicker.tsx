@@ -154,7 +154,7 @@ export function ItemPicker({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:flex-initial md:max-h-[70%] md:min-h-0 md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border">
+      <div className="fixed inset-x-0 bottom-0 top-[54px] z-50 rounded-t-[18px] bg-page flex flex-col min-h-0 overflow-hidden shadow-panel md:static md:inset-auto md:z-auto md:flex-initial md:max-h-[70%] md:min-h-0 md:mx-4 md:mb-3 md:rounded-card md:bg-surface-card md:border md:border-border min-[1600px]:mx-auto min-[1600px]:w-full min-[1600px]:max-w-[960px]">
         <div className="w-11 h-1.5 rounded-full bg-border mx-auto mt-2 shrink-0 md:hidden" />
 
         <div className="flex items-center justify-between px-4 py-1.5 md:px-3.5 md:pt-3 md:pb-2 shrink-0">
@@ -204,8 +204,8 @@ export function ItemPicker({
                       onClick={() => setSelectedVariant(v)}
                       className={`w-full flex items-center gap-2 min-h-[54px] md:min-h-[46px] px-3.5 md:px-2.5 border-t border-border first:border-t-0 text-[18px] md:text-[16px] text-left transition-colors ${
                         isSelected
-                          ? "border-primary bg-primary-soft text-primary font-bold"
-                          : "border-border bg-surface-card text-text-primary font-medium hover:bg-page"
+                          ? "bg-primary-soft text-primary font-bold"
+                          : "border-border bg-surface-card text-text-primary font-medium [@media(hover:hover)]:hover:bg-page"
                       }`}
                     >
                       <span
@@ -320,7 +320,7 @@ export function ItemPicker({
           </div>
 
           <div className="flex items-center gap-2 md:gap-2.5">
-            <div className="flex items-center border border-border rounded-card md:rounded-button h-[60px] md:h-[52px] md:mr-auto shrink-0 bg-surface-card">
+            <div className="flex items-center border border-border rounded-card md:rounded-button h-[60px] md:h-[52px] shrink-0 bg-surface-card">
               <button
                 type="button"
                 aria-label="Bớt"
@@ -355,9 +355,9 @@ export function ItemPicker({
             <button
               type="button"
               onClick={addToCart}
-              className="flex-1 md:flex-none min-w-0 bg-primary text-on-primary h-[60px] md:h-[52px] min-h-[44px] px-3 md:px-5 rounded-card md:rounded-button hover:bg-primary-hover active:scale-[0.98] transition-all flex flex-col items-center justify-center"
+              className="flex-1 min-w-0 bg-primary text-on-primary h-[60px] md:h-auto min-h-[44px] md:min-h-[52px] md:py-1 px-3 md:px-5 rounded-card md:rounded-button hover:bg-primary-hover active:scale-[0.98] transition-all flex flex-col items-center justify-center"
             >
-              <div className="font-extrabold text-[15px] md:text-[17px] leading-tight text-center md:whitespace-nowrap">
+              <div className="font-extrabold text-[15px] md:text-[17px] leading-tight text-center">
                 <span className="whitespace-nowrap">{isEditing ? "Cập nhật" : "Thêm vào đơn"} ·</span>{" "}
                 <span className="whitespace-nowrap">{formatNumber(currentItemFinalTotal)}</span>
               </div>

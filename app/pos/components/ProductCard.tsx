@@ -14,9 +14,9 @@ export function renderPriceRange(sizes: { variant?: any; price?: number }[]) {
     <>
       <span className="whitespace-nowrap">{formatNumber(minPrice)}</span>
       {maxPrice !== minPrice && (
-        <small className="text-[15px] font-medium text-text-secondary">
+        <>
           {"\u00A0– "}<span className="whitespace-nowrap">{formatNumber(maxPrice)}</span>
-        </small>
+        </>
       )}
     </>
   );
@@ -65,17 +65,11 @@ export function ProductCard({
         )}
       </div>
 
-      <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 pt-1">
-        {sizes.length > 0 ? (
-          <span className="text-[17px] font-extrabold text-primary leading-tight shrink-0 max-w-full">
-            {renderPriceRange(sizes)}
-          </span>
-        ) : (
-          <span />
+      <div className="pt-1">
+        {sizes.length > 0 && (
+          <div className="text-[17px] font-extrabold text-primary leading-tight">{renderPriceRange(sizes)}</div>
         )}
-        {hasOptions && (
-          <span className="text-xs text-text-secondary shrink-0">Có tuỳ chọn</span>
-        )}
+        {hasOptions && <div className="text-xs text-text-secondary mt-0.5">Có tuỳ chọn</div>}
       </div>
     </button>
   );

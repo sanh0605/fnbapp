@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildPnlTable } from "@/lib/reports/profit-and-loss-table";
 import { pnlFigures2026 } from "../__fixtures__/pnl-2026";
 import { PnlTableView } from "./PnlTableView";
@@ -160,3 +160,53 @@ describe("PnlTableView -- the approved look on the Table set (wave K5)", () => {
     expect(heads).toContain("Tổng");
   });
 });
+
+describe("PnlTableView -- months scroll in whole columns (G14)", () => {
+  // The 1280 screen: scroll box 927 px, Khoản 210, Tổng 116, % doanh thu 97, widest month 119.
+  const widthOf = (el: Element) => {
+    const text = el.textContent ?? "";
+    if (el.tagName !== "TH") return 0;
+    if (text.startsWith("Khoản")) return 210;
+    if (text.startsWith("Tổng")) return 116;
+    if (text.startsWith("% doanh thu")) return 97;
+    return 119;
+  };
+  afterEach(() => vi.restoreAllMocks());
+
+  it("when the months do not fit, every month column is 126 px (4 whole months in 504 px) and the box snaps to month edges", () => {
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(927);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(1255);
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    render(<PnlTableView table={table()} />);
+    const head = screen.getByRole("columnheader", { name: "08/2026" });
+    expect(head.style.width).toBe("126px");
+    expect(head.style.minWidth).toBe("126px");
+    expect(head.style.scrollSnapAlign).toBe("start");
+    const scroller = head.closest(".overflow-x-auto") as HTMLElement;
+    expect(scroller.style.scrollSnapType).toBe("x mandatory");
+    expect(scroller.style.scrollPaddingLeft).toBe("210px");
+    expect(screen.getByRole("columnheader", { name: "Khoản" }).style.width).toBe("");
+  });
+
+  it("when every month fits, no width is forced and nothing snaps", () => {
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(1278);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(1278);
+    render(<PnlTableView table={table()} />);
+    const head = screen.getByRole("columnheader", { name: "08/2026" });
+    expect(head.style.width).toBe("");
+    const scroller = head.closest(".overflow-x-auto") as HTMLElement;
+    expect(scroller.style.scrollSnapType).toBe("");
+  });
+
+  it("Lãi lỗ opens on the newest months", () => {
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({ width: 100 } as DOMRect);
+    const setLeft = vi.spyOn(Element.prototype, "scrollLeft", "set");
+    render(<PnlTableView table={table()} />);
+    expect(setLeft).toHaveBeenCalledWith(900);
+  });
+});
+

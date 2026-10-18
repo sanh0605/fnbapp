@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { formatPercent, type PnlRow, type PnlTable } from "@/lib/reports/profit-and-loss-table";
 import { cellText, cellTone, isCostRow, NoteMarks } from "./pnl-display";
 import { PnlSourceList } from "./PnlSourceList";
@@ -23,6 +23,7 @@ import {
 // default and Tailwind's preflight does not reset, hence [font-weight:inherit].
 // Panel look, sticky Tổng/% columns and cost-row minus signs follow the
 // sample the owner approved 2026-09-11 (plan Mục 3).
+// Months scroll in whole columns and open on the newest (Table openAtEnd).
 
 function getRowLook(kind: PnlRow["kind"]): TableRowLook | undefined {
   if (kind === "revenue") return "strong";
@@ -37,23 +38,15 @@ export function PnlTableView({ table }: { table: PnlTable }) {
   const selectedCell = selected ? selectedRow?.cells.find(c => c.month === selected.month) : undefined;
   const selectedColumn = selected ? table.months.find(m => m.month === selected.month) : undefined;
 
-  const sectionRef = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const scrollContainer = sectionRef.current?.querySelector<HTMLElement>(".overflow-x-auto");
-    if (scrollContainer) {
-      scrollContainer.scrollLeft = scrollContainer.scrollWidth;
-    }
-  }, []);
-
   return (
-    <section ref={sectionRef} className="hidden overflow-hidden rounded-xl border border-border bg-surface-card shadow-panel md:block">
+    <section className="hidden overflow-hidden rounded-xl border border-border bg-surface-card shadow-panel md:block">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-[18px] pb-[6px] pt-4">
         <h2 className="text-[17px] font-semibold text-text-primary">Bảng từng tháng</h2>
         <p className="text-xs text-text-secondary">
           Bấm vào một ô để xem số đó từ đâu ra. Đọc từ trên xuống: doanh thu → trừ giá vốn → lợi nhuận gộp → trừ chi phí → lợi nhuận ròng.
         </p>
       </div>
-      <Table statement>
+      <Table statement openAtEnd>
         <TableHead>
           <TableHeaderCell stick="left">Khoản</TableHeaderCell>
           {table.months.map(m => (
