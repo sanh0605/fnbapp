@@ -152,4 +152,41 @@ describe("StocktakeList (Screen 1)", () => {
     expect(within(phone).getByText("01/09/2026 15:00:00 · Admin · Đã đếm 50/50")).toBeInTheDocument();
     expect(within(phone).getByText("09/08/2026 22:02:24 · Admin · Đã đếm 50/50")).toBeInTheDocument();
   });
+
+  it("Kiểm kê list on a phone: a confirmed session shows no 'Đã xác nhận' badge in its phone row; an open one still shows its badge", () => {
+    const sessions: StocktakeListRow[] = [
+      {
+        id: "STK-OPEN",
+        status: "OPEN",
+        at: "2026-10-15T10:00:00.000Z",
+        personName: "Admin",
+        countedLines: 12,
+        totalLines: 50,
+        shortValue: 50000,
+        foundValue: 0,
+        isLatestConfirmed: false,
+      },
+      {
+        id: "STK-CONFIRMED",
+        status: "CONFIRMED",
+        at: "2026-08-09T15:02:24.000Z",
+        personName: "Admin",
+        countedLines: 50,
+        totalLines: 50,
+        shortValue: 296033,
+        foundValue: 0,
+        isLatestConfirmed: true,
+      },
+    ];
+
+    const { container } = render(<StocktakeList sessions={sessions} />);
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(phone).toBeTruthy();
+
+    const openRow = within(phone).getByText("STK-OPEN").closest("a")!;
+    expect(within(openRow).getByText("Đang đếm")).toBeInTheDocument();
+
+    const confirmedRow = within(phone).getByText("STK-CONFIRMED").closest("a")!;
+    expect(within(confirmedRow).queryByText("Đã xác nhận")).toBeNull();
+  });
 });

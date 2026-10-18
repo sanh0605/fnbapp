@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, within } from "@testing-library/react";
 import { AssetItemDetailView } from "./AssetItemDetailView";
 import type { AssetItemDetail } from "@/lib/assets/asset-items";
 
@@ -300,12 +300,11 @@ describe("AssetItemDetailView", () => {
     expect(firstRow?.className).toContain("py-2.5");
     expect(firstRow?.className).not.toContain("p-4");
 
-    // PhoneRow: line 1 has TS-004 and remaining value 145,860đ
-    expect(firstRow?.textContent).toContain("TS-004");
+    // PhoneRow: line 1 has date 04/04/2026 00:00:00 and remaining value 145,860đ
+    expect(within(firstRow).getByText("04/04/2026 00:00:00").className).toContain("text-base");
     expect(firstRow?.textContent).toContain("145,860đ");
-    // Line 2 has meta: date, remaining/quantity, unit cost ("Giá một cái" value), term, PO
-    expect(firstRow?.textContent).toContain("04/04/2026 00:00:00");
-    expect(firstRow?.textContent).toContain("Còn 1/2 cái");
+    // Line 2 has meta: TS-004, remaining/quantity, unit cost ("Giá một cái" value), term, PO
+    expect(within(firstRow).getByText(/^TS-004 · Còn 1\/2 cái/)).toBeInTheDocument();
     expect(firstRow?.textContent).toContain("205,920đ");
     expect(firstRow?.textContent).toContain("24 tháng");
     expect(firstRow?.textContent).toContain("PO-009");

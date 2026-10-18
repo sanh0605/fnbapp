@@ -171,7 +171,10 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
           ]
             .filter(Boolean)
             .join(" · "),
-          badge: renderStocktakeStatusBadge(row.status),
+          badge:
+            row.status !== "CONFIRMED"
+              ? renderStocktakeStatusBadge(row.status)
+              : undefined,
         })}
         empty={
           <EmptyState

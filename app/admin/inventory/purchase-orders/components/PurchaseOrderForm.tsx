@@ -475,7 +475,7 @@ export default function PurchaseOrderForm({
 
       <FormActionBar
         mode={isEdit ? "edit" : "create"}
-        submitLabel={isEdit ? "Cập nhật & Hoàn thành" : undefined}
+        submitLabel={isEdit ? "Cập nhật & hoàn thành" : undefined}
         onSubmit={() => handleSubmit("COMPLETED")}
         loading={loading && submittingStatus === "COMPLETED"}
         disabled={loading}

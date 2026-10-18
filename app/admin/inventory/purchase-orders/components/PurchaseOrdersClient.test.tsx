@@ -250,7 +250,7 @@ describe("PurchaseOrdersClient", () => {
     }
   });
 
-  it("phoneRow meta uses full dateText with code first while desktop column keeps full dateText", () => {
+  it("phoneRow meta uses full dateText with date first while desktop column keeps full dateText", () => {
     const dataWithRow: typeof pageData = {
       ...pageData,
       total: 1,
@@ -278,10 +278,10 @@ describe("PurchaseOrdersClient", () => {
     expect(table).toBeTruthy();
     expect(within(table!).getByText("15/10/2026 18:34:59")).toBeInTheDocument();
 
-    // Phone row meta puts source name first (when not "—"), followed by code, dateText, payment
+    // Phone row meta has dateText first, followed by code, payment
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
     expect(phone).toBeTruthy();
-    expect(within(phone!).getByText("Shopee · PO-206 · 15/10/2026 18:34:59 · Tiền mặt")).toBeInTheDocument();
+    expect(within(phone!).getByText("15/10/2026 18:34:59 · PO-206 · Tiền mặt")).toBeInTheDocument();
     expect(within(phone!).getByText("Nhà cung cấp C")).toBeInTheDocument();
   });
 
@@ -311,7 +311,36 @@ describe("PurchaseOrdersClient", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
     expect(phone).toBeTruthy();
     expect(within(phone!).getByText("Không rõ")).toBeInTheDocument();
-    expect(within(phone!).getByText("Shopee · PO-207 · 15/10/2026 18:34:59 · Tiền mặt")).toBeInTheDocument();
+    expect(within(phone!).getByText("15/10/2026 18:34:59 · PO-207 · Tiền mặt")).toBeInTheDocument();
+  });
+
+  it("a phone row whose source is not 'Mua ngoài' does not show the source name on line 2", () => {
+    const dataWithRow: typeof pageData = {
+      ...pageData,
+      total: 1,
+      firstIndex: 1,
+      lastIndex: 1,
+      rows: [
+        {
+          id: "PO-208",
+          dateText: "15/10/2026 18:34:59",
+          supplierName: "Nhà cung cấp C",
+          sourceName: "Shopee",
+          status: "COMPLETED",
+          totalAmount: 350000,
+          paymentLabel: "Tiền mặt",
+        },
+      ],
+    };
+
+    const { container } = render(
+      <PurchaseOrdersClient range={TEST_RANGE} today={TEST_TODAY} pageData={dataWithRow} />
+    );
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
+    expect(phone).toBeTruthy();
+    expect(within(phone!).queryByText(/Shopee/)).toBeNull();
+    expect(within(phone!).getByText("15/10/2026 18:34:59 · PO-208 · Tiền mặt")).toBeInTheDocument();
   });
 });
 

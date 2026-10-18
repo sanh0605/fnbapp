@@ -649,4 +649,19 @@ describe("DisposeAssetForm -- money received (BR-COGS-008)", () => {
     const form = container.querySelector("form")!;
     expect(form.checkValidity()).toBe(false);
   });
+
+  it("before a quantity is entered the preview shows 'Nhập số lượng để xem'", async () => {
+    const container = await renderTracked(
+      <DisposeAssetForm
+        lots={[TS030_LOT]}
+        initialLotId="TS-030"
+        returnTo="/admin/inventory/assets/SPM-COC"
+        bankAccounts={[]}
+      />,
+    );
+    await flush();
+
+    expect(container.textContent).toContain("Nhập số lượng để xem");
+    expect(mocks.previewDisposalCharge).not.toHaveBeenCalled();
+  });
 });

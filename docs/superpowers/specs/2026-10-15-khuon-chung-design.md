@@ -53,7 +53,7 @@ Một thành phần chung `FormActionBar` trong `components/ui/`, đặt cuối 
   | Sửa | "Lưu thay đổi" | "Bỏ thay đổi" |
 
   Trang có việc riêng giữ chữ của việc đó: "Ghi phiếu", "Xác nhận huỷ", "Lưu nháp". Đang gửi thì nút chính hiện "Đang lưu…" và không bấm lại được.
-- **Thanh đứng yên ở đáy màn hình** khi form dài hơn màn hình (giống thanh lưu Shopify, nhưng luôn hiện): nền trắng, đường kẻ trên. Form ngắn thì thanh nằm ngay dưới ô cuối, không cách xa.
+- **Thanh đứng yên ở đáy màn hình** khi form dài hơn màn hình (giống thanh lưu Shopify, nhưng luôn hiện): nền trắng, đường kẻ trên. Form ngắn thì thanh nằm ngay dưới ô cuối, không cách xa. 2026-10-18, chờ chủ quán duyệt: code hiện đẩy thanh xuống sát đáy màn hình cả khi form ngắn (`components/ui/FormActionBar.tsx`), vì đợt sửa 2b (mục C5) thấy thanh trôi giữa trang ở Phiếu xuất tạo mới và Đổi cách trả; ý ban đầu ở câu trên là thanh nằm ngay dưới ô cuối.
   - Máy tính: nút canh phải, nút chính ở ngoài cùng bên phải.
   - Điện thoại: hai nút chia đôi bề ngang, nút chính bên phải; thanh nằm trên thanh menu đáy (`PhoneNavBar`), không che nó.
 - **"Có thay đổi chưa lưu"**: khi người dùng gõ hay chọn bất kỳ ô nào trong form, bên trái thanh hiện dòng chữ xám này. Không hỏi, không chặn rời trang (mục 1, câu 7).

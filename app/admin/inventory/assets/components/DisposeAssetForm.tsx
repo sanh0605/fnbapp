@@ -291,17 +291,23 @@ export function DisposeAssetForm({
           />
         </Field>
 
-        <div className="p-3 bg-warning/10 rounded-lg border border-warning/20 mb-6">
-          <div className="text-xs text-warning-active mb-1">
+        <div className="p-3 bg-surface-secondary rounded-lg border border-border mb-6">
+          <div className="text-xs text-text-secondary mb-1">
             Sẽ ghi nhận chi phí tháng này
           </div>
-          <div className="text-lg font-bold text-warning-active">
-            {previewLoading
-              ? "Đang tính..."
-              : preview !== null
-              ? `${formatNumber(preview)}đ`
-              : "---"}
-          </div>
+          {Number(quantity) > 0 ? (
+            <div className="text-lg font-bold text-text-primary">
+              {previewLoading
+                ? "Đang tính..."
+                : preview !== null
+                ? `${formatNumber(preview)}đ`
+                : "---"}
+            </div>
+          ) : (
+            <div className="text-sm text-text-muted">
+              Nhập số lượng để xem
+            </div>
+          )}
         </div>
 
         <FormActionBar

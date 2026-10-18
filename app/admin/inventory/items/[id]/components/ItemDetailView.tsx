@@ -81,7 +81,9 @@ export function ItemDetailView({
   }
 
   const isNonInventory =
-    item.is_non_inventory === true || (item.is_non_inventory as any) === "true";
+    item.is_non_inventory === true ||
+    (item.is_non_inventory as any) === "true" ||
+    (item.is_non_inventory as any) === "TRUE";
 
   let stockValue: React.ReactNode = "—";
   if (stock) {
@@ -102,7 +104,7 @@ export function ItemDetailView({
   const fields: Field[] = [
     { label: "Phân loại", value: category?.name || "—" },
     { label: "Tính tồn kho", value: isNonInventory ? "Không" : "Có" },
-    { label: "Tồn kho hiện tại", value: stockValue },
+    ...(stock?.kind === "untracked" ? [] : [{ label: "Tồn kho hiện tại", value: stockValue }]),
     {
       label: "Trạng thái",
       value: item.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng",

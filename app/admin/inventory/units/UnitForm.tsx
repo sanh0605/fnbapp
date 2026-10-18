@@ -47,7 +47,6 @@ export function UnitForm({ initialData, returnTo: rawReturnTo }: UnitFormProps) 
         <Field
           label="Tên đơn vị"
           htmlFor={`${formId}-name`}
-          hint="Ví dụ: g, hộp"
           required
         >
           <TextInput

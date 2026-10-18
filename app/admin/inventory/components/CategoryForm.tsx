@@ -13,6 +13,7 @@ import { FormActionBar } from "@/components/ui/FormActionBar";
 const TYPE_EXPLANATIONS: Record<string, string> = {
   RAW: "Có tính quy đổi, có trong công thức",
   CONSUMABLE: "Kiểm kê định kỳ",
+  EQUIPMENT: "Theo dõi ở mục Tài sản",
 };
 
 interface CategoryFormProps {
