@@ -272,4 +272,57 @@ describe("POSScreen drafts modal", () => {
     expect(document.body.textContent).not.toContain("Draft One");
     expect(document.body.textContent).toContain("Chưa có đơn nháp nào.");
   });
+
+  it("with no drafts, the 'Đơn nháp' button shows no count; 'Nháp' and 'Đăng xuất' label spans have lg:inline", async () => {
+    (getPOSDrafts as any).mockResolvedValue([]);
+
+    const container = await renderTracked(
+      <POSScreen
+        brandId="BRAND1"
+        outletId="OUT-001"
+        categories={[CATEGORY]}
+        products={[]}
+        variants={[]}
+        modifiers={[]}
+      />,
+    );
+
+    const draftBtn = container.querySelector('button[aria-label="Đơn nháp"]')!;
+    expect(draftBtn).toBeDefined();
+    expect(draftBtn.querySelector("span.rounded-full")).toBeNull();
+
+    const nhapSpan = Array.from(draftBtn.querySelectorAll("span")).find(
+      s => s.textContent === "Nháp",
+    );
+    expect(nhapSpan?.className).toContain("lg:inline");
+
+    const logoutBtn = container.querySelector('button[aria-label="Đăng xuất"]')!;
+    expect(logoutBtn).toBeDefined();
+    const logoutSpan = Array.from(logoutBtn.querySelectorAll("span")).find(
+      s => s.textContent === "Đăng xuất",
+    );
+    expect(logoutSpan?.className).toContain("lg:inline");
+  });
+
+  it("with drafts, the 'Đơn nháp' button shows the count", async () => {
+    (getPOSDrafts as any).mockResolvedValue([
+      makeDraftRow("D1", "Draft One", [SIMPLE_LINE]),
+    ]);
+
+    const container = await renderTracked(
+      <POSScreen
+        brandId="BRAND1"
+        outletId="OUT-001"
+        categories={[CATEGORY]}
+        products={[]}
+        variants={[]}
+        modifiers={[]}
+      />,
+    );
+
+    const draftBtn = container.querySelector('button[aria-label="Đơn nháp"]')!;
+    const badge = draftBtn.querySelector("span.rounded-full");
+    expect(badge).not.toBeNull();
+    expect(badge?.textContent).toBe("1");
+  });
 });

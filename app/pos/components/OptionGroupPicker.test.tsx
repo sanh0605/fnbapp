@@ -92,11 +92,12 @@ describe("OptionGroupPicker (Task 5 Step 1)", () => {
 
     expect(screen.getByRole("radiogroup", { name: "Mức đường" })).toBeInTheDocument();
     expect(normalBtn).toHaveAttribute("aria-checked", "true");
-    expect(normalBtn.className).toContain("border-primary");
     expect(normalBtn.className).toContain("bg-primary-soft");
+    expect(normalBtn.className).not.toContain("border-primary");
     expect(normalBtn.querySelector("span")?.className).toContain("text-primary");
 
     expect(lessBtn).toHaveAttribute("aria-checked", "false");
+    expect(lessBtn.className).not.toContain("bg-primary-soft");
     expect(lessBtn.className).not.toContain("border-primary");
   });
 

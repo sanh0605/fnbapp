@@ -188,18 +188,18 @@ export function CartPanel({
         />
 
         <div className="h-14 bg-surface-card flex items-center justify-between px-4 shrink-0 border-b border-border">
-          <h2 className="font-bold text-text-primary text-base md:text-lg flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-primary" />
-            Hoá đơn <span className="text-xs text-text-secondary">({totalItems})</span>
+          <h2 className="min-w-0 font-bold text-text-primary text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
+            <ShoppingCart className="hidden lg:block w-5 h-5 text-primary" />
+            <span className="truncate">Hoá đơn</span> <span className="text-xs text-text-secondary">({totalItems})</span>
           </h2>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2 shrink-0">
             {cart.length > 0 && (
               <>
                 <button
                   type="button"
                   onClick={() => saveDraft(cart, true)}
                   disabled={!!isCheckingOut}
-                  className="text-xs font-bold text-primary hover:bg-primary-soft px-3 py-2 rounded-button transition-colors min-h-[44px] flex items-center disabled:opacity-50"
+                  className="text-sm font-bold text-primary border border-border bg-surface-card hover:bg-primary-soft px-2.5 py-2 whitespace-nowrap rounded-button transition-colors min-h-[44px] flex items-center disabled:opacity-50"
                 >
                   Lưu nháp
                 </button>
@@ -213,7 +213,7 @@ export function CartPanel({
                     }
                   }}
                   disabled={!!isCheckingOut}
-                  className="text-xs font-bold text-danger hover:bg-danger/10 px-3 py-2 rounded-button transition-colors min-h-[44px] flex items-center disabled:opacity-50"
+                  className="text-sm font-bold text-danger border border-danger/40 bg-surface-card hover:bg-danger/10 px-2.5 py-2 whitespace-nowrap rounded-button transition-colors min-h-[44px] flex items-center disabled:opacity-50"
                 >
                   Xoá hết
                 </button>
@@ -312,7 +312,11 @@ export function CartPanel({
           )}
         </div>
 
-        <div className="bg-surface-card border-t border-border p-4 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        {(lastCheckoutError || cart.length > 0 || processingOrder) && (
+          <div
+            data-testid="cart-footer"
+            className="bg-surface-card border-t border-border p-4 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom))]"
+          >
           {lastCheckoutError && (
             <div className="bg-danger/10 border border-danger/30 text-danger p-3 rounded-card text-xs font-semibold flex items-center justify-between mb-3 animate-fade-in">
               <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -630,7 +634,8 @@ export function CartPanel({
               </div>
             </div>
           ) : null}
-        </div>
+          </div>
+        )}
       </div>
 
       {isSplitPaymentOpen && (

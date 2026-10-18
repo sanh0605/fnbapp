@@ -149,4 +149,30 @@ describe("ProductCard (Task 3a)", () => {
     expect(cardSingle.textContent).toContain("15,000");
     expect(cardSingle.textContent).not.toContain("–");
   });
+
+  it("with two sizes (25,000 and 45,000) there is no small element, and 'Có tuỳ chọn' is not inside the element that holds the price", () => {
+    render(
+      <ProductCard
+        product={{ id: "P-TEST", name: "Cà phê sữa" }}
+        sizes={[
+          { variant: { id: "V1", price: 25000 }, price: 25000 },
+          { variant: { id: "V2", price: 45000 }, price: 45000 },
+        ]}
+        hasPromo={false}
+        hasOptions={true}
+        disabled={false}
+        onOpen={vi.fn()}
+      />
+    );
+
+    const card = screen.getByRole("button", { name: "Cà phê sữa" });
+    expect(card.querySelector("small")).toBeNull();
+
+    const priceEl = card.querySelector(".text-\\[17px\\]");
+    expect(priceEl).not.toBeNull();
+    expect(priceEl!.textContent).toContain("25,000\u00A0– 45,000");
+
+    const optionsEl = screen.getByText("Có tuỳ chọn");
+    expect(priceEl!.contains(optionsEl)).toBe(false);
+  });
 });
