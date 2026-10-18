@@ -8,7 +8,7 @@ brCodes: BR-COGS-005, BR-COGS-007, BR-PNL-001, BR-PNL-002, BR-PNL-003, BR-PNL-00
 ```
 
 **Behaviour change — 2026-10-15 (Báo cáo area, `docs/superpowers/specs/2026-10-15-bao-cao-de-xuat.md`, `BR-UI-017`):**
-- **Doanh số** sits on the report frame. `getSalesDataV2` does all the counting: the pie groups by each line's group as sold, not today's group; the payment table counts payments ("Lượt thanh toán", total row "N lượt thanh toán của M đơn", `BR-SALE-013`); best sellers come split into Nước, Thức ăn and Topping. "Lọc" applies the brand and group picked; changing the range keeps only what was applied.
+- **Doanh số** sits on the report frame. `getSalesDataV2` does all the counting: the pie groups by each line's group as sold, not today's group; the payment table counts payments ("Lượt thanh toán", a line under the table "N lượt thanh toán của M đơn", `BR-SALE-013`); best sellers come split into Nước, Thức ăn and Topping. "Lọc" applies the brand and group picked; changing the range keeps only what was applied.
 - **Hàng đã xuất** takes a month range (default Năm nay), and its tabs keep it. Each month shows two lines, Hàng dùng and Hao hụt, which equal Giá vốn and Hao hụt on Lãi lỗ.
 - **Lãi lỗ** shows its summary on a phone too.
 - **Cài đặt Tổng quan:** a manager sees the settings but cannot save; the dish picker offers dishes in use only.

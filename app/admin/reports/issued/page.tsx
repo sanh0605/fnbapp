@@ -1,7 +1,7 @@
 import { getIssuedValueReport } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
-import { formatNumber } from "@/lib/shared/format";
+import { formatNumber, formatDecimal } from "@/lib/shared/format";
 import { formatDateTimeFull, saigonToday, formatMonthLabel } from "@/lib/shared/datetime";
 import { readMonthRangeParams, type RawParams } from "@/lib/shared/date-range-params";
 import { DateRangeUrlButton } from "@/components/ui/DateRangeUrlButton";
@@ -68,35 +68,61 @@ export default async function IssuedValueReportPage(
       />
 
       {/* 2. Headline figures (BR-UI-017) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="md:hidden bg-surface-card rounded-card p-4 border border-border shadow-sm space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
+            Tổng giá trị đã xuất
+          </span>
+          <span className="text-base font-bold text-text-primary tabular-nums">
+            {formatNumber(report.grandTotal)}đ
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
+            Hàng dùng
+          </span>
+          <span className="text-base font-bold text-text-primary tabular-nums">
+            {formatNumber(report.usedTotal)}đ
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">
+            Hao hụt
+          </span>
+          <span className="text-base font-bold text-text-primary tabular-nums">
+            {formatNumber(report.shrinkageTotal)}đ
+          </span>
+        </div>
+      </div>
+      <div className="hidden md:grid md:grid-cols-3 md:gap-4">
         <div className="bg-surface-card rounded-card p-5 border border-border shadow-sm">
           <div className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">
             Tổng giá trị đã xuất
           </div>
-          <div className="text-2xl font-bold text-danger">{formatNumber(report.grandTotal)}đ</div>
+          <div className="text-2xl font-bold text-text-primary tabular-nums">{formatNumber(report.grandTotal)}đ</div>
         </div>
         <div className="bg-surface-card rounded-card p-5 border border-border shadow-sm">
           <div className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">
             Hàng dùng
           </div>
-          <div className="text-2xl font-bold text-text-primary">{formatNumber(report.usedTotal)}đ</div>
+          <div className="text-2xl font-bold text-text-primary tabular-nums">{formatNumber(report.usedTotal)}đ</div>
         </div>
         <div className="bg-surface-card rounded-card p-5 border border-border shadow-sm">
           <div className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">
             Hao hụt
           </div>
-          <div className="text-2xl font-bold text-text-primary">{formatNumber(report.shrinkageTotal)}đ</div>
+          <div className="text-2xl font-bold text-text-primary tabular-nums">{formatNumber(report.shrinkageTotal)}đ</div>
         </div>
       </div>
 
       {/* 3. Tabs: Tab links keep from/to range in their URL */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
         {tabs.map(({ tab, label }) => (
           <Button
             key={tab}
             href={tabHref(tab, searchParams)}
             variant={activeTab === tab ? "primary" : "secondary"}
-            className="flex-1 md:flex-none"
+            className="shrink-0 whitespace-nowrap"
           >
             {label}
           </Button>
@@ -118,17 +144,17 @@ export default async function IssuedValueReportPage(
             <TableTotalRow>
               <TableCell stick="left">Tổng cộng</TableCell>
               <TableCell align="right" />
-              <TableCell align="right" tone="negative">{formatNumber(report.grandTotal)}đ</TableCell>
+              <TableCell align="right">{formatNumber(report.grandTotal)}đ</TableCell>
               <TableCell align="right" />
             </TableTotalRow>
             <TableBody>
               {report.items.map((item) => (
                 <TableRow key={item.purchasedItemId}>
-                  <TableRowHeader stick="left">{item.name}</TableRowHeader>
+                  <TableRowHeader stick="left"><div className="max-w-[150px] md:max-w-none whitespace-normal break-words">{item.name}</div></TableRowHeader>
                   <TableCell align="right">
-                    {formatNumber(item.issuedQuantity, { withDecimals: true })} {item.unitName}
+                    {formatDecimal(item.issuedQuantity, { maxDigits: 2 })} {item.unitName}
                   </TableCell>
-                  <TableCell align="right" tone="negative">
+                  <TableCell align="right">
                     {formatNumber(item.issuedValue)}đ
                   </TableCell>
                   <TableCell align="right">
@@ -175,7 +201,7 @@ export default async function IssuedValueReportPage(
                 </TableHead>
                 <TableTotalRow>
                   <TableCell colSpan={4}>Tổng cộng</TableCell>
-                  <TableCell align="right" tone="negative">{formatNumber(report.grandTotal)}đ</TableCell>
+                  <TableCell align="right">{formatNumber(report.grandTotal)}đ</TableCell>
                 </TableTotalRow>
                 <TableBody>
                   {report.events.map((event) => (
@@ -194,7 +220,7 @@ export default async function IssuedValueReportPage(
                       <TableCell><span className="whitespace-nowrap">{formatDateTimeFull(event.at)}</span></TableCell>
                       <TableCell>{event.label}</TableCell>
                       <TableCell align="right">{event.itemCount}</TableCell>
-                      <TableCell align="right" tone="negative">{formatNumber(event.value)}đ</TableCell>
+                      <TableCell align="right">{formatNumber(event.value)}đ</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -218,13 +244,13 @@ export default async function IssuedValueReportPage(
             </TableHead>
             <TableTotalRow>
               <TableCell stick="left">Tổng cộng</TableCell>
-              <TableCell align="right" tone={report.usedTotal === 0 ? "muted" : "negative"}>
+              <TableCell align="right" tone={report.usedTotal === 0 ? "muted" : undefined}>
                 {formatNumber(report.usedTotal)}đ
               </TableCell>
-              <TableCell align="right" tone={report.shrinkageTotal === 0 ? "muted" : "negative"}>
+              <TableCell align="right" tone={report.shrinkageTotal === 0 ? "muted" : undefined}>
                 {formatNumber(report.shrinkageTotal)}đ
               </TableCell>
-              <TableCell align="right" tone={report.grandTotal === 0 ? "muted" : "negative"}>
+              <TableCell align="right" tone={report.grandTotal === 0 ? "muted" : undefined}>
                 {formatNumber(report.grandTotal)}đ
               </TableCell>
             </TableTotalRow>
@@ -234,13 +260,13 @@ export default async function IssuedValueReportPage(
                 return (
                   <TableRow key={month.yearMonth}>
                     <TableRowHeader stick="left">Tháng {formatMonthLabel(month.yearMonth)}</TableRowHeader>
-                    <TableCell align="right" tone={month.usedValue === 0 ? "muted" : "negative"}>
+                    <TableCell align="right" tone={month.usedValue === 0 ? "muted" : undefined}>
                       {formatNumber(month.usedValue)}đ
                     </TableCell>
-                    <TableCell align="right" tone={month.shrinkageValue === 0 ? "muted" : "negative"}>
+                    <TableCell align="right" tone={month.shrinkageValue === 0 ? "muted" : undefined}>
                       {formatNumber(month.shrinkageValue)}đ
                     </TableCell>
-                    <TableCell align="right" tone={monthTotal === 0 ? "muted" : "negative"}>
+                    <TableCell align="right" tone={monthTotal === 0 ? "muted" : undefined}>
                       {formatNumber(monthTotal)}đ
                     </TableCell>
                   </TableRow>

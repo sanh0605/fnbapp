@@ -16,12 +16,12 @@ export default async function AdminDashboard(_props: {
     <div className="space-y-6">
       <PageHeader
         title="Tổng quan"
-        subtitle="Việc cần xử lý và bán hàng 7 ngày qua."
+        subtitle="Việc cần xử lý và bán hàng 7 ngày qua · đơn vị: đồng"
         actions={
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full xl:w-auto">
             <Link
               href="/admin/dashboard-settings"
-              className="text-sm font-medium text-text-secondary hover:text-text-primary px-3 py-2 rounded-button border border-border bg-surface-card hover:bg-page transition-colors"
+              className="text-sm font-medium text-text-secondary hover:text-text-primary px-3 py-2 rounded-button border border-border bg-surface-card hover:bg-page transition-colors min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center"
             >
               Cài đặt Tổng quan
             </Link>

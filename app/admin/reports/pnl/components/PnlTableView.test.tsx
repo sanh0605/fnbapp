@@ -58,7 +58,7 @@ describe("PnlTableView", () => {
   it("the 08/2026 header shows the note number the fixture gives it", () => {
     render(<PnlTableView table={table()} />);
     const header = screen.getByRole("columnheader", { name: "08/2026" });
-    expect(header.querySelector("sup")?.textContent).toBe("1");
+    expect(header.textContent).toContain("(1)");
   });
 
   it("the Luỹ kế row exists", () => {
@@ -86,6 +86,17 @@ describe("PnlTableView", () => {
     stickyCells.forEach(cell => {
       expect(cell.className).toMatch(/\bz-10\b/);
     });
+  });
+
+  it("shows the asterisk note when a month is partial", () => {
+    render(<PnlTableView table={table()} />);
+    expect(screen.getByText("* Tháng đang chạy, chưa hết tháng.")).toBeInTheDocument();
+  });
+
+  it("omits the asterisk note when no month is partial", () => {
+    const fullyElapsed = buildPnlTable(pnlFigures2026(), "2026-10-09", "năm nay");
+    render(<PnlTableView table={fullyElapsed} />);
+    expect(screen.queryByText("* Tháng đang chạy, chưa hết tháng.")).toBeNull();
   });
 });
 

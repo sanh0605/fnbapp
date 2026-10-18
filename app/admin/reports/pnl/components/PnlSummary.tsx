@@ -5,10 +5,10 @@ function Tile({ label, value, sub, tone }: { label: string; value: string; sub: 
   const border = tone === "success" ? "border-success" : tone === "danger" ? "border-danger" : "border-border";
   const valueColor = tone === "success" ? "text-success" : tone === "danger" ? "text-danger" : "text-text-primary";
   return (
-    <div className={`rounded-xl border ${border} bg-surface-card px-4 py-3.5`}>
+    <div className={`rounded-xl border ${border} bg-surface-card p-3 sm:px-4 sm:py-3.5`}>
       <p className="text-xs font-medium uppercase tracking-[0.04em] text-text-muted">{label}</p>
-      <p className={`mt-1 font-display text-2xl font-semibold tabular-nums ${valueColor}`}>{value}</p>
-      <p className="mt-1 text-[12.5px] text-text-secondary">{sub}</p>
+      <p className={`mt-1 font-display text-lg sm:text-2xl font-semibold tabular-nums ${valueColor}`}>{value}</p>
+      <p className="mt-1 text-xs sm:text-[12.5px] text-text-secondary">{sub}</p>
     </div>
   );
 }
@@ -29,7 +29,7 @@ export function PnlSummary({ table }: { table: PnlTable }) {
   return (
     <section
       aria-label="Tóm tắt"
-      className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${summary.worstMonth ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}
+      className={`grid grid-cols-2 gap-2.5 sm:gap-3 ${summary.worstMonth ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}
     >
       <Tile
         label={`Doanh thu ${rangeName}`}
@@ -44,7 +44,7 @@ export function PnlSummary({ table }: { table: PnlTable }) {
       />
       <Tile
         label="Tháng lời nhất"
-        value={summary.bestMonth ? summary.bestMonth.label : "---"}
+        value={summary.bestMonth ? summary.bestMonth.label : "–"}
         sub={summary.bestMonth ? formatNumber(summary.bestMonth.netProfit) : "Chưa có tháng nào lời"}
       />
       {summary.worstMonth && (

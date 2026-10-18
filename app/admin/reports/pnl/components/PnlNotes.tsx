@@ -24,13 +24,14 @@ function withStrong(text: string, strong: string[]): ReactNode {
 
 // Rendered once inside PnlTableView (computer) and once inside
 // PnlMonthCards (phone); each copy is hidden by its parent's md: classes.
-export function PnlNotes({ footnotes }: { footnotes: PnlFootnote[] }) {
-  if (footnotes.length === 0) return null;
+export function PnlNotes({ footnotes, hasAsterisk }: { footnotes: PnlFootnote[]; hasAsterisk?: boolean }) {
+  if (footnotes.length === 0 && !hasAsterisk) return null;
   return (
     <section aria-label="Ghi chú" className="space-y-1.5 border-t border-border px-4 py-3 md:px-[18px]">
+      {hasAsterisk && <p className="text-[13px] text-text-secondary">* Tháng đang chạy, chưa hết tháng.</p>}
       {footnotes.map(f => (
         <p key={f.key} className="text-[13px] text-text-secondary">
-          <NoteMarks numbers={[f.number]} />
+          <NoteMarks numbers={[f.number]} className="mr-1 text-xs font-semibold text-text-secondary" />
           {withStrong(f.text, f.strong)}
         </p>
       ))}

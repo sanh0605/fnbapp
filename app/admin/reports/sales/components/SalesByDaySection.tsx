@@ -24,7 +24,7 @@ export interface SalesByDaySectionProps {
 export function SalesByDaySection({ salesByDate, totalRevenue }: SalesByDaySectionProps) {
   return (
     <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
-      <h3 className="font-bold text-text-primary text-lg mb-4">Doanh thu theo Ngày</h3>
+      <h3 className="font-bold text-text-primary text-lg mb-4">Doanh thu theo ngày</h3>
 
       <Table>
         <TableHead>
