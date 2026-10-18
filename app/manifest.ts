@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'FNB App',
     short_name: 'FNB App',
-    description: 'FNB POS System',
+    description: 'Quản lý quán cà phê: bán hàng, kho, giá vốn, thu chi, báo cáo',
     start_url: '/',
     scope: '/',
     display: 'standalone',

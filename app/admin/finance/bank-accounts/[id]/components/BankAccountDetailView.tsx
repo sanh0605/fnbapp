@@ -125,7 +125,7 @@ export function BankAccountDetailView({
         backLabel="Tài khoản ngân hàng"
         title={account.name}
         subtitle={account.id}
-        badge={account.status !== "ACTIVE" ? <Badge variant="warning">Ngừng dùng</Badge> : undefined}
+        badge={account.status !== "ACTIVE" ? <Badge variant="neutral">Ngừng dùng</Badge> : undefined}
         actions={headerActions}
       />
 

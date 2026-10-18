@@ -127,7 +127,7 @@ export function MonthlyItemDetailView({
         backLabel="Khoản chi hằng tháng"
         title={item.name}
         subtitle={item.id}
-        badge={item.status !== "ACTIVE" ? <Badge variant="warning">Ngừng dùng</Badge> : undefined}
+        badge={item.status !== "ACTIVE" ? <Badge variant="neutral">Ngừng dùng</Badge> : undefined}
         actions={headerActions}
       />
 

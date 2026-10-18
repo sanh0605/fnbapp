@@ -127,7 +127,7 @@ export function CategoryDetailView({
         backLabel="Nhóm thu chi"
         title={category.name}
         subtitle={category.id}
-        badge={category.status !== "ACTIVE" ? <Badge variant="warning">Ngừng dùng</Badge> : undefined}
+        badge={category.status !== "ACTIVE" ? <Badge variant="neutral">Ngừng dùng</Badge> : undefined}
         actions={headerActions}
       />
 

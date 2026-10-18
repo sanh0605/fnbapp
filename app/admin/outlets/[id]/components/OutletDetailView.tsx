@@ -154,7 +154,7 @@ export function OutletDetailView({
         backLabel="Điểm bán"
         title={outlet.name}
         subtitle={outlet.id}
-        badge={outlet.status !== "ACTIVE" ? <Badge variant="warning">Ngừng hoạt động</Badge> : undefined}
+        badge={outlet.status !== "ACTIVE" ? <Badge variant="neutral">Ngừng hoạt động</Badge> : undefined}
         actions={headerActions}
       />
 
