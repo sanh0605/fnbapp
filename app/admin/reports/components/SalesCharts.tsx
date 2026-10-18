@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatNumber } from "@/lib/shared/format";
+import { formatMonthLabel, formatVnDay } from "@/lib/shared/datetime";
 
 export default function SalesCharts({ 
   salesByDate, 
@@ -35,7 +36,7 @@ export default function SalesCharts({
     <div className="xl:col-span-2 bg-surface-card rounded-card p-6 shadow-sm border border-border flex flex-col min-h-[400px]">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <h3 className="font-bold text-text-primary">Biểu đồ doanh thu</h3>
-        <div className="flex bg-page p-1 rounded-lg border border-border/50 overflow-x-auto max-w-full">
+        <div className="flex bg-page p-1 rounded-lg border border-border/50 overflow-x-auto max-w-full hide-scrollbar">
           <button 
             onClick={() => setViewMode("HOUR")}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "HOUR" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
@@ -71,14 +72,17 @@ export default function SalesCharts({
           const showLabel = i % labelInterval === 0 || i === totalItems - 1;
           const isTooCloseToLast = (totalItems - 1 - i) < labelInterval && i !== totalItems - 1;
           const desktopShow = showLabel && !isTooCloseToLast;
-          const phoneShow =
-            viewMode === "HOUR"
-              ? (i % 3 === 0 && (totalItems - 1 - i >= 3 || i === 0)) || i === totalItems - 1
-              : desktopShow;
+          // Phone label step: day labels ~32 px, month labels ~52 px must not touch on a ~263 px chart (edge labels are pushed inward).
+          const phoneStep =
+            viewMode === "HOUR" ? 3 : viewMode === "DATE" ? Math.max(1, Math.ceil((totalItems - 2) / 5)) : viewMode === "MONTH" ? Math.max(1, Math.ceil((totalItems - 1) / 3)) : 1;
+          const phoneShow = (i % phoneStep === 0 && (totalItems - 1 - i >= phoneStep || i === 0)) || i === totalItems - 1;
+
+          const edge = i === 0 ? "self-start" : i === totalItems - 1 ? "self-end" : "";
+          const alignClass = !edge ? "" : totalItems > 7 ? edge : viewMode === "MONTH" && totalItems > 4 ? `${edge} sm:self-auto` : "";
 
           return (
             <div key={i} className="flex flex-col items-center flex-1 group min-w-[8px] sm:min-w-[12px]">
-              <div className="text-xs text-text-secondary mb-2 font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 bg-surface-card px-1 rounded shadow-sm border border-border/50">
+              <div className={`text-xs text-text-secondary mb-2 font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 bg-surface-card px-1 rounded shadow-sm border border-border/50 ${alignClass}`}>
                 {formatNumber(Math.round(d.amount / 1000))}k
               </div>
               <div className="w-full max-w-[40px] bg-primary-soft rounded-t-lg relative flex items-end h-[250px]">
@@ -87,8 +91,10 @@ export default function SalesCharts({
                   style={{ height: `${heightPercent}%`, minHeight: d.amount > 0 ? '4px' : '0' }}
                 ></div>
               </div>
-              <div className="text-xs text-text-muted mt-3 font-medium text-center h-4">
-                <span className={`${phoneShow ? "" : "hidden"} ${desktopShow ? "md:inline" : "md:hidden"}`}>{d.label}</span>
+              <div className={`text-xs text-text-muted mt-3 font-medium text-center h-4 ${alignClass}`}>
+                <span className={`${phoneShow ? "" : "hidden"} ${desktopShow ? "md:inline" : "md:hidden"}`}>
+                  {viewMode === "DATE" ? formatVnDay(d.label).slice(0, 5) : viewMode === "MONTH" ? formatMonthLabel(d.label) : d.label}
+                </span>
               </div>
             </div>
           );

@@ -466,10 +466,18 @@ export default function PromotionsClient({
           const expired = isExpired(promo.end_date);
 
           const endText = promo.end_date
-            ? `đến ${formatPromotionDate(promo.end_date)}`
-            : "không hết hạn";
+            ? `Đến ${formatPromotionDate(promo.end_date)}`
+            : "Không hết hạn";
 
-          const meta = [brandName, scopeText, endText].filter(Boolean).join(" · ");
+          const meta = (
+            <>
+              <span className="whitespace-nowrap">{endText}</span>
+              {" · "}
+              <span className="whitespace-nowrap">{scopeText}</span>
+              {" · "}
+              <span className="whitespace-nowrap">{brandName}</span>
+            </>
+          );
 
           return {
             title: promo.name,

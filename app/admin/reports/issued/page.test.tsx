@@ -130,6 +130,7 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     // Row has quantity and values
     const row = rowHeader.closest("tr")!;
     expect(within(row).getByText("10 hộp")).toBeInTheDocument();
+    expect(within(row).getByText("10 hộp").classList.contains("whitespace-nowrap")).toBe(true);
     expect(within(row).getByText("500,000đ")).toBeInTheDocument();
     expect(within(row).getByText("200,000đ")).toBeInTheDocument();
 
@@ -182,6 +183,12 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     });
 
     render(page);
+
+    expect(
+      [...document.querySelectorAll(".uppercase")].filter(
+        (el) => el.textContent?.includes("Phiếu xuất") || el.textContent?.includes("Kiểm kê")
+      )
+    ).toHaveLength(0);
 
     const phoneBlocks = phoneOnlyBesidesHeadline();
     expect(phoneBlocks).toHaveLength(1);

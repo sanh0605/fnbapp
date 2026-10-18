@@ -1,6 +1,7 @@
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { PhoneRow } from "@/components/ui/list/PhoneRow";
+import { Badge } from "@/components/ui/Badge";
 
 export function EventCard({
   kind,
@@ -23,13 +24,9 @@ export function EventCard({
         value={`${formatNumber(value)}đ`}
         meta={`${dateLabel} · ${itemCount} mặt hàng`}
         badge={
-          <span
-            className={`text-xs uppercase tracking-wider px-2 py-0.5 rounded-full ${
-              kind === "STOCKTAKE" ? "bg-primary-soft text-primary" : "bg-warning/10 text-warning"
-            }`}
-          >
+          <Badge variant={kind === "STOCKTAKE" ? "processing" : "neutral"}>
             {kind === "STOCKTAKE" ? "Kiểm kê" : "Phiếu xuất"}
-          </span>
+          </Badge>
         }
       />
     </div>
