@@ -139,6 +139,8 @@ describe("ModifierGroupDetailView", () => {
     expect(screen.getByText("Chọn nhiều")).toBeInTheDocument();
     expect(screen.getByText("3 phần")).toBeInTheDocument();
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Số tuỳ chọn")).toBeNull();
+    expect(screen.queryByText("Số món áp dụng")).toBeNull();
 
     // Chỉnh sửa link
     const editLink = screen.getByRole("link", { name: "Chỉnh sửa" });
@@ -301,7 +303,7 @@ describe("ModifierGroupDetailView", () => {
     expect(within(optionRow).getByText("Trân châu trắng")).toBeInTheDocument();
     expect(within(optionRow).getByText("5,000đ")).toBeInTheDocument();
     expect(within(optionRow).getByText("Tối đa: 2")).toBeInTheDocument();
-    expect(within(optionRow).getByText("Đang dùng")).toBeInTheDocument();
+    expect(within(optionRow).queryByText("Đang dùng")).toBeNull();
 
     // No text-[10px] anywhere in the row
     expect(optionRow.innerHTML).not.toContain("text-[10px]");

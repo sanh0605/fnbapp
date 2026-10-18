@@ -134,4 +134,21 @@ describe("ProductTypesClient", () => {
     expect(codeElements[1].textContent).toBe("PT-002");
     expect(codeElements[2].textContent).toBe("PT-001");
   });
+
+  it("shows only code and 'Tính là ly' on line 2 for a type 'Topping' whose only category is 'Topping'", () => {
+    const rowsWithSameName: ProductTypeRow[] = [
+      {
+        type: { id: "PT-004", name: "Topping", is_drink: false, created_at: "2026-10-14T09:00:00Z" },
+        categoryCount: 1,
+        categoryNames: ["Topping"],
+      },
+    ];
+    const { container } = render(<ProductTypesClient rows={rowsWithSameName} />);
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(
+      within(phone)
+        .getAllByText("PT-004")
+        .some((el) => el.parentElement?.textContent === "PT-004 · Tính là ly: Không")
+    ).toBe(true);
+  });
 });

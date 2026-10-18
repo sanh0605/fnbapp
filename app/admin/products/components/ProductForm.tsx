@@ -267,7 +267,7 @@ export default function ProductForm({
                           required
                           example="25,000"
                           disabled={priceReadOnly}
-                          hint={priceReadOnly ? "Giá này đặt ở màn hình Topping & Tuỳ chọn." : undefined}
+                          hint={priceReadOnly ? "Giá này đặt ở màn hình Topping & tuỳ chọn." : undefined}
                           error={priceErrors[vIdx]}
                           value={
                             variant.price === "" || variant.price === null || variant.price === undefined
