@@ -908,7 +908,8 @@ describe("IssueSlipClient -- Row 3 Giá trị xuất", () => {
     expect(desktop.textContent).toContain("Tổng giá trị xuất");
     expect(desktop.textContent).toContain("301đ");
     // Total on phone shows 301đ
-    expect(phone.textContent).toContain("Tổng giá trị xuất:");
+    expect(phone.textContent).toContain("Tổng giá trị xuất");
+    expect(phone.textContent).not.toContain("Tổng giá trị xuất:");
     expect(phone.textContent).toContain("301đ");
   });
 

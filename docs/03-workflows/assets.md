@@ -63,7 +63,7 @@ table of its own.
    row per purchased item, summing its purchase lines (the same item bought three
    times is one row; each purchase is listed on the item's detail page). Rows
    flagged `INACTIVE` are excluded. An item whose every purchase is fully disposed
-   is hidden unless "Hiện cả tài sản đã thanh lý hết" is ticked. The band list shows every depreciation band, sorted by lowest price. It
+   is hidden unless "Hiện cả tài sản đã thanh lý hết" is ticked. The band list shows every depreciation band, newest code first (`BR-DATA-008`); the edit page lists them by price. It
    deliberately excludes the assets themselves.
 4. **Valid inputs, and what happens outside the range.** A disposal needs a
    positive quantity no greater than what remains (asset quantity minus prior

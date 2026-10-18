@@ -337,7 +337,7 @@ export function EditBandsForm({
 
                 <div className="space-y-1">
                   <div className="text-sm text-text-secondary">Đến dưới</div>
-                  <div className="text-sm font-medium text-text-primary px-3 py-2 bg-surface-secondary/50 rounded-button">
+                  <div className="text-sm text-right tabular-nums text-text-primary px-3 py-2 bg-surface-secondary/50 rounded-button">
                     {nextMinText}
                   </div>
                 </div>
