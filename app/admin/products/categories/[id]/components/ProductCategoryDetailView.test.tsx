@@ -177,6 +177,10 @@ describe("ProductCategoryDetailView", () => {
     // PhoneRow: title on line 1, meta & badge on line 2
     expect(within(firstLink).getByText("Cà phê đá")).toBeInTheDocument();
     expect(within(firstLink).getByText("PROD-001")).toBeInTheDocument();
-    expect(within(firstLink).getByText("Đang bán")).toBeInTheDocument();
+    expect(within(firstLink).queryByText("Đang bán")).toBeNull();
+
+    const secondLink = links[1];
+    expect(within(secondLink).getByText("Bạc xỉu")).toBeInTheDocument();
+    expect(within(secondLink).getByText("Ngừng bán")).toBeInTheDocument();
   });
 });

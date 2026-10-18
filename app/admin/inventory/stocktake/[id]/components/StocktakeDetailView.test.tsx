@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { StocktakeDetailView } from "./StocktakeDetailView";
-import type { StocktakeSessionView } from "../../actions";
+import type { StocktakeSessionView, StocktakeListRow } from "../../actions";
 
 const routerMock = vi.hoisted(() => ({
   push: vi.fn(),
@@ -171,5 +171,42 @@ describe("StocktakeDetailView (Screen 3)", () => {
     expect(firstRow?.textContent).not.toContain("Sổ lúc đếm");
     expect(firstRow?.textContent).not.toContain("Chênh lệch số lượng");
     expect(firstRow?.textContent).not.toContain("Chênh lệch giá trị");
+  });
+
+  it("renders Giá trị lệch when session is confirmed and listRow is provided", () => {
+    const listRow: StocktakeListRow = {
+      id: "STK-001",
+      status: "CONFIRMED",
+      at: "2026-10-10T09:00:00Z",
+      personName: "Chủ quán",
+      countedLines: 1,
+      totalLines: 1,
+      shortValue: 296033,
+      foundValue: 0,
+      isLatestConfirmed: true,
+    };
+
+    const { rerender } = render(
+      <StocktakeDetailView
+        session={confirmedSession}
+        isLatestConfirmed={true}
+        isOwner={true}
+        listRow={listRow}
+      />
+    );
+
+    expect(screen.getByText("Giá trị lệch")).toBeInTheDocument();
+    expect(screen.getByText("thiếu 296,033đ")).toBeInTheDocument();
+
+    rerender(
+      <StocktakeDetailView
+        session={reversedSession}
+        isLatestConfirmed={false}
+        isOwner={true}
+        listRow={{ ...listRow, status: "REVERSED" }}
+      />
+    );
+
+    expect(screen.queryByText("Giá trị lệch")).toBeNull();
   });
 });

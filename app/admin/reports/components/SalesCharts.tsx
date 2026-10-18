@@ -18,7 +18,7 @@ export default function SalesCharts({
   const [viewMode, setViewMode] = useState<"HOUR" | "DOW" | "DATE" | "MONTH">("HOUR");
 
   const chartRef = useRef<HTMLDivElement>(null);
-  // Measured width of the bars box; 263 is a 360 px phone (also used before the first measure).
+  // Measured width of the bars box; 263 (the old 360 px phone width) is only the first paint before the measure.
   const [chartWidth, setChartWidth] = useState(263);
   useEffect(() => {
     const el = chartRef.current;
@@ -42,31 +42,31 @@ export default function SalesCharts({
   const edgeLabels = labelW > pitch;
 
   return (
-    <div className="xl:col-span-2 bg-surface-card rounded-card p-6 shadow-sm border border-border flex flex-col min-h-[400px]">
+    <div className="xl:col-span-2 bg-surface-card rounded-card p-4 md:p-6 shadow-sm border border-border flex flex-col min-h-[400px]">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <h3 className="font-bold text-text-primary">Biểu đồ doanh thu</h3>
-        <div className="flex bg-page p-1 rounded-lg border border-border/50 overflow-x-auto max-w-full hide-scrollbar">
+        <div className="grid grid-cols-4 w-full sm:flex sm:w-auto bg-page p-1 rounded-lg border border-border/50">
           <button 
             onClick={() => setViewMode("HOUR")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "HOUR" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
+            className={`px-1 sm:px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "HOUR" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
           >
             Theo giờ
           </button>
           <button 
             onClick={() => setViewMode("DOW")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "DOW" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
+            className={`px-1 sm:px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "DOW" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
           >
             Theo thứ
           </button>
           <button 
             onClick={() => setViewMode("DATE")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "DATE" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
+            className={`px-1 sm:px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "DATE" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
           >
             Theo ngày
           </button>
           <button 
             onClick={() => setViewMode("MONTH")}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "MONTH" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
+            className={`px-1 sm:px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "MONTH" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
           >
             Theo tháng
           </button>

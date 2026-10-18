@@ -56,8 +56,8 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
   return (
     <form onSubmit={handleSubmit} className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       {/* Left column: Summary (time, dishes with size and quantity, Khách trả) */}
-      <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
-        <div className="p-4 border-b border-border bg-surface-secondary/50 flex flex-wrap justify-between items-center gap-2 text-sm">
+      <div className="space-y-4">
+        <div className="flex flex-wrap justify-between items-center gap-2 text-sm">
           <span className="font-semibold text-text-primary">Thông tin đơn hàng</span>
           <span className="text-text-secondary tabular-nums">{formatDateTimeFull(order.created_at)}</span>
         </div>
@@ -96,40 +96,45 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
         </div>
 
         {/* Phone stacked lines (hidden on desktop) */}
-        <div className="divide-y divide-border lg:hidden" data-testid="phone-lines-list">
-          {order.lines.map((line, idx) => (
-            <div
-              key={idx}
-              className="px-4 py-3 min-h-[48px] md:min-h-[40px] flex flex-col justify-center"
-            >
-              <PhoneRow
-                title={
-                  <span>
-                    <span className="text-primary mr-1">{line.qty}x</span>
-                    {line.product_name}
-                  </span>
-                }
-                meta={
-                  <span>
-                    Size {line.size_name}
-                    {line.modifiers && line.modifiers.length > 0 && (
-                      <span className="text-text-secondary">
-                        {" · "}
-                        {line.modifiers
-                          .map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`)
-                          .join(", ")}
+        <div
+          className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden divide-y divide-border lg:hidden"
+          data-testid="phone-lines-list"
+        >
+          {order.lines.map((line, idx) => {
+            const gross = line.gross_line_total;
+            const net = line.net_line_total;
+            const qtySize = line.size_name ? `${line.qty} × Size ${line.size_name}` : `${line.qty}`;
+            const modifiersText =
+              line.modifiers && line.modifiers.length > 0
+                ? `+ ${line.modifiers.map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`).join(", ")}`
+                : null;
+            const meta = [qtySize, modifiersText].filter(Boolean).join(" · ");
+
+            return (
+              <div key={idx} className="px-4 py-2.5">
+                <PhoneRow
+                  title={line.product_name}
+                  value={
+                    gross > net ? (
+                      <span>
+                        <span className="text-xs text-text-muted line-through mr-1 font-normal">
+                          {formatNumber(gross)}đ
+                        </span>
+                        <span>{formatNumber(net)}đ</span>
                       </span>
-                    )}
-                  </span>
-                }
-                value={`${formatNumber(line.net_line_total)}đ`}
-              />
-            </div>
-          ))}
+                    ) : (
+                      `${formatNumber(net)}đ`
+                    )
+                  }
+                  meta={meta}
+                />
+              </div>
+            );
+          })}
         </div>
 
         {/* Total: Khách trả */}
-        <div className="p-4 border-t border-border flex justify-between items-center text-base font-semibold bg-surface-secondary/20">
+        <div className="bg-surface-card rounded-xl shadow-sm border border-border p-4 flex justify-between items-center text-base font-semibold">
           <span className="text-text-primary">Khách trả</span>
           <span className="text-primary tabular-nums">{formatNumber(order.net_total)}đ</span>
         </div>
@@ -144,14 +149,18 @@ export function VoidOrderForm({ order, detailHref }: VoidOrderFormProps) {
         )}
 
         <Field label="Lý do huỷ" htmlFor="cancel-reason" required>
-            <textarea
-              id="cancel-reason"
-              rows={4}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Ví dụ: khách đổi ý hoặc nhập trùng"
-              className="w-full border border-border rounded-lg p-3 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card text-text-primary resize-y min-h-[100px]"
-            />
+          <textarea
+            id="cancel-reason"
+            rows={4}
+            maxLength={500}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Ví dụ: khách đổi ý hoặc nhập trùng"
+            className="w-full border border-border rounded-lg p-3 text-sm focus:ring-2 focus:ring-focus-ring outline-none bg-surface-card text-text-primary resize-y min-h-[100px]"
+          />
+          <div className="text-right text-xs text-text-muted">
+            {reason.length}/500
+          </div>
         </Field>
 
         <div className="flex items-center gap-3 pt-2">

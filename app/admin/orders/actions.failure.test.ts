@@ -136,4 +136,35 @@ describe("voidOrderV2 atomic failure handling", () => {
     expect(result.success).toBe(false);
     expect(mocks.voidOrderAtomic).not.toHaveBeenCalled();
   });
+
+  it("refuses a reason longer than 500 characters before the RPC", async () => {
+    const result = await voidOrderV2("ord-void-1", "a".repeat(501));
+
+    expect(result).toEqual({ success: false, error: "Lý do huỷ tối đa 500 ký tự" });
+    expect(mocks.voidOrderAtomic).not.toHaveBeenCalled();
+  });
+
+  it("accepts a reason of exactly 500 characters", async () => {
+    mocks.voidOrderAtomic.mockResolvedValue({
+      orderId: "ord-void-1",
+      reversalCount: 0,
+      alreadyVoided: false,
+    });
+
+    expect(await voidOrderV2("ord-void-1", "a".repeat(500))).toEqual({ success: true });
+    expect(mocks.voidOrderAtomic).toHaveBeenCalledTimes(1);
+  });
+
+  it("saves the trimmed reason, so padding cannot carry it past 500 characters", async () => {
+    mocks.voidOrderAtomic.mockResolvedValue({
+      orderId: "ord-void-1",
+      reversalCount: 0,
+      alreadyVoided: false,
+    });
+
+    expect(await voidOrderV2("ord-void-1", `  ${"a".repeat(500)}  `)).toEqual({ success: true });
+    const callArgs = mocks.voidOrderAtomic.mock.calls[0][0];
+    expect(callArgs.reason).toBe("a".repeat(500));
+    expect(callArgs.event.reason).toBe("a".repeat(500));
+  });
 });

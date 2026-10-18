@@ -16,7 +16,7 @@ export default async function AdminDashboard(_props: {
     <div className="space-y-6">
       <PageHeader
         title="Tổng quan"
-        subtitle="Việc cần xử lý và bán hàng 7 ngày qua · đơn vị: đồng"
+        subtitle={"Việc cần xử lý và bán hàng 7 ngày qua · đơn\u00a0vị:\u00a0đồng"}
         actions={
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full xl:w-auto">
             <Link

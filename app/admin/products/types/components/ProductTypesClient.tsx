@@ -199,16 +199,28 @@ export default function ProductTypesClient({
           `/admin/products/types/${encodeURIComponent(r.type.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        phoneRow={(r) => ({
-          title: r.type.name,
-          meta: [
-            r.type.id,
-            `Tính là ly: ${r.type.is_drink ? "Có" : "Không"}`,
-            r.categoryNames.length > 0
-              ? r.categoryNames.join(", ")
-              : "Chưa có nhóm nào",
-          ].join(" · "),
-        })}
+        phoneRow={(r) => {
+          const typeNameNorm = r.type.name.trim().toLowerCase();
+          const filteredCategories = r.categoryNames.filter(
+            (n) => n.trim().toLowerCase() !== typeNameNorm,
+          );
+          const categoryPart =
+            r.categoryNames.length === 0
+              ? "Chưa có nhóm nào"
+              : filteredCategories.length > 0
+              ? filteredCategories.join(", ")
+              : null;
+          return {
+            title: r.type.name,
+            meta: [
+              r.type.id,
+              `Tính là ly: ${r.type.is_drink ? "Có" : "Không"}`,
+              categoryPart,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

@@ -1714,6 +1714,37 @@ describe("Ticket 6c-2: PurchaseOrderLines & PurchaseOrderTotals enhancements", (
 
     expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
   });
+
+  it("no label text ends with ':' and 'Thanh toán' is inside the same card element as 'Tổng tiền hàng'", () => {
+    render(
+      <PurchaseOrderForm
+        suppliers={sampleSuppliers}
+        sources={sampleSources}
+        items={sampleItems}
+        conversions={sampleConversions}
+        units={sampleUnits}
+        bankAccounts={sampleAccounts}
+      />
+    );
+
+    expect(screen.queryByText("Tổng tiền hàng:")).toBeNull();
+    const subtotalLabel = screen.getByText("Tổng tiền hàng");
+    expect(subtotalLabel).toBeInTheDocument();
+
+    expect(screen.queryByText("Phí vận chuyển (+):")).toBeNull();
+    expect(screen.getByText("Phí vận chuyển (+)")).toBeInTheDocument();
+
+    expect(screen.queryByText("Voucher (-):")).toBeNull();
+    expect(screen.getByText("Voucher (-)")).toBeInTheDocument();
+
+    expect(screen.queryByText("Cần thanh toán:")).toBeNull();
+    expect(screen.getByText("Cần thanh toán")).toBeInTheDocument();
+
+    const heading = screen.getByText("Thanh toán");
+    const card = subtotalLabel.closest(".bg-surface-card");
+    expect(card).not.toBeNull();
+    expect(card).toContainElement(heading);
+  });
 });
 
 

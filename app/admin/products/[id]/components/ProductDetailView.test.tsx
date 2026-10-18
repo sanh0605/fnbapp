@@ -220,7 +220,7 @@ describe("ProductDetailView", () => {
     // PhoneRow: title (size) and value (price with đ) on line 1, badge on line 2
     expect(within(firstRow).getByText("360ml")).toBeInTheDocument();
     expect(within(firstRow).getByText("20,000đ")).toBeInTheDocument();
-    expect(within(firstRow).getByText("Đang bán")).toBeInTheDocument();
+    expect(within(firstRow).queryByText("Đang bán")).toBeNull();
     expect(firstRow.querySelector(".font-bold")).toBeNull();
   });
 

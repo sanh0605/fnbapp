@@ -209,69 +209,65 @@ export default async function PurchaseOrderDetail(
         </>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
-              <div className="p-4 border-b border-border bg-surface-secondary/50">
-                <h2 className="text-base font-semibold text-text-primary">Danh sách mặt hàng</h2>
+          <div className="lg:col-span-2 space-y-4">
+            <h2 className="text-base font-semibold text-text-primary">Danh sách mặt hàng</h2>
+
+            {poLines.length === 0 ? (
+              <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden p-6 text-center text-text-muted">
+                Phiếu nhập kho này được tạo tự động từ hệ thống cũ (Tồn kho đầu kỳ).
               </div>
+            ) : (
+              <>
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHead>
+                      <TableHeaderCell>Mặt hàng</TableHeaderCell>
+                      <TableHeaderCell>Đơn vị</TableHeaderCell>
+                      <TableHeaderCell>Số lượng</TableHeaderCell>
+                      <TableHeaderCell>Đơn giá</TableHeaderCell>
+                      <TableHeaderCell>Thành tiền</TableHeaderCell>
+                    </TableHead>
+                    <TableBody>
+                      {poLines.map((line: any, idx: number) => {
+                        const item = allItems.find((i: any) => i.id === line.purchased_item_id);
+                        const unitName =
+                          allUnits.find((u: any) => u.id === line.unit)?.name || line.unit;
 
-              {poLines.length === 0 ? (
-                <div className="p-6 text-center text-text-muted">
-                  Phiếu nhập kho này được tạo tự động từ hệ thống cũ (Tồn kho đầu kỳ).
+                        return (
+                          <TableRow key={idx}>
+                            <TableCell>{item?.name || line.purchased_item_id}</TableCell>
+                            <TableCell>{unitName}</TableCell>
+                            <TableCell align="right">
+                              {formatDecimal(Number(line.quantity), { maxDigits: 3 })}
+                            </TableCell>
+                            <TableCell align="right">{formatNumber(line.unit_price)}đ</TableCell>
+                            <TableCell align="right">{formatNumber(line.subtotal)}đ</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 </div>
-              ) : (
-                <>
-                  <div className="hidden md:block">
-                    <Table>
-                      <TableHead>
-                        <TableHeaderCell>Mặt hàng</TableHeaderCell>
-                        <TableHeaderCell>Đơn vị</TableHeaderCell>
-                        <TableHeaderCell>Số lượng</TableHeaderCell>
-                        <TableHeaderCell>Đơn giá</TableHeaderCell>
-                        <TableHeaderCell>Thành tiền</TableHeaderCell>
-                      </TableHead>
-                      <TableBody>
-                        {poLines.map((line: any, idx: number) => {
-                          const item = allItems.find((i: any) => i.id === line.purchased_item_id);
-                          const unitName =
-                            allUnits.find((u: any) => u.id === line.unit)?.name || line.unit;
 
-                          return (
-                            <TableRow key={idx}>
-                              <TableCell>{item?.name || line.purchased_item_id}</TableCell>
-                              <TableCell>{unitName}</TableCell>
-                              <TableCell align="right">
-                                {formatDecimal(Number(line.quantity), { maxDigits: 3 })}
-                              </TableCell>
-                              <TableCell align="right">{formatNumber(line.unit_price)}đ</TableCell>
-                              <TableCell align="right">{formatNumber(line.subtotal)}đ</TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </div>
+                <div className="md:hidden divide-y divide-border bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
+                  {poLines.map((line: any, idx: number) => {
+                    const item = allItems.find((i: any) => i.id === line.purchased_item_id);
+                    const unitName =
+                      allUnits.find((u: any) => u.id === line.unit)?.name || line.unit;
 
-                  <div className="md:hidden divide-y divide-border">
-                    {poLines.map((line: any, idx: number) => {
-                      const item = allItems.find((i: any) => i.id === line.purchased_item_id);
-                      const unitName =
-                        allUnits.find((u: any) => u.id === line.unit)?.name || line.unit;
-
-                      return (
-                        <div key={idx} className="px-4 py-2.5">
-                          <PhoneRow
-                            title={item?.name || line.purchased_item_id}
-                            value={`${formatNumber(line.subtotal)}đ`}
-                            meta={`${formatDecimal(Number(line.quantity), { maxDigits: 3 })} ${unitName} × ${formatNumber(line.unit_price)}đ`}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
+                    return (
+                      <div key={idx} className="px-4 py-2.5">
+                        <PhoneRow
+                          title={item?.name || line.purchased_item_id}
+                          value={`${formatNumber(line.subtotal)}đ`}
+                          meta={`${formatDecimal(Number(line.quantity), { maxDigits: 3 })} ${unitName} × ${formatNumber(line.unit_price)}đ`}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="space-y-6">
