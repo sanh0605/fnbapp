@@ -93,7 +93,7 @@ export function OutletDetailView({
   const brandLink = (
     <Link
       href={`/admin/brands/${encodeURIComponent(outlet.brand_id)}`}
-      className="text-primary hover:underline font-medium"
+      className="text-primary underline underline-offset-2 font-medium"
     >
       {brandName}
     </Link>

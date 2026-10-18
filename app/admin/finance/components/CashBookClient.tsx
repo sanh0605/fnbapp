@@ -100,34 +100,34 @@ function BalanceBlock({
         <div className="text-sm font-semibold text-text-primary">{title}</div>
         <div className="text-xs text-text-muted">Cả sổ, mọi loại</div>
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
-        <div className="flex items-baseline justify-between gap-4 sm:flex-col sm:items-start sm:gap-0">
+      <div className="grid grid-cols-1 gap-2 xl:grid-cols-3 xl:gap-4">
+        <div className="flex items-baseline justify-between gap-4 xl:flex-col xl:items-start xl:gap-0">
           <div className="text-xs text-text-muted">Tiền mặt (theo sổ)</div>
           <div
             data-testid={`${testIdPrefix}-cash`}
-            className={`font-semibold sm:mt-1 text-base tabular-nums ${
+            className={`font-semibold xl:mt-1 text-base tabular-nums ${
               balance.cash < 0 ? "text-danger" : "text-text-primary"
             }`}
           >
             {money(balance.cash)}
           </div>
         </div>
-        <div className="flex items-baseline justify-between gap-4 sm:flex-col sm:items-start sm:gap-0">
+        <div className="flex items-baseline justify-between gap-4 xl:flex-col xl:items-start xl:gap-0">
           <div className="text-xs text-text-muted">Ngân hàng</div>
           <div
             data-testid={`${testIdPrefix}-bank`}
-            className={`font-semibold sm:mt-1 text-base tabular-nums ${
+            className={`font-semibold xl:mt-1 text-base tabular-nums ${
               balance.bank < 0 ? "text-danger" : "text-text-primary"
             }`}
           >
             {money(balance.bank)}
           </div>
         </div>
-        <div className="flex items-baseline justify-between gap-4 sm:flex-col sm:items-start sm:gap-0">
+        <div className="flex items-baseline justify-between gap-4 xl:flex-col xl:items-start xl:gap-0">
           <div className="text-xs text-text-muted">Tổng</div>
           <div
             data-testid={`${testIdPrefix}-total`}
-            className={`font-bold sm:mt-1 text-base tabular-nums ${
+            className={`font-bold xl:mt-1 text-base tabular-nums ${
               balance.total < 0 ? "text-danger" : "text-text-primary"
             }`}
           >
@@ -247,6 +247,11 @@ export default function CashBookClient({
                 Khoản chi hằng tháng: {r.monthlyItemName}
               </div>
             )}
+            {r.status !== "ACTIVE" && r.kind !== "SALE" && r.kind !== "PURCHASE" && (
+              <div>
+                <Badge variant="neutral">Đã huỷ</Badge>
+              </div>
+            )}
           </div>
         ),
       },
@@ -296,7 +301,7 @@ export default function CashBookClient({
         secondary: true,
         sortValue: (r) => r.note,
         render: (r) => (
-          <span className="text-text-secondary">{display(r.note)}</span>
+          <span className="text-text-secondary inline-block min-w-24">{display(r.note)}</span>
         ),
       },
       {
@@ -307,25 +312,6 @@ export default function CashBookClient({
         render: (r) => (
           <span className="text-text-secondary">{display(r.creator)}</span>
         ),
-      },
-      {
-        key: "status",
-        header: "Trạng thái",
-        nowrap: true,
-        sortValue: (r) =>
-          r.kind === "SALE" || r.kind === "PURCHASE"
-            ? ""
-            : r.status === "ACTIVE"
-              ? "Đang dùng"
-              : "Đã huỷ",
-        render: (r) => {
-          if (r.kind === "SALE" || r.kind === "PURCHASE") return null;
-          return r.status === "ACTIVE" ? (
-            <Badge variant="success">Đang dùng</Badge>
-          ) : (
-            <Badge variant="neutral">Đã huỷ</Badge>
-          );
-        },
       },
     ],
     [],

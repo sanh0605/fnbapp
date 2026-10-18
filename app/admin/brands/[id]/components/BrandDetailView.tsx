@@ -35,12 +35,12 @@ export function BrandDetailView({
     outlets.length === 0 ? (
       "—"
     ) : (
-      <span className="flex flex-wrap items-center gap-x-2">
+      <span className="flex flex-wrap items-center gap-x-2 gap-y-6 md:gap-y-5">
         {outlets.map((outlet, idx) => (
           <span key={outlet.id} className="inline-flex items-center">
             <Link
               href={`/admin/outlets/${encodeURIComponent(outlet.id)}`}
-              className="inline-flex items-center min-h-[48px] md:min-h-[40px] text-primary underline underline-offset-2 font-medium"
+              className="inline-flex items-center min-h-[48px] md:min-h-[40px] -my-3 md:-my-2.5 text-primary underline underline-offset-2 font-medium"
             >
               {outlet.name}
             </Link>

@@ -2,11 +2,15 @@ import { NAV_GROUPS } from "../nav-items";
 
 const KEY = "fnb.sidebarCollapsed";
 
-export function readSidebarCollapsed(getStorage: () => Pick<Storage, "getItem"> | null): boolean {
+export function readSidebarCollapsed(
+  getStorage: () => Pick<Storage, "getItem"> | null,
+  fallback = false,
+): boolean {
   try {
-    return getStorage()?.getItem(KEY) === "1";
+    const stored = getStorage()?.getItem(KEY);
+    return stored == null ? fallback : stored === "1";
   } catch {
-    return false;
+    return fallback;
   }
 }
 

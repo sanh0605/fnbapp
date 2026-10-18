@@ -28,13 +28,13 @@ export interface SupplierDetailViewProps {
 
 function renderPoStatusBadge(status: string) {
   if (status === "COMPLETED") {
-    return <Badge variant="processing">Hoàn thành</Badge>;
+    return <Badge variant="success">Hoàn thành</Badge>;
   }
   if (status === "CANCELLED") {
     return <Badge variant="neutral">Đã huỷ</Badge>;
   }
   if (status === "DRAFT") {
-    return <Badge variant="neutral">Nháp</Badge>;
+    return <Badge variant="warning">Nháp</Badge>;
   }
   return <Badge variant="neutral">{status}</Badge>;
 }

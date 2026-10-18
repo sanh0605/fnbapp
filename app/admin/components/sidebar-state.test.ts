@@ -11,7 +11,15 @@ describe("sidebar state", () => {
   it("never throws when storage is blocked", () => {
     const blocked = { getItem: () => { throw new Error("SecurityError"); }, setItem: () => { throw new Error("SecurityError"); } };
     expect(readSidebarCollapsed(() => blocked)).toBe(false);
+    expect(readSidebarCollapsed(() => blocked, true)).toBe(true);
     expect(() => writeSidebarCollapsed(() => blocked, true)).not.toThrow();
+  });
+  it("uses fallback when nothing is stored, and stored choice always wins", () => {
+    expect(readSidebarCollapsed(() => ({ getItem: () => null }), true)).toBe(true);
+    expect(readSidebarCollapsed(() => ({ getItem: () => null }), false)).toBe(false);
+    expect(readSidebarCollapsed(() => ({ getItem: () => "0" }), true)).toBe(false);
+    expect(readSidebarCollapsed(() => ({ getItem: () => "1" }), false)).toBe(true);
+    expect(readSidebarCollapsed(() => ({ getItem: () => "1" }), true)).toBe(true);
   });
   describe("activeChildHref", () => {
     it("returns the longest matching child href", () => {
