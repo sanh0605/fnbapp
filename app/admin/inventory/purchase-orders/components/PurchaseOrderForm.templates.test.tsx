@@ -165,10 +165,10 @@ describe("PurchaseOrderForm number boxes (wave K3)", () => {
 });
 
 describe("PurchaseOrderForm save buttons (owner 2026-10-08, BR-INV-015)", () => {
-  it("editing a completed order has no Lưu nháp; it is saved with Cập nhật & Hoàn thành", () => {
+  it("editing a completed order has no Lưu nháp; it is saved with Cập nhật & hoàn thành", () => {
     renderForm({ initialData: order("COMPLETED") });
     expect(screen.queryByRole("button", { name: "Lưu nháp" })).toBeNull();
-    expect(screen.getByRole("button", { name: "Cập nhật & Hoàn thành" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Cập nhật & hoàn thành" })).toBeTruthy();
   });
 
   it("a draft and a new order still have Lưu nháp", () => {
@@ -218,14 +218,14 @@ describe("PurchaseOrderForm asset warning (BR-COGS-008)", () => {
   it("a save that returns an asset warning opens the order's page with ?assetWarning=1", async () => {
     mockSavePurchaseOrder.mockResolvedValueOnce({ success: true, po_id: "PO-100", assetWarning: "insert failed" });
     renderForm({ initialData: order("COMPLETED") });
-    fireEvent.click(screen.getByRole("button", { name: "Cập nhật & Hoàn thành" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật & hoàn thành" }));
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/admin/inventory/purchase-orders/PO-100?assetWarning=1"));
   });
 
   it("a plain save still goes back to the list", async () => {
     mockSavePurchaseOrder.mockResolvedValueOnce({ success: true, po_id: "PO-100" });
     renderForm({ initialData: order("COMPLETED") });
-    fireEvent.click(screen.getByRole("button", { name: "Cập nhật & Hoàn thành" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cập nhật & hoàn thành" }));
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/admin/inventory/purchase-orders"));
   });
 });

@@ -30,18 +30,14 @@ describe("ProductTable on the shared Table set (wave K5)", () => {
     expect(table.querySelector("tbody .font-bold, tbody .font-semibold, tbody .font-medium")).toBeNull();
   });
 
-  // K5 review: a long list scrolls inside the card and its column names stay
-  // in view (the old table pinned its head; the shared one must too). Sticky
-  // only works when the box that scrolls is the table's own parent.
-  it("the column names stay in view while a long list scrolls", () => {
+  // Ticket G9 item 17: removed fixed heights/inner scroll, table grows with content
+  it("does not scroll vertically inside the page, letting content grow", () => {
     const { container } = render(<ProductTable title="Bán chạy" items={ITEMS} uniqueSizes={[]} />);
     const table = container.querySelector("table")!;
     const scroller = table.parentElement!;
-    expect(scroller.className.split(/\s+/)).toEqual(expect.arrayContaining(["max-h-[528px]", "overflow-y-auto"]));
-    expect(scroller.parentElement!.closest(".overflow-y-auto")).toBeNull();
-    for (const th of Array.from(table.querySelectorAll("thead th"))) {
-      expect(th.className.split(/\s+/)).toEqual(expect.arrayContaining(["sticky", "top-0"]));
-    }
+    expect(scroller.className.split(/\s+/)).not.toContain("max-h-[528px]");
+    expect(scroller.className.split(/\s+/)).not.toContain("overflow-y-auto");
+    expect(scroller.className.split(/\s+/)).toEqual(expect.arrayContaining(["overflow-x-auto"]));
   });
 
   it("renders compact table on phone without mobile cards, body rows starting with sticky TableRowHeader (Task 5)", () => {

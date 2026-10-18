@@ -3,7 +3,7 @@
 import { useState, useId } from "react";
 import { changePasswordAction } from "@/app/actions/auth";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { BackLink } from "@/components/ui/BackLink";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
@@ -29,6 +29,11 @@ export default function ChangePasswordPage() {
   if (!session) {
     return <div className="p-8 text-center">Vui lòng đăng nhập</div>;
   }
+
+  const role = (session?.user as any)?.role;
+  const isStaff = role === "STAFF";
+  const backHref = isStaff ? "/pos" : "/admin";
+  const backLabel = isStaff ? "Về máy bán hàng" : "Về trang quản trị";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,13 +69,9 @@ export default function ChangePasswordPage() {
   return (
     <div className="min-h-screen bg-page p-8">
       <div className="max-w-md mx-auto bg-surface-card rounded-xl shadow-lg p-8">
+        <BackLink href={backHref} label={backLabel} />
         <PageHeader
           title="Đổi mật khẩu"
-          actions={
-            <Link href="/pos" className="text-primary hover:underline text-sm">
-              Về trang POS
-            </Link>
-          }
         />
 
         {error && (
@@ -80,9 +81,9 @@ export default function ChangePasswordPage() {
         )}
         
         {success && (
-          <div className="bg-success/10 text-success p-3 rounded-lg text-sm text-center mb-6 border border-success/20">
+          <Alert variant="success" className="mb-6">
             {success}
-          </div>
+          </Alert>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">

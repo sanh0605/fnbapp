@@ -34,7 +34,7 @@ export default async function EditUnitPage(
         backHref={detailHref}
         backLabel={unit.name}
         title="Chỉnh sửa"
-        subtitle={unit.id}
+        subtitle={unit.name}
       />
       <UnitForm initialData={unit} returnTo={detailHref} />
     </DetailFrame>

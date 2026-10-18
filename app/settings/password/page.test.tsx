@@ -4,17 +4,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import React from "react";
 import ChangePasswordPage from "./page";
 
-const mocks = vi.hoisted(() => ({ changePasswordAction: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  changePasswordAction: vi.fn(),
+  sessionData: { user: { name: "admin", role: "ADMIN" } } as any,
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+}));
 
 vi.mock("@/app/actions/auth", () => ({ changePasswordAction: mocks.changePasswordAction }));
 vi.mock("next-auth/react", () => ({
-  useSession: () => ({ data: { user: { name: "admin" } }, status: "authenticated" }),
+  useSession: () => ({ data: mocks.sessionData, status: "authenticated" }),
 }));
 
 afterEach(() => cleanup());
 beforeEach(() => {
   mocks.changePasswordAction.mockReset();
   mocks.changePasswordAction.mockResolvedValue({ success: true });
+  mocks.sessionData = { user: { name: "admin", role: "ADMIN" } };
 });
 
 // Wave K6 (plan Review Focus 5): the page moves onto the shared templates; the
@@ -53,5 +61,21 @@ describe("Đổi mật khẩu", () => {
     fill("abc123", "newpass1", "newpass1");
     await waitFor(() => expect(mocks.changePasswordAction).toHaveBeenCalledWith("abc123", "newpass1"));
     expect(await screen.findByText("Đổi mật khẩu thành công!")).toBeInTheDocument();
+  });
+
+  it("renders back link to /admin for non-staff role", () => {
+    mocks.sessionData = { user: { name: "admin", role: "ADMIN" } };
+    render(<ChangePasswordPage />);
+    const backLink = screen.getByRole("link", { name: /Về trang quản trị/ });
+    expect(backLink).toBeInTheDocument();
+    expect(backLink).toHaveAttribute("href", "/admin");
+  });
+
+  it("renders back link to /pos for STAFF role", () => {
+    mocks.sessionData = { user: { name: "staff1", role: "STAFF" } };
+    render(<ChangePasswordPage />);
+    const backLink = screen.getByRole("link", { name: /Về máy bán hàng/ });
+    expect(backLink).toBeInTheDocument();
+    expect(backLink).toHaveAttribute("href", "/pos");
   });
 });

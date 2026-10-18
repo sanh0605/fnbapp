@@ -36,7 +36,7 @@ export default async function EditConversionPage(
         backHref={detailHref}
         backLabel={item?.name || conv.id}
         title="Chỉnh sửa"
-        subtitle={conv.id}
+        subtitle={item?.name || conv.id}
       />
       <ConversionForm
         initialData={conv}

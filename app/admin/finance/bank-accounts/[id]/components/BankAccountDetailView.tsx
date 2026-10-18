@@ -108,9 +108,9 @@ export function BankAccountDetailView({
         )}
         {canDelete && (
           <RemoveRecordButton
-            verb="Xoá hẳn"
+            verb="Xoá"
             name={account.name}
-            confirmMessage={`Xoá hẳn tài khoản "${account.name}"? Không thể hoàn tác. Nếu đã có dòng sổ dùng tài khoản này, hệ thống sẽ từ chối xoá.`}
+            confirmMessage={`Xoá tài khoản "${account.name}"? Không thể hoàn tác. Nếu đã có dòng sổ dùng tài khoản này, hệ thống sẽ từ chối xoá.`}
             remove={async () => {
               const fd = new FormData();
               fd.set("id", account.id);

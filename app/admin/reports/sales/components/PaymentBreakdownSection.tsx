@@ -57,9 +57,7 @@ export function PaymentBreakdownSection({
         {paymentBreakdown.length > 0 && (
           <TableTotalRow>
             <TableCell stick="left">Tổng cộng</TableCell>
-            <TableCell align="right">
-              {totalPaymentCount} lượt thanh toán của {paymentOrderCount} đơn
-            </TableCell>
+            <TableCell align="right">{totalPaymentCount}</TableCell>
             <TableCell align="right">{formatNumber(totalRevenue)}</TableCell>
           </TableTotalRow>
         )}
@@ -85,6 +83,11 @@ export function PaymentBreakdownSection({
           )}
         </TableBody>
       </Table>
+      {paymentBreakdown.length > 0 && (
+        <p className="mt-2 text-xs text-text-secondary">
+          {totalPaymentCount} lượt thanh toán của {paymentOrderCount} đơn
+        </p>
+      )}
     </div>
   );
 }

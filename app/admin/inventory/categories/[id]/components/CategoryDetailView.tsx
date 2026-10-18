@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
@@ -45,12 +44,12 @@ export function CategoryDetailView({
       value: (
         <div className="flex items-center gap-3">
           <span>{itemCount}</span>
-          <Link
+          <Button
             href={`/admin/inventory/items?category=${encodeURIComponent(category.id)}`}
-            className="text-primary hover:text-primary-hover font-medium text-xs underline"
+            variant="secondary"
           >
             Xem hàng hoá
-          </Link>
+          </Button>
         </div>
       ),
     },

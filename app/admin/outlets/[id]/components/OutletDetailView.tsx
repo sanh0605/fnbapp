@@ -125,9 +125,9 @@ export function OutletDetailView({
   ];
 
   const headerActions = (
-    <div className="flex flex-col gap-2 w-full md:w-auto">
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
-        <Button href={editHref} variant="secondary" className="w-full md:w-auto">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button href={editHref} variant="secondary">
           Chỉnh sửa
         </Button>
         {outlet.status === "ACTIVE" ? (
@@ -136,7 +136,6 @@ export function OutletDetailView({
             variant="delete"
             onClick={handleRetire}
             loading={retireLoading}
-            className="w-full md:w-auto"
           >
             Ngừng hoạt động
           </Button>
@@ -146,7 +145,6 @@ export function OutletDetailView({
             variant="secondary"
             onClick={handleReactivate}
             loading={reactivateLoading}
-            className="w-full md:w-auto"
           >
             Mở lại hoạt động
           </Button>
@@ -166,7 +164,6 @@ export function OutletDetailView({
         backHref={returnTo}
         backLabel="Điểm bán"
         title={outlet.name}
-        subtitle={outlet.id}
         badge={outlet.status !== "ACTIVE" ? <Badge variant="warning">Ngừng hoạt động</Badge> : undefined}
         actions={headerActions}
       />

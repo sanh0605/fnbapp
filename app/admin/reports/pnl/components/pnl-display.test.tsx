@@ -44,7 +44,7 @@ describe("cellText", () => {
     expect(cellText(netRow, 0)).toBe("–");
   });
   it("shows a percent row's null value as the placeholder", () => {
-    expect(cellText(marginRow, null)).toBe("---");
+    expect(cellText(marginRow, null)).toBe("–");
   });
   it("shows a percent row's value via formatPercent, unnegated by isCostRow", () => {
     expect(cellText(marginRow, -183.1)).toBe("-183.10%");
@@ -69,20 +69,20 @@ describe("cellTone", () => {
 describe("NoteMarks", () => {
   it("renders nothing for an empty list", () => {
     const { container } = render(<NoteMarks numbers={[]} />);
-    expect(container.querySelector("sup")).toBeNull();
+    expect(container.firstChild).toBeNull();
   });
-  it("joins several numbers with a comma, in one <sup>", () => {
+  it("shows several numbers in brackets, comma-separated, in one span", () => {
     const { container } = render(<NoteMarks numbers={[1, 3]} />);
-    const sups = container.querySelectorAll("sup");
-    expect(sups).toHaveLength(1);
-    expect(sups[0].textContent).toBe("1,3");
+    expect(container.children.length).toBe(1);
+    expect(container.children[0].tagName).toBe("SPAN");
+    expect(container.children[0].textContent).toBe("(1, 3)");
   });
 
   it("uses text-xs (no text-[10.5px] below 12px)", () => {
     const { container } = render(<NoteMarks numbers={[1, 3]} />);
-    const sup = container.querySelector("sup")!;
-    expect(sup.className).not.toContain("text-[10.5px]");
-    expect(sup.className).toContain("text-xs");
+    const span = container.querySelector("span")!;
+    expect(span.className).not.toContain("text-[10.5px]");
+    expect(span.className).toContain("text-xs");
   });
 });
 

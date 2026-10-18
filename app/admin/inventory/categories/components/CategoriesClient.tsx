@@ -35,16 +35,8 @@ const SYSTEM_TYPE_LABELS: Record<string, string> = {
 };
 
 function getTypeLabel(type: string) {
-  switch (type) {
-    case "RAW":
-      return <Badge variant="processing">Nguyên liệu</Badge>;
-    case "CONSUMABLE":
-      return <Badge variant="warning">Vật tư</Badge>;
-    case "EQUIPMENT":
-      return <Badge variant="neutral">Dụng cụ</Badge>;
-    default:
-      return type;
-  }
+  const label = SYSTEM_TYPE_LABELS[type] || type;
+  return <Badge variant="neutral">{label}</Badge>;
 }
 
 export default function CategoriesClient({
@@ -150,11 +142,15 @@ export default function CategoriesClient({
           `/admin/inventory/categories/${encodeURIComponent(cat.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        phoneRow={(cat) => ({
-          title: cat.name,
-          meta: cat.id,
-          badge: getTypeLabel(cat.system_type),
-        })}
+        phoneRow={(cat) => {
+          const kindLabel = SYSTEM_TYPE_LABELS[cat.system_type] || cat.system_type;
+          const showBadge = cat.name.trim().toLowerCase() !== kindLabel.trim().toLowerCase();
+          return {
+            title: cat.name,
+            meta: cat.id,
+            badge: showBadge ? getTypeLabel(cat.system_type) : undefined,
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

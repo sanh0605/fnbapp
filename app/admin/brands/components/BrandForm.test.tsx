@@ -164,4 +164,15 @@ describe("BrandForm", () => {
       vi.useRealTimers();
     }
   });
+
+  it("shows DayInput error and does not call save action on invalid day", async () => {
+    const { container } = render(<BrandForm returnTo="/admin/brands" />);
+    const dayBox = screen.getByLabelText(/^Ngày bắt đầu hoạt động/) as HTMLInputElement;
+    fireEvent.change(dayBox, { target: { value: "32/13/2026" } });
+    fireEvent.blur(dayBox);
+    fireEvent.submit(container.querySelector("form")!);
+    expect(await screen.findByText("Ngày không hợp lệ")).toBeInTheDocument();
+    expect(mocks.addBrand).not.toHaveBeenCalled();
+    expect(mocks.editBrand).not.toHaveBeenCalled();
+  });
 });

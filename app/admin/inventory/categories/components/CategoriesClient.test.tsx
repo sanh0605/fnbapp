@@ -105,7 +105,10 @@ describe("CategoriesClient", () => {
     const metaEl = within(phone).getByText("NHH-001");
     expect(metaEl.className).toContain("text-sm");
     expect(metaEl.className).toContain("text-text-secondary");
-    expect(metaEl.parentElement?.textContent).toBe("NHH-001Nguyên liệu");
+    expect(metaEl.parentElement?.textContent).toBe("NHH-001");
+
+    const metaEl2 = within(phone).getByText("NHH-002");
+    expect(metaEl2.parentElement?.textContent).toBe("NHH-002Vật tư");
   });
 
   it("canDelete=false renders no checkboxes and no removal bin", () => {

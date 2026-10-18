@@ -26,7 +26,7 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
     <div className="space-y-4">
       {trend && trend !== "same" && (
         <Alert variant={trend === "up" ? "warning" : "success"}>
-          Giá nhập gần nhất {trend === "up" ? "tăng" : "giảm"} so với lần trước: {formatNumber(rows[1].unitCost)} → {formatNumber(rows[0].unitCost)}
+          Giá nhập gần nhất {trend === "up" ? "tăng" : "giảm"} so với lần trước: {formatNumber(rows[1].unitCost)}đ → {formatNumber(rows[0].unitCost)}đ
         </Alert>
       )}
 
@@ -54,12 +54,12 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
                   {formatNumber(row.quantity)} {row.unitLabel}
                 </TableCell>
                 <TableCell align="right">
-                  <span className="text-text-muted">{formatNumber(row.unitCost)}</span>
+                  {formatNumber(row.unitCost)}đ
                 </TableCell>
                 <TableCell align="right">
-                  {formatNumber(row.lineTotal)}
+                  {formatNumber(row.lineTotal)}đ
                 </TableCell>
-                <TableCell align="right">
+                <TableCell>
                   <Link
                     href={`/admin/inventory/purchase-orders/${row.poId}`}
                     className="text-primary hover:text-primary-hover font-mono text-xs"

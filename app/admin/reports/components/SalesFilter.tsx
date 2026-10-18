@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Button } from "@/components/ui/Button";
+import { RefreshCw } from "lucide-react";
 import { Field } from "@/components/ui/Field";
 import { Select } from "@/components/ui/Select";
 import { DateRangeButton } from "@/components/ui/DateRangeButton";
@@ -187,14 +187,22 @@ function SalesFilterInner({
           </Field>
         </div>
         <div className="w-full md:w-auto">
-          <Button
-            variant="primary"
+          <button
+            type="button"
             onClick={handleFilter}
-            loading={isPending}
-            className="w-full md:w-auto whitespace-nowrap"
+            disabled={isPending}
+            aria-busy={isPending || undefined}
+            className="relative w-full md:w-auto bg-surface-secondary text-text-primary px-4 rounded-lg font-medium hover:bg-surface-secondary/80 transition border border-border flex items-center justify-center min-w-[80px] min-h-[48px] md:min-h-[40px] text-base md:text-sm whitespace-nowrap disabled:opacity-50"
           >
-            Lọc
-          </Button>
+            {isPending ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin absolute" />
+                <span className="invisible">Lọc</span>
+              </>
+            ) : (
+              "Lọc"
+            )}
+          </button>
         </div>
       </div>
     </>

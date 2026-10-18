@@ -175,8 +175,8 @@ describe("OutletsClient", () => {
 
     expect(screen.getAllByText("07:00 - 22:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chưa đặt").length).toBeGreaterThan(0);
-    expect(screen.getByText("Phin Đi · 001 · 07:00 - 22:00 · Bắt đầu: 27/03/2026 00:00:00")).toBeInTheDocument();
-    expect(screen.getByText("Uchako · 002 · Chưa đặt · Bắt đầu: 01/06/2026 00:00:00")).toBeInTheDocument();
+    expect(screen.getByText("Phin Đi · 001 · Giờ 07:00 - 22:00")).toBeInTheDocument();
+    expect(screen.getByText("Uchako · 002 · Giờ chưa đặt")).toBeInTheDocument();
     expect(screen.queryByText(/Giờ hoạt động:/)).toBeNull();
   });
 

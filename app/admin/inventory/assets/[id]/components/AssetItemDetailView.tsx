@@ -183,7 +183,7 @@ export function AssetItemDetailView({
             <div className="md:hidden bg-surface-card rounded-card border border-border divide-y divide-border">
               {detail.lots.map((lot) => {
                 const metaParts = [
-                  formatDateTimeFull(lot.acquiredDate),
+                  lot.id,
                   `Còn ${lot.remainingQuantity}/${lot.quantity} cái`,
                   `${formatNumber(Math.round(lot.unitCost))}đ`,
                   `${lot.termMonths} tháng`,
@@ -192,7 +192,7 @@ export function AssetItemDetailView({
 
                 const content = (
                   <PhoneRow
-                    title={lot.id}
+                    title={formatDateTimeFull(lot.acquiredDate)}
                     value={`${formatNumber(Math.round(lot.remainingValue))}đ`}
                     meta={metaParts.join(" · ")}
                   />

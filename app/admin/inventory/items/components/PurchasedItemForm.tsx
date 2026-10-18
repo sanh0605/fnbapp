@@ -339,7 +339,12 @@ export function PurchasedItemForm({
                 placeholder="Ví dụ: Cà phê hạt Robusta 500g"
               />
             </Field>
-            <Field label="Phân loại" htmlFor={`${formId}-categoryId`} required>
+            <Field
+              label="Phân loại"
+              htmlFor={`${formId}-categoryId`}
+              required
+              hint={!selectedCategoryId ? "Chọn phân loại để hiện các ô còn lại." : undefined}
+            >
               <Select
                 id={`${formId}-categoryId`}
                 value={selectedCategoryId}
@@ -546,8 +551,8 @@ function ConversionRowsSection({
   isEdit: boolean;
 }) {
   return (
-    <div className="bg-page p-4 rounded-xl border border-border">
-      <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
+    <div className="space-y-3">
+      <div className="flex flex-wrap justify-between items-center gap-2">
         <h4 className="text-sm font-bold text-text-primary">Quy đổi đơn vị mua</h4>
         <Button
           type="button"
@@ -566,39 +571,15 @@ function ConversionRowsSection({
         {unitsState.map((u, idx) => {
           const unitRowId = `${formId}-unit-${idx}`;
           return (
-            <div key={idx} className="flex flex-wrap sm:flex-nowrap gap-2 items-end">
-              <div className="flex-1 min-w-[140px]">
-                <Field label="Đơn vị mua" htmlFor={`${unitRowId}-name`}>
-                  <SearchableSelect
-                    id={`${unitRowId}-name`}
-                    options={unitOptions}
-                    value={u.name}
-                    onChange={(val) => updateUnitRow(idx, "name", val)}
-                    placeholder="Ví dụ: Bao 10kg"
-                  />
-                </Field>
-              </div>
-              <div className="pb-3 text-text-muted font-bold">=</div>
-              <div className="w-28 sm:w-32">
-                <Field label="Hệ số" htmlFor={`${unitRowId}-conversion_rate`}>
-                  <NumberInput
-                    id={`${unitRowId}-conversion_rate`}
-                    decimals={6}
-                    min={0}
-                    minExclusive
-                    example="1,000"
-                    value={u.conversion_rate === "" ? null : Number(u.conversion_rate)}
-                    onValueChange={(v) =>
-                      updateUnitRow(idx, "conversion_rate", v === null ? "" : String(v))
-                    }
-                  />
-                </Field>
-              </div>
-              <div className="pb-3 text-sm text-text-secondary font-medium whitespace-nowrap">
-                {baseUnitName || "cơ bản"}
-              </div>
+            <div
+              key={idx}
+              className={idx > 0 ? "pt-3 border-t border-border" : ""}
+            >
               {unitsState.length > 1 && (
-                <div className="pb-0.5">
+                <div className="flex items-center justify-between sm:hidden mb-2">
+                  <span className="text-xs text-text-secondary">
+                    Đơn vị mua {idx + 1}
+                  </span>
                   <Button
                     type="button"
                     variant="delete"
@@ -612,6 +593,51 @@ function ConversionRowsSection({
                   </Button>
                 </div>
               )}
+              <div className="flex items-end gap-2">
+                <div className="w-28 sm:w-48 shrink-0">
+                  <Field label="Đơn vị mua" htmlFor={`${unitRowId}-name`}>
+                    <SearchableSelect
+                      id={`${unitRowId}-name`}
+                      options={unitOptions}
+                      value={u.name}
+                      onChange={(val) => updateUnitRow(idx, "name", val)}
+                      placeholder="Ví dụ: Bao 10kg"
+                    />
+                  </Field>
+                </div>
+                <div className="pb-3 text-text-muted font-bold shrink-0">=</div>
+                <div className="flex-1 sm:w-40 sm:flex-none min-w-0">
+                  <Field label="Hệ số" htmlFor={`${unitRowId}-conversion_rate`}>
+                    <NumberInput
+                      id={`${unitRowId}-conversion_rate`}
+                      decimals={6}
+                      min={0}
+                      minExclusive
+                      example="1,000"
+                      unit={baseUnitName || "cơ bản"}
+                      value={u.conversion_rate === "" ? null : Number(u.conversion_rate)}
+                      onValueChange={(v) =>
+                        updateUnitRow(idx, "conversion_rate", v === null ? "" : String(v))
+                      }
+                    />
+                  </Field>
+                </div>
+                {unitsState.length > 1 && (
+                  <div className="pb-0.5 shrink-0 hidden sm:block">
+                    <Button
+                      type="button"
+                      variant="delete"
+                      onClick={(e) => {
+                        e.currentTarget.dispatchEvent(new Event("change", { bubbles: true }));
+                        removeUnitRow(idx);
+                      }}
+                      aria-label="Xoá đơn vị mua"
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}

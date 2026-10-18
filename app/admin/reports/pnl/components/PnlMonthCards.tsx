@@ -3,6 +3,7 @@ import type { PnlRow, PnlTable } from "@/lib/reports/profit-and-loss-table";
 import { cellText, cellTone, isCostRow, NoteMarks } from "./pnl-display";
 import { PnlSourceList } from "./PnlSourceList";
 import { PnlNotes } from "./PnlNotes";
+import { ChevronDown } from "lucide-react";
 
 // Phone layout (.claude/rules/ui-devices.md): no wide table. A card for the
 // range, then one card per month, newest first. Native <details>, so no
@@ -30,17 +31,20 @@ function YearCard({ table }: { table: PnlTable }) {
   const lines = table.rows.filter(r => r.total !== null);
   const eyebrow = table.rangeName.toLocaleUpperCase("vi-VN");
   return (
-    <details data-testid="pnl-year" className="rounded-xl bg-surface-secondary">
-      <summary className="flex min-h-[48px] md:min-h-[40px] cursor-pointer flex-col gap-1 px-4 py-3">
-        <span className="text-xs font-medium uppercase tracking-[0.04em] text-text-muted">{eyebrow}</span>
-        <span className="flex items-baseline justify-between gap-3">
-          <span className="font-display font-semibold text-text-primary">Lợi nhuận ròng</span>
-          <span className={`font-display text-xl font-semibold tabular-nums ${netTone(net.total)}`}>{formatNumber(net.total)}</span>
-        </span>
-        <span className="flex items-baseline justify-between gap-3 text-sm text-text-secondary">
-          <span>Doanh thu</span>
-          <span className="tabular-nums">{formatNumber(revenue.total)}</span>
-        </span>
+    <details data-testid="pnl-year" className="group rounded-xl bg-surface-secondary">
+      <summary className="flex min-h-[48px] md:min-h-[40px] cursor-pointer items-center justify-between gap-3 px-4 py-3 list-none [&::-webkit-details-marker]:hidden">
+        <div className="flex flex-1 flex-col gap-1 min-w-0">
+          <span className="text-xs font-medium uppercase tracking-[0.04em] text-text-muted">{eyebrow}</span>
+          <span className="flex items-baseline justify-between gap-3">
+            <span className="font-display font-semibold text-text-primary">Lợi nhuận ròng</span>
+            <span className={`font-display text-xl font-semibold tabular-nums ${netTone(net.total)}`}>{formatNumber(net.total)}</span>
+          </span>
+          <span className="flex items-baseline justify-between gap-3 text-sm text-text-secondary">
+            <span>Doanh thu</span>
+            <span className="tabular-nums">{formatNumber(revenue.total)}</span>
+          </span>
+        </div>
+        <ChevronDown className="h-5 w-5 shrink-0 text-text-secondary transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
       </summary>
       <div className="divide-y divide-border border-t border-border px-4">
         {lines.map(row => (
@@ -57,23 +61,32 @@ function MonthCard({ table, index }: { table: PnlTable; index: number }) {
   const column = table.months[index];
   const net = table.rows.find(r => r.key === "netProfit")!.cells[index];
   const revenue = table.rows.find(r => r.key === "revenue")!.cells[index];
+  const cumRow = table.rows.find(r => r.key === "cumulative")!;
+  const cumulative = cumRow.cells[index];
   return (
-    <details data-testid={`pnl-month-${column.month}`} className="rounded-xl border border-border bg-surface-card">
-      <summary className="flex min-h-[48px] md:min-h-[40px] cursor-pointer flex-col gap-1 px-4 py-3">
-        <span className="flex items-baseline justify-between gap-3">
-          <span className="min-w-0 font-bold text-text-primary">
-            {column.title}
-            <NoteMarks numbers={column.notes} />
+    <details data-testid={`pnl-month-${column.month}`} className="group rounded-xl border border-border bg-surface-card">
+      <summary className="flex min-h-[48px] md:min-h-[40px] cursor-pointer items-center justify-between gap-3 px-4 py-3 list-none [&::-webkit-details-marker]:hidden">
+        <div className="flex flex-1 flex-col gap-1 min-w-0">
+          <span className="flex items-baseline justify-between gap-3">
+            <span className="min-w-0 font-bold text-text-primary">
+              {column.title}
+              <NoteMarks numbers={column.notes} />
+            </span>
+            <span className={`font-display text-xl font-semibold tabular-nums ${netTone(net.value)}`}>{formatNumber(net.value)}</span>
           </span>
-          <span className={`font-display text-xl font-semibold tabular-nums ${netTone(net.value)}`}>{formatNumber(net.value)}</span>
-        </span>
-        <span className="flex items-baseline justify-between gap-3 text-sm text-text-secondary">
-          <span>Doanh thu{column.until ? ` · đến ${column.until}` : ""}</span>
-          <span className="tabular-nums">{formatNumber(revenue.value)}</span>
-        </span>
+          <span className="flex items-baseline justify-between gap-3 text-sm text-text-secondary">
+            <span>Doanh thu{column.until ? ` · đến ${column.until}` : ""}</span>
+            <span className="tabular-nums">{formatNumber(revenue.value)}</span>
+          </span>
+          <span className="flex items-baseline justify-between gap-3 text-sm text-text-secondary">
+            <span>Luỹ kế</span>
+            <span className={`tabular-nums ${cellTone(cumRow, cumulative.value)}`}>{cellText(cumRow, cumulative.value)}</span>
+          </span>
+        </div>
+        <ChevronDown className="h-5 w-5 shrink-0 text-text-secondary transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
       </summary>
       <div className="divide-y divide-border border-t border-border px-4">
-        {table.rows.map(row => {
+        {table.rows.filter(row => row.key !== "cumulative").map(row => {
           const cell = row.cells[index];
           const opens = cell.sources.length > 0 || cell.formula !== null;
           if (!opens) {

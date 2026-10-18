@@ -99,6 +99,6 @@ describe("DashboardSettingsPage", () => {
     render(jsx);
 
     expect(screen.getByText("Chỉ chủ quán sửa được mục này")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Lưu" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
   });
 });

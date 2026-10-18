@@ -87,7 +87,7 @@ describe("admin dashboard drops old controls (BR-UI-007)", () => {
     const tree = await AdminDashboard({ searchParams: Promise.resolve({}) });
     const text = collectText(tree as ReactNode).join("|");
     expect(text).toContain("Tổng quan");
-    expect(text).toContain("Việc cần xử lý và bán hàng 7 ngày qua.");
+    expect(text).toContain("Việc cần xử lý và bán hàng 7 ngày qua · đơn vị: đồng");
     expect(text).toContain("Cài đặt Tổng quan");
   });
 

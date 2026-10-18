@@ -110,9 +110,9 @@ export function CategoryDetailView({
         )}
         {canDelete && (
           <RemoveRecordButton
-            verb="Xoá hẳn"
+            verb="Xoá"
             name={category.name}
-            confirmMessage={`Xoá hẳn nhóm "${category.name}"? Không thể hoàn tác. Nếu đã có dòng sổ dùng nhóm này, hệ thống sẽ từ chối xoá.`}
+            confirmMessage={`Xoá nhóm "${category.name}"? Không thể hoàn tác. Nếu đã có dòng sổ dùng nhóm này, hệ thống sẽ từ chối xoá.`}
             remove={async () => {
               const fd = new FormData();
               fd.set("id", category.id);

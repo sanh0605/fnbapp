@@ -20,8 +20,8 @@ export function shownMoney(row: PnlRow, value: number): number {
 // percent -> formatPercent; a money cell that is exactly 0 -> en dash, as
 // in the sample; otherwise the shown (possibly negated) amount.
 export function cellText(row: PnlRow, value: number | null): string {
-  if (row.unit === "percent") return formatPercent(value);
   if (value === null) return "–";
+  if (row.unit === "percent") return formatPercent(value);
   const shown = shownMoney(row, value);
   return shown === 0 ? "–" : formatNumber(shown);
 }
@@ -33,9 +33,9 @@ export function cellTone(row: PnlRow, value: number | null): string {
   return shownMoney(row, value) < 0 ? "text-danger" : "";
 }
 
-// The numbers of the footnotes that name a column or a line, e.g. "1,3" --
-// joined with a comma, never run together ("13" would read as thirteen).
-export function NoteMarks({ numbers }: { numbers: number[] }) {
+// The numbers of the footnotes that name a column or a line, e.g. "1, 3" --
+// shown as normal small text in brackets after the month (Ticket G9 item 5).
+export function NoteMarks({ numbers, className }: { numbers: number[]; className?: string }) {
   if (numbers.length === 0) return null;
-  return <sup className="ml-0.5 text-xs font-bold text-primary">{numbers.join(",")}</sup>;
+  return <span className={className ?? "ml-1 text-xs font-normal text-text-secondary"}>({numbers.join(", ")})</span>;
 }

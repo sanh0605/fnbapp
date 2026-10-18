@@ -347,4 +347,37 @@ describe("ItemsClient", () => {
     expect(tableRows[3]).toHaveTextContent("SPM-078");
     expect(tableRows[3]).toHaveTextContent("Xem ở Tài sản");
   });
+
+  it("an asset item's phone row shows 'Tài sản'", () => {
+    const items: DBPurchasedItem[] = [
+      {
+        id: "SPM-078",
+        name: "Muỗng nhựa định lượng 10g",
+        item_category_id: "CAT-1",
+        status: "ACTIVE",
+        is_non_inventory: false,
+        created_at: "2026-01-01T00:00:00Z",
+      },
+    ];
+
+    const stockById: Record<string, ItemStockDisplay> = {
+      "SPM-078": { kind: "equipment", text: "Xem ở Tài sản" },
+    };
+
+    const { container } = render(
+      <ItemsClient
+        categories={CATEGORIES}
+        items={items}
+        conversions={[]}
+        units={UNITS}
+        stockById={stockById}
+        canDelete={false}
+      />,
+    );
+
+    const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
+    expect(phone).toBeTruthy();
+    const phoneRow = within(phone).getByText("Muỗng nhựa định lượng 10g").closest("a")!;
+    expect(within(phoneRow).getByText("Tài sản")).toBeInTheDocument();
+  });
 });

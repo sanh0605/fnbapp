@@ -290,7 +290,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
               <Button
                 href={detailHref}
                 variant="secondary"
-                className="flex-1 min-h-[48px] md:min-h-[40px]"
+                className="flex-1 min-h-[48px] md:min-h-[40px] whitespace-nowrap"
               >
                 Quay lại
               </Button>
@@ -299,7 +299,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                 variant="danger"
                 loading={isSubmitting}
                 disabled={!reason.trim() || isSubmitting}
-                className="flex-1 min-h-[48px] md:min-h-[40px]"
+                className="flex-1 min-h-[48px] md:min-h-[40px] whitespace-nowrap"
               >
                 Xác nhận huỷ
               </Button>

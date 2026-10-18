@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
@@ -30,6 +31,9 @@ export interface PurchaseOrderTotalsProps {
   notes: string;
   setNotes: (notes: string) => void;
 }
+
+const RADIO_LABEL_CLASS =
+  "flex items-center gap-3 px-3 rounded-lg border border-border cursor-pointer min-h-[48px] md:min-h-[40px] hover:bg-surface-secondary/50 text-sm font-medium text-text-primary transition-colors";
 
 export function PurchaseOrderTotals({
   formId,
@@ -62,172 +66,181 @@ export function PurchaseOrderTotals({
   const isExpanded = hasValue || userOpen;
 
   return (
-    <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
-      <div>
-        <h3 className="text-sm text-text-secondary mb-3">Thanh toán</h3>
-        <div className="w-full mb-6 lg:mb-0 space-y-3 bg-surface-card rounded-xl shadow-sm border border-border p-5">
-          <div className="flex justify-between items-center text-sm text-text-secondary">
-            <span className="font-medium">Tổng tiền hàng:</span>
-            <span className="font-semibold text-text-primary">{formatNumber(subtotalAmount)}đ</span>
+    <div>
+      <h3 className="text-sm text-text-secondary mb-3">Thanh toán</h3>
+      <div className="w-full bg-surface-card rounded-xl shadow-sm border border-border p-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-sm text-text-secondary">
+              <span className="font-medium">Tổng tiền hàng:</span>
+              <span className="font-semibold text-text-primary">{formatNumber(subtotalAmount)}đ</span>
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-border/60">
+              <div className="flex justify-between items-center text-sm gap-2">
+                <span className="text-text-secondary">Phí vận chuyển (+):</span>
+                <div className="w-36 md:w-40">
+                  <NumberInput
+                    id={`${formId}-shipping`}
+                    aria-label="Phí vận chuyển"
+                    decimals={0}
+                    zeroIsEmpty
+                    example="5,000"
+                    value={shippingFee || null}
+                    onValueChange={(v) => setShippingFee(v ?? 0)}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-sm gap-2">
+                <span className="text-text-secondary">Voucher (-):</span>
+                <div className="w-36 md:w-40">
+                  <NumberInput
+                    id={`${formId}-voucher`}
+                    aria-label="Voucher"
+                    decimals={0}
+                    zeroIsEmpty
+                    example="5,000"
+                    value={voucherAmount || null}
+                    onValueChange={(v) => setVoucherAmount(v ?? 0)}
+                  />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={hasValue}
+                onClick={() => {
+                  if (hasValue) return;
+                  setUserOpen((prev) => !prev);
+                }}
+                className="text-sm text-primary hover:underline py-1 flex items-center justify-between w-full min-h-[48px] md:min-h-[40px] disabled:no-underline disabled:cursor-default"
+              >
+                <span>Thuế, chiết khấu, ghi chú</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-text-muted transition-transform duration-200 ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                  aria-hidden="true"
+                />
+              </button>
+
+              <div className={isExpanded ? "space-y-2" : "hidden"}>
+                <div className="flex justify-between items-center text-sm gap-2">
+                  <span className="text-text-secondary">Thuế (+):</span>
+                  <div className="w-36 md:w-40">
+                    <NumberInput
+                      id={`${formId}-tax`}
+                      aria-label="Thuế"
+                      decimals={0}
+                      zeroIsEmpty
+                      example="5,000"
+                      value={taxAmount || null}
+                      onValueChange={(v) => setTaxAmount(v ?? 0)}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center text-sm gap-2">
+                  <span className="text-text-secondary">Chiết khấu (-):</span>
+                  <div className="w-36 md:w-40">
+                    <NumberInput
+                      id={`${formId}-discount`}
+                      aria-label="Chiết khấu"
+                      decimals={0}
+                      zeroIsEmpty
+                      example="5,000"
+                      value={discountAmount || null}
+                      onValueChange={(v) => setDiscountAmount(v ?? 0)}
+                    />
+                  </div>
+                </div>
+                <div className="pt-1">
+                  <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
+                    <TextInput
+                      id={`${formId}-notes`}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Ví dụ: giao buổi sáng"
+                    />
+                  </Field>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t border-border">
+              <span className="text-base font-bold text-text-primary">Cần thanh toán:</span>
+              <span className="text-2xl font-bold text-success">{formatNumber(totalAmount)}đ</span>
+            </div>
           </div>
 
-          <div className="space-y-2 pt-2 border-t border-border/60">
-            <div className="flex justify-between items-center text-sm gap-2">
-              <span className="text-text-secondary">Phí vận chuyển (+):</span>
-              <div className="w-28 md:w-32">
-                <NumberInput
-                  id={`${formId}-shipping`}
-                  aria-label="Phí vận chuyển"
-                  decimals={0}
-                  zeroIsEmpty
-                  value={shippingFee || null}
-                  onValueChange={(v) => setShippingFee(v ?? 0)}
+          <div className="space-y-3">
+            <div className="text-sm text-text-secondary">Hình thức thanh toán</div>
+            <div className="flex flex-col gap-2">
+              <label className={RADIO_LABEL_CLASS}>
+                <input
+                  type="radio"
+                  name="payment_method_radio"
+                  value="CASH"
+                  checked={paymentMethod === "CASH"}
+                  onChange={() => {
+                    setPaymentMethod("CASH");
+                    setBankAccountId("");
+                    setPaymentError(null);
+                  }}
+                  className="w-4 h-4 text-primary focus:ring-focus-ring"
                 />
-              </div>
-            </div>
-            <div className="flex justify-between items-center text-sm gap-2">
-              <span className="text-text-secondary">Voucher (-):</span>
-              <div className="w-28 md:w-32">
-                <NumberInput
-                  id={`${formId}-voucher`}
-                  aria-label="Voucher"
-                  decimals={0}
-                  zeroIsEmpty
-                  value={voucherAmount || null}
-                  onValueChange={(v) => setVoucherAmount(v ?? 0)}
+                <span>Tiền mặt</span>
+              </label>
+              <label className={RADIO_LABEL_CLASS}>
+                <input
+                  type="radio"
+                  name="payment_method_radio"
+                  value="BANK_TRANSFER"
+                  checked={paymentMethod === "BANK_TRANSFER"}
+                  onChange={() => {
+                    setPaymentMethod("BANK_TRANSFER");
+                    setPaymentError(null);
+                    if (!bankAccountId && bankAccounts.length === 1) {
+                      setBankAccountId(bankAccounts[0].id);
+                    }
+                  }}
+                  className="w-4 h-4 text-primary focus:ring-focus-ring"
                 />
-              </div>
+                <span>Chuyển khoản</span>
+              </label>
             </div>
 
-            <button
-              type="button"
-              disabled={hasValue}
-              onClick={() => {
-                if (hasValue) return;
-                setUserOpen((prev) => !prev);
-              }}
-              className="text-sm text-primary hover:underline py-1 flex items-center justify-between w-full min-h-[48px] md:min-h-[40px] disabled:no-underline disabled:cursor-default"
-            >
-              <span>Thuế, chiết khấu, ghi chú</span>
-              <span className="text-xs text-text-muted">{isExpanded ? "▲" : "▼"}</span>
-            </button>
-
-            <div className={isExpanded ? "space-y-2" : "hidden"}>
-              <div className="flex justify-between items-center text-sm gap-2">
-                <span className="text-text-secondary">Thuế (+):</span>
-                <div className="w-28 md:w-32">
-                  <NumberInput
-                    id={`${formId}-tax`}
-                    aria-label="Thuế"
-                    decimals={0}
-                    zeroIsEmpty
-                    value={taxAmount || null}
-                    onValueChange={(v) => setTaxAmount(v ?? 0)}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-between items-center text-sm gap-2">
-                <span className="text-text-secondary">Chiết khấu (-):</span>
-                <div className="w-28 md:w-32">
-                  <NumberInput
-                    id={`${formId}-discount`}
-                    aria-label="Chiết khấu"
-                    decimals={0}
-                    zeroIsEmpty
-                    value={discountAmount || null}
-                    onValueChange={(v) => setDiscountAmount(v ?? 0)}
-                  />
-                </div>
-              </div>
-              <div className="pt-1">
-                <Field label="Ghi chú" htmlFor={`${formId}-notes`}>
-                  <TextInput
-                    id={`${formId}-notes`}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Ví dụ: giao buổi sáng"
-                  />
+            {paymentMethod === "BANK_TRANSFER" && (
+              <div className="mt-3">
+                <Field label="Tài khoản" htmlFor={`${formId}-bankAccountId`}>
+                  <Select
+                    id={`${formId}-bankAccountId`}
+                    value={bankAccountId}
+                    onChange={(e) => {
+                      setBankAccountId(e.target.value);
+                      setPaymentError(null);
+                    }}
+                  >
+                    <option value="" data-placeholder>-- Chọn tài khoản --</option>
+                    {bankAccounts.map((a: any) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name}
+                      </option>
+                    ))}
+                    {bankAccountId && !bankAccounts.some((a: any) => a.id === bankAccountId) && (
+                      <option value={bankAccountId}>{bankAccountId} (không còn dùng)</option>
+                    )}
+                  </Select>
                 </Field>
               </div>
-            </div>
-          </div>
+            )}
 
-          <div className="flex justify-between items-center pt-4 border-t border-border">
-            <span className="text-base font-bold text-text-primary">Cần thanh toán:</span>
-            <span className="text-2xl font-bold text-success">{formatNumber(totalAmount)}đ</span>
+            {paymentError && (
+              <div role="alert" className="text-sm font-medium text-danger mt-2">
+                {paymentError}
+              </div>
+            )}
           </div>
         </div>
-      </div>
-
-      <div className="w-full mb-6 lg:mb-0 lg:order-first">
-        <span className="block text-sm font-semibold text-text-secondary mb-2">
-          Hình thức thanh toán
-        </span>
-        <div className="flex items-center gap-6 min-h-[48px] md:min-h-[40px]">
-          <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
-            <input
-              type="radio"
-              name="payment_method_radio"
-              value="CASH"
-              checked={paymentMethod === "CASH"}
-              onChange={() => {
-                setPaymentMethod("CASH");
-                setBankAccountId("");
-                setPaymentError(null);
-              }}
-              className="w-4 h-4 text-primary focus:ring-focus-ring"
-            />
-            <span>Tiền mặt</span>
-          </label>
-          <label className="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary">
-            <input
-              type="radio"
-              name="payment_method_radio"
-              value="BANK_TRANSFER"
-              checked={paymentMethod === "BANK_TRANSFER"}
-              onChange={() => {
-                setPaymentMethod("BANK_TRANSFER");
-                setPaymentError(null);
-                if (!bankAccountId && bankAccounts.length === 1) {
-                  setBankAccountId(bankAccounts[0].id);
-                }
-              }}
-              className="w-4 h-4 text-primary focus:ring-focus-ring"
-            />
-            <span>Chuyển khoản</span>
-          </label>
-        </div>
-
-        {paymentMethod === "BANK_TRANSFER" && (
-          <div className="mt-3">
-            <Field label="Tài khoản" htmlFor={`${formId}-bankAccountId`}>
-              <Select
-                id={`${formId}-bankAccountId`}
-                value={bankAccountId}
-                onChange={(e) => {
-                  setBankAccountId(e.target.value);
-                  setPaymentError(null);
-                }}
-              >
-                <option value="" data-placeholder>-- Chọn tài khoản --</option>
-                {bankAccounts.map((a: any) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name}
-                  </option>
-                ))}
-                {bankAccountId && !bankAccounts.some((a: any) => a.id === bankAccountId) && (
-                  <option value={bankAccountId}>{bankAccountId} (không còn dùng)</option>
-                )}
-              </Select>
-            </Field>
-          </div>
-        )}
-
-        {paymentError && (
-          <div role="alert" className="text-sm font-medium text-danger mt-2">
-            {paymentError}
-          </div>
-        )}
       </div>
     </div>
   );

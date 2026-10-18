@@ -39,6 +39,30 @@ function renderPoStatusBadge(status: string) {
   return <Badge variant="neutral">{status}</Badge>;
 }
 
+function renderLinks(text: string | null | undefined) {
+  if (!text?.trim()) return null;
+  const parts = text.split(/(https?:\/\/\S+)/);
+  return (
+    <>
+      {parts.map((part, idx) =>
+        /^https?:\/\/\S+$/.test(part) ? (
+          <a
+            key={idx}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline break-all"
+          >
+            {part}
+          </a>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+}
+
 export function SupplierDetailView({
   supplier,
   orders,
@@ -88,10 +112,14 @@ export function SupplierDetailView({
     { label: "Điện thoại", value: supplier.phone },
     { label: "Địa chỉ", value: supplier.address },
     { label: "Mã số thuế", value: supplier.tax_id },
-    { label: "Ghi chú / liên kết", value: supplier.links },
+    { label: "Ghi chú / liên kết", value: renderLinks(supplier.links) },
     {
       label: "Trạng thái",
-      value: supplier.status === "INACTIVE" ? "Ngừng hợp tác" : "Đang hợp tác",
+      value: (
+        <Badge variant={isInactive ? "neutral" : "success"}>
+          {isInactive ? "Ngừng hợp tác" : "Đang hợp tác"}
+        </Badge>
+      ),
     },
   ];
 
@@ -149,7 +177,6 @@ export function SupplierDetailView({
         backHref={returnTo}
         backLabel="Nhà cung cấp"
         title={supplier.name}
-        subtitle={supplier.id}
         badge={
           supplier.status === "INACTIVE" ? (
             <Badge variant="neutral">
