@@ -131,9 +131,12 @@ export default function IssueSlipsClient({
         key: "id",
         header: "Mã phiếu",
         render: (row) => (
-          <span className="font-mono text-xs text-primary transition-colors">
-            {row.id}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs text-primary transition-colors">
+              {row.id}
+            </span>
+            {renderKindBadge(row.kind)}
+          </div>
         ),
       },
       {
@@ -142,11 +145,6 @@ export default function IssueSlipsClient({
         render: (row) => (
           <span className="tabular-nums text-text-primary">{row.dateText}</span>
         ),
-      },
-      {
-        key: "kind",
-        header: "Loại",
-        render: (row) => renderKindBadge(row.kind),
       },
       {
         key: "createdByName",

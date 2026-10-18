@@ -73,7 +73,7 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
         key: "id",
         header: "Mã phiên",
         render: (row) => (
-          <span className="text-primary">{row.id}</span>
+          <span className="font-mono text-xs text-primary">{row.id}</span>
         ),
       },
       {
@@ -161,11 +161,11 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
         getHref={(row) => `/admin/inventory/stocktake/${row.id}`}
         columns={columns}
         phoneRow={(row) => ({
-          title: <span className="whitespace-nowrap">{formatDateTimeFull(row.at)}</span>,
+          title: row.id,
           value: formatStocktakeDiffValue(row).replace(" (tạm tính)", ""),
           meta: [
+            formatDateTimeFull(row.at),
             row.status === "OPEN" ? "Tạm tính" : null,
-            row.id,
             row.personName,
             `Đã đếm ${row.countedLines}/${row.totalLines}`,
           ]

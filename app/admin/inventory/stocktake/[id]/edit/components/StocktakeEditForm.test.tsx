@@ -51,11 +51,12 @@ describe("StocktakeEditForm (BR-INV-012)", () => {
 
   it("recomputes the variance as the owner types", () => {
     const { container } = render(<StocktakeEditForm detail={DETAIL} />);
-    expect(lineOf(container, "SKL-00004")).toHaveTextContent("Thiếu 2,000");
+    expect(lineOf(container, "SKL-00004")).toHaveTextContent("Thiếu 2,000 g");
+    expect(lineOf(container, "SKL-00007")).toHaveTextContent("Khớp");
     fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "5000" } });
-    expect(lineOf(container, "SKL-00004")).toHaveTextContent("Thiếu 1,000");
+    expect(lineOf(container, "SKL-00004")).toHaveTextContent("Thiếu 1,000 g");
     fireEvent.change(box("Bột milkfoam muối biển"), { target: { value: "2500" } });
-    expect(lineOf(container, "SKL-00007")).toHaveTextContent("Dư 500");
+    expect(lineOf(container, "SKL-00007")).toHaveTextContent("Thừa 500 g");
   });
 
   it("sends only the changed lines and goes back to the stocktake page", async () => {

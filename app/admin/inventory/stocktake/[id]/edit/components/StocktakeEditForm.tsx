@@ -67,7 +67,7 @@ export function StocktakeEditForm({ detail }: { detail: Detail }) {
       <div className="space-y-3">
         {detail.lines.map((line) => {
           const val = values[line.id] ?? null;
-          const varianceText = getVarianceText(val, line.theoreticalAtCount);
+          const varianceText = getVarianceText(val, line.theoreticalAtCount, line.unitName);
 
           return (
             <div

@@ -45,8 +45,8 @@ export default async function CancelStocktakePage(props: {
       <DetailHeader
         backHref={detailHref}
         backLabel="Phiếu kiểm kê"
-        title={`Hoàn tác phiên kiểm kê ${params.id}`}
-        subtitle={`Người tạo: ${sessionData.createdByName} · Ngày: ${formatDateTimeFull(sessionData.createdAt)}`}
+        title={<>Hoàn tác phiên kiểm kê <span className="whitespace-nowrap">{params.id}</span></>}
+        subtitle={`Người tạo ${sessionData.createdByName} · Tạo lúc ${formatDateTimeFull(sessionData.createdAt)}`}
       />
       <CancelStocktakeForm session={sessionData} listRow={listRow} />
     </div>

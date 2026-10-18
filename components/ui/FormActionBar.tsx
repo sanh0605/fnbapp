@@ -7,7 +7,7 @@ export interface FormActionBarProps {
   mode: "create" | "edit";
   loading?: boolean;          // while submitting
   onCancel: () => void;       // "Bỏ" / "Bỏ thay đổi"
-  submitLabel?: string;
+  submitLabel?: React.ReactNode;
   disabled?: boolean;
   onSubmit?: () => void;
   children?: React.ReactNode;

@@ -31,9 +31,9 @@ function renderDaysLeft(row: StockOnHandRow) {
     if (row.daysLeft <= 7) {
       return <Badge variant="warning">{text}</Badge>;
     }
-    return <span className="text-text-secondary">{text}</span>;
+    return <span className="text-text-secondary whitespace-nowrap">{text}</span>;
   }
-  return <span className="text-text-muted">—</span>;
+  return <span className="text-text-muted whitespace-nowrap">—</span>;
 }
 
 export default function StockOnHandClient({
@@ -117,7 +117,7 @@ export default function StockOnHandClient({
         header: "Tồn",
         align: "right",
         render: (row) => (
-          <span className={row.onHand < 0 ? "text-danger tabular-nums" : "tabular-nums"}>
+          <span className={row.onHand < 0 ? "text-danger tabular-nums whitespace-nowrap" : "tabular-nums whitespace-nowrap"}>
             {formatDecimal(row.onHand, { maxDigits: 2 })} {row.unitName}
           </span>
         ),
@@ -229,7 +229,7 @@ export default function StockOnHandClient({
               row.value !== null ? `${formatNumber(Math.round(row.value))}đ` : null,
               daysText,
               row.categoryName || null,
-              row.lastCountedAt ? `Kiểm lần cuối ${formatDateTimeFull(row.lastCountedAt)}` : "Chưa kiểm lần nào",
+              row.lastCountedAt ? `Kiểm ${formatDateTimeFull(row.lastCountedAt)}` : "Chưa kiểm",
             ]
               .filter(Boolean)
               .join(" · "),

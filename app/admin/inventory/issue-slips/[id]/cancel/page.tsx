@@ -50,8 +50,9 @@ export default async function CancelIssueSlipPage(
         title={`Huỷ phiếu ${detail.id}`}
         subtitle={
           <span>
-            Ngày xuất: {detail.dateText} ·{" "}
-            <span className="whitespace-nowrap">Người ghi: {detail.createdByName}</span>
+            <span className="block sm:inline">Ngày xuất: {detail.dateText}</span>
+            <span className="hidden sm:inline"> · </span>
+            <span className="block sm:inline">Người ghi: {detail.createdByName}</span>
           </span>
         }
       />

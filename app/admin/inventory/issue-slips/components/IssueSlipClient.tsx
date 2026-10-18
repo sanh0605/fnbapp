@@ -283,16 +283,16 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                 </p>
               )}
             </div>
-            <div className="text-sm font-medium text-text-secondary md:py-2">
-              Đã điền đủ: {filledLineCount}/{lines.length} dòng
-            </div>
           </div>
 
           {/* form-lines: lines table */}
           <div
             data-testid="form-lines"
-            className="min-w-0 space-y-6"
+            className="min-w-0 space-y-3"
           >
+            <div className="flex justify-end text-sm font-medium text-text-secondary">
+              Đã điền đủ: {filledLineCount}/{lines.length} dòng
+            </div>
             <Table>
               <TableHead>
                 <TableHeaderCell><span className="whitespace-nowrap">Mặt hàng</span></TableHeaderCell>
@@ -317,12 +317,14 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                   return (
                     <TableRow key={index}>
                       <TableCell>
-                        <SearchableSelect
-                          value={line.purchasedItemId}
-                          onChange={val => handleItemChange(index, val)}
-                          options={itemOptions}
-                          placeholder="-- Chọn hàng --"
-                        />
+                        <div className="min-w-[320px]">
+                          <SearchableSelect
+                            value={line.purchasedItemId}
+                            onChange={val => handleItemChange(index, val)}
+                            options={itemOptions}
+                            placeholder="-- Chọn hàng --"
+                          />
+                        </div>
                       </TableCell>
                       <TableCell>
                         <span className="tabular-nums text-text-secondary whitespace-nowrap">{onHandDisplay}</span>
@@ -423,7 +425,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
       {/* Phone view (below md) */}
       <div className="md:hidden space-y-4">
         {/* Time card first */}
-        <div className="bg-surface-card rounded-card shadow-sm border border-border p-4 space-y-3">
+        <div className="bg-surface-card rounded-card shadow-sm border border-border p-4">
           <div>
             <label className="block text-sm font-medium text-text-primary mb-1.5">
               Thời điểm xuất (áp dụng cho cả phiếu)
@@ -438,13 +440,13 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
               </p>
             )}
           </div>
-          <p className="text-xs text-text-muted text-center pt-1 border-t border-border">
-            Đã điền đủ: {filledLineCount}/{lines.length} dòng
-          </p>
         </div>
 
         {/* Stacked cards per line */}
         <div className="space-y-3">
+          <div className="text-xs text-text-secondary px-1">
+            Đã điền đủ: {filledLineCount}/{lines.length} dòng
+          </div>
           {lines.map((line, index) => {
             const computed = computedLines[index];
             const item = computed?.item;
@@ -598,7 +600,11 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
 
       <FormActionBar
         mode="create"
-        submitLabel={`Ghi phiếu xuất (${lines.length} dòng)`}
+        submitLabel={
+          <span className="whitespace-nowrap">
+            Ghi phiếu <span className="hidden md:inline">xuất </span>({lines.length} dòng)
+          </span>
+        }
         onSubmit={handleSubmit}
         loading={submitting}
         onCancel={() => router.push("/admin/inventory/issue-slips")}

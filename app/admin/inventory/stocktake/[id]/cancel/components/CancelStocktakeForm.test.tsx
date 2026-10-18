@@ -110,4 +110,17 @@ describe("CancelStocktakeForm (Screen 4)", () => {
       expect(routerMock.push).toHaveBeenCalledWith("/admin/inventory/stocktake/STK-001");
     });
   });
+
+  it("renders info panel with timestamps, variance with unit, no BR-INV-009, and Quay lại before Hoàn tác", () => {
+    render(<CancelStocktakeForm session={mockSession} listRow={mockListRow} />);
+
+    expect(screen.getByText("Tạo lúc")).toBeInTheDocument();
+    expect(screen.getByText("Xác nhận lúc")).toBeInTheDocument();
+    expect(screen.queryByText(/BR-INV-009/)).not.toBeInTheDocument();
+    expect(screen.getAllByText("Thiếu 2,000 g").length).toBeGreaterThan(0);
+
+    const backBtn = screen.getByRole("link", { name: "Quay lại" });
+    const submitBtn = screen.getByRole("button", { name: "Hoàn tác" });
+    expect(submitBtn.previousElementSibling).toBe(backBtn);
+  });
 });

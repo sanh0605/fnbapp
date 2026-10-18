@@ -45,16 +45,16 @@ const sampleAccounts: DBBankAccount[] = [
 ];
 
 describe("PurchasePaymentBlock", () => {
-  it("PO-181 (COMPLETED, CASH) shows Hình thức thanh toán: Tiền mặt", () => {
+  it("PO-181 (COMPLETED, CASH) shows Hình thức thanh toán, no colon, then Tiền mặt", () => {
     render(
       <PurchasePaymentBlock paymentMethod="CASH" bankAccountId={null} bankAccounts={sampleAccounts} />
     );
 
-    expect(screen.getByText("Hình thức thanh toán:")).toBeTruthy();
+    expect(screen.getByText("Hình thức thanh toán")).toBeTruthy();
     expect(screen.getByText("Tiền mặt")).toBeTruthy();
   });
 
-  it("shows Hình thức thanh toán: Chuyển khoản with account name", () => {
+  it("shows Hình thức thanh toán, no colon, then Chuyển khoản with account name", () => {
     render(
       <PurchasePaymentBlock paymentMethod="BANK_TRANSFER" bankAccountId="BA-001" bankAccounts={sampleAccounts} />
     );

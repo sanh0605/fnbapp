@@ -57,7 +57,13 @@ export default async function CancelPurchaseOrderPage(
         backHref={detailHref}
         backLabel="Phiếu nhập"
         title={`Huỷ phiếu nhập ${params.id}`}
-        subtitle={`Ngày nhập: ${view.order.dateText} · Nhà cung cấp: ${view.order.supplierName}`}
+        subtitle={
+          <span>
+            <span className="block sm:inline">Ngày nhập: {view.order.dateText}</span>
+            <span className="hidden sm:inline"> · </span>
+            <span className="block sm:inline">Nhà cung cấp: {view.order.supplierName}</span>
+          </span>
+        }
       />
       <CancelPurchaseOrderForm view={view} />
     </div>

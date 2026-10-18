@@ -24,7 +24,7 @@ Measured 2026-10-15 afternoon (re-measure before use):
 2. **Quantity** in the item's base unit, from the same purchased-minus-issued figure every stock writer uses. Negative stock (0 items today) shows in red and gets no "đủ dùng".
 3. **Value** = the costing engine's closing value for the item (`computeIssueCosting`, landed cost per `BR-COGS-006`). The total at the top is the sum of the unrounded values, rounded once (`BR-DATA` rounding rule in `data-integrity.md`).
 4. **Đủ dùng khoảng X ngày** = on hand ÷ (quantity issued by staff over the last 30 days) × 30, rounded down. Only `MANUAL` rows count, reversals included (a cancelled slip nets out); stocktake rows do not, since a count difference is not use. No use in 30 days → "—". Zero stock → "Hết". Rounded down, because a warning that comes a day early is cheaper than one a day late.
-5. **Last count** = the latest confirmed, not undone, stocktake that gave the item a number (`BR-INV-011`: a blank line is not a count). None → "Chưa kiểm lần nào".
+5. **Last count** = the latest confirmed, not undone, stocktake that gave the item a number (`BR-INV-011`: a blank line is not a count). None → "Chưa kiểm lần nào" (the phone row uses the short "Chưa kiểm" / "Kiểm <date>", 2026-10-18).
 6. **Order**: "Hết" first (about 14 items on 2026-10-15), then fewest days, then "—" and negative-stock items, ties by name. One search box (`BR-UI-016`, accent-blind like the till). No other filters: the owner declined "chưa kiểm bao giờ" and "lâu chưa xuất" (Q1).
 7. **Caption** under the total: "Theo sổ: đã nhập trừ đã xuất. Mỗi món đúng tới ngày kiểm gần nhất của nó."
 8. Tapping a row opens the item (`/admin/inventory/items/[id]`).

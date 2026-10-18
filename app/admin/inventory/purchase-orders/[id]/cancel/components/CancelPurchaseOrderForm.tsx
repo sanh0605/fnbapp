@@ -7,6 +7,8 @@ import { cancelPurchaseOrder, type PurchaseOrderCancelView } from "@/app/admin/i
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Field } from "@/components/ui/Field";
+import { MoneySummary } from "@/components/ui/MoneySummary";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import {
   Table,
   TableHead,
@@ -99,12 +101,12 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
                 </Table>
               </div>
 
-              {/* Phone Cards (lg:hidden) */}
-              <div className="p-4 space-y-3 lg:hidden" data-testid="phone-lines-list">
+              {/* Phone Lines (lg:hidden) */}
+              <div className="divide-y divide-border lg:hidden" data-testid="phone-lines-list">
                 {lines.map((line) => (
                   <div
                     key={line.id}
-                    className="p-3 rounded-lg border border-border bg-surface-card flex items-center justify-between gap-3"
+                    className="p-4 flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-text-primary break-words">{line.itemName}</p>
@@ -136,7 +138,6 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
             <div className="hidden lg:block overflow-x-auto" data-testid="desktop-assets-table">
               <Table>
                 <TableHead>
-                  <TableHeaderCell>Mặt hàng</TableHeaderCell>
                   <TableHeaderCell>Mã</TableHeaderCell>
                   <TableHeaderCell>Tên</TableHeaderCell>
                   <TableHeaderCell>Số lượng</TableHeaderCell>
@@ -155,22 +156,18 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
               </Table>
             </div>
 
-            {/* Phone Cards (lg:hidden) */}
-            <div className="p-4 space-y-3 lg:hidden" data-testid="phone-assets-list">
+            {/* Phone Rows (lg:hidden) */}
+            <div className="divide-y divide-border lg:hidden" data-testid="phone-assets-list">
               {assets.map((asset) => (
                 <div
                   key={asset.id}
-                  className="p-3 rounded-lg border border-border bg-surface-card flex items-center justify-between gap-3"
+                  className="px-4 py-3 min-h-[48px] md:min-h-[40px] flex flex-col justify-center"
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-text-primary">{asset.name}</p>
-                    <p className="text-xs text-text-muted">
-                      {asset.id} · SL {asset.quantity}
-                    </p>
-                  </div>
-                  <div className="text-right font-medium text-text-primary whitespace-nowrap">
-                    {formatNumber(asset.totalCost)}đ
-                  </div>
+                  <PhoneRow
+                    title={asset.name}
+                    meta={`${asset.id} · SL ${asset.quantity}`}
+                    value={`${formatNumber(asset.totalCost)}đ`}
+                  />
                 </div>
               ))}
             </div>
@@ -181,54 +178,61 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
       {/* Right Column on Desktop / 1st & 4th on Phone */}
       <div className="contents lg:block lg:col-span-1 lg:space-y-6">
         {/* Money Card */}
-        <div className="order-1 bg-surface-card rounded-xl shadow-sm border border-border p-5 space-y-4" data-testid="money-card">
+        <div className="order-1 space-y-4" data-testid="money-card">
           <h2 className="font-semibold text-text-primary">Thông tin thanh toán</h2>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between text-text-secondary">
-              <span>Tổng tiền hàng:</span>
-              <span className="font-medium text-text-primary">{formatNumber(order.subtotalAmount)}đ</span>
-            </div>
-            <div className="flex justify-between text-text-secondary">
-              <span>Phí vận chuyển:</span>
-              <span className="font-medium text-text-primary">
-                {Number(order.shippingFee) === 0 ? "0đ" : `+${formatNumber(order.shippingFee)}đ`}
-              </span>
-            </div>
-            <div className="flex justify-between text-text-secondary">
-              <span>Thuế:</span>
-              <span className="font-medium text-text-primary">
-                {Number(order.taxAmount) === 0 ? "0đ" : `+${formatNumber(order.taxAmount)}đ`}
-              </span>
-            </div>
-            <div className="flex justify-between text-text-secondary">
-              <span>Voucher/Giảm giá:</span>
-              <span className={`font-medium ${Number(order.discountTotal) > 0 ? "text-danger" : "text-text-primary"}`}>
-                {Number(order.discountTotal) === 0 ? "0đ" : `-${formatNumber(order.discountTotal)}đ`}
-              </span>
-            </div>
-            <div className="pt-3 border-t border-border flex justify-between font-semibold text-base">
-              <span className="text-text-primary">Tổng cộng:</span>
-              <span className="text-primary">{formatNumber(order.totalAmount)}đ</span>
-            </div>
-          </div>
+          <MoneySummary
+            lines={[
+              {
+                label: "Tổng tiền hàng",
+                value: `${formatNumber(order.subtotalAmount)}đ`,
+              },
+              {
+                label: "Phí vận chuyển",
+                value:
+                  Number(order.shippingFee) === 0
+                    ? "0đ"
+                    : `+${formatNumber(order.shippingFee)}đ`,
+              },
+              {
+                label: "Thuế",
+                value:
+                  Number(order.taxAmount) === 0
+                    ? "0đ"
+                    : `+${formatNumber(order.taxAmount)}đ`,
+              },
+              {
+                label: "Voucher/Giảm giá",
+                value:
+                  Number(order.discountTotal) === 0
+                    ? "0đ"
+                    : `-${formatNumber(order.discountTotal)}đ`,
+              },
+            ]}
+            total={{
+              label: "Tổng cộng",
+              value: `${formatNumber(order.totalAmount)}đ`,
+            }}
+          />
 
-          <div className="pt-4 border-t border-border text-sm text-text-secondary space-y-2">
-            <p>
-              Hình thức thanh toán: <span className="font-medium text-text-primary">{order.paymentLabel}</span>
-            </p>
-            <div className="pt-2 border-t border-border/60 text-xs text-text-muted space-y-1">
-              <p>
-                Mã hoá đơn: <span className="text-text-secondary">{order.invoiceCode || "Không có"}</span>
-              </p>
-              <p>
-                Nguồn nhập: <span className="text-text-secondary">{order.sourceName}</span>
-              </p>
-              {Boolean(order.notes && order.notes.trim()) && (
-                <p>
-                  Ghi chú: <span className="text-text-secondary">{order.notes}</span>
-                </p>
-              )}
+          <div className="bg-surface-card rounded-xl border border-border p-4 text-sm text-text-secondary space-y-2">
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-sm text-text-secondary shrink-0">Hình thức thanh toán</span>
+              <span className="text-sm text-text-primary font-medium text-right break-words min-w-0">{order.paymentLabel}</span>
             </div>
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-sm text-text-secondary shrink-0">Mã hoá đơn</span>
+              <span className="text-sm text-text-primary text-right break-words min-w-0">{order.invoiceCode || "Không có"}</span>
+            </div>
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-sm text-text-secondary shrink-0">Nguồn nhập</span>
+              <span className="text-sm text-text-primary text-right break-words min-w-0">{order.sourceName}</span>
+            </div>
+            {Boolean(order.notes && order.notes.trim()) && (
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-sm text-text-secondary shrink-0">Ghi chú</span>
+                <span className="text-sm text-text-primary text-right break-words min-w-0">{order.notes}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -244,7 +248,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
               <Button
                 href={detailHref}
                 variant="secondary"
-                className="w-full"
+                className="w-full min-h-[48px] md:min-h-[40px]"
               >
                 Quay lại
               </Button>
@@ -282,22 +286,22 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
               </div>
             </div>
 
-            <div className="space-y-2 pt-2">
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                href={detailHref}
+                variant="secondary"
+                className="flex-1 min-h-[48px] md:min-h-[40px]"
+              >
+                Quay lại
+              </Button>
               <Button
                 type="submit"
                 variant="danger"
                 loading={isSubmitting}
                 disabled={!reason.trim() || isSubmitting}
-                className="w-full"
+                className="flex-1 min-h-[48px] md:min-h-[40px]"
               >
                 Xác nhận huỷ
-              </Button>
-              <Button
-                href={detailHref}
-                variant="secondary"
-                className="w-full"
-              >
-                Quay lại
               </Button>
             </div>
           </div>

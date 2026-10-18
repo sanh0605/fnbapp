@@ -251,7 +251,34 @@ describe("CancelPurchaseOrderForm (BR-INV-015)", () => {
     expect(within(moneyCard).getByText("+59,600đ")).toBeInTheDocument();
     expect(within(moneyCard).getByText("-756,200đ")).toBeInTheDocument();
     expect(within(moneyCard).getByText("2,443,400đ")).toBeInTheDocument();
-    expect(within(moneyCard).getByText(/Hình thức thanh toán:/)).toBeInTheDocument();
+    expect(within(moneyCard).getByText("Hình thức thanh toán")).toBeInTheDocument();
+  });
+
+  it("when assets exist: desktop assets table header row has exactly 4 header cells", () => {
+    const viewWithAssets: ReadyCancelView = {
+      ...po195View,
+      assets: [
+        {
+          id: "AST-001",
+          name: "Máy pha cà phê",
+          quantity: 1,
+          totalCost: 15000000,
+        },
+      ],
+    };
+
+    render(<CancelPurchaseOrderForm view={viewWithAssets} />);
+
+    const table = screen.getByTestId("desktop-assets-table");
+    const headerRow = table.querySelector("thead tr");
+    expect(headerRow).not.toBeNull();
+    const headers = headerRow!.querySelectorAll("th");
+    expect(headers).toHaveLength(4);
+    expect(within(table).getByText("Mã")).toBeInTheDocument();
+    expect(within(table).getByText("Tên")).toBeInTheDocument();
+    expect(within(table).getByText("Số lượng")).toBeInTheDocument();
+    expect(within(table).getByText("Nguyên giá")).toBeInTheDocument();
+    expect(within(table).queryByText("Mặt hàng")).toBeNull();
   });
 
   it("when blocked: the line table and money card still render, Xác nhận huỷ and the textarea do not", () => {

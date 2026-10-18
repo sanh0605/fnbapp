@@ -23,7 +23,7 @@ export function PurchasePaymentBlock({
   return (
     <div className="space-y-3">
       <div className="flex justify-between text-sm text-text-secondary">
-        <span>Hình thức thanh toán:</span>
+        <span>Hình thức thanh toán</span>
         <span className="font-medium text-text-primary">
           {currentLabel}
           {paymentMethod === "BANK_TRANSFER" && currentAccount ? ` (${currentAccount.name})` : ""}
