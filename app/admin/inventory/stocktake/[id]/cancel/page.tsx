@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/auth";
 import { redirect, notFound } from "next/navigation";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
-import { formatDateTimeFull } from "@/lib/shared/datetime";
 import {
   getStocktakeSessionData,
   listStocktakeSessions,
@@ -44,9 +43,8 @@ export default async function CancelStocktakePage(props: {
     <div className="space-y-6">
       <DetailHeader
         backHref={detailHref}
-        backLabel="Phiếu kiểm kê"
+        backLabel={params.id}
         title={<>Hoàn tác phiên kiểm kê <span className="whitespace-nowrap">{params.id}</span></>}
-        subtitle={`Người tạo ${sessionData.createdByName} · Tạo lúc ${formatDateTimeFull(sessionData.createdAt)}`}
       />
       <CancelStocktakeForm session={sessionData} listRow={listRow} />
     </div>

@@ -24,7 +24,8 @@ export default async function StocktakeEditPage(
       <DetailHeader
         backHref={`/admin/inventory/stocktake/${encodeURIComponent(detail.id)}`}
         backLabel={detail.id}
-        title={`Sửa phiếu kiểm kê ${detail.id}`}
+        title="Chỉnh sửa"
+        subtitle={detail.id}
       />
       <StocktakeEditForm detail={detail} />
     </div>
