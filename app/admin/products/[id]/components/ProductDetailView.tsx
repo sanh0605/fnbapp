@@ -60,8 +60,6 @@ export function ProductDetailView({
       : "—";
 
   const fields: Field[] = [
-    { label: "Mã", value: product.id },
-    { label: "Tên", value: product.name },
     { label: "Nhóm", value: categoryName || "—" },
     { label: "Nhóm tuỳ chọn", value: optionGroupsText },
     { label: "Trạng thái", value: statusLabel },
@@ -173,6 +171,7 @@ export function ProductDetailView({
         backHref={returnTo}
         backLabel="Món"
         title={product.name}
+        subtitle={product.id}
         badge={
           product.status === "INACTIVE" ? (
             <Badge variant="neutral">Ngừng bán</Badge>

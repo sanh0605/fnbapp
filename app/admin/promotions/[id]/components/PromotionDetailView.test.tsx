@@ -232,5 +232,21 @@ describe("PromotionDetailView", () => {
     const metaEl = within(firstRow).getByText("Size M · Giá đồng giá");
     expect(metaEl.textContent?.endsWith("Giá đồng giá")).toBe(true);
   });
+
+  it("does not repeat code and name in the field list", () => {
+    render(
+      <PromotionDetailView
+        promo={samplePromo}
+        brandName="Uchako"
+        applicableItems={sampleItems}
+        canDelete={true}
+        returnTo="/admin/promotions"
+      />,
+    );
+
+    expect(screen.queryByText("Mã")).toBeNull();
+    expect(screen.queryByText("Tên")).toBeNull();
+    expect(screen.getAllByText("PRM-004")).toHaveLength(1);
+  });
 });
 
