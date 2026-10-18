@@ -84,9 +84,9 @@ describe("ProductTypesClient", () => {
     expect(screen.getAllByText("Chưa có nhóm nào").length).toBeGreaterThan(0);
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
-    expect(within(phone).getByText("PT-001 · Tính là ly: Có · Cà phê, Trà")).toBeInTheDocument();
-    expect(within(phone).getByText("PT-002 · Tính là ly: Không · Bánh")).toBeInTheDocument();
-    expect(within(phone).getByText("PT-003 · Tính là ly: Không · Chưa có nhóm nào")).toBeInTheDocument();
+    expect(within(phone).getAllByText("PT-001").some((el) => el.parentElement?.textContent === "PT-001 · Tính là ly: Có · Cà phê, Trà")).toBe(true);
+    expect(within(phone).getAllByText("PT-002").some((el) => el.parentElement?.textContent === "PT-002 · Tính là ly: Không · Bánh")).toBe(true);
+    expect(within(phone).getAllByText("PT-003").some((el) => el.parentElement?.textContent === "PT-003 · Tính là ly: Không · Chưa có nhóm nào")).toBe(true);
     expect(within(phone).queryByText(/Nhóm món đang dùng:/)).toBeNull();
   });
 

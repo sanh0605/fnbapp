@@ -24,7 +24,6 @@ export function UnitDetailView({
 
   const fields: Field[] = [
     { label: "Mã", value: unit.id },
-    { label: "Tên", value: unit.name },
     { label: "Ghi chú", value: unit.description || "—" },
   ];
 

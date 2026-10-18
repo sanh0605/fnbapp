@@ -63,7 +63,8 @@ describe("UnitDetailView", () => {
     // canDelete=false hides "Xoá"
     expect(screen.queryByRole("button", { name: /Xoá/ })).toBeNull();
 
-    // Fields: Mã, Tên, Ghi chú
+    // Fields: Mã, Ghi chú
+    expect(screen.queryByText("Tên")).toBeNull();
     expect(screen.getAllByText("UNT-001").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Hộp").length).toBeGreaterThan(0);
     expect(screen.getByText("Hộp giấy 1000ml")).toBeInTheDocument();

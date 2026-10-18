@@ -192,9 +192,9 @@ describe("ConversionsClient", () => {
     expect(screen.getAllByText("Chỉ cách mua").length).toBeGreaterThan(0);
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
-    expect(within(phone).getByText("1 Thùng = 24 Lon · CONV-1")).toBeInTheDocument();
-    expect(within(phone).getByText("1 Gói = 500 g · CONV-2 · Chỉ cách mua")).toBeInTheDocument();
-    expect(within(phone).getByText("1 Thùng = 24 Lon · CONV-3")).toBeInTheDocument();
+    expect(within(phone).getAllByText("CONV-1").some((el) => el.parentElement?.textContent === "1 Thùng = 24 Lon · CONV-1")).toBe(true);
+    expect(within(phone).getAllByText("CONV-2").some((el) => el.parentElement?.textContent === "1 Gói = 500 g · CONV-2 · Chỉ cách mua")).toBe(true);
+    expect(within(phone).getAllByText("CONV-3").some((el) => el.parentElement?.textContent === "1 Thùng = 24 Lon · CONV-3")).toBe(true);
     expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
   });
 });

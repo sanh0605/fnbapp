@@ -692,10 +692,13 @@ describe("IssueSlipClient -- per-line validation names which line is wrong, befo
 });
 
 describe("IssueSlipClient -- Số lượng field sizing (D10, K1)", () => {
-  it("the Số lượng field carries the compact w-32 width class (class presence, not measured width)", async () => {
+  it("the Số lượng field carries flex-1 and the Đơn vị box still has flex-1 (class presence, not measured width)", async () => {
     const container = await renderTracked(<IssueSlipClient items={[item()]} />);
-    const qtyInput = findQtyInput(getLineBlocks(container)[0]);
-    expect(qtyInput.closest(".w-32")).toBeTruthy();
+    const block = getLineBlocks(container)[0];
+    const qtyInput = findQtyInput(block);
+    expect(qtyInput.closest(".flex-1")).toBeTruthy();
+    const unitSelect = block.querySelector("select");
+    expect(unitSelect?.closest(".flex-1")).toBeTruthy();
   });
 });
 

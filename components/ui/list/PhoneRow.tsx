@@ -7,6 +7,20 @@ export interface PhoneRowData {
   badge?: React.ReactNode;
 }
 
+function renderMeta(meta: React.ReactNode): React.ReactNode {
+  if (typeof meta !== "string") return meta;
+  // Split with one capture group puts every code at an odd index; a code must never break at its hyphen.
+  return meta.split(/([A-Z]{1,5}-\d+)/).map((part, i) =>
+    i % 2 ? (
+      <span key={i} className="whitespace-nowrap">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
+
 export function PhoneRow({ title, value, meta, badge }: PhoneRowData) {
   return (
     <div className="min-w-0">
@@ -16,7 +30,7 @@ export function PhoneRow({ title, value, meta, badge }: PhoneRowData) {
       </div>
       {(meta != null || badge != null) && (
         <div className="mt-0.5 flex items-start justify-between gap-3">
-          <div className="min-w-0 line-clamp-2 break-words text-sm text-text-secondary">{meta}</div>
+          <div className="min-w-0 line-clamp-2 break-words text-sm text-text-secondary">{renderMeta(meta)}</div>
           {badge != null && <div className="shrink-0 flex items-center gap-1">{badge}</div>}
         </div>
       )}

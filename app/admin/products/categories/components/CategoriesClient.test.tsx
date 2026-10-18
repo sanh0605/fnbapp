@@ -198,7 +198,7 @@ describe("CategoriesClient", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("☕")).toBeInTheDocument();
     expect(within(phone).getByText("8 món")).toBeInTheDocument();
-    expect(within(phone).getByText("CAT-001 · Đồ uống")).toBeInTheDocument();
+    expect(within(phone).getAllByText("CAT-001").some((el) => el.parentElement?.textContent === "CAT-001 · Đồ uống")).toBe(true);
     expect(within(phone).queryByText(/Loại món:/)).toBeNull();
   });
 });

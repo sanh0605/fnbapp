@@ -231,7 +231,7 @@ describe("ModifiersClient", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("Dâu sấy")).toBeInTheDocument();
     expect(within(phone).getByText("5,000đ")).toBeInTheDocument();
-    expect(within(phone).getByText("Thêm Topping · MOD-007 · Bán độc lập")).toBeInTheDocument();
+    expect(within(phone).getAllByText("MOD-007").some((el) => el.parentElement?.textContent === "Thêm Topping · MOD-007 · Bán độc lập")).toBe(true);
     expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
   });
 
@@ -267,7 +267,7 @@ describe("ModifiersClient", () => {
     );
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
-    expect(within(phone).getByText("Trân châu trắng · MOD-001")).toBeInTheDocument();
+    expect(within(phone).getAllByText("MOD-001").some((el) => el.parentElement?.textContent === "Trân châu trắng · MOD-001")).toBe(true);
     expect(within(phone).queryByText(/Bán độc lập/)).toBeNull();
   });
 });

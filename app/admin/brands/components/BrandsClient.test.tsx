@@ -141,7 +141,7 @@ describe("BrandsClient", () => {
     expect(screen.getAllByText("Phin Đi").length).toBeGreaterThan(0);
     expect(screen.getAllByText("PHD").length).toBeGreaterThan(0);
     expect(screen.getAllByText("27/03/2026 00:00:00").length).toBeGreaterThan(0);
-    expect(screen.getByText("BR-001 · PHD · Từ 27/03/2026 00:00:00")).toBeInTheDocument();
+    expect(screen.getAllByText("BR-001").some((el) => el.parentElement?.textContent === "BR-001 · PHD · Từ 27/03/2026 00:00:00")).toBe(true);
     expect(screen.queryByText(/Ngày bắt đầu:/)).toBeNull();
   });
 

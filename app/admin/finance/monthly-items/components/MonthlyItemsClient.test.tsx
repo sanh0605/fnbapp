@@ -121,11 +121,11 @@ describe("MonthlyItemsClient", () => {
     const phoneList = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phoneList).getByText("Tiền điện")).toBeInTheDocument();
     expect(within(phoneList).getByText("5 dòng đã nhập")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Chi phí cố định · KCT-001")).toBeInTheDocument();
+    expect(within(phoneList).getAllByText("KCT-001").some((el) => el.parentElement?.textContent === "Chi phí cố định · KCT-001")).toBe(true);
     expect(within(phoneList).getByText("Đang dùng")).toBeInTheDocument();
     expect(within(phoneList).getByText("Tiền nước")).toBeInTheDocument();
     expect(within(phoneList).getByText("0 dòng đã nhập")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Vận hành · KCT-002")).toBeInTheDocument();
+    expect(within(phoneList).getAllByText("KCT-002").some((el) => el.parentElement?.textContent === "Vận hành · KCT-002")).toBe(true);
     expect(within(phoneList).getByText("Ngừng dùng")).toBeInTheDocument();
   });
 
