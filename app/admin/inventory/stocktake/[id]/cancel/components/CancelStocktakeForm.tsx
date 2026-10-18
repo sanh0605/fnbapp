@@ -153,7 +153,7 @@ export function CancelStocktakeForm({ session, listRow }: CancelStocktakeFormPro
               type="submit"
               variant="danger"
               loading={isSubmitting}
-              disabled={isSubmitting}
+              disabled={!reason.trim() || isSubmitting}
               className="flex-1 min-h-[48px] md:min-h-[40px]"
             >
               Hoàn tác
@@ -186,68 +186,54 @@ export function CancelStocktakeForm({ session, listRow }: CancelStocktakeFormPro
                   <TableHeaderCell>Giá trị lệch</TableHeaderCell>
                 </TableHead>
                 <TableBody>
-                  {diffLines.map((line) => {
-                    const diff = line.countedQty! - line.theoreticalAtCount!;
-                    return (
-                      <TableRow key={line.id}>
-                        <TableCell>{line.itemName}</TableCell>
-                        <TableCell>{line.unitName}</TableCell>
-                        <TableCell align="right">
-                          <span className="tabular-nums whitespace-nowrap">
-                            {formatNumber(line.theoreticalAtCount)}
-                          </span>
-                        </TableCell>
-                        <TableCell align="right">
-                          <span className="tabular-nums whitespace-nowrap">
-                            {formatNumber(line.countedQty)}
-                          </span>
-                        </TableCell>
-                        <TableCell align="right">
-                          <span
-                            className={`tabular-nums whitespace-nowrap ${
-                              diff > 0 ? "text-success" : "text-danger"
-                            }`}
-                          >
-                            {getVarianceText(line.countedQty, line.theoreticalAtCount, line.unitName)}
-                          </span>
-                        </TableCell>
-                        <TableCell align="right">
-                          <span className="tabular-nums whitespace-nowrap">
-                            {formatDiffValue(line)}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {diffLines.map((line) => (
+                    <TableRow key={line.id}>
+                      <TableCell>{line.itemName}</TableCell>
+                      <TableCell>{line.unitName}</TableCell>
+                      <TableCell align="right">
+                        <span className="tabular-nums whitespace-nowrap">
+                          {formatNumber(line.theoreticalAtCount)}
+                        </span>
+                      </TableCell>
+                      <TableCell align="right">
+                        <span className="tabular-nums whitespace-nowrap">
+                          {formatNumber(line.countedQty)}
+                        </span>
+                      </TableCell>
+                      <TableCell align="right">
+                        <span className="tabular-nums whitespace-nowrap">
+                          {getVarianceText(line.countedQty, line.theoreticalAtCount, line.unitName)}
+                        </span>
+                      </TableCell>
+                      <TableCell align="right">
+                        <span className="tabular-nums whitespace-nowrap">
+                          {formatDiffValue(line)}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
 
             {/* Mobile PhoneRow Layout */}
             <div className="md:hidden divide-y divide-border">
-              {diffLines.map((line) => {
-                const diff = line.countedQty! - line.theoreticalAtCount!;
-                return (
-                  <div key={line.id} className="py-2.5">
-                    <PhoneRow
-                      title={line.itemName}
-                      value={formatDiffValue(line)}
-                      meta={
-                        <span>
-                          Sổ {formatNumber(line.theoreticalAtCount)} {line.unitName} · Đếm {formatNumber(line.countedQty)} {line.unitName} ·{" "}
-                          <span
-                            className={`whitespace-nowrap ${
-                              diff > 0 ? "text-success" : "text-danger"
-                            }`}
-                          >
-                            {getVarianceText(line.countedQty, line.theoreticalAtCount, line.unitName)}
-                          </span>
+              {diffLines.map((line) => (
+                <div key={line.id} className="py-2.5">
+                  <PhoneRow
+                    title={line.itemName}
+                    value={formatDiffValue(line)}
+                    meta={
+                      <span>
+                        Sổ {formatNumber(line.theoreticalAtCount)} {line.unitName} · Đếm {formatNumber(line.countedQty)} {line.unitName} ·{" "}
+                        <span className="whitespace-nowrap">
+                          {getVarianceText(line.countedQty, line.theoreticalAtCount, line.unitName)}
                         </span>
-                      }
-                    />
-                  </div>
-                );
-              })}
+                      </span>
+                    }
+                  />
+                </div>
+              ))}
             </div>
           </>
         )}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
 import { DetailHeader } from "@/components/ui/detail/DetailHeader";
 import { FieldList, type Field as DetailField } from "@/components/ui/detail/FieldList";
@@ -18,8 +17,9 @@ import {
 } from "@/components/ui/Table";
 import { formatNumber } from "@/lib/shared/format";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
+import { formatStocktakeDiffValue } from "@/app/admin/inventory/stocktake/components/StocktakeList";
 import { useStocktakeLinesFilter } from "./useStocktakeLinesFilter";
-import type { StocktakeSessionView, StocktakeLineView } from "../../actions";
+import type { StocktakeSessionView, StocktakeLineView, StocktakeListRow } from "../../actions";
 
 export function getVarianceText(counted: number | null, book: number | null, unitName?: string): string {
   if (counted === null || book === null) return "";
@@ -35,6 +35,7 @@ export interface StocktakeDetailViewProps {
   isLatestConfirmed: boolean;
   isOwner: boolean;
   hasOpenSession?: boolean;
+  listRow?: StocktakeListRow;
 }
 
 export function StocktakeDetailView({
@@ -42,6 +43,7 @@ export function StocktakeDetailView({
   isLatestConfirmed,
   isOwner,
   hasOpenSession = false,
+  listRow,
 }: StocktakeDetailViewProps) {
   const lines = session.lines;
   const {
@@ -116,6 +118,14 @@ export function StocktakeDetailView({
       label: "Người xác nhận",
       value: session.confirmedByName || "—",
     },
+    ...(listRow && session.status === "CONFIRMED"
+      ? [
+          {
+            label: "Giá trị lệch",
+            value: formatStocktakeDiffValue(listRow),
+          },
+        ]
+      : []),
   ];
 
   function formatDiffQuantity(line: StocktakeLineView) {

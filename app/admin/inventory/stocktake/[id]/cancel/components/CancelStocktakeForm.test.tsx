@@ -72,21 +72,17 @@ describe("CancelStocktakeForm (Screen 4)", () => {
   it("empty reason blocked", async () => {
     render(<CancelStocktakeForm session={mockSession} listRow={mockListRow} />);
 
-    // Click "Hoàn tác" button with empty reason
     const submitBtn = screen.getByRole("button", { name: "Hoàn tác" });
-    fireEvent.click(submitBtn);
-
-    // Empty reason error message must be shown
-    expect(screen.getByText("Nhập lý do hoàn tác")).toBeInTheDocument();
+    expect(submitBtn).toBeDisabled();
     expect(actions.reverseConfirmedStocktakeSession).not.toHaveBeenCalled();
 
-    // Whitespace only reason must also be blocked
     const textarea = screen.getByLabelText(/Lý do hoàn tác/);
     fireEvent.change(textarea, { target: { value: "   " } });
-    fireEvent.click(submitBtn);
-
-    expect(screen.getByText("Nhập lý do hoàn tác")).toBeInTheDocument();
+    expect(submitBtn).toBeDisabled();
     expect(actions.reverseConfirmedStocktakeSession).not.toHaveBeenCalled();
+
+    fireEvent.change(textarea, { target: { value: "Kiểm nhầm ngày" } });
+    expect(submitBtn).toBeEnabled();
   });
 
   it("submits trimmed reason when valid", async () => {

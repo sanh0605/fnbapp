@@ -43,7 +43,7 @@ const lineOf = (container: HTMLElement, id: string) => container.querySelector(`
 describe("StocktakeEditForm (BR-INV-012)", () => {
   it("has exactly one decimal number box per line, filled with the current count", () => {
     render(<StocktakeEditForm detail={DETAIL} />);
-    expect(screen.getAllByRole("textbox")).toHaveLength(2);
+    expect(screen.getAllByRole("textbox")).toHaveLength(3); // two count boxes + the Tìm hàng box
     expect(box("Bột cà phê truyền thống Phin Đậm").value).toBe("4,000");
     expect(box("Bột cà phê truyền thống Phin Đậm").getAttribute("inputMode")).toBe("decimal");
     expect(box("Bột milkfoam muối biển").value).toBe("2,000");
@@ -128,6 +128,135 @@ describe("Ticket 6c: StocktakeEditForm FormActionBar and phone layout", () => {
 
     const inputContainer = input.closest(".w-36, .w-\\[9rem\\]") || input;
     expect(inputContainer.className).toMatch(/\b(w-36|w-\[9rem\])\b/);
+  });
+});
+
+describe("search and chips (H2)", () => {
+  it("typing 'milkfoam' in the 'Tìm hàng' box leaves only the 'Bột milkfoam muối biển' box", () => {
+    render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.change(screen.getByLabelText("Tìm hàng"), { target: { value: "milkfoam" } });
+    expect(screen.getByLabelText("Bột milkfoam muối biển")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Bột cà phê truyền thống Phin Đậm")).toBeNull();
+  });
+
+  it("typing a search is not an unsaved change; typing a count is", () => {
+    render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.change(screen.getByLabelText("Tìm hàng"), { target: { value: "milkfoam" } });
+    expect(screen.queryByText("Có thay đổi chưa lưu")).toBeNull();
+    fireEvent.change(box("Bột milkfoam muối biển"), { target: { value: "1500" } });
+    expect(screen.getByText("Có thay đổi chưa lưu")).toBeInTheDocument();
+  });
+
+  it("tapping 'Lệch (1)' leaves only Phin Đậm, tapping 'Khớp (1)' leaves only milkfoam, tapping 'Tất cả (2)' shows both", () => {
+    render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.click(screen.getByRole("button", { name: "Lệch (1)" }));
+    expect(screen.getByLabelText("Bột cà phê truyền thống Phin Đậm")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Bột milkfoam muối biển")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Khớp (1)" }));
+    expect(screen.getByLabelText("Bột milkfoam muối biển")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Bột cà phê truyền thống Phin Đậm")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Tất cả (2)" }));
+    expect(screen.getByLabelText("Bột cà phê truyền thống Phin Đậm")).toBeInTheDocument();
+    expect(screen.getByLabelText("Bột milkfoam muối biển")).toBeInTheDocument();
+  });
+
+  it("after tapping 'Lệch (1)', typing 6000 keeps row on screen and updates chips, and submitting sends changed line", async () => {
+    vi.mocked(editConfirmedStocktake).mockResolvedValue({ success: true, changedCount: 1 } as never);
+    const { container } = render(<StocktakeEditForm detail={DETAIL} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Lệch (1)" }));
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "6000" } });
+
+    expect(screen.getByLabelText("Bột cà phê truyền thống Phin Đậm")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Lệch (0)" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Khớp (2)" })).toBeInTheDocument();
+
+    fireEvent.submit(container.querySelector("form")!);
+    await waitFor(() =>
+      expect(editConfirmedStocktake).toHaveBeenCalledWith("STK-001", [
+        { lineId: "SKL-00004", countedQty: 6000 },
+      ])
+    );
+  });
+
+  it("a changed line hidden by a chip is still saved", async () => {
+    vi.mocked(editConfirmedStocktake).mockResolvedValue({ success: true, changedCount: 1 } as never);
+    const { container } = render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "5000" } });
+    fireEvent.click(screen.getByRole("button", { name: "Khớp (1)" }));
+    expect(screen.queryByLabelText("Bột cà phê truyền thống Phin Đậm")).toBeNull();
+    fireEvent.submit(container.querySelector("form")!);
+    await waitFor(() =>
+      expect(editConfirmedStocktake).toHaveBeenCalledWith("STK-001", [
+        { lineId: "SKL-00004", countedQty: 5000 },
+      ])
+    );
+  });
+
+  it("a counted line emptied and hidden by a chip blocks Lưu and names the item", async () => {
+    const { container } = render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Khớp (1)" }));
+    fireEvent.submit(container.querySelector("form")!);
+    expect(screen.getByRole("button", { name: "Chưa đếm (1)" })).toHaveAttribute("aria-pressed", "true");
+    expect(box("Bột cà phê truyền thống Phin Đậm")).toBeInTheDocument();
+    expect(screen.getByText(/"Bột cà phê truyền thống Phin Đậm" chưa có số đếm/)).toBeInTheDocument();
+    expect(editConfirmedStocktake).not.toHaveBeenCalled();
+    await waitFor(() => expect(box("Bột cà phê truyền thống Phin Đậm")).toHaveFocus());
+    await waitFor(() => expect(screen.getByText("Cần nhập số.")).toBeInTheDocument());
+  });
+
+  it("a counted line emptied and hidden by a search is shown again on Lưu", () => {
+    const { container } = render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("Tìm hàng"), { target: { value: "milkfoam" } });
+    fireEvent.submit(container.querySelector("form")!);
+    expect((screen.getByLabelText("Tìm hàng") as HTMLInputElement).value).toBe("");
+    expect(box("Bột cà phê truyền thống Phin Đậm")).toBeInTheDocument();
+    expect(editConfirmedStocktake).not.toHaveBeenCalled();
+  });
+
+  it("typing a number clears the message", () => {
+    const { container } = render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Khớp (1)" }));
+    fireEvent.submit(container.querySelector("form")!);
+    expect(screen.getByText(/chưa có số đếm/)).toBeInTheDocument();
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "4000" } });
+    expect(screen.queryByText(/chưa có số đếm/)).toBeNull();
+  });
+
+  it("the selected 'Chưa đếm' chip stays while its last row gets a number", () => {
+    render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Chưa đếm (1)" }));
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "4000" } });
+    expect(screen.getByRole("button", { name: "Chưa đếm (0)" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("'Chưa đếm (0)' goes away when another chip is picked", () => {
+    render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Chưa đếm (1)" }));
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "4000" } });
+    fireEvent.click(screen.getByRole("button", { name: "Tất cả (2)" }));
+    expect(screen.queryByRole("button", { name: /^Chưa đếm/ })).toBeNull();
+  });
+
+  it("the form skips the browser's own check so every Lưu reaches the cleared line", () => {
+    const { container } = render(<StocktakeEditForm detail={DETAIL} />);
+    const form = container.querySelector("form")!;
+    expect(form.noValidate).toBe(true);
+  });
+
+  it("pressing Lưu again on a visible emptied line still names it", () => {
+    render(<StocktakeEditForm detail={DETAIL} />);
+    fireEvent.change(box("Bột cà phê truyền thống Phin Đậm"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
+    expect(screen.getByText(/"Bột cà phê truyền thống Phin Đậm" chưa có số đếm/)).toBeInTheDocument();
+    expect(editConfirmedStocktake).not.toHaveBeenCalled();
   });
 });
 

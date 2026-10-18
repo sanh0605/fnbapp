@@ -42,7 +42,9 @@ một khung tóm tắt phiếu gần nhất với nút huỷ, và dòng "Kiểm 
 mở về trang Kiểm kê chung. Nên dựng thêm hai trang.
 
 **Trang phiếu kiểm kê** `/admin/inventory/stocktake/[id]` (mọi người xem được, như hôm nay):
-- Đầu trang: mã phiếu, trạng thái (Đã xác nhận / Đã huỷ), ngày kiểm, người xác nhận.
+- Đầu trang: mã phiếu, trạng thái (Đã xác nhận / Đã huỷ), ngày kiểm, người xác nhận; phiếu đã
+  xác nhận thêm "Giá trị lệch" của cả phiếu, cùng số với danh sách Kiểm kê, ví dụ "thiếu 34,864,627đ"
+  (thêm 2026-10-18).
 - Máy tính: bảng Hàng · Đơn vị · Sổ lúc đếm · Đếm được · Chênh lệch. Chênh lệch ghi "Thiếu 2,000 g"
   hoặc "Thừa 500 g", bằng 0 thì ghi "Khớp" (sửa 2026-10-18 cho khớp trang đang chạy).
   Điện thoại: dòng gọn hai tầng, cùng các ô đó.
@@ -55,6 +57,10 @@ mở về trang Kiểm kê chung. Nên dựng thêm hai trang.
 - Mỗi dòng một ô số, điền sẵn số đếm hiện tại, đơn vị là đơn vị gốc của hàng (g, ml, cái…),
   không chia theo gói như lúc đếm: sửa là chữa con số, không đếm lại.
 - Cạnh mỗi ô: sổ lúc đếm và chênh lệch tính lại ngay khi gõ.
+- Trên các dòng: nút lọc Tất cả / Chưa đếm (khi có) / Lệch / Khớp và ô "Tìm hàng", như trang
+  phiếu (thêm 2026-10-18). Lọc chỉ để tìm dòng: Lưu vẫn gửi mọi dòng đã đổi, kể cả dòng đang bị
+  lọc ẩn; một dòng đã đếm bị xoá trắng thì Lưu dừng lại, nêu tên hàng đó, chuyển sang
+  "Chưa đếm", xoá ô tìm và đặt con trỏ vào ô của dòng đó.
 - Lưu một lần cho mọi dòng đã đổi, cùng thành hoặc cùng không. Xong về trang phiếu.
 - Không có ô lý do. Không có hộp hỏi lại (luật không cửa sổ bật lên `BR-DATA-007`).
 
