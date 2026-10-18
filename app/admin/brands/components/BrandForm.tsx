@@ -6,8 +6,7 @@ import { addBrand, editBrand } from "@/app/admin/brands/actions";
 import { FormActionBar } from "@/components/ui/FormActionBar";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
-import { CustomDatePicker } from "@/components/ui/CustomDatePicker";
-import { pickerDateToIsoDay, isoDayToPickerDate } from "@/components/ui/picker-date";
+import { DayInput } from "@/components/ui/DayInput";
 import { safeReturnTo } from "@/lib/shared/return-to";
 import { Alert } from "@/components/ui/Alert";
 import type { DBBrand } from "@/types/db";
@@ -25,9 +24,8 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(() =>
-    isoDayToPickerDate(initialData?.start_date)
-  );
+  const [startDate, setStartDate] = useState(initialData?.start_date || "");
+  const [startDateError, setStartDateError] = useState("");
 
   // section A4b/B: found while fixing this file's delete button -- this
   // add/edit handler discarded its result too (via `fn`, not a literal
@@ -41,8 +39,13 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
     if (isEdit && initialData) {
       formData.append("id", initialData.id);
     }
-    if (selectedDate) {
-      formData.set("start_date", pickerDateToIsoDay(selectedDate));
+    if (startDate === "invalid") {
+      setLoading(false);
+      setStartDateError("Ngày không hợp lệ");
+      return;
+    }
+    if (startDate) {
+      formData.set("start_date", startDate);
     } else {
       formData.delete("start_date");
     }
@@ -88,16 +91,15 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
             />
           </Field>
 
-          <Field label="Ngày bắt đầu hoạt động" htmlFor={`${formId}-start-date`}>
-            <CustomDatePicker
-              id={`${formId}-start-date`}
-              selected={selectedDate}
-              onChange={(date: Date | null) => setSelectedDate(date)}
-              dateFormat="dd/MM/yyyy"
-              showTimeSelect={false}
-              placeholderText="DD/MM/YYYY"
-            />
-          </Field>
+          <DayInput
+            label="Ngày bắt đầu hoạt động"
+            value={startDate}
+            onChange={(v) => {
+              setStartDate(v);
+              setStartDateError("");
+            }}
+            error={startDateError}
+          />
         </div>
 
         <FormActionBar

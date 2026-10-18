@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { DetailFrame } from "@/components/ui/detail/DetailFrame";
@@ -36,17 +35,17 @@ export function BrandDetailView({
     outlets.length === 0 ? (
       "—"
     ) : (
-      <span>
+      <span className="flex flex-wrap items-center gap-x-2">
         {outlets.map((outlet, idx) => (
-          <React.Fragment key={outlet.id}>
-            {idx > 0 && ", "}
+          <span key={outlet.id} className="inline-flex items-center">
             <Link
               href={`/admin/outlets/${encodeURIComponent(outlet.id)}`}
-              className="text-primary hover:underline font-medium"
+              className="inline-flex items-center min-h-[48px] md:min-h-[40px] text-primary underline underline-offset-2 font-medium"
             >
               {outlet.name}
             </Link>
-          </React.Fragment>
+            {idx < outlets.length - 1 && ","}
+          </span>
         ))}
       </span>
     );
@@ -93,7 +92,6 @@ export function BrandDetailView({
         backHref={returnTo}
         backLabel="Thương hiệu"
         title={brand.name}
-        subtitle={brand.id}
         actions={headerActions}
       />
 

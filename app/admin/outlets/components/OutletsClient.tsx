@@ -108,9 +108,10 @@ export default function OutletsClient({
       {
         key: "id",
         header: "Mã",
+        nowrap: true,
         sortValue: (o) => o.id,
         render: (o) => (
-          <span className="font-mono text-xs text-primary transition-colors">
+          <span className="font-mono text-xs text-primary transition-colors whitespace-nowrap">
             {o.id}
           </span>
         ),
@@ -118,17 +119,19 @@ export default function OutletsClient({
       {
         key: "name",
         header: "Tên",
+        nowrap: true,
         sortValue: (o) => o.name,
         render: (o) => (
-          <div className="text-text-primary">{o.name}</div>
+          <div className="text-text-primary whitespace-nowrap">{o.name}</div>
         ),
       },
       {
         key: "brand",
         header: "Thương hiệu",
+        nowrap: true,
         sortValue: (o) => brandMap[o.brand_id] || o.brand_id,
         render: (o) => (
-          <span className="text-text-secondary">
+          <span className="text-text-secondary whitespace-nowrap">
             {brandMap[o.brand_id] || o.brand_id}
           </span>
         ),
@@ -136,9 +139,10 @@ export default function OutletsClient({
       {
         key: "code",
         header: "Mã đơn",
+        nowrap: true,
         sortValue: (o) => o.code,
         render: (o) => (
-          <span className="font-mono text-text-secondary">
+          <span className="text-text-secondary whitespace-nowrap">
             {o.code}
           </span>
         ),
@@ -146,9 +150,10 @@ export default function OutletsClient({
       {
         key: "hours",
         header: "Giờ hoạt động",
+        nowrap: true,
         sortValue: (o) => formatHours(o.open_time, o.close_time),
         render: (o) => (
-          <span className="text-text-secondary text-sm">
+          <span className="text-text-secondary text-sm whitespace-nowrap">
             {formatHours(o.open_time, o.close_time)}
           </span>
         ),
@@ -156,6 +161,7 @@ export default function OutletsClient({
       {
         key: "start_date",
         header: "Bắt đầu",
+        nowrap: true,
         sortValue: (o) => o.start_date || "",
         render: (o) => (
           <span className="text-text-secondary text-sm whitespace-nowrap">
@@ -166,6 +172,7 @@ export default function OutletsClient({
       {
         key: "status",
         header: "Trạng thái",
+        nowrap: true,
         sortValue: (o) => (o.status === "ACTIVE" ? "Đang hoạt động" : "Ngừng hoạt động"),
         render: (o) =>
           o.status === "ACTIVE" ? (
@@ -310,23 +317,26 @@ export default function OutletsClient({
           `/admin/outlets/${encodeURIComponent(o.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        phoneRow={(o) => ({
-          title: o.name,
-          meta: [
-            brandMap[o.brand_id] || o.brand_id,
-            o.code,
-            formatHours(o.open_time, o.close_time),
-            o.start_date ? `Bắt đầu: ${formatDateTimeFull(o.start_date)}` : null,
-          ]
-            .filter(Boolean)
-            .join(" · "),
-          badge:
-            o.status === "ACTIVE" ? (
-              <Badge variant="success">Đang hoạt động</Badge>
-            ) : (
-              <Badge variant="warning">Ngừng hoạt động</Badge>
-            ),
-        })}
+        phoneRow={(o) => {
+          const hoursText =
+            o.open_time && o.close_time
+              ? `Giờ ${formatHours(o.open_time, o.close_time)}`
+              : "Giờ chưa đặt";
+          return {
+            title: o.name,
+            meta: [
+              brandMap[o.brand_id] || o.brand_id,
+              o.code,
+              hoursText,
+            ].join(" · "),
+            badge:
+              o.status === "ACTIVE" ? (
+                <Badge variant="success">Đang hoạt động</Badge>
+              ) : (
+                <Badge variant="warning">Ngừng hoạt động</Badge>
+              ),
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

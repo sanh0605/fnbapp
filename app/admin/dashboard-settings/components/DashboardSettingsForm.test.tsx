@@ -67,10 +67,19 @@ describe("DashboardSettingsForm (plan 2026-10-14-tong-quan-moi, Hiện trạng i
     expect(screen.getByText(/không còn bán/)).toBeInTheDocument();
   });
 
-  it("settings save hidden for a manager", () => {
+  it("settings save disabled for a manager", () => {
     render(<DashboardSettingsForm settings={SETTINGS} products={PRODUCTS} types={TYPES} isOwner={false} />);
-    expect(screen.queryByRole("button", { name: "Lưu" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
     expect(screen.getByText("Chỉ chủ quán sửa được mục này")).toBeInTheDocument();
+    expect(screen.getByLabelText("Trứng luộc")).toBeDisabled();
+    expect(screen.getByLabelText("Cột topping mua riêng")).toBeDisabled();
+  });
+
+  it("sorts saved food columns first, then rest by name", () => {
+    renderForm();
+    const checkboxes = screen.getAllByRole("checkbox");
+    const labels = checkboxes.map((cb) => cb.getAttribute("aria-label"));
+    expect(labels).toEqual(["Khoai lang", "Trứng luộc", "Cà phê đá"]);
   });
 
   it("inactive dish not offered if not already chosen", () => {

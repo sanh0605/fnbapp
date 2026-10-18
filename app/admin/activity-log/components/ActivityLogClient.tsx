@@ -1,12 +1,14 @@
 "use client";
 
-import { PageHeader } from "@/components/ui/PageHeader";
-import { Button } from "@/components/ui/Button";
+import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
 import { DateRangeButton } from "@/components/ui/DateRangeButton";
-import { useEffect, useState, useTransition } from "react";
+import { FilterCard } from "@/components/ui/list/FilterCard";
+import { ListPagination } from "@/components/ui/list/ListPagination";
+import { DataList, type DataColumn } from "@/components/ui/list/DataList";
+import { useEffect, useState, useMemo, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatDateTimeFull } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
@@ -22,6 +24,79 @@ function formatEmptyRangePart(range: RangeValue): string {
   const text = formatRangeButtonText(range);
   const [preset, ...rest] = text.split(" · ");
   return `${preset} (${rest.join(" · ")})`;
+}
+
+function parseDelta(deltaJson?: string): {
+  netTotal?: number;
+  items: { key: string; label: string; value: string }[];
+} {
+  if (!deltaJson) return { items: [] };
+  try {
+    const delta = JSON.parse(deltaJson);
+    if (typeof delta !== "object" || delta === null) return { items: [] };
+
+    let netTotal: number | undefined;
+    const items: { key: string; label: string; value: string }[] = [];
+
+    for (const [key, val] of Object.entries(delta)) {
+      let label = key;
+      let formattedVal = String(val);
+
+      if (key === "gross_total") {
+        label = "Doanh thu gốc";
+        formattedVal = formatNumber(Number(val));
+      } else if (key === "net_total") {
+        label = "Doanh thu thuần";
+        netTotal = Number(val);
+        formattedVal = formatNumber(Number(val));
+      } else if (key === "line_count") {
+        label = "Số món";
+      } else if (key === "payment_method") {
+        label = "PT thanh toán";
+        formattedVal = val === "BANK_TRANSFER" ? "Chuyển khoản" : "Tiền mặt";
+      }
+
+      items.push({ key, label, value: formattedVal });
+    }
+
+    return { netTotal, items };
+  } catch {
+    return { items: [{ key: "raw", label: "", value: deltaJson }] };
+  }
+}
+
+function eventBadge(type: string) {
+  let label = type;
+  let classes = "bg-page text-text-primary border-border";
+  switch (type) {
+    case "CREATED":
+      label = "Tạo mới";
+      classes = "bg-success/10 text-success-active border-success/30";
+      break;
+    case "EDITED":
+      label = "Chỉnh sửa";
+      classes = "bg-primary-soft text-primary-active border-primary/20";
+      break;
+    case "VOIDED":
+      label = "Huỷ đơn";
+      classes = "bg-danger/10 text-danger-active border-danger/30";
+      break;
+    case "REOPENED":
+      label = "Mở lại";
+      classes = "bg-warning/10 text-warning-active border-warning/30";
+      break;
+    case "MIGRATED":
+      label = "Di trú";
+      classes = "bg-surface-secondary text-text-secondary border-border";
+      break;
+  }
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${classes}`}
+    >
+      {label}
+    </span>
+  );
 }
 
 export interface ActivityLogClientProps {
@@ -50,7 +125,6 @@ export default function ActivityLogClient({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-
   const [search, setSearch] = useState(() => searchParams.get("q") || "");
   const [eventType, setEventType] = useState(() => searchParams.get("type") || "ALL");
   const actorFromUrl = actorLabel ?? (searchParams.get("actor") || "ALL");
@@ -69,7 +143,6 @@ export default function ActivityLogClient({
   }, [searchParams, actorFromUrl]);
 
   const updateUrl = (updates: {
-    page?: number;
     q?: string;
     type?: string;
     actor?: string;
@@ -82,12 +155,9 @@ export default function ActivityLogClient({
       else params.delete(key);
     }
 
-    const isFilterChange = ["q", "type", "actor"]
-      .some(key => updates[key as keyof typeof updates] !== undefined);
-    const targetPage = updates.page ?? (isFilterChange ? 1 : currentPage);
-    if (targetPage > 1) params.set("page", String(targetPage));
-    else params.delete("page");
-    setCurrentPage(targetPage);
+    // Every caller changes a filter, so the list goes back to page 1.
+    params.delete("page");
+    setCurrentPage(1);
 
     const href = params.size > 0 ? `${pathname}?${params.toString()}` : pathname;
     startTransition(() => {
@@ -129,100 +199,121 @@ export default function ActivityLogClient({
       searchParams.get("to")
   );
 
+  const isDateNotDefault = range.preset !== "THIS_MONTH";
+
+  const activeCount =
+    (searchParams.get("q")?.trim() ? 1 : 0) +
+    (eventType !== "ALL" ? 1 : 0) +
+    (actorFilter !== "ALL" ? 1 : 0) +
+    (isDateNotDefault ? 1 : 0);
+
   const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
 
-  const renderDelta = (deltaJson?: string) => {
-    if (!deltaJson) return null;
-    try {
-      const delta = JSON.parse(deltaJson);
-      if (typeof delta !== "object" || delta === null) return null;
-
-      const items = Object.entries(delta).map(([key, val]) => {
-        let label = key;
-        let formattedVal = String(val);
-
-        if (key === "gross_total") {
-          label = "Doanh thu gốc";
-          formattedVal = formatNumber(Number(val));
-        } else if (key === "net_total") {
-          label = "Doanh thu thuần";
-          formattedVal = formatNumber(Number(val));
-        } else if (key === "line_count") {
-          label = "Số món";
-        } else if (key === "payment_method") {
-          label = "PT Thanh toán";
-          formattedVal = val === "BANK_TRANSFER" ? "Chuyển khoản" : "Tiền mặt";
-        }
-
-        return (
-          <span
-            key={key}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-secondary text-text-secondary border border-border"
-          >
-            <span className="text-xs uppercase font-bold text-text-muted">{label}:</span>
-            <span>{formattedVal}</span>
+  const columns: DataColumn<OrderEvent>[] = useMemo(
+    () => [
+      {
+        key: "event_at",
+        header: "Thời gian",
+        nowrap: true,
+        render: (evt) => (
+          <span className="whitespace-nowrap text-text-secondary">
+            {formatDateTimeFull(evt.event_at)}
           </span>
-        );
-      });
+        ),
+      },
+      {
+        key: "event_type",
+        header: "Sự kiện",
+        render: (evt) => eventBadge(evt.event_type),
+      },
+      {
+        key: "order_no",
+        header: "Đơn hàng",
+        nowrap: true,
+        render: (evt) => (
+          <span className="font-mono text-xs text-primary whitespace-nowrap">
+            {evt.order_no}
+          </span>
+        ),
+      },
+      {
+        key: "actor_name",
+        header: "Người làm",
+        render: (evt) => evt.actor_name,
+      },
+      {
+        key: "reason",
+        header: "Lý do",
+        render: (evt) => {
+          if (!evt.reason) return <span className="text-text-muted">—</span>;
+          const text = evt.reason === "POS checkout" ? "Bán tại máy bán hàng" : evt.reason;
+          return <span className="text-text-secondary">{text}</span>;
+        },
+      },
+      {
+        key: "delta",
+        header: "Thay đổi",
+        render: (evt) => {
+          const { items } = parseDelta(evt.delta_json);
+          if (items.length === 0) return <span className="text-text-muted">—</span>;
+          return (
+            <span className="text-text-secondary">
+              {items.map((it) => `${it.label} ${it.value}`.trim()).join(" · ")}
+            </span>
+          );
+        },
+      },
+    ],
+    [],
+  );
 
-      return <div className="flex flex-wrap gap-2 mt-2">{items}</div>;
-    } catch (e) {
-      return (
-        <pre className="text-xs text-text-muted font-mono bg-surface-secondary p-2 rounded-lg border border-border mt-2 overflow-x-auto">
-          {deltaJson}
-        </pre>
-      );
-    }
+  const firstIndex = totalCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const lastIndex = Math.min(totalCount, currentPage * itemsPerPage);
+  const slice = {
+    page: currentPage,
+    pageCount: totalPages,
+    total: totalCount,
+    firstIndex,
+    lastIndex,
   };
 
-  const getEventBadge = (type: string) => {
-    switch (type) {
-      case "CREATED":
-        return {
-          label: "Tạo mới",
-          classes: "bg-success/10 text-success-active border-success/30",
-          dotColor: "bg-success ring-success/20",
-        };
-      case "EDITED":
-        return {
-          label: "Chỉnh sửa",
-          classes: "bg-primary-soft text-primary-active border-primary/20",
-          dotColor: "bg-primary ring-primary/20",
-        };
-      case "VOIDED":
-        return {
-          label: "Huỷ đơn",
-          classes: "bg-danger/10 text-danger-active border-danger/30",
-          dotColor: "bg-danger ring-danger/20",
-        };
-      case "REOPENED":
-        return {
-          label: "Mở lại",
-          classes: "bg-warning/10 text-warning-active border-warning/30",
-          dotColor: "bg-warning ring-warning/20",
-        };
-      case "MIGRATED":
-        return {
-          label: "Di trú",
-          classes: "bg-surface-secondary text-text-secondary border-border",
-          dotColor: "bg-border ring-border",
-        };
-      default:
-        return {
-          label: type,
-          classes: "bg-page text-text-primary border-border",
-          dotColor: "bg-text-muted ring-border",
-        };
-    }
+  const pageHref = (p: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (p > 1) params.set("page", String(p));
+    else params.delete("page");
+    return params.size > 0 ? `${pathname}?${params.toString()}` : pathname;
   };
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Nhật ký hoạt động"
-        subtitle="Theo dõi lịch sử chỉnh sửa đơn hàng, huỷ đơn, và các sự kiện trong hệ thống."
-      />
-      <div className="flex flex-wrap items-end gap-3 mb-6">
+      <div className="space-y-1">
+        <ListPageHeader
+          group="Cài đặt"
+          title="Nhật ký hoạt động"
+        />
+        <p className="text-sm text-text-secondary">
+          Theo dõi lịch sử chỉnh sửa đơn hàng, huỷ đơn, và các sự kiện trong hệ thống.
+        </p>
+      </div>
+
+      <FilterCard
+        onApply={() => updateUrl({ q: search })}
+        onClear={handleClear}
+        showClear={hasAnyFilter}
+        activeCount={activeCount}
+        search={
+          <div className="shrink-0 w-full md:w-56">
+            <Field label="Tìm kiếm" htmlFor="filter-search">
+              <TextInput
+                id="filter-search"
+                placeholder="Ví dụ: 261017001032"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </Field>
+          </div>
+        }
+      >
         <div className="w-full md:w-auto shrink-0">
           <DateRangeButton
             value={range}
@@ -232,39 +323,6 @@ export default function ActivityLogClient({
             disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
           />
         </div>
-        <div className="shrink-0 w-full md:w-56">
-          <Field label="Tìm kiếm" htmlFor="filter-search">
-            <TextInput
-              id="filter-search"
-              placeholder="Ví dụ: PHD000001"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") updateUrl({ q: search });
-              }}
-            />
-          </Field>
-        </div>
-        <Button
-          type="button"
-          variant="primary"
-          onClick={() => updateUrl({ q: search })}
-          loading={isPending}
-          className="w-full md:w-auto"
-        >
-          Lọc
-        </Button>
-        {hasAnyFilter && (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleClear}
-            disabled={isPending}
-            className="w-full md:w-auto"
-          >
-            Xoá lọc
-          </Button>
-        )}
         <div className="shrink-0 w-full md:w-40">
           <Field label="Loại sự kiện" htmlFor="filter-event-type">
             <Select
@@ -306,14 +364,35 @@ export default function ActivityLogClient({
             </Select>
           </Field>
         </div>
-      </div>
+      </FilterCard>
 
-      <div className={`relative pl-6 md:pl-10 ${isPending ? "opacity-60" : ""}`}>
-        {/* Vertical Timeline Line */}
-        <div className="absolute top-4 bottom-4 left-[34px] md:left-[50px] w-0.5 border-border" />
+      <div className={isPending ? "opacity-60 transition-opacity" : ""}>
+        <DataList
+          rows={initialEvents}
+          getId={(evt) => evt.id}
+          getName={(evt) => `Đơn hàng ${evt.order_no}`}
+          getHref={(evt) =>
+            `/admin/orders/${encodeURIComponent(evt.order_id)}`
+          }
+          columns={columns}
+          phoneRow={(evt) => {
+            const { netTotal } = parseDelta(evt.delta_json);
+            const time = formatDateTimeFull(evt.event_at);
+            const person = evt.actor_name;
+            const reason = evt.reason && evt.reason !== "POS checkout" ? evt.reason : null;
 
-        <div className="space-y-6">
-          {initialEvents.length === 0 ? (
+            const meta = [time, person, reason]
+              .filter(Boolean)
+              .join(" · ");
+
+            return {
+              title: `Đơn hàng ${evt.order_no}`,
+              value: netTotal !== undefined ? `${formatNumber(netTotal)}đ` : undefined,
+              badge: eventBadge(evt.event_type),
+              meta,
+            };
+          }}
+          empty={
             <EmptyState 
               icon="🕒" 
               title={
@@ -331,89 +410,19 @@ export default function ActivityLogClient({
                 onClick: handleClear,
               }}
             />
-          ) : (
-            initialEvents.map((evt) => {
-              const badge = getEventBadge(evt.event_type);
-              return (
-                <div key={evt.id} className="relative group">
-                  {/* Timeline Dot Indicator */}
-                  <div
-                    className={`absolute -left-[27px] md:-left-[43px] top-4 w-4 h-4 rounded-full border-4 border-white ${badge.dotColor} ring-4 transition-transform duration-200 group-hover:scale-125 z-10`}
-                  />
-
-                  {/* Card Container */}
-                  <div className="bg-surface-card rounded-2xl border border-border p-5 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col md:flex-row md:items-start justify-between gap-4">
-                    <div className="space-y-2 flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border ${badge.classes}`}
-                        >
-                          {badge.label}
-                        </span>
-                        <span className="font-extrabold text-sm text-text-primary">
-                          Đơn hàng {evt.order_no}
-                        </span>
-                      </div>
-
-                      <div className="text-xs text-text-secondary space-y-1">
-                        <p className="flex items-center gap-1.5">
-                          <span className="text-text-muted">Thời gian:</span>
-                          <span className="font-medium text-text-secondary">
-                            {formatDateTimeFull(evt.event_at)}
-                          </span>
-                        </p>
-                        <p className="flex items-center gap-1.5">
-                          <span className="text-text-muted">Thực hiện:</span>
-                          <span className="font-bold text-text-primary">
-                            {evt.actor_name}
-                          </span>
-                        </p>
-                        {evt.reason && (
-                          <p className="mt-1 pt-1 border-t border-border">
-                            <span className="text-text-muted">Lý do:</span>{" "}
-                            <span className="font-medium text-text-primary italic">
-                              "{evt.reason === "POS checkout" ? "Bán tại máy bán hàng" : evt.reason}"
-                            </span>
-                          </p>
-                        )}
-                      </div>
-
-                      {renderDelta(evt.delta_json)}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+          }
+        />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
-        <span className="text-xs font-semibold text-text-muted">
-          {initialEvents.length} / {totalCount} sự kiện
-        </span>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={currentPage <= 1 || isPending}
-            onClick={() => updateUrl({ page: currentPage - 1 })}
-          >
-            Trước
-          </Button>
-          <span className="min-w-20 text-center text-xs font-bold text-text-secondary">
-            {currentPage} / {totalPages}
-          </span>
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={currentPage >= totalPages || isPending}
-            onClick={() => updateUrl({ page: currentPage + 1 })}
-          >
-            Sau
-          </Button>
+      {totalCount > 0 && (
+        <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
+          <ListPagination
+            slice={slice}
+            unit="sự kiện"
+            pageHref={pageHref}
+          />
         </div>
-      </div>
+      )}
     </div>
   );
 }

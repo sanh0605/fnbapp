@@ -95,8 +95,8 @@ describe("OutletForm edit mode", () => {
     expect(document.querySelector('select[name="brand_id"]')).not.toBeNull();
     expect(document.querySelector('input[name="address"]')).not.toBeNull();
     expect(document.body.textContent).toContain("Ngày bắt đầu hoạt động");
-    expect(document.querySelector('input[name="open_time"]')).not.toBeNull();
-    expect(document.querySelector('input[name="close_time"]')).not.toBeNull();
+    expect(document.querySelector('[name="open_time"]')).not.toBeNull();
+    expect(document.querySelector('[name="close_time"]')).not.toBeNull();
   });
 
   it("pre-fills brand, address and hours from the outlet being edited", () => {
@@ -104,8 +104,8 @@ describe("OutletForm edit mode", () => {
 
     const brandSelect = document.querySelector('select[name="brand_id"]') as HTMLSelectElement;
     const addressInput = document.querySelector('input[name="address"]') as HTMLInputElement;
-    const openInput = document.querySelector('input[name="open_time"]') as HTMLInputElement;
-    const closeInput = document.querySelector('input[name="close_time"]') as HTMLInputElement;
+    const openInput = document.querySelector('[name="open_time"]') as HTMLSelectElement;
+    const closeInput = document.querySelector('[name="close_time"]') as HTMLSelectElement;
 
     expect(brandSelect.value).toBe("BR-001");
     expect(addressInput.value).toBe("123 ABC");
@@ -146,8 +146,8 @@ describe("OutletForm sections", () => {
   });
 });
 
-// Wave K6 (plan Review Focus 1): the two hour boxes move to the shared
-// TextInput; Postgres "HH:MM:SS" still shows as HH:MM and is posted as HH:MM.
+// Wave K6: the two hour boxes use Select with half-hour options;
+// Postgres "HH:MM:SS" shows as HH:MM and is posted as HH:MM.
 describe("OutletForm hour boxes (wave K6)", () => {
   it("07:00:00 and 22:30:00 show as 07:00 and 22:30 and are sent as open_time=07:00, close_time=22:30", async () => {
     mocks.editOutlet.mockResolvedValue({});
@@ -159,9 +159,10 @@ describe("OutletForm hour boxes (wave K6)", () => {
         returnTo="/admin/outlets"
       />,
     );
-    const open = screen.getByLabelText(/^Giờ mở cửa/) as HTMLInputElement;
-    const close = screen.getByLabelText(/^Giờ đóng cửa/) as HTMLInputElement;
-    expect(open.type).toBe("time");
+    const open = screen.getByLabelText(/^Giờ mở cửa/) as HTMLSelectElement;
+    const close = screen.getByLabelText(/^Giờ đóng cửa/) as HTMLSelectElement;
+    expect(open.tagName).toBe("SELECT");
+    expect(close.tagName).toBe("SELECT");
     expect(open.value).toBe("07:00");
     expect(close.value).toBe("22:30");
     fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
@@ -187,6 +188,39 @@ describe("OutletForm hour boxes (wave K6)", () => {
     expect(formData.get("open_time")).toBe("");
     expect(formData.get("close_time")).toBe("");
   });
+
+  it('a saved open time "07:15:00" shows "07:15" selected as an extra option, "Chưa đặt" is the first option, and submitting posts open_time = "07:15"', async () => {
+    mocks.editOutlet.mockResolvedValue({});
+    render(
+      <OutletForm
+        initialData={{ ...OUTLET, open_time: "07:15:00" }}
+        brands={BRANDS}
+        outlets={[OUTLET]}
+        returnTo="/admin/outlets"
+      />,
+    );
+    const open = screen.getByLabelText(/^Giờ mở cửa/) as HTMLSelectElement;
+    expect(open.value).toBe("07:15");
+    expect(open.options[0].textContent).toBe("Chưa đặt");
+    expect(open.options[0].value).toBe("");
+    const optionValues = Array.from(open.options).map((opt) => opt.value);
+    expect(optionValues).toContain("07:15");
+    fireEvent.click(screen.getByRole("button", { name: "Lưu thay đổi" }));
+    await waitFor(() => expect(mocks.editOutlet).toHaveBeenCalledTimes(1));
+    const formData = mocks.editOutlet.mock.calls[0][0] as FormData;
+    expect(formData.get("open_time")).toBe("07:15");
+  });
+
+  it("shows DayInput error and does not call save action on invalid day", async () => {
+    const { container } = render(<OutletForm brands={BRANDS} outlets={[]} returnTo="/admin/outlets" />);
+    const dayBox = screen.getByLabelText(/^Ngày bắt đầu hoạt động/) as HTMLInputElement;
+    fireEvent.change(dayBox, { target: { value: "32/13/2026" } });
+    fireEvent.blur(dayBox);
+    fireEvent.submit(container.querySelector("form")!);
+    expect(await screen.findByText("Ngày không hợp lệ")).toBeInTheDocument();
+    expect(mocks.addOutlet).not.toHaveBeenCalled();
+    expect(mocks.editOutlet).not.toHaveBeenCalled();
+  });
 });
 
 describe("OutletForm add mode", () => {
@@ -201,8 +235,8 @@ describe("OutletForm add mode", () => {
 
     expect(document.querySelector('select[name="brand_id"]')).not.toBeNull();
     expect(document.querySelector('input[name="address"]')).not.toBeNull();
-    expect(document.querySelector('input[name="open_time"]')).not.toBeNull();
-    expect(document.querySelector('input[name="close_time"]')).not.toBeNull();
+    expect(document.querySelector('[name="open_time"]')).not.toBeNull();
+    expect(document.querySelector('[name="close_time"]')).not.toBeNull();
   });
 
   it("shows the next auto-assigned code previewing nextOutletCode (004 for 001 and 003)", () => {
