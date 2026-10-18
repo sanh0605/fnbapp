@@ -225,16 +225,24 @@ export default function CategoriesClient({
           `/admin/products/categories/${encodeURIComponent(cat.id)}?returnTo=${encodeURIComponent(currentListUrl)}`
         }
         columns={columns}
-        phoneRow={(cat) => ({
-          title: (
-            <>
-              {cat.icon ? <span className="mr-1.5">{cat.icon}</span> : null}
-              {cat.name}
-            </>
-          ),
-          value: `${formatNumber(counts[cat.id] ?? 0)} món`,
-          meta: [cat.id, typesById.get(cat.type_id)].filter(Boolean).join(" · "),
-        })}
+        phoneRow={(cat) => {
+          const typeName = typesById.get(cat.type_id);
+          const showType =
+            typeName &&
+            cat.name.trim().toLowerCase() !== typeName.trim().toLowerCase();
+          return {
+            title: (
+              <>
+                {cat.icon ? <span className="mr-1.5">{cat.icon}</span> : null}
+                {cat.name}
+              </>
+            ),
+            value: `${formatNumber(counts[cat.id] ?? 0)} món`,
+            meta: [cat.id, showType ? typeName : null]
+              .filter(Boolean)
+              .join(" · "),
+          };
+        }}
         sort={{
           key: sortKey,
           dir: sortDir,

@@ -80,7 +80,7 @@ export default function ModifierGroupsClient({
         nowrap: true,
         sortValue: (r) => r.group.sort_order,
         render: (r) => (
-          <span className="font-mono text-xs text-text-secondary whitespace-nowrap">
+          <span className="text-text-secondary tabular-nums">
             {r.group.sort_order}
           </span>
         ),
@@ -88,9 +88,10 @@ export default function ModifierGroupsClient({
       {
         key: "name",
         header: "Tên nhóm",
+        nowrap: true,
         sortValue: (r) => r.group.name,
         render: (r) => (
-          <div className="text-text-primary font-normal">{r.group.name}</div>
+          <div className="text-text-primary font-normal whitespace-nowrap">{r.group.name}</div>
         ),
       },
       {
@@ -99,7 +100,7 @@ export default function ModifierGroupsClient({
         nowrap: true,
         sortValue: (r) => (r.group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều"),
         render: (r) => (
-          <span className="text-text-secondary font-normal">
+          <span className="text-text-secondary font-normal whitespace-nowrap">
             {r.group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều"}
           </span>
         ),
@@ -111,7 +112,7 @@ export default function ModifierGroupsClient({
         secondary: true,
         sortValue: (r) => r.group.max_total ?? 0,
         render: (r) => (
-          <span className="text-text-secondary font-normal">
+          <span className="text-text-secondary font-normal whitespace-nowrap">
             {r.group.selection_mode === "ONE"
               ? "—"
               : r.group.max_total
@@ -140,7 +141,10 @@ export default function ModifierGroupsClient({
         header: "Tuỳ chọn",
         sortValue: (r) => r.optionNames.join(", "),
         render: (r) => (
-          <div className="text-text-secondary font-normal">
+          <div
+            className="text-text-secondary font-normal line-clamp-2"
+            title={r.optionNames.join(", ")}
+          >
             {r.optionNames.length > 0
               ? r.optionNames.join(", ")
               : "Chưa có tuỳ chọn"}
@@ -278,7 +282,7 @@ export default function ModifierGroupsClient({
             r.group.selection_mode === "ONE" ? "Chọn một" : "Chọn nhiều",
             r.group.max_total ? `tối đa ${r.group.max_total} phần` : null,
             r.optionNames.length > 0
-              ? `${r.optionNames.length} tuỳ chọn: ${r.optionNames.join(", ")}`
+              ? `${r.optionNames.length} tuỳ chọn`
               : "Chưa có tuỳ chọn",
           ]
             .filter(Boolean)
