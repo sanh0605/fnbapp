@@ -45,11 +45,11 @@ function parseDelta(deltaJson?: string): {
 
       if (key === "gross_total") {
         label = "Doanh thu gốc";
-        formattedVal = formatNumber(Number(val));
+        formattedVal = formatNumber(Number(val)) + "đ";
       } else if (key === "net_total") {
         label = "Doanh thu thuần";
         netTotal = Number(val);
-        formattedVal = formatNumber(Number(val));
+        formattedVal = formatNumber(Number(val)) + "đ";
       } else if (key === "line_count") {
         label = "Số món";
       } else if (key === "payment_method") {
@@ -60,7 +60,8 @@ function parseDelta(deltaJson?: string): {
       items.push({ key, label, value: formattedVal });
     }
 
-    return { netTotal, items };
+    // Gross only says something when a discount made it differ from net.
+    return { netTotal, items: items.filter((i) => !(i.key === "gross_total" && Number(delta.gross_total) === netTotal)) };
   } catch {
     return { items: [{ key: "raw", label: "", value: deltaJson }] };
   }
@@ -234,7 +235,8 @@ export default function ActivityLogClient({
       {
         key: "actor_name",
         header: "Người làm",
-        render: (evt) => evt.actor_name,
+        nowrap: true,
+        render: (evt) => <span className="whitespace-nowrap">{evt.actor_name}</span>,
       },
       {
         key: "reason",
@@ -242,7 +244,7 @@ export default function ActivityLogClient({
         render: (evt) => {
           if (!evt.reason) return <span className="text-text-muted">—</span>;
           const text = evt.reason === "POS checkout" ? "Bán tại máy bán hàng" : evt.reason;
-          return <span className="text-text-secondary">{text}</span>;
+          return <span className="text-text-secondary inline-block min-w-40">{text}</span>;
         },
       },
       {
@@ -297,11 +299,11 @@ export default function ActivityLogClient({
         showClear={hasAnyFilter}
         activeCount={activeCount}
         search={
-          <div className="shrink-0 w-full md:w-56">
+          <div className="shrink-0 w-full md:w-40">
             <Field label="Tìm kiếm" htmlFor="filter-search">
               <TextInput
                 id="filter-search"
-                placeholder="Ví dụ: 261017001032"
+                placeholder="Ví dụ: 001032"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -311,6 +313,7 @@ export default function ActivityLogClient({
       >
         <div className="w-full md:w-auto shrink-0">
           <DateRangeButton
+            label="Thời gian"
             value={range}
             today={today}
             onChange={handleDateRangeChange}
@@ -318,7 +321,7 @@ export default function ActivityLogClient({
             disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
           />
         </div>
-        <div className="shrink-0 w-full md:w-40">
+        <div className="shrink-0 w-full md:w-36">
           <Field label="Loại sự kiện" htmlFor="filter-event-type">
             <Select
               id="filter-event-type"
@@ -337,7 +340,7 @@ export default function ActivityLogClient({
             </Select>
           </Field>
         </div>
-        <div className="shrink-0 w-full md:w-40">
+        <div className="shrink-0 w-full md:w-36">
           <Field label="Tài khoản" htmlFor="filter-actor">
             <Select
               id="filter-actor"
@@ -347,7 +350,7 @@ export default function ActivityLogClient({
                 updateUrl({ actor: e.target.value });
               }}
             >
-              <option value="ALL">Tất cả tài khoản</option>
+              <option value="ALL">Tất cả</option>
               {actorFilter !== "ALL" && !actors.includes(actorFilter) && (
                 <option value={actorFilter}>{actorFilter}</option>
               )}

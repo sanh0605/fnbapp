@@ -126,12 +126,13 @@ export function DateRangeButton(props: {
   value: RangeValue;
   onChange: (next: RangeValue) => void;
   today: string; // yyyy-mm-dd, Saigon
+  label?: string;
   mode?: "day" | "month"; // default "day"
   disabled?: boolean;
   disabledHint?: string; // shown under the button when disabled
   align?: "left" | "right";
 }) {
-  const { value, onChange, today, mode = "day", disabled = false, disabledHint, align = "left" } = props;
+  const { value, onChange, today, label, mode = "day", disabled = false, disabledHint, align = "left" } = props;
 
   const [isOpen, setIsOpen] = useState(false);
   const [draftPreset, setDraftPreset] = useState<DateRangePresetKey>(value.preset);
@@ -293,10 +294,12 @@ export function DateRangeButton(props: {
 
   return (
     <div ref={containerRef} className="relative w-full md:w-auto inline-block">
+      {label && <span id={`range-label-${uniqueId}`} className="block text-sm font-medium text-text-primary mb-1">{label}</span>}
       <button
         ref={triggerRef}
         type="button"
         data-testid="range-button"
+        aria-describedby={label ? `range-label-${uniqueId}` : undefined}
         disabled={disabled}
         onClick={handleTriggerClick}
         className="w-full md:w-auto min-h-[48px] md:min-h-[40px] px-3.5 py-2 rounded-xl border border-border bg-surface-card hover:bg-page transition-colors text-left flex items-center justify-between gap-3 shadow-sm disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"

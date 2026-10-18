@@ -14,6 +14,7 @@ import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
 import { Alert } from "@/components/ui/Alert";
 import { DateRangeButton } from "@/components/ui/DateRangeButton";
+import { ChevronDown } from "lucide-react";
 import { formatDateTimeFull, formatVnDay } from "@/lib/shared/datetime";
 import { formatNumber } from "@/lib/shared/format";
 import { cancelCashEntry } from "@/app/admin/finance/actions";
@@ -308,6 +309,7 @@ export default function CashBookClient({
         key: "creator",
         header: "Người tạo",
         secondary: true,
+        nowrap: true,
         sortValue: (r) => r.creator,
         render: (r) => (
           <span className="text-text-secondary">{display(r.creator)}</span>
@@ -457,7 +459,7 @@ export default function CashBookClient({
         showClear={Boolean(search.trim() || status !== "ACTIVE" || kind !== "ALL")}
         activeCount={activeCount}
         search={
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-[160px]">
             <Field label="Tìm kiếm" htmlFor="cashbook-search">
               <TextInput
                 id="cashbook-search"
@@ -470,16 +472,14 @@ export default function CashBookClient({
         }
       >
         <div className="shrink-0 w-full md:w-auto">
-          <label className="block text-sm font-medium text-text-primary mb-1">
-            Thời gian
-          </label>
           <DateRangeButton
+            label="Thời gian"
             value={range}
             today={today}
             onChange={handleDateRangeChange}
           />
         </div>
-        <div className="shrink-0 w-full md:w-44">
+        <div className="shrink-0 w-full md:w-36">
           <Field label="Loại" htmlFor="cashbook-kind">
             <Select
               id="cashbook-kind"
@@ -498,7 +498,7 @@ export default function CashBookClient({
             </Select>
           </Field>
         </div>
-        <div className="shrink-0 w-full md:w-44">
+        <div className="shrink-0 w-full md:w-36">
           <Field label="Trạng thái" htmlFor="cashbook-status">
             <Select
               id="cashbook-status"
@@ -558,15 +558,17 @@ export default function CashBookClient({
             <div className="text-lg md:text-xl tabular-nums font-bold text-success mt-1">
               {money(summary.totals.totalIncome)}
             </div>
-            <div className="text-xs text-text-muted mt-2 pt-2 border-t border-border">
-              Trong đó thu ngoài lãi lỗ (vốn góp, ...):{" "}
-              <span
-                data-testid="income-outside-pnl"
-                className="font-medium text-text-primary"
-              >
-                {money(summary.totals.incomeOutsidePnl)}
-              </span>
-            </div>
+            {summary.totals.incomeOutsidePnl !== 0 && (
+              <div className="text-xs text-text-muted mt-2 pt-2 border-t border-border">
+                Trong đó không tính vào lãi lỗ (vốn góp…):{" "}
+                <span
+                  data-testid="income-outside-pnl"
+                  className="font-medium text-text-primary"
+                >
+                  {money(summary.totals.incomeOutsidePnl)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -576,10 +578,11 @@ export default function CashBookClient({
             data-testid="by-category"
             open={isDetailsOpen}
             onToggle={(e) => setIsDetailsOpen(e.currentTarget.open)}
-            className="bg-surface-card rounded-2xl border border-border p-4 shadow-sm"
+            className="group bg-surface-card rounded-2xl border border-border p-4 shadow-sm"
           >
-            <summary className="relative text-sm text-text-muted cursor-pointer py-3.5 -my-3.5 md:py-2.5 md:-my-2.5">
-              Theo nhóm
+            <summary className="relative text-sm text-text-muted cursor-pointer py-3.5 -my-3.5 md:py-2.5 md:-my-2.5 list-none [&::-webkit-details-marker]:hidden flex items-center justify-between gap-2">
+              <span>Theo nhóm</span>
+              <ChevronDown className="h-5 w-5 shrink-0 text-text-secondary transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
             </summary>
             <div className="mt-2 space-y-1 text-sm max-w-md">
               {summary.byGroup.map((g) => (

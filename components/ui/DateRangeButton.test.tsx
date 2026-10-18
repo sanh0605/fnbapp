@@ -67,6 +67,18 @@ describe("DateRangeButton -- the button", () => {
     fireEvent.click(screen.getByTestId("range-button"));
     expect(screen.queryByTestId("range-panel-desktop")).toBeNull();
   });
+
+  it("rendered with label='Thời gian', the text 'Thời gian' is on screen and the button does not have 'Thời gian' in its accessible name; without label, no 'Thời gian'", () => {
+    const { rerender } = render(<DateRangeButton value={THIS_MONTH} onChange={vi.fn()} today={TODAY} label="Thời gian" />);
+    expect(screen.getByText("Thời gian")).toBeInTheDocument();
+    const btn = screen.getByTestId("range-button");
+    expect(btn).not.toHaveAccessibleName(/Thời gian/);
+    expect(btn).toHaveAccessibleDescription("Thời gian");
+
+    rerender(<DateRangeButton value={THIS_MONTH} onChange={vi.fn()} today={TODAY} />);
+    expect(screen.queryByText("Thời gian")).toBeNull();
+    expect(screen.getByTestId("range-button")).not.toHaveAttribute("aria-describedby");
+  });
 });
 
 describe("DateRangeButton -- ready ranges", () => {
