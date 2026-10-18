@@ -64,7 +64,7 @@ Not seen:
   - the asset register and its bands;
   - the cancel page of Phiếu nhập, the model for every other cancel.
 - **Wrong at the root, so fix before anything else:**
-  1. **Giá vốn reads today's classification for past months.** `filterOutEquipmentIssues` and `selectCostedIssues` look up each item's *current* category and "không tính tồn kho" flag. One edit to a category's type (RAW to EQUIPMENT) takes every past issue of its items out of Giá vốn: up to 187 rows, 23.061.959đ, across closed months. `cogs.md:161` says earlier purchases stay counted as goods. Today's effect is 0đ (2 rows, netting to zero).
+  1. **Giá vốn reads today's classification for past months.** `filterOutEquipmentIssues` and `selectCostedIssues` look up each item's *current* category and "Không theo dõi tồn kho" flag. One edit to a category's type (RAW to EQUIPMENT) takes every past issue of its items out of Giá vốn: up to 187 rows, 23.061.959đ, across closed months. `cogs.md:161` says earlier purchases stay counted as goods. Today's effect is 0đ (2 rows, netting to zero).
      - Direction: record on each issue row, at write time, whether it is costed, and let the engine read that value. CLAUDE.md asks for this choice to be stated: the value used at the time is stored; editing a category later recalculates nothing.
      - Until then: refuse a category type change while any of its items has issue rows.
   2. **Editing a confirmed count has no stock check.** `edit_confirmed_stocktake_atomic` only refuses a count below zero. The other three stock writers check that stock stays at or above zero to today (`BR-INV-005`). Lowering a count on STK-001 can push later stock negative and quietly skew Giá vốn. 0 edits so far.

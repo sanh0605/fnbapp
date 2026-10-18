@@ -237,9 +237,9 @@ export function ProductDetailView({
                     title={v.size_name}
                     value={`${formatNumber(v.price)}đ`}
                     badge={
-                      <Badge variant={v.status === "ACTIVE" ? "success" : "neutral"}>
-                        {v.status === "ACTIVE" ? "Đang bán" : "Ngừng bán"}
-                      </Badge>
+                      v.status === "ACTIVE" ? undefined : (
+                        <Badge variant="neutral">Ngừng bán</Badge>
+                      )
                     }
                   />
                 </div>
@@ -304,7 +304,7 @@ export function ProductDetailView({
                     return (
                       <TableRow key={entry.id || idx}>
                         <TableCell>
-                          <span className="text-text-secondary text-sm tabular-nums whitespace-nowrap">
+                          <span className="text-sm tabular-nums whitespace-nowrap">
                             {dateText}
                           </span>
                         </TableCell>

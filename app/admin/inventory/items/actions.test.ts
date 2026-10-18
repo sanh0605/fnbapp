@@ -821,7 +821,7 @@ describe("updatePurchasedItem -- an issued item cannot leave costing, and a conv
     expect(mocks.saveItem).not.toHaveBeenCalled();
   });
 
-  it("refuses ticking 'không tính tồn kho' on an issued item", async () => {
+  it("refuses ticking 'Không theo dõi tồn kho' on an issued item", async () => {
     const res = await actions.updatePurchasedItem(form("NHH-001", true));
     expect(res.error).toBe(refusal);
     expect(mocks.saveItem).not.toHaveBeenCalled();
@@ -833,7 +833,7 @@ describe("updatePurchasedItem -- an issued item cannot leave costing, and a conv
     expect(res.error).toBeUndefined();
   });
 
-  it("refuses taking an issued item back into costing: leaving EQUIPMENT, or unticking 'không tính tồn kho'", async () => {
+  it("refuses taking an issued item back into costing: leaving EQUIPMENT, or unticking 'Không theo dõi tồn kho'", async () => {
     currentItem = { ...currentItem, item_category_id: "NHH-009" };
     expect((await actions.updatePurchasedItem(form("NHH-001"))).error).toBe(refusal);
     currentItem = { ...currentItem, item_category_id: "NHH-001", is_non_inventory: true };

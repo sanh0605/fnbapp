@@ -86,7 +86,7 @@ describe("ProductForm -- price field for a topping linked to an ACTIVE modifier"
 
     expect(priceInput.readOnly || priceInput.disabled).toBe(true);
     expect(priceInput.value).toBe("4,000");
-    expect(document.body.textContent).toContain("Topping & Tuỳ chọn");
+    expect(document.body.textContent).toContain("Topping & tuỳ chọn");
   });
 
   it("stays a normal editable field for an ordinary product", async () => {

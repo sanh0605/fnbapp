@@ -107,8 +107,6 @@ export function ModifierGroupDetailView({
       label: "Trạng thái",
       value: group.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng",
     },
-    { label: "Số tuỳ chọn", value: `${options.length} tuỳ chọn` },
-    { label: "Số món áp dụng", value: `${productIds.length} món` },
   ];
 
   async function handleDelete() {
@@ -287,13 +285,17 @@ export function ModifierGroupDetailView({
                     value={`${formatNumber(opt.price)}đ`}
                     meta={
                       group.selection_mode === "ONE"
-                        ? `Có sẵn: ${opt.is_default ? "Có" : "Không"}`
-                        : `Tối đa: ${opt.max_qty ? opt.max_qty : "Không giới hạn"}`
+                        ? opt.is_default
+                          ? "Có sẵn"
+                          : undefined
+                        : opt.max_qty
+                        ? `Tối đa: ${opt.max_qty}`
+                        : undefined
                     }
                     badge={
-                      <Badge variant={opt.status === "ACTIVE" ? "success" : "neutral"}>
-                        {opt.status === "ACTIVE" ? "Đang dùng" : "Ngừng dùng"}
-                      </Badge>
+                      opt.status === "ACTIVE" ? undefined : (
+                        <Badge variant="neutral">Ngừng dùng</Badge>
+                      )
                     }
                   />
                 </div>

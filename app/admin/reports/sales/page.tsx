@@ -107,7 +107,7 @@ export default async function SalesReportPage(
         range={range}
         today={today}
         title="Doanh số"
-        subtitle="Phân tích hiệu quả kinh doanh theo thời gian · đơn vị: đồng"
+        subtitle={"Phân tích hiệu quả kinh doanh theo thời gian · đơn\u00a0vị:\u00a0đồng"}
       />
 
       {/* 2. Headline figures (R1 order: three headline cards with compare line and small lines) */}

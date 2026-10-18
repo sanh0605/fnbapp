@@ -13,6 +13,7 @@ import { Select } from "@/components/ui/Select";
 import { NumberInput } from "@/components/ui/NumberInput";
 import { Alert } from "@/components/ui/Alert";
 import { FormActionBar } from "@/components/ui/FormActionBar";
+import { PhoneRow } from "@/components/ui/list/PhoneRow";
 import {
   Table,
   TableHead,
@@ -160,11 +161,11 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
         {/* Summary of order as sold (Desktop: left 2/3, Phone: stacked above) */}
         <div
           data-testid="form-lines"
-          className="bg-surface-card rounded-card shadow-sm border border-border p-5 space-y-4 lg:col-span-2 lg:col-start-1"
+          className="lg:col-span-2 lg:col-start-1 space-y-4"
         >
-          <div className="font-bold text-text-primary text-base">
+          <h2 className="text-base font-semibold text-text-primary">
             Món trong đơn
-          </div>
+          </h2>
 
           {/* Desktop table */}
           <div className="hidden md:block">
@@ -172,7 +173,7 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
               <TableHead>
                 <TableHeaderCell>Món</TableHeaderCell>
                 <TableHeaderCell>Size</TableHeaderCell>
-                <TableHeaderCell>Topping</TableHeaderCell>
+                <TableHeaderCell>Tuỳ chọn</TableHeaderCell>
                 <TableHeaderCell>SL</TableHeaderCell>
                 <TableHeaderCell>Thành tiền</TableHeaderCell>
               </TableHead>
@@ -207,46 +208,45 @@ export function OrderEditForm({ order, returnTo }: OrderEditFormProps) {
           </div>
 
           {/* Phone cards */}
-          <div data-testid="summary-lines-phone" className="md:hidden space-y-3">
+          <div
+            data-testid="summary-lines-phone"
+            className="bg-surface-card rounded-card shadow-sm border border-border md:hidden divide-y divide-border"
+          >
             {order.lines.map((line, idx) => {
+              const gross = line.gross_line_total;
+              const net = line.net_line_total;
+              const qtySize = line.size_name ? `${line.qty} × Size ${line.size_name}` : `${line.qty}`;
               const modifiersText =
                 line.modifiers && line.modifiers.length > 0
-                  ? line.modifiers
-                      .map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`)
-                      .join(", ")
-                  : "";
+                  ? `+ ${line.modifiers.map((m: any) => `${Number(m.qty || 1) > 1 ? `${m.qty}x ` : ""}${m.name}`).join(", ")}`
+                  : null;
+              const meta = [qtySize, modifiersText].filter(Boolean).join(" · ");
 
               return (
-                <div key={line.id || idx} className="bg-page rounded-xl p-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="font-bold text-text-primary">
-                        <span className="text-primary mr-1">{line.qty}x</span>
-                        {line.product_name}
-                      </div>
-                      {line.size_name && (
-                        <div className="text-xs text-text-secondary mt-0.5">Size {line.size_name}</div>
-                      )}
-                      {modifiersText && (
-                        <div className="text-xs text-primary mt-1">+ {modifiersText}</div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      {line.gross_line_total > line.net_line_total && (
-                        <div className="text-xs text-text-muted line-through">
-                          {formatNumber(line.gross_line_total)}đ
-                        </div>
-                      )}
-                      <div className="font-bold text-text-primary">{formatNumber(line.net_line_total)}đ</div>
-                    </div>
-                  </div>
+                <div key={line.id || idx} className="px-4 py-2.5">
+                  <PhoneRow
+                    title={line.product_name}
+                    value={
+                      gross > net ? (
+                        <span>
+                          <span className="text-xs text-text-muted line-through mr-1 font-normal">
+                            {formatNumber(gross)}đ
+                          </span>
+                          <span>{formatNumber(net)}đ</span>
+                        </span>
+                      ) : (
+                        `${formatNumber(net)}đ`
+                      )
+                    }
+                    meta={meta}
+                  />
                 </div>
               );
             })}
           </div>
 
           {/* Order total */}
-          <div className="pt-3 border-t border-border flex justify-between items-center">
+          <div className="bg-surface-card rounded-card shadow-sm border border-border p-4 flex justify-between items-center">
             <span className="font-bold text-text-primary">Khách trả</span>
             <span className="text-xl font-black text-primary">{formatNumber(totalAmount)}đ</span>
           </div>

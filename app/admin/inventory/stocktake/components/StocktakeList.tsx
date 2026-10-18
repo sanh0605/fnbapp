@@ -167,7 +167,7 @@ export function StocktakeList({ sessions }: { sessions: StocktakeListRow[] }) {
             formatDateTimeFull(row.at),
             row.status === "OPEN" ? "Tạm tính" : null,
             row.personName,
-            `Đã đếm ${row.countedLines}/${row.totalLines}`,
+            `Đã đếm ${row.countedLines}/${row.totalLines}`,
           ]
             .filter(Boolean)
             .join(" · "),

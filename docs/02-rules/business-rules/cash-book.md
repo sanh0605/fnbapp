@@ -87,10 +87,10 @@ screen never shows one figure that is income minus expense.
 **Status:** `APPROVED` — owner decision 2026-09-08.
 
 A category marked "không tính vào lãi lỗ" (seeded: "Vốn góp") still counts
-toward total income on the cash book, shown as its own line inside it, and is
-excluded from any profit-and-loss figure. The flag lives on the category, not
-on each row: changing it re-classifies every past row of that category,
-earlier months included. The form warns before saving such a change.
+toward total income on the cash book, shown as its own line inside it (hidden at 0;
+chosen 2026-10-18 under the owner's 2026-10-15 delegation), and is excluded from any
+profit-and-loss figure. The flag lives on the category, not on each row: changing it
+re-classifies every past row of that category, earlier months included. The form warns before saving such a change.
 
 ### BR-CASH-004 — A category's side is fixed once it has a row
 

@@ -300,7 +300,7 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     expect(visibleIndices).toEqual([0, 4, 11]);
   });
 
-  it("tab container has hide-scrollbar class", () => {
+  it("tab container is a 4-column grid on phone", () => {
     render(
       <SalesCharts
         salesByHour={DUMMY_DATA}
@@ -310,7 +310,7 @@ describe("SalesCharts text size on phone (Task 5)", () => {
       />
     );
     const tabContainer = screen.getByRole("button", { name: "Theo giờ" }).parentElement;
-    expect(tabContainer?.classList.contains("hide-scrollbar")).toBe(true);
+    expect(tabContainer?.classList.contains("grid-cols-4")).toBe(true);
   });
 
   it("in day view with 7 entries, spans without hidden class are exactly indices [0, 2, 4, 6]", () => {

@@ -22,7 +22,7 @@ export function FieldList({ fields }: FieldListProps) {
         return (
           <div
             key={idx}
-            className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-1 md:gap-4 p-4"
+            className="grid grid-cols-1 md:grid-cols-[220px_1fr] md:items-baseline gap-1 md:gap-4 p-4"
           >
             <div className="text-sm text-text-muted font-medium md:text-text-secondary">
               {field.label}

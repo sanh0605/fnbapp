@@ -382,13 +382,13 @@ describe("PurchasedItemForm -- consumable base unit renders correctly, not as an
 // controls that for equipment, and leaving it settable would reopen the
 // double-count OPEN-ITEMS 59 warns about (equipment must always be
 // depreciated, never expensed on purchase).
-describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-21, narrowed 2026-08-26)", () => {
+describe("PurchasedItemForm -- 'Không theo dõi tồn kho' checkbox (2026-08-21, narrowed 2026-08-26)", () => {
   it("appears for Vật tư tiêu hao (CONSUMABLE)", async () => {
     await openForm();
     const categorySelect = document.querySelector("select") as HTMLSelectElement;
     await setSelectValue(categorySelect, "NHH-002");
 
-    expect(document.body.textContent).toContain("Không quản lý tồn kho");
+    expect(document.body.textContent).toContain("Không theo dõi tồn kho");
   });
 
   it("does not appear for Dụng cụ (EQUIPMENT) -- category-based stocktake exclusion makes it inert, and settable would risk double-counting against depreciation", async () => {
@@ -396,7 +396,7 @@ describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-2
     const categorySelect = document.querySelector("select") as HTMLSelectElement;
     await setSelectValue(categorySelect, "NHH-003");
 
-    expect(document.body.textContent).not.toContain("Không quản lý tồn kho");
+    expect(document.body.textContent).not.toContain("Không theo dõi tồn kho");
   });
 
   // section 1.2/2: the tier-2 ingredient groups (base_ingredients) are
@@ -409,7 +409,7 @@ describe("PurchasedItemForm -- 'Không quản lý tồn kho' checkbox (2026-08-2
     const categorySelect = document.querySelector("select") as HTMLSelectElement;
     await setSelectValue(categorySelect, "NHH-001");
 
-    expect(document.body.textContent).toContain("Không quản lý tồn kho");
+    expect(document.body.textContent).toContain("Không theo dõi tồn kho");
   });
 });
 

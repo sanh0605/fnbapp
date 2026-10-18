@@ -82,7 +82,7 @@ export function ProductTypeForm({ initialData, returnTo = "/admin/products/types
           <div className="flex items-center pt-2 md:pt-7">
             <label
               htmlFor={`${formId}-is_drink`}
-              className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[48px] md:min-h-[40px] w-full"
+              className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[48px] md:min-h-[40px] w-full p-2.5 rounded-xl border border-border bg-surface-card hover:bg-surface-secondary/50 transition-colors"
             >
               <input
                 type="checkbox"
