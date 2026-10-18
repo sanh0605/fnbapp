@@ -175,6 +175,11 @@ describe("IssuedValueReportPage (Ticket G-BC, spec root 2, R3)", () => {
     expect(monthsTab.getAttribute("href")).toContain("to=2026-09");
     expect(monthsTab.getAttribute("href")).toContain("range=CUSTOM");
     expect(monthsTab.getAttribute("href")).toContain("tab=months");
+
+    // Active tab link has aria-current="page" and the others do not
+    expect(itemsTab.getAttribute("aria-current")).toBe("page");
+    expect(eventsTab.getAttribute("aria-current")).toBeNull();
+    expect(monthsTab.getAttribute("aria-current")).toBeNull();
   });
 
   it("events tab on phone renders total strip above the events list (BR-UI-004, BR-UI-018)", async () => {

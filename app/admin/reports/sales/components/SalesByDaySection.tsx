@@ -26,34 +26,36 @@ export function SalesByDaySection({ salesByDate, totalRevenue }: SalesByDaySecti
     <div className="bg-surface-card rounded-card p-6 shadow-sm border border-border">
       <h3 className="font-bold text-text-primary text-lg mb-4">Doanh thu theo ngày</h3>
 
-      <Table>
-        <TableHead>
-          <TableHeaderCell stick="left">Ngày</TableHeaderCell>
-          <TableHeaderCell>Doanh thu</TableHeaderCell>
-        </TableHead>
-        {salesByDate.length > 0 && (
-          <TableTotalRow>
-            <TableCell stick="left">Tổng cộng</TableCell>
-            <TableCell align="right">{formatNumber(totalRevenue)}</TableCell>
-          </TableTotalRow>
-        )}
-        <TableBody>
-          {salesByDate.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={2}>
-                <div className="text-center py-4 text-text-muted">Không có dữ liệu</div>
-              </TableCell>
-            </TableRow>
-          ) : (
-            salesByDate.map((d) => (
-              <TableRow key={d.label}>
-                <TableRowHeader stick="left">{formatVnDay(d.label) || d.label}</TableRowHeader>
-                <TableCell align="right">{formatNumber(d.amount)}</TableCell>
-              </TableRow>
-            ))
+      <div className="max-w-md">
+        <Table>
+          <TableHead>
+            <TableHeaderCell stick="left">Ngày</TableHeaderCell>
+            <TableHeaderCell>Doanh thu</TableHeaderCell>
+          </TableHead>
+          {salesByDate.length > 0 && (
+            <TableTotalRow>
+              <TableCell stick="left">Tổng cộng</TableCell>
+              <TableCell align="right">{formatNumber(totalRevenue)}</TableCell>
+            </TableTotalRow>
           )}
-        </TableBody>
-      </Table>
+          <TableBody>
+            {salesByDate.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={2}>
+                  <div className="text-center py-4 text-text-muted">Không có dữ liệu</div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              salesByDate.map((d) => (
+                <TableRow key={d.label}>
+                  <TableRowHeader stick="left">{formatVnDay(d.label) || d.label}</TableRowHeader>
+                  <TableCell align="right">{formatNumber(d.amount)}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

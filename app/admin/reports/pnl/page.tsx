@@ -31,8 +31,8 @@ export default async function ProfitAndLossPage(
   const { table, brandNames } = await getProfitAndLossReport(range);
   const brandsText = joinBrandNames(brandNames);
   const subtitle = brandsText
-    ? `Cả quán, gồm ${brandsText} · đơn vị: đồng · tháng theo giờ Việt Nam`
-    : "Cả quán · đơn vị: đồng · tháng theo giờ Việt Nam";
+    ? `Cả quán, gồm ${brandsText} · đơn\u00a0vị:\u00a0đồng · tháng theo giờ Việt Nam`
+    : "Cả quán · đơn\u00a0vị:\u00a0đồng · tháng theo giờ Việt Nam";
 
   return (
     <div className="space-y-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
