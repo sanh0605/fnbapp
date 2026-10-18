@@ -28,7 +28,7 @@ Chưa xem: `ProductGrid.tsx`, `ProductCard.tsx`, `CartItemRow.tsx`, phần giữ
    - The per-dish "Chiết khấu" field is always open in the popup. It is a `type="number"` box, so it shows spinner arrows, and its placeholder reads "Ví dụ: 2".
    - The order discount box is in the cart.
 5. **Data.**
-   - In option groups (Nhóm lựa chọn) there is only "Thêm Topping": 9 toppings, all priced 3.000–10.000đ, linked to 35 drinks.
+   - In option groups (Nhóm tuỳ chọn) there is only "Thêm Topping": 9 toppings, all priced 3.000–10.000đ, linked to 35 drinks.
    - Of the 4.960 order lines, 328 carry an option.
    - Out of scope: Độ ngọt and Đá do not exist yet (section 6).
 

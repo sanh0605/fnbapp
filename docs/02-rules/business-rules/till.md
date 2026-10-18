@@ -11,7 +11,7 @@ How a cashier rings a dish and takes payment at the till (`/pos`). The order and
 - Two adds of the same dish and size with any option different give two cart lines. Owner: *"Nếu anh chọn cà phê đá cùng size nhưng khác nhau các lựa chọn trước khi thêm vào giỏ thì trong giỏ phải hiện ra 2 dòng"*.
 - Two adds with every choice the same give one line with the quantities added. Owner chose *"Gộp 1 dòng, số lượng 2"* on 2026-10-17.
 - Example: 2 × Cà phê đá 360ml · Ít ngọt · Ít đá · Kem muối, then 1 × Cà phê đá 360ml · Không đường · Ít đá · Kem muối, is two lines. Adding one more of the first makes that line 3 ×.
-- Sweetness (Độ ngọt) and ice (Đá) are option groups the owner edits in Nhóm lựa chọn, not fixed in code. On 2026-10-17 only "Thêm Topping" exists; the owner chose *"Em tạo sẵn, anh duyệt"*: the two groups are written only after the owner approves the list.
+- Sweetness (Độ ngọt) and ice (Đá) are option groups the owner edits in Nhóm tuỳ chọn, not fixed in code. On 2026-10-17 only "Thêm Topping" exists; the owner chose *"Em tạo sẵn, anh duyệt"*: the two groups are written only after the owner approves the list.
 
 **How the choices look (owner 2026-10-17, after comparing four phone mockups and two layouts):**
 - Phone: the choices slide up from the bottom over the dish list (mockup "Điện thoại 1"). Each option is its own row, chosen by tapping the whole row. Owner chose *"Tấm chọn từ đáy nhưng các lựa chọn nên xếp các lựa chọn thành mỗi hàng 1 lựa chọn"*, then kiểu A over one row per group.

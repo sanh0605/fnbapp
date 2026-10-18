@@ -63,14 +63,12 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
     <>
       {/* Left Column on Desktop / 2nd & 3rd on Phone */}
       <div className="contents lg:block lg:col-span-2 lg:space-y-6">
-        {/* Card: Hàng trong phiếu */}
-        <div className="order-2 bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
-          <div className="p-4 border-b border-border bg-surface-secondary/50">
-            <h2 className="font-semibold text-text-primary">Hàng trong phiếu</h2>
-          </div>
+        {/* Section: Hàng trong phiếu */}
+        <div className="order-2 space-y-4">
+          <h2 className="text-base font-semibold text-text-primary">Hàng trong phiếu</h2>
 
           {lines.length === 0 ? (
-            <div className="p-6 text-center text-text-muted">
+            <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden p-6 text-center text-text-muted">
               Phiếu nhập kho này được tạo tự động từ hệ thống cũ (Tồn kho đầu kỳ). Vui lòng xem chi tiết ở báo cáo Tồn Kho.
             </div>
           ) : (
@@ -102,7 +100,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
               </div>
 
               {/* Phone Lines (lg:hidden) */}
-              <div className="divide-y divide-border lg:hidden" data-testid="phone-lines-list">
+              <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden divide-y divide-border lg:hidden" data-testid="phone-lines-list">
                 {lines.map((line) => (
                   <div
                     key={line.id}
@@ -124,14 +122,14 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
           )}
         </div>
 
-        {/* Card: Tài sản sẽ ngừng (if assets.length > 0) */}
+        {/* Section: Tài sản sẽ ngừng (if assets.length > 0) */}
         {assets.length > 0 && (
-          <div className="order-3 bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden">
-            <div className="p-4 border-b border-border bg-surface-secondary/50">
-              <h2 className="font-semibold text-text-primary">Tài sản sẽ ngừng</h2>
-            </div>
-            <div className="p-4 text-sm text-text-secondary border-b border-border">
-              Các tài sản sau sẽ ngừng, khấu hao đã tính cho các tháng trước được gỡ ra:
+          <div className="order-3 space-y-4">
+            <div className="space-y-1">
+              <h2 className="text-base font-semibold text-text-primary">Tài sản sẽ ngừng</h2>
+              <div className="text-sm text-text-secondary">
+                Các tài sản sau sẽ ngừng, khấu hao đã tính cho các tháng trước được gỡ ra:
+              </div>
             </div>
 
             {/* Desktop Table (hidden below lg) */}
@@ -157,7 +155,7 @@ export function CancelPurchaseOrderForm({ view }: CancelPurchaseOrderFormProps) 
             </div>
 
             {/* Phone Rows (lg:hidden) */}
-            <div className="divide-y divide-border lg:hidden" data-testid="phone-assets-list">
+            <div className="bg-surface-card rounded-xl shadow-sm border border-border overflow-hidden divide-y divide-border lg:hidden" data-testid="phone-assets-list">
               {assets.map((asset) => (
                 <div
                   key={asset.id}

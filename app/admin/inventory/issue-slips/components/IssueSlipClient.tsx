@@ -571,7 +571,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
 
         {/* Summary card on phone */}
         <div className="bg-surface-card rounded-xl border border-border p-3.5 flex justify-between items-center shadow-sm">
-          <span className="text-sm font-semibold text-text-secondary">Tổng giá trị xuất:</span>
+          <span className="text-sm font-semibold text-text-secondary">Tổng giá trị xuất</span>
           <div className="text-right">
             <span className="text-base font-bold text-text-primary tabular-nums">
               {formatNumber(displayMoney(exactTotal))}đ
