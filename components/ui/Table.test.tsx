@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { render, screen, cleanup, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { render, screen, cleanup, within, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   Table,
   TableBody,
@@ -117,7 +117,7 @@ describe("BR-UI-011 column titles", () => {
 describe("BR-UI-005 Table set: a statement (wave K5)", () => {
   function Statement() {
     return (
-      <Table aria-label="Lãi lỗ">
+      <Table aria-label="Lãi lỗ" statement>
         <TableHead>
           <TableHeaderCell stick="left">Khoản</TableHeaderCell>
           <TableHeaderCell aria-label="Tháng 1 năm 2026">T1</TableHeaderCell>
@@ -200,6 +200,26 @@ describe("BR-UI-005 Table set: a statement (wave K5)", () => {
     const cells = Array.from(row("Lợi nhuận ròng").children) as HTMLElement[];
     expect(cells[1].className).toContain("text-danger");
     expect(cells[3].className).not.toContain("text-danger");
+  });
+
+  it("in a statement table the Khoản and Tổng dividers are inset shadows, so they move with the sticky cells", () => {
+    render(<Statement />);
+    const cells = Array.from(row("Doanh thu").children) as HTMLElement[];
+    expect(cells[0].className).toContain("shadow-[inset_-2px_0_0_var(--color-border)]");
+    expect(cells[2].className).toContain("shadow-[inset_2px_0_0_var(--color-border)]");
+    expect(cells[2].className).not.toMatch(/\bborder-l-2\b/);
+    expect(screen.getByRole("columnheader", { name: "Tổng" }).className).toContain("shadow-[inset_2px_0_0_var(--color-border)]");
+  });
+
+  it("a plain table's sticky first column has no divider", () => {
+    render(
+      <Table>
+        <TableHead><TableHeaderCell stick="left">Tên</TableHeaderCell><TableHeaderCell>Giá</TableHeaderCell></TableHead>
+        <TableBody><TableRow><TableRowHeader stick="left">Cà phê</TableRowHeader><TableCell>10,000</TableCell></TableRow></TableBody>
+      </Table>,
+    );
+    expect(screen.getByRole("rowheader", { name: "Cà phê" }).className).not.toContain("shadow-[inset");
+    expect(screen.getByRole("columnheader", { name: "Tên" }).className).not.toContain("shadow-[inset");
   });
 });
 
@@ -350,4 +370,297 @@ describe("Table review fixes (desktop lining and total band)", () => {
     expect(td.className).not.toContain("bg-surface-card");
   });
 });
+
+describe("a statement scrolls in whole columns (G14)", () => {
+  // Khoản 150 px, every month 100 px, scroll box 450 px: room 300, so 3 whole months of 100 px.
+  const widthOf = (el: Element) => (el.tagName !== "TH" ? 0 : (el.textContent ?? "").startsWith("Khoản") ? 150 : 100);
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  const Months = ({ months, openAtEnd }: { months: string[]; openAtEnd?: boolean }) => (
+    <Table statement openAtEnd={openAtEnd}>
+      <TableHead>
+        <TableHeaderCell stick="left">Khoản</TableHeaderCell>
+        {months.map(m => <TableHeaderCell key={m}>{m}</TableHeaderCell>)}
+      </TableHead>
+      <TableBody>
+        <TableRow>
+          <TableRowHeader stick="left">Thu bán hàng</TableRowHeader>
+          {months.map(m => <TableCell key={m} align="right">1,000</TableCell>)}
+        </TableRow>
+      </TableBody>
+    </Table>
+  );
+
+  it("months that do not fit get one width each, a whole number fill the room, and the box snaps after the sticky column", () => {
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    render(<Months months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    const head = screen.getByRole("columnheader", { name: "05/2026" });
+    expect(head.style.width).toBe("100px");
+    expect(head.style.scrollSnapAlign).toBe("start");
+    const scroller = head.closest(".overflow-x-auto") as HTMLElement;
+    expect(scroller.style.scrollSnapType).toBe("x mandatory");
+    expect(scroller.style.scrollPaddingLeft).toBe("150px");
+    expect(screen.getByRole("columnheader", { name: "Khoản" }).style.width).toBe("");
+  });
+
+  it("months added by a re-render (another date range) get the width too", async () => {
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    const { rerender } = render(<Months months={["03/2026", "04/2026", "05/2026", "06/2026"]} />);
+    rerender(<Months months={["09/2026", "10/2026", "11/2026", "12/2026"]} />);
+    await waitFor(() => expect(screen.getByRole("columnheader", { name: "12/2026" }).style.width).toBe("100px"));
+  });
+
+  it("months that all fit after a shorter range lose the forced width and the snap", async () => {
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    const scrollWidth = vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    const { rerender } = render(<Months months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    expect(screen.getByRole("columnheader", { name: "08/2026" }).style.width).toBe("100px");
+    scrollWidth.mockReturnValue(350);
+    rerender(<Months months={["07/2026", "08/2026"]} />);
+    await waitFor(() => expect(screen.getByRole("columnheader", { name: "08/2026" }).style.width).toBe(""));
+    const scroller = screen.getByRole("columnheader", { name: "08/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    expect(scroller.style.scrollSnapType).toBe("");
+  });
+
+  it("openAtEnd opens on the newest months once; a resize keeps the place the owner scrolled to", () => {
+    let resize: () => void = () => {};
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(cb: () => void) { resize = cb; }
+      observe() {}
+      disconnect() {}
+    });
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    const setLeft = vi.spyOn(Element.prototype, "scrollLeft", "set");
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    render(<Months openAtEnd months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    expect(setLeft).toHaveBeenLastCalledWith(900);
+    const scroller = screen.getByRole("columnheader", { name: "05/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    scroller.scrollLeft = 100;
+    setLeft.mockClear();
+    resize();
+    expect(setLeft).toHaveBeenLastCalledWith(100);
+  });
+
+  it("a refit keeps the month the owner scrolled to, not the pixels", () => {
+    let resize: () => void = () => {};
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(cb: () => void) { resize = cb; }
+      observe() {}
+      disconnect() {}
+    });
+    const clientWidth = vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    const setLeft = vi.spyOn(Element.prototype, "scrollLeft", "set");
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    render(<Months months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    const scroller = screen.getByRole("columnheader", { name: "05/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    scroller.scrollLeft = 200;
+    clientWidth.mockReturnValue(520);
+    resize();
+    expect(setLeft.mock.calls.at(-1)?.[0]).toBeCloseTo(2 * 370 / 3, 5);
+  });
+
+  it("openAtEnd goes to the newest months again when another range is shown", async () => {
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    const setLeft = vi.spyOn(Element.prototype, "scrollLeft", "set");
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    const { rerender } = render(<Months openAtEnd months={["03/2026", "04/2026", "05/2026", "06/2026"]} />);
+    const scroller = screen.getByRole("columnheader", { name: "03/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    scroller.scrollLeft = 0;
+    rerender(<Months openAtEnd months={["09/2026", "10/2026", "11/2026", "12/2026"]} />);
+    await waitFor(() => expect(setLeft).toHaveBeenLastCalledWith(900));
+  });
+
+  it("openAtEnd is held back until the months overflow", () => {
+    let resize: () => void = () => {};
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(cb: () => void) { resize = cb; }
+      observe() {}
+      disconnect() {}
+    });
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    const scrollWidth = vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(400);
+    const setLeft = vi.spyOn(Element.prototype, "scrollLeft", "set");
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    render(<Months openAtEnd months={["03/2026", "04/2026"]} />);
+    scrollWidth.mockReturnValue(900);
+    resize();
+    expect(setLeft).toHaveBeenLastCalledWith(900);
+  });
+
+  it("a plain list table is never sized", () => {
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    render(
+      <Table>
+        <TableHead><TableHeaderCell stick="left">Tên</TableHeaderCell><TableHeaderCell>Giá</TableHeaderCell></TableHead>
+        <TableBody><TableRow><TableRowHeader stick="left">Cà phê</TableRowHeader><TableCell>10,000</TableCell></TableRow></TableBody>
+      </Table>,
+    );
+    expect(screen.getByRole("columnheader", { name: "Giá" }).style.width).toBe("");
+  });
+
+  it("a month is never narrower than its content when none fits beside the fixed columns", () => {
+    let resize: () => void = () => {};
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(cb: () => void) { resize = cb; }
+      observe() {}
+      disconnect() {}
+    });
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(230);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    render(<Months months={["03/2026", "04/2026", "05/2026"]} />);
+    expect(screen.getByRole("columnheader", { name: "04/2026" }).style.width).toBe("100px");
+  });
+
+  it("at the newest months, a refit that fits fewer months stays at the newest", () => {
+    let resize: () => void = () => {};
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(cb: () => void) { resize = cb; }
+      observe() {}
+      disconnect() {}
+    });
+    const clientWidth = vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    const setLeft = vi.spyOn(Element.prototype, "scrollLeft", "set");
+    render(<Months openAtEnd months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    const scroller = screen.getByRole("columnheader", { name: "05/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    scroller.scrollLeft = 450;
+    clientWidth.mockReturnValue(400);
+    setLeft.mockClear();
+    resize();
+    expect(setLeft).toHaveBeenLastCalledWith(900);
+  });
+
+  it("at the newest months, a big instant shrink stays at the newest", () => {
+    let resize: () => void = () => {};
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(cb: () => void) { resize = cb; }
+      observe() {}
+      disconnect() {}
+    });
+    const clientWidth = vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    const setLeft = vi.spyOn(Element.prototype, "scrollLeft", "set");
+    render(<Months openAtEnd months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    const scroller = screen.getByRole("columnheader", { name: "05/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    scroller.scrollLeft = 450;
+    clientWidth.mockReturnValue(350);
+    setLeft.mockClear();
+    resize();
+    expect(setLeft).toHaveBeenLastCalledWith(900);
+  });
+
+  it("after every month fitted once, the next overflow opens at the newest months", () => {
+    let resize: () => void = () => {};
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(cb: () => void) { resize = cb; }
+      observe() {}
+      disconnect() {}
+    });
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(450);
+    const scrollWidth = vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(900);
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    const setLeft = vi.spyOn(Element.prototype, "scrollLeft", "set");
+    render(<Months openAtEnd months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    const scroller = screen.getByRole("columnheader", { name: "05/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    scrollWidth.mockReturnValue(400);
+    resize();
+    scroller.scrollLeft = 0;
+    scrollWidth.mockReturnValue(900);
+    setLeft.mockClear();
+    resize();
+    expect(setLeft).toHaveBeenLastCalledWith(900);
+  });
+
+  // The scroll width follows the header cells as laid out now: Khoản 150 + six months of 100 = 750.
+  const laidOut = (box: () => number) => {
+    let resize: () => void = () => {};
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(cb: () => void) { resize = cb; }
+      observe() {}
+      disconnect() {}
+    });
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockImplementation(box);
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockImplementation(function (this: Element) {
+      const ths = Array.from(this.querySelectorAll<HTMLElement>("thead th"));
+      return Math.max(box(), ths.reduce((t, th) => t + (parseFloat(th.style.width) || widthOf(th)), 0));
+    });
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      return { width: widthOf(this) } as DOMRect;
+    });
+    return { resize: () => resize(), setLeft: vi.spyOn(Element.prototype, "scrollLeft", "set") };
+  };
+
+  it("one month back from the newest, a wider window keeps that month", () => {
+    let box = 450;
+    const { resize, setLeft } = laidOut(() => box);
+    render(<Months months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    const scroller = screen.getByRole("columnheader", { name: "05/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    scroller.scrollLeft = 200; // 05/2026 first; the newest would be 300
+    box = 520;
+    setLeft.mockClear();
+    resize();
+    expect(setLeft.mock.calls.at(-1)?.[0]).toBeCloseTo(2 * 370 / 3, 5);
+  });
+
+  it("at the newest months, a wider window that the browser clamps stays at the newest", () => {
+    let box = 450;
+    const { resize, setLeft } = laidOut(() => box);
+    render(<Months openAtEnd months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    const scroller = screen.getByRole("columnheader", { name: "05/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    scroller.scrollLeft = 300; // the newest
+    box = 530;
+    scroller.scrollLeft = 750 - 530; // the browser pulls the scroll back to its new end
+    setLeft.mockClear();
+    resize();
+    expect(setLeft).toHaveBeenLastCalledWith(scroller.scrollWidth);
+  });
+
+  it("hidden and shown again, after the browser reset the scroll, it opens at the newest months", () => {
+    let box = 450;
+    const { resize, setLeft } = laidOut(() => box);
+    render(<Months openAtEnd months={["03/2026", "04/2026", "05/2026", "06/2026", "07/2026", "08/2026"]} />);
+    const scroller = screen.getByRole("columnheader", { name: "05/2026" }).closest(".overflow-x-auto") as HTMLElement;
+    box = 0;
+    resize();
+    scroller.scrollLeft = 0;
+    box = 450;
+    setLeft.mockClear();
+    resize();
+    expect(setLeft).toHaveBeenLastCalledWith(scroller.scrollWidth);
+  });
+});
+
 
