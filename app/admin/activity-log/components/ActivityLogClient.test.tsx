@@ -159,5 +159,95 @@ describe("ActivityLogClient", () => {
     expect(phoneScope.queryByText("Tạo mới")).toBeNull();
     expect(phoneScope.getByText("Chỉnh sửa")).toBeInTheDocument();
   });
-});
 
+  it("shows 'Doanh thu thuần 20,000đ' when delta_json contains net_total 20000", () => {
+    const events: OrderEvent[] = [
+      {
+        id: "evt-delta",
+        order_id: "ord-1",
+        order_no: "261018001",
+        event_type: "EDITED",
+        event_at: "2026-10-18T08:00:00Z",
+        actor_id: "admin",
+        actor_name: "Admin",
+        delta_json: JSON.stringify({ net_total: 20000 }),
+      },
+    ];
+
+    render(
+      <ActivityLogClient
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialEvents={events}
+        actors={["Admin"]}
+        actorLabel={null}
+        totalCount={1}
+        itemsPerPage={20}
+      />,
+    );
+
+    expect(screen.getByText("Doanh thu thuần 20,000đ")).toBeInTheDocument();
+  });
+
+  it("shows 'Doanh thu thuần 20,000đ' and NOT 'Doanh thu gốc' when gross_total equals net_total", () => {
+    const events: OrderEvent[] = [
+      {
+        id: "evt-delta",
+        order_id: "ord-1",
+        order_no: "261018001",
+        event_type: "EDITED",
+        event_at: "2026-10-18T08:00:00Z",
+        actor_id: "admin",
+        actor_name: "Admin",
+        delta_json: JSON.stringify({ net_total: 20000, gross_total: 20000, line_count: 1 }),
+      },
+    ];
+
+    render(
+      <ActivityLogClient
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialEvents={events}
+        actors={["Admin"]}
+        actorLabel={null}
+        totalCount={1}
+        itemsPerPage={20}
+      />,
+    );
+
+    const cell = screen.getByText(/Doanh thu thuần 20,000đ/);
+    expect(cell).toBeInTheDocument();
+    expect(cell).not.toHaveTextContent("Doanh thu gốc");
+  });
+
+  it("shows both 'Doanh thu thuần 18,000đ' and 'Doanh thu gốc 20,000đ' when gross_total differs from net_total", () => {
+    const events: OrderEvent[] = [
+      {
+        id: "evt-delta",
+        order_id: "ord-1",
+        order_no: "261018001",
+        event_type: "EDITED",
+        event_at: "2026-10-18T08:00:00Z",
+        actor_id: "admin",
+        actor_name: "Admin",
+        delta_json: JSON.stringify({ net_total: 18000, gross_total: 20000, line_count: 1 }),
+      },
+    ];
+
+    render(
+      <ActivityLogClient
+        range={TEST_RANGE}
+        today={TEST_TODAY}
+        initialEvents={events}
+        actors={["Admin"]}
+        actorLabel={null}
+        totalCount={1}
+        itemsPerPage={20}
+      />,
+    );
+
+    const cell = screen.getByText(/Doanh thu thuần 18,000đ/);
+    expect(cell).toBeInTheDocument();
+    expect(cell).toHaveTextContent("Doanh thu gốc 20,000đ");
+  });
+});

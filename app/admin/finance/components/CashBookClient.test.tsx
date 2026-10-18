@@ -626,4 +626,20 @@ describe("CashBookClient", () => {
     expect(tableScope.queryByText("Đang dùng")).toBeNull();
     expect(tableScope.queryByText("Trạng thái")).toBeNull();
   });
+
+  it("with incomeOutsidePnl 0 the test id is absent; when non-zero it shows with new label", () => {
+    const zeroSummary: CashBookSummary = {
+      ...septemberSummary,
+      totals: {
+        ...septemberSummary.totals,
+        incomeOutsidePnl: 0,
+      },
+    };
+    const { rerender } = render(<CashBookClient {...defaultProps} summary={zeroSummary} />);
+    expect(screen.queryByTestId("income-outside-pnl")).toBeNull();
+
+    rerender(<CashBookClient {...defaultProps} />);
+    expect(screen.getByTestId("income-outside-pnl")).toBeInTheDocument();
+    expect(screen.getByText(/Trong đó không tính vào lãi lỗ \(vốn góp…\):/)).toBeInTheDocument();
+  });
 });
