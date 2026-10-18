@@ -261,4 +261,19 @@ describe("ProductDetailView", () => {
     );
     expect(screen.getByText("Có")).toBeInTheDocument();
   });
+
+  it("does not repeat code and name in the field list", () => {
+    render(
+      <ProductDetailView
+        product={matchaLatteProduct}
+        categoryName="Giải trí"
+        returnTo="/admin/products"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.queryByText("Mã")).toBeNull();
+    expect(screen.queryByText("Tên")).toBeNull();
+    expect(screen.getAllByText("PROD-005")).toHaveLength(1);
+  });
 });

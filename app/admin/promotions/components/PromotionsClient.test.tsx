@@ -192,8 +192,9 @@ describe("PromotionsClient", () => {
     expect(within(phone).getByText("202607 - GIẢM 10K")).toBeInTheDocument();
     expect(within(phone).getByText("Giảm 10,000đ")).toBeInTheDocument();
     expect(
-      within(phone).getByText("Uchako · 2 món, 3 size · đến 15/07/2026 12:59:00")
-    ).toBeInTheDocument();
+      within(phone).getByText("Đến 15/07/2026 12:59:00").parentElement?.textContent,
+    ).toBe("Đến 15/07/2026 12:59:00 · 2 món, 3 size · Uchako");
+    expect(within(phone).getByText("2 món, 3 size")).toHaveClass("whitespace-nowrap");
     expect(within(phone).getByText("Đã hết hạn")).toBeInTheDocument();
     expect(within(phone).queryByText("PRM-004")).toBeNull();
   });
@@ -234,7 +235,7 @@ describe("PromotionsClient", () => {
     const codes = screen.getAllByText(/^PRM-00[14]$/);
     expect(codes[0].textContent).toBe("PRM-004");
     expect(codes[1].textContent).toBe("PRM-001");
-    expect(screen.getByText("Toàn đơn")).toHaveClass("whitespace-nowrap");
+    expect(within(screen.getByRole("table")).getByText("Toàn đơn")).toHaveClass("whitespace-nowrap");
   });
 
   it("create link reads 'Tạo' and points to /admin/promotions/new", () => {
@@ -271,7 +272,9 @@ describe("PromotionsClient", () => {
       />,
     );
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
-    expect(within(phone).getByText("Toàn hệ thống · Toàn đơn · không hết hạn")).toBeInTheDocument();
+    expect(
+      within(phone).getByText("Không hết hạn").parentElement?.textContent,
+    ).toBe("Không hết hạn · Toàn đơn · Toàn hệ thống");
     expect(within(phone).queryByText(/→/)).toBeNull();
   });
 });

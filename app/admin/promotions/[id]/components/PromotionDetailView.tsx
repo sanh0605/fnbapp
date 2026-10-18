@@ -75,8 +75,6 @@ export function PromotionDetailView({
   }
 
   const fields: Field[] = [
-    { label: "Mã", value: promo.id },
-    { label: "Tên", value: promo.name },
     { label: "Thương hiệu", value: brandName },
     {
       label: "Loại",
