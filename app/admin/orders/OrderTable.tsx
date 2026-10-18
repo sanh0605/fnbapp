@@ -335,6 +335,7 @@ export default function OrderTable({
       >
         <div className="w-full md:w-auto shrink-0">
           <DateRangeButton
+            label="Thời gian"
             value={range}
             today={today}
             onChange={handleDateRangeChange}
