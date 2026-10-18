@@ -52,7 +52,7 @@ export default function BandsClient({
         header: "Mã",
         sortValue: (band) => band.id,
         render: (band) => (
-          <span className="font-mono text-text-primary">{band.id}</span>
+          <span className="font-mono text-xs text-primary">{band.id}</span>
         ),
       },
       {

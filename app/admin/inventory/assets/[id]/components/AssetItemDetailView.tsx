@@ -148,14 +148,14 @@ export function AssetItemDetailView({
                   {detail.lots.map((lot) => (
                     <TableRow key={lot.id}>
                       <TableCell>
-                        <span className="font-mono text-primary">{lot.id}</span>
+                        <span className="font-mono text-xs text-primary">{lot.id}</span>
                       </TableCell>
                       <TableCell>{formatDateTimeFull(lot.acquiredDate)}</TableCell>
                       <TableCell>
                         {lot.purchaseOrderId ? (
                           <Link
                             href={`/admin/inventory/purchase-orders/${lot.purchaseOrderId}`}
-                            className="font-mono text-primary hover:underline"
+                            className="font-mono text-xs text-primary hover:underline"
                           >
                             {lot.purchaseOrderId}
                           </Link>
