@@ -107,8 +107,6 @@ export function OutletDetailView({
     );
 
   const fields: Field[] = [
-    { label: "Mã", value: outlet.id },
-    { label: "Tên", value: outlet.name },
     { label: "Mã đơn", value: outlet.code },
     { label: "Thương hiệu", value: brandLink },
     { label: "Địa chỉ", value: outlet.address || "—" },
@@ -117,10 +115,9 @@ export function OutletDetailView({
       label: "Bắt đầu",
       value: formatDateTimeFull(outlet.start_date) || "—",
     },
-    {
-      label: "Kết thúc",
-      value: formatDateTimeFull(outlet.end_date) || "—",
-    },
+    ...(outlet.end_date
+      ? [{ label: "Kết thúc", value: formatDateTimeFull(outlet.end_date) }]
+      : []),
     { label: "Trạng thái", value: statusBadge },
   ];
 
@@ -164,6 +161,7 @@ export function OutletDetailView({
         backHref={returnTo}
         backLabel="Điểm bán"
         title={outlet.name}
+        subtitle={outlet.id}
         badge={outlet.status !== "ACTIVE" ? <Badge variant="warning">Ngừng hoạt động</Badge> : undefined}
         actions={headerActions}
       />

@@ -71,7 +71,6 @@ export function UserForm({ returnTo: rawReturnTo, canGrantAdmin = true }: UserFo
               type="password"
               name="password"
               required
-              placeholder="******"
             />
           </Field>
           <Field label="Quyền hạn" htmlFor={`${formId}-role`} required>

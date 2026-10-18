@@ -76,8 +76,6 @@ export function MonthlyItemDetailView({
     );
 
   const fields: Field[] = [
-    { label: "Mã", value: item.id },
-    { label: "Tên khoản", value: item.name },
     { label: "Nhóm chi", value: categoryName },
     { label: "Trạng thái", value: statusBadge },
     { label: "Số dòng đã nhập", value: `${formatNumber(entryCount)} dòng` },

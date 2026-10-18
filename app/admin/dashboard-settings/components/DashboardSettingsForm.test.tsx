@@ -69,7 +69,7 @@ describe("DashboardSettingsForm (plan 2026-10-14-tong-quan-moi, Hiện trạng i
 
   it("settings save disabled for a manager", () => {
     render(<DashboardSettingsForm settings={SETTINGS} products={PRODUCTS} types={TYPES} isOwner={false} />);
-    expect(screen.getByRole("button", { name: "Lưu" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeDisabled();
     expect(screen.getByText("Chỉ chủ quán sửa được mục này")).toBeInTheDocument();
     expect(screen.getByLabelText("Trứng luộc")).toBeDisabled();
     expect(screen.getByLabelText("Cột topping mua riêng")).toBeDisabled();

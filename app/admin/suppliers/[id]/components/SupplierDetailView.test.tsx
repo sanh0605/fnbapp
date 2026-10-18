@@ -138,6 +138,11 @@ describe("SupplierDetailView", () => {
     // Mã số thuế rỗng hiện "—"
     expect(screen.getByText("Mã số thuế")).toBeInTheDocument();
     expect(screen.getByText("—")).toBeInTheDocument();
+
+    // Subtitle shows NCC-029 and no Mã/Tên labels
+    expect(screen.getByText("NCC-029")).toHaveClass("text-text-secondary");
+    expect(screen.queryByText("Mã")).toBeNull();
+    expect(screen.queryByText("Tên")).toBeNull();
   });
 
   // Final review (BR-UI-007): Phiếu nhập opens on Tháng này, so the link

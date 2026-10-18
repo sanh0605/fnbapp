@@ -76,7 +76,7 @@ export function BrandForm({ initialData, returnTo: rawReturnTo }: BrandFormProps
               name="name"
               required
               defaultValue={initialData?.name}
-              placeholder="Ví dụ: Phin Di"
+              placeholder="Ví dụ: Phin Đi"
             />
           </Field>
 

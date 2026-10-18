@@ -425,7 +425,7 @@ describe("PromotionForm sections and FormActionBar (BR-UI-014, BR-UI-015)", () =
     expect(headingTexts).toEqual(["Chương trình", "Mức giảm", "Thời gian", "Món áp dụng"]);
 
     headings.forEach(h => {
-      expect(h.className).toContain("text-sm");
+      expect(h.className).toContain("text-base");
       expect(h.className).toContain("font-semibold");
       expect(h.className).toContain("text-text-primary");
     });

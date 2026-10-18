@@ -50,11 +50,13 @@ describe("BankAccountDetailView", () => {
       />,
     );
 
-    expect(screen.getAllByText("BA-001").length).toBeGreaterThan(0);
+    expect(screen.getByText("BA-001")).toHaveClass("text-text-secondary");
     expect(screen.getAllByText("ACB - Phin Di").length).toBeGreaterThan(0);
     expect(screen.getAllByText("ACB").length).toBeGreaterThan(0);
     expect(screen.getAllByText("123456").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Mã")).toBeNull();
+    expect(screen.queryByText("Tên")).toBeNull();
   });
 
   it("renders '—' for missing bank_name or account_number", () => {

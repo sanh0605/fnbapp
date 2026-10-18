@@ -245,7 +245,7 @@ export function PromotionForm({
 
         {/* Section 1: Chương trình */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-text-primary">Chương trình</h3>
+          <h3 className="text-base font-semibold text-text-primary">Chương trình</h3>
           <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div className="col-span-1 md:col-span-2">
               <Field label="Tên chương trình" htmlFor={`${formId}-name`} required>
@@ -319,7 +319,7 @@ export function PromotionForm({
 
         {/* Section 2: Mức giảm */}
         <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm font-semibold text-text-primary">Mức giảm</h3>
+          <h3 className="text-base font-semibold text-text-primary">Mức giảm</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div>
               <Field label="Đối tượng giảm giá" htmlFor={`${formId}-type`}>
@@ -391,7 +391,7 @@ export function PromotionForm({
 
         {/* Section 3: Thời gian */}
         <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm font-semibold text-text-primary">Thời gian</h3>
+          <h3 className="text-base font-semibold text-text-primary">Thời gian</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div>
               <Field label="Bắt đầu lúc" htmlFor={`${formId}-startDate`} required>
@@ -418,13 +418,13 @@ export function PromotionForm({
 
         {/* Section 4: Món áp dụng */}
         <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm font-semibold text-text-primary">Món áp dụng</h3>
+          <h3 className="text-base font-semibold text-text-primary">Món áp dụng</h3>
 
           {type === "PRODUCT_DISCOUNT" ? (
             <div>
             <div className="flex justify-between items-center mb-3">
               <div>
-                <h4 className="text-sm font-bold text-text-primary">Chọn món áp dụng</h4>
+                <h4 className="text-sm font-semibold text-text-primary">Chọn món áp dụng</h4>
                 <p className="text-xs text-text-muted">Chọn các kích cỡ/món áp dụng khuyến mãi này. Có thể điều chỉnh giá trị giảm riêng cho từng món.</p>
               </div>
               <div className="text-xs font-bold text-primary bg-primary-soft px-2.5 py-1 rounded-full whitespace-nowrap shrink-0">

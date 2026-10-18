@@ -63,7 +63,7 @@ describe("CashEntryDetailView", () => {
       />,
     );
 
-    expect(screen.getAllByText("CE-040").length).toBeGreaterThan(0);
+    expect(screen.getByText("CE-040")).toHaveClass("text-text-secondary");
     expect(screen.getAllByText("30/09/2026 00:00:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Vốn góp").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Thu").length).toBeGreaterThan(0);
@@ -72,6 +72,7 @@ describe("CashEntryDetailView", () => {
     expect(screen.getAllByText("Góp vốn tháng 9").length).toBeGreaterThan(0);
     expect(screen.getAllByText("admin").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Mã")).toBeNull();
   });
 
   it("shows Chỉnh sửa and Huỷ buttons when entry is not cancelled", () => {

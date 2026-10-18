@@ -196,7 +196,7 @@ export default function BrandsClient({
             <Field label="Tìm thương hiệu" htmlFor="brands-search">
               <TextInput
                 id="brands-search"
-                placeholder="Ví dụ: Phin Di"
+                placeholder="Ví dụ: Phin Đi"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

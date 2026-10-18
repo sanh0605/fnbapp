@@ -18,7 +18,7 @@ export default async function NewBrandPage(
         backHref={returnTo}
         backLabel="Thương hiệu"
         title="Tạo thương hiệu"
-        subtitle="Quản lý thương hiệu F&B trên hệ thống."
+        subtitle="Thêm thương hiệu mới vào hệ thống."
       />
       <BrandForm returnTo={returnTo} />
     </DetailFrame>

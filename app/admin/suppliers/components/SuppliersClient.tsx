@@ -108,7 +108,7 @@ export default function SuppliersClient({
         secondary: true,
         sortValue: (s) => s.tax_id || null,
         render: (s) => (
-          <span className="font-mono text-text-secondary">{s.tax_id || "—"}</span>
+          <span className="tabular-nums text-text-secondary">{s.tax_id || "—"}</span>
         ),
       },
     ],

@@ -77,11 +77,14 @@ describe("MonthlyItemDetailView", () => {
       />,
     );
 
-    expect(screen.getAllByText("KCT-001").length).toBeGreaterThan(0);
+    expect(screen.getByText("KCT-001")).toHaveClass("text-text-secondary");
+    expect(screen.getByRole("heading", { level: 1, name: "Tiền điện" })).toBeInTheDocument();
+    expect(screen.queryByText("Tên khoản")).toBeNull();
     expect(screen.getAllByText("Tiền điện").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chi phí cố định").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
     expect(screen.getAllByText("3 dòng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Mã")).toBeNull();
   });
 
   it("shows Chỉnh sửa button linking to edit page", () => {

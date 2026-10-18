@@ -119,7 +119,7 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
         )}
 
         <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          <h3 className="col-span-1 md:col-span-2 text-sm font-semibold text-text-primary">Thông tin</h3>
+          <h3 className="col-span-1 md:col-span-2 text-base font-semibold text-text-primary">Thông tin</h3>
 
           <Field label="Tên điểm bán" htmlFor={`${formId}-name`} required>
             <TextInput
@@ -165,10 +165,10 @@ export function OutletForm({ initialData, brands, outlets, returnTo: rawReturnTo
             error={startDateError}
           />
 
-          <h3 className="col-span-1 md:col-span-2 text-sm font-semibold text-text-primary pt-2">Giờ hoạt động</h3>
+          <h3 className="col-span-1 md:col-span-2 text-base font-semibold text-text-primary pt-2">Giờ hoạt động</h3>
 
           <div className="col-span-1 md:col-span-2 space-y-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
               <Field label="Giờ mở cửa" htmlFor={`${formId}-open-time`}>
                 <Select
                   id={`${formId}-open-time`}

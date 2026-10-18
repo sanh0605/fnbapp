@@ -76,8 +76,6 @@ export function CategoryDetailView({
     );
 
   const fields: Field[] = [
-    { label: "Mã", value: category.id },
-    { label: "Tên", value: category.name },
     { label: "Bên", value: KIND_LABEL[category.kind] },
     { label: "Tính vào lãi lỗ", value: pnlTreatmentLabel(category) },
     { label: "Trạng thái", value: statusBadge },

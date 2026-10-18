@@ -92,7 +92,6 @@ export function CashEntryDetailView({
     );
 
   const fields: Field[] = [
-    { label: "Mã", value: entry.id },
     { label: "Ngày", value: formatDateTimeFull(entry.entry_date) },
     { label: "Nhóm", value: category?.name ?? "—" },
     ...(monthlyItemName ? [{ label: "Khoản chi hằng tháng", value: monthlyItemName }] : []),

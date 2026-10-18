@@ -4,10 +4,7 @@ import { SkeletonTable } from "@/components/ui/SkeletonTable";
 export default function Loading() {
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Nhà cung cấp" 
-        subtitle="Quản lý thông tin liên hệ và danh sách các đối tác cung ứng." 
-      />
+      <PageHeader title="Nhà cung cấp" />
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={6} />
       </div>

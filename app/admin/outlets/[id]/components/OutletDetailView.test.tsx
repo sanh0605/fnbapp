@@ -61,7 +61,7 @@ describe("OutletDetailView", () => {
       />,
     );
 
-    expect(screen.getAllByText("OUT-001").length).toBeGreaterThan(0);
+    expect(screen.getByText("OUT-001")).toHaveClass("text-text-secondary");
     expect(screen.getAllByText("Điểm bán 1").length).toBeGreaterThan(0);
     expect(screen.getAllByText("001").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Phin Đi").length).toBeGreaterThan(0);
@@ -69,6 +69,30 @@ describe("OutletDetailView", () => {
     expect(screen.getAllByText("07:00 - 22:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("27/03/2026 00:00:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang hoạt động").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Mã")).toBeNull();
+    expect(screen.queryByText("Tên")).toBeNull();
+  });
+
+  it("shows no Kết thúc when outlet end_date is not set, and shows formatted date when set", () => {
+    const { unmount } = render(
+      <OutletDetailView
+        outlet={{ ...sampleOutlet, end_date: null }}
+        brandName="Phin Đi"
+        returnTo="/admin/outlets"
+      />,
+    );
+    expect(screen.queryByText("Kết thúc")).toBeNull();
+    unmount();
+
+    render(
+      <OutletDetailView
+        outlet={{ ...sampleOutlet, end_date: "2026-10-15T15:00:00Z" }}
+        brandName="Phin Đi"
+        returnTo="/admin/outlets"
+      />,
+    );
+    expect(screen.getByText("Kết thúc")).toBeInTheDocument();
+    expect(screen.getByText("15/10/2026 22:00:00")).toBeInTheDocument();
   });
 
   it("shows Ngừng hoạt động button and hides Mở lại hoạt động when ACTIVE", () => {

@@ -51,11 +51,13 @@ describe("CategoryDetailView", () => {
       />,
     );
 
-    expect(screen.getAllByText("CFC-001").length).toBeGreaterThan(0);
+    expect(screen.getByText("CFC-001")).toHaveClass("text-text-secondary");
     expect(screen.getAllByText("Vận hành").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chi").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Có").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Mã")).toBeNull();
+    expect(screen.queryByText("Tên")).toBeNull();
   });
 
   it("shows Ngừng dùng button when status is ACTIVE", () => {

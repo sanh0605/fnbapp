@@ -85,7 +85,6 @@ export function CashTransferDetailView({
     );
 
   const fields: Field[] = [
-    { label: "Mã", value: transfer.id },
     { label: "Ngày", value: formatDateTimeFull(transfer.transfer_date) },
     { label: "Số tiền", value: amountStr },
     { label: "Từ", value: fromText },

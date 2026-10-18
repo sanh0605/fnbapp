@@ -214,10 +214,7 @@ describe("PromotionsClient", () => {
         canDelete={false}
       />,
     );
-    // The table cell puts the date and the time in separate spans so they wrap only between them.
-    expect(
-      screen.getAllByText("01/06/2026").some(el => el.parentElement?.textContent === "01/06/2026 00:00:00"),
-    ).toBe(true);
+    expect(screen.getByText("01/06/2026 00:00:00")).toBeInTheDocument();
   });
 
   it("renders in default order newest code first", () => {
@@ -276,5 +273,58 @@ describe("PromotionsClient", () => {
       within(phone).getByText("Không hết hạn").parentElement?.textContent,
     ).toBe("Không hết hạn · Toàn đơn · Toàn hệ thống");
     expect(within(phone).queryByText(/→/)).toBeNull();
+  });
+
+  it("shows '→ Không hết hạn' in table cell when end_date is empty", () => {
+    const promoWithoutEndDate: DBPromotion = {
+      ...samplePromotions[0],
+      end_date: "",
+    };
+    render(
+      <PromotionsClient
+        promotions={[promoWithoutEndDate]}
+        brands={sampleBrands}
+        products={[]}
+        variants={sampleVariants}
+        categories={[]}
+        canDelete={false}
+      />,
+    );
+
+    const table = screen.getByRole("table");
+    const cell = within(table)
+      .getAllByRole("cell")
+      .find((td) => td.textContent?.includes("→ Không hết hạn"));
+    expect(cell).toBeDefined();
+    expect(within(table).getByText("→ Không hết hạn")).toBeInTheDocument();
+  });
+
+  it("renders Thời gian column header (no Bắt đầu or Kết thúc headers) and shows start and end in the same cell", () => {
+    render(
+      <PromotionsClient
+        promotions={[samplePromotions[1]]}
+        brands={sampleBrands}
+        products={[]}
+        variants={sampleVariants}
+        categories={[]}
+        canDelete={true}
+      />,
+    );
+
+    expect(screen.getByRole("columnheader", { name: "Thời gian" })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Bắt đầu" })).toBeNull();
+    expect(screen.queryByRole("columnheader", { name: "Kết thúc" })).toBeNull();
+
+    const table = screen.getByRole("table");
+    const cell = within(table)
+      .getAllByRole("cell")
+      .find(
+        (td) =>
+          td.textContent?.includes("01/07/2026 00:00:00") &&
+          td.textContent?.includes("→ 15/07/2026 12:59:00"),
+      );
+    expect(cell).toBeDefined();
+    // Each date-time stays on one line: two lines in the cell, not four.
+    expect(cell!.querySelector(".tabular-nums")).toHaveClass("whitespace-nowrap");
   });
 });
