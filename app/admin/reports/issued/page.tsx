@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { getIssuedValueReport } from "./actions";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Button } from "@/components/ui/Button";
 import { formatNumber, formatDecimal } from "@/lib/shared/format";
 import { formatDateTimeFull, saigonToday, formatMonthLabel } from "@/lib/shared/datetime";
 import { readMonthRangeParams, type RawParams } from "@/lib/shared/date-range-params";
@@ -64,7 +64,7 @@ export default async function IssuedValueReportPage(
       {/* 1. Page Header with month-range bar (default Năm nay) */}
       <PageHeader
         title="Hàng đã xuất"
-        subtitle={`Theo dõi giá trị nguyên liệu đã xuất kho từ ${formatMonthLabel(range.start)} đến ${formatMonthLabel(range.end)} · đơn vị: đồng`}
+        subtitle={`Theo dõi giá trị nguyên liệu đã xuất kho từ ${formatMonthLabel(range.start)} đến ${formatMonthLabel(range.end)} · đơn\u00a0vị:\u00a0đồng`}
         actions={<DateRangeUrlButton mode="month" value={range} today={today} />}
       />
 
@@ -117,16 +117,18 @@ export default async function IssuedValueReportPage(
       </div>
 
       {/* 3. Tabs: Tab links keep from/to range in their URL */}
-      <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+      <div className="grid grid-cols-3 gap-2 md:flex">
         {tabs.map(({ tab, label }) => (
-          <Button
+          <Link
             key={tab}
             href={tabHref(tab, searchParams)}
-            variant={activeTab === tab ? "primary" : "secondary"}
-            className="shrink-0 whitespace-nowrap"
+            aria-current={activeTab === tab ? "page" : undefined}
+            className={`min-h-[48px] md:min-h-[40px] px-2 md:px-4 rounded-button text-sm text-center leading-tight inline-flex items-center justify-center transition-colors ${
+              activeTab === tab ? "bg-primary-soft text-primary font-semibold" : "text-text-secondary hover:text-text-primary"
+            }`}
           >
             {label}
-          </Button>
+          </Link>
         ))}
       </div>
 
