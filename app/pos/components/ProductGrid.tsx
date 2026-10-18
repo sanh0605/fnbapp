@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Search } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { ProductPhoneRow } from "./ProductPhoneRow";
 
@@ -38,6 +38,28 @@ export function ProductGrid({
   disabled,
   children,
 }: ProductGridProps) {
+  const [moreBelow, setMoreBelow] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+
+  const updateMoreBelow = () => {
+    const nav = navRef.current;
+    if (!nav) return;
+    setMoreBelow(nav.scrollTop + nav.clientHeight < nav.scrollHeight - 1);
+  };
+
+  useEffect(() => {
+    updateMoreBelow();
+    const nav = navRef.current;
+    if (!nav || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      updateMoreBelow();
+    });
+    observer.observe(nav);
+    return () => {
+      observer.disconnect();
+    };
+  }, [categories?.length]);
+
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
@@ -113,6 +135,8 @@ export function ProductGrid({
       </div>
 
       <nav
+        ref={navRef}
+        onScroll={updateMoreBelow}
         aria-label="Danh mục món"
         className="bg-surface-card px-4 pb-3 shrink-0 lg:absolute lg:inset-y-0 lg:left-0 lg:w-[132px] lg:p-2 lg:border-r lg:border-border lg:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
@@ -151,10 +175,14 @@ export function ProductGrid({
             );
           })}
         </div>
-        <div
-          aria-hidden="true"
-          className="hidden lg:block sticky -bottom-2 h-10 -mt-10 pointer-events-none bg-gradient-to-t from-surface-card to-transparent"
-        />
+        {moreBelow && (
+          <div
+            aria-hidden="true"
+            className="hidden lg:flex sticky -bottom-2 pointer-events-none h-14 -mt-14 bg-gradient-to-t from-surface-card via-surface-card/90 to-transparent items-end justify-center pb-1"
+          >
+            <ChevronDown className="w-6 h-6 text-text-secondary" />
+          </div>
+        )}
       </nav>
 
       <div

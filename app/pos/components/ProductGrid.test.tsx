@@ -173,15 +173,36 @@ describe("ProductGrid empty states and Task 3a behaviour", () => {
     }
   });
 
-  it("renders a decorative scroll fade in the category rail with pointer-events-none and lg:block", () => {
+  it("shows a scroll cue in the category rail on first paint when it overflows, before any scroll", () => {
+    const heights = [
+      vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(800),
+      vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(500),
+    ];
+    try {
+      render(<ProductGrid {...defaultProps} />);
+      const nav = screen.getByRole("navigation", { name: "Danh mục món" });
+      expect(nav.lastElementChild).toHaveClass("lg:flex", "pointer-events-none", "sticky", "-bottom-2");
+    } finally {
+      heights.forEach((s) => s.mockRestore());
+    }
+  });
+
+  it("removes the scroll cue once the rail is scrolled to the end", () => {
     render(<ProductGrid {...defaultProps} />);
 
     const nav = screen.getByRole("navigation", { name: "Danh mục món" });
-    // the fade is the rail's last child, after the category list
-    const fade = nav.lastElementChild!;
+    const categoryList = nav.firstElementChild!;
+    expect(nav.lastElementChild).toBe(categoryList);
 
-    expect(fade.getAttribute("aria-hidden")).toBe("true");
-    // -bottom-2 sticks it to the nav's outer edge, past its 8 px bottom padding
-    expect(fade).toHaveClass("lg:block", "pointer-events-none", "sticky", "-bottom-2");
+    Object.defineProperty(nav, "scrollHeight", { configurable: true, value: 800 });
+    Object.defineProperty(nav, "clientHeight", { configurable: true, value: 500 });
+    fireEvent.scroll(nav);
+
+    expect(nav.lastElementChild?.getAttribute("aria-hidden")).toBe("true");
+
+    Object.defineProperty(nav, "scrollTop", { configurable: true, value: 300 });
+    fireEvent.scroll(nav);
+
+    expect(nav.lastElementChild).toBe(categoryList);
   });
 });
