@@ -17,8 +17,8 @@ const appFont = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "FNB App v2 - Google Sheets",
-  description: "FNB App powered by Next.js and Google Sheets",
+  title: "FNB App",
+  description: "Quản lý quán cà phê: bán hàng, kho, giá vốn, thu chi, báo cáo",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

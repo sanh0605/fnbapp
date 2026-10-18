@@ -136,7 +136,7 @@ export default function BankAccountsClient({
           a.status === "ACTIVE" ? (
             <Badge variant="success">Đang dùng</Badge>
           ) : (
-            <Badge variant="warning">Ngừng dùng</Badge>
+            <Badge variant="neutral">Ngừng dùng</Badge>
           ),
       },
     ],
@@ -288,7 +288,7 @@ export default function BankAccountsClient({
             a.status === "ACTIVE" ? (
               <Badge variant="success">Đang dùng</Badge>
             ) : (
-              <Badge variant="warning">Ngừng dùng</Badge>
+              <Badge variant="neutral">Ngừng dùng</Badge>
             ),
         })}
         sort={{

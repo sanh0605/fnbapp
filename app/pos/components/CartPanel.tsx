@@ -188,7 +188,7 @@ export function CartPanel({
         />
 
         <div className="h-14 bg-surface-card flex items-center justify-between px-4 shrink-0 border-b border-border">
-          <h2 className="min-w-0 font-bold text-text-primary text-base md:text-lg flex items-center gap-2 whitespace-nowrap">
+          <h2 className="min-w-0 font-bold text-text-primary text-base md:text-lg flex items-center gap-2">
             <ShoppingCart className="hidden lg:block w-5 h-5 text-primary" />
             <span className="truncate">Hoá đơn</span> <span className="text-xs text-text-secondary">({totalItems})</span>
           </h2>

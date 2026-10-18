@@ -60,7 +60,7 @@ export function PromotionDetailView({
   const statusBadge = expired ? (
     <Badge variant="danger">Đã hết hạn</Badge>
   ) : promo.status === "INACTIVE" ? (
-    <Badge variant="warning">Tạm ngưng</Badge>
+    <Badge variant="neutral">Tạm ngưng</Badge>
   ) : (
     <Badge variant="success">Đang chạy</Badge>
   );

@@ -178,7 +178,7 @@ export default function OutletsClient({
           o.status === "ACTIVE" ? (
             <Badge variant="success">Đang hoạt động</Badge>
           ) : (
-            <Badge variant="warning">Ngừng hoạt động</Badge>
+            <Badge variant="neutral">Ngừng hoạt động</Badge>
           ),
       },
     ],
@@ -333,7 +333,7 @@ export default function OutletsClient({
               o.status === "ACTIVE" ? (
                 <Badge variant="success">Đang hoạt động</Badge>
               ) : (
-                <Badge variant="warning">Ngừng hoạt động</Badge>
+                <Badge variant="neutral">Ngừng hoạt động</Badge>
               ),
           };
         }}

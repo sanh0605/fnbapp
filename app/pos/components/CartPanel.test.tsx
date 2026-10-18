@@ -364,9 +364,9 @@ describe("Discount (R3)", () => {
       expect(clearBtn.className).toContain("border");
     });
 
-    it("the cart header stays on one line: title and both buttons never wrap", () => {
+    // The title itself stays on one line through its truncate span (next test).
+    it("the cart header stays on one line: both buttons never wrap", () => {
       render(<CartPanel {...defaultProps} cart={sampleCart} />);
-      expect(screen.getByRole("heading", { name: /Hoá đơn/ }).className).toContain("whitespace-nowrap");
       expect(screen.getByRole("button", { name: "Lưu nháp" }).className).toContain("whitespace-nowrap");
       expect(screen.getByRole("button", { name: "Xoá hết" }).className).toContain("whitespace-nowrap");
     });

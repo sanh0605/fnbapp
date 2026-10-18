@@ -275,7 +275,7 @@ export default function PromotionsClient({
             return <Badge variant="danger">Đã hết hạn</Badge>;
           }
           if (p.status === "INACTIVE") {
-            return <Badge variant="warning">Tạm ngưng</Badge>;
+            return <Badge variant="neutral">Tạm ngưng</Badge>;
           }
           return <Badge variant="success">Đang chạy</Badge>;
         },
@@ -466,7 +466,7 @@ export default function PromotionsClient({
             badge: expired ? (
               <Badge variant="danger">Đã hết hạn</Badge>
             ) : promo.status === "INACTIVE" ? (
-              <Badge variant="warning">Tạm ngưng</Badge>
+              <Badge variant="neutral">Tạm ngưng</Badge>
             ) : (
               <Badge variant="success">Đang chạy</Badge>
             ),
