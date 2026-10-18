@@ -84,7 +84,7 @@ export default function AssetsClient({
         header: "Mã hàng",
         sortValue: (asset) => asset.itemId,
         render: (asset) => (
-          <span className="font-mono text-primary">{asset.itemId}</span>
+          <span className="font-mono text-xs text-primary">{asset.itemId}</span>
         ),
       },
       {

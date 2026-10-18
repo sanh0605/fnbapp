@@ -85,7 +85,7 @@ export function PurchaseHistoryView({ rows, itemName }: PurchaseHistoryViewProps
                   {row.date ? formatDateTimeFull(row.date) : "---"} · {formatNumber(row.quantity)} {row.unitLabel} × {formatNumber(row.unitCost)}đ ·{" "}
                   <Link
                     href={`/admin/inventory/purchase-orders/${row.poId}`}
-                    className="text-primary hover:text-primary-hover font-mono text-xs whitespace-nowrap"
+                    className="text-primary hover:text-primary-hover whitespace-nowrap"
                   >
                     {row.poId}
                   </Link>
