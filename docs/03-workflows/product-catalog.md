@@ -37,7 +37,7 @@ brCodes: BR-CATALOG-001, BR-CATALOG-003, BR-CATALOG-005, BR-ACCESS-003, BR-SALE-
 
 **Behaviour change — 2026-10-15 (Biểu tượng nhóm món, `BR-SALE-017`, migration `0130`, runs before the push):** the Nhóm món form has a "Biểu tượng" box. The emoji shows at the till (on the dish cards until 2026-10-17; since the till redo, on the dish-group tab); blank means no icon (no default cup). Trimmed; more than 8 characters is refused with "Biểu tượng tối đa 8 ký tự". The till no longer guesses an icon from the group name. The return-to links on the dish pages go through the shared `safeReturnTo`.
 
-**Behaviour change — 2026-10-18 (audit fixes, plan `docs/superpowers/plans/2026-10-18-soat-kho-ban-hang.md` S3):** on screen only. The option detail page no longer carries the "Bán độc lập" switch, which looked like a read-only value; it shows "Có" (linked dish on sale), "Không", or "—" (group without standalone). The switch stays on the option edit form.
+**Behaviour change — 2026-10-18 (audit fixes, merge `e08660b4`):** on screen only. The option detail page no longer carries the "Bán độc lập" switch, which looked like a read-only value; it shows "Có" (linked dish on sale), "Không", or "—" (group without standalone). The switch stays on the option edit form.
 
 **Reviewed, no behaviour change — 2026-10-14:** `app/admin/products/modifiers/actions.ts` one message spelled "Thiếu mã tuỳ chọn" instead of "tùy" (`BR-UI-001`); no logic changed.
 
