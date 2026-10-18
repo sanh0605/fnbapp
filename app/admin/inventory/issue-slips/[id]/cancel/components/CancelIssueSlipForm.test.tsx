@@ -37,7 +37,7 @@ beforeEach(() => {
 const sampleDetail: IssueSlipDetail = {
   id: "ISL-00076",
   issuedAt: "2026-09-28T18:20:00Z",
-  dateText: "28/09/2026 18:20",
+  dateText: "28/09/2026 18:20:00",
   createdByName: "tuyen2612",
   lines: [
     {
@@ -67,7 +67,7 @@ describe("CancelIssueSlipForm", () => {
       ...sampleDetail,
       cancellation: {
         at: "2026-09-29T10:00:00Z",
-        dateText: "29/09/2026 17:00",
+        dateText: "29/09/2026 17:00:00",
         reason: "Xuất nhầm quán khác",
       },
       canEdit: false,
@@ -93,7 +93,7 @@ describe("CancelIssueSlipForm", () => {
   it("A locked slip shows 'Phiếu này không huỷ được', lock note and back link, and no form", () => {
     const lockedDetail: IssueSlipDetail = {
       ...sampleDetail,
-      lock: { sessionId: "STK-1", confirmedAt: "2026-08-09T00:00:00Z", dateText: "09/08/2026" },
+      lock: { sessionId: "STK-1", confirmedAt: "2026-08-09T00:00:00Z", dateText: "09/08/2026 22:02:24" },
       canEdit: false,
     };
 
@@ -107,7 +107,7 @@ describe("CancelIssueSlipForm", () => {
     expect(screen.getByText("Phiếu này không huỷ được")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Phiếu nằm trước lần kiểm kê ngày 09/08/2026 nên không sửa được. Sai lệch sẽ được bù ở lần kiểm kê sau."
+        "Phiếu nằm trước lần kiểm kê ngày 09/08/2026 22:02:24 nên không sửa được. Sai lệch sẽ được bù ở lần kiểm kê sau."
       )
     ).toBeInTheDocument();
     expect(screen.queryByRole("textbox")).toBeNull();
