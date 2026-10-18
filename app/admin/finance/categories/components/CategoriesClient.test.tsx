@@ -135,11 +135,11 @@ describe("CategoriesClient", () => {
 
     const phoneList = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phoneList).getByText("Vận hành")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Chi · Tính lãi lỗ · CFC-001")).toBeInTheDocument();
+    expect(within(phoneList).getAllByText("CFC-001").some((el) => el.parentElement?.textContent === "Chi · Tính lãi lỗ · CFC-001")).toBe(true);
     expect(within(phoneList).getByText("Vốn góp")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Thu · Ngoài lãi lỗ · CFC-005")).toBeInTheDocument();
+    expect(within(phoneList).getAllByText("CFC-005").some((el) => el.parentElement?.textContent === "Thu · Ngoài lãi lỗ · CFC-005")).toBe(true);
     expect(within(phoneList).getByText("Doanh thu ghi tay")).toBeInTheDocument();
-    expect(within(phoneList).getByText("Thu · Tính lãi lỗ · Doanh thu bán hàng · CFC-006")).toBeInTheDocument();
+    expect(within(phoneList).getAllByText("CFC-006").some((el) => el.parentElement?.textContent === "Thu · Tính lãi lỗ · Doanh thu bán hàng · CFC-006")).toBe(true);
     expect(within(phoneList).getAllByText("Đang dùng")).toHaveLength(2);
     expect(within(phoneList).getByText("Ngừng dùng")).toBeInTheDocument();
   });

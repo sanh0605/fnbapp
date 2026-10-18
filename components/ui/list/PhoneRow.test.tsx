@@ -27,7 +27,10 @@ describe("BR-UI-018 PhoneRow", () => {
     expect(valueEl.className).toContain("whitespace-nowrap");
     expect(valueEl.className).toContain("tabular-nums");
 
-    const metaEl = screen.getByText("16/10/2026 · PN-001 · Tiền mặt");
+    const codeEl = screen.getByText("PN-001");
+    expect(codeEl.className).toContain("whitespace-nowrap");
+    const metaEl = codeEl.parentElement!;
+    expect(metaEl.textContent).toBe("16/10/2026 · PN-001 · Tiền mặt");
     expect(metaEl.className).toContain("line-clamp-2");
     expect(metaEl.className).not.toContain("truncate");
 
@@ -36,6 +39,19 @@ describe("BR-UI-018 PhoneRow", () => {
     for (const el of Array.from(container.querySelectorAll("*"))) {
       expect(el.className).not.toMatch(/\bfont-(bold|semibold)\b/);
     }
+  });
+
+  it("renders a React-element meta unchanged", () => {
+    render(
+      <PhoneRow
+        title="Tiêu đề"
+        meta={<span data-testid="custom-meta">16/10/2026 · PN-001</span>}
+      />,
+    );
+    const custom = screen.getByTestId("custom-meta");
+    expect(custom).toBeInTheDocument();
+    expect(custom.textContent).toBe("16/10/2026 · PN-001");
+    expect(custom.querySelector(".whitespace-nowrap")).toBeNull();
   });
 
   it("renders the meta element with line-clamp-2 and not truncate", () => {

@@ -304,7 +304,9 @@ describe("AssetItemDetailView", () => {
     expect(within(firstRow).getByText("04/04/2026 00:00:00").className).toContain("text-base");
     expect(firstRow?.textContent).toContain("145,860đ");
     // Line 2 has meta: TS-004, remaining/quantity, unit cost ("Giá một cái" value), term, PO
-    expect(within(firstRow).getByText(/^TS-004 · Còn 1\/2 cái/)).toBeInTheDocument();
+    expect(
+      within(firstRow).getAllByText("TS-004").some((el) => /^TS-004 · Còn 1\/2 cái/.test(el.parentElement?.textContent ?? "")),
+    ).toBe(true);
     expect(firstRow?.textContent).toContain("205,920đ");
     expect(firstRow?.textContent).toContain("24 tháng");
     expect(firstRow?.textContent).toContain("PO-009");
@@ -330,6 +332,10 @@ describe("AssetItemDetailView", () => {
     // Old card labels should not exist
     expect(firstRow?.textContent).not.toContain("Lần mua:");
     expect(firstRow?.textContent).not.toContain("Lý do:");
+
+    const lotCode = within(firstRow as HTMLElement).getByText("(TS-004)");
+    expect(lotCode.className).toContain("whitespace-nowrap");
+    expect(lotCode.parentElement?.textContent).toBe("04/04/2026 00:00:00 (TS-004)");
   });
 
   it("renders 'Khấu hao theo tháng' child rows on phone as a divide-y list of PhoneRow", () => {

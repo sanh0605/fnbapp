@@ -281,7 +281,7 @@ describe("PurchaseOrdersClient", () => {
     // Phone row meta has dateText first, followed by code, payment
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
     expect(phone).toBeTruthy();
-    expect(within(phone!).getByText("15/10/2026 18:34:59 · PO-206 · Tiền mặt")).toBeInTheDocument();
+    expect(within(phone!).getAllByText("PO-206").some((el) => el.parentElement?.textContent === "15/10/2026 18:34:59 · PO-206 · Tiền mặt")).toBe(true);
     expect(within(phone!).getByText("Nhà cung cấp C")).toBeInTheDocument();
   });
 
@@ -311,7 +311,7 @@ describe("PurchaseOrdersClient", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
     expect(phone).toBeTruthy();
     expect(within(phone!).getByText("Không rõ")).toBeInTheDocument();
-    expect(within(phone!).getByText("15/10/2026 18:34:59 · PO-207 · Tiền mặt")).toBeInTheDocument();
+    expect(within(phone!).getAllByText("PO-207").some((el) => el.parentElement?.textContent === "15/10/2026 18:34:59 · PO-207 · Tiền mặt")).toBe(true);
   });
 
   it("a phone row whose source is not 'Mua ngoài' does not show the source name on line 2", () => {
@@ -340,7 +340,7 @@ describe("PurchaseOrdersClient", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col");
     expect(phone).toBeTruthy();
     expect(within(phone!).queryByText(/Shopee/)).toBeNull();
-    expect(within(phone!).getByText("15/10/2026 18:34:59 · PO-208 · Tiền mặt")).toBeInTheDocument();
+    expect(within(phone!).getAllByText("PO-208").some((el) => el.parentElement?.textContent === "15/10/2026 18:34:59 · PO-208 · Tiền mặt")).toBe(true);
   });
 });
 

@@ -102,13 +102,15 @@ describe("CategoriesClient", () => {
     expect(screen.queryByText(/EQUIPMENT/)).toBeNull();
 
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
-    const metaEl = within(phone).getByText("NHH-001");
+    const codeEl = within(phone).getByText("NHH-001");
+    expect(codeEl.className).toContain("whitespace-nowrap");
+    const metaEl = codeEl.parentElement!;
     expect(metaEl.className).toContain("text-sm");
     expect(metaEl.className).toContain("text-text-secondary");
     expect(metaEl.parentElement?.textContent).toBe("NHH-001");
 
-    const metaEl2 = within(phone).getByText("NHH-002");
-    expect(metaEl2.parentElement?.textContent).toBe("NHH-002Vật tư");
+    const codeEl2 = within(phone).getByText("NHH-002");
+    expect(codeEl2.parentElement?.parentElement?.textContent).toBe("NHH-002Vật tư");
   });
 
   it("canDelete=false renders no checkboxes and no removal bin", () => {

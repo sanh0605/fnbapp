@@ -266,7 +266,9 @@ export function AssetItemDetailView({
             <div className="md:hidden bg-surface-card rounded-card border border-border divide-y divide-border">
               {detail.disposals.map((d) => {
                 const metaNodes: React.ReactNode[] = [
-                  `${formatDateTimeFull(d.lotAcquiredDate)} (${d.assetId})`,
+                  <span key="lot">
+                    {formatDateTimeFull(d.lotAcquiredDate)} <span className="whitespace-nowrap">({d.assetId})</span>
+                  </span>,
                   `${d.quantity} cái`,
                   <span key="proceeds">Thu được: {renderProceeds(d.proceeds)}</span>,
                   d.reason || null,

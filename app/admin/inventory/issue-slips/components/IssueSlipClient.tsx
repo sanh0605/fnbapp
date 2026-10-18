@@ -516,7 +516,7 @@ export function IssueSlipClient({ items }: { items: IssueSlipItemView[] }) {
                         ))}
                       </Select>
                     </div>
-                    <div className="w-32 shrink-0">
+                    <div className="flex-1 min-w-0">
                       <label className="block text-xs font-medium text-text-muted mb-1">Số lượng</label>
                       <NumberInput
                         id={`issue-qty-m-${index}`}

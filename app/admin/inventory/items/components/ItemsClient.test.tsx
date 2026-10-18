@@ -219,8 +219,8 @@ describe("ItemsClient", () => {
     const phone = container.querySelector<HTMLElement>(".md\\:hidden.flex.flex-col")!;
     expect(within(phone).getByText("Sữa tươi Mlekovita")).toBeInTheDocument();
     expect(within(phone).getByText("Tồn: 42.000 ml")).toBeInTheDocument();
-    expect(within(phone).getByText("SPM-002 · Nguyên liệu")).toBeInTheDocument();
-    expect(within(phone).getByText("SPM-099 · Nguyên liệu")).toBeInTheDocument();
+    expect(within(phone).getAllByText("SPM-002").some((el) => el.parentElement?.textContent === "SPM-002 · Nguyên liệu")).toBe(true);
+    expect(within(phone).getAllByText("SPM-099").some((el) => el.parentElement?.textContent === "SPM-099 · Nguyên liệu")).toBe(true);
     expect(within(phone).getByText("Ngừng dùng")).toBeInTheDocument();
     expect(within(phone).queryByText("1 Hộp = 1,000 ml")).toBeNull();
   });

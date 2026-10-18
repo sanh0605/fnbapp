@@ -58,11 +58,24 @@ describe("getPriceTrend", () => {
     expect(getPriceTrend([{ poId: "PO-1", date: "", supplierId: "", supplierName: "", quantity: 1, unitLabel: "", unitCost: 100, lineTotal: 100 }])).toBeNull();
   });
 
-  it("detects up, down, and same trends between the latest 2 rows", () => {
+  it("detects up, down, and same trends between the latest 2 rows, with the compared prices", () => {
     const row = (unitCost: number) => ({ poId: "PO", date: "", supplierId: "", supplierName: "", quantity: 1, unitLabel: "", unitCost, lineTotal: unitCost });
 
-    expect(getPriceTrend([row(120), row(100)])).toBe("up");
-    expect(getPriceTrend([row(80), row(100)])).toBe("down");
-    expect(getPriceTrend([row(100), row(100)])).toBe("same");
+    expect(getPriceTrend([row(120), row(100)])).toEqual({ direction: "up", from: 100, to: 120 });
+    expect(getPriceTrend([row(80), row(100)])).toEqual({ direction: "down", from: 100, to: 80 });
+    expect(getPriceTrend([row(100), row(100)])).toEqual({ direction: "same", from: 100, to: 100 });
+  });
+
+  // Rows are newest first. Đá viên: 36 Bao x 20,000 vs 2 Túi x 5,000 are both 1đ per g.
+  const dau = (unitLabel: string, quantity: number, unitCost: number) => ({ poId: "PO", date: "", supplierId: "", supplierName: "", quantity, unitLabel, unitCost, lineTotal: quantity * unitCost });
+
+  it("compares against the most recent earlier purchase in the same unit, skipping other units", () => {
+    const rows = [dau("Bao", 36, 20000), dau("Túi", 2, 5000), dau("Bao", 48, 20000)];
+
+    expect(getPriceTrend(rows)).toEqual({ direction: "same", from: 20000, to: 20000 });
+  });
+
+  it("returns null when no earlier purchase used the latest unit", () => {
+    expect(getPriceTrend([dau("Bao", 36, 20000), dau("Túi", 2, 5000)])).toBeNull();
   });
 });

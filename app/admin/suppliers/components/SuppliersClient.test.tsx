@@ -118,7 +118,7 @@ describe("SuppliersClient", () => {
     );
     const links = screen.getAllByRole("link", { name: /Cũ/ });
     expect(links.length).toBeGreaterThan(0);
-    expect(screen.getByText("SUP-003 · 0909123456")).toBeInTheDocument();
+    expect(screen.getAllByText("SUP-003").some((el) => el.parentElement?.textContent === "SUP-003 · 0909123456")).toBe(true);
     expect(screen.getAllByText("Ngừng hợp tác").length).toBeGreaterThan(0);
     expect(screen.queryByText("LH:")).toBeNull();
     expect(screen.queryByText("MST:")).toBeNull();

@@ -187,8 +187,8 @@ describe("IssueSlipsClient", () => {
       expect(phone.querySelector("table")).toBeNull();
       expect(within(phone).getByText("29/09")).toBeInTheDocument();
       expect(within(phone).getByText("100đ")).toBeInTheDocument();
-      expect(within(phone).getByText("ISL-01 · admin")).toBeInTheDocument();
-      expect(within(phone).getByText("ISL-03 · admin")).toBeInTheDocument();
+      expect(within(phone).getAllByText("ISL-01").some((el) => el.parentElement?.textContent === "ISL-01 · admin")).toBe(true);
+      expect(within(phone).getAllByText("ISL-03").some((el) => el.parentElement?.textContent === "ISL-03 · admin")).toBe(true);
       expect(within(phone).queryByText("Phiếu xuất")).toBeNull();
     });
   });
