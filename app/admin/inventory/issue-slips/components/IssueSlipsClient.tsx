@@ -193,7 +193,7 @@ export default function IssueSlipsClient({
         showClear={showClear}
         activeCount={activeCount}
         search={
-          <div className="flex-1 min-w-[200px]">
+          <div className="flex-1 min-w-[160px]">
             <Field label="Tìm kiếm" htmlFor="search-input">
               <TextInput
                 id="search-input"
@@ -207,6 +207,7 @@ export default function IssueSlipsClient({
       >
         <div className="w-full md:w-auto shrink-0">
           <DateRangeButton
+            label="Thời gian"
             value={range}
             today={today}
             onChange={handleDateRangeChange}
@@ -214,7 +215,7 @@ export default function IssueSlipsClient({
             disabledHint="Đang tìm trên mọi ngày · xoá ô tìm để lọc theo ngày"
           />
         </div>
-        <div className="w-full md:w-40">
+        <div className="w-full md:w-36">
           <Field label="Loại" htmlFor="kind-select">
             <Select
               id="kind-select"
@@ -227,7 +228,7 @@ export default function IssueSlipsClient({
             </Select>
           </Field>
         </div>
-        <div className="w-full md:w-48">
+        <div className="w-full md:w-36">
           <Field label="Người ghi" htmlFor="person-select">
             <Select
               id="person-select"

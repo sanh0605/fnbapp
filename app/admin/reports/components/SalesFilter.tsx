@@ -145,6 +145,7 @@ function SalesFilterInner({
       <div className="flex flex-wrap items-end gap-3 mb-6">
         <div className="w-full md:w-auto">
           <DateRangeButton
+            label="Thời gian"
             value={range}
             today={today}
             onChange={handleRangeChange}
