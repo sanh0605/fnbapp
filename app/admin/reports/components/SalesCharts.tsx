@@ -36,7 +36,7 @@ export default function SalesCharts({
     <div className="xl:col-span-2 bg-surface-card rounded-card p-6 shadow-sm border border-border flex flex-col min-h-[400px]">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <h3 className="font-bold text-text-primary">Biểu đồ doanh thu</h3>
-        <div className="flex bg-page p-1 rounded-lg border border-border/50 overflow-x-auto max-w-full">
+        <div className="flex bg-page p-1 rounded-lg border border-border/50 overflow-x-auto max-w-full hide-scrollbar">
           <button 
             onClick={() => setViewMode("HOUR")}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition whitespace-nowrap shrink-0 min-h-[48px] md:min-h-[40px] inline-flex items-center justify-center ${viewMode === "HOUR" ? "bg-surface-card shadow-sm text-primary" : "text-text-secondary hover:text-text-primary"}`}
@@ -72,12 +72,13 @@ export default function SalesCharts({
           const showLabel = i % labelInterval === 0 || i === totalItems - 1;
           const isTooCloseToLast = (totalItems - 1 - i) < labelInterval && i !== totalItems - 1;
           const desktopShow = showLabel && !isTooCloseToLast;
-          const phoneShow =
-            viewMode === "HOUR"
-              ? (i % 3 === 0 && (totalItems - 1 - i >= 3 || i === 0)) || i === totalItems - 1
-              : desktopShow;
+          // Phone label step: day labels ~32 px, month labels ~52 px must not touch on a ~263 px chart (edge labels are pushed inward).
+          const phoneStep =
+            viewMode === "HOUR" ? 3 : viewMode === "DATE" ? Math.max(1, Math.ceil((totalItems - 2) / 5)) : viewMode === "MONTH" ? Math.max(1, Math.ceil((totalItems - 1) / 3)) : 1;
+          const phoneShow = (i % phoneStep === 0 && (totalItems - 1 - i >= phoneStep || i === 0)) || i === totalItems - 1;
 
-          const alignClass = totalItems <= 7 ? "" : i === 0 ? "self-start" : i === totalItems - 1 ? "self-end" : "";
+          const edge = i === 0 ? "self-start" : i === totalItems - 1 ? "self-end" : "";
+          const alignClass = !edge ? "" : totalItems > 7 ? edge : viewMode === "MONTH" && totalItems > 4 ? `${edge} sm:self-auto` : "";
 
           return (
             <div key={i} className="flex flex-col items-center flex-1 group min-w-[8px] sm:min-w-[12px]">
