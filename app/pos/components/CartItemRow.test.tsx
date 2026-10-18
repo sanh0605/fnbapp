@@ -56,4 +56,24 @@ describe("CartItemRow line text (BR-SALE-019, Task 5a)", () => {
     expect(screen.queryByText(/Size 360ml/i)).toBeNull();
     expect(screen.getByText("360ml · Ít ngọt · Ít đá · Kem muối ×2")).toBeInTheDocument();
   });
+
+  it("the 'Xoá' (trash) button has the class border", () => {
+    const item = {
+      id: "line-1",
+      product_id: "P1",
+      product_name: "Cà phê đá",
+      variant_id: "V1",
+      size_name: "360ml",
+      unit_price: 15000,
+      qty: 1,
+      modifiers: [],
+      discount_amount: 0,
+      discount_type: "VND",
+    };
+
+    render(<CartItemRow {...defaultProps} item={item} />);
+    const trashButtons = screen.getAllByRole("button", { name: "Xoá" });
+    const desktopTrashBtn = trashButtons.find((btn) => btn.className.includes("hidden md:flex"))!;
+    expect(desktopTrashBtn.className).toContain("border");
+  });
 });

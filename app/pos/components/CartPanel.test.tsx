@@ -342,5 +342,42 @@ describe("Discount (R3)", () => {
       expect(screen.getByText("40,000")).toBeInTheDocument();
     });
   });
+
+  describe("Ticket H8: visual fixes", () => {
+    it("with an empty cart and nothing being sent, cart-footer is absent; with one item it is present", () => {
+      const { rerender } = render(
+        <CartPanel {...defaultProps} cart={[]} processingOrder={null} lastCheckoutError={null} />
+      );
+      expect(screen.queryByTestId("cart-footer")).toBeNull();
+
+      rerender(
+        <CartPanel {...defaultProps} cart={sampleCart} processingOrder={null} lastCheckoutError={null} />
+      );
+      expect(screen.getByTestId("cart-footer")).toBeInTheDocument();
+    });
+
+    it("'Lưu nháp' and 'Xoá hết' have the class border", () => {
+      render(<CartPanel {...defaultProps} cart={sampleCart} />);
+      const saveDraftBtn = screen.getByRole("button", { name: "Lưu nháp" });
+      const clearBtn = screen.getByRole("button", { name: "Xoá hết" });
+      expect(saveDraftBtn.className).toContain("border");
+      expect(clearBtn.className).toContain("border");
+    });
+
+    it("the cart header stays on one line: title and both buttons never wrap", () => {
+      render(<CartPanel {...defaultProps} cart={sampleCart} />);
+      expect(screen.getByRole("heading", { name: /Hoá đơn/ }).className).toContain("whitespace-nowrap");
+      expect(screen.getByRole("button", { name: "Lưu nháp" }).className).toContain("whitespace-nowrap");
+      expect(screen.getByRole("button", { name: "Xoá hết" }).className).toContain("whitespace-nowrap");
+    });
+
+    it("on a very narrow phone the title gives way, not the buttons", () => {
+      render(<CartPanel {...defaultProps} cart={sampleCart} />);
+      const heading = screen.getByRole("heading", { name: /Hoá đơn/ });
+      expect(heading.className).toContain("min-w-0");
+      expect(screen.getByText("Hoá đơn").className).toContain("truncate");
+      expect(screen.getByRole("button", { name: "Lưu nháp" }).parentElement?.className).toContain("shrink-0");
+    });
+  });
 });
 

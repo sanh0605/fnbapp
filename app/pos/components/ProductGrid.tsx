@@ -99,7 +99,7 @@ export function ProductGrid({
   const isSearching = Boolean(searchQuery.trim());
 
   const categoryButtonClass = (isActive: boolean) =>
-    `snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 lg:px-2 lg:py-2 rounded-full lg:rounded-card text-sm md:text-base lg:text-[16px] font-medium lg:font-bold whitespace-nowrap lg:whitespace-normal min-h-[44px] lg:h-[70px] flex flex-col items-center justify-center text-center gap-0.5 border transition-all duration-150 active:scale-95 transform ${
+    `snap-start shrink-0 px-4 py-2 md:px-5 md:py-2.5 lg:px-2 lg:py-2 rounded-full lg:rounded-card text-sm md:text-base lg:text-[16px] font-medium lg:font-bold whitespace-nowrap lg:whitespace-normal min-h-[44px] lg:h-[70px] lg:[@media(max-height:719px)]:h-14 flex flex-col items-center justify-center text-center gap-0.5 border transition-all duration-150 active:scale-95 transform ${
       isActive
         ? "bg-primary text-on-primary border-primary shadow-md lg:bg-primary-soft lg:text-primary lg:shadow-none"
         : "bg-surface-secondary text-text-secondary border-transparent hover:bg-border lg:bg-surface-card lg:text-text-primary lg:hover:bg-surface-secondary"

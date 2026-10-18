@@ -970,12 +970,12 @@ export default function POSScreen({
             {isOnline ? (
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-primary-soft text-primary border border-border shrink-0">
                 <span className="w-2 h-2 rounded-full bg-primary"></span>
-                <span className="sr-only xl:not-sr-only">Trực tuyến</span>
+                <span className="sr-only lg:not-sr-only">Trực tuyến</span>
               </span>
             ) : (
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-danger/20 shrink-0">
                 <span className="w-2 h-2 rounded-full bg-danger animate-ping"></span>
-                <span className="sr-only xl:not-sr-only">Ngoại tuyến</span>
+                <span className="sr-only lg:not-sr-only">Ngoại tuyến</span>
               </span>
             )}
           </div>
@@ -989,11 +989,13 @@ export default function POSScreen({
               }}
               disabled={!!isCheckingOut}
               aria-label="Đơn nháp"
-              className="text-xs sm:text-sm font-bold text-primary bg-primary-soft px-3 rounded-button hover:bg-primary-soft transition flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] min-w-[44px] disabled:opacity-50"
+              className="text-xs sm:text-sm font-bold text-primary border border-border bg-surface-card px-3 rounded-button hover:bg-primary-soft transition flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] min-w-[44px] disabled:opacity-50"
             >
               <FileText className="w-4 h-4 shrink-0" />
-              <span className="hidden xl:inline">Nháp</span>
-              <span className="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
+              <span className="hidden lg:inline">Nháp</span>
+              {drafts.length > 0 && (
+                <span className="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded-full">{drafts.length}</span>
+              )}
             </button>
             <div className="hidden xl:flex items-center text-sm font-medium text-text-secondary border border-border px-3 min-h-[44px] rounded-button shrink-0">
               {formatDate(new Date())}
@@ -1002,11 +1004,11 @@ export default function POSScreen({
               type="button"
               onClick={handleLogout}
               aria-label="Đăng xuất"
-              className="text-xs sm:text-sm font-semibold text-text-secondary hover:text-danger border border-border hover:bg-danger/10 px-3 rounded-button transition flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] min-w-[44px]"
+              className="ml-2 text-xs sm:text-sm font-semibold text-text-secondary hover:text-danger border border-border hover:bg-danger/10 px-3 rounded-button transition flex items-center justify-center gap-1.5 shrink-0 min-h-[44px] min-w-[44px]"
               title="Đăng xuất"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              <span className="hidden xl:inline">Đăng xuất</span>
+              <span className="hidden lg:inline">Đăng xuất</span>
             </button>
           </div>
         </header>
