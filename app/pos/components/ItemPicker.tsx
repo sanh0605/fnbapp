@@ -61,7 +61,7 @@ export function ItemPicker({
   );
   const maxQty = Math.max(99, initialLine?.qty ?? 1);
   const [selectedQty, setSelectedQty] = useState<number>(() =>
-    initialLine ? Math.min(maxQty, Math.max(1, Number(initialLine.qty) || 1)) : 1
+    initialLine ? Math.max(1, Number(initialLine.qty) || 1) : 1
   );
   const [itemDiscount, setItemDiscount] = useState<number>(() =>
     initialLine ? initialLine.discount_amount || 0 : 0
@@ -83,6 +83,13 @@ export function ItemPicker({
   useEffect(() => {
     setItemDiscount((prev) => clampDiscount(prev, itemDiscountType, lineSubtotal) ?? 0);
   }, [lineSubtotal, itemDiscountType]);
+
+  // The cart row's +/− or a one-tap merge changes this line; show its real quantity.
+  useEffect(() => {
+    if (initialLine?.qty != null) {
+      setSelectedQty(Math.max(1, Number(initialLine.qty) || 1));
+    }
+  }, [initialLine?.qty]);
 
   const addToCart = () => {
     if (!selectedVariant) return;

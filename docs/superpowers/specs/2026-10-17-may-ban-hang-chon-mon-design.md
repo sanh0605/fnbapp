@@ -47,7 +47,7 @@ Thêm câu riêng cho việc này:
 3. Chọn số lượng (bắt đầu 1), bấm **Thêm vào đơn · <tiền>**. Tiền là tổng của dòng sau khuyến mãi, như ô THÊM hôm nay.
 4. Khung đóng lại; giỏ hiện dòng mới hoặc dòng gộp.
 
-Chạm món khác khi khung đang mở: khung đổi sang món đó, lựa chọn trở về mặc định. Bấm **Bỏ** (máy tính), ✕ hoặc vùng tối (điện thoại), hoặc Esc: đóng khung, giỏ không đổi.
+Chạm món khác khi khung đang mở: khung đổi sang món đó, lựa chọn trở về mặc định. Riêng món một chạm (BR-SALE-019): món vào hoá đơn ngay, khung vẫn mở ở món cũ. Bấm **Bỏ** (máy tính), ✕ hoặc vùng tối (điện thoại), hoặc Esc: đóng khung, giỏ không đổi.
 
 ## 3. Món không có gì để chọn
 
@@ -126,6 +126,7 @@ Ví dụ số thật (giá ngày 2026-10-17):
   - **Chia tiền mặt + chuyển khoản**: mở khung chia tiền đang có;
   - **‹ Quay lại đơn**.
 - **Enter** (bàn phím máy tính) làm đúng việc của nút Thanh toán: mở bước chọn cách trả. When the step opens, the cursor is on Tiền mặt, so a second Enter pays cash. A cash sale from the keyboard is Enter, Enter. The "Xác nhận thanh toán TIỀN MẶT" box is gone. This is self-decided (section 9, point 3).
+- **Esc** on the step does what **‹ Quay lại đơn** does: the step closes and the order shows again; nothing is sent. With the split box open, Esc closes only that box, on any screen. Otherwise, on the phone, Esc closes the whole cart sheet, as it always did. Self-decided 2026-10-18 after a check on the till found Esc did nothing there (section 9, point 14). Built, not pushed yet.
 - On the phone, the bottom bar "Thanh toán ›" opens the cart sheet at the order view, so the cashier sees the lines. The Thanh toán button in the sheet then goes to the method step.
 - Offline, the cart empty, or an order sending: Thanh toán is disabled, as the pay buttons are today. The "Gửi lại" message still shows when a send fails.
 - The step closes and the cart goes back to the order view when sending starts (the cart empties at once, as today, and the existing "Đang gửi…" panel shows), when the cart is cleared, or when the cart changes in any other way (a dish added, a draft loaded). If the send fails, the cart comes back in the order view with "Gửi lại", as today.
@@ -176,6 +177,9 @@ These are written by a script that does a dry run by default and writes only wit
 10. Topping: chạm một dòng topping đã chọn là thêm một phần nữa (hiện "×2"), nút "−" bớt một phần. Cả 9 topping hiện không giới hạn số phần (đo 2026-10-17).
 11. Nút chia tiền ghi "Chia tiền mặt + chuyển khoản"; dòng báo lỗi dùng cùng chữ đó thay cho "Nhiều hình thức".
 12. Cần chủ quán chốt khi duyệt dữ liệu: Yogurt và nhóm Giải trí (cacao, matcha, sữa dâu) có cần Độ ngọt và Đá không; món "Test11" có gắn không. Đã chốt 2026-10-18 (*"Duyệt, đủ 35 món"*, *"Có, giữ Yogurt"*): gắn cả 35 món, Yogurt và Test11 gồm trong đó.
+13. (2026-10-18, chưa đẩy) Khung đang sửa một dòng mà số lượng dòng đó đổi từ ngoài khung (bấm +/− ở dòng trong giỏ, hoặc chạm một món một chạm gộp vào dòng đó): khung hiện số mới, các lựa chọn khác trong khung giữ nguyên; "Cập nhật" lưu số mới. Riêng giảm giá theo tiền (đồng) đang gõ trong khung: tiền dòng nhỏ đi thì giảm giá bị cắt xuống cho vừa, tiền dòng tăng lại thì không tự trả về số cũ. Giảm theo phần trăm không bị cắt. Trước đây khung giữ số cũ và "Cập nhật" ghi đè, mất phần vừa thêm.
+14. (2026-10-18, chưa đẩy) Esc ở bước chọn cách trả làm việc của **‹ Quay lại đơn** (mục 6). Khung "Chia tiền mặt + chuyển khoản" đang mở thì Esc chỉ đóng khung đó, bước chọn cách trả vẫn còn (cả máy tính lẫn điện thoại). Khung đó không mở thì trên điện thoại Esc đóng cả tấm hoá đơn như trước giờ.
+15. (2026-10-18, chưa đẩy) Sau một chạm, thẻ món không giữ con trỏ, để Enter mở bước chọn cách trả thay vì chạm món lần nữa. Máy chỉ bỏ con trỏ khỏi nút; con trỏ đang ở một ô gõ (ô tìm món, ô giảm giá, ô mã khuyến mãi) thì máy để yên. Trên iPad chạm món không kéo con trỏ đi, nên bàn phím không bị đóng giữa lúc gõ tìm. Trên máy tính, bấm chuột vào thẻ món thì trình duyệt tự kéo con trỏ khỏi ô tìm, như mọi nút khác. Cái giá: ai dùng phím Tab chọn món rồi bấm Enter liên tục thì Enter lần hai mở bước chọn cách trả, Enter lần ba là tiền mặt. Quầy dùng chạm và chuột nên chấp nhận.
 
 ## 10. Phân việc
 

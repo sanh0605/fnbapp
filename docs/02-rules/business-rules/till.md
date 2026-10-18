@@ -25,4 +25,5 @@ How a cashier rings a dish and takes payment at the till (`/pos`). The order and
 
 - The cart has one Thanh toán button. It opens the step where the cashier picks tiền mặt or chuyển khoản.
 - Picking tiền mặt in that step sends the order; no amount handed over is asked and no change is shown (`BR-SALE-018` keeps that part).
+- Esc on that step goes back to the order, like ‹ Quay lại đơn, and sends nothing; with the split box open Esc closes only that box; otherwise, on the phone, Esc closes the whole cart sheet, as before (self-decided 2026-10-18, not pushed yet).
 - Cost accepted by the owner: every cash order takes one more tap than before.

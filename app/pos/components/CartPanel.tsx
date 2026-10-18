@@ -118,6 +118,19 @@ export function CartPanel({
     }
   }, [appliedPromoCode, userCustomDiscount]);
 
+  // Close the split overlay on Esc before POSScreen's listener sees it
+  useEffect(() => {
+    if (!isSplitPaymentOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopImmediatePropagation();
+        setIsSplitPaymentOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [isSplitPaymentOpen]);
+
   useEffect(() => {
     if (prevCartLengthRef.current === 0 && cart.length > 0) {
       setIsPromoOpen(Boolean(appliedPromoCode) || userCustomDiscount !== null);
