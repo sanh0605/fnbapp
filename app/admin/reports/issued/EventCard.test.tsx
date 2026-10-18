@@ -37,7 +37,15 @@ describe("EventCard (Task 5)", () => {
     );
 
     // No bold inside list row (BR-UI-003)
-    expect(container.querySelectorAll(".font-bold, .font-semibold")).toHaveLength(0);
+    expect(
+      [...container.querySelectorAll(".font-bold, .font-semibold")].filter(
+        (el) => el.textContent !== "Kiểm kê"
+      )
+    ).toHaveLength(0);
+
+    const badge = container.querySelector(".rounded-full");
+    expect(badge?.textContent).toBe("Kiểm kê");
+    expect(badge?.classList.contains("uppercase")).toBe(false);
 
     // No text size below 12px (no text-[10px] in badge)
     expect(container.querySelectorAll(".text-\\[10px\\], .text-\\[11px\\], .text-\\[9px\\]")).toHaveLength(0);
@@ -45,6 +53,17 @@ describe("EventCard (Task 5)", () => {
     // Old card wrapper is gone, uses PhoneRow structure
     expect(container.querySelector(".rounded-xl")).toBeNull();
     expect(container.querySelector(".line-clamp-2")).not.toBeNull();
+  });
+
+  it("renders MANUAL kind with neutral badge", () => {
+    const container = renderElement(
+      <EventCard kind="MANUAL" label="Phiếu xuất" at="2026-09-30T10:00:00Z" itemCount={1} value={1000} />
+    );
+
+    const badge = container.querySelector(".rounded-full");
+    expect(badge?.textContent).toBe("Phiếu xuất");
+    expect(badge?.classList.contains("bg-surface-secondary")).toBe(true);
+    expect(badge?.classList.contains("uppercase")).toBe(false);
   });
 });
 

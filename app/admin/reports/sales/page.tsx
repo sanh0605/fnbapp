@@ -304,11 +304,11 @@ export default async function SalesReportPage(
 
         {/* Desktop Grid View (>= 768px) */}
         <div className="hidden md:block overflow-x-auto table-mobile-scroll pb-2">
-          <div className="min-w-[960px] space-y-1">
+          <div className="min-w-[960px] xl:min-w-0 space-y-1">
             {/* Header: Hours */}
             <div className="flex items-center">
               <div className="w-16 shrink-0 text-xs text-text-muted font-bold text-center">Thứ</div>
-              <div className="flex-1 gap-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
+              <div className="flex-1 gap-1 xl:gap-0.5" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
                 {Array.from({ length: 24 }, (_, i) => i).map(h => (
                   <div key={h} className="text-center text-xs text-text-muted font-medium">
                     {h}h
@@ -323,7 +323,7 @@ export default async function SalesReportPage(
                 <div className="w-16 shrink-0 text-sm font-semibold text-text-secondary">
                   {day === "CN" ? "Chủ nhật" : `Thứ ${day.replace("T", "")}`}
                 </div>
-                <div className="flex-1 gap-1 h-full" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
+                <div className="flex-1 gap-1 xl:gap-0.5 h-full" style={{ display: 'grid', gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
                   {Array.from({ length: 24 }, (_, i) => i).map(hour => {
                     const cell = heatmapMap.get(`${day}|${hour}`) || { revenue: 0, orderCount: 0 };
                     const opacity = maxRevenue > 0 ? (cell.revenue / maxRevenue) : 0;

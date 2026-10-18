@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import React from "react";
 import SalesCharts from "./SalesCharts";
@@ -49,6 +49,11 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     // Bar 3 is labelled on a phone (every third) but not on a computer (every second).
     expect(spans[3].classList.contains("hidden")).toBe(false);
     expect(spans[3].classList.contains("md:hidden")).toBe(true);
+
+    expect(spans[0].parentElement?.classList.contains("self-start")).toBe(true);
+    expect(spans[16].parentElement?.classList.contains("self-end")).toBe(true);
+    expect(spans[8].parentElement?.classList.contains("self-start")).toBe(false);
+    expect(spans[8].parentElement?.classList.contains("self-end")).toBe(false);
   });
 
   it("in the hour view with 3 hourly entries, the labels of the first and the last entry do not carry the class token hidden, and the middle one does", () => {
@@ -71,5 +76,33 @@ describe("SalesCharts text size on phone (Task 5)", () => {
     expect(spans[0].classList.contains("hidden")).toBe(false);
     expect(spans[1].classList.contains("hidden")).toBe(true);
     expect(spans[2].classList.contains("hidden")).toBe(false);
+
+    expect(spans[0].parentElement?.classList.contains("self-start")).toBe(false);
+    expect(spans[2].parentElement?.classList.contains("self-end")).toBe(false);
+  });
+
+  it("formats day and month labels for display", () => {
+    const { container } = render(
+      <SalesCharts
+        salesByHour={DUMMY_DATA}
+        salesByDate={[
+          { label: "2026-10-01", amount: 1000 },
+          { label: "2026-10-17", amount: 2000 },
+        ]}
+        salesByDayOfWeek={DUMMY_DATA}
+        salesByMonth={[{ label: "2026-10", amount: 3000 }]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Theo ngày" }));
+    const daySpans = container.querySelectorAll(".h-4 span");
+    expect(daySpans).toHaveLength(2);
+    expect(daySpans[0].textContent).toBe("01/10");
+    expect(daySpans[1].textContent).toBe("17/10");
+
+    fireEvent.click(screen.getByRole("button", { name: "Theo tháng" }));
+    const monthSpans = container.querySelectorAll(".h-4 span");
+    expect(monthSpans).toHaveLength(1);
+    expect(monthSpans[0].textContent).toBe("10/2026");
   });
 });

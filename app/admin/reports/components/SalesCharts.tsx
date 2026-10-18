@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatNumber } from "@/lib/shared/format";
+import { formatMonthLabel, formatVnDay } from "@/lib/shared/datetime";
 
 export default function SalesCharts({ 
   salesByDate, 
@@ -76,9 +77,11 @@ export default function SalesCharts({
               ? (i % 3 === 0 && (totalItems - 1 - i >= 3 || i === 0)) || i === totalItems - 1
               : desktopShow;
 
+          const alignClass = totalItems <= 7 ? "" : i === 0 ? "self-start" : i === totalItems - 1 ? "self-end" : "";
+
           return (
             <div key={i} className="flex flex-col items-center flex-1 group min-w-[8px] sm:min-w-[12px]">
-              <div className="text-xs text-text-secondary mb-2 font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 bg-surface-card px-1 rounded shadow-sm border border-border/50">
+              <div className={`text-xs text-text-secondary mb-2 font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 bg-surface-card px-1 rounded shadow-sm border border-border/50 ${alignClass}`}>
                 {formatNumber(Math.round(d.amount / 1000))}k
               </div>
               <div className="w-full max-w-[40px] bg-primary-soft rounded-t-lg relative flex items-end h-[250px]">
@@ -87,8 +90,10 @@ export default function SalesCharts({
                   style={{ height: `${heightPercent}%`, minHeight: d.amount > 0 ? '4px' : '0' }}
                 ></div>
               </div>
-              <div className="text-xs text-text-muted mt-3 font-medium text-center h-4">
-                <span className={`${phoneShow ? "" : "hidden"} ${desktopShow ? "md:inline" : "md:hidden"}`}>{d.label}</span>
+              <div className={`text-xs text-text-muted mt-3 font-medium text-center h-4 ${alignClass}`}>
+                <span className={`${phoneShow ? "" : "hidden"} ${desktopShow ? "md:inline" : "md:hidden"}`}>
+                  {viewMode === "DATE" ? formatVnDay(d.label).slice(0, 5) : viewMode === "MONTH" ? formatMonthLabel(d.label) : d.label}
+                </span>
               </div>
             </div>
           );

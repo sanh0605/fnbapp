@@ -17,6 +17,7 @@ import {
   TableCell,
 } from "@/components/ui/Table";
 import { EventCard } from "./EventCard";
+import { Badge } from "@/components/ui/Badge";
 
 export const dynamic = "force-dynamic";
 
@@ -152,7 +153,9 @@ export default async function IssuedValueReportPage(
                 <TableRow key={item.purchasedItemId}>
                   <TableRowHeader stick="left"><div className="max-w-[150px] md:max-w-none whitespace-normal break-words">{item.name}</div></TableRowHeader>
                   <TableCell align="right">
-                    {formatDecimal(item.issuedQuantity, { maxDigits: 2 })} {item.unitName}
+                    <span className="whitespace-nowrap">
+                      {formatDecimal(item.issuedQuantity, { maxDigits: 2 })} {item.unitName}
+                    </span>
                   </TableCell>
                   <TableCell align="right">
                     {formatNumber(item.issuedValue)}đ
@@ -207,15 +210,9 @@ export default async function IssuedValueReportPage(
                   {report.events.map((event) => (
                     <TableRow key={event.key}>
                       <TableCell>
-                        <span
-                          className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                            event.kind === "STOCKTAKE"
-                              ? "bg-primary-soft text-primary"
-                              : "bg-warning/10 text-warning"
-                          }`}
-                        >
+                        <Badge variant={event.kind === "STOCKTAKE" ? "processing" : "neutral"}>
                           {event.kind === "STOCKTAKE" ? "Kiểm kê" : "Phiếu xuất"}
-                        </span>
+                        </Badge>
                       </TableCell>
                       <TableCell><span className="whitespace-nowrap">{formatDateTimeFull(event.at)}</span></TableCell>
                       <TableCell>{event.label}</TableCell>
