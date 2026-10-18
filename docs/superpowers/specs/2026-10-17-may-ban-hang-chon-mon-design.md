@@ -30,7 +30,7 @@ Chưa xem: `ProductGrid.tsx`, `ProductCard.tsx`, `CartItemRow.tsx`, phần giữ
 5. **Data.**
    - In option groups (Nhóm tuỳ chọn) there is only "Thêm Topping": 9 toppings, all priced 3.000–10.000đ, linked to 35 drinks.
    - Of the 4.960 order lines, 328 carry an option.
-   - Out of scope: Độ ngọt and Đá do not exist yet (section 6).
+   - Out of scope: Độ ngọt and Đá do not exist yet (section 7).
 
 Thêm câu riêng cho việc này:
 
@@ -54,6 +54,8 @@ Chạm món khác khi khung đang mở: khung đổi sang món đó, lựa chọ
 Every dish takes the same path, Trứng luộc and Khoai lang included (one size, no group). The window opens showing only the size group, already lit, plus the quantity. The cashier sets the quantity and taps Thêm.
 
 Why: step 3 of the owner's flow is choosing the quantity, and one path means no special case in the code. Cost: an egg takes two taps instead of one. This is self-decided (section 9, point 1).
+
+**Reversed by the owner 2026-10-18** (*"Theo em khuyến nghị"*, after tapping Trứng luộc on the live till): a dish with one size and no option to choose (no group linked, or every linked group has no option in use) goes into the cart on one tap, quantity 1, with no window; tapping its cart line opens the window for quantity or a dish discount. Exception to `BR-SALE-019` in `docs/02-rules/business-rules/till.md`. Built 2026-10-18, not pushed yet.
 
 ## 4. Gộp dòng giống hệt
 
@@ -128,7 +130,7 @@ Ví dụ số thật (giá ngày 2026-10-17):
 - Offline, the cart empty, or an order sending: Thanh toán is disabled, as the pay buttons are today. The "Gửi lại" message still shows when a send fails.
 - The step closes and the cart goes back to the order view when sending starts (the cart empties at once, as today, and the existing "Đang gửi…" panel shows), when the cart is cleared, or when the cart changes in any other way (a dish added, a draft loaded). If the send fails, the cart comes back in the order view with "Gửi lại", as today.
 
-## 7. Độ ngọt và Đá: dữ liệu, chưa ghi
+## 7. Độ ngọt và Đá: dữ liệu, đã ghi 2026-10-18 ngay sau lần đẩy
 
 These are written by a script that does a dry run by default and writes only with `--apply`, after the owner approves the printed list.
 - One SQL transaction writes all three tables (group, options, dish links), so either everything is written or nothing is. A dry run runs the same SQL and ends with `rollback`.
@@ -162,7 +164,7 @@ These are written by a script that does a dry run by default and writes only wit
 
 ## 9. Điểm tự quyết, chủ quán duyệt cuối đợt
 
-1. Món không có gì để chọn (Trứng luộc, Khoai lang) cũng mở khung để chọn số lượng: hai chạm thay vì một (mục 3).
+1. Món không có gì để chọn (Trứng luộc, Khoai lang) cũng mở khung để chọn số lượng: hai chạm thay vì một (mục 3). Chủ quán đảo lại 2026-10-18: món một cỡ, không tuỳ chọn → một chạm vào giỏ (ngoại lệ `BR-SALE-019`), dựng 2026-10-18, chưa đẩy.
 2. Sửa một dòng không tự gộp với dòng khác (mục 4).
 3. Enter mở bước chọn cách trả; Enter lần nữa là tiền mặt; bỏ hộp hỏi tiền mặt (mục 6). Giữ phím Enter không gửi đơn: chỉ lần nhấn đầu được tính.
 4. Giảm giá món gập lại; ô nhập gợi ý "Ví dụ: 2" theo luật `BR-UI-009` (mục 5).
@@ -173,7 +175,7 @@ These are written by a script that does a dry run by default and writes only wit
 9. Số lượng một lần thêm: từ 1 đến 99; sửa một dòng đã gộp quá 99 thì giữ nguyên số đó.
 10. Topping: chạm một dòng topping đã chọn là thêm một phần nữa (hiện "×2"), nút "−" bớt một phần. Cả 9 topping hiện không giới hạn số phần (đo 2026-10-17).
 11. Nút chia tiền ghi "Chia tiền mặt + chuyển khoản"; dòng báo lỗi dùng cùng chữ đó thay cho "Nhiều hình thức".
-12. Cần chủ quán chốt khi duyệt dữ liệu: Yogurt và nhóm Giải trí (cacao, matcha, sữa dâu) có cần Độ ngọt và Đá không; món "Test11" có gắn không.
+12. Cần chủ quán chốt khi duyệt dữ liệu: Yogurt và nhóm Giải trí (cacao, matcha, sữa dâu) có cần Độ ngọt và Đá không; món "Test11" có gắn không. Đã chốt 2026-10-18 (*"Duyệt, đủ 35 món"*, *"Có, giữ Yogurt"*): gắn cả 35 món, Yogurt và Test11 gồm trong đó.
 
 ## 10. Phân việc
 

@@ -146,8 +146,11 @@ async function main(): Promise<void> {
     },
     findings,
   };
-  const os = await import("node:os");
-  const outPath = path.join(os.tmpdir(), `fnbapp-restore-drill-${new Date().toISOString().slice(0, 10)}.json`);
+  // Inside the repo's ignored .worktrees, not the system temp folder: the owner
+  // allows no files outside the project (2026-10-15).
+  const outDir = path.join(process.cwd(), ".worktrees");
+  fs.mkdirSync(outDir, { recursive: true });
+  const outPath = path.join(outDir, `fnbapp-restore-drill-${new Date().toISOString().slice(0, 10)}.json`);
   fs.writeFileSync(outPath, JSON.stringify(report, null, 2));
   console.log(`\nFull report written to ${outPath}`);
 }

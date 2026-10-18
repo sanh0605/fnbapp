@@ -53,8 +53,9 @@ price, that price's launch `product_price_history` row, and the
 `modifiers.product_id` link — one transaction
 (`lib/products/create-standalone-topping.ts` calling
 `create_standalone_topping_product_atomic`), or none of it. The RPC re-checks
-under the modifier row's own lock that it is `ACTIVE`, still unlinked, in the
-*Thêm Topping* group, and priced above zero, so a stale client render (a
+under the modifier row's own lock that it is `ACTIVE`, still unlinked, in a
+group that allows standalone sale (today *Thêm topping*), and priced above
+zero, so a stale client render (a
 second tab, a double click) can never create a duplicate product; it also
 refuses a name collision with an existing `ACTIVE` product
 (`ux_products_active_name`, `BR-CATALOG-001` level 1) rather than letting a
@@ -139,7 +140,7 @@ product (`MOD-009` today) updates only itself.
    used by a dish that is not deleted is refused with its dish count, not
    silently removed. The modifier list and detail offer create, edit, and
    remove; the "Bán độc lập" switch sits on the modifier edit form, only in a
-   group that allows standalone sale (today *Thêm Topping*), since only a topping
+   group that allows standalone sale (today *Thêm topping*), since only a topping
    can be sold standalone; the detail page shows it as "Có", "Không", or "—"
    in any other group.
 3. **What each list contains, and what is excluded.** The product list shows the

@@ -11,7 +11,6 @@
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-import { tmpdir } from "node:os";
 
 export function renderOpenItems(todos: { title: string; file: string }[]): string {
   const head = "# Việc đang làm (sinh tự động từ it.todo — đừng sửa tay)\n";
@@ -29,18 +28,26 @@ type VitestJson = {
 
 function generate(): void {
   const root = process.cwd();
-  const tmp = join(tmpdir(), `vitest-todos-${process.pid}.json`);
+  // Inside the repo's ignored .worktrees, not the system temp folder: the owner
+  // allows no files outside the project (2026-10-15).
+  const tmpDir = join(root, ".worktrees");
+  mkdirSync(tmpDir, { recursive: true });
+  const tmp = join(tmpDir, `vitest-todos-${process.pid}.json`);
 
   // vitest exits 0 when only .todo tests are present. A real failure exits
   // non-zero and throws here, which is correct: do not regenerate the open-items
   // list from a broken test run. A command string (not an args array) is used so
   // the shell resolves `npx` on Windows without triggering DEP0190.
-  execSync(
-    `npx vitest run --reporter=json --outputFile="${tmp}"`,
-    { cwd: root, stdio: "inherit" },
-  );
-
-  const report = JSON.parse(readFileSync(tmp, "utf8")) as VitestJson;
+  let report: VitestJson;
+  try {
+    execSync(
+      `npx vitest run --reporter=json --outputFile="${tmp}"`,
+      { cwd: root, stdio: "inherit" },
+    );
+    report = JSON.parse(readFileSync(tmp, "utf8")) as VitestJson;
+  } finally {
+    rmSync(tmp, { force: true });
+  }
 
   const todos: { title: string; file: string }[] = [];
   for (const testResult of report.testResults) {
@@ -55,7 +62,6 @@ function generate(): void {
   const outDir = join(root, "docs/04-operations");
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "OPEN-ITEMS.md"), renderOpenItems(todos));
-  rmSync(tmp, { force: true });
 
   console.log(`[open-items] ${todos.length} todo(s) -> docs/04-operations/OPEN-ITEMS.md`);
 }
