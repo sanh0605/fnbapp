@@ -73,7 +73,7 @@ const sampleTransfer: DBCashTransfer = {
 } as unknown as DBCashTransfer;
 
 describe("CashTransferDetailView", () => {
-  it("renders fields properly including Mã, Ngày, Số tiền, Từ, Đến, Ghi chú, Trạng thái, Người tạo, Ghi sổ lúc", () => {
+  it("renders fields properly including Ngày, Số tiền, Từ, Đến, Ghi chú, Trạng thái, Người tạo, Ghi sổ lúc", () => {
     render(
       <CashTransferDetailView
         transfer={sampleTransfer}
@@ -83,15 +83,16 @@ describe("CashTransferDetailView", () => {
       />,
     );
 
-    expect(screen.getAllByText("CT-001").length).toBeGreaterThan(0);
+    expect(screen.getByText("CT-001")).toHaveClass("text-text-secondary");
     expect(screen.getAllByText("10/09/2026 00:00:00").length).toBeGreaterThan(0);
     expect(screen.getAllByText("5,000,000đ").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Tiền mặt (két)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("ACB - Phin Di").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chuyển tiền két vào ACB").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
     expect(screen.getAllByText("admin").length).toBeGreaterThan(0);
     expect(screen.getByText("Ghi sổ lúc")).toBeInTheDocument();
+    expect(screen.queryByText("Mã")).toBeNull();
   });
 
   it("shows Chỉnh sửa and Huỷ buttons when transfer is active", () => {
@@ -121,6 +122,20 @@ describe("CashTransferDetailView", () => {
     expect(screen.queryByRole("link", { name: "Chỉnh sửa" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Huỷ" })).toBeNull();
     expect(screen.getAllByText("Đã huỷ").length).toBeGreaterThan(0);
+  });
+
+  it("with a cancelled record, 'Đã huỷ' appears exactly once and 'Trạng thái' is not in the field list", () => {
+    render(
+      <CashTransferDetailView
+        transfer={{ ...sampleTransfer, status: "CANCELLED" }}
+        accounts={sampleAccounts}
+        returnTo="/admin/finance"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.getAllByText("Đã huỷ")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
   });
 
   it("MANAGER sees no Xoá (canDelete=false)", () => {

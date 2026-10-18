@@ -68,18 +68,6 @@ function formatPromotionDate(val: string | null | undefined): string {
   return formatDateTimeFull(val) || "—";
 }
 
-function renderPromotionDate(val: string | null | undefined) {
-  const text = formatPromotionDate(val);
-  const spaceIdx = text.indexOf(" ");
-  if (spaceIdx === -1) return text;
-  return (
-    <>
-      <span className="whitespace-nowrap">{text.slice(0, spaceIdx)}</span>{" "}
-      <span className="whitespace-nowrap">{text.slice(spaceIdx + 1)}</span>
-    </>
-  );
-}
-
 function formatDiscountText(promo: DBPromotion): string {
   if (promo.discount_type === "PERCENT") {
     return `Giảm ${promo.discount_value}%`;
@@ -227,6 +215,7 @@ export default function PromotionsClient({
       {
         key: "brand",
         header: "Thương hiệu",
+        nowrap: true,
         sortValue: (p) => (p.brand_id ? brandMap[p.brand_id] || "Toàn hệ thống" : "Toàn hệ thống"),
         render: (p) => (
           <span className="text-text-secondary">
@@ -261,23 +250,14 @@ export default function PromotionsClient({
       },
       {
         key: "start",
-        header: "Bắt đầu",
-        secondary: true,
+        header: "Thời gian",
+        nowrap: true,
         sortValue: (p) => p.start_date || "",
         render: (p) => (
-          <span className="text-text-secondary text-sm">
-            {renderPromotionDate(p.start_date)}
-          </span>
-        ),
-      },
-      {
-        key: "end",
-        header: "Kết thúc",
-        sortValue: (p) => p.end_date || "",
-        render: (p) => (
-          <span className="text-text-secondary text-sm">
-            {renderPromotionDate(p.end_date)}
-          </span>
+          <div className="text-text-secondary text-sm tabular-nums whitespace-nowrap">
+            <div>{formatPromotionDate(p.start_date)}</div>
+            <div>{p.end_date ? `→ ${formatPromotionDate(p.end_date)}` : "→ Không hết hạn"}</div>
+          </div>
         ),
       },
       {

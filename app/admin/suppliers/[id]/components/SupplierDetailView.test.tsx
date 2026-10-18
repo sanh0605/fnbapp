@@ -138,6 +138,12 @@ describe("SupplierDetailView", () => {
     // Mã số thuế rỗng hiện "—"
     expect(screen.getByText("Mã số thuế")).toBeInTheDocument();
     expect(screen.getByText("—")).toBeInTheDocument();
+
+    // Subtitle shows NCC-029 and no Mã/Tên labels
+    expect(screen.getByText("NCC-029")).toHaveClass("text-text-secondary");
+    expect(screen.queryByText("Mã")).toBeNull();
+    expect(screen.queryByText("Tên")).toBeNull();
+    expect(screen.queryByText("Trạng thái", { selector: "div" })).toBeNull();
   });
 
   // Final review (BR-UI-007): Phiếu nhập opens on Tháng này, so the link
@@ -181,6 +187,24 @@ describe("SupplierDetailView", () => {
       />
     );
     expect(screen.getByRole("button", { name: "Hợp tác lại" })).toBeInTheDocument();
+  });
+
+  it("with a stopped record, 'Ngừng hợp tác' appears exactly once and 'Trạng thái' is not in the field list", () => {
+    const inactiveSupplier: DBSupplier = {
+      ...vinamilkSupplier,
+      status: "INACTIVE",
+    };
+    render(
+      <SupplierDetailView
+        supplier={inactiveSupplier}
+        orders={emptyOrders}
+        returnTo="/admin/suppliers"
+        canDelete={false}
+      />
+    );
+
+    expect(screen.getAllByText("Ngừng hợp tác")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái", { selector: "div" })).toBeNull();
   });
 
   it("'Xoá' hidden when orders.total > 0, shown when 0 for a viewer who may delete", () => {

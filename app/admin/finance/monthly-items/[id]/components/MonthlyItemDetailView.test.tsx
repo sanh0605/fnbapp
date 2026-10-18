@@ -77,11 +77,14 @@ describe("MonthlyItemDetailView", () => {
       />,
     );
 
-    expect(screen.getAllByText("KCT-001").length).toBeGreaterThan(0);
+    expect(screen.getByText("KCT-001")).toHaveClass("text-text-secondary");
+    expect(screen.getByRole("heading", { level: 1, name: "Tiền điện" })).toBeInTheDocument();
+    expect(screen.queryByText("Tên khoản")).toBeNull();
     expect(screen.getAllByText("Tiền điện").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Chi phí cố định").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
     expect(screen.getAllByText("3 dòng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Mã")).toBeNull();
   });
 
   it("shows Chỉnh sửa button linking to edit page", () => {
@@ -143,6 +146,21 @@ describe("MonthlyItemDetailView", () => {
     await vi.waitFor(() => expect(setMonthlyItemStatus).toHaveBeenCalledTimes(1));
     const formData = vi.mocked(setMonthlyItemStatus).mock.calls[0][0] as FormData;
     expect(formData.get("status")).toBe("ACTIVE");
+  });
+
+  it("with a stopped record, 'Ngừng dùng' appears exactly once and 'Trạng thái' is not in the field list", () => {
+    render(
+      <MonthlyItemDetailView
+        item={{ ...SAMPLE_ITEM, status: "INACTIVE" }}
+        category={CATEGORY}
+        entryCount={0}
+        canDelete={false}
+        returnTo="/admin/finance/monthly-items"
+      />,
+    );
+
+    expect(screen.getAllByText("Ngừng dùng")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
   });
 
   it("shows Xoá button only when canDelete is true AND entryCount is 0", () => {

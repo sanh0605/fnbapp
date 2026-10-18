@@ -84,15 +84,7 @@ export function CashEntryDetailView({
     }
   };
 
-  const statusBadge =
-    entry.status === "ACTIVE" ? (
-      <Badge variant="success">Đang dùng</Badge>
-    ) : (
-      <Badge variant="neutral">Đã huỷ</Badge>
-    );
-
   const fields: Field[] = [
-    { label: "Mã", value: entry.id },
     { label: "Ngày", value: formatDateTimeFull(entry.entry_date) },
     { label: "Nhóm", value: category?.name ?? "—" },
     ...(monthlyItemName ? [{ label: "Khoản chi hằng tháng", value: monthlyItemName }] : []),
@@ -106,7 +98,6 @@ export function CashEntryDetailView({
       label: "Ghi sổ lúc",
       value: formatDateTimeFull(entry.created_at),
     },
-    { label: "Trạng thái", value: statusBadge },
   ];
 
   const headerActions = (

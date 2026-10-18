@@ -119,10 +119,6 @@ export function ModifierDetailView({
   const fields: Field[] = [
     { label: "Nhóm", value: displayGroupName },
     { label: "Giá thêm", value: `${formatNumber(modifier.price)}đ` },
-    {
-      label: "Trạng thái",
-      value: modifier.status === "INACTIVE" ? "Ngừng dùng" : "Đang dùng",
-    },
     ...(isOne
       ? [{ label: "Có sẵn", value: modifier.is_default ? "Có" : "Không" }]
       : []),

@@ -50,11 +50,13 @@ describe("BankAccountDetailView", () => {
       />,
     );
 
-    expect(screen.getAllByText("BA-001").length).toBeGreaterThan(0);
+    expect(screen.getByText("BA-001")).toHaveClass("text-text-secondary");
     expect(screen.getAllByText("ACB - Phin Di").length).toBeGreaterThan(0);
     expect(screen.getAllByText("ACB").length).toBeGreaterThan(0);
     expect(screen.getAllByText("123456").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Đang dùng").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
+    expect(screen.queryByText("Mã")).toBeNull();
+    expect(screen.queryByText("Tên")).toBeNull();
   });
 
   it("renders '—' for missing bank_name or account_number", () => {
@@ -94,6 +96,19 @@ describe("BankAccountDetailView", () => {
     expect(screen.getByRole("button", { name: "Dùng lại" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ngừng dùng" })).toBeNull();
     expect(screen.getAllByText("Ngừng dùng").length).toBeGreaterThan(0);
+  });
+
+  it("with a stopped record, 'Ngừng dùng' appears exactly once and 'Trạng thái' is not in the field list", () => {
+    render(
+      <BankAccountDetailView
+        account={{ ...sampleAccount, status: "INACTIVE" }}
+        returnTo="/admin/finance/bank-accounts"
+        canDelete={false}
+      />,
+    );
+
+    expect(screen.getAllByText("Ngừng dùng")).toHaveLength(1);
+    expect(screen.queryByText("Trạng thái")).toBeNull();
   });
 
   it("shows Xoá button only when canDelete is true", () => {

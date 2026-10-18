@@ -88,7 +88,6 @@ export default function EditUserForm({
               id={`${formId}-password`}
               type="password"
               name="password"
-              placeholder="******"
             />
           </Field>
 

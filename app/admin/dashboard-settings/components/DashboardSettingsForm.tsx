@@ -260,7 +260,6 @@ export function DashboardSettingsForm({
         )}
         <FormActionBar
           mode="edit"
-          submitLabel="Lưu"
           onCancel={() => router.push("/admin")}
           loading={loading}
           disabled={!isOwner}

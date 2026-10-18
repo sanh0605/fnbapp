@@ -51,8 +51,6 @@ export function BrandDetailView({
     );
 
   const fields: Field[] = [
-    { label: "Mã", value: brand.id },
-    { label: "Tên thương hiệu", value: brand.name },
     { label: "Mã đơn hàng", value: brand.code || "—" },
     {
       label: "Ngày bắt đầu",
@@ -92,6 +90,7 @@ export function BrandDetailView({
         backHref={returnTo}
         backLabel="Thương hiệu"
         title={brand.name}
+        subtitle={brand.id}
         actions={headerActions}
       />
 

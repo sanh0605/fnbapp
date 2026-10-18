@@ -31,8 +31,6 @@ export function UserDetailView({
   const { name, showLogin } = staffLabel(user);
 
   const fields: Field[] = [
-    { label: "Mã NV", value: user.id },
-    { label: "Tên đăng nhập", value: user.username },
     { label: "Quyền hạn", value: <RoleBadge role={user.role} /> },
     { label: "Ngày tạo", value: formatDateTimeFull(user.created_at) || "—" },
   ];

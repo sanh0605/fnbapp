@@ -1,13 +1,10 @@
-import { PageHeader } from "@/components/ui/PageHeader";
+import { ListPageHeader } from "@/components/ui/list/ListPageHeader";
 import { SkeletonTable } from "@/components/ui/SkeletonTable";
 
 export default function Loading() {
   return (
     <div className="space-y-6">
-      <PageHeader 
-        title="Món" 
-        subtitle="Quản lý Menu bán hàng, cấu hình Size và Định mức pha chế."
-      />
+      <ListPageHeader group="Bán hàng" title="Món" />
       <div className="bg-surface-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <SkeletonTable rows={5} columns={6} />
       </div>

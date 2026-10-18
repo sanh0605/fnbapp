@@ -107,20 +107,10 @@ export function SupplierDetailView({
     return p > 1 ? `${base}&poPage=${p}` : base;
   };
   const fields: Field[] = [
-    { label: "Mã", value: supplier.id },
-    { label: "Tên", value: supplier.name },
     { label: "Điện thoại", value: supplier.phone },
     { label: "Địa chỉ", value: supplier.address },
     { label: "Mã số thuế", value: supplier.tax_id },
     { label: "Ghi chú / liên kết", value: renderLinks(supplier.links) },
-    {
-      label: "Trạng thái",
-      value: (
-        <Badge variant={isInactive ? "neutral" : "success"}>
-          {isInactive ? "Ngừng hợp tác" : "Đang hợp tác"}
-        </Badge>
-      ),
-    },
   ];
 
   const editHref = `/admin/suppliers/${encodeURIComponent(supplier.id)}/edit?returnTo=${encodeURIComponent(returnTo)}`;
@@ -177,6 +167,7 @@ export function SupplierDetailView({
         backHref={returnTo}
         backLabel="Nhà cung cấp"
         title={supplier.name}
+        subtitle={supplier.id}
         badge={
           supplier.status === "INACTIVE" ? (
             <Badge variant="neutral">

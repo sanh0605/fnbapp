@@ -68,7 +68,7 @@ export function BankAccountForm({ account, returnTo: rawReturnTo }: BankAccountF
               name="name"
               required
               defaultValue={account?.name}
-              placeholder="Ví dụ: Vietcombank Sanh"
+              placeholder="Ví dụ: Vietcombank của quán"
             />
           </Field>
 

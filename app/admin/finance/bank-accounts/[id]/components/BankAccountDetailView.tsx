@@ -66,19 +66,9 @@ export function BankAccountDetailView({
     }
   };
 
-  const statusBadge =
-    account.status === "ACTIVE" ? (
-      <Badge variant="success">Đang dùng</Badge>
-    ) : (
-      <Badge variant="warning">Ngừng dùng</Badge>
-    );
-
   const fields: Field[] = [
-    { label: "Mã", value: account.id },
-    { label: "Tên", value: account.name },
     { label: "Ngân hàng", value: display(account.bank_name) },
     { label: "Số tài khoản", value: display(account.account_number) },
-    { label: "Trạng thái", value: statusBadge },
   ];
 
   const headerActions = (
