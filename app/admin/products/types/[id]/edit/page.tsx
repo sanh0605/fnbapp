@@ -46,7 +46,7 @@ export default async function EditProductTypePage(
       <DetailHeader
         backHref={detailHref}
         backLabel={productType.name}
-        title="Sửa loại món"
+        title="Chỉnh sửa"
         subtitle={productType.name}
       />
       <ProductTypeForm

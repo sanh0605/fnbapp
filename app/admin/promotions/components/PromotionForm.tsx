@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
+import { Folder, UtensilsCrossed } from "lucide-react";
 import { savePromotion } from "@/app/admin/promotions/actions";
 import { Field } from "@/components/ui/Field";
 import { TextInput } from "@/components/ui/TextInput";
@@ -129,7 +130,7 @@ export function PromotionForm({
       setStartDate(toSaigonIsoString(now).slice(0, 16));
       
       const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      setEndDate(toSaigonIsoString(nextWeek).slice(0, 16));
+      setEndDate(toSaigonIsoString(nextWeek).slice(0, 10) + "T23:59");
       
       setSelectedVariants([]);
       setVariantValues({});
@@ -244,7 +245,7 @@ export function PromotionForm({
 
         {/* Section 1: Chương trình */}
         <div className="space-y-4">
-          <h3 className="text-sm text-text-secondary">Chương trình</h3>
+          <h3 className="text-sm font-semibold text-text-primary">Chương trình</h3>
           <div data-testid="form-fields" className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div className="col-span-1 md:col-span-2">
               <Field label="Tên chương trình" htmlFor={`${formId}-name`} required>
@@ -252,19 +253,23 @@ export function PromotionForm({
                   id={`${formId}-name`}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ví dụ: Happy Hour Giảm 10%"
+                  placeholder="Ví dụ: Khai trương giảm 10%"
                   required
                 />
               </Field>
             </div>
 
             <div>
-              <Field label="Mã khuyến mãi (để nhập tay)" htmlFor={`${formId}-code`}>
+              <Field
+                label="Mã khuyến mãi (để nhập tay)"
+                htmlFor={`${formId}-code`}
+                hint="Để trống thì máy tự đặt mã."
+              >
                 <TextInput
                   id={`${formId}-code`}
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  placeholder="Ví dụ: HAPPY10 (để trống nếu tự động)"
+                  placeholder="Ví dụ: KHAITRUONG10"
                 />
               </Field>
             </div>
@@ -276,10 +281,10 @@ export function PromotionForm({
                   value={brandId}
                   onChange={setBrandId}
                   options={[
-                    { id: "", label: "Tất cả thương hiệu (Toàn hệ thống)" },
+                    { id: "", label: "Toàn hệ thống" },
                     ...brands.map((b) => ({ id: b.id, label: b.name })),
                   ]}
-                  placeholder="Tất cả thương hiệu (Toàn hệ thống)"
+                  placeholder="Toàn hệ thống"
                 />
               </Field>
             </div>
@@ -314,7 +319,7 @@ export function PromotionForm({
 
         {/* Section 2: Mức giảm */}
         <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm text-text-secondary">Mức giảm</h3>
+          <h3 className="text-sm font-semibold text-text-primary">Mức giảm</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div>
               <Field label="Đối tượng giảm giá" htmlFor={`${formId}-type`}>
@@ -386,7 +391,7 @@ export function PromotionForm({
 
         {/* Section 3: Thời gian */}
         <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm text-text-secondary">Thời gian</h3>
+          <h3 className="text-sm font-semibold text-text-primary">Thời gian</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             <div>
               <Field label="Bắt đầu lúc" htmlFor={`${formId}-startDate`} required>
@@ -413,7 +418,7 @@ export function PromotionForm({
 
         {/* Section 4: Món áp dụng */}
         <div className="space-y-4 pt-4 border-t border-border">
-          <h3 className="text-sm text-text-secondary">Món áp dụng</h3>
+          <h3 className="text-sm font-semibold text-text-primary">Món áp dụng</h3>
 
           {type === "PRODUCT_DISCOUNT" ? (
             <div>
@@ -422,7 +427,7 @@ export function PromotionForm({
                 <h4 className="text-sm font-bold text-text-primary">Chọn món áp dụng</h4>
                 <p className="text-xs text-text-muted">Chọn các kích cỡ/món áp dụng khuyến mãi này. Có thể điều chỉnh giá trị giảm riêng cho từng món.</p>
               </div>
-              <div className="text-xs font-bold text-primary bg-primary-soft px-2.5 py-1 rounded-full">
+              <div className="text-xs font-bold text-primary bg-primary-soft px-2.5 py-1 rounded-full whitespace-nowrap shrink-0">
                 Đã chọn: {selectedVariants.length} mục
               </div>
             </div>
@@ -445,7 +450,7 @@ export function PromotionForm({
                           onChange={(e) => handleSelectGroup(group.allVariantIds, e.target.checked)}
                           className="rounded text-primary focus:ring-primary h-4 w-4"
                         />
-                        📁 {group.category.name}
+                        <Folder className="h-4 w-4 text-text-muted shrink-0" aria-hidden /> {group.category.name}
                       </label>
                       <span className="text-xs text-text-muted font-medium">
                         {group.products.length} sản phẩm
@@ -456,8 +461,9 @@ export function PromotionForm({
                       {group.products.map((item) => {
                         return (
                           <div key={item.product.id} className="p-2 border border-border/40 rounded-lg hover:border-border transition bg-surface-card">
-                            <div className="font-bold text-xs text-text-secondary mb-2 px-1">
-                              🍽️ {item.product.name}
+                            <div className="font-bold text-xs text-text-secondary mb-2 px-1 flex items-center gap-1.5">
+                              <UtensilsCrossed className="h-4 w-4 text-text-muted shrink-0" aria-hidden />
+                              <span>{item.product.name}</span>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                               {item.variants.map((v) => {
@@ -490,7 +496,7 @@ export function PromotionForm({
 
                                     {isChecked && (
                                       <div className="flex items-center gap-1.5 pt-1.5 border-t border-border/40">
-                                        <span className="text-xs text-text-muted shrink-0">Giảm:</span>
+                                        <span className="text-xs text-text-muted shrink-0">{discountType === "FLAT_PRICE" ? "Giá:" : "Giảm:"}</span>
                                         <div className="w-28">
                                           <NumberInput
                                             id={`${formId}-variant-${v.id}`}
@@ -535,7 +541,7 @@ export function PromotionForm({
             </div>
           </div>
         ) : (
-          <p className="text-sm text-text-muted">Áp dụng cho toàn đơn</p>
+          <p className="text-sm text-text-secondary">Áp dụng cho toàn đơn, không cần chọn món.</p>
         )}
         </div>
 

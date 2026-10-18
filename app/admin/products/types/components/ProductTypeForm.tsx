@@ -82,7 +82,7 @@ export function ProductTypeForm({ initialData, returnTo = "/admin/products/types
           <div className="flex items-center pt-2 md:pt-7">
             <label
               htmlFor={`${formId}-is_drink`}
-              className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[48px] md:min-h-[40px]"
+              className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary min-h-[48px] md:min-h-[40px] w-full"
             >
               <input
                 type="checkbox"
@@ -90,7 +90,7 @@ export function ProductTypeForm({ initialData, returnTo = "/admin/products/types
                 name="is_drink"
                 value="true"
                 defaultChecked={initialData?.is_drink ?? false}
-                className="w-6 h-6 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
+                className="h-4 w-4 rounded border-border text-primary focus:ring-focus-ring cursor-pointer"
               />
               <span>Là thức uống (tính là ly)</span>
             </label>
